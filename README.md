@@ -14,7 +14,7 @@ A modern email app built with React, featuring a clean interface and core email 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/turing-rlgym/MailG.git
+git clone https://github.com/turing-rlgym/mailg.git
 cd mailg
 ```
 
