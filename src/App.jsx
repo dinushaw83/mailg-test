@@ -8,7 +8,7 @@ import { initialState } from "./contexts/fixtures";
 
 function App() {
   useEffect(() => {
-    document.title = `MailView(2) - ${initialState.user.email} - MailG`;
+    document.title = `Inbox(2) - ${initialState.user.email} - MailG`;
   }, []);
 
   return (
