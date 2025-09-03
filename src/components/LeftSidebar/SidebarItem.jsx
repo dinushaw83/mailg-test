@@ -40,7 +40,7 @@ export default function SidebarItem({ item }) {
               </NavLink>
             </span>
 
-            {typeof item.count === "number" && item.count > 0 && (
+            {item.key !== "all" && typeof item.count === "number" && item.count > 0 && (
               <div className="bsU">{item.count}</div>
             )}
           </div>

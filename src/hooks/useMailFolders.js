@@ -17,56 +17,24 @@ export default function useMailFolders(emails = []) {
             categories: [],
         };
 
-        emails.forEach((mail) => {
-            // Inbox → unread messages
-            if ((mail.labels || []).includes("Inbox")) {
-                folders.inbox.push(mail);
-            }
+        const has = (m, name) => (m.labels || []).includes(name);
 
-            if (mail.starred) {
-                folders.starred.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Snoozed")) {
-                folders.snoozed.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Sent")) {
-                folders.sent.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Drafts")) {
-                folders.drafts.push(mail);
-            }
-
-            if (mail.important) {
-                folders.important.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Chats")) {
-                folders.chats.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Scheduled")) {
-                folders.scheduled.push(mail);
-            }
-
-            if ((mail.labels || []).includes("All Mail")) {
-                folders.allmail.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Spam")) {
-                folders.spam.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Trash")) {
-                folders.trash.push(mail);
-            }
-
-            if ((mail.labels || []).includes("Categories")) {
-                folders.categories.push(mail);
-            }
+        emails.forEach((m) => {
+            if (has(m, "Inbox")) folders.inbox.push(m);
+            if (m.starred) folders.starred.push(m);
+            if (has(m, "Snoozed")) folders.snoozed.push(m);
+            if (has(m, "Sent")) folders.sent.push(m);
+            if (has(m, "Drafts")) folders.drafts.push(m);
+            if (m.important) folders.important.push(m);
+            if (has(m, "Chats")) folders.chats.push(m);
+            if (has(m, "Scheduled")) folders.scheduled.push(m);
+            if (has(m, "Spam")) folders.spam.push(m);
+            if (has(m, "Trash")) folders.trash.push(m);
+            if (has(m, "Categories")) folders.categories.push(m);
         });
+
+        // All Mail = everything except Spam/Trash
+        folders.all = emails.filter((m) => !has(m, "Spam") && !has(m, "Trash"));
 
         return folders;
     }, [emails]);

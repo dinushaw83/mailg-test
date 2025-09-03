@@ -17,7 +17,7 @@ const HIDDEN_FOLDERS = [
   { key: "important", label: "Important", icon: "label_important" },
   { key: "chats", label: "Chats", icon: "chat" },
   { key: "scheduled", label: "Scheduled", icon: "schedule_send" },
-  { key: "allmail", label: "All Mail", icon: "mail" },
+  { key: "all", label: "All Mail", icon: "mail" },
   { key: "spam", label: "Spam", icon: "report", count: 0 },
   { key: "trash", label: "Trash", icon: "delete" },
   { key: "categories", label: "Categories", icon: "label" },
