@@ -1,6 +1,9 @@
 import React from "react";
+import useMailActions from "../hooks/useMailActions";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
+  const { toggleImportant } = useMailActions()
+  
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -117,6 +120,10 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
               aria-checked={email.important.toString()}
               id={`:pn${index}`}
               data-is-important={email.important.toString()}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleImportant && toggleImportant([email.id]);
+              }}
             >
               <div className="T-ays-a45 sf-hidden">
                 {email.important && "Important according to Google magic."}
