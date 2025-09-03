@@ -1,9 +1,28 @@
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
+import { useParams } from "react-router-dom";
+
 import EmailList from "../components/EmailList";
 import { GlobalContext } from "../contexts/GlobalContext";
+import useMailFolders from "../hooks/useMailFolders";
 
 const Inbox = () => {
   const { state } = useContext(GlobalContext);
+  const emails = state?.emails || [];
+
+  const { folder, label: labelParam } = useParams();
+  const label = labelParam ? decodeURIComponent(labelParam) : null;
+  const activeFolder = folder || "inbox";
+
+  // get all folders from hook
+  const folders = useMailFolders(emails);
+
+  // pick rows based on folder/label
+  const rows = useMemo(() => {
+    if (label) {
+      return emails.filter((m) => (m.labels || []).includes(label));
+    }
+    return folders[activeFolder] || emails;
+  }, [emails, label, activeFolder, folders]);
 
   return (
     <div className="nH bkK">
@@ -676,7 +695,7 @@ const Inbox = () => {
                                       role="grid"
                                       aria-readonly="true"
                                     >
-                                      <EmailList emails={state.emails} />
+                                      <EmailList emails={rows} />
                                     </table>
                                   </div>
                                 </div>
