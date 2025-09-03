@@ -92,11 +92,12 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
               <div className="T-Jo-auh sf-hidden" />
             </div>
           </td>
-          <td className="apU xY">
+          <td className={`apU ${email.starred ? "" : "xY"}`}>
             <button
               type="button"
               aria-label={email.starred ? "Unstar" : "Star"}
               aria-pressed={email.starred}
+              className="T-Jo"
               onClick={(e) => {
                 e.stopPropagation();
                 toggleStar([email.id]);
@@ -114,7 +115,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                 style={{
                   fontSize: 18,
                   verticalAlign: "middle",
-                  fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`, // filled vs outline
+                  fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`,
                 }}
               >
                 star
