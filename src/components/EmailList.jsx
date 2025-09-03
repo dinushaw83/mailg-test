@@ -2,7 +2,7 @@ import React from "react";
 import useMailActions from "../hooks/useMailActions";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
-  const { toggleImportant } = useMailActions()
+  const { toggleImportant, toggleStar } = useMailActions()
   
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -93,21 +93,33 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             </div>
           </td>
           <td className="apU xY">
-            {email.starred && (
+            <button
+              type="button"
+              aria-label={email.starred ? "Unstar" : "Star"}
+              aria-pressed={email.starred}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStar([email.id]);
+              }}
+              style={{
+                background: "transparent",
+                border: 0,
+                padding: 0,
+                cursor: "pointer",
+                color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+              }}
+            >
               <span
-                id={`:pm${index}`}
-                className="T-KT T-KT-Jp"
-                aria-label="Starred"
-                role="button"
-                data-tooltip="Starred"
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 18,
+                  verticalAlign: "middle",
+                  fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`, // filled vs outline
+                }}
               >
-                <img
-                  className="T-KT-JX"
-                  src="/assets/images/pr_2_image_1.gif"
-                  alt="Starred"
-                />
+                star
               </span>
-            )}
+            </button>
           </td>
           <td className="WA xY">
             <div
