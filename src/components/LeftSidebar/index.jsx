@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import useLabelCounts from "./../LeftSidebar/useLabelCounts";
@@ -26,12 +26,12 @@ const HIDDEN_FOLDERS = [
 const LABELS = ["[Imap]/Drafts", "[Imap]/Sent"];
 
 const LeftSidebar = () => {
-  const [showLess, setShowLess] = React.useState(true);
+  const [showLess, setShowLess] = useState(true);
   const { state } = useGlobalContext();
   const emails = state?.emails || [];
   const folders = useMailFolders(emails);
 
-  const counts = useLabelCounts(emails)
+  const counts = useLabelCounts(emails);
 
   return (
     <div
@@ -79,7 +79,10 @@ const LeftSidebar = () => {
                               {DEFAULT_FOLDERS.map((item) => (
                                 <SidebarItem
                                   key={item.key}
-                                  item={{ ...item, count: folders[item.key]?.length || 0 }}
+                                  item={{
+                                    ...item,
+                                    count: folders[item.key]?.length || 0,
+                                  }}
                                 />
                               ))}
                             </div>
@@ -90,33 +93,48 @@ const LeftSidebar = () => {
                           <span
                             role="button"
                             className="J-Ke n4 ah9"
-                            aria-label={showLess ? "More labels" : "Less labels"}
+                            aria-label={
+                              showLess ? "More labels" : "Less labels"
+                            }
                             tabIndex={0}
                             onClick={() => setShowLess(!showLess)}
                           >
-                            <span className="CJ">{showLess ? "More" : "Less"}</span>
-                            <span className="ait" style={{ marginLeft: "6px" }}>
+                            <span className="CJ">
+                              {showLess ? "More" : "Less"}
+                            </span>
+                            <span
+                              className="ait"
+                              style={{ marginRight: "18px" }}
+                            >
                               <span
                                 className="material-symbols-outlined"
-                                style={{ fontSize: "18px", verticalAlign: "middle" }}
+                                style={{
+                                  fontSize: "18px",
+                                  verticalAlign: "middle",
+                                }}
                               >
                                 {showLess ? "expand_more" : "expand_less"}
                               </span>
                             </span>
                           </span>
                         </div>
-                        {!showLess && <div id=":n1" className="n3"> 
-                          <div className="byl">
-                            <div className="TK">
-                              {HIDDEN_FOLDERS.map((item) => (
-                                <SidebarItem
-                                  key={item.key}
-                                  item={{ ...item, count: folders[item.key]?.length || 0 }}
-                                />
-                              ))}
-                             </div>
+                        {!showLess && (
+                          <div id=":n1" className="n3">
+                            <div className="byl">
+                              <div className="TK">
+                                {HIDDEN_FOLDERS.map((item) => (
+                                  <SidebarItem
+                                    key={item.key}
+                                    item={{
+                                      ...item,
+                                      count: folders[item.key]?.length || 0,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            </div>
                           </div>
-                        </div>}
+                        )}
                       </div>
                     </div>
                   </div>
@@ -145,7 +163,11 @@ const LeftSidebar = () => {
                           <div className="zw" gh="cl">
                             <div className="TK">
                               {LABELS.map((name) => (
-                                <LabelItem key={name} name={name} count={counts[name]} />
+                                <LabelItem
+                                  key={name}
+                                  name={name}
+                                  count={counts[name]}
+                                />
                               ))}
                             </div>
                           </div>
