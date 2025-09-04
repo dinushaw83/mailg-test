@@ -1,10 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
 import EmailDetails from "./pages/EmailDetails";
@@ -20,8 +15,8 @@ function App() {
   }, []);
 
   return (
-    <GlobalContextProvider>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <GlobalContextProvider>
         <Layout>
           <Routes>
             <Route path="/" element={<Navigate to="/inbox" replace />} />
@@ -37,8 +32,8 @@ function App() {
 
         {/* Global Snackbar */}
         <GlobalSnackbar />
-      </Router>
-    </GlobalContextProvider>
+      </GlobalContextProvider>
+    </Router>
   );
 }
 

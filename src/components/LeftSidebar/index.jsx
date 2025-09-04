@@ -28,11 +28,11 @@ const HIDDEN_FOLDERS = [
 const LeftSidebar = () => {
   const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
-  const { emails } = useGlobalContext();
+  const { emails, labels } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labelIndex } = useLabels();
 
-  const customLabels = Object.entries(labelIndex)
+  const customLabels = Object.entries(labels || {})
     .filter(([name, meta]) => !meta.system)
     .map(([name]) => name)
     .sort();
