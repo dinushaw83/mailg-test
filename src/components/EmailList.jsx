@@ -1,8 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+import useMailActions from "../hooks/useMailActions";
+import CheckBox from "./ui/CheckBox";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
+  const { selection } = useGlobalContext()
+  const { toggleImportant, toggleStar } = useMailActions()
+
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -80,34 +87,42 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
         >
           <td className="PF xY" />
           <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
-            <div
-              id={`:pl${index}`}
-              className="oZ-jc T-Jo J-J5-Ji"
-              role="checkbox"
-              aria-labelledby={`:pj${index}`}
-              dir="ltr"
-              aria-checked="false"
-              tabIndex={-1}
-            >
-              <div className="T-Jo-auh sf-hidden" />
-            </div>
+            <CheckBox
+              id={`:pl${email.id}`}
+              labelledBy={`:pj${email.id}`}
+              checked={selection.isSelected(email.id)}
+              onChange={() => selection.toggle(email.id)}
+            />
           </td>
-          <td className="apU xY">
-            {email.starred && (
+          <td className={`apU ${email.starred ? "" : "xY"}`}>
+            <button
+              type="button"
+              aria-label={email.starred ? "Unstar" : "Star"}
+              aria-pressed={email.starred}
+              className="T-Jo"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStar([email.id]);
+              }}
+              style={{
+                background: "transparent",
+                border: 0,
+                padding: 0,
+                cursor: "pointer",
+                color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+              }}
+            >
               <span
-                id={`:pm${index}`}
-                className="T-KT T-KT-Jp"
-                aria-label="Starred"
-                role="button"
-                data-tooltip="Starred"
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 18,
+                  verticalAlign: "middle",
+                  fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`,
+                }}
               >
-                <img
-                  className="T-KT-JX"
-                  src="/assets/images/pr_2_image_1.gif"
-                  alt="Starred"
-                />
+                star
               </span>
-            )}
+            </button>
           </td>
           <td className="WA xY">
             <div
@@ -120,6 +135,10 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
               aria-checked={email.important.toString()}
               id={`:pn${index}`}
               data-is-important={email.important.toString()}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleImportant && toggleImportant([email.id]);
+              }}
             >
               <div className="T-ays-a45 sf-hidden">
                 {email.important && "Important according to Google magic."}

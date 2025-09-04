@@ -6,15 +6,7 @@ import styled from "@emotion/styled";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
 
-export const Icon = ({
-  name,
-  label,
-  onClick,
-  style,
-  disabled,
-  placement = "bottom",
-  size = "small",
-}) => {
+export const Icon = ({ name, label, onClick, style, disabled, placement = "bottom", size = "small" }) => {
   return (
     <Tooltip title={label} placement={placement}>
       <IconButton
@@ -79,10 +71,7 @@ const MailActions = () => {
           <Icon name="delete" label="Delete" />
         </>
 
-        <Divider
-          orientation="vertical"
-          style={{ marginLeft: 10, marginRight: 10, height: 24 }}
-        />
+        <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
 
         <>
           <Icon name="mark_email_unread" label="Mark as unread" />
@@ -117,22 +106,15 @@ const EmailPosition = ({ currentItem, totalItems }) => {
 
 const NavigationActions = () => {
   const { inboxId } = useParams();
-  const { state } = useContext(GlobalContext);
-  const emails = state?.emails || [];
+  const { emails } = useContext(GlobalContext);
   const navigate = useNavigate();
 
   const hasNextEmail = useMemo(() => {
-    return (
-      emails.find((e) => String(e.id) === String(Number(inboxId) + 1)) !==
-      undefined
-    );
+    return emails.find((e) => String(e.id) === String(Number(inboxId) + 1)) !== undefined;
   }, [emails, inboxId]);
 
   const hasPreviousEmail = useMemo(() => {
-    return (
-      emails.find((e) => String(e.id) === String(Number(inboxId) - 1)) !==
-      undefined
-    );
+    return emails.find((e) => String(e.id) === String(Number(inboxId) - 1)) !== undefined;
   }, [emails, inboxId]);
 
   const currentItem = useMemo(() => {

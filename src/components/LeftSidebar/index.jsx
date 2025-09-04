@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import useLabelCounts from "./../LeftSidebar/useLabelCounts";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
+import useLabels from "../../hooks/useLabels";
 
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
@@ -23,15 +25,17 @@ const HIDDEN_FOLDERS = [
   { key: "categories", label: "Categories", icon: "label" },
 ];
 
-const LABELS = ["[Imap]/Drafts", "[Imap]/Sent"];
-
 const LeftSidebar = () => {
+  const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
-  const { state } = useGlobalContext();
-  const emails = state?.emails || [];
+  const { emails, labels } = useGlobalContext();
   const folders = useMailFolders(emails);
+  const { labelIndex } = useLabels();
 
-  const counts = useLabelCounts(emails);
+  const customLabels = Object.entries(labels || {})
+    .filter(([name, meta]) => !meta.system)
+    .map(([name]) => name)
+    .sort();
 
   return (
     <div
@@ -40,7 +44,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{ width: 187, height: 1001 }}
     >
-      <div className="aic">
+      <div className="aic" onClick={() => navigate("?compose=new")}>
         <div className="z0">
           <div
             className="T-I T-I-KE L3"
@@ -162,11 +166,11 @@ const LeftSidebar = () => {
                         <div className="n3">
                           <div className="zw" gh="cl">
                             <div className="TK">
-                              {LABELS.map((name) => (
+                              {customLabels.map((name) => (
                                 <LabelItem
                                   key={name}
                                   name={name}
-                                  count={counts[name]}
+                                  count={labelIndex[name]?.unread || 0}
                                 />
                               ))}
                             </div>
