@@ -3,6 +3,8 @@ import ActionButton from '../common/ActionButton';
 import replyImage from "../../icons/reply.png";
 import replyAllImage from "../../icons/replyall.png";
 import forwardImage from "../../icons/forward.png";
+import ReplySectionREFERENCE from './ReplySectionREF';
+import ReplySection from './ReplySection';
 
 const EmailResponseView = () => {
   const handleReply = () => {
@@ -27,6 +29,9 @@ const EmailResponseView = () => {
         <ActionButton text="Reply all" onClick={handleReplyAll} icon={<img src={replyAllImage} alt="Reply all" />} />
         <ActionButton text="Forward" onClick={handleForward} icon={<img src={forwardImage} alt="Forward" />} />
       </div>
+      <ReplySectionREFERENCE />
+      <br />
+      <ReplySection />
     </div>
   );
 };

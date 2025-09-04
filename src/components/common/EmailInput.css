@@ -1,0 +1,118 @@
+.email-input-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.email-label {
+  color: #666;
+  font-size: 14px;
+  display: none;
+  transition: opacity 0.2s ease-in-out;
+  margin-right: 8px;
+  margin-top: 9px;
+}
+
+.email-label.visible {
+  display: block;
+}
+
+.input-container {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  background-color: #fff;
+  border-radius: 4px;
+  min-height: 28px;
+  margin-top: 4px;
+}
+
+.email-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 200px;
+  font-size: 14px;
+  padding-inline: 4px;
+}
+
+.pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.email-pill {
+  display: flex;
+  align-items: center;
+  border-radius: 16px;
+  padding: 1px;
+  gap: 8px;
+  height: min-content;
+  border: 1px solid lightgray
+}
+
+.email-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.email-text {
+  font-size: 14px;
+  color: #333;
+  padding-right: 8px;
+}
+
+.remove-email {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+}
+
+.remove-email:hover {
+  color: #333;
+}
+
+.collapsed-container {
+  width: 100%;
+  cursor: text;
+  padding: 4px;
+}
+
+.collapsed-view {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  margin-top: 4px;
+}
+
+.collapsed-emails {
+  color: #333;
+}
+
+.more-count {
+  background-color: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #666;
+  font-size: 13px;
+}

@@ -17,6 +17,7 @@ const EmailView = () => {
   return (
     <div style={{
       flex: 1,
+      paddingRight: '20px',
     }}>
       <h4>{email.subject}</h4>
       <EmailResponseView />

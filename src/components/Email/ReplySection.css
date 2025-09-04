@@ -1,0 +1,86 @@
+.replybox {
+  border: 1px solid rgb(225, 227, 225);
+  border-radius: 16px;
+  transition: border 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  width: 625px;
+  height: 224px;
+}
+
+.replybox:hover, .replybox:focus {
+  box-shadow: 0 1px 2px 0 rgba(60,64,67,.3),0 2px 6px 2px rgba(60,64,67,.15);
+}
+
+.replybox-header {
+  display: flex;
+  align-items: flex-start;
+}
+
+.reply-dropdown-container {
+  padding: 8px;
+}
+
+.reply-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.selected-option {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 8px;
+  padding-right: 0px;
+  border-radius: 4px;
+}
+
+.selected-option:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.reply-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.dropdown-arrow {
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.dropdown-options {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 1000;
+  min-width: 150px;
+  padding: 4px 0px;
+}
+
+.dropdown-options.show {
+  display: block;
+}
+
+.dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 24px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dropdown-option:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.reply-input-container {
+  flex-grow: 1;
+  padding-right: 10px;
+}
