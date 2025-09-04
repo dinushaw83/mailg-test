@@ -1,32 +1,37 @@
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "@emotion/styled";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import Tooltip from "@mui/material/Tooltip";
 
-const Icon = ({ name, onClick, style }) => {
+const Icon = ({ name, label, onClick, style, disabled }) => {
   return (
-    <IconButton
-      size="small"
-      sx={{
-        width: 36,
-        height: 36,
-        borderRadius: "50%",
-        marginRight: "10px",
-        ...style,
-      }}
-      onClick={onClick}
-    >
-      <span
-        className="material-symbols-outlined"
-        style={{
-          fontSize: 20,
-          color: "rgb(68, 68, 68)",
+    <Tooltip title={label}>
+      <IconButton
+        size="small"
+        sx={{
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          marginRight: "10px",
+          ...style,
         }}
+        onClick={onClick}
+        disabled={disabled}
       >
-        {name}
-      </span>
-    </IconButton>
+        <span
+          className="material-symbols-outlined"
+          style={{
+            fontSize: 20,
+            color: "rgb(68, 68, 68)",
+          }}
+        >
+          {name}
+        </span>
+      </IconButton>
+    </Tooltip>
   );
 };
 
@@ -57,12 +62,13 @@ const MailActions = () => {
           name="arrow_back"
           onClick={() => navigate("/inbox")}
           style={{ marginRight: "20px" }}
+          label="Back to Inbox"
         />
 
         <>
-          <Icon name="archive" />
-          <Icon name="report" />
-          <Icon name="delete" />
+          <Icon name="archive" label="Archive" />
+          <Icon name="report" label="Report spam" />
+          <Icon name="delete" label="Delete" />
         </>
 
         <Divider
@@ -71,80 +77,73 @@ const MailActions = () => {
         />
 
         <>
-          <Icon name="mark_email_unread" />
+          <Icon name="mark_email_unread" label="Mark as unread" />
           {/* The next icon does not exactly match */}
-          <Icon name="drive_file_move" />
-          <Icon name="more_vert" />
+          <Icon name="drive_file_move" label="Move to" />
+          <Icon name="more_vert" label="More" />
         </>
       </div>
     </div>
   );
 };
 
-const NavigationActions = ({ currentItem, totalItems }) => {
+const NavigationActions = () => {
+  const { inboxId } = useParams();
+  const { state } = useContext(GlobalContext);
+  const emails = state?.emails || [];
+  const navigate = useNavigate();
+
+  const hasNextEmail = useMemo(() => {
+    return (
+      emails.find((e) => String(e.id) === String(Number(inboxId) + 1)) !==
+      undefined
+    );
+  }, [emails, inboxId]);
+
+  const hasPreviousEmail = useMemo(() => {
+    return (
+      emails.find((e) => String(e.id) === String(Number(inboxId) - 1)) !==
+      undefined
+    );
+  }, [emails, inboxId]);
+
+  const currentItem = useMemo(() => {
+    return emails.findIndex((e) => String(e.id) === String(inboxId)) + 1;
+  }, [emails, inboxId]);
+
+  const totalItems = useMemo(() => {
+    return emails.length;
+  }, [emails]);
+
   return (
     <div
-      className="adF"
       style={{
-        textAlign: "right",
-        display: "flex",
-        height: "100%",
         alignItems: "center",
+        display: "flex",
       }}
     >
-      <div
-        className="iG J-J5-Ji"
-        style={{
-          position: "relative",
-          marginLeft: "10px",
-          padding: "0px",
-          WebkitBoxAlign: "center",
-          alignItems: "center",
-          display: "flex",
-          height: "100%",
-        }}
-      >
-        <div
-          className="h0"
-          style={{
-            whiteSpace: "nowrap",
-            color: "rgb(94, 94, 94)",
-            textAlign: "right",
-            padding: "0px",
-            WebkitBoxAlign: "center",
-            alignItems: "center",
-            display: "flex",
-            height: "100%",
-            paddingRight: "0px",
-          }}
-        >
-          <span
-            id=":lp"
-            className="adl"
-            style={{
-              textShadow: "none",
-              margin: "0px",
-              textDecoration: "none",
-              WebkitFontSmoothing: "auto",
-              fontSize: "0.75rem",
-              letterSpacing: "normal",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-            }}
-          >
-            <span className="ts" style={{ fontWeight: "inherit" }}>
-              {currentItem}
-            </span>{" "}
-            of{" "}
-            <span className="ts" style={{ fontWeight: "inherit" }}>
-              {totalItems}
-            </span>
-          </span>
-          <div style={{ display: "flex", marginLeft: 10 }}>
-            <Icon name="chevron_left" />
-            <Icon name="chevron_right" />
-          </div>
-        </div>
+      <span>
+        <span className="ts" style={{ fontWeight: "inherit" }}>
+          {currentItem}
+        </span>{" "}
+        of{" "}
+        <span className="ts" style={{ fontWeight: "inherit" }}>
+          {totalItems}
+        </span>
+      </span>
+      <div style={{ display: "flex", marginLeft: 10 }}>
+        <Icon
+          name="chevron_left"
+          label="Newer"
+          disabled={!hasPreviousEmail}
+          onClick={() => navigate(`/inbox/${Number(inboxId) - 1}`)}
+        />
+        <Icon
+          name="chevron_right"
+          label="Older"
+          disabled={!hasNextEmail}
+          onClick={() => navigate(`/inbox/${Number(inboxId) + 1}`)}
+        />
       </div>
     </div>
   );

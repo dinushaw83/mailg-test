@@ -6,11 +6,12 @@ import ActionBar from "./ActionBar";
 const InboxView = () => {
   const { inboxId } = useParams();
   const { state } = useContext(GlobalContext);
+  const emails = state?.emails || [];
 
   const email = useMemo(() => {
     if (!state?.emails) return null;
     // IDs in fixtures are numbers; support string compare just in case
-    return state.emails.find((e) => String(e.id) === String(inboxId));
+    return emails.find((e) => String(e.id) === String(inboxId));
   }, [state?.emails, inboxId]);
 
   if (!email) {
