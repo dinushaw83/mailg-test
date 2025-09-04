@@ -8,6 +8,7 @@ import { Subject } from "./Subject";
 import { Divider } from "@mui/material";
 import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
+import { Actions } from "./Actions";
 
 const InboxViewContainer = styled.div`
   padding: 24px;

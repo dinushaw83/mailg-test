@@ -21,7 +21,6 @@ function App() {
             <Route path="/:folder/:threadId" element={<EmailDetails />} />
             <Route path="/label/:label/:threadId" element={<EmailDetails />} />
             <Route path="/:folder" element={<MailView />} />
-            <Route path="/:folder/:uuid" element={<EmailView />} />
             <Route path="/label/:label" element={<MailView />} />
             <Route path="/search/:query" element={<SearchResultsView />} />
             <Route path="/verify" element={<VerificationDashboard />} />
