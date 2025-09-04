@@ -11,8 +11,7 @@ import { Icon } from "../InboxView/ActionBar";
 import { Divider } from "@mui/material";
 
 export default function InboxActions() {
-  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom } =
-    useMailActions();
+  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
   const { selection, labels, emails } = useGlobalContext();
 
   const [open, setOpen] = useState(false);
@@ -62,11 +61,7 @@ export default function InboxActions() {
         moveToTrash(ids);
       } else if (item.id.startsWith("__label__")) {
         // moving between labels:
-        if (
-          currentLabel &&
-          labels?.[currentLabel] &&
-          labels?.[currentLabel]["system"] === false
-        ) {
+        if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
           moveToLabelFrom(ids, currentLabel, item.name);
         } else {
           moveToLabel(ids, item.name);
@@ -121,17 +116,9 @@ export default function InboxActions() {
               {selection.hasSelection && (
                 <React.Fragment>
                   <div className="T-I J-J5-Ji nu T-I-ax7 L3">
-                    <Icon
-                      name="archive"
-                      label="Archive"
-                      onClick={() => console.log("Archive clicked")}
-                    />
+                    <Icon name="archive" label="Archive" onClick={() => console.log("Archive clicked")} />
 
-                    <Icon
-                      name="report"
-                      label="Report"
-                      onClick={() => console.log("Report clicked")}
-                    />
+                    <Icon name="report" label="Report" onClick={() => console.log("Report clicked")} />
 
                     <Icon
                       name="delete"
@@ -143,18 +130,10 @@ export default function InboxActions() {
 
                     <Divider orientation="vertical" sx={{ mr: 1 }} />
 
-                    <Icon
-                      name="mail"
-                      label="Mail"
-                      onClick={() => console.log("Mail clicked")}
-                    />
+                    <Icon name="mail" label="Mail" onClick={() => console.log("Mail clicked")} />
 
                     <div ref={anchorRef}>
-                      <Icon
-                        name="drive_file_move"
-                        label="Move"
-                        onClick={() => setOpen((s) => !s)}
-                      />
+                      <Icon name="drive_file_move" label="Move" onClick={() => setOpen((s) => !s)} />
                     </div>
                   </div>
 
@@ -207,7 +186,6 @@ export default function InboxActions() {
               setSpamModal({ open: false, ids: [] });
             }}
             onUnsubscribe={() => {
-              // TODO: unsubscribe
               moveToSpam(spamModal.ids);
               setSpamModal({ open: false, ids: [] });
             }}
@@ -232,21 +210,6 @@ export default function InboxActions() {
           />
         </div>
       </div>
-      <SpamOrUnsubModal
-        open={spamModal.open}
-        onClose={() => {
-          setSpamModal({ open: false, ids: [] });
-        }}
-        onReportSpam={() => {
-          moveToSpam(spamModal.ids);
-          setSpamModal({ open: false, ids: [] });
-        }}
-        onUnsubscribe={() => {
-          // TODO: unsubscribe
-          moveToSpam(spamModal.ids);
-          setSpamModal({ open: false, ids: [] });
-        }}
-      />
     </div>
   );
 }
