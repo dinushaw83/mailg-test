@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const formatDate = (timestamp) => {
@@ -150,7 +151,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             role="gridcell"
           >
             <div className="a4X">
-              <div className="xS" role="link">
+              <Link to={`/inbox/${email.id}`} className="xS" role="link">
                 <div className="xT">
                   <div className="yi" id={`:pq${index}`}>
                     <div className="ar as">
@@ -192,7 +193,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                     {email.preview}
                   </span>
                 </div>
-              </div>
+              </Link>
               <span className="aKS sf-hidden" />
             </div>
           </td>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
 import Inbox from "./pages/Inbox";
+import EmailDetails from "./pages/EmailDetails";
 
 import { initialState } from "./contexts/fixtures";
 
@@ -17,6 +18,7 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Inbox />} />
+            <Route path="/inbox/:inboxId" element={<EmailDetails />} />
           </Routes>
         </Layout>
       </Router>
