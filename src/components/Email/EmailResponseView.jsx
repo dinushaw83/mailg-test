@@ -1,0 +1,34 @@
+import React from 'react';
+import ActionButton from '../common/ActionButton';
+import replyImage from "../../icons/reply.png";
+import replyAllImage from "../../icons/replyall.png";
+import forwardImage from "../../icons/forward.png";
+
+const EmailResponseView = () => {
+  const handleReply = () => {
+    // TODO: Implement reply functionality
+    console.log('Reply clicked');
+  };
+
+  const handleReplyAll = () => {
+    // TODO: Implement reply all functionality
+    console.log('Reply all clicked');
+  };
+
+  const handleForward = () => {
+    // TODO: Implement forward functionality
+    console.log('Forward clicked');
+  };
+
+  return (
+    <div>
+      <div>
+        <ActionButton text="Reply" onClick={handleReply} icon={<img src={replyImage} alt="Reply" />} />
+        <ActionButton text="Reply all" onClick={handleReplyAll} icon={<img src={replyAllImage} alt="Reply all" />} />
+        <ActionButton text="Forward" onClick={handleForward} icon={<img src={forwardImage} alt="Forward" />} />
+      </div>
+    </div>
+  );
+};
+
+export default EmailResponseView;

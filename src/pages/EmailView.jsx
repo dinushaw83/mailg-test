@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useGlobalContext } from '../contexts/GlobalContext';
+import EmailResponseView from '../components/Email/EmailResponseView';
 
 const EmailView = () => {
   const { uuid } = useParams();
@@ -18,6 +19,7 @@ const EmailView = () => {
       flex: 1,
     }}>
       <h4>{email.subject}</h4>
+      <EmailResponseView />
     </div>
   );
 };
