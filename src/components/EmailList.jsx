@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import useMailActions from "../hooks/useMailActions";
+import CheckBox from "./ui/CheckBox";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const { toggleImportant, toggleStar } = useMailActions()
@@ -66,6 +67,16 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     return status.join(", ");
   };
 
+  const [selected, setSelected] = useState(new Set());
+
+  function setCheckedFor(emailId, next) {
+    setSelected(prev => {
+      const s = new Set(prev);
+      next ? s.add(emailId) : s.delete(emailId);
+      return s;
+    });
+  }
+
   return (
     <tbody>
       {emails.map((email, index) => (
@@ -80,17 +91,18 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
         >
           <td className="PF xY" />
           <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
-            <div
+            <CheckBox
               id={`:pl${index}`}
-              className="oZ-jc T-Jo J-J5-Ji"
-              role="checkbox"
-              aria-labelledby={`:pj${index}`}
-              dir="ltr"
-              aria-checked="false"
-              tabIndex={-1}
-            >
-              <div className="T-Jo-auh sf-hidden" />
-            </div>
+              labelledBy={`:pj${index}`}
+              checked={selected.has(email.id)}
+              onChange={(next) => {
+                setSelected(prev => {
+                  const s = new Set(prev);
+                  next ? s.add(email.id) : s.delete(email.id);
+                  return s;
+                });
+              }}
+            />
           </td>
           <td className={`apU ${email.starred ? "" : "xY"}`}>
             <button
