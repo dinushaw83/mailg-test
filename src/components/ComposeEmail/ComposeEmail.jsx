@@ -27,14 +27,14 @@ export default function ComposeEmail() {
     html: "",
     plainText: "",
   });
-  
+
   // Store raw input text for validation
   const [rawInputText, setRawInputText] = useState({
     to: "",
     cc: "",
     bcc: "",
   });
-  
+
   const [isMinimized, setIsMinimized] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -99,7 +99,7 @@ export default function ComposeEmail() {
 
     // 3. Check for invalid emails (both in chips and raw input text)
     const allRecipients = [...to, ...cc, ...bcc];
-    
+
     // Check chips for invalid emails
     const invalidRecipient = allRecipients.find((recipient) => {
       const email = recipient.email || recipient.name || recipient;
@@ -109,7 +109,7 @@ export default function ComposeEmail() {
     // Check raw input text for invalid emails
     const rawInputs = [rawInputText.to, rawInputText.cc, rawInputText.bcc];
     const fieldNames = ["To", "Cc", "Bcc"];
-    
+
     for (let i = 0; i < rawInputs.length; i++) {
       const inputText = rawInputs[i].trim();
       if (inputText && !isValidEmail(inputText)) {
@@ -285,6 +285,9 @@ export default function ComposeEmail() {
         setState((prevState) => {
           const filteredEmails = prevState.emails.filter((email) => email.id !== emailToRemove.id);
 
+          // Push compose parameter to URL
+          navigate(`?compose=${emailToRemove?.id}`);
+
           // Clear the ref after successful state update
           lastSentEmailRef.current = null;
 
@@ -294,9 +297,6 @@ export default function ComposeEmail() {
           };
         });
       }
-
-      // Push compose parameter to URL
-      navigate(`?compose=${lastSentEmailRef.current?.id}`);
 
       setSnackbar({
         open: true,
@@ -310,7 +310,7 @@ export default function ComposeEmail() {
   const handleSnackbarViewMessage = () => {
     // Hide the snackbar
     setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
-    // TODO: Navigate to the sent message or open it in a new view
+    // TODO: Open the message from sent items
     console.log("View message clicked");
   };
 
@@ -380,15 +380,15 @@ export default function ComposeEmail() {
             bcc={bcc}
             onToChange={(value, rawText) => {
               setTo(Array.isArray(value) ? value : []);
-              setRawInputText(prev => ({ ...prev, to: rawText || "" }));
+              setRawInputText((prev) => ({ ...prev, to: rawText || "" }));
             }}
             onCcChange={(value, rawText) => {
               setCc(Array.isArray(value) ? value : []);
-              setRawInputText(prev => ({ ...prev, cc: rawText || "" }));
+              setRawInputText((prev) => ({ ...prev, cc: rawText || "" }));
             }}
             onBccChange={(value, rawText) => {
               setBcc(Array.isArray(value) ? value : []);
-              setRawInputText(prev => ({ ...prev, bcc: rawText || "" }));
+              setRawInputText((prev) => ({ ...prev, bcc: rawText || "" }));
             }}
             placeholder="Recipients"
           />

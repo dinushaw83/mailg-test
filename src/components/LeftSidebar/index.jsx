@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import useLabelCounts from "./../LeftSidebar/useLabelCounts";
@@ -26,6 +27,7 @@ const HIDDEN_FOLDERS = [
 const LABELS = ["[Imap]/Drafts", "[Imap]/Sent"];
 
 const LeftSidebar = () => {
+  const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
   const { state } = useGlobalContext();
   const emails = state?.emails || [];
@@ -40,7 +42,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{ width: 187, height: 1001 }}
     >
-      <div className="aic">
+      <div className="aic" onClick={() => navigate("?compose=new")}>
         <div className="z0">
           <div
             className="T-I T-I-KE L3"
