@@ -6,9 +6,16 @@ import styled from "@emotion/styled";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
 
-const Icon = ({ name, label, onClick, style, disabled }) => {
+export const Icon = ({
+  name,
+  label,
+  onClick,
+  style,
+  disabled,
+  placement = "bottom",
+}) => {
   return (
-    <Tooltip title={label}>
+    <Tooltip title={label} placement={placement}>
       <IconButton
         size="small"
         sx={{
@@ -164,7 +171,6 @@ const ActionsContainer = styled.div`
   display: flex;
   height: 48px;
   justify-content: space-between;
-  margin: 0 150px 0 0;
 `;
 
 export default function ActionBar() {
