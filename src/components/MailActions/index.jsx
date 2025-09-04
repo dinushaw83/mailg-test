@@ -1,6 +1,7 @@
 import React, { useState, useRef} from "react"
 import MoveToMenu from "./MoveToMenu"
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import useMailActions from "../../hooks/useMailActions";
 
 const LABELS = [
   { id: "notes", name: "Notes" },
@@ -13,10 +14,29 @@ const LABELS = [
 ];
 
 export default function MailActions() {
-    const { selection } = useGlobalContext()
-    
+    const { moveToSpam, moveToTrash } = useMailActions();
+    const { selection } = useGlobalContext();
+
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
+
+    const handleMenuItemClick = async (item) => {
+        const ids = [...selection.ids];       // Set → Array
+        if (!ids.length) return;
+
+        try {
+            if (item.id === "__spam__" || item.id === "spam") {
+                moveToSpam(ids);
+            } else if (item.id === "__trash__" || item.id === "trash") {
+                moveToTrash(ids);
+            } 
+            setOpen(false);
+            // selection.clear(); // uncomment if you want to clear after action
+        } catch (e) {
+            console.error("Move failed:", e);
+            // optionally show a toast
+        }
+    };
 
     return (
       <div className="Cq aqL" gh="mtb">
@@ -178,7 +198,7 @@ export default function MailActions() {
                   data-tooltip="Refresh"
                   aria-label="Refresh"
                   ref={anchorRef}
-                  onClick={() => setOpen((s) => !s)}       // NEW: toggle menu
+                  onClick={() => setOpen((s) => !s)}
                   style={{ userSelect: "none", cursor: "pointer" }}
                 >
                   <div className="asa">
@@ -189,15 +209,12 @@ export default function MailActions() {
                 </div>
               </div>
 
-              {open && (                                   // NEW: render only when open
+              {open && (
                 <MoveToMenu
                   anchorRef={anchorRef}
                   labels={LABELS}
-                  onSelect={(label) => {
-                    console.log("Move to:", label);
-                    setOpen(false);                        // close after select
-                  }}
-                  onClose={() => setOpen(false)}           // close on outside click / Esc
+                  onSelect={handleMenuItemClick}
+                  onClose={() => setOpen(false)}
                 />
               )}
 
