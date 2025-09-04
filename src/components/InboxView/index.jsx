@@ -9,6 +9,7 @@ import { Subject } from "./Subject";
 const InboxViewContainer = styled.div`
   padding: 24px;
   margin-right: 150px;
+  width: 100%;
 `;
 
 const InboxView = () => {
@@ -21,8 +22,6 @@ const InboxView = () => {
     // IDs in fixtures are numbers; support string compare just in case
     return emails.find((e) => String(e.id) === String(inboxId));
   }, [state?.emails, inboxId]);
-
-  console.log({ email });
 
   if (!email) {
     return (
