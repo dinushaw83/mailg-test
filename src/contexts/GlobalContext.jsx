@@ -1,4 +1,4 @@
-import React, { createContext } from "react";
+import React, { createContext, useContext } from "react";
 import { usePersistedState } from "../hooks/usePersistedState";
 
 import { initialState } from "./fixtures";
@@ -19,3 +19,5 @@ export const GlobalContextProvider = ({ children }) => {
     </GlobalContext.Provider>
   );
 };
+
+export const useGlobalContext = () => useContext(GlobalContext);
