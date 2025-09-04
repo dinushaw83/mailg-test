@@ -1,24 +1,9 @@
 import React, { useState, useRef} from "react"
 import MoveToMenu from "./MoveToMenu"
-
-const btnStyle = {
-  textAlign: "left",
-  padding: "10px 16px",
-  fontSize: 14,
-  background: "transparent",
-  border: "none",
-  cursor: "pointer",
-};
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const LABELS = [
-  { id: "check1", name: "✔" },
-  { id: "check2", name: "✔✔" },
-  { id: "gtb", name: "GTB" },
   { id: "notes", name: "Notes" },
-  { id: "twilio", name: "Notes/Twilio" },
-  { id: "personal", name: "Personal" },
-  { id: "personal-kkk", name: "Personal/kkk" },
-  { id: "personal-cx", name: "Personal/kkk/cx" },
   { id: "receipts", name: "Receipts" },
   { id: "work", name: "Work" },
   { id: "social", name: "Social" },
@@ -28,6 +13,8 @@ const LABELS = [
 ];
 
 export default function MailActions() {
+    const { selection } = useGlobalContext()
+    
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
 
@@ -104,7 +91,7 @@ export default function MailActions() {
             </div>
 
             {/* Shows up when a mail is selected */}
-            <React.Fragment>
+            {selection.hasSelection && <React.Fragment>
               <div className="G-Ni J-J5-Ji">
                 <div
                   className="T-I J-J5-Ji nu T-I-ax7 L3"
@@ -214,7 +201,7 @@ export default function MailActions() {
                 />
               )}
 
-            </React.Fragment>
+            </React.Fragment>}
 
             <div className="J-J5-Ji">
               <div

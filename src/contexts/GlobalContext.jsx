@@ -20,6 +20,7 @@ export const GlobalContextProvider = ({ children }) => {
   const selection = useMemo(() => {
     const isSelected = (id) => selected.has(id);
     const count = selected.size;
+    const hasSelection = count > 0; 
 
     const select = (id) =>
       setSelected((prev) => {
@@ -47,7 +48,17 @@ export const GlobalContextProvider = ({ children }) => {
     const setMany = (ids) =>
       setSelected(() => new Set(ids)); // replace with exactly these ids
 
-    return { ids: selected, isSelected, select, deselect, toggle, clear, setMany, count };
+    return {
+      ids: selected,
+      isSelected,
+      select,
+      deselect,
+      toggle,
+      clear,
+      setMany,
+      count,
+      hasSelection
+    };
   }, [selected]);
 
   const contextValue = {
