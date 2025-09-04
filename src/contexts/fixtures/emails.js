@@ -3,6 +3,7 @@
 export const initialEmails = [
   {
     id: 1,
+    uuid: "FMfcgzQcpdhjlTZlMCCZBpccFXGtQQrV",
     threadId: "#thread-f:1842139573356840007",
     legacyThreadId: "1990982e909fc447",
     legacyLastMessageId: "1990982e909fc447",
@@ -28,6 +29,7 @@ export const initialEmails = [
   // Existing message id:2 is the first one in this thread. Add replies/follow-ups.
   {
     id: 2,
+    uuid: "FMfcgzQcpdgXmrdgJsLhHWhFRcbbFCQZ",
     threadId: "#thread-f:1842087366422769452",
     legacyThreadId: "199068b330dd2f2c",
     legacyLastMessageId: "199068b330dd2f2c",
@@ -65,6 +67,7 @@ export const initialEmails = [
   },
   {
     id: 3,
+    uuid: "FMfcgzQcpTMQrKhbwDhGrlpkqBxLQBCQ",
     threadId: "#thread-f:1842085083087208760",
     legacyThreadId: "1990669f8f758138",
     legacyLastMessageId: "1990669f8f758138",
