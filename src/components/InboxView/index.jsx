@@ -88,16 +88,6 @@ const InboxView = () => {
                     >
                       {email.body}
                     </div>
-
-                    <div style={{ marginTop: 24 }}>
-                      <Link
-                        to="/"
-                        className="T-I T-I-KE L3"
-                        style={{ textDecoration: "none" }}
-                      >
-                        Back to Inbox
-                      </Link>
-                    </div>
                   </div>
                 </div>
               </div>
