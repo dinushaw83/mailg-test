@@ -1,7 +1,7 @@
 import React, { useContext, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { ActionBar } from "./ActionBar";
+import ActionBar from "./ActionBar";
 
 const InboxView = () => {
   const { inboxId } = useParams();
@@ -38,7 +38,9 @@ const InboxView = () => {
                   <div className="bGI nH oy8Mbf aE3 S4" style={{ padding: 24 }}>
                     <ActionBar />
                     <div className="a0V" style={{ marginBottom: 8 }}>
-                      <h2 style={{ margin: 0 }}>{email.subject}</h2>
+                      <h2 style={{ margin: 0 }}>
+                        {email.subject || "Ola Amigos"}
+                      </h2>
                     </div>
                     <div
                       style={{ display: "flex", gap: 12, alignItems: "center" }}
