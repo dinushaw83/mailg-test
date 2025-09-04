@@ -1,27 +1,18 @@
 import { useContext, useState, useRef } from "react";
-import {
-  Button,
-  Box,
-  MenuItem,
-  Popper,
-  Grow,
-  Paper,
-  ClickAwayListener,
-  MenuList,
-} from "@mui/material";
+import { Button, Box, MenuItem, Popper, Grow, Paper, ClickAwayListener, MenuList } from "@mui/material";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
 const Pagination = () => {
-  const { state } = useContext(GlobalContext);
+  const { emails, setSortOrder, currentPage, setCurrentPage, itemsPerPage } = useContext(GlobalContext);
   const anchorRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const emails = state?.emails || [];
   const totalItems = emails.length;
-  const currentPage = 1;
-  const itemsPerPage = 50;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage + 1;
   const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
+  const hasNextPage = currentPage < totalPages;
+  const hasPreviousPage = currentPage > 1;
 
   const handleOpenMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -29,20 +20,37 @@ const Pagination = () => {
 
   const handleCloseMenu = (event) => {
     // Check if it's a click event and if the clicked element is the button that triggered the popper
-    if (
-      event &&
-      event.type === "click" &&
-      anchorRef.current &&
-      anchorRef.current.contains(event.target)
-    ) {
+    if (event && event.type === "click" && anchorRef.current && anchorRef.current.contains(event.target)) {
       return; // Don't close if clicking on the button itself
     }
     setAnchorEl(null);
   };
 
+  const handleSortChange = (newSortOrder) => {
+    setSortOrder(newSortOrder);
+    if (newSortOrder === "oldest") {
+      setCurrentPage(totalPages);
+    } else {
+      setCurrentPage(1);
+    }
+    setAnchorEl(null);
+  };
+
+  const handlePreviousPage = () => {
+    if (hasPreviousPage) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (hasNextPage) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   const open = Boolean(anchorEl);
 
-  console.log(state);
+  console.log(emails);
   return (
     <span className="Di">
       <Box onMouseEnter={handleOpenMenu}>
@@ -68,8 +76,7 @@ const Pagination = () => {
         >
           <span className="Dj">
             <span>
-              <span className="ts">{startIndex}</span>–
-              <span className="ts">{endIndex}</span>{" "}
+              <span className="ts">{startIndex}</span>–<span className="ts">{endIndex}</span>{" "}
             </span>
             of <span className="ts">{totalItems}</span>
           </span>
@@ -87,8 +94,7 @@ const Pagination = () => {
             <Grow
               {...TransitionProps}
               style={{
-                transformOrigin:
-                  placement === "bottom-start" ? "left top" : "left bottom",
+                transformOrigin: placement === "bottom-start" ? "left top" : "left bottom",
               }}
             >
               <Paper
@@ -114,8 +120,24 @@ const Pagination = () => {
                       },
                     }}
                   >
-                    <MenuItem onClick={handleCloseMenu}>Newest</MenuItem>
-                    <MenuItem onClick={handleCloseMenu}>Oldest</MenuItem>
+                    <MenuItem
+                      onClick={() => handleSortChange("newest")}
+                      sx={{
+                        color: hasPreviousPage ? "#484747" : "#cccccc",
+                      }}
+                      disabled={!hasPreviousPage}
+                    >
+                      Newest
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => handleSortChange("oldest")}
+                      sx={{
+                        color: hasNextPage ? "#484747" : "#cccccc",
+                      }}
+                      disabled={!hasNextPage}
+                    >
+                      Oldest
+                    </MenuItem>
                   </MenuList>
                 </ClickAwayListener>
               </Paper>
@@ -124,18 +146,8 @@ const Pagination = () => {
         </Popper>
       </Box>
 
-      <Icon
-        name="chevron_left"
-        label="Newer"
-        disabled={true}
-        // onClick={() => navigate(`/inbox/${Number(inboxId) - 1}`)}
-      />
-      <Icon
-        name="chevron_right"
-        label="Older"
-        disabled={false}
-        // onClick={() => navigate(`/inbox/${Number(inboxId) + 1}`)}
-      />
+      <Icon name="chevron_left" label="Newer" disabled={!hasPreviousPage} onClick={handlePreviousPage} />
+      <Icon name="chevron_right" label="Older" disabled={!hasNextPage} onClick={handleNextPage} />
     </span>
   );
 };

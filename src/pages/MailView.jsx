@@ -9,7 +9,7 @@ import ToolBar from "../components/ToolBar";
 import MailActions from "../components/MailActions";
 
 const Inbox = () => {
-  const { emails } = useContext(GlobalContext);
+  const { emails, sortOrder, currentPage, itemsPerPage } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -18,13 +18,33 @@ const Inbox = () => {
   // get all folders from hook
   const folders = useMailFolders(emails);
 
-  // pick rows based on folder/label
+  // pick rows based on folder/label, then sort and paginate
   const rows = useMemo(() => {
+    let filteredEmails;
     if (label) {
-      return emails.filter((m) => (m.labels || []).includes(label));
+      filteredEmails = emails.filter((m) => (m.labels || []).includes(label));
+    } else {
+      filteredEmails = folders[activeFolder] || emails;
     }
-    return folders[activeFolder] || emails;
-  }, [emails, label, activeFolder, folders]);
+
+    // Sort emails based on sortOrder
+    const sortedEmails = [...filteredEmails].sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+
+      if (sortOrder === "newest") {
+        return dateB - dateA;
+      } else {
+        return dateA - dateB;
+      }
+    });
+
+    // Apply pagination
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+
+    return sortedEmails.slice(startIndex, endIndex);
+  }, [emails, label, activeFolder, folders, sortOrder, currentPage, itemsPerPage]);
 
   return (
     <div className="nH bkK">

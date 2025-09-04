@@ -37,10 +37,7 @@ const ToolBar = () => {
                       &nbsp;
                     </div>
                   </div>
-                  <div
-                    className="J-J5-Ji J-JN-M-I-JG sf-hidden"
-                    aria-hidden="true"
-                  >
+                  <div className="J-J5-Ji J-JN-M-I-JG sf-hidden" aria-hidden="true">
                     &nbsp;
                   </div>
                 </div>
@@ -102,10 +99,7 @@ const ToolBar = () => {
           <div className="ar5 J-J5-Ji">
             <Pagination />
           </div>
-          <div
-            className="G-Ni J-J5-Ji"
-            jslog="177396; u014N:cOuCgd,Kr2w4b,xr6bB;"
-          >
+          <div className="G-Ni J-J5-Ji" jslog="177396; u014N:cOuCgd,Kr2w4b,xr6bB;">
             <div
               id=":1w"
               className="T-I J-J5-Ji apF T-I-Js-IF T-I-ax7 L3"
