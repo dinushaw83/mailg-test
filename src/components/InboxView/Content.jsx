@@ -167,7 +167,7 @@ export const Content = ({ body, timestamp, senderName, senderEmail }) => {
   return (
     <ContentContainer>
       <ProfileImageContainer>
-        <Avatar>H</Avatar>
+        <Avatar>{senderName.charAt(0)}</Avatar>
       </ProfileImageContainer>
       <BodyContainer>
         <TopBar
