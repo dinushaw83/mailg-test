@@ -8,7 +8,7 @@ import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
 export default function InboxActions() {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom } = useMailActions();
-  const { selection, labels } = useGlobalContext();
+  const { selection, labels, emails } = useGlobalContext();
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
@@ -30,12 +30,24 @@ export default function InboxActions() {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [labels]);
 
+  // Check if any selected emails are not in the inbox
+  const showInboxOption = useMemo(() => {
+    if (!selection.hasSelection) return false;
+    const selectedIds = [...selection.ids];
+    return selectedIds.some(id => {
+      const email = emails.find(e => e.id === id);
+      return email && !email.labels?.includes("Inbox");
+    });
+  }, [selection.ids, selection.hasSelection, emails]);
+
   const handleMenuItemClick = async (item) => {
     const ids = [...selection.ids]; // Set → Array
     if (!ids.length) return;
 
     try {
-      if (item.id === "__spam__" || item.id === "spam") {
+      if (item.id === "__inbox__" || item.id === "inbox") {
+        moveToLabel(ids, "Inbox");
+      } else if (item.id === "__spam__" || item.id === "spam") {
         setSpamModal({ open: true, ids });
         // moveToSpam(ids);
       } else if (item.id === "__trash__" || item.id === "trash") {
@@ -218,6 +230,7 @@ export default function InboxActions() {
                   labels={customLabels}
                   onSelect={handleMenuItemClick}
                   onClose={() => setOpen(false)}
+                  showInbox={showInboxOption}
                 />
               )}
             </React.Fragment>
