@@ -11,7 +11,7 @@ import styles from "./ComposeEmail.module.css";
 export default function ComposeEmail() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { state, setState, setSnackbar } = useContext(GlobalContext);
+  const { emails, setEmails, setSnackbar, loggedInUser } = useContext(GlobalContext);
   const searchParams = new URLSearchParams(location.search);
   // Get compose parameter value
   const composeParam = searchParams.get("compose");
@@ -146,7 +146,7 @@ export default function ComposeEmail() {
 
   const sendEmail = () => {
     // Generate new id if compose parameter is "new", otherwise use the id from the compose parameter
-    const newId = composeParam === "new" ? generateNextEmailId(state.emails) : composeParam;
+    const newId = composeParam === "new" ? generateNextEmailId(emails) : composeParam;
     const threadId = generateThreadId();
     const legacyThreadId = generateLegacyThreadId();
     const timestamp = new Date().toISOString();
@@ -164,8 +164,8 @@ export default function ComposeEmail() {
       legacyLastMessageId: legacyThreadId,
       legacyLastNonDraftMessageId: legacyThreadId,
       from: {
-        name: state.user.name,
-        email: state.user.email,
+        name: loggedInUser.name,
+        email: loggedInUser.email,
       },
       to: to.map((recipient) => recipient.email),
       cc: cc.length > 0 ? cc.map((recipient) => recipient.email) : [],
@@ -203,13 +203,10 @@ export default function ComposeEmail() {
     // Simulate sending process
     setTimeout(() => {
       // Add the new email to the beginning of the emails array
-      const updatedEmails = [newEmail, ...state.emails];
+      const updatedEmails = [newEmail, ...emails];
 
       // Update the global state
-      setState((prevState) => ({
-        ...prevState,
-        emails: updatedEmails,
-      }));
+      setEmails(updatedEmails);
 
       // Then show "Message sent" snackbar with Undo and View message buttons
       setSnackbar({
@@ -282,8 +279,8 @@ export default function ComposeEmail() {
         const emailToRemove = lastSentEmailRef.current;
 
         // Remove the email from the state
-        setState((prevState) => {
-          const filteredEmails = prevState.emails.filter((email) => email.id !== emailToRemove.id);
+        setEmails((prevEmails) => {
+          const filteredEmails = prevEmails.filter((email) => email.id !== emailToRemove.id);
 
           // Push compose parameter to URL
           navigate(`?compose=${emailToRemove?.id}`);
@@ -291,10 +288,7 @@ export default function ComposeEmail() {
           // Clear the ref after successful state update
           lastSentEmailRef.current = null;
 
-          return {
-            ...prevState,
-            emails: filteredEmails,
-          };
+          return filteredEmails;
         });
       }
 

@@ -1,10 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
 import EmailDetails from "./pages/EmailDetails";
@@ -12,11 +7,11 @@ import MailView from "./pages/MailView";
 import ComposeEmail from "./components/ComposeEmail/ComposeEmail";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 
-import { initialState } from "./contexts/fixtures";
+import { initialUser } from "./contexts/fixtures/me";
 
 function App() {
   useEffect(() => {
-    document.title = `Inbox(2) - ${initialState.user.email} - MailG`;
+    document.title = `Inbox(2) - ${initialUser.email} - MailG`;
   }, []);
 
   return (
@@ -34,7 +29,7 @@ function App() {
           {/* Compose Email */}
           <ComposeEmail />
         </Layout>
-        
+
         {/* Global Snackbar */}
         <GlobalSnackbar />
       </Router>

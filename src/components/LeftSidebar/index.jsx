@@ -29,8 +29,7 @@ const LABELS = ["[Imap]/Drafts", "[Imap]/Sent"];
 const LeftSidebar = () => {
   const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
-  const { state } = useGlobalContext();
-  const emails = state?.emails || [];
+  const { emails } = useGlobalContext();
   const folders = useMailFolders(emails);
 
   const counts = useLabelCounts(emails);

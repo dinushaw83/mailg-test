@@ -14,7 +14,7 @@ export default function RecipientsInput({
   onBccChange,
   placeholder = "Recipients",
 }) {
-  const { state } = useContext(GlobalContext);
+  const { recipients } = useContext(GlobalContext);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
@@ -38,7 +38,7 @@ export default function RecipientsInput({
       cc: Array.isArray(cc) ? cc : [],
       bcc: Array.isArray(bcc) ? bcc : [],
     });
-    
+
     // Only reset input values if all props are empty (form reset)
     const allPropsEmpty = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
     if (allPropsEmpty) {
@@ -103,7 +103,7 @@ export default function RecipientsInput({
         const toWithInput = [...selectedRecipients.to];
         const ccWithInput = [...selectedRecipients.cc];
         const bccWithInput = [...selectedRecipients.bcc];
-        
+
         // Add input text as custom recipients only if they are valid emails
         if (inputValues.to.trim() && isValidEmail(inputValues.to.trim())) {
           toWithInput.push(createCustomRecipient(inputValues.to.trim()));
@@ -114,7 +114,7 @@ export default function RecipientsInput({
         if (inputValues.bcc.trim() && isValidEmail(inputValues.bcc.trim())) {
           bccWithInput.push(createCustomRecipient(inputValues.bcc.trim()));
         }
-        
+
         // Pass both chips and raw input text for validation
         onToChange(toWithInput, inputValues.to.trim());
         onCcChange(ccWithInput, inputValues.cc.trim());
@@ -189,7 +189,7 @@ export default function RecipientsInput({
 
   // Handle autocomplete key down events with custom highlight management
   const handleAutocompleteKeyDown = (event, field) => {
-    const filteredOptions = filterOptions(state?.recipients || [], { inputValue: inputValues[field] });
+    const filteredOptions = filterOptions(recipients || [], { inputValue: inputValues[field] });
 
     if (event.key === "ArrowDown") {
       event.preventDefault();
@@ -388,7 +388,7 @@ export default function RecipientsInput({
     const initials = option.name.charAt(0).toUpperCase();
 
     // Get the current filtered options to determine if this option is highlighted
-    const filteredOptions = filterOptions(state?.recipients || [], { inputValue: inputValues[field] });
+    const filteredOptions = filterOptions(recipients || [], { inputValue: inputValues[field] });
     const currentIndex = filteredOptions.findIndex((opt) => opt.id === option.id);
     const isHighlighted = currentIndex === highlightedIndex;
 
@@ -504,7 +504,7 @@ export default function RecipientsInput({
                 />
               ))}
               <Autocomplete
-                options={state?.recipients || []}
+                options={recipients || []}
                 getOptionLabel={(option) => option.email}
                 value={null}
                 inputValue={inputValues.to}
@@ -602,7 +602,7 @@ export default function RecipientsInput({
                   />
                 ))}
                 <Autocomplete
-                  options={state?.recipients || []}
+                  options={recipients || []}
                   getOptionLabel={(option) => option.email}
                   value={null}
                   inputValue={inputValues.cc}
@@ -700,7 +700,7 @@ export default function RecipientsInput({
                   />
                 ))}
                 <Autocomplete
-                  options={state?.recipients || []}
+                  options={recipients || []}
                   getOptionLabel={(option) => option.email}
                   value={null}
                   inputValue={inputValues.bcc}
