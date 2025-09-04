@@ -1,6 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const LeftSidebar = () => {
+  const navigate = useNavigate();
+
+  const composeEmail = () => {
+    // Push compose=new parameter to the url
+    navigate("?compose=new");
+  }
+
   return (
     <div
       className="aeN WR baA nH oy8Mbf"
@@ -8,7 +16,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{ width: 187, height: 1001 }}
     >
-      <div className="aic">
+      <div className="aic" onClick={composeEmail}>
         <div className="z0">
           <div
             className="T-I T-I-KE L3"
