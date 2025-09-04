@@ -1,8 +1,14 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
-import Inbox from "./pages/Inbox";
+import EmailDetails from "./pages/EmailDetails";
+import MailView from "./pages/MailView";
 import ComposeEmail from "./components/ComposeEmail/ComposeEmail";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 
@@ -15,10 +21,14 @@ function App() {
 
   return (
     <GlobalContextProvider>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Layout>
           <Routes>
-            <Route path="/" element={<Inbox />} />
+            <Route path="/" element={<Navigate to="/inbox" replace />} />
+            <Route path="/inbox/:inboxId" element={<EmailDetails />} />
+            <Route path="/:folder" element={<MailView />} />
+            <Route path="/label/:label" element={<MailView />} />
+            <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
 
           {/* Compose Email */}

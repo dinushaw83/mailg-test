@@ -1,6 +1,8 @@
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
+  const navigate = useNavigate();
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -74,6 +76,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
           role="row"
           aria-labelledby={`:pj${index}`}
           draggable="false"
+          onClick={() => navigate(`/inbox/${email.id}`)}
         >
           <td className="PF xY" />
           <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
@@ -150,7 +153,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             role="gridcell"
           >
             <div className="a4X">
-              <div className="xS" role="link">
+              <Link to={`/inbox/${email.id}`} className="xS" role="link">
                 <div className="xT">
                   <div className="yi" id={`:pq${index}`}>
                     <div className="ar as">
@@ -192,7 +195,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                     {email.preview}
                   </span>
                 </div>
-              </div>
+              </Link>
               <span className="aKS sf-hidden" />
             </div>
           </td>
