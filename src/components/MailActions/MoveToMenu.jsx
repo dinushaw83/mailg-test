@@ -32,6 +32,7 @@ export default function MoveToMenu({
   labels = [],
   onSelect,
   onClose,
+  showInbox = false,
 }) {
   const menuRef = useRef(null);
   const inputRef = useRef(null);
@@ -80,7 +81,8 @@ export default function MoveToMenu({
 
   function handleSelect(item) {
     if (!item || item.id === "__sep__") return;
-    if (item.id === "__spam__") onSelect({ id: "spam", name: "Spam" });
+    if (item.id === "__inbox__") onSelect({ id: "inbox", name: "Inbox" });
+    else if (item.id === "__spam__") onSelect({ id: "spam", name: "Spam" });
     else if (item.id === "__trash__") onSelect({ id: "trash", name: "Trash" });
     else onSelect(item);
     onClose();
@@ -308,6 +310,13 @@ export default function MoveToMenu({
               userSelect: "none",
             }}
           />
+
+          {showInbox && (
+            <HoverRow
+              label="Inbox"
+              onClick={() => handleSelect({ id: "__inbox__", name: "Inbox" })}
+            />
+          )}
 
           <HoverRow
             label="Spam"

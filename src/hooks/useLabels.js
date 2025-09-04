@@ -3,66 +3,68 @@ import React, { useCallback, useMemo } from "react";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 export default function useLabels() {
-  const { state, setState } = useGlobalContext();
+  const { emails, setEmails, labels, setLabels } = useGlobalContext();
 
   const createLabel = useCallback(
     (name, meta = {}) => {
       const trimmed = name.trim();
       if (!trimmed) return;
-      setState((prev) => {
-        if (prev.labels[trimmed]) return prev; // no dupes
+      setLabels((prev) => {
+        if (prev[trimmed]) return prev; // no dupes
         return {
           ...prev,
           labels: {
-            ...prev.labels,
+            ...prev,
             [trimmed]: { system: false, color: null, ...meta },
           },
         };
       });
     },
-    [setState]
+    [setLabels]
   );
 
   const renameLabel = useCallback(
     (oldName, newName) => {
       const next = newName.trim();
       if (!next || oldName === next) return;
-      setState((prev) => {
-        const meta = prev.labels[oldName];
-        if (!meta || prev.labels[next]) return prev; // guard
-        const labels = { ...prev.labels };
+      setLabels((prev) => {
+        const meta = prev[oldName];
+        if (!meta || prev[next]) return prev; // guard
+        const labels = { ...prev };
         labels[next] = { ...meta, system: false };
         delete labels[oldName];
-        const emails = prev.emails.map((m) => ({
+        const emails = emails.map((m) => ({
           ...m,
-          labels: (m.labels || []).map((l) => (l === oldName ? next : l)),
+          labels: (m || []).map((l) => (l === oldName ? next : l)),
         }));
-        return { ...prev, labels, emails };
+        setEmails(emails);
+        return labels;
       });
     },
-    [setState]
+    [setLabels]
   );
 
   const deleteLabel = useCallback(
     (name) => {
-      setState((prev) => {
-        const meta = prev.labels[name];
+      setLabels((prev) => {
+        const meta = prev[name];
         if (!meta || meta.system) return prev; // don’t delete system labels
-        const labels = { ...prev.labels };
+        const labels = { ...prev };
         delete labels[name];
-        const emails = prev.emails.map((m) => ({
+        const emails = emails.map((m) => ({
           ...m,
           labels: (m.labels || []).filter((l) => l !== name),
         }));
-        return { ...prev, labels, emails };
+        setEmails(emails);
+        return labels;
       });
     },
-    [setState]
+    [setLabels]
   );
 
   const labelIndex = useMemo(() => {
     const map = {};
-    for (const m of state.emails) {
+    for (const m of emails) {
       for (const l of m.labels || []) {
         if (!map[l]) map[l] = { total: 0, unread: 0, items: [] };
         map[l].total += 1;
@@ -71,10 +73,10 @@ export default function useLabels() {
       }
     }
     return map;
-  }, [state.emails]);
+  }, [emails]);
 
   return {
-    labels: state.labels,
+    labels,
     createLabel,
     renameLabel,
     deleteLabel,

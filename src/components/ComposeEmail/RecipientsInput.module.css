@@ -1,0 +1,101 @@
+.recipientsContainer {
+  width: calc(100% - 24px);
+  position: relative;
+  border-bottom: 1px solid #f0f0f0;
+  margin: 0px 12px;
+}
+
+.recipientsDisplay {
+  width: 100%;
+  min-height: 20px;
+  padding: 8px 0;
+  cursor: text;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #000;
+  background: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.recipientsPlaceholder {
+  color: #747775;
+}
+
+.recipientsValue {
+  color: #222;
+}
+
+.recipientsExpanded {
+  width: 100%;
+}
+
+.recipientRow {
+  display: flex;
+  align-items: center;
+}
+
+.recipientLabel {
+  font-size: 14px;
+  color: #444746;
+  cursor: pointer;
+  transition: text-decoration 0.2s ease;
+  user-select: none;
+}
+
+.recipientLabel:hover {
+  text-decoration: underline;
+}
+
+.inputContainer {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  min-height: 20px;
+}
+
+.recipientInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #000;
+  background: transparent;
+  min-width: 120px;
+}
+
+.recipientInput::placeholder {
+  color: #747775;
+}
+
+.toggleButtons {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #747775;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.toggleButton:hover {
+  text-decoration: underline;
+}
+
+.toggleButton.active {
+  color: #041e49;
+  background-color: rgba(4, 30, 73, 0.1);
+  text-decoration: underline;
+}

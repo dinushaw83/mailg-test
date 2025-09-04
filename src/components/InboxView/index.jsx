@@ -20,22 +20,20 @@ const InnerContainer = styled.div`
 
 const InboxView = () => {
   const { inboxId } = useParams();
-  const { state } = useContext(GlobalContext);
-  const emails = state?.emails || [];
+  const { emails } = useContext(GlobalContext);
 
   const email = useMemo(() => {
-    if (!state?.emails) return null;
+    if (!emails) return null;
     // IDs in fixtures are numbers; support string compare just in case
     return emails.find((e) => String(e.id) === String(inboxId));
-  }, [state?.emails, inboxId]);
+  }, [emails, inboxId]);
 
   if (!email) {
     return (
       <div className="nH bkK" style={{ padding: 24 }}>
         <h2 style={{ margin: 0 }}>Email not found</h2>
         <p style={{ marginTop: 8 }}>
-          The message you’re looking for doesn’t exist. Go back to{" "}
-          <Link to="/">Inbox</Link>.
+          The message you’re looking for doesn’t exist. Go back to <Link to="/">Inbox</Link>.
         </p>
       </div>
     );
