@@ -11,7 +11,7 @@ export default function useMailFolders(emails = []) {
             important: [],
             chats: [],
             scheduled: [],
-            allmail: [],
+            all: [],
             spam: [],
             trash: [],
             categories: [],

@@ -114,6 +114,41 @@ export default function useMailActions() {
         labels.add("Inbox");
       });
 
+    const moveToLabel = (ids, name) => {
+      const idSet = new Set(ids);
+      setState(prev => ({
+        ...prev,
+        emails: prev.emails.map(m => {
+          if (!idSet.has(m.id)) return m;
+          const labels = new Set(m.labels || []);
+          labels.delete("Inbox");
+          labels.delete("Spam");
+          labels.delete("Trash");
+          labels.add(name);      // e.g. "Work"
+          return { ...m, labels: Array.from(labels) };
+        }),
+      }));
+    };
+
+    // When moving from one label view to another label,
+    // remove the current label and add the new one.
+    const moveToLabelFrom = (ids, sourceLabel, dest) => {
+      const idSet = new Set(ids);
+      setState(prev => ({
+        ...prev,
+        emails: prev.emails.map(m => {
+          if (!idSet.has(m.id)) return m;
+          const labels = new Set(m.labels || []);
+          labels.delete("Inbox");
+          labels.delete("Spam");
+          labels.delete("Trash");
+          if (sourceLabel) labels.delete(sourceLabel);
+          labels.add(dest);
+          return { ...m, labels: Array.from(labels) };
+        }),
+      }));
+    };
+
     return {
       addLabels,
       removeLabels,
@@ -127,6 +162,8 @@ export default function useMailActions() {
       toggleImportant,
       setImportant,
       notSpam,
+      moveToLabel,
+      moveToLabelFrom
     };
   }, [setState, updateLabelsByIds]);
 
