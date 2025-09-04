@@ -1,10 +1,12 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { usePersistedState } from "../hooks/usePersistedState";
 
 import { initialUser } from "./fixtures/me";
 import { initialEmails } from "./fixtures/emails";
 import { recipients as initialRecipients } from "./fixtures/recipients";
 import { recipientLabels as initialRecipientLabels } from "./fixtures/recipientLabels";
+import { initialLabels } from "./fixtures/labels";
 
 export const GlobalContext = createContext();
 
@@ -25,7 +27,60 @@ export const GlobalContextProvider = ({ children }) => {
     autoHideDuration: null,
   });
 
+  const [selected, setSelected] = useState(() => new Set());
+  const [labels, setLabels] = useState(initialLabels);
+
+  // Clear selection on navigation (folder/label changes)
+  const location = useLocation();
+  useEffect(() => {
+    setSelected(new Set());
+  }, [location.pathname]);
+
+  const selection = useMemo(() => {
+    const isSelected = (id) => selected.has(id);
+    const count = selected.size;
+    const hasSelection = count > 0;
+
+    const select = (id) =>
+      setSelected((prev) => {
+        const s = new Set(prev);
+        s.add(id);
+        return s;
+      });
+
+    const deselect = (id) =>
+      setSelected((prev) => {
+        const s = new Set(prev);
+        s.delete(id);
+        return s;
+      });
+
+    const toggle = (id) =>
+      setSelected((prev) => {
+        const s = new Set(prev);
+        s.has(id) ? s.delete(id) : s.add(id);
+        return s;
+      });
+
+    const clear = () => setSelected(new Set());
+
+    const setMany = (ids) => setSelected(() => new Set(ids)); // replace with exactly these ids
+
+    return {
+      ids: selected,
+      isSelected,
+      select,
+      deselect,
+      toggle,
+      clear,
+      setMany,
+      count,
+      hasSelection,
+    };
+  }, [selected]);
+
   const contextValue = {
+    selection,
     loggedInUser,
     setLoggedInUser,
     emails,
@@ -42,6 +97,8 @@ export const GlobalContextProvider = ({ children }) => {
     setComposeOpen,
     snackbar,
     setSnackbar,
+    labels,
+    setLabels,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
