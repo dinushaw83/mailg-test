@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import MoveToMenu from "./MoveToMenu"
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
+import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
 export default function InboxActions() {
     const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom } = useMailActions();
@@ -11,6 +12,12 @@ export default function InboxActions() {
 
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
+
+    const [isSpamModalOpen, setIsSpamModalOpen] = useState(false);
+    const [spamModal, setSpamModal] = useState({
+        open: false,
+        ids: [],
+    });
 
     const { label: labelParam } = useParams();
     const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
@@ -29,7 +36,8 @@ export default function InboxActions() {
 
         try {
             if (item.id === "__spam__" || item.id === "spam") {
-                moveToSpam(ids);
+                setSpamModal({ open: true, ids });
+                // moveToSpam(ids);
             } else if (item.id === "__trash__" || item.id === "trash") {
                 moveToTrash(ids);
             } else if (item.id.startsWith("__label__")) {
@@ -267,6 +275,21 @@ export default function InboxActions() {
                     />
                 </div>
             </div>
+            <SpamOrUnsubModal
+                open={spamModal.open}
+                onClose={() => {
+                    setSpamModal({ open: false, ids: [] })
+                }}
+                onReportSpam={() => {
+                    moveToSpam(spamModal.ids);
+                    setSpamModal({ open: false, ids: [] });
+                }}
+                onUnsubscribe={() => {
+                    // TODO: unsubscribe
+                    moveToSpam(spamModal.ids);
+                    setSpamModal({ open: false, ids: [] });
+                }}
+            />
         </div>
     )
 }
