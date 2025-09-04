@@ -7,6 +7,7 @@ import { Content } from "./Content";
 import { Subject } from "./Subject";
 import { Divider } from "@mui/material";
 import { Actions } from "./Actions";
+import EmailResponseView from "../Email/EmailResponseView";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
@@ -18,6 +19,8 @@ const InnerContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - 10rem);
+  padding-right: 10px;
+  overflow-y: auto;
 `;
 
 const InboxView = () => {
@@ -64,6 +67,7 @@ const InboxView = () => {
           </React.Fragment>
         ))}
         <Actions />
+        <EmailResponseView />
       </InnerContainer>
     </InboxViewContainer>
   );

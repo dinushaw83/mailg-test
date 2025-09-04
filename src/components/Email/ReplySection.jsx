@@ -30,12 +30,12 @@ const ReplySection = () => {
   return (
     <div style={{
       display: "flex",
-      gap: 10,
-      paddingLeft: 16,
+      gap: 12,
+      paddingLeft: 28,
     }}>
       <div
         style={{
-          width: '40px',
+          minWidth: '40px',
           height: '40px',
           borderRadius: '50%',
           backgroundColor: '#5f9ea0',

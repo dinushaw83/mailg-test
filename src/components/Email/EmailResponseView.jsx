@@ -23,13 +23,13 @@ const EmailResponseView = () => {
   };
 
   return (
-    <div>
-      <div>
+    <div style={{ marginTop: '4rem', marginBottom: '2rem' }}>
+      <div style={{ marginLeft: '78px' }}>
         <ActionButton text="Reply" onClick={handleReply} icon={<img src={replyImage} alt="Reply" />} />
         <ActionButton text="Reply all" onClick={handleReplyAll} icon={<img src={replyAllImage} alt="Reply all" />} />
         <ActionButton text="Forward" onClick={handleForward} icon={<img src={forwardImage} alt="Forward" />} />
       </div>
-      <ReplySectionREFERENCE />
+      {/* <ReplySectionREFERENCE /> */}
       <br />
       <ReplySection />
     </div>

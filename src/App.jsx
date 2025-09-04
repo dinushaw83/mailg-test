@@ -6,7 +6,6 @@ import EmailDetails from "./pages/EmailDetails";
 import MailView from "./pages/MailView";
 import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
-import EmailView from "./pages/EmailView";
 
 import { initialUser } from "./contexts/fixtures/me";
 
@@ -24,7 +23,6 @@ function App() {
             <Route path="/inbox/:threadId" element={<EmailDetails />} />
             <Route path="/sent/:threadId" element={<EmailDetails />} />
             <Route path="/:folder" element={<MailView />} />
-            <Route path="/:folder/:uuid" element={<EmailView />} />
             <Route path="/label/:label" element={<MailView />} />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
