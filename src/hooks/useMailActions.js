@@ -93,6 +93,12 @@ export default function useMailActions() {
           ids.includes(m.id) ? { ...m, important: value } : m
         ),
       }));
+    
+    const notSpam = (ids) =>
+      updateLabelsByIds(ids, (labels) => {
+        labels.delete("Spam");
+        labels.add("Inbox");
+      });
 
     return {
       addLabels,
@@ -106,6 +112,7 @@ export default function useMailActions() {
       markRead,
       toggleImportant,
       setImportant,
+      notSpam,
     };
   }, [setState, updateLabelsByIds]);
 
