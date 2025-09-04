@@ -1,24 +1,27 @@
-import React, { useState, useRef } from "react"
+import React, { useState, useRef, useMemo } from "react"
+import { useParams } from "react-router-dom";
+
 import MoveToMenu from "./MoveToMenu"
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 
-const LABELS = [
-    { id: "notes", name: "Notes" },
-    { id: "receipts", name: "Receipts" },
-    { id: "work", name: "Work" },
-    { id: "social", name: "Social" },
-    { id: "updates", name: "Updates" },
-    { id: "forums", name: "Forums" },
-    { id: "promotions", name: "Promotions" },
-];
-
 export default function InboxActions() {
-    const { moveToSpam, moveToTrash } = useMailActions();
-    const { selection } = useGlobalContext();
+    const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom } = useMailActions();
+    const { selection, state } = useGlobalContext();
 
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
+
+    const { label: labelParam } = useParams();
+    const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
+
+    const customLabels = useMemo(() => {
+        const map = state.labels || {};
+        return Object.entries(map)
+            .filter(([, meta]) => !meta.system)
+            .map(([name]) => ({ id: "__label__" + name, name }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [state.labels]);
 
     const handleMenuItemClick = async (item) => {
         const ids = [...selection.ids];       // Set → Array
@@ -29,12 +32,17 @@ export default function InboxActions() {
                 moveToSpam(ids);
             } else if (item.id === "__trash__" || item.id === "trash") {
                 moveToTrash(ids);
+            } else if (item.id.startsWith("__label__")) {
+                // moving between labels:
+                if (currentLabel && state.labels?.[currentLabel] && state.labels?.[currentLabel]["system"] === false ) {
+                    moveToLabelFrom(ids, currentLabel, item.name);
+                } else {
+                    moveToLabel(ids, item.name);
+                }
             }
             setOpen(false);
-            // selection.clear(); // uncomment if you want to clear after action
         } catch (e) {
             console.error("Move failed:", e);
-            // optionally show a toast
         }
     };
 
@@ -212,7 +220,7 @@ export default function InboxActions() {
                         {open && (
                             <MoveToMenu
                                 anchorRef={anchorRef}
-                                labels={LABELS}
+                                labels={customLabels}
                                 onSelect={handleMenuItemClick}
                                 onClose={() => setOpen(false)}
                             />
