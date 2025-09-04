@@ -1,25 +1,20 @@
 import React, { useState, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import Tooltip from "@mui/material/Tooltip";
+import { Button, Divider } from "@mui/material";
 
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
-import UndoToast from "./UndoToast";
 import { Icon } from "../InboxView/ActionBar";
-import { Divider } from "@mui/material";
 
 export default function InboxActions() {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
-  const { selection, labels, emails } = useGlobalContext();
+  const { selection, labels, emails, setSnackbar } = useGlobalContext();
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
-  const [toast, setToast] = useState({ open: false, ids: [] });
-  const [toastUndone, setToastUndone] = useState(false);
-  const [isSpamModalOpen, setIsSpamModalOpen] = useState(false);
   const [spamModal, setSpamModal] = useState({
     open: false,
     ids: [],
@@ -57,8 +52,30 @@ export default function InboxActions() {
         setSpamModal({ open: true, ids });
         // moveToSpam(ids);
       } else if (item.id === "__trash__" || item.id === "trash") {
-        setToast({ open: true, ids });
-        moveToTrash(ids);
+          moveToTrash(ids);
+          // Show global snackbar with UNDO action
+          setSnackbar({
+              open: true,
+              message: "Conversation moved to Trash.",
+              autoHideDuration: 10000,
+              action: (
+                  <Button
+                      size="small"
+                      onClick={() => {
+                          moveToInbox(ids);
+                          // Follow-up confirmation snackbar
+                          setSnackbar({
+                              open: true,
+                              message: "Action undone.",
+                              autoHideDuration: 3000,
+                              action: null,
+                          });
+                      }}
+                  >
+                      UNDO
+                  </Button>
+              ),
+          });
       } else if (item.id.startsWith("__label__")) {
         // moving between labels:
         if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
@@ -189,24 +206,6 @@ export default function InboxActions() {
               moveToSpam(spamModal.ids);
               setSpamModal({ open: false, ids: [] });
             }}
-          />
-          <UndoToast
-            autoHideMs={10000}
-            open={toast.open}
-            message="Conversation moved to Trash."
-            onUndo={() => {
-              moveToInbox(toast.ids);
-              setToast({ open: false, ids: [] });
-              setToastUndone(true);
-            }}
-            onClose={() => setToast({ open: false, ids: [] })}
-          />
-
-          <UndoToast
-            open={toastUndone}
-            message="Action undone."
-            showLink={false}
-            onClose={() => setToastUndone(false)}
           />
         </div>
       </div>
