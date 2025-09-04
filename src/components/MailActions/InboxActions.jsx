@@ -1,19 +1,28 @@
 import React, { useState, useRef, useMemo } from "react"
 import { useParams } from "react-router-dom";
+import Tooltip from "@mui/material/Tooltip";
 
 import MoveToMenu from "./MoveToMenu"
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
+import UndoToast from "./UndoToast";
+import { Icon } from "../InboxView/ActionBar";
+import { Divider } from "@mui/material";
 
 export default function InboxActions() {
-    const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom } = useMailActions();
+    const {
+        moveToSpam, moveToTrash,
+        moveToLabel, moveToLabelFrom,
+        moveToInbox
+    } = useMailActions();
     const { selection, state } = useGlobalContext();
 
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
 
-    const [isSpamModalOpen, setIsSpamModalOpen] = useState(false);
+    const [toast, setToast] = useState({ open: true, ids: [] });
+    const [toastUndone, setToastUndone] = useState(false);
     const [spamModal, setSpamModal] = useState({
         open: false,
         ids: [],
@@ -39,6 +48,7 @@ export default function InboxActions() {
                 setSpamModal({ open: true, ids });
                 // moveToSpam(ids);
             } else if (item.id === "__trash__" || item.id === "trash") {
+                setToast({ open: true, ids }); 
                 moveToTrash(ids);
             } else if (item.id.startsWith("__label__")) {
                 // moving between labels:
@@ -128,100 +138,39 @@ export default function InboxActions() {
 
                     {/* Shows up when a mail is selected */}
                     {selection.hasSelection && <React.Fragment>
-                        <div className="G-Ni J-J5-Ji">
-                            <div
-                                className="T-I J-J5-Ji nu T-I-ax7 L3"
-                                act={20}
-                                role="button"
-                                tabIndex={0}
-                                jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                                data-tooltip="Refresh"
-                                aria-label="Refresh"
-                                style={{ userSelect: "none" }}
-                            >
-                                <div className="asa">
-                                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                                        archive
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <div className="T-I J-J5-Ji nu T-I-ax7 L3">
+                            <Icon
+                                name="archive"
+                                label="Archive"
+                                onClick={() => console.log("Archive clicked")}
+                            />
 
-                        <div className="G-Ni J-J5-Ji">
-                            <div
-                                className="T-I J-J5-Ji nu T-I-ax7 L3"
-                                act={20}
-                                role="button"
-                                tabIndex={0}
-                                jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                                data-tooltip="Refresh"
-                                aria-label="Refresh"
-                                style={{ userSelect: "none" }}
-                            >
-                                <div className="asa">
-                                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                                        report
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                            <Icon
+                                name="report"
+                                label="Report"
+                                onClick={() => console.log("Report clicked")}
+                            />
 
-                        <div className="G-Ni J-J5-Ji G-aE">
-                            <div
-                                className="T-I J-J5-Ji nu T-I-ax7 L3"
-                                act={20}
-                                role="button"
-                                tabIndex={0}
-                                jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                                data-tooltip="Refresh"
-                                aria-label="Refresh"
-                                style={{ userSelect: "none" }}
-                            >
-                                <div className="asa">
-                                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                                        Delete
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                            <Icon
+                                name="delete"
+                                label="Delete"
+                                onClick={() => console.log("Delete clicked")}
+                            />
 
-                        <div className="G-Ni J-J5-Ji">
-                            <div
-                                className="T-I J-J5-Ji nu T-I-ax7 L3"
-                                act={20}
-                                role="button"
-                                tabIndex={0}
-                                jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                                data-tooltip="Refresh"
-                                aria-label="Refresh"
-                                style={{ userSelect: "none" }}
-                            >
-                                <div className="asa">
-                                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                                        mail
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                            <Divider orientation="vertical" sx={{ mr: 1 }} />
 
-                        <div className="G-Ni J-J5-Ji">
-                            <div
-                                className="T-I J-J5-Ji nu T-I-ax7 L3"
-                                act={20}
-                                role="button"
-                                tabIndex={0}
-                                jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                                data-tooltip="Refresh"
-                                aria-label="Refresh"
-                                ref={anchorRef}
-                                onClick={() => setOpen((s) => !s)}
-                                style={{ userSelect: "none", cursor: "pointer" }}
-                            >
-                                <div className="asa">
-                                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                                        drive_file_move
-                                    </span>
-                                </div>
+                            <Icon
+                                name="mail"
+                                label="Mail"
+                                onClick={() => console.log("Mail clicked")}
+                            />
+
+                            <div ref={anchorRef}>
+                                <Icon
+                                    name="drive_file_move"
+                                    label="Move"
+                                    onClick={() => setOpen((s) => !s)}
+                                />
                             </div>
                         </div>
 
@@ -233,17 +182,7 @@ export default function InboxActions() {
                                 onClose={() => setOpen(false)}
                             />
                         )}
-
                     </React.Fragment>}
-
-                    <div className="J-J5-Ji">
-                        <div
-                            className="T9"
-                            style={{ display: "none" }}
-                        >
-                            Fetching mail...
-                        </div>
-                    </div>
 
                     <div className="G-Ni J-J5-Ji">
                         <div
@@ -289,6 +228,26 @@ export default function InboxActions() {
                     moveToSpam(spamModal.ids);
                     setSpamModal({ open: false, ids: [] });
                 }}
+            />
+            <UndoToast
+                autoHideMs={10000}
+                open={toast.open}
+                message="Conversation moved to Trash."
+                onUndo={() => {
+                    moveToInbox(toast.ids);
+                    setToast({ open: false, ids: [] });
+                    setToastUndone(true);
+                }}
+                onClose={() =>
+                    setToast({ open: false, ids: [] })
+                }
+            />
+
+            <UndoToast
+                open={toastUndone}
+                message="Action undone."
+                showLink={false}
+                onClose={() => setToastUndone(false)}
             />
         </div>
     )
