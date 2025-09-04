@@ -8,7 +8,6 @@ import { Subject } from "./Subject";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
-  margin-right: 150px;
   width: 100%;
 `;
 
