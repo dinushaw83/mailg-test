@@ -67,7 +67,7 @@ const InboxView = () => {
           </React.Fragment>
         ))}
         <Actions />
-        <EmailResponseView />
+        <EmailResponseView email={email} />
       </InnerContainer>
     </InboxViewContainer>
   );

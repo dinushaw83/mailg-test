@@ -1,21 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import EmailRecipients from '../common/EmailRecipients';
 import { useGlobalContext } from '../../contexts/GlobalContext';
-import "./ReplySection.css";
+import "./ReplyContainer.css";
 import replyIcon from '../../icons/reply.png';
 import replyAllIcon from '../../icons/replyall.png';
 import forwardIcon from '../../icons/forward.png';
 import dropdownArrow from '../../icons/dropdownarrow.png';
 
-const ReplySection = () => {
+const ReplyContainer = ({ email, replyType }) => {
   const { state } = useGlobalContext();
   const firstLetter = state.user.name.charAt(0);
-  const [selectedReplyOption, setSelectedReplyOption] = useState('reply');
-  const [recipients, setRecipients] = useState({
-    to: [],
-    cc: [],
-    bcc: []
-  });
+  const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
+  
+  const calculateRecipients = (type) => {
+    const calculatedRecipients = {
+      to: type === 'forward' ? [] : [email.from],
+      cc: [],
+      bcc: []
+    };
+
+    if (type === 'replyAll') {
+      // Combine original cc and to lists
+      const allCcRecipients = [...(email.cc || []), ...(email.to || [])];
+      // Filter out the current user's email
+      calculatedRecipients.cc = allCcRecipients.filter(recipient => recipient.email !== state.user.email);
+    }
+
+    return calculatedRecipients;
+  };
+
+  const [recipients, setRecipients] = useState(() => calculateRecipients(replyType));
+
+  useEffect(() => {
+    setRecipients(calculateRecipients(selectedReplyOption));
+  }, [selectedReplyOption, email, state.user.email]);
   
   const options = [
     { value: 'reply', label: 'Reply', icon: replyIcon },
@@ -87,4 +105,4 @@ const ReplySection = () => {
   )
 }
 
-export default ReplySection
+export default ReplyContainer

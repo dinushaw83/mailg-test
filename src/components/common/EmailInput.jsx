@@ -4,7 +4,7 @@ import './EmailInput.css';
 const EmailInput = React.forwardRef(({ label, emails, onEmailAdded, onEmailRemoved, isParentFocused = false, onFocusChange }, ref) => {
   console.log("EmailInput", label, emails);
   const [inputValue, setInputValue] = useState('');
-  const [addedEmails, setAddedEmails] = useState(emails.map(e => typeof e === 'string' ? e : e.email));
+  const [addedEmails, setAddedEmails] = useState(emails);
   const [isFocused, setIsFocused] = useState(isParentFocused);
   const inputRef = useRef(null);
 
@@ -37,9 +37,10 @@ const EmailInput = React.forwardRef(({ label, emails, onEmailAdded, onEmailRemov
     if (e.key === 'Enter') {
       const trimmedEmail = inputValue.trim();
       if (isValidEmail(trimmedEmail)) {
-        setAddedEmails([...addedEmails, trimmedEmail]);
+        const newEmail = { email: trimmedEmail };
+        setAddedEmails([...addedEmails, newEmail]);
         setInputValue('');
-        onEmailAdded && onEmailAdded(trimmedEmail);
+        onEmailAdded && onEmailAdded(newEmail);
       }
     }
   };
@@ -47,7 +48,7 @@ const EmailInput = React.forwardRef(({ label, emails, onEmailAdded, onEmailRemov
   const removeEmail = (emailToRemove, e) => {
     e.preventDefault(); // Prevent the default action
     e.stopPropagation(); // Stop event bubbling
-    setAddedEmails(addedEmails.filter(email => email !== emailToRemove));
+    setAddedEmails(addedEmails.filter(email => email.email !== emailToRemove.email));
     onEmailRemoved && onEmailRemoved(emailToRemove);
     // Restore focus to the input
     if (inputRef.current) {
@@ -55,8 +56,9 @@ const EmailInput = React.forwardRef(({ label, emails, onEmailAdded, onEmailRemov
     }
   };
 
-  const EmailPill = ({ email }) => {
+  const EmailPill = ({ email: recipient }) => {
     const [color] = useState(generateRandomColor);
+    const displayName = recipient.name || recipient.email;
     
     return (
       <div className="email-pill">
@@ -64,12 +66,14 @@ const EmailInput = React.forwardRef(({ label, emails, onEmailAdded, onEmailRemov
           className="email-circle" 
           style={{ backgroundColor: color }}
         >
-          {email[0].toUpperCase()}
+          {displayName[0].toUpperCase()}
         </div>
-        <span className="email-text">{email}</span>
+        <span className="email-text">
+          {recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email}
+        </span>
         <button 
           className="remove-email"
-          onClick={(e) => removeEmail(email, e)}
+          onClick={(e) => removeEmail(recipient, e)}
         >
           ×
         </button>
@@ -86,7 +90,12 @@ const EmailInput = React.forwardRef(({ label, emails, onEmailAdded, onEmailRemov
     return (
       <div className="collapsed-view">
         <span className="collapsed-emails">
-          {displayEmails.join(', ')}
+          {displayEmails.map((recipient, index) => (
+            <span key={recipient.email}>
+              {recipient.name ? `${recipient.name} <${recipient.email}>` : recipient.email}
+              {index === 0 && displayEmails.length > 1 ? ', ' : ''}
+            </span>
+          ))}
         </span>
         {remainingCount > 0 && (
           <span className="more-count">

@@ -53,9 +53,9 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
   // Get all recipients for collapsed view
   const getAllRecipients = () => {
     const allRecipients = [
-      ...recipients.to.map(email => ({ email, type: 'to' })),
-      ...recipients.cc.map(email => ({ email, type: 'cc' })),
-      ...recipients.bcc.map(email => ({ email, type: 'bcc' }))
+      ...recipients.to.map(recipient => ({ ...recipient, type: 'to' })),
+      ...recipients.cc.map(recipient => ({ ...recipient, type: 'cc' })),
+      ...recipients.bcc.map(recipient => ({ ...recipient, type: 'bcc' }))
     ];
     return allRecipients;
   };
@@ -137,7 +137,7 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
                 {totalRecipients.slice(0, 2).map((r, i) => (
                   <span key={i}>
                     {r.type !== 'to' && `${r.type}: `}
-                    {r.email}
+                    {r.name ? `${r.name} <${r.email}>` : r.email}
                     {i === 0 && totalRecipients.length > 1 ? ', ' : ''}
                   </span>
                 ))}
