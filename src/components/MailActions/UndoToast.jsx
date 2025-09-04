@@ -1,5 +1,7 @@
+import { Button } from "@mui/material";
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "../InboxView/ActionBar";
 
 export default function UndoToast({
     open,
@@ -35,30 +37,11 @@ export default function UndoToast({
         lineHeight: "20px",
     };
 
-    const linkStyle = {
-        background: "none",
-        border: 0,
-        padding: 0,
-        cursor: "pointer",
-        color: "#1a73e8",
-        font: "inherit",
-    };
-
-    const closeStyle = {
-        marginLeft: 8,
-        background: "none",
-        border: 0,
-        cursor: "pointer",
-        fontSize: 20,
-        lineHeight: "20px",
-        color: "#5f6368",
-    };
-
     return createPortal(
         <div role="status" aria-live="polite" style={wrapStyle}>
             <span style={{ color: "#202124" }}>{message}</span>
-            {showLink && <button type="button" style={linkStyle} onClick={onUndo}>Undo</button>}
-            <button type="button" style={closeStyle} aria-label="Dismiss" onClick={onClose}>×</button>
+            {showLink && <Button type="button" variant="text" onClick={onUndo}>Undo</Button>}
+            <Icon name="close" onClick={onClose} aria-label="Dismiss" />
         </div>,
         document.body
     );

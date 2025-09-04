@@ -21,7 +21,7 @@ export default function InboxActions() {
     const [open, setOpen] = useState(false);
     const anchorRef = useRef(null);
 
-    const [toast, setToast] = useState({ open: true, ids: [] });
+    const [toast, setToast] = useState({ open: false, ids: [] });
     const [toastUndone, setToastUndone] = useState(false);
     const [spamModal, setSpamModal] = useState({
         open: false,
@@ -154,7 +154,9 @@ export default function InboxActions() {
                             <Icon
                                 name="delete"
                                 label="Delete"
-                                onClick={() => console.log("Delete clicked")}
+                                onClick={() => {
+                                    handleMenuItemClick({ id: "trash" })
+                                }}
                             />
 
                             <Divider orientation="vertical" sx={{ mr: 1 }} />
