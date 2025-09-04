@@ -11,6 +11,13 @@ const InboxViewContainer = styled.div`
   width: 100%;
 `;
 
+const InnerContainer = styled.div`
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 10rem);
+`;
+
 const InboxView = () => {
   const { inboxId } = useParams();
   const { state } = useContext(GlobalContext);
@@ -39,13 +46,15 @@ const InboxView = () => {
   return (
     <InboxViewContainer>
       <ActionBar />
-      <Subject email={email} />
-      <Content
-        body={email.body}
-        timestamp={email.timestamp}
-        senderName={email.from.name}
-        senderEmail={email.from.email}
-      />
+      <InnerContainer>
+        <Subject email={email} />
+        <Content
+          body={email.body}
+          timestamp={email.timestamp}
+          senderName={email.from.name}
+          senderEmail={email.from.email}
+        />
+      </InnerContainer>
     </InboxViewContainer>
   );
 };
