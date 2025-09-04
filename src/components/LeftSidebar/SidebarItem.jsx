@@ -4,8 +4,14 @@ import { NavLink, useMatch } from "react-router-dom";
 const hsClass = (key) => `aHS-bn${key}`;
 
 export default function SidebarItem({ item }) {
-  const match = useMatch({ path: `/${item.key}`, end: true });
-  const isActive = !!match;
+  // Exact match for base path
+  const exactMatch = useMatch({ path: `/${item.key}`, end: true });
+  // For Inbox, also match nested paths like /inbox/:inboxId
+  const nestedMatch =
+    item.key === "inbox"
+      ? useMatch({ path: `/${item.key}/*`, end: false })
+      : null;
+  const isActive = !!(exactMatch || nestedMatch);
 
   return (
     <NavLink
