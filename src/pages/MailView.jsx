@@ -6,8 +6,7 @@ import { GlobalContext } from "../contexts/GlobalContext";
 import useMailFolders from "../hooks/useMailFolders";
 
 const Inbox = () => {
-  const { state } = useContext(GlobalContext);
-  const emails = state?.emails || [];
+  const { emails } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
