@@ -17,8 +17,8 @@ function App() {
   }, []);
 
   return (
-    <GlobalContextProvider>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <GlobalContextProvider>
         <Layout>
           <Routes>
             <Route path="/" element={<Navigate to="/inbox" replace />} />
@@ -27,8 +27,8 @@ function App() {
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
         </Layout>
-      </Router>
-    </GlobalContextProvider>
+      </GlobalContextProvider>
+    </Router>
   );
 }
 

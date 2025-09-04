@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import useMailActions from "../hooks/useMailActions";
 import CheckBox from "./ui/CheckBox";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const { toggleImportant, toggleStar } = useMailActions()
-  
+  const { selection } = useGlobalContext()
+
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -67,16 +69,6 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     return status.join(", ");
   };
 
-  const [selected, setSelected] = useState(new Set());
-
-  function setCheckedFor(emailId, next) {
-    setSelected(prev => {
-      const s = new Set(prev);
-      next ? s.add(emailId) : s.delete(emailId);
-      return s;
-    });
-  }
-
   return (
     <tbody>
       {emails.map((email, index) => (
@@ -92,16 +84,10 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
           <td className="PF xY" />
           <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
             <CheckBox
-              id={`:pl${index}`}
-              labelledBy={`:pj${index}`}
-              checked={selected.has(email.id)}
-              onChange={(next) => {
-                setSelected(prev => {
-                  const s = new Set(prev);
-                  next ? s.add(email.id) : s.delete(email.id);
-                  return s;
-                });
-              }}
+              id={`:pl${email.id}`}
+              labelledBy={`:pj${email.id}`}
+              checked={selection.isSelected(email.id)}
+              onChange={() => selection.toggle(email.id)}
             />
           </td>
           <td className={`apU ${email.starred ? "" : "xY"}`}>
