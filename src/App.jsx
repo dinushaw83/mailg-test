@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
+import EmailDetails from "./pages/EmailDetails";
 import MailView from "./pages/MailView";
 
 import { initialState } from "./contexts/fixtures";
@@ -22,6 +23,7 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Navigate to="/inbox" replace />} />
+            <Route path="/inbox/:inboxId" element={<EmailDetails />} />
             <Route path="/:folder" element={<MailView />} />
             <Route path="/label/:label" element={<MailView />} />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
