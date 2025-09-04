@@ -95,6 +95,26 @@ const MailActions = () => {
   );
 };
 
+const EmailPositionContainer = styled.span`
+  font-size: 0.75rem;
+  color: #5e5e5e;
+  white-space: nowrap;
+`;
+
+const EmailPosition = ({ currentItem, totalItems }) => {
+  return (
+    <EmailPositionContainer>
+      <span className="ts" style={{ fontWeight: "inherit" }}>
+        {currentItem}
+      </span>{" "}
+      of{" "}
+      <span className="ts" style={{ fontWeight: "inherit" }}>
+        {totalItems}
+      </span>
+    </EmailPositionContainer>
+  );
+};
+
 const NavigationActions = () => {
   const { inboxId } = useParams();
   const { state } = useContext(GlobalContext);
@@ -130,15 +150,7 @@ const NavigationActions = () => {
         display: "flex",
       }}
     >
-      <span>
-        <span className="ts" style={{ fontWeight: "inherit" }}>
-          {currentItem}
-        </span>{" "}
-        of{" "}
-        <span className="ts" style={{ fontWeight: "inherit" }}>
-          {totalItems}
-        </span>
-      </span>
+      <EmailPosition currentItem={currentItem} totalItems={totalItems} />
       <div style={{ display: "flex", marginLeft: 10 }}>
         <Icon
           name="chevron_left"
