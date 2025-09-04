@@ -3,6 +3,7 @@
 export const initialEmails = [
   {
     id: 1,
+    uuid: "FMfcgzQcpdhjlTZlMCCZBpccFXGtQQrV",
     threadId: "#thread-f:1842139573356840007",
     legacyThreadId: "1990982e909fc447",
     legacyLastMessageId: "1990982e909fc447",
@@ -11,7 +12,7 @@ export const initialEmails = [
       name: "GitHub",
       email: "noreply@github.com",
     },
-    to: "john.doe@example.com",
+    to: ["john.doe@example.com"],
     subject: "[GitHub] Your Dependabot alerts for the week of Aug 26 - Sep 2",
     body: "Explore this week on GitHub GitHub security alert digest john's repository security updates from the week of Aug 26 - Sep 2 john's personal account john / aspiod Known security",
     preview:
@@ -100,6 +101,7 @@ export const initialEmails = [
   },
   {
     id: 2,
+    uuid: "FMfcgzQcpdgXmrdgJsLhHWhFRcbbFCQZ",
     threadId: "#thread-f:1842087366422769452",
     legacyThreadId: "199068b330dd2f2c",
     legacyLastMessageId: "199068b330dd2f2c",
@@ -108,7 +110,7 @@ export const initialEmails = [
       name: "GitHub",
       email: "noreply@github.com",
     },
-    to: "john.doe@example.com",
+    to: ["john.doe@example.com"],
     subject: "[GitHub] Please verify your device",
     body: "Hey john! A sign in attempt requires further verification because we did not recognize your device. To complete the sign in, enter the verification code on the unrecognized device. Device: Chrome on",
     preview:
@@ -137,6 +139,7 @@ export const initialEmails = [
   },
   {
     id: 3,
+    uuid: "FMfcgzQcpTMQrKhbwDhGrlpkqBxLQBCQ",
     threadId: "#thread-f:1842085083087208760",
     legacyThreadId: "1990669f8f758138",
     legacyLastMessageId: "1990669f8f758138",
@@ -145,7 +148,7 @@ export const initialEmails = [
       name: "Notion Team",
       email: "notify@updates.notion.so",
     },
-    to: "john.doe@example.com",
+    to: ["john.doe@example.com"],
     subject: "A new device logged into your account",
     body: "Review a recent login from a new device There was a recent login to your Notion account. Please review the details: Account john.doe@example.com Login method Login with Google IP & approximate",
     preview:
