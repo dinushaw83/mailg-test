@@ -42,12 +42,26 @@ export default function useMailActions() {
         labels.delete("Inbox");
       });
 
-    const moveToSpam = (ids) =>
-      updateLabelsByIds(ids, (labels) => {
-        labels.delete("Inbox");
-        labels.delete("Trash");
-        labels.add("Spam");
-      });
+    const moveToSpam = (ids) => {
+      const idSet = new Set(ids);
+      setState((prev) => ({
+        ...prev,
+        emails: prev.emails.map((m) => {
+          if (!idSet.has(m.id)) return m;
+
+          const labels = new Set(m.labels || []);
+          labels.delete("Inbox");
+          labels.delete("Trash");
+          labels.add("Spam");
+
+          return {
+            ...m,
+            important: false,
+            labels: Array.from(labels),
+          };
+        }),
+      }));
+    };
 
     const moveToTrash = (ids) =>
       updateLabelsByIds(ids, (labels) => {
