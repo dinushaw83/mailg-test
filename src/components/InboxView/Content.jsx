@@ -35,11 +35,11 @@ const SenderEmail = styled.div`
   color: #5f6368;
 `;
 
-const Sender = () => {
+const Sender = ({ name, email }) => {
   return (
     <SenderContainer>
-      <SenderName>Sender</SenderName>
-      <SenderEmail>&lt;noreply@github.com&gt;</SenderEmail>
+      <SenderName>{name}</SenderName>
+      <SenderEmail>&lt;{email}&gt;</SenderEmail>
     </SenderContainer>
   );
 };
@@ -85,6 +85,10 @@ const ActionsContainer = styled.div`
   align-items: center;
 `;
 
+const TimeContainer = styled.div`
+  margin-right: 1rem;
+`;
+
 const Time = ({ timestamp }) => {
   if (!timestamp) {
     return null;
@@ -122,17 +126,17 @@ const Time = ({ timestamp }) => {
   }
 
   return (
-    <div>
+    <TimeContainer>
       {timeString} ({relativeTime})
-    </div>
+    </TimeContainer>
   );
 };
 
-const TopBar = ({ timestamp }) => {
+const TopBar = ({ timestamp, senderName, senderEmail }) => {
   return (
     <TopBarContainer>
       <div>
-        <Sender />
+        <Sender name={senderName} email={senderEmail} />
         <Recipient />
       </div>
       <ActionsContainer>
@@ -150,14 +154,18 @@ const EmailHtmlBody = ({ body }) => {
   return <div dangerouslySetInnerHTML={{ __html: body }} />;
 };
 
-export const Content = ({ body, timestamp }) => {
+export const Content = ({ body, timestamp, senderName, senderEmail }) => {
   return (
     <ContentContainer>
       <ProfileImageContainer>
         <Avatar>H</Avatar>
       </ProfileImageContainer>
       <BodyContainer>
-        <TopBar timestamp={timestamp} />
+        <TopBar
+          timestamp={timestamp}
+          senderName={senderName}
+          senderEmail={senderEmail}
+        />
         <EmailHtmlBody body={body} />
       </BodyContainer>
     </ContentContainer>

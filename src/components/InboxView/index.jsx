@@ -35,11 +35,18 @@ const InboxView = () => {
     );
   }
 
+  console.log({ email });
+
   return (
     <InboxViewContainer>
       <ActionBar />
       <Subject email={email} />
-      <Content body={email.body} timestamp={email.timestamp} />
+      <Content
+        body={email.body}
+        timestamp={email.timestamp}
+        senderName={email.from.name}
+        senderEmail={email.from.email}
+      />
     </InboxViewContainer>
   );
 };
