@@ -13,11 +13,12 @@ export const Icon = ({
   style,
   disabled,
   placement = "bottom",
+  size = "small",
 }) => {
   return (
     <Tooltip title={label} placement={placement}>
       <IconButton
-        size="small"
+        size={size}
         sx={{
           width: 36,
           height: 36,

@@ -26,13 +26,19 @@ const SenderContainer = styled.div`
 `;
 
 const SenderName = styled.div`
-  font-weight: 500;
+  font-size: 0.875rem;
+  color: #1f1f1f;
+  line-height: 20px;
+  font-weight: bold;
+  white-space: nowrap;
   margin-right: 0.5rem;
 `;
 
 const SenderEmail = styled.div`
-  font-size: 0.875rem;
-  color: #5f6368;
+  color: #5e5e5e;
+  font-size: 0.75rem;
+  letter-spacing: normal;
+  line-height: 20px;
 `;
 
 const Sender = ({ name, email }) => {
@@ -47,17 +53,12 @@ const Sender = ({ name, email }) => {
 const RecipientContainer = styled.div`
   display: flex;
   align-items: center;
+  font-size: 0.75rem;
+  color: #5e5e5e;
 `;
 
 const RecipientName = styled.div`
   margin-right: 5px;
-  font-size: 0.875rem;
-  color: #5f6368;
-`;
-
-const RecipientEmail = styled.div`
-  font-size: 0.875rem;
-  color: #5f6368;
 `;
 
 const Recipient = () => {
@@ -66,9 +67,13 @@ const Recipient = () => {
       <RecipientName>to me</RecipientName>
       <Icon
         name="arrow_drop_down"
-        style={{ borderRadius: "10px", padding: "none" }}
+        style={{
+          borderRadius: "5px",
+          width: "18px",
+          height: "18px",
+          padding: "0px",
+        }}
       />
-      {/* <RecipientEmail>&lt;john.doe@example.com&gt;</RecipientEmail> */}
     </RecipientContainer>
   );
 };
@@ -86,7 +91,11 @@ const ActionsContainer = styled.div`
 `;
 
 const TimeContainer = styled.div`
-  margin-right: 1rem;
+  margin-right: 0.5rem;
+  line-height: 20px;
+  font-size: 0.75rem;
+  letter-spacing: normal;
+  color: #5e5e5e;
 `;
 
 const Time = ({ timestamp }) => {
