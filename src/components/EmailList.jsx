@@ -76,7 +76,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
         const threadId = email.threadId.split(":")[1];
         return (
           <tr
-            key={email.id}
+            key={threadId}
             className={getRowClassName(email)}
             id={`:pi${index}`}
             tabIndex={-1}
@@ -88,10 +88,10 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             <td className="PF xY" />
             <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
               <CheckBox
-                id={`:pl${email.id}`}
-                labelledBy={`:pj${email.id}`}
-                checked={selection.isSelected(email.id)}
-                onChange={() => selection.toggle(email.id)}
+                id={`:pl${threadId}`}
+                labelledBy={`:pj${threadId}`}
+                checked={selection.isSelected(threadId)}
+                onChange={() => selection.toggle(threadId)}
               />
             </td>
             <td className={`apU ${email.starred ? "" : "xY"}`}>

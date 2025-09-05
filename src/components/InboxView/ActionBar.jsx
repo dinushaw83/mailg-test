@@ -194,8 +194,6 @@ const ActionsContainer = styled.div`
 `;
 
 export default function ActionBar() {
-  const { currentItem, totalItems } = { currentItem: 6, totalItems: 100 };
-
   return (
     <ActionBarContainer>
       <ActionsContainer>
