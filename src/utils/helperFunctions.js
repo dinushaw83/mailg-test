@@ -37,24 +37,3 @@ export const generateNextEmailId = (emails) => {
   const maxId = Math.max(...emails.map(email => email.id));
   return maxId + 1;
 };
-
-export function buildLabelTree(labels) {
-  const nodes = Object.entries(labels || {}).map(([name, meta]) => ({
-    name,
-    parent: meta?.parent || null,
-    system: !!meta?.system,
-    children: [],
-  }));
-  const byName = Object.fromEntries(nodes.map(n => [n.name, n]));
-  const roots = [];
-  nodes.forEach(n => {
-    if (n.parent && byName[n.parent]) byName[n.parent].children.push(n);
-    else roots.push(n);
-  });
-  const sortRec = (arr) => {
-    arr.sort((a, b) => a.name.localeCompare(b.name));
-    arr.forEach(c => sortRec(c.children));
-  };
-  sortRec(roots);
-  return roots;
-}
