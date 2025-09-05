@@ -5,15 +5,27 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "@emotion/styled";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
+import PropTypes from "prop-types";
 
-export const Icon = ({ name, label, onClick, style, disabled, placement = "bottom", size = "small" }) => {
+export const Icon = ({
+  name,
+  label,
+  onClick,
+  style,
+  disabled,
+  placement = "bottom",
+  size = "small",
+  color = "rgb(68, 68, 68)",
+  width = 36,
+  height = 36,
+}) => {
   return (
     <Tooltip title={label} placement={placement}>
       <IconButton
         size={size}
         sx={{
-          width: 36,
-          height: 36,
+          width,
+          height,
           borderRadius: "50%",
           marginRight: "10px",
           ...style,
@@ -25,7 +37,7 @@ export const Icon = ({ name, label, onClick, style, disabled, placement = "botto
           className="material-symbols-outlined"
           style={{
             fontSize: 20,
-            color: "rgb(68, 68, 68)",
+            color,
           }}
         >
           {name}
@@ -175,7 +187,7 @@ export default function ActionBar() {
     <ActionBarContainer>
       <ActionsContainer>
         <MailActions />
-        <NavigationActions currentItem={currentItem} totalItems={totalItems} />
+        <NavigationActions />
       </ActionsContainer>
       <Divider />
     </ActionBarContainer>

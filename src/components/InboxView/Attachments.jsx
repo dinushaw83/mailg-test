@@ -37,6 +37,80 @@ const ImageContainer = styled.div`
     object-position: center;
     display: block;
   }
+
+  &:hover .overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+  background: rgba(158, 158, 158, 0.6); /* translucent gray */
+  color: #fff;
+  opacity: 0;
+  transition: opacity 120ms ease-in-out;
+  pointer-events: none; /* enabled on parent hover */
+`;
+
+const OverlayTop = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+`;
+
+const OverlayTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  .material-symbols-outlined {
+    font-size: 18px;
+  }
+`;
+
+const OverlayFilesize = styled.div`
+  font-size: 0.75rem;
+  opacity: 0.9;
+`;
+
+const OverlayActions = styled.div`
+  display: flex;
+  justify-content: flex-start;
+`;
+
+const ActionButton = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  pointer-events: auto; /* clickable inside overlay */
+  transition: background 120ms ease-in-out, border-color 120ms ease-in-out;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.34);
+  }
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
 `;
 
 const AttachmentsContainer = styled.div`
@@ -144,11 +218,13 @@ export const Attachments = () => {
       id: 1,
       name: "attachment.webp",
       url: "/assets/images/attachment.webp",
+      size: "1.2 MB",
     },
     {
       id: 2,
       name: "attachment2.webp",
       url: "/assets/images/attachment.webp",
+      size: "980 KB",
     },
   ];
 
@@ -166,6 +242,47 @@ export const Attachments = () => {
         {attachments.map((attachment) => (
           <ImageContainer key={attachment.id}>
             <img loading="lazy" src={attachment.url} alt={attachment.name} />
+            <Overlay className="overlay">
+              <OverlayTop>
+                <OverlayTitleRow title={attachment.name}>
+                  <span className="material-symbols-outlined">image</span>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
+                </OverlayTitleRow>
+                <OverlayFilesize>{attachment.size}</OverlayFilesize>
+              </OverlayTop>
+              <OverlayActions>
+                <Icon
+                  label="Download"
+                  placement="top"
+                  name="download"
+                  color="white"
+                  style={{
+                    borderRadius: "6px",
+                    width: "24px",
+                    height: "24px",
+                    background: "rgb(128, 134, 139)",
+                    "&:hover": { background: "#898F94" },
+                    marginRight: "8px",
+                  }}
+                />
+
+                <Icon
+                  label="Save to Drive"
+                  placement="top"
+                  name="drive_file_move"
+                  color="white"
+                  style={{
+                    borderRadius: "6px",
+                    width: "24px",
+                    height: "24px",
+                    padding: "5px",
+                    background: "rgb(128, 134, 139)",
+                    "&:hover": { background: "#898F94" },
+                    marginRight: "0px",
+                  }}
+                />
+              </OverlayActions>
+            </Overlay>
           </ImageContainer>
         ))}
       </AttachmentsContainer>
