@@ -20,17 +20,21 @@ export default function useMailFolders(emails = []) {
         const has = (m, name) => (m.labels || []).includes(name);
 
         emails.forEach((m) => {
+            const inSpam = has(m, "Spam");
+            const inTrash = has(m, "Trash");
+            const hidden = inSpam || inTrash;
+
             if (has(m, "Inbox")) folders.inbox.push(m);
-            if (m.starred) folders.starred.push(m);
-            if (has(m, "Snoozed")) folders.snoozed.push(m);
+            if (m.starred && !hidden) folders.starred.push(m);
+            if (has(m, "Snoozed") && !hidden) folders.snoozed.push(m);
             if (has(m, "Sent")) folders.sent.push(m);
             if (has(m, "Drafts")) folders.drafts.push(m);
-            if (m.important) folders.important.push(m);
+            if (m.important && !hidden) folders.important.push(m);
             if (has(m, "Chats")) folders.chats.push(m);
             if (has(m, "Scheduled")) folders.scheduled.push(m);
             if (has(m, "Spam")) folders.spam.push(m);
             if (has(m, "Trash")) folders.trash.push(m);
-            if (has(m, "Categories")) folders.categories.push(m);
+            if (has(m, "Categories") && !hidden) folders.categories.push(m);
         });
 
         // All Mail = everything except Spam/Trash

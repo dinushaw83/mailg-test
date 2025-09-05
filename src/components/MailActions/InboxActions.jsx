@@ -1,19 +1,20 @@
 import React, { useState, useRef, useMemo } from "react";
 import { useParams } from "react-router-dom";
+import { Button, Divider } from "@mui/material";
 
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
+import { Icon } from "../InboxView/ActionBar";
 
 export default function InboxActions() {
-  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom } = useMailActions();
-  const { selection, labels, emails } = useGlobalContext();
+  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
+  const { selection, labels, emails, setSnackbar } = useGlobalContext();
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
 
-  const [isSpamModalOpen, setIsSpamModalOpen] = useState(false);
   const [spamModal, setSpamModal] = useState({
     open: false,
     ids: [],
@@ -34,8 +35,8 @@ export default function InboxActions() {
   const showInboxOption = useMemo(() => {
     if (!selection.hasSelection) return false;
     const selectedIds = [...selection.ids];
-    return selectedIds.some(id => {
-      const email = emails.find(e => e.id === id);
+    return selectedIds.some((id) => {
+      const email = emails.find((e) => e.id === id);
       return email && !email.labels?.includes("Inbox");
     });
   }, [selection.ids, selection.hasSelection, emails]);
@@ -52,6 +53,30 @@ export default function InboxActions() {
         // moveToSpam(ids);
       } else if (item.id === "__trash__" || item.id === "trash") {
         moveToTrash(ids);
+        // Show global snackbar with Undo action
+        setSnackbar({
+          open: true,
+          message: "Conversation moved to Trash.",
+          autoHideDuration: 10000,
+          action: (
+            <Button
+              sx={{ textTransform: "none" }}
+              size="small"
+              onClick={() => {
+                moveToInbox(ids);
+                // Follow-up confirmation snackbar
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              }}
+            >
+              Undo
+            </Button>
+          ),
+        });
       } else if (item.id.startsWith("__label__")) {
         // moving between labels:
         if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
@@ -103,188 +128,88 @@ export default function InboxActions() {
               </div>
             </div>
           </div>
-          <div className="G-Ni G-aE J-J5-Ji" style={{ display: "none" }} />
+          <div>
+            <div>
+              {/* Shows up when a mail is selected */}
+              {selection.hasSelection && (
+                <React.Fragment>
+                  <div className="T-I J-J5-Ji nu T-I-ax7 L3">
+                    <Icon name="archive" label="Archive" onClick={() => console.log("Archive clicked")} />
 
-          <div className="G-Ni J-J5-Ji" style={{ display: "none" }} />
+                    <Icon name="report" label="Report" onClick={() => console.log("Report clicked")} />
 
-          <div className="G-Ni J-J5-Ji">
-            <div
-              className="T-I J-J5-Ji nu T-I-ax7 L3"
-              act={20}
-              role="button"
-              tabIndex={0}
-              jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-              data-tooltip="Refresh"
-              aria-label="Refresh"
-              style={{ userSelect: "none" }}
-            >
-              <div className="asa">
-                <div className="asf T-I-J3 J-J5-Ji" />
-              </div>
-            </div>
-          </div>
+                    <Icon
+                      name="delete"
+                      label="Delete"
+                      onClick={() => {
+                        handleMenuItemClick({ id: "trash" });
+                      }}
+                    />
 
-          {/* Shows up when a mail is selected */}
-          {selection.hasSelection && (
-            <React.Fragment>
-              <div className="G-Ni J-J5-Ji">
-                <div
-                  className="T-I J-J5-Ji nu T-I-ax7 L3"
-                  act={20}
-                  role="button"
-                  tabIndex={0}
-                  jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                  data-tooltip="Refresh"
-                  aria-label="Refresh"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="asa">
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                      archive
-                    </span>
+                    <Divider orientation="vertical" sx={{ mr: 1 }} />
+
+                    <Icon name="mail" label="Mail" onClick={() => console.log("Mail clicked")} />
+
+                    <div ref={anchorRef}>
+                      <Icon name="drive_file_move" label="Move" onClick={() => setOpen((s) => !s)} />
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="G-Ni J-J5-Ji">
-                <div
-                  className="T-I J-J5-Ji nu T-I-ax7 L3"
-                  act={20}
-                  role="button"
-                  tabIndex={0}
-                  jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                  data-tooltip="Refresh"
-                  aria-label="Refresh"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="asa">
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                      report
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="G-Ni J-J5-Ji G-aE">
-                <div
-                  className="T-I J-J5-Ji nu T-I-ax7 L3"
-                  act={20}
-                  role="button"
-                  tabIndex={0}
-                  jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                  data-tooltip="Refresh"
-                  aria-label="Refresh"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="asa">
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                      Delete
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="G-Ni J-J5-Ji">
-                <div
-                  className="T-I J-J5-Ji nu T-I-ax7 L3"
-                  act={20}
-                  role="button"
-                  tabIndex={0}
-                  jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                  data-tooltip="Refresh"
-                  aria-label="Refresh"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="asa">
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                      mail
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="G-Ni J-J5-Ji">
-                <div
-                  className="T-I J-J5-Ji nu T-I-ax7 L3"
-                  act={20}
-                  role="button"
-                  tabIndex={0}
-                  jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                  data-tooltip="Refresh"
-                  aria-label="Refresh"
-                  ref={anchorRef}
-                  onClick={() => setOpen((s) => !s)}
-                  style={{ userSelect: "none", cursor: "pointer" }}
-                >
-                  <div className="asa">
-                    <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                      drive_file_move
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {open && (
-                <MoveToMenu
-                  anchorRef={anchorRef}
-                  labels={customLabels}
-                  onSelect={handleMenuItemClick}
-                  onClose={() => setOpen(false)}
-                  showInbox={showInboxOption}
-                />
+                  {open && (
+                    <MoveToMenu
+                      anchorRef={anchorRef}
+                      labels={customLabels}
+                      onSelect={handleMenuItemClick}
+                      onClose={() => setOpen(false)}
+                    />
+                  )}
+                </React.Fragment>
               )}
-            </React.Fragment>
-          )}
 
-          <div className="J-J5-Ji">
-            <div className="T9" style={{ display: "none" }}>
-              Fetching mail...
-            </div>
-          </div>
-
-          <div className="G-Ni J-J5-Ji">
-            <div
-              id=":2w"
-              className="T-I J-J5-Ji nf T-I-ax7 L3"
-              role="button"
-              tabIndex={0}
-              aria-label="More email options"
-              aria-haspopup="false"
-              aria-expanded="false"
-              data-tooltip="More"
-            >
-              <div className="asa">
-                <div className="bjy T-I-J3 J-J5-Ji" />
+              <div className="G-Ni J-J5-Ji">
+                <div
+                  id=":2w"
+                  className="T-I J-J5-Ji nf T-I-ax7 L3"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="More email options"
+                  aria-haspopup="false"
+                  aria-expanded="false"
+                  data-tooltip="More"
+                >
+                  <div className="asa">
+                    <div className="bjy T-I-J3 J-J5-Ji" />
+                  </div>
+                  <div className="G-asx T-I-J3 J-J5-Ji sf-hidden">&nbsp;</div>
+                </div>
               </div>
-              <div className="G-asx T-I-J3 J-J5-Ji sf-hidden">&nbsp;</div>
+              <div
+                className="J-M jQjAxd"
+                role="menu"
+                aria-haspopup="true"
+                style={{
+                  display: "none",
+                  userSelect: "none",
+                }}
+              />
             </div>
           </div>
-          <div
-            className="J-M jQjAxd"
-            role="menu"
-            aria-haspopup="true"
-            style={{
-              display: "none",
-              userSelect: "none",
+          <SpamOrUnsubModal
+            open={spamModal.open}
+            onClose={() => {
+              setSpamModal({ open: false, ids: [] });
+            }}
+            onReportSpam={() => {
+              moveToSpam(spamModal.ids);
+              setSpamModal({ open: false, ids: [] });
+            }}
+            onUnsubscribe={() => {
+              moveToSpam(spamModal.ids);
+              setSpamModal({ open: false, ids: [] });
             }}
           />
         </div>
       </div>
-      <SpamOrUnsubModal
-        open={spamModal.open}
-        onClose={() => {
-          setSpamModal({ open: false, ids: [] });
-        }}
-        onReportSpam={() => {
-          moveToSpam(spamModal.ids);
-          setSpamModal({ open: false, ids: [] });
-        }}
-        onUnsubscribe={() => {
-          // TODO: unsubscribe
-          moveToSpam(spamModal.ids);
-          setSpamModal({ open: false, ids: [] });
-        }}
-      />
     </div>
   );
 }
