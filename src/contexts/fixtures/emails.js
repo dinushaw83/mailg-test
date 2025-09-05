@@ -24,6 +24,80 @@ export const initialEmails = [
     labels: ["Inbox"],
     labelColor: "#e1e3e1",
   },
+  // Thread with multiple messages (GitHub device verification)
+  // Existing message id:2 is the first one in this thread. Add replies/follow-ups.
+  {
+    id: 6,
+    threadId: "#thread-f:1842087366422769452",
+    legacyThreadId: "199068b330dd2f2c",
+    legacyLastMessageId: "199068b330dd2f2d",
+    legacyLastNonDraftMessageId: "199068b330dd2f2d",
+    from: {
+      name: "John Doe",
+      email: "john.doe@example.com",
+    },
+    to: "noreply@github.com",
+    subject: "Re: [GitHub] Please verify your device",
+    body:
+      "Hi GitHub team, this was me. I successfully verified my device. Thanks!",
+    preview:
+      "Hi GitHub team, this was me. I successfully verified my device.",
+    timestamp: "2025-09-01T21:35:00.000Z",
+    timeDisplay: "Sep 1",
+    read: true,
+    starred: true,
+    important: false,
+    labels: ["Sent"],
+    labelColor: "#e1e3e1",
+  },
+  {
+    id: 7,
+    threadId: "#thread-f:1842087366422769452",
+    legacyThreadId: "199068b330dd2f2c",
+    legacyLastMessageId: "199068b330dd2f2e",
+    legacyLastNonDraftMessageId: "199068b330dd2f2e",
+    from: {
+      name: "GitHub",
+      email: "noreply@github.com",
+    },
+    to: "john.doe@example.com",
+    subject: "Re: [GitHub] Please verify your device",
+    body:
+      "Thanks for confirming, John. If this wasn’t you, reset your password immediately. This email address is not monitored.",
+    preview:
+      "Thanks for confirming, John. If this wasn’t you, reset your password immediately.",
+    timestamp: "2025-09-01T21:36:00.000Z",
+    timeDisplay: "Sep 1",
+    read: false,
+    starred: true,
+    important: true,
+    labels: ["Inbox"],
+    labelColor: "#e1e3e1",
+  },
+  {
+    id: 8,
+    threadId: "#thread-f:1842087366422769452",
+    legacyThreadId: "199068b330dd2f2c",
+    legacyLastMessageId: "199068b330dd2f2f",
+    legacyLastNonDraftMessageId: "199068b330dd2f2f",
+    from: {
+      name: "GitHub",
+      email: "noreply@github.com",
+    },
+    to: "john.doe@example.com",
+    subject: "[GitHub] New sign-in from Chrome on Mac",
+    body:
+      "We noticed a new sign-in to your account from Chrome on macOS. If this was you, no further action is required.",
+    preview:
+      "New sign-in to your account from Chrome on macOS.",
+    timestamp: "2025-09-01T21:25:00.000Z",
+    timeDisplay: "Sep 1",
+    read: true,
+    starred: false,
+    important: false,
+    labels: ["Inbox"],
+    labelColor: "#e1e3e1",
+  },
   {
     id: 2,
     threadId: "#thread-f:1842087366422769452",
