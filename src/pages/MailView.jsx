@@ -3,33 +3,26 @@ import { useParams } from "react-router-dom";
 
 import EmailList from "../components/EmailList";
 import { GlobalContext } from "../contexts/GlobalContext";
-import useMailFolders from "../hooks/useMailFolders";
 import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
 
-import MailActions from "../components/MailActions";
-
 const Inbox = () => {
-  const { emails, sortOrder, currentPage, itemsPerPage } =
-    useContext(GlobalContext);
+  const { emails, sortOrder, currentPage, itemsPerPage } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
   const activeFolder = folder || "inbox";
 
-  // get all folders from hook
-  const folders = useMailFolders(emails);
+  // Build thread rows: one row per thread
+  const filteredRows = useMemo(() => {
+    return getThreadRows(emails, { label, folder: activeFolder });
+  }, [emails, label, activeFolder]);
 
   // pick rows based on folder/label, then sort and paginate
   const rows = useMemo(() => {
-    const filteredEmails = getThreadRows(emails, {
-      label,
-      folder: activeFolder,
-    });
-
     // Sort emails based on sortOrder
-    const sortedEmails = [...filteredEmails].sort((a, b) => {
+    const sortedEmails = [...filteredRows].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
 
@@ -40,20 +33,11 @@ const Inbox = () => {
       }
     });
 
-    // Apply pagination
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
     return sortedEmails.slice(startIndex, endIndex);
-  }, [
-    emails,
-    label,
-    activeFolder,
-    folders,
-    sortOrder,
-    currentPage,
-    itemsPerPage,
-  ]);
+  }, [filteredRows, sortOrder, currentPage, itemsPerPage]);
 
   return (
     <div className="nH bkK">
@@ -65,12 +49,8 @@ const Inbox = () => {
               <div id=":3" className="Tm" style={{ height: 985 }}>
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
-                    <div
-                      className="bGI nH oy8Mbf aE3 S4"
-                      role="main"
-                      jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd"
-                    >
-                      <ToolBar />
+                    <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
+                      <ToolBar totalFilteredItems={filteredRows.length} />
                       <div />
                       <div className="X3" />
                       <div className="a0V">
@@ -110,34 +90,13 @@ const Inbox = () => {
                                     borderLeftWidth: 1,
                                   }}
                                 >
-                                  <div
-                                    className="aKu aKo aKq sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKo sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKu aKo aKr sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKp aIf-aLf"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKw"
-                                    style={{ userSelect: "none" }}
-                                  >
-                                    <div
-                                      className="aKy"
-                                      style={{ userSelect: "none" }}
-                                    >
-                                      <div
-                                        className="aKx"
-                                        style={{ userSelect: "none" }}
-                                      >
+                                  <div className="aKu aKo aKq sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKo sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKu aKo aKr sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKp aIf-aLf" style={{ userSelect: "none" }} />
+                                  <div className="aKw" style={{ userSelect: "none" }}>
+                                    <div className="aKy" style={{ userSelect: "none" }}>
+                                      <div className="aKx" style={{ userSelect: "none" }}>
                                         <div
                                           className="aDG"
                                           style={{
@@ -156,19 +115,10 @@ const Inbox = () => {
                                           Primary
                                         </div>
                                       </div>
-                                      <div
-                                        className="aKv"
-                                        style={{ userSelect: "none" }}
-                                      />
+                                      <div className="aKv" style={{ userSelect: "none" }} />
                                     </div>
-                                    <div
-                                      className="aKn"
-                                      style={{ userSelect: "none" }}
-                                    />
-                                    <div
-                                      className="aKs"
-                                      style={{ userSelect: "none" }}
-                                    />
+                                    <div className="aKn" style={{ userSelect: "none" }} />
+                                    <div className="aKs" style={{ userSelect: "none" }} />
                                   </div>
                                 </div>
                               </td>
@@ -195,39 +145,14 @@ const Inbox = () => {
                                     width: 252,
                                   }}
                                 >
-                                  <div
-                                    className="aKu aKo aKq sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKo sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKu aKo aKr sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKp aJi-aLf"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKw"
-                                    style={{ userSelect: "none" }}
-                                  >
-                                    <div
-                                      className="aKy"
-                                      style={{ userSelect: "none" }}
-                                    >
-                                      <div
-                                        className="aKx"
-                                        style={{ userSelect: "none" }}
-                                      >
-                                        <div
-                                          className="aDG"
-                                          style={{ userSelect: "none" }}
-                                          data-tooltip-align="t,l"
-                                        >
+                                  <div className="aKu aKo aKq sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKo sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKu aKo aKr sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKp aJi-aLf" style={{ userSelect: "none" }} />
+                                  <div className="aKw" style={{ userSelect: "none" }}>
+                                    <div className="aKy" style={{ userSelect: "none" }}>
+                                      <div className="aKx" style={{ userSelect: "none" }}>
+                                        <div className="aDG" style={{ userSelect: "none" }} data-tooltip-align="t,l">
                                           1 new
                                         </div>
                                         <div
@@ -240,21 +165,11 @@ const Inbox = () => {
                                           Promotions
                                         </div>
                                       </div>
-                                      <div
-                                        className="aKv"
-                                        style={{ userSelect: "none" }}
-                                      />
+                                      <div className="aKv" style={{ userSelect: "none" }} />
                                     </div>
-                                    <div
-                                      className="aKn"
-                                      style={{ userSelect: "none" }}
-                                    />
-                                    <div
-                                      className="aKs"
-                                      style={{ userSelect: "none" }}
-                                    >
-                                      Ethiopian Airlines — Skip the Rush, Savor
-                                      the Trip – 10% Off Now
+                                    <div className="aKn" style={{ userSelect: "none" }} />
+                                    <div className="aKs" style={{ userSelect: "none" }}>
+                                      Ethiopian Airlines — Skip the Rush, Savor the Trip – 10% Off Now
                                     </div>
                                   </div>
                                 </div>
@@ -282,34 +197,13 @@ const Inbox = () => {
                                     width: 252,
                                   }}
                                 >
-                                  <div
-                                    className="aKu aKo aKq sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKo sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKu aKo aKr sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKp aKe-aLf"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKw"
-                                    style={{ userSelect: "none" }}
-                                  >
-                                    <div
-                                      className="aKy"
-                                      style={{ userSelect: "none" }}
-                                    >
-                                      <div
-                                        className="aKx"
-                                        style={{ userSelect: "none" }}
-                                      >
+                                  <div className="aKu aKo aKq sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKo sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKu aKo aKr sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKp aKe-aLf" style={{ userSelect: "none" }} />
+                                  <div className="aKw" style={{ userSelect: "none" }}>
+                                    <div className="aKy" style={{ userSelect: "none" }}>
+                                      <div className="aKx" style={{ userSelect: "none" }}>
                                         <div
                                           className="aDG"
                                           style={{
@@ -328,19 +222,10 @@ const Inbox = () => {
                                           Social
                                         </div>
                                       </div>
-                                      <div
-                                        className="aKv"
-                                        style={{ userSelect: "none" }}
-                                      />
+                                      <div className="aKv" style={{ userSelect: "none" }} />
                                     </div>
-                                    <div
-                                      className="aKn"
-                                      style={{ userSelect: "none" }}
-                                    />
-                                    <div
-                                      className="aKs"
-                                      style={{ userSelect: "none" }}
-                                    />
+                                    <div className="aKn" style={{ userSelect: "none" }} />
+                                    <div className="aKs" style={{ userSelect: "none" }} />
                                   </div>
                                 </div>
                               </td>
@@ -367,39 +252,14 @@ const Inbox = () => {
                                     width: 252,
                                   }}
                                 >
-                                  <div
-                                    className="aKu aKo aKq sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKo sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKu aKo aKr sf-hidden"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKp aH2-aLf"
-                                    style={{ userSelect: "none" }}
-                                  />
-                                  <div
-                                    className="aKw"
-                                    style={{ userSelect: "none" }}
-                                  >
-                                    <div
-                                      className="aKy"
-                                      style={{ userSelect: "none" }}
-                                    >
-                                      <div
-                                        className="aKx"
-                                        style={{ userSelect: "none" }}
-                                      >
-                                        <div
-                                          className="aDG"
-                                          style={{ userSelect: "none" }}
-                                          data-tooltip-align="t,l"
-                                        >
+                                  <div className="aKu aKo aKq sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKo sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKu aKo aKr sf-hidden" style={{ userSelect: "none" }} />
+                                  <div className="aKp aH2-aLf" style={{ userSelect: "none" }} />
+                                  <div className="aKw" style={{ userSelect: "none" }}>
+                                    <div className="aKy" style={{ userSelect: "none" }}>
+                                      <div className="aKx" style={{ userSelect: "none" }}>
+                                        <div className="aDG" style={{ userSelect: "none" }} data-tooltip-align="t,l">
                                           2 new
                                         </div>
                                         <div
@@ -412,29 +272,16 @@ const Inbox = () => {
                                           Updates
                                         </div>
                                       </div>
-                                      <div
-                                        className="aKv"
-                                        style={{ userSelect: "none" }}
-                                      />
+                                      <div className="aKv" style={{ userSelect: "none" }} />
                                     </div>
-                                    <div
-                                      className="aKn"
-                                      style={{ userSelect: "none" }}
-                                    />
-                                    <div
-                                      className="aKs"
-                                      style={{ userSelect: "none" }}
-                                    >
-                                      Superlist Team — Back to School Special:
-                                      Save 25% 🎉
+                                    <div className="aKn" style={{ userSelect: "none" }} />
+                                    <div className="aKs" style={{ userSelect: "none" }}>
+                                      Superlist Team — Back to School Special: Save 25% 🎉
                                     </div>
                                   </div>
                                 </div>
                               </td>
-                              <td
-                                className="aRy"
-                                style={{ userSelect: "none" }}
-                              >
+                              <td className="aRy" style={{ userSelect: "none" }}>
                                 <div
                                   className="aKj jOWHyd sf-hidden"
                                   tabIndex={0}
@@ -443,14 +290,8 @@ const Inbox = () => {
                                   style={{ userSelect: "none" }}
                                 />
                               </td>
-                              <td
-                                className="aRx"
-                                style={{ userSelect: "none" }}
-                              >
-                                <div
-                                  className="aKi"
-                                  style={{ userSelect: "none" }}
-                                />
+                              <td className="aRx" style={{ userSelect: "none" }}>
+                                <div className="aKi" style={{ userSelect: "none" }} />
                               </td>
                             </tr>
                             <tr>
@@ -468,11 +309,7 @@ const Inbox = () => {
                         jsaction="rcuQ6b:npT2md;jo33Se:PhqmKf;Rb1Lod:ZpywWb;J0lErd:Oyw2Hb;nGJuB:OcHC8;ZvXgGe:Csi5td;fbYNtb:.CLIENT;UGzfzc:.CLIENT;njKHYb:.CLIENT"
                         gh="tl"
                       >
-                        <div
-                          className="Nu tf aZ6"
-                          jsname="xSLh2d"
-                          style={{ flexGrow: 100, height: 897 }}
-                        >
+                        <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100, height: 897 }}>
                           <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
                             <div className="aDP">
                               <div
@@ -484,10 +321,7 @@ const Inbox = () => {
                               >
                                 <div>
                                   <div className="Wg aAD aAz sf-hidden" />
-                                  <div
-                                    className="aVj"
-                                    style={{ display: "none" }}
-                                  />
+                                  <div className="aVj" style={{ display: "none" }} />
                                 </div>
                                 <div className="Cp">
                                   <div>
@@ -502,10 +336,7 @@ const Inbox = () => {
                                     </table>
                                   </div>
                                 </div>
-                                <div
-                                  className="VNyZ8c"
-                                  style={{ display: "none" }}
-                                />
+                                <div className="VNyZ8c" style={{ display: "none" }} />
                               </div>
                               <div
                                 className="ae4 aDM"
@@ -539,29 +370,16 @@ const Inbox = () => {
                                 <div className="ajd">
                                   <div className="aiF">
                                     <a className="bcB" href="#">
-                                      <div
-                                        className="aiC"
-                                        jslog="108909; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd"
-                                      >
-                                        <div
-                                          className="aiA"
-                                          style={{ width: "15%" }}
-                                        />
+                                      <div className="aiC" jslog="108909; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd">
+                                        <div className="aiA" style={{ width: "15%" }} />
                                       </div>
-                                      <div
-                                        className="aiG"
-                                        jslog="108910; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd"
-                                      >
+                                      <div className="aiG" jslog="108910; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd">
                                         <div className="aiD">
                                           <span dir="ltr">15%</span>
                                           of <span dir="ltr">15 GB</span>
                                           used
                                         </div>
-                                        <div
-                                          className="aiz"
-                                          role="img"
-                                          aria-label="Follow link to manage storage"
-                                        />
+                                        <div className="aiz" role="img" aria-label="Follow link to manage storage" />
                                       </div>
                                     </a>
                                   </div>
@@ -590,15 +408,8 @@ const Inbox = () => {
                             <div id=":2n" className="ae3">
                               <div>
                                 <div className="l6">
-                                  <div>
-                                    Last account activity: 25 minutes ago
-                                  </div>
-                                  <span
-                                    id=":o8"
-                                    className="l8 LJOhwe"
-                                    tabIndex={0}
-                                    role="link"
-                                  >
+                                  <div>Last account activity: 25 minutes ago</div>
+                                  <span id=":o8" className="l8 LJOhwe" tabIndex={0} role="link">
                                     Details
                                   </span>
                                 </div>
