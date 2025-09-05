@@ -15,7 +15,8 @@ export default function ComposeEmail({ composeWindow }) {
   const location = useLocation();
   const { emails, setEmails, setSnackbar, loggedInUser, recipients, composeWindows, setComposeWindows } =
     useContext(GlobalContext);
-  const { removeComposeWindow, toggleMinimize, toggleMaximize, visibleWindowCount } = useComposeModal();
+  const { removeComposeWindow, toggleMinimize, toggleMaximize, visibleWindowCount, addNewComposeWindow } =
+    useComposeModal();
 
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
@@ -36,6 +37,7 @@ export default function ComposeEmail({ composeWindow }) {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastSentEmailRef = useRef(null);
+  const lastDeletedDraftRef = useRef(null);
   const currentDraftId = composeWindow?.draftId;
 
   // Draft management hook
@@ -51,14 +53,14 @@ export default function ComposeEmail({ composeWindow }) {
   // Handle window focus to update URL
   const handleWindowFocus = () => {
     const urlParams = new URLSearchParams(location.search);
-    const currentComposeParam = urlParams.get('compose');
-    
+    const currentComposeParam = urlParams.get("compose");
+
     // Only update if the URL doesn't already match this window
     if (currentDraftId && currentComposeParam !== currentDraftId.toString()) {
-      urlParams.set('compose', currentDraftId.toString());
+      urlParams.set("compose", currentDraftId.toString());
       navigate(`${location.pathname}?${urlParams.toString()}`);
-    } else if (!currentDraftId && currentComposeParam !== 'new') {
-      urlParams.set('compose', 'new');
+    } else if (!currentDraftId && currentComposeParam !== "new") {
+      urlParams.set("compose", "new");
       navigate(`${location.pathname}?${urlParams.toString()}`);
     }
   };
@@ -429,12 +431,89 @@ export default function ComposeEmail({ composeWindow }) {
     navigate(`/sent/${lastSentEmailRef.current?.id}`);
   };
 
+  const handleSnackbarUndoDelete = () => {
+    if (lastDeletedDraftRef.current) {
+      const deletedDraft = lastDeletedDraftRef.current;
+
+      // Create a new draft email with the restored data
+      const restoredDraft = {
+        id: deletedDraft.id,
+        threadId: generateThreadId(),
+        legacyThreadId: generateLegacyThreadId(),
+        legacyLastMessageId: generateLegacyThreadId(),
+        legacyLastNonDraftMessageId: null,
+        from: {
+          name: loggedInUser.name,
+          email: loggedInUser.email,
+        },
+        to: deletedDraft.to.map((recipient) => recipient.email),
+        cc: deletedDraft.cc.length > 0 ? deletedDraft.cc.map((recipient) => recipient.email) : [],
+        bcc: deletedDraft.bcc.length > 0 ? deletedDraft.bcc.map((recipient) => recipient.email) : [],
+        subject: deletedDraft.subject.trim() || "(no subject)",
+        body: deletedDraft.content.html,
+        preview: deletedDraft.content.plainText,
+        timestamp: new Date().toISOString(),
+        timeDisplay: new Date().toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        read: false,
+        starred: false,
+        important: false,
+        labels: ["Drafts"],
+        labelColor: "#e1e3e1",
+      };
+
+      // Add the restored draft back to emails
+      setEmails((prevEmails) => [restoredDraft, ...prevEmails]);
+
+      // Open a new compose window with the restored draft
+      addNewComposeWindow(deletedDraft.id);
+
+      // Clear the ref
+      lastDeletedDraftRef.current = null;
+
+      // Hide the snackbar
+      setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
+    }
+  };
+
   // Remove the email from draft
   const handleDelete = () => {
     if (isDraft) {
+      // Store the draft data for potential restoration
+      lastDeletedDraftRef.current = {
+        id: draftId,
+        to,
+        cc,
+        bcc,
+        subject,
+        content,
+        rawInputText,
+        composeWindowId: composeWindow.id,
+      };
+
       deleteDraft();
+
+      // Close the compose window
+      handleClose();
+
+      // Show "Draft discarded" snackbar with undo button
+      setSnackbar({
+        open: true,
+        message: "Draft discarded.",
+        action: (
+          <Button variant="text" size="medium" onClick={handleSnackbarUndoDelete} sx={{ textTransform: "capitalize" }}>
+            Undo
+          </Button>
+        ),
+        autoHideDuration: 4000,
+      });
+    } else {
+      // If not a draft, just close the window
+      handleClose();
     }
-    handleClose();
   };
 
   return (
