@@ -28,7 +28,7 @@ export default function InboxActions() {
   const customLabels = useMemo(() => {
     const map = labels || {};
     return Object.entries(map)
-      .filter(([, meta]) => !meta.system)
+      .filter(([name, meta]) => !meta.system && name !== currentLabel)
       .map(([name]) => ({ id: "__label__" + name, name }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [labels]);
