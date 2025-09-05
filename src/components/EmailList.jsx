@@ -165,7 +165,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             </td>
             <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
               <div className="a4X">
-                <Link to={`/inbox/${email.id}`} className="xS" role="link">
+                <Link to={`/inbox/${threadId}`} className="xS" role="link">
                   <div className="xT">
                     <div className="yi" id={`:pq${index}`}>
                       <div className="ar as">
