@@ -172,9 +172,9 @@ export default function ComposeEmail({ composeWindow }) {
   };
 
   // Close the compose email modal
-  const handleClose = () => {
+  const handleClose = (saveToDraft = true) => {
     // Save draft if there's content worth saving
-    if (hasDraftContent()) {
+    if (hasDraftContent() && saveToDraft) {
       saveDraftManually();
     }
 
@@ -294,7 +294,7 @@ export default function ComposeEmail({ composeWindow }) {
     lastSentEmailRef.current = newEmail;
 
     // Close the compose modal
-    handleClose();
+    handleClose(false);
 
     // Show "Sending..." snackbar with Cancel button
     setSnackbar({
@@ -458,7 +458,7 @@ export default function ComposeEmail({ composeWindow }) {
           minute: "2-digit",
           hour12: true,
         }),
-        read: false,
+        read: true,
         starred: false,
         important: false,
         labels: ["Drafts"],
@@ -497,7 +497,7 @@ export default function ComposeEmail({ composeWindow }) {
       deleteDraft();
 
       // Close the compose window
-      handleClose();
+      handleClose(false);
 
       // Show "Draft discarded" snackbar with undo button
       setSnackbar({
@@ -512,7 +512,7 @@ export default function ComposeEmail({ composeWindow }) {
       });
     } else {
       // If not a draft, just close the window
-      handleClose();
+      handleClose(false);
     }
   };
 
@@ -568,7 +568,7 @@ export default function ComposeEmail({ composeWindow }) {
               title="Close"
               onClick={(e) => {
                 e.stopPropagation();
-                handleClose();
+                handleClose(true);
               }}
             >
               <span className="material-symbols-outlined">close</span>
