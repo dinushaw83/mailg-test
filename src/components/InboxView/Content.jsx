@@ -2,8 +2,8 @@ import styled from "@emotion/styled";
 import React from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
-import { Divider } from "@mui/material";
 import { Attachments } from "./Attachments";
+import { Actions } from "./Actions";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -175,6 +175,7 @@ export const Content = ({ body, timestamp, senderName, senderEmail, attachments 
         <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
         <EmailHtmlBody body={body} />
         <Attachments attachments={attachments} />
+        <Actions />
       </BodyContainer>
     </ContentContainer>
   );
