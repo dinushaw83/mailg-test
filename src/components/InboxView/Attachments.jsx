@@ -1,0 +1,157 @@
+import styled from "@emotion/styled";
+import { Divider, Typography } from "@mui/material";
+import React from "react";
+import { Icon } from "./ActionBar";
+import Popover from "@mui/material/Popover";
+import Link from "@mui/material/Link";
+
+const ImageContainer = styled.div`
+  width: 180px;
+  height: 120px;
+  overflow: hidden;
+  color: #222;
+  outline: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+  }
+`;
+
+const AttachmentsContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+const AttachmentsHeaderContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  white-space: pre-wrap;
+  font-size: 0.875rem;
+  line-height: 20px;
+`;
+
+const AttachmentsScannedContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const Dot = styled.div`
+  width: 4px;
+  height: 4px;
+  background-color: #5e5e5e;
+  border-radius: 50%;
+`;
+
+const AttachmentsCountContainer = styled.div`
+  font-weight: bold;
+`;
+
+const PopupContainer = styled.div`
+  width: 328px;
+  padding: 12px;
+`;
+
+const ScannedByGmail = () => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handlePopoverOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
+  return (
+    <AttachmentsScannedContainer>
+      <div>Scanned by MailG</div>{" "}
+      <span
+        aria-haspopup="true"
+        aria-expanded={open ? "true" : "false"}
+        className="material-symbols-outlined"
+        style={{
+          fontSize: 20,
+          color: "rgb(68, 68, 68)",
+          cursor: "default",
+        }}
+        onMouseEnter={handlePopoverOpen}
+        onMouseLeave={handlePopoverClose}
+      >
+        info
+      </span>
+      <Popover
+        id="mouse-over-popover"
+        sx={{ pointerEvents: "none" }}
+        open={open}
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        onClose={handlePopoverClose}
+        disableRestoreFocus
+      >
+        <PopupContainer>
+          <Typography sx={{ p: 1, fontSize: "16px", fontWeight: 500, lineHeight: "24px" }}>
+            Attachment scanning in MailG
+          </Typography>
+          <Typography
+            sx={{ p: 1, fontSize: "0.875rem", fontWeight: 400, lineHeight: "20px", color: "rgb(60, 64, 67)" }}
+          >
+            To help protect your inbox, MailG blocks attachments when malware is detected. You should still only
+            download attachments from people you trust. <Link underline="hover">Learn more</Link>
+          </Typography>
+        </PopupContainer>
+      </Popover>
+    </AttachmentsScannedContainer>
+  );
+};
+
+export const Attachments = () => {
+  const attachments = [
+    {
+      id: 1,
+      name: "attachment.webp",
+      url: "/assets/images/attachment.webp",
+    },
+    {
+      id: 2,
+      name: "attachment2.webp",
+      url: "/assets/images/attachment.webp",
+    },
+  ];
+
+  const count = attachments.length > 1 ? `${attachments.length} attachments` : "One attachment";
+
+  return (
+    <div>
+      <Divider sx={{ borderStyle: "dotted", marginTop: "1rem", marginBottom: "1rem" }} />
+      <AttachmentsHeaderContainer>
+        <AttachmentsCountContainer>{count}</AttachmentsCountContainer>
+        <Dot />
+        <ScannedByGmail />
+      </AttachmentsHeaderContainer>
+      <AttachmentsContainer>
+        {attachments.map((attachment) => (
+          <ImageContainer key={attachment.id}>
+            <img loading="lazy" src={attachment.url} alt={attachment.name} />
+          </ImageContainer>
+        ))}
+      </AttachmentsContainer>
+    </div>
+  );
+};
