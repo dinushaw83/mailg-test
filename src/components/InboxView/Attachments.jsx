@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Divider, Typography } from "@mui/material";
+import { Box, Divider, Typography } from "@mui/material";
 import React from "react";
 import { Icon } from "./ActionBar";
 import Popover from "@mui/material/Popover";
@@ -101,6 +101,11 @@ const AttachmentsContainer = styled.div`
 
 const AttachmentsHeaderContainer = styled.div`
   display: flex;
+  justify-content: space-between;
+`;
+
+const AttachmentsScannedOuterContainer = styled.div`
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
@@ -193,6 +198,15 @@ const ScannedByGmail = () => {
   );
 };
 
+const AttachmentsHeaderActions = () => {
+  return (
+    <Box>
+      <Icon name="download_2" label="Download all attachments" />
+      <Icon name="add_to_drive" label="Add all to Drive" />
+    </Box>
+  );
+};
+
 export const Attachments = ({ attachments = [] }) => {
   if (attachments.length === 0) return null;
   const count = attachments.length > 1 ? `${attachments.length} attachments` : "One attachment";
@@ -201,9 +215,12 @@ export const Attachments = ({ attachments = [] }) => {
     <div>
       <Divider sx={{ borderStyle: "dotted", marginTop: "1rem", marginBottom: "1rem" }} />
       <AttachmentsHeaderContainer>
-        <AttachmentsCountContainer>{count}</AttachmentsCountContainer>
-        <Dot />
-        <ScannedByGmail />
+        <AttachmentsScannedOuterContainer>
+          <AttachmentsCountContainer>{count}</AttachmentsCountContainer>
+          <Dot />
+          <ScannedByGmail />
+        </AttachmentsScannedOuterContainer>
+        <AttachmentsHeaderActions />
       </AttachmentsHeaderContainer>
       <AttachmentsContainer>
         {attachments.map((attachment) => (
