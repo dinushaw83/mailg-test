@@ -45,12 +45,21 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
     const handleCreate = () => {
         try {
             // If you want parent/child naming like "Parent/Child":
-            const finalName = nest && parent ? `${parent}/${trimmed}` : trimmed;
-            createLabel(finalName);
+            if (nest && parent) {
+                createLabel(trimmed, { parent });
+            } else {
+                createLabel(trimmed);
+            }
             
             // we leave onAfterCreate to notify parent components of the new label
             if (onAfterCreate) {
-                onAfterCreate(finalName);
+                if (nest && parent) {
+                    createLabel(trimmed, { parent });
+                    onAfterCreate?.(trimmed, parent);
+                } else {
+                    createLabel(trimmed);
+                    onAfterCreate?.(trimmed, null);
+                }
             } else {
                 setSnackbar({
                     open: true,
