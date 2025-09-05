@@ -58,11 +58,3 @@ export function buildLabelTree(labels) {
   sortRec(roots);
   return roots;
 }
-
-export function flattenTreeForSelect(roots, depth = 0, out = []) {
-  roots.forEach(node => {
-    out.push({ value: node.name, label: node.name, depth });
-    if (node.children?.length) flattenTreeForSelect(node.children, depth + 1, out);
-  });
-  return out;
-}
