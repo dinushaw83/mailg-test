@@ -5,6 +5,8 @@ import ActionBar, { Icon } from "./ActionBar";
 import styled from "@emotion/styled";
 import { Content } from "./Content";
 import { Subject } from "./Subject";
+import { Divider } from "@mui/material";
+import { Actions } from "./Actions";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
@@ -19,16 +21,18 @@ const InnerContainer = styled.div`
 `;
 
 const InboxView = () => {
-  const { inboxId } = useParams();
-  const { emails } = useContext(GlobalContext);
+  const { threadId } = useParams();
+  const { emails, normalizedEmails } = useContext(GlobalContext);
 
-  const email = useMemo(() => {
+  const { threadsById, messagesById } = normalizedEmails;
+
+  const emailThread = useMemo(() => {
     if (!emails) return null;
     // IDs in fixtures are numbers; support string compare just in case
-    return emails.find((e) => String(e.id) === String(inboxId));
-  }, [emails, inboxId]);
+    return threadsById[`#thread-f:${threadId}`];
+  }, [emails, threadId]);
 
-  if (!email) {
+  if (!emailThread) {
     return (
       <div className="nH bkK" style={{ padding: 24 }}>
         <h2 style={{ margin: 0 }}>Email not found</h2>
@@ -39,20 +43,27 @@ const InboxView = () => {
     );
   }
 
-  console.log({ email });
+  const { messageIds } = emailThread;
+  const messages = messageIds.map((id) => messagesById[id]);
 
   return (
     <InboxViewContainer>
       <ActionBar />
       <InnerContainer>
-        <Subject email={email} />
-        <Content
-          body={email.body}
-          timestamp={email.timestamp}
-          senderName={email.from.name}
-          senderEmail={email.from.email}
-          attachments={email.attachments}
-        />
+        <Subject subject={messages[0].subject} />
+        {messages.map((message, index) => (
+          <>
+            <Content
+              body={message.body}
+              timestamp={message.timestamp}
+              senderName={message.from.name}
+              senderEmail={message.from.email}
+              attachments={message.attachments}
+            />
+            {index < messages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
+          </>
+        ))}
+        <Actions />
       </InnerContainer>
     </InboxViewContainer>
   );

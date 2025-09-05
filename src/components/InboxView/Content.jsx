@@ -175,7 +175,6 @@ export const Content = ({ body, timestamp, senderName, senderEmail, attachments 
         <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
         <EmailHtmlBody body={body} />
         <Attachments attachments={attachments} />
-        <Actions />
       </BodyContainer>
     </ContentContainer>
   );
