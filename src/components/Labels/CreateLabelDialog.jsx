@@ -6,71 +6,80 @@ import {
 } from "@mui/material";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useLabels from "../../hooks/useLabels";
+import { buildLabelTree, flattenTreeForSelect } from "../../utils/helperFunctions";
 
 export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
     const { labels, setSnackbar } = useGlobalContext();
-    const { createLabel } = useLabels()
+    const { createLabel } = useLabels();
 
     const [name, setName] = useState("");
     const [nest, setNest] = useState(false);
     const [parent, setParent] = useState("");
+    const [attempted, setAttempted] = useState(false);
 
-    // non-system labels for the dropdown
-    const labelOptions = useMemo(
-        () => Object.entries(labels || {})
-            .filter(([, meta]) => !meta.system)
-            .map(([n]) => n)
-            .sort((a, b) => a.localeCompare(b)),
-        [labels]
-    );
+    // Build parent choices (Gmail-like nesting)
+    const parentChoices = useMemo(() => {
+        const filtered = Object.fromEntries(
+            Object.entries(labels || {}).filter(([, meta]) => !meta?.system)
+        );
+        const tree = buildLabelTree(filtered);
+        return flattenTreeForSelect(tree); // [{ value, label, depth }]
+    }, [labels]);
 
     const trimmed = name.trim();
-    const isDup = useMemo(
-        () => Object.keys(labels || {}).some(n => n.toLowerCase() === trimmed.toLowerCase()),
-        [labels, trimmed]
-    );
-    const canCreate = trimmed.length > 0 && !isDup && (!nest || !!parent);
+    const targetParent = nest ? (parent || null) : null;
+
+    // sibling-scoped duplicate check
+    const isDup = useMemo(() => {
+        if (!trimmed) return false;
+        return Object.entries(labels || {}).some(([n, meta]) => {
+            const sameParent = (meta?.parent || null) === targetParent;
+            return sameParent && n.toLowerCase() === trimmed.toLowerCase();
+        });
+    }, [labels, trimmed, targetParent]);
+
+    // only block conditions we care about
+    const missingName = trimmed.length === 0;
+    const missingParent = nest && !parent;
+
+    // Shown only after clicking Create
+    const showError = attempted && (missingName || isDup || missingParent);
+    const errorText =
+        missingName
+            ? "Please enter a label name:"
+            : isDup
+                ? "The label name you have chosen already exists. Please try another name:"
+                : missingParent
+                    ? "Please choose a parent label:"
+                    : "Please enter a new label name:";
 
     const reset = () => {
-        setName("");
-        setNest(false);
-        setParent("");
+        setName(""); setNest(false); setParent(""); setAttempted(false);   // reset attempted
     };
 
-    const handleClose = () => {
-        reset();
-        onClose?.();
-    };
+    // Keep "Create" enabled (Gmail style). We'll block in handleCreate if invalid.
+    const canSubmit = trimmed.length > 0 && (!nest || !!parent);
+
+    const handleClose = () => { reset(); onClose?.(); };
 
     const handleCreate = () => {
+        // click/Enter: validate now
+        if (missingName || isDup || missingParent) {
+            setAttempted(true);
+            return;
+        }
+
         try {
-            // If you want parent/child naming like "Parent/Child":
             if (nest && parent) {
                 createLabel(trimmed, { parent });
+                onAfterCreate?.(trimmed, parent);
             } else {
                 createLabel(trimmed);
+                onAfterCreate?.(trimmed, null);
             }
-            
-            // we leave onAfterCreate to notify parent components of the new label
-            if (onAfterCreate) {
-                if (nest && parent) {
-                    createLabel(trimmed, { parent });
-                    onAfterCreate?.(trimmed, parent);
-                } else {
-                    createLabel(trimmed);
-                    onAfterCreate?.(trimmed, null);
-                }
-            } else {
-                setSnackbar({
-                    open: true,
-                    message: `Created label “${finalName}”.`,
-                    autoHideDuration: 3000,
-                });
-            }
-
             handleClose();
         } catch (e) {
-            setSnackbar({
+            setSnackbar?.({
                 open: true,
                 message: e?.message || "Could not create label.",
                 autoHideDuration: 4000,
@@ -79,18 +88,31 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
     };
 
     return (
-        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xs" slotProps={{
-            paper: {
-                sx: {
-                    borderRadius: "24px",
-                    padding: "12px",
-                }
-            }
-        }}>
-            <DialogTitle>New label</DialogTitle>
-            <DialogContent>
-                <div style={{ marginBottom: 12, color: "rgba(0,0,0,0.6)", fontSize: 14 }}>
-                    Please enter a new label name:
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            maxWidth={false}
+            slotProps={{
+                paper: {
+                    sx: {
+                        width: "25%",     // custom px value
+                        maxWidth: "90%", // still responsive
+                        borderRadius: "24px",
+                        p: 1.5,
+                    },
+                },
+            }}
+        >
+            <DialogTitle sx={{ px: 3, pt: 3, pb: 1.5 }}>New label</DialogTitle>
+
+            <DialogContent sx={{ px: 3, pt: 0, pb: 1.5 }}>
+                <div
+                    style={{
+                        marginBottom: 12,
+                        fontSize: 14,
+                    }}
+                >
+                    {showError ? errorText : "Please enter a new label name:"}
                 </div>
 
                 <TextField
@@ -98,10 +120,15 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                     fullWidth
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder=""
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleCreate();
+                        }
+                    }}
                     inputProps={{ "aria-label": "New label name" }}
-                    error={!!trimmed && isDup}
-                    helperText={isDup ? "A label with this name already exists." : " "}
+                    error={!!trimmed && showError && (missingName || isDup)}
+                    helperText=" "
                 />
 
                 <FormControlLabel
@@ -119,33 +146,27 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                         onChange={(e) => setParent(e.target.value)}
                         MenuProps={{ PaperProps: { style: { maxHeight: 280 } } }}
                     >
-                        {labelOptions.map((opt) => (
-                            <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+                        {parentChoices.map((opt) => (
+                            <MenuItem key={opt.value} value={opt.value}>
+                                <span style={{ paddingLeft: 12 + opt.depth * 14, display: "inline-block" }}>
+                                    {opt.label}
+                                </span>
+                            </MenuItem>
                         ))}
                     </Select>
                 </FormControl>
             </DialogContent>
 
-            <DialogActions>
-                <Button
-                    onClick={handleClose}
-                    sx={{
-                        borderRadius: "20px",
-                        textTransform: "none",
-                        px: 3,
-                    }}
-                >
+            <DialogActions sx={{ px: 3, py: 2 }}>
+                <Button sx={{ borderRadius: "20px", textTransform: "none", px: 3 }} onClick={handleClose}>
                     Cancel
                 </Button>
                 <Button
                     variant="contained"
                     onClick={handleCreate}
-                    disabled={!canCreate}
-                    sx={{
-                        borderRadius: "20px",
-                        textTransform: "none",
-                        px: 3,
-                    }}
+                    // Keep enabled to match Gmail; we block in handler if invalid
+                    disabled={!canSubmit}
+                    sx={{ borderRadius: "20px", textTransform: "none", px: 3 }}
                 >
                     Create
                 </Button>
