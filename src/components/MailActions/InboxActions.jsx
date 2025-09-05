@@ -81,7 +81,7 @@ export default function InboxActions() {
             </Button>
           ),
         });
-      } else if (item.id.startsWith("__label__")) {
+      } else {
         // item.id is now the TARGET LABEL KEY
         const targetKey = item.id;
         const curMeta = currentLabel ? labels?.[currentLabel] : null;
