@@ -6,14 +6,25 @@ import styled from "@emotion/styled";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
 
-export const Icon = ({ name, label, onClick, style, disabled, placement = "bottom", size = "small" }) => {
+export const Icon = ({
+  name,
+  label,
+  onClick,
+  style,
+  disabled,
+  placement = "bottom",
+  size = "small",
+  color = "rgb(68, 68, 68)",
+  width = 36,
+  height = 36,
+}) => {
   return (
     <Tooltip title={label} placement={placement}>
       <IconButton
         size={size}
         sx={{
-          width: 36,
-          height: 36,
+          width,
+          height,
           borderRadius: "50%",
           marginRight: "10px",
           ...style,
@@ -105,25 +116,39 @@ const EmailPosition = ({ currentItem, totalItems }) => {
 };
 
 const NavigationActions = () => {
-  const { inboxId } = useParams();
-  const { emails } = useContext(GlobalContext);
+  const { threadId } = useParams();
+  const { normalizedEmails } = useContext(GlobalContext);
+  const { threadIds } = normalizedEmails;
   const navigate = useNavigate();
 
-  const hasNextEmail = useMemo(() => {
-    return emails.find((e) => String(e.id) === String(Number(inboxId) + 1)) !== undefined;
-  }, [emails, inboxId]);
+  // use thread position in threadIds array to determine if there is a previous or next thread
+  const threadPosition = useMemo(() => {
+    return threadIds.indexOf(`#thread-f:${threadId}`);
+  }, [threadIds, threadId]);
 
-  const hasPreviousEmail = useMemo(() => {
-    return emails.find((e) => String(e.id) === String(Number(inboxId) - 1)) !== undefined;
-  }, [emails, inboxId]);
+  const hasPreviousThread = useMemo(() => {
+    return threadPosition > 0;
+  }, [threadPosition]);
+
+  const hasNextThread = useMemo(() => {
+    return threadPosition < threadIds.length - 1;
+  }, [threadPosition, threadIds]);
+
+  const previousThread = useMemo(() => {
+    return (threadIds[threadPosition - 1] || "").split(":")[1];
+  }, [threadIds, threadPosition]);
+
+  const nextThread = useMemo(() => {
+    return (threadIds[threadPosition + 1] || "").split(":")[1];
+  }, [threadIds, threadPosition]);
 
   const currentItem = useMemo(() => {
-    return emails.findIndex((e) => String(e.id) === String(inboxId)) + 1;
-  }, [emails, inboxId]);
+    return threadPosition + 1;
+  }, [threadPosition]);
 
   const totalItems = useMemo(() => {
-    return emails.length;
-  }, [emails]);
+    return threadIds.length;
+  }, [threadIds]);
 
   return (
     <div
@@ -137,14 +162,14 @@ const NavigationActions = () => {
         <Icon
           name="chevron_left"
           label="Newer"
-          disabled={!hasPreviousEmail}
-          onClick={() => navigate(`/inbox/${Number(inboxId) - 1}`)}
+          disabled={!hasPreviousThread}
+          onClick={() => navigate(`/inbox/${previousThread}`)}
         />
         <Icon
           name="chevron_right"
           label="Older"
-          disabled={!hasNextEmail}
-          onClick={() => navigate(`/inbox/${Number(inboxId) + 1}`)}
+          disabled={!hasNextThread}
+          onClick={() => navigate(`/inbox/${nextThread}`)}
         />
       </div>
     </div>
@@ -175,7 +200,7 @@ export default function ActionBar() {
     <ActionBarContainer>
       <ActionsContainer>
         <MailActions />
-        <NavigationActions currentItem={currentItem} totalItems={totalItems} />
+        <NavigationActions />
       </ActionsContainer>
       <Divider />
     </ActionBarContainer>

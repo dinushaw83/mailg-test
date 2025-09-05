@@ -2,6 +2,8 @@ import styled from "@emotion/styled";
 import React from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
+import { Attachments } from "./Attachments";
+import { Actions } from "./Actions";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -163,19 +165,16 @@ const EmailHtmlBody = ({ body }) => {
   return <div dangerouslySetInnerHTML={{ __html: body }} />;
 };
 
-export const Content = ({ body, timestamp, senderName, senderEmail }) => {
+export const Content = ({ body, timestamp, senderName, senderEmail, attachments }) => {
   return (
     <ContentContainer>
       <ProfileImageContainer>
         <Avatar>{senderName.charAt(0)}</Avatar>
       </ProfileImageContainer>
       <BodyContainer>
-        <TopBar
-          timestamp={timestamp}
-          senderName={senderName}
-          senderEmail={senderEmail}
-        />
+        <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
         <EmailHtmlBody body={body} />
+        <Attachments attachments={attachments} />
       </BodyContainer>
     </ContentContainer>
   );

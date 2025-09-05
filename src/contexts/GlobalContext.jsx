@@ -7,6 +7,7 @@ import { initialEmails } from "./fixtures/emails";
 import { recipients as initialRecipients } from "./fixtures/recipients";
 import { recipientLabels as initialRecipientLabels } from "./fixtures/recipientLabels";
 import { initialLabels } from "./fixtures/labels";
+import { normalizeEmails } from "../utils/emails";
 
 export const GlobalContext = createContext();
 
@@ -82,6 +83,10 @@ export const GlobalContextProvider = ({ children }) => {
     };
   }, [selected]);
 
+  const normalizedEmails = useMemo(() => {
+    return normalizeEmails(emails);
+  }, [emails]);
+
   const contextValue = {
     selection,
     loggedInUser,
@@ -108,6 +113,7 @@ export const GlobalContextProvider = ({ children }) => {
     setCurrentPage,
     itemsPerPage,
     setItemsPerPage,
+    normalizedEmails,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
