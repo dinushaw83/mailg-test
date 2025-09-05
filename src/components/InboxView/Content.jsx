@@ -165,7 +165,7 @@ const EmailHtmlBody = ({ body }) => {
   return <div dangerouslySetInnerHTML={{ __html: body }} />;
 };
 
-export const Content = ({ body, timestamp, senderName, senderEmail }) => {
+export const Content = ({ body, timestamp, senderName, senderEmail, attachments }) => {
   return (
     <ContentContainer>
       <ProfileImageContainer>
@@ -174,7 +174,7 @@ export const Content = ({ body, timestamp, senderName, senderEmail }) => {
       <BodyContainer>
         <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
         <EmailHtmlBody body={body} />
-        <Attachments />
+        <Attachments attachments={attachments} />
       </BodyContainer>
     </ContentContainer>
   );

@@ -212,22 +212,8 @@ const ScannedByGmail = () => {
   );
 };
 
-export const Attachments = () => {
-  const attachments = [
-    {
-      id: 1,
-      name: "attachment.webp",
-      url: "/assets/images/attachment.webp",
-      size: "1.2 MB",
-    },
-    {
-      id: 2,
-      name: "attachment2.webp",
-      url: "/assets/images/attachment.webp",
-      size: "980 KB",
-    },
-  ];
-
+export const Attachments = ({ attachments = [] }) => {
+  if (attachments.length === 0) return null;
   const count = attachments.length > 1 ? `${attachments.length} attachments` : "One attachment";
 
   return (

@@ -51,6 +51,7 @@ const InboxView = () => {
           timestamp={email.timestamp}
           senderName={email.from.name}
           senderEmail={email.from.email}
+          attachments={email.attachments}
         />
       </InnerContainer>
     </InboxViewContainer>

@@ -46,6 +46,20 @@ export const initialEmails = [
     important: true,
     labels: ["Inbox"],
     labelColor: "#e1e3e1",
+    attachments: [
+      {
+        id: 1,
+        name: "attachment.webp",
+        url: "/assets/images/attachment.webp",
+        size: "1.2 MB",
+      },
+      {
+        id: 2,
+        name: "attachment2.webp",
+        url: "/assets/images/attachment.webp",
+        size: "980 KB",
+      },
+    ],
   },
   {
     id: 3,
@@ -69,6 +83,14 @@ export const initialEmails = [
     important: false,
     labels: ["Inbox"],
     labelColor: "#e1e3e1",
+    attachments: [
+      {
+        id: 1,
+        name: "attachment.webp",
+        url: "/assets/images/attachment.webp",
+        size: "1.3 MB",
+      },
+    ],
   },
   {
     id: 4,
@@ -125,8 +147,7 @@ export const initialEmails = [
         <p>Stripe, Inc. • 510 Townsend Street, San Francisco, CA 94103</p>
       </div>
     </div>`,
-    preview:
-      "Receipt for your payment to Acme Corp - Thank you for your payment! Amount: $29.99",
+    preview: "Receipt for your payment to Acme Corp - Thank you for your payment! Amount: $29.99",
     timestamp: "2025-09-01T18:45:00.000Z",
     timeDisplay: "Sep 1",
     read: false,
