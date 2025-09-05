@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 
 import EmailList from "../components/EmailList";
 import { GlobalContext } from "../contexts/GlobalContext";
-import useMailFolders from "../hooks/useMailFolders";
+// switched to thread-based rows derived from raw messages
+import { getThreadRows } from "../utils/emails";
 
 import MailActions from "../components/MailActions";
 
@@ -14,16 +15,10 @@ const Inbox = () => {
   const label = labelParam ? decodeURIComponent(labelParam) : null;
   const activeFolder = folder || "inbox";
 
-  // get all folders from hook
-  const folders = useMailFolders(emails);
-
-  // pick rows based on folder/label
+  // Build thread rows: one row per thread
   const rows = useMemo(() => {
-    if (label) {
-      return emails.filter((m) => (m.labels || []).includes(label));
-    }
-    return folders[activeFolder] || emails;
-  }, [emails, label, activeFolder, folders]);
+    return getThreadRows(emails, { label, folder: activeFolder });
+  }, [emails, label, activeFolder]);
 
   return (
     <div className="nH bkK">
