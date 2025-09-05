@@ -19,6 +19,9 @@ export const GlobalContextProvider = ({ children }) => {
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
   const [composeOpen, setComposeOpen] = usePersistedState("composeOpen", false);
+  const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
+  const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
+  const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 2);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -104,6 +107,12 @@ export const GlobalContextProvider = ({ children }) => {
     setSnackbar,
     labels,
     setLabels,
+    sortOrder,
+    setSortOrder,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
     normalizedEmails,
   };
 
