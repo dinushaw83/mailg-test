@@ -1,5 +1,7 @@
 import Pagination from "./Pagination";
 
+import MailActions from "../MailActions";
+
 const ToolBar = ({ totalFilteredItems }) => {
   return (
     <div className="D E G-atb" gh="tm">
@@ -10,6 +12,7 @@ const ToolBar = ({ totalFilteredItems }) => {
         <div className="Cq aqL" gh="mtb">
           <div className="bzn" jslog="202616; u014N:xr6bB">
             <div className="G-tF">
+              {/* Select button */}
               <div className="G-Ni J-J5-Ji">
                 <div
                   id=":2u"
@@ -44,6 +47,8 @@ const ToolBar = ({ totalFilteredItems }) => {
               </div>
               <div className="G-Ni G-aE J-J5-Ji" style={{ display: "none" }} />
               <div className="G-Ni J-J5-Ji" style={{ display: "none" }} />
+
+              {/* Refresh button */}
               <div className="G-Ni J-J5-Ji">
                 <div
                   className="T-I J-J5-Ji nu T-I-ax7 L3"
@@ -60,11 +65,13 @@ const ToolBar = ({ totalFilteredItems }) => {
                   </div>
                 </div>
               </div>
-              <div className="J-J5-Ji">
+              {/* <div className="J-J5-Ji">
                 <div className="T9" style={{ display: "none" }}>
                   Fetching mail...
                 </div>
-              </div>
+              </div> */}
+
+              {/* More button */}
               <div className="G-Ni J-J5-Ji">
                 <div
                   id=":2w"
@@ -83,7 +90,7 @@ const ToolBar = ({ totalFilteredItems }) => {
                   <div className="G-asx T-I-J3 J-J5-Ji sf-hidden">&nbsp;</div>
                 </div>
               </div>
-              <div
+              {/* <div
                 className="J-M jQjAxd"
                 role="menu"
                 aria-haspopup="true"
@@ -91,7 +98,7 @@ const ToolBar = ({ totalFilteredItems }) => {
                   display: "none",
                   userSelect: "none",
                 }}
-              />
+              /> */}
             </div>
           </div>
         </div>
@@ -99,6 +106,8 @@ const ToolBar = ({ totalFilteredItems }) => {
           <div className="ar5 J-J5-Ji">
             <Pagination totalFilteredItems={totalFilteredItems} />
           </div>
+
+          {/* Toggle split pane mode button */}
           <div className="G-Ni J-J5-Ji" jslog="177396; u014N:cOuCgd,Kr2w4b,xr6bB;">
             <div
               id=":1w"
@@ -135,11 +144,11 @@ const ToolBar = ({ totalFilteredItems }) => {
             }}
           />
         </div>
-        <div className="dJ" />
+        {/* <div className="dJ" /> */}
       </div>
-      <div className="LQDzGc" />
-      <div className="ciwp4" style={{ display: "none" }} />
-      <div className="r0yTaf" />
+      {/* <div className="LQDzGc" /> */}
+      {/* <div className="ciwp4" style={{ display: "none" }} /> */}
+      {/* <div className="r0yTaf" /> */}
     </div>
   );
 };
