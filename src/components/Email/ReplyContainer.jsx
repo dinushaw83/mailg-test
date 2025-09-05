@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import EmailRecipients from '../common/EmailRecipients';
 import { useGlobalContext } from '../../contexts/GlobalContext';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
+import { useSendEmail } from '../../hooks/useSendEmail';
+import InfoModal from '../ComposeEmail/InfoModal';
 import "./ReplyContainer.css";
 import replyIcon from '../../icons/reply.png';
 import replyAllIcon from '../../icons/replyall.png';
@@ -38,6 +40,44 @@ const ReplyContainer = ({ email, replyType }) => {
 
   useEffect(() => {
     setRecipients(calculateRecipients(selectedReplyOption));
+
+    // Add forwarded message header when forward is selected
+    if (selectedReplyOption === 'forward') {
+      const recipientsList = email.to.map(recipient => {
+        if (typeof recipient === 'string') {
+          return recipient;
+        }
+        return `${recipient.name} <${recipient.email}>`;
+      }).join(', ');
+
+      const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+
+      const forwardedHeader = `
+<br /><br />
+---------- Forwarded message ---------<br />
+From: ${email.from.name} <${email.from.email}><br />
+Date: ${formattedDate}<br />
+Subject: ${email.subject}<br />
+To: ${recipientsList}<br />
+Cc: ${(email.cc || []).join(', ')}<br />
+<br /><br />
+${email.body}`;
+
+      setContent({ 
+        html: forwardedHeader, 
+        plainText: forwardedHeader 
+      });
+    } else {
+      setContent({ html: '', plainText: '' });
+    }
   }, [selectedReplyOption, email, loggedInUser.email]);
   
   const options = [
@@ -50,21 +90,36 @@ const ReplyContainer = ({ email, replyType }) => {
     return options.find(option => option.value === selectedReplyOption)?.icon;
   };
 
+  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose } = useSendEmail(
+    selectedReplyOption === 'forward' ? undefined : email.id,
+    selectedReplyOption === 'forward' ? email.id : undefined
+  );
+
   const handleSend = () => {
-    console.log(content)
+    handleSendEmail({
+      to: recipients.to,
+      cc: recipients.cc,
+      bcc: recipients.bcc,
+      subject: `${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`,
+      content,
+      onClose: () => {
+        setContent({ html: '', plainText: '' });
+      }
+    });
   }
 
   const handleDelete = () => {
-    console.log('delete')
+    setContent({ html: '', plainText: '' });
   }
 
   return (
-    <div style={{
-      display: "flex",
-      gap: 12,
-      paddingLeft: 28,
-    }}>
-      <div
+    <>
+      <div style={{
+        display: "flex",
+        gap: 12,
+        paddingLeft: 28,
+      }}>
+        <div
         style={{
           minWidth: '40px',
           height: '40px',
@@ -212,6 +267,23 @@ const ReplyContainer = ({ email, replyType }) => {
           </div>
       </div>
     </div>
+
+      {/* Error Modal */}
+      <InfoModal
+        isOpen={showErrorModal}
+        onClose={handleErrorModalClose}
+        title="Error"
+        message={errorMessage}
+        buttons={[
+          {
+            text: "OK",
+            onClick: handleErrorModalClose,
+            className: "primary",
+          },
+        ]}
+        modalBoxStyle={{ width: errorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
+      />
+    </>
   )
 }
 

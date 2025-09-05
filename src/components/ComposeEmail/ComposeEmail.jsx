@@ -1,6 +1,5 @@
-import React, { useState, useContext, useRef, useLayoutEffect, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import Button from "@mui/material/Button";
+import React, { useState, useContext, useLayoutEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import RichTextEditor from "../RichTextEditor/RichTextEditor";
 import RecipientsInput from "./RecipientsInput";
 import InfoModal from "./InfoModal";
@@ -8,6 +7,7 @@ import { GlobalContext } from "../../contexts/GlobalContext";
 import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../../utils/helperFunctions";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useComposeModal } from "../../hooks/useComposeModal";
+import { useSendEmail } from "../../hooks/useSendEmail";
 import styles from "./ComposeEmail.module.css";
 
 export default function ComposeEmail({ composeWindow }) {
@@ -34,8 +34,6 @@ export default function ComposeEmail({ composeWindow }) {
     bcc: "",
   });
 
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastSentEmailRef = useRef(null);
   const lastDeletedDraftRef = useRef(null);
   const currentDraftId = composeWindow?.draftId;
@@ -182,36 +180,17 @@ export default function ComposeEmail({ composeWindow }) {
     removeComposeWindow(composeWindow.id);
   };
 
-  // Validate email format
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose } = useSendEmail();
 
   const handleSend = () => {
-    // 1. Check if all recipient fields are empty
-    const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
-
-    if (hasNoRecipients) {
-      setShowErrorModal(true);
-      return;
-    }
-
-    // 2. Check if subject is missing
-    if (!subject.trim()) {
-      const confirmed = confirm("Send this message without a subject or text in the body?");
-      if (!confirmed) {
-        return;
-      }
-    }
-
-    // 3. Check for invalid emails (both in chips and raw input text)
-    const allRecipients = [...to, ...cc, ...bcc];
-
-    // Check chips for invalid emails
-    const invalidRecipient = allRecipients.find((recipient) => {
-      const email = recipient.email || recipient.name || recipient;
-      return !isValidEmail(email);
+    handleSendEmail({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      rawInputText,
+      onClose: handleClose
     });
 
     // Check raw input text for invalid emails
@@ -340,12 +319,6 @@ export default function ComposeEmail({ composeWindow }) {
         autoHideDuration: 4000,
       });
     }, 500);
-  };
-
-  // Handle error modal close
-  const handleErrorModalClose = () => {
-    setShowErrorModal(false);
-    setErrorMessage("Please specify at least one recipient."); // Reset to default message
   };
 
   // Snackbar handlers

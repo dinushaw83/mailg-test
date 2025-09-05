@@ -10,8 +10,8 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
   // Track which inputs are visible
   const [visibleInputs, setVisibleInputs] = useState({
     to: true,    // 'To' is always visible
-    cc: false,
-    bcc: false
+    cc: recipients.cc?.length > 0,
+    bcc: recipients.bcc?.length > 0
   });
 
   // Handle adding email to a specific list
