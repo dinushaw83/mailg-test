@@ -13,12 +13,29 @@ const ImageContainer = styled.div`
   outline: none;
   cursor: pointer;
   font-size: 0.875rem;
+  position: relative; /* enable overlay positioning */
+
+  /* Cut-corner overlay (bottom-right) */
+  &::after {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    right: -12px; /* offset half size so the rotated square sits on the corner */
+    bottom: -12px;
+    background: #fff; /* match page background */
+    transform: rotate(45deg);
+    /* Optional subtle separator along the diagonal to enhance the cut */
+    box-shadow: -1px -1px 0 0 rgba(0, 0, 0, 0.06);
+    pointer-events: none;
+  }
 
   img {
     width: 100%;
     height: auto;
     object-fit: cover;
     object-position: center;
+    display: block;
   }
 `;
 
