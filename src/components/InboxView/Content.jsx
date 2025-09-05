@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import React from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
+import { Divider } from "@mui/material";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -163,6 +164,35 @@ const EmailHtmlBody = ({ body }) => {
   return <div dangerouslySetInnerHTML={{ __html: body }} />;
 };
 
+const ImageContainer = styled.div`
+  width: 180px;
+  height: 120px;
+  overflow: hidden;
+  color: #222;
+  outline: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+  }
+`;
+
+const Attachments = () => {
+  return (
+    <div>
+      <Divider sx={{ borderStyle: "dotted", marginTop: "1rem", marginBottom: "1rem" }} />
+      <div>One attachments</div> <div>Scanned by Google</div>
+      <ImageContainer>
+        <img loading="lazy" src="/assets/images/attachment.webp" alt="attachment" />
+      </ImageContainer>
+    </div>
+  );
+};
+
 export const Content = ({ body, timestamp, senderName, senderEmail }) => {
   return (
     <ContentContainer>
@@ -170,12 +200,9 @@ export const Content = ({ body, timestamp, senderName, senderEmail }) => {
         <Avatar>{senderName.charAt(0)}</Avatar>
       </ProfileImageContainer>
       <BodyContainer>
-        <TopBar
-          timestamp={timestamp}
-          senderName={senderName}
-          senderEmail={senderEmail}
-        />
+        <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
         <EmailHtmlBody body={body} />
+        <Attachments />
       </BodyContainer>
     </ContentContainer>
   );
