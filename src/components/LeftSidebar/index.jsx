@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
-import useLabelCounts from "./../LeftSidebar/useLabelCounts";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
 import useLabels from "../../hooks/useLabels";
@@ -63,11 +62,7 @@ const LeftSidebar = () => {
       <div className="V3 aam">
         <div className="at9">
           <div className="Ls77Lb aZ6">
-            <div
-              jscontroller="DUNnfe"
-              className="pp"
-              style={{ userSelect: "none" }}
-            >
+            <div jscontroller="DUNnfe" className="pp" style={{ userSelect: "none" }}>
               <div id=":n8">
                 <div className="nM">
                   <div id=":mz" className="aic" />
@@ -97,19 +92,12 @@ const LeftSidebar = () => {
                           <span
                             role="button"
                             className="J-Ke n4 ah9"
-                            aria-label={
-                              showLess ? "More labels" : "Less labels"
-                            }
+                            aria-label={showLess ? "More labels" : "Less labels"}
                             tabIndex={0}
                             onClick={() => setShowLess(!showLess)}
                           >
-                            <span className="CJ">
-                              {showLess ? "More" : "Less"}
-                            </span>
-                            <span
-                              className="ait"
-                              style={{ marginRight: "18px" }}
-                            >
+                            <span className="CJ">{showLess ? "More" : "Less"}</span>
+                            <span className="ait" style={{ marginRight: "18px" }}>
                               <span
                                 className="material-symbols-outlined"
                                 style={{
@@ -167,11 +155,7 @@ const LeftSidebar = () => {
                           <div className="zw" gh="cl">
                             <div className="TK">
                               {customLabels.map((name) => (
-                                <LabelItem
-                                  key={name}
-                                  name={name}
-                                  count={labelIndex[name]?.unread || 0}
-                                />
+                                <LabelItem key={name} name={name} count={labelIndex[name]?.unread || 0} />
                               ))}
                             </div>
                           </div>
