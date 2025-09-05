@@ -1,23 +1,21 @@
-import React, { useState, useContext, useRef, useLayoutEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useContext, useRef, useLayoutEffect, useEffect, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Button from "@mui/material/Button";
 import RichTextEditor from "../RichTextEditor/RichTextEditor";
 import RecipientsInput from "./RecipientsInput";
 import InfoModal from "./InfoModal";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { generateThreadId, generateLegacyThreadId, generateNextEmailId } from "../../utils/helperFunctions";
+import { useDraftManagement } from "../../hooks/useDraftManagement";
+import { useComposeModal } from "../../hooks/useComposeModal";
 import styles from "./ComposeEmail.module.css";
 
-export default function ComposeEmail() {
-  const location = useLocation();
+export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
-  const { emails, setEmails, setSnackbar, loggedInUser } = useContext(GlobalContext);
-  const searchParams = new URLSearchParams(location.search);
-  // Get compose parameter value
-  const composeParam = searchParams.get("compose");
-  // TODO: Display compose modal if compose parameter is "new" or an id from the draft emails state
-  // For now, display compose modal if compose parameter has a value, since draft is not implemented yet
-  const showCompose = composeParam?.length > 0;
+  const location = useLocation();
+  const { emails, setEmails, setSnackbar, loggedInUser, recipients, composeWindows, setComposeWindows } =
+    useContext(GlobalContext);
+  const { removeComposeWindow, toggleMinimize, toggleMaximize, visibleWindowCount } = useComposeModal();
 
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
@@ -35,43 +33,151 @@ export default function ComposeEmail() {
     bcc: "",
   });
 
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isMaximized, setIsMaximized] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastSentEmailRef = useRef(null);
+  const currentDraftId = composeWindow?.draftId;
 
-  // Reset form fields whenever the compose modal is opened
-  useLayoutEffect(() => {
-    if (composeParam === "new") {
-      setTo([]);
-      setCc([]);
-      setBcc([]);
-      setSubject("");
-      setContent({ html: "", plainText: "" });
-      setRawInputText({ to: "", cc: "", bcc: "" });
+  // Draft management hook
+  const { saveDraftManually, deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } = useDraftManagement({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    currentDraftId,
+  });
+
+  // Handle window focus to update URL
+  const handleWindowFocus = () => {
+    const urlParams = new URLSearchParams(location.search);
+    const currentComposeParam = urlParams.get('compose');
+    
+    // Only update if the URL doesn't already match this window
+    if (currentDraftId && currentComposeParam !== currentDraftId.toString()) {
+      urlParams.set('compose', currentDraftId.toString());
+      navigate(`${location.pathname}?${urlParams.toString()}`);
+    } else if (!currentDraftId && currentComposeParam !== 'new') {
+      urlParams.set('compose', 'new');
+      navigate(`${location.pathname}?${urlParams.toString()}`);
     }
-  }, [composeParam]);
+  };
+
+  // Load existing draft if draftId exists in the compose window when the component mounts
+  useLayoutEffect(() => {
+    if (currentDraftId) {
+      // Load existing draft
+      const existingDraft = emails.find(
+        (email) => email.id.toString() === currentDraftId?.toString() && email.labels.includes("Drafts")
+      );
+      if (existingDraft) {
+        setTo(
+          existingDraft.to.map((email) => {
+            const recipientObj = recipients.find((r) => r.email === email);
+            if (recipientObj) {
+              return recipientObj;
+            }
+            return {
+              id: `custom-${email}`,
+              name: email,
+              email: email,
+              avatar: null,
+              labels: [],
+            };
+          })
+        );
+        setCc(
+          existingDraft.cc.map((email) => {
+            const recipientObj = recipients.find((r) => r.email === email);
+            if (recipientObj) {
+              return recipientObj;
+            }
+            return {
+              id: `custom-${email}`,
+              name: email,
+              email: email,
+              avatar: null,
+              labels: [],
+            };
+          })
+        );
+        setBcc(
+          existingDraft.bcc.map((email) => {
+            const recipientObj = recipients.find((r) => r.email === email);
+            if (recipientObj) {
+              return recipientObj;
+            }
+            return {
+              id: `custom-${email}`,
+              name: email,
+              email: email,
+              avatar: null,
+              labels: [],
+            };
+          })
+        );
+        setSubject(existingDraft.subject === "(no subject)" ? "" : existingDraft.subject);
+        setContent({ html: existingDraft.body, plainText: existingDraft.preview });
+        setRawInputText({ to: "", cc: "", bcc: "" });
+      }
+    }
+  }, [emails, currentDraftId]);
+
+  // Whenever the draft id is available update it in compose window
+  useEffect(() => {
+    if (draftId) {
+      setComposeWindows((prev) =>
+        prev.map((window) => (window.id === composeWindow.id ? { ...window, draftId: draftId } : window))
+      );
+    }
+  }, [draftId]);
+
+  // Calculate compose modal Right position
+  const composeModalRightPosition = useMemo(() => {
+    const windows = composeWindows.slice(-visibleWindowCount);
+
+    // Find the index of current window from list
+    const windowIndex = windows.findIndex((window) => window.id === composeWindow.id);
+
+    let rightPosition = 60; // Base right position
+
+    // If it's the last window, return base position
+    if (windowIndex === windows.length - 1) {
+      return rightPosition;
+    }
+
+    // Calculate position based on windows to the right
+    for (let i = windowIndex + 1; i < windows.length; i++) {
+      const window = windows[i];
+      const isMinimized = window.isMinimized;
+      const windowWidth = isMinimized ? 350 : 550;
+      const gap = 5; // 5px gap between windows
+
+      rightPosition += gap + windowWidth;
+    }
+
+    return rightPosition;
+  }, [composeWindows, visibleWindowCount, composeWindow.id]);
 
   // Toggle minimize/restore modal
   const handleToggleMinimize = () => {
-    setIsMinimized(!isMinimized);
+    toggleMinimize(composeWindow.id);
   };
 
   // Toggle maximize/restore modal
   const handleToggleMaximize = () => {
-    setIsMaximized(!isMaximized);
-    // Clear minimize state when toggling maximize
-    setIsMinimized(false);
+    toggleMaximize(composeWindow.id);
   };
 
   // Close the compose email modal
   const handleClose = () => {
-    // Remove the compose parameter from URL
-    const newSearchParams = new URLSearchParams(location.search);
-    newSearchParams.delete("compose");
-    const newSearch = newSearchParams.toString();
-    navigate(`${location.pathname}${newSearch ? `?${newSearch}` : ""}`);
+    // Save draft if there's content worth saving
+    if (hasDraftContent()) {
+      saveDraftManually();
+    }
+
+    // Remove the compose window
+    removeComposeWindow(composeWindow.id);
   };
 
   // Validate email format
@@ -145,8 +251,8 @@ export default function ComposeEmail() {
   };
 
   const sendEmail = () => {
-    // Generate new id if compose parameter is "new", otherwise use the id from the compose parameter
-    const newId = composeParam === "new" ? generateNextEmailId(emails) : composeParam;
+    // Use the draftId from the compose window if it exists, otherwise generate a new id
+    const newId = composeWindow?.draftId ? composeWindow?.draftId : generateNextEmailId(emails);
     const threadId = generateThreadId();
     const legacyThreadId = generateLegacyThreadId();
     const timestamp = new Date().toISOString();
@@ -202,8 +308,10 @@ export default function ComposeEmail() {
 
     // Simulate sending process
     setTimeout(() => {
-      // Add the new email to the beginning of the emails array
-      const updatedEmails = [newEmail, ...emails];
+      // Update emails array - replace draft with sent email if it was a draft, otherwise add new email
+      const updatedEmails = isDraft
+        ? emails.map((email) => (email.id === newEmail.id ? newEmail : email))
+        : [newEmail, ...emails];
 
       // Update the global state
       setEmails(updatedEmails);
@@ -272,24 +380,36 @@ export default function ComposeEmail() {
       autoHideDuration: 1000,
     });
 
-    // After 1 second, remove email from state and show "Sending undone"
+    // After 1 second, change sent email back to draft
     setTimeout(() => {
       // Double-check that the email still exists
       if (lastSentEmailRef.current && lastSentEmailRef.current.id) {
-        const emailToRemove = lastSentEmailRef.current;
+        const emailToRestore = lastSentEmailRef.current;
 
-        // Remove the email from the state
+        // Change the email from Sent back to Draft
         setEmails((prevEmails) => {
-          const filteredEmails = prevEmails.filter((email) => email.id !== emailToRemove.id);
-
-          // Push compose parameter to URL
-          navigate(`?compose=${emailToRemove?.id}`);
-
-          // Clear the ref after successful state update
-          lastSentEmailRef.current = null;
-
-          return filteredEmails;
+          return prevEmails.map((email) =>
+            email.id === emailToRestore.id
+              ? {
+                  ...email,
+                  labels: ["Drafts"],
+                  labelColor: "#e1e3e1",
+                  timestamp: new Date().toISOString(),
+                  timeDisplay: new Date().toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  }),
+                }
+              : email
+          );
         });
+
+        // Navigate to the draft
+        navigate(`?compose=${emailToRestore.id}`);
+
+        // Clear the ref after successful state update
+        lastSentEmailRef.current = null;
       }
 
       setSnackbar({
@@ -304,36 +424,44 @@ export default function ComposeEmail() {
   const handleSnackbarViewMessage = () => {
     // Hide the snackbar
     setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
-    // TODO: Open the message from sent items
-    console.log("View message clicked");
+
+    // Navigate to the message in the sent items
+    navigate(`/sent/${lastSentEmailRef.current?.id}`);
   };
 
   // Remove the email from draft
   const handleDelete = () => {
-    // TODO: Implement delete/discard functionality
-    console.log("Discarding email");
+    if (isDraft) {
+      deleteDraft();
+    }
     handleClose();
   };
-
-  // Hide compose email modal when message is sending
-  if (!showCompose) return null;
 
   return (
     <>
       {/* Modal Overlay - only shown when maximized */}
-      {isMaximized && !isMinimized && <div className={styles.modalOverlay} />}
+      {composeWindow?.isMaximized && !composeWindow?.isMinimized && (
+        <div className={styles.modalOverlay} onClick={handleToggleMaximize} />
+      )}
 
       <div
-        className={`${styles.composeModal} ${isMinimized ? styles.minimized : ""} ${
-          isMaximized && !isMinimized ? styles.maximized : ""
+        className={`${styles.composeModal} ${composeWindow?.isMinimized ? styles.minimized : ""} ${
+          composeWindow?.isMaximized && !composeWindow?.isMinimized ? styles.maximized : ""
         }`}
+        style={{
+          right: `${composeModalRightPosition}px`,
+        }}
+        onFocus={handleWindowFocus}
+        tabIndex={-1}
       >
         {/* Title Bar */}
         <div className={styles.composeTitleBar} onClick={handleToggleMinimize}>
-          <span className={styles.composeTitle}>New Message</span>
+          <span className={styles.composeTitle}>{draftSaved ? "Draft saved" : "New Message"}</span>
           <div className={styles.composeWindowControls}>
             <button
-              className={`${styles.windowControl} ${styles.minimize} ${isMinimized ? styles.restoreMinimize : ""}`}
+              className={`${styles.windowControl} ${styles.minimize} ${
+                composeWindow?.isMinimized ? styles.restoreMinimize : ""
+              }`}
               title="Minimize"
               onClick={(e) => {
                 e.stopPropagation();
@@ -343,14 +471,18 @@ export default function ComposeEmail() {
               <span className="material-symbols-outlined">minimize</span>
             </button>
             <button
-              className={`${styles.windowControl} ${styles.maximize} ${isMaximized ? styles.restoreMaximize : ""}`}
-              title={isMaximized ? "Restore" : "Maximize"}
+              className={`${styles.windowControl} ${styles.maximize} ${
+                composeWindow?.isMaximized ? styles.restoreMaximize : ""
+              }`}
+              title={composeWindow?.isMaximized ? "Restore" : "Maximize"}
               onClick={(e) => {
                 e.stopPropagation();
                 handleToggleMaximize();
               }}
             >
-              <span className="material-symbols-outlined">{isMaximized ? "close_fullscreen" : "open_in_full"}</span>
+              <span className="material-symbols-outlined">
+                {composeWindow?.isMaximized ? "close_fullscreen" : "open_in_full"}
+              </span>
             </button>
             <button
               className={`${styles.windowControl} ${styles.close}`}
@@ -366,22 +498,22 @@ export default function ComposeEmail() {
         </div>
 
         {/* Content that gets hidden when minimized */}
-        <div className={`${styles.composeContent} ${isMinimized ? styles.hidden : ""}`}>
+        <div className={`${styles.composeContent} ${composeWindow?.isMinimized ? styles.hidden : ""}`}>
           {/* Recipients Field */}
           <RecipientsInput
             to={to}
             cc={cc}
             bcc={bcc}
             onToChange={(value, rawText) => {
-              setTo(Array.isArray(value) ? value : []);
+              setTo(Array.isArray(value) ? [...value] : []);
               setRawInputText((prev) => ({ ...prev, to: rawText || "" }));
             }}
             onCcChange={(value, rawText) => {
-              setCc(Array.isArray(value) ? value : []);
+              setCc(Array.isArray(value) ? [...value] : []);
               setRawInputText((prev) => ({ ...prev, cc: rawText || "" }));
             }}
             onBccChange={(value, rawText) => {
-              setBcc(Array.isArray(value) ? value : []);
+              setBcc(Array.isArray(value) ? [...value] : []);
               setRawInputText((prev) => ({ ...prev, bcc: rawText || "" }));
             }}
             placeholder="Recipients"

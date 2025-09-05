@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import useLabelCounts from "./../LeftSidebar/useLabelCounts";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
 import useLabels from "../../hooks/useLabels";
+import { useComposeModal } from "../../hooks/useComposeModal";
 
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
@@ -26,16 +26,21 @@ const HIDDEN_FOLDERS = [
 ];
 
 const LeftSidebar = () => {
-  const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
   const { emails, labels } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labelIndex } = useLabels();
+  const { addNewComposeWindow } = useComposeModal();
 
   const customLabels = Object.entries(labels || {})
     .filter(([name, meta]) => !meta.system)
     .map(([name]) => name)
     .sort();
+
+  // Open a new compose window
+  const openComposeWindow = () => {
+    addNewComposeWindow();
+  };
 
   return (
     <div
@@ -44,7 +49,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{ width: 187, height: 1001 }}
     >
-      <div className="aic" onClick={() => navigate("?compose=new")}>
+      <div className="aic" onClick={openComposeWindow}>
         <div className="z0">
           <div
             className="T-I T-I-KE L3"
@@ -63,11 +68,7 @@ const LeftSidebar = () => {
       <div className="V3 aam">
         <div className="at9">
           <div className="Ls77Lb aZ6">
-            <div
-              jscontroller="DUNnfe"
-              className="pp"
-              style={{ userSelect: "none" }}
-            >
+            <div jscontroller="DUNnfe" className="pp" style={{ userSelect: "none" }}>
               <div id=":n8">
                 <div className="nM">
                   <div id=":mz" className="aic" />
@@ -97,19 +98,12 @@ const LeftSidebar = () => {
                           <span
                             role="button"
                             className="J-Ke n4 ah9"
-                            aria-label={
-                              showLess ? "More labels" : "Less labels"
-                            }
+                            aria-label={showLess ? "More labels" : "Less labels"}
                             tabIndex={0}
                             onClick={() => setShowLess(!showLess)}
                           >
-                            <span className="CJ">
-                              {showLess ? "More" : "Less"}
-                            </span>
-                            <span
-                              className="ait"
-                              style={{ marginRight: "18px" }}
-                            >
+                            <span className="CJ">{showLess ? "More" : "Less"}</span>
+                            <span className="ait" style={{ marginRight: "18px" }}>
                               <span
                                 className="material-symbols-outlined"
                                 style={{
@@ -167,11 +161,7 @@ const LeftSidebar = () => {
                           <div className="zw" gh="cl">
                             <div className="TK">
                               {customLabels.map((name) => (
-                                <LabelItem
-                                  key={name}
-                                  name={name}
-                                  count={labelIndex[name]?.unread || 0}
-                                />
+                                <LabelItem key={name} name={name} count={labelIndex[name]?.unread || 0} />
                               ))}
                             </div>
                           </div>

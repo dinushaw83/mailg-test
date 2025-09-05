@@ -4,7 +4,7 @@ import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
 import EmailDetails from "./pages/EmailDetails";
 import MailView from "./pages/MailView";
-import ComposeEmail from "./components/ComposeEmail/ComposeEmail";
+import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 
 import { initialUser } from "./contexts/fixtures/me";
@@ -26,8 +26,8 @@ function App() {
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
 
-          {/* Compose Email */}
-          <ComposeEmail />
+          {/* Compose Email Wrapper */}
+          <ComposeEmailWrapper />
         </Layout>
 
         {/* Global Snackbar */}

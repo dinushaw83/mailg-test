@@ -17,7 +17,8 @@ export const GlobalContextProvider = ({ children }) => {
   const [recipientLabels, setRecipientLabels] = usePersistedState("recipientLabels", initialRecipientLabels);
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
-  const [composeOpen, setComposeOpen] = usePersistedState("composeOpen", false);
+  // Store multiple compose windows
+  const [composeWindows, setComposeWindows] = usePersistedState("composeWindows", []);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -93,12 +94,12 @@ export const GlobalContextProvider = ({ children }) => {
     setCurrentView,
     selectedEmails,
     setSelectedEmails,
-    composeOpen,
-    setComposeOpen,
     snackbar,
     setSnackbar,
     labels,
     setLabels,
+    composeWindows,
+    setComposeWindows,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

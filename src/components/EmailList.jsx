@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import useMailActions from "../hooks/useMailActions";
 import CheckBox from "./ui/CheckBox";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { useComposeModal } from "../hooks/useComposeModal";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
-  const { selection } = useGlobalContext()
-  const { toggleImportant, toggleStar } = useMailActions()
+  const location = useLocation();
+  const { selection } = useGlobalContext();
+  const { toggleImportant, toggleStar } = useMailActions();
+  const { addNewComposeWindow } = useComposeModal();
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -51,9 +54,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   };
 
   const getImportantAriaLabel = (email) => {
-    return email.important
-      ? "Important according to Google magic."
-      : "Not important";
+    return email.important ? "Important according to Google magic." : "Not important";
   };
 
   const getImportantClassName = (email) => {
@@ -72,6 +73,23 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     return status.join(", ");
   };
 
+  // Navigate to the email details page
+  const navigateToEmailDetails = (email) => {
+    // If pathname is /drafts, then add new compose window with the draft id
+    if (location.pathname === "/drafts") {
+      addNewComposeWindow(email.id);
+    } else {
+      // If compose param is present in the url, include it while navigating
+      const urlParams = new URLSearchParams(location.search);
+      const composeParam = urlParams.get("compose");
+      if (composeParam) {
+        navigate(`${location.pathname}/${email.id}?compose=${composeParam}`);
+      } else {
+        navigate(`${location.pathname}/${email.id}`);
+      }
+    }
+  };
+
   return (
     <tbody>
       {emails.map((email, index) => (
@@ -83,7 +101,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
           role="row"
           aria-labelledby={`:pj${index}`}
           draggable="false"
-          onClick={() => navigate(`/inbox/${email.id}`)}
+          onClick={() => navigateToEmailDetails(email)}
         >
           <td className="PF xY" />
           <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
@@ -140,9 +158,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                 toggleImportant && toggleImportant([email.id]);
               }}
             >
-              <div className="T-ays-a45 sf-hidden">
-                {email.important && "Important according to Google magic."}
-              </div>
+              <div className="T-ays-a45 sf-hidden">{email.important && "Important according to Google magic."}</div>
               <div className={getImportantClassName(email)} />
               <div className="bnj" />
             </div>
@@ -159,18 +175,14 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   email={email.from.email}
                   name={email.from.name}
                   data-hovercard-id={email.from.email}
+                  style={location.pathname === "/drafts" ? { color: "#dd4b39", fontWeight: 400 } : {}}
                 >
-                  {email.from.name}
+                  {location.pathname === "/drafts" ? "Draft" : email.from.name}
                 </span>
               </span>
             </div>
           </td>
-          <td
-            id={`:pp${index}`}
-            tabIndex={-1}
-            className="xY a4W"
-            role="gridcell"
-          >
+          <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
             <div className="a4X">
               <Link to={`/inbox/${email.id}`} className="xS" role="link">
                 <div className="xT">
@@ -201,9 +213,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                         data-thread-id={email.threadId}
                         data-legacy-thread-id={email.legacyThreadId}
                         data-legacy-last-message-id={email.legacyLastMessageId}
-                        data-legacy-last-non-draft-message-id={
-                          email.legacyLastNonDraftMessageId
-                        }
+                        data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
                       >
                         {email.subject}
                       </span>
@@ -226,9 +236,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
               id={`:pu${index}`}
               aria-label={new Date(email.timestamp).toLocaleString()}
             >
-              <span className={email.read ? "" : "bq3"}>
-                {formatDate(email.timestamp)}
-              </span>
+              <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
             </span>
           </td>
           <td className="bq4 xY sf-hidden" />
