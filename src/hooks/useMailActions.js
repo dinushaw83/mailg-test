@@ -7,10 +7,10 @@ export default function useMailActions() {
 
   const updateLabelsByIds = useCallback(
     (ids, transform) => {
-      const idSet = new Set(ids);
+      const idSet = new Set(ids.map((id) => String(id)));
       setEmails((prev) =>
         prev.map((m) => {
-          if (!idSet.has(m.id)) return m;
+          if (!idSet.has(String(m.id))) return m;
           const labels = new Set(m.labels || []);
           transform(labels, m);
           return { ...m, labels: Array.from(labels) };
@@ -39,10 +39,10 @@ export default function useMailActions() {
       });
 
     const moveToSpam = (ids) => {
-      const idSet = new Set(ids);
+      const idSet = new Set(ids.map((id) => String(id)));
       setEmails((prev) =>
         prev.map((m) => {
-          if (!idSet.has(m.id)) return m;
+          if (!idSet.has(String(m.id))) return m;
 
           const labels = new Set(m.labels || []);
           labels.clear();
@@ -70,16 +70,22 @@ export default function useMailActions() {
       });
 
     const toggleStar = (ids) =>
-      setEmails((prev) => prev.map((m) => (ids.includes(m.id) ? { ...m, starred: !m.starred } : m)));
+      setEmails((prev) =>
+        prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, starred: !m.starred } : m))
+      );
 
     const markRead = (ids, read = true) =>
-      setEmails((prev) => prev.map((m) => (ids.includes(m.id) ? { ...m, read } : m)));
+      setEmails((prev) => prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, read } : m)));
 
     const toggleImportant = (ids) =>
-      setEmails((prev) => prev.map((m) => (ids.includes(m.id) ? { ...m, important: !m.important } : m)));
+      setEmails((prev) =>
+        prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, important: !m.important } : m))
+      );
 
     const setImportant = (ids, value = true) =>
-      setEmails((prev) => prev.map((m) => (ids.includes(m.id) ? { ...m, important: value } : m)));
+      setEmails((prev) =>
+        prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, important: value } : m))
+      );
 
     const notSpam = (ids) =>
       updateLabelsByIds(ids, (labels) => {
@@ -88,10 +94,10 @@ export default function useMailActions() {
       });
 
     const moveToLabel = (ids, name) => {
-      const idSet = new Set(ids);
+      const idSet = new Set(ids.map((id) => String(id)));
       setEmails((prev) =>
         prev.map((m) => {
-          if (!idSet.has(m.id)) return m;
+          if (!idSet.has(String(m.id))) return m;
           const labels = new Set(m.labels || []);
           labels.clear();
           labels.add(name); // e.g. "Work"
@@ -103,10 +109,10 @@ export default function useMailActions() {
     // When moving from one label view to another label,
     // remove the current label and add the new one.
     const moveToLabelFrom = (ids, sourceLabel, dest) => {
-      const idSet = new Set(ids);
+      const idSet = new Set(ids.map((id) => String(id)));
       setEmails((prev) =>
         prev.map((m) => {
-          if (!idSet.has(m.id)) return m;
+          if (!idSet.has(String(m.id))) return m;
           const labels = new Set(m.labels || []);
           labels.clear();
           if (sourceLabel) labels.delete(sourceLabel);

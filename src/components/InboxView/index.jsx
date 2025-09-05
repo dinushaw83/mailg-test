@@ -52,7 +52,7 @@ const InboxView = () => {
       <InnerContainer>
         <Subject subject={messages[0].subject} />
         {messages.map((message, index) => (
-          <>
+          <React.Fragment key={message.id}>
             <Content
               body={message.body}
               timestamp={message.timestamp}
@@ -61,7 +61,7 @@ const InboxView = () => {
               attachments={message.attachments}
             />
             {index < messages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
-          </>
+          </React.Fragment>
         ))}
         <Actions />
       </InnerContainer>
