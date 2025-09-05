@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import EmailInput from './EmailInput';
 import './EmailRecipients.css';
+import { GlobalContext } from '../../contexts/GlobalContext';
 
 const EmailRecipients = ({ recipients, setRecipients }) => {
+  const { recipients: globalRecipients } = useContext(GlobalContext);
   const [isAnyInputFocused, setIsAnyInputFocused] = useState(false);
   
   // Track which inputs are visible
@@ -53,9 +55,9 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
   // Get all recipients for collapsed view
   const getAllRecipients = () => {
     const allRecipients = [
-      ...recipients.to.map(recipient => ({ ...recipient, type: 'to' })),
-      ...recipients.cc.map(recipient => ({ ...recipient, type: 'cc' })),
-      ...recipients.bcc.map(recipient => ({ ...recipient, type: 'bcc' }))
+      ...recipients.to.map(email => ({ email, type: 'to' })),
+      ...recipients.cc.map(email => ({ email, type: 'cc' })),
+      ...recipients.bcc.map(email => ({ email, type: 'bcc' }))
     ];
     return allRecipients;
   };
@@ -134,13 +136,15 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
           {hasRecipients ? (
             <div className="collapsed-view">
               <span className="collapsed-emails">
-                {totalRecipients.slice(0, 2).map((r, i) => (
-                  <span key={i}>
-                    {r.type !== 'to' && `${r.type}: `}
-                    {r.name ? `${r.name} <${r.email}>` : r.email}
-                    {i === 0 && totalRecipients.length > 1 ? ', ' : ''}
-                  </span>
-                ))}
+                {totalRecipients.slice(0, 2).map((r, i) => {
+                  const recipientDetails = globalRecipients.find(gr => gr.email === r.email);
+                  return (
+                    <span key={i}>
+                      {recipientDetails?.name || r.email}
+                      {i === 0 && totalRecipients.length > 1 ? ', ' : ''}
+                    </span>
+                  );
+                })}
               </span>
               {totalRecipients.length > 2 && (
                 <span className="more-count">

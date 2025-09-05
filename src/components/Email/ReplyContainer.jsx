@@ -8,13 +8,13 @@ import forwardIcon from '../../icons/forward.png';
 import dropdownArrow from '../../icons/dropdownarrow.png';
 
 const ReplyContainer = ({ email, replyType }) => {
-  const { state } = useGlobalContext();
-  const firstLetter = state.user.name.charAt(0);
+  const { loggedInUser } = useGlobalContext();
+  const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
   
   const calculateRecipients = (type) => {
     const calculatedRecipients = {
-      to: type === 'forward' ? [] : [email.from],
+      to: type === 'forward' ? [] : [email.from.email],
       cc: [],
       bcc: []
     };
@@ -23,7 +23,7 @@ const ReplyContainer = ({ email, replyType }) => {
       // Combine original cc and to lists
       const allCcRecipients = [...(email.cc || []), ...(email.to || [])];
       // Filter out the current user's email
-      calculatedRecipients.cc = allCcRecipients.filter(recipient => recipient.email !== state.user.email);
+      calculatedRecipients.cc = allCcRecipients.filter(recipient => recipient !== loggedInUser.email);
     }
 
     return calculatedRecipients;
@@ -33,13 +33,17 @@ const ReplyContainer = ({ email, replyType }) => {
 
   useEffect(() => {
     setRecipients(calculateRecipients(selectedReplyOption));
-  }, [selectedReplyOption, email, state.user.email]);
+  }, [selectedReplyOption, email, loggedInUser.email]);
   
   const options = [
     { value: 'reply', label: 'Reply', icon: replyIcon },
     { value: 'replyAll', label: 'Reply All', icon: replyAllIcon },
     { value: 'forward', label: 'Forward', icon: forwardIcon }
   ];
+
+  useEffect(() => {
+    console.log(recipients)
+  }, [recipients])
 
   const getSelectedIcon = () => {
     return options.find(option => option.value === selectedReplyOption)?.icon;
