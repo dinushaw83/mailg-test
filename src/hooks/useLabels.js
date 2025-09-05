@@ -1,117 +1,213 @@
-// hooks/useLabels.js
 import { useCallback, useMemo } from "react";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
-// Build a simple tree for rendering (indent, expand, etc.)
+export const ROOT = null;
+
+export function makeKey(name, parentKey = ROOT) {
+  return parentKey ? `${parentKey}::${name}` : name;
+}
+
+export function splitKey(key) {
+  const idx = key.lastIndexOf("::");
+  if (idx === -1) return { parentKey: ROOT, name: key };
+  return { parentKey: key.slice(0, idx), name: key.slice(idx + 2) };
+}
+
 function buildTree(labels) {
-  const nodes = Object.entries(labels || {}).map(([name, meta]) => ({
-    name,
-    ...meta,
-    children: [],
-  }));
-  const byName = Object.fromEntries(nodes.map(n => [n.name, n]));
+  const nodes = Object.entries(labels || {}).map(([key, meta]) => {
+    // fallback to composite parsing when fields are missing
+    let name = meta?.name;
+    let parentKey = meta?.parentKey;
+
+    if (!name || !parentKey) {
+      const parsed = splitKey(key);        // "__ROOT__::Parent::Child"
+      name = name ?? parsed.name;
+      parentKey = parentKey ?? parsed.parentKey ?? ROOT;
+    }
+
+    return {
+      key,
+      name,
+      parentKey,
+      system: !!meta?.system,
+      children: [],
+    };
+  });
+
+  const byKey = Object.fromEntries(nodes.map(n => [n.key, n]));
   const roots = [];
   for (const n of nodes) {
-    if (n.parent && byName[n.parent]) byName[n.parent].children.push(n);
+    if (n.parentKey && byKey[n.parentKey]) byKey[n.parentKey].children.push(n);
     else roots.push(n);
   }
-  const sortRec = (arr) => {
-    arr.sort((a, b) => a.name.localeCompare(b.name));
-    arr.forEach(c => sortRec(c.children));
-  };
+  const sortRec = arr => { arr.sort((a, b) => a.name.localeCompare(b.name)); arr.forEach(c => sortRec(c.children)); };
   sortRec(roots);
   return roots;
+}
+
+// Useful for <Select> and MoveTo menus: makes [{key, name, depth}] flat list
+export function flattenTreeForSelect(roots, depth = 0, out = []) {
+  for (const node of roots) {
+    out.push({ key: node.key, name: node.name, depth, system: node.system });
+    if (node.children?.length) flattenTreeForSelect(node.children, depth + 1, out);
+  }
+  return out;
+}
+
+export function getPathLabelFromKey(labelsMap, key) {
+  if (!key) return "";
+  const parts = key.split("::");
+  const paths = [];
+  for (let i = 0; i < parts.length; i++) {
+    const k = parts.slice(0, i + 1).join("::");       // cumulative key
+    const nm = labelsMap?.[k]?.name ?? parts[i];      // fallback to raw segment
+    paths.push(nm);
+  }
+  return paths.join(" / ");
 }
 
 export default function useLabels() {
   const { emails, setEmails, labels, setLabels } = useGlobalContext();
 
-  // Create a label; supports optional parent (by name).
-  // Enforces sibling-unique names (case-insensitive).
   const createLabel = useCallback(
-    (name, { parent = null, ...meta } = {}) => {
+    (name, { parentKey = ROOT, ...meta } = {}) => {
       const nm = String(name || "").trim();
       if (!nm) return;
 
       setLabels(prev => {
         const cur = prev || {};
-        // sibling uniqueness (same parent)
-        const siblingNames = Object.entries(cur)
-          .filter(([, m]) => (m.parent || null) === (parent || null))
-          .map(([n]) => n.toLowerCase());
 
-        if (siblingNames.includes(nm.toLowerCase())) return cur;
+        // sibling uniqueness: check names under same parentKey (fallback to key parsing)
+        const isDup = Object.entries(cur).some(([key, v]) => {
+          let nm = v?.name, pk = v?.parentKey;
+          if (nm == null || pk === undefined) {
+            const parsed = splitKey(key);
+            nm = nm ?? parsed.name;
+            pk = pk ?? (parsed.parentKey ?? ROOT);
+          }
+          return (pk ?? ROOT) === parentKey && (nm || "").toLowerCase() === name.toLowerCase();
+        });
+        if (isDup) return cur;
+
+        const key = makeKey(name, parentKey);
+        if (cur[key]) return cur;
 
         return {
           ...cur,
-          [nm]: { system: false, color: null, parent: parent || null, ...meta },
+          [key]: { name, parentKey, system: false, color: null, ...meta },
         };
       });
     },
     [setLabels]
   );
 
-  // Rename a label; update emails and children parent refs.
+  // Rekey an entire subtree when a node is renamed
   const renameLabel = useCallback(
-    (oldName, newName) => {
-      const nextName = String(newName || "").trim();
-      if (!nextName || oldName === nextName) return;
+    (key, newName) => {
+      const nm = String(newName || "").trim();
+      if (!nm) return;
 
       setLabels(prev => {
         const cur = { ...(prev || {}) };
-        const meta = cur[oldName];
-        if (!meta || cur[nextName]) return prev; // guard: must exist; no duplicate
+        const lbl = cur[key];
+        if (!lbl) return prev;
 
-        // Move label entry
-        delete cur[oldName];
-        cur[nextName] = { ...meta, system: !!meta.system };
+        // sibling uniqueness
+        const dup = Object.entries(cur).some(([k, v]) =>
+          v.parentKey === lbl.parentKey &&
+          (v.name || "").toLowerCase() === nm.toLowerCase() &&
+          k !== key
+        );
+        if (dup) return prev;
 
-        // Fix children parent refs (names are our keys)
-        for (const [n, m] of Object.entries(cur)) {
-          if (m.parent === oldName) {
-            cur[n] = { ...m, parent: nextName };
+        const newKey = makeKey(nm, lbl.parentKey);
+
+        // Fast path: key unchanged (case-only rename)
+        if (newKey === key) {
+          cur[key] = { ...lbl, name: nm };
+          return cur;
+        }
+
+        // Build parent→children index to walk the whole subtree
+        const childrenByParent = {};
+        for (const [k, v] of Object.entries(cur)) {
+          const p = v.parentKey ?? ROOT;
+          (childrenByParent[p] ||= []).push(k);
+        }
+
+        // Collect subtree (BFS)
+        const oldToNew = new Map();
+        const queue = [key];
+        oldToNew.set(key, newKey);
+
+        while (queue.length) {
+          const oldK = queue.shift();
+          const mappedParent = oldToNew.get(oldK); // new parent key for its children
+          const childKeys = childrenByParent[oldK] || [];
+          for (const ck of childKeys) {
+            const child = cur[ck];
+            const childNewKey = makeKey(child.name, mappedParent);
+            oldToNew.set(ck, childNewKey);
+            queue.push(ck);
           }
         }
 
-        // Update emails -> replace oldName with nextName in label arrays
-        setEmails(prevEmails =>
-          (prevEmails || []).map(m => ({
-            ...m,
-            labels: (m.labels || []).map(l => (l === oldName ? nextName : l)),
-          }))
-        );
+        // Apply rekey operations
+        const next = { ...cur };
+        // 1) create new entries
+        for (const [oldK, newK] of oldToNew.entries()) {
+          const v = next[oldK];
+          if (!v) continue;
+          const isRoot = oldK === key;
+          const newParentKey = isRoot ? v.parentKey : oldToNew.get(v.parentKey) || v.parentKey;
+          next[newK] = { ...v, name: isRoot ? nm : v.name, parentKey: newParentKey };
+        }
+        // 2) delete old keys
+        for (const oldK of oldToNew.keys()) {
+          delete next[oldK];
+        }
 
-        return cur;
+        // Update emails for the **renamed node only**
+        // (descendant keys are not in emails unless assigned; if they are, they’ve been rekeyed above)
+        const renamedOldKey = key;
+        const renamedNewKey = newKey;
+        if (renamedOldKey !== renamedNewKey) {
+          setEmails(prevEmails =>
+            (prevEmails || []).map(m => ({
+              ...m,
+              labels: (m.labels || []).map(l => (l === renamedOldKey ? renamedNewKey : l)),
+            }))
+          );
+        }
+
+        return next;
       });
     },
     [setLabels, setEmails]
   );
 
-  // Delete a label; cascade to descendants; remove from emails.
   const deleteLabel = useCallback(
-    (name) => {
+    (key) => {
       setLabels(prev => {
         const cur = { ...(prev || {}) };
-        const meta = cur[name];
-        if (!meta || meta.system) return prev; // don't delete system labels or non-existent
+        const lbl = cur[key];
+        if (!lbl || lbl.system) return prev;
 
-        // Collect all descendants (cascade)
-        const toDelete = new Set([name]);
+        // collect subtree by parentKey (cascade delete)
+        const toDelete = new Set([key]);
         let changed = true;
         while (changed) {
           changed = false;
-          for (const [n, m] of Object.entries(cur)) {
-            if (m.parent && toDelete.has(m.parent) && !toDelete.has(n)) {
-              toDelete.add(n);
+          for (const [k, v] of Object.entries(cur)) {
+            if (toDelete.has(v.parentKey) && !toDelete.has(k)) {
+              toDelete.add(k);
               changed = true;
             }
           }
         }
 
-        // Remove from labels map
-        for (const n of toDelete) delete cur[n];
+        for (const k of toDelete) delete cur[k];
 
-        // Remove from emails
         setEmails(prevEmails =>
           (prevEmails || []).map(m => ({
             ...m,
@@ -125,29 +221,32 @@ export default function useLabels() {
     [setLabels, setEmails]
   );
 
-  // Counts by label (flat). Works with nested too.
+  // Counts by label key
   const labelIndex = useMemo(() => {
     const map = {};
     for (const m of emails || []) {
-      for (const l of m.labels || []) {
-        if (!map[l]) map[l] = { total: 0, unread: 0, items: [] };
-        map[l].total += 1;
-        if (!m.read) map[l].unread += 1;
-        map[l].items.push(m);
+      for (const key of m.labels || []) {
+        if (!map[key]) map[key] = { total: 0, unread: 0, items: [] };
+        map[key].total += 1;
+        if (!m.read) map[key].unread += 1;
+        map[key].items.push(m);
       }
     }
     return map;
   }, [emails]);
 
-  // Optional: tree for sidebar / MoveTo menu (indent via depth)
   const labelTree = useMemo(() => buildTree(labels || {}), [labels]);
 
   return {
-    labels,
+    labels, 
     createLabel,
     renameLabel,
     deleteLabel,
     labelIndex,
     labelTree,
+    flattenTreeForSelect,
+    ROOT,
+    makeKey,
+    splitKey,
   };
 }

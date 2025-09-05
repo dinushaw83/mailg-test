@@ -8,10 +8,12 @@ import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { Icon } from "../InboxView/ActionBar";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import useLabels, { flattenTreeForSelect, makeKey, getPathLabelFromKey } from "../../hooks/useLabels";
 
 export default function InboxActions() {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
-  const { selection, labels, emails, setSnackbar } = useGlobalContext();
+  const { selection, setSnackbar } = useGlobalContext();
+  const { labels, labelTree } = useLabels()
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
@@ -25,23 +27,17 @@ export default function InboxActions() {
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
 
-  const customLabels = useMemo(() => {
-    const map = labels || {};
-    return Object.entries(map)
-      .filter(([name, meta]) => !meta.system && name !== currentLabel)
-      .map(([name]) => ({ id: "__label__" + name, name }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [labels]);
-
   // Check if any selected emails are not in the inbox
-  const showInboxOption = useMemo(() => {
-    if (!selection.hasSelection) return false;
-    const selectedIds = [...selection.ids];
-    return selectedIds.some((id) => {
-      const email = emails.find((e) => e.id === id);
-      return email && !email.labels?.includes("Inbox");
-    });
-  }, [selection.ids, selection.hasSelection, emails]);
+  const menuItems = useMemo(() => {
+    const flat = flattenTreeForSelect(labelTree); // [{ key, name, depth, system }]
+    return flat
+      .filter(item => !labels?.[item.key]?.system)
+      .map(item => ({
+        id: item.key,
+        name: getPathLabelFromKey(labels, item.key), // "Parent / Child / ..."
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [labelTree, labels]);
 
   const handleMenuItemClick = async (item) => {
     const ids = [...selection.ids]; // Set → Array
@@ -86,11 +82,14 @@ export default function InboxActions() {
           ),
         });
       } else if (item.id.startsWith("__label__")) {
-        // moving between labels:
-        if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
-          moveToLabelFrom(ids, currentLabel, item.name);
+        // item.id is now the TARGET LABEL KEY
+        const targetKey = item.id;
+        const curMeta = currentLabel ? labels?.[currentLabel] : null;
+        const inCustomLabel = curMeta && curMeta.system === false;
+        if (inCustomLabel) {
+          moveToLabelFrom(ids, currentLabel, targetKey);
         } else {
-          moveToLabel(ids, item.name);
+          moveToLabel(ids, targetKey); // pass key
         }
       }
       setOpen(false);
@@ -100,26 +99,24 @@ export default function InboxActions() {
     }
   };
 
-  const handleOnAfterCreate = (newLabelName) => {
+  const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
 
     try {
-      const inCustomLabel = currentLabel && labels?.[currentLabel] && labels[currentLabel].system === false;
-
       // Perform the move after creation
-      if (inCustomLabel) {
-        moveToLabelFrom(ids, currentLabel, newLabelName);
-      } else {
-        moveToLabel(ids, newLabelName);
-      }
+      const newKey = makeKey(childName, parentKey); // build composite key
+      const curMeta = currentLabel ? labels?.[currentLabel] : null;
+      const inCustomLabel = curMeta && curMeta.system === false;
+      if (inCustomLabel) { moveToLabelFrom(ids, currentLabel, newKey); }
+      else { moveToLabel(ids, newKey); }
 
       selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
         open: true,
-        message: `Conversation moved to “${newLabelName}”.`,
+        message: `Conversation moved to “${childName}”.`,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -127,11 +124,10 @@ export default function InboxActions() {
             onClick={() => {
               try {
                 if (inCustomLabel) {
-                  // revert: new → old
-                  moveToLabelFrom(ids, newLabelName, currentLabel);
+                  moveToLabelFrom(ids, newKey, currentLabel);
                 } else {
-                  // revert: just remove the newly-added label
-                  moveToLabel(ids, currentLabel);
+                  if (currentLabel) moveToLabel(ids, currentLabel);
+                  else moveToInbox(ids);
                 }
 
                 setSnackbar({
@@ -273,7 +269,7 @@ export default function InboxActions() {
           {open && (
             <MoveToMenu
               anchorRef={anchorRef}
-              labels={customLabels}
+              labels={menuItems}
               onSelect={handleMenuItemClick}
               onClose={() => setOpen(false)}
             />

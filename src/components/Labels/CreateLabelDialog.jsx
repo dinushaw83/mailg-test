@@ -5,44 +5,49 @@ import {
     FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import useLabels from "../../hooks/useLabels";
-import { buildLabelTree, flattenTreeForSelect } from "../../utils/helperFunctions";
+import useLabels, { flattenTreeForSelect, ROOT, splitKey } from "../../hooks/useLabels";
 
 export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
-    const { labels, setSnackbar } = useGlobalContext();
-    const { createLabel } = useLabels();
+    const { setSnackbar } = useGlobalContext();
+    const { labels, createLabel, labelTree } = useLabels();
 
     const [name, setName] = useState("");
     const [nest, setNest] = useState(false);
-    const [parent, setParent] = useState("");
+    const [parentKey, setParentKey] = useState(null);
     const [attempted, setAttempted] = useState(false);
 
-    // Build parent choices (Gmail-like nesting)
-    const parentChoices = useMemo(() => {
-        const filtered = Object.fromEntries(
-            Object.entries(labels || {}).filter(([, meta]) => !meta?.system)
-        );
-        const tree = buildLabelTree(filtered);
-        return flattenTreeForSelect(tree); // [{ value, label, depth }]
-    }, [labels]);
+    const parentChoices = useMemo(
+        () => flattenTreeForSelect(labelTree).filter(opt => !labels?.[opt.key]?.system),
+        [labelTree, labels]
+    );
 
     const trimmed = name.trim();
-    const targetParent = nest ? (parent || null) : null;
+    const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;
 
-    // sibling-scoped duplicate check
     const isDup = useMemo(() => {
         if (!trimmed) return false;
-        return Object.entries(labels || {}).some(([n, meta]) => {
-            const sameParent = (meta?.parent || null) === targetParent;
-            return sameParent && n.toLowerCase() === trimmed.toLowerCase();
+
+        return Object.entries(labels || {}).some(([key, meta]) => {
+            // prefer meta, but fall back to parsing the key
+            let candidateName = meta?.name;
+            let candidateParentKey = meta?.parentKey;
+
+            if (candidateName == null || candidateParentKey === undefined) {
+                const parsed = splitKey(key);
+                candidateName = candidateName ?? parsed.name;
+                candidateParentKey = candidateParentKey ?? (parsed.parentKey ?? ROOT);
+            }
+
+            const sameParent = (candidateParentKey ?? ROOT) === targetParentKey;
+            return sameParent && (candidateName || "").toLowerCase() === trimmed.toLowerCase();
         });
-    }, [labels, trimmed, targetParent]);
+    }, [labels, trimmed, targetParentKey]);
 
-    // only block conditions we care about
     const missingName = trimmed.length === 0;
-    const missingParent = nest && !parent;
+    const missingParent = nest && !parentKey;
 
-    // Shown only after clicking Create
+    const canSubmit = trimmed.length > 0 && (!nest || !!parentKey);
+
     const showError = attempted && (missingName || isDup || missingParent);
     const errorText =
         missingName
@@ -54,29 +59,24 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                     : "Please enter a new label name:";
 
     const reset = () => {
-        setName(""); setNest(false); setParent(""); setAttempted(false);   // reset attempted
+        setName("");
+        setNest(false);
+        setParentKey(null);
+        setAttempted(false);
     };
-
-    // Keep "Create" enabled (Gmail style). We'll block in handleCreate if invalid.
-    const canSubmit = trimmed.length > 0 && (!nest || !!parent);
-
     const handleClose = () => { reset(); onClose?.(); };
 
     const handleCreate = () => {
-        // click/Enter: validate now
+        // validate on submit (Gmail style)
         if (missingName || isDup || missingParent) {
             setAttempted(true);
             return;
         }
-
         try {
-            if (nest && parent) {
-                createLabel(trimmed, { parent });
-                onAfterCreate?.(trimmed, parent);
-            } else {
-                createLabel(trimmed);
-                onAfterCreate?.(trimmed, null);
-            }
+            const pk = nest ? parentKey : ROOT;
+            createLabel(trimmed, { parentKey: pk });
+            onAfterCreate?.(trimmed, pk);
+
             handleClose();
         } catch (e) {
             setSnackbar?.({
@@ -95,8 +95,8 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
             slotProps={{
                 paper: {
                     sx: {
-                        width: "25%",     // custom px value
-                        maxWidth: "90%", // still responsive
+                        width: 420,        // custom width: between xs and sm
+                        maxWidth: "90%",
                         borderRadius: "24px",
                         p: 1.5,
                     },
@@ -106,12 +106,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
             <DialogTitle sx={{ px: 3, pt: 3, pb: 1.5 }}>New label</DialogTitle>
 
             <DialogContent sx={{ px: 3, pt: 0, pb: 1.5 }}>
-                <div
-                    style={{
-                        marginBottom: 12,
-                        fontSize: 14,
-                    }}
-                >
+                <div style={{ marginBottom: 12, fontSize: 14}}>
                     {showError ? errorText : "Please enter a new label name:"}
                 </div>
 
@@ -120,19 +115,18 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                     fullWidth
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleCreate();
-                        }
-                    }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
                     inputProps={{ "aria-label": "New label name" }}
-                    error={!!trimmed && showError && (missingName || isDup)}
+                    error={showError && (missingName || isDup)}
                     helperText=" "
                 />
 
                 <FormControlLabel
-                    control={<Checkbox checked={nest} onChange={(e) => setNest(e.target.checked)} />}
+                    control={<Checkbox checked={nest} onChange={(e) => {
+                        setNest(e.target.checked);
+                        if (!e.target.checked) setParentKey(null);
+                    }
+                    } />}
                     label="Nest label under:"
                     sx={{ mt: 0.5 }}
                 />
@@ -140,16 +134,16 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                 <FormControl fullWidth disabled={!nest} sx={{ mb: 1 }}>
                     <InputLabel id="nest-under-label">Choose label</InputLabel>
                     <Select
+                        value={parentKey ?? ""}
+                        onChange={(e) => setParentKey(e.target.value || null)}
                         labelId="nest-under-label"
                         label="Choose label"
-                        value={parent}
-                        onChange={(e) => setParent(e.target.value)}
                         MenuProps={{ PaperProps: { style: { maxHeight: 280 } } }}
                     >
-                        {parentChoices.map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>
+                        {parentChoices.map(opt => (
+                            <MenuItem key={opt.key} value={opt.key}>
                                 <span style={{ paddingLeft: 12 + opt.depth * 14, display: "inline-block" }}>
-                                    {opt.label}
+                                    {opt.name}
                                 </span>
                             </MenuItem>
                         ))}
@@ -164,8 +158,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                 <Button
                     variant="contained"
                     onClick={handleCreate}
-                    // Keep enabled to match Gmail; we block in handler if invalid
-                    disabled={!canSubmit}
+                    disabled={!canSubmit} // keep enabled; validation happens on submit
                     sx={{ borderRadius: "20px", textTransform: "none", px: 3 }}
                 >
                     Create
