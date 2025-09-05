@@ -52,30 +52,31 @@ export default function InboxActions() {
         setSpamModal({ open: true, ids });
         // moveToSpam(ids);
       } else if (item.id === "__trash__" || item.id === "trash") {
-          moveToTrash(ids);
-          // Show global snackbar with UNDO action
-          setSnackbar({
-              open: true,
-              message: "Conversation moved to Trash.",
-              autoHideDuration: 10000,
-              action: (
-                  <Button
-                      size="small"
-                      onClick={() => {
-                          moveToInbox(ids);
-                          // Follow-up confirmation snackbar
-                          setSnackbar({
-                              open: true,
-                              message: "Action undone.",
-                              autoHideDuration: 3000,
-                              action: null,
-                          });
-                      }}
-                  >
-                      UNDO
-                  </Button>
-              ),
-          });
+        moveToTrash(ids);
+        // Show global snackbar with Undo action
+        setSnackbar({
+          open: true,
+          message: "Conversation moved to Trash.",
+          autoHideDuration: 10000,
+          action: (
+            <Button
+              sx={{ textTransform: "none" }}
+              size="small"
+              onClick={() => {
+                moveToInbox(ids);
+                // Follow-up confirmation snackbar
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              }}
+            >
+              Undo
+            </Button>
+          ),
+        });
       } else if (item.id.startsWith("__label__")) {
         // moving between labels:
         if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
