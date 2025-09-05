@@ -53,7 +53,7 @@ const Pagination = () => {
   console.log(emails);
   return (
     <span className="Di">
-      <Box onMouseEnter={handleOpenMenu}>
+      <Box onMouseEnter={handleOpenMenu} onMouseLeave={handleCloseMenu}>
         <Button
           ref={anchorRef}
           variant="text"
