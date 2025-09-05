@@ -1,6 +1,6 @@
 import Pagination from "./Pagination";
 
-const ToolBar = () => {
+const ToolBar = ({ totalFilteredItems }) => {
   return (
     <div className="D E G-atb" gh="tm">
       <div className="G6" role="toolbar" aria-label="search refinement">
@@ -97,7 +97,7 @@ const ToolBar = () => {
         </div>
         <div className="Cr aqJ">
           <div className="ar5 J-J5-Ji">
-            <Pagination />
+            <Pagination totalFilteredItems={totalFilteredItems} />
           </div>
           <div className="G-Ni J-J5-Ji" jslog="177396; u014N:cOuCgd,Kr2w4b,xr6bB;">
             <div

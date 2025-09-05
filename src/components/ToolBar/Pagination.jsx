@@ -1,14 +1,21 @@
-import { useContext, useState, useRef } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { Button, Box, MenuItem, Popper, Grow, Paper, ClickAwayListener, MenuList } from "@mui/material";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
-const Pagination = () => {
-  const { emails, setSortOrder, currentPage, setCurrentPage, itemsPerPage } = useContext(GlobalContext);
+const Pagination = ({ totalFilteredItems }) => {
+  const { setSortOrder, currentPage, setCurrentPage, itemsPerPage } = useContext(GlobalContext);
   const anchorRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const totalItems = emails.length;
+  const totalItems = totalFilteredItems;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage, setCurrentPage]);
+
   const startIndex = (currentPage - 1) * itemsPerPage + 1;
   const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
   const hasNextPage = currentPage < totalPages;
@@ -50,7 +57,6 @@ const Pagination = () => {
 
   const open = Boolean(anchorEl);
 
-  console.log(emails);
   return (
     <span className="Di">
       <Box onMouseEnter={handleOpenMenu} onMouseLeave={handleCloseMenu}>

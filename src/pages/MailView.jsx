@@ -18,15 +18,17 @@ const Inbox = () => {
   // get all folders from hook
   const folders = useMailFolders(emails);
 
+  // Get filtered emails (before sorting and pagination)
+  const filteredEmails = useMemo(() => {
+    if (label) {
+      return emails.filter((m) => (m.labels || []).includes(label));
+    } else {
+      return folders[activeFolder] || emails;
+    }
+  }, [emails, label, activeFolder, folders]);
+
   // pick rows based on folder/label, then sort and paginate
   const rows = useMemo(() => {
-    let filteredEmails;
-    if (label) {
-      filteredEmails = emails.filter((m) => (m.labels || []).includes(label));
-    } else {
-      filteredEmails = folders[activeFolder] || emails;
-    }
-
     // Sort emails based on sortOrder
     const sortedEmails = [...filteredEmails].sort((a, b) => {
       const dateA = new Date(a.timestamp);
@@ -39,12 +41,11 @@ const Inbox = () => {
       }
     });
 
-    // Apply pagination
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
     return sortedEmails.slice(startIndex, endIndex);
-  }, [emails, label, activeFolder, folders, sortOrder, currentPage, itemsPerPage]);
+  }, [filteredEmails, sortOrder, currentPage, itemsPerPage]);
 
   return (
     <div className="nH bkK">
@@ -57,7 +58,7 @@ const Inbox = () => {
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
                     <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
-                      <ToolBar />
+                      <ToolBar totalFilteredItems={filteredEmails.length} />
                       <div />
                       <div className="X3" />
                       <div className="a0V">
