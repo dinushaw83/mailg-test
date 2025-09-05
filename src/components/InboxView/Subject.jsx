@@ -16,10 +16,10 @@ const SubjectContainer = styled.div`
   margin-bottom: 1.25rem;
 `;
 
-export const Subject = ({ email }) => {
+export const Subject = ({ subject }) => {
   return (
     <SubjectContainer>
-      <StyledSubject>{email.subject}</StyledSubject>
+      <StyledSubject>{subject}</StyledSubject>
       <div>
         <Icon name="print" label="Print all" placement="top" />
         <Icon name="open_in_new" label="In new window" placement="top" />
