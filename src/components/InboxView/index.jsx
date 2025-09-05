@@ -26,6 +26,7 @@ const InnerContainer = styled.div`
 const InboxView = () => {
   const { threadId } = useParams();
   const { emails, normalizedEmails } = useContext(GlobalContext);
+  const responseViewRef = React.useRef();
 
   const { threadsById, messagesById } = normalizedEmails;
 
@@ -67,7 +68,7 @@ const InboxView = () => {
           </React.Fragment>
         ))}
         <Actions />
-        <EmailResponseView email={email} />
+        <EmailResponseView ref={responseViewRef} email={email} />
       </InnerContainer>
     </InboxViewContainer>
   );

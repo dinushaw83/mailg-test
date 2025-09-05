@@ -5,7 +5,10 @@ import replyAllImage from "../../icons/replyall.png";
 import forwardImage from "../../icons/forward.png";
 import ReplyContainer from './ReplyContainer';
 
-const EmailResponseView = ({ email }) => {
+const EmailResponseView = React.forwardRef(({ email }, ref) => {
+  React.useImperativeHandle(ref, () => ({
+    handleReply
+  }));
   const [showReplyContainer, setShowReplyContainer] = useState(false);
   const [replyType, setReplyType] = useState(null);
 
@@ -25,7 +28,7 @@ const EmailResponseView = ({ email }) => {
   };
 
   return (
-    <div style={{ marginTop: '4rem', marginBottom: '2rem' }}>
+    <div data-testid="email-response-view" style={{ marginTop: '4rem', marginBottom: '2rem' }}>
       {
         !showReplyContainer &&
         <div style={{ marginLeft: '78px' }}>
@@ -34,9 +37,15 @@ const EmailResponseView = ({ email }) => {
           <ActionButton text="Forward" onClick={handleForward} icon={<img src={forwardImage} alt="Forward" />} />
         </div>
       }
-      {showReplyContainer && <ReplyContainer email={email} replyType={replyType} />}
+      {showReplyContainer && (
+        <ReplyContainer 
+          email={email} 
+          replyType={replyType} 
+          onClose={() => setShowReplyContainer(false)} 
+        />
+      )}
     </div>
   );
-};
+});
 
-export default EmailResponseView;
+export default React.memo(EmailResponseView);

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import EmailInput from './EmailInput';
 import './EmailRecipients.css';
 import { GlobalContext } from '../../contexts/GlobalContext';
@@ -8,11 +8,21 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
   const [isAnyInputFocused, setIsAnyInputFocused] = useState(false);
   
   // Track which inputs are visible
+  console.log(recipients);
   const [visibleInputs, setVisibleInputs] = useState({
     to: true,    // 'To' is always visible
     cc: recipients.cc?.length > 0,
     bcc: recipients.bcc?.length > 0
   });
+
+  // Update visible inputs when recipients change
+  useEffect(() => {
+    setVisibleInputs(prev => ({
+      ...prev,
+      cc: recipients.cc?.length > 0,
+      bcc: recipients.bcc?.length > 0
+    }));
+  }, [recipients]);
 
   // Handle adding email to a specific list
   const handleEmailAdded = (type) => (email) => {

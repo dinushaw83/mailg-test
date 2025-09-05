@@ -143,7 +143,7 @@ const Time = ({ timestamp }) => {
   );
 };
 
-const TopBar = ({ timestamp, senderName, senderEmail }) => {
+const TopBar = ({ timestamp, senderName, senderEmail, onReply }) => {
   return (
     <TopBarContainer>
       <div>
@@ -154,7 +154,7 @@ const TopBar = ({ timestamp, senderName, senderEmail }) => {
         <Time timestamp={timestamp} />
         <Icon name="star" label="Not starred" />
         <Icon name="mood" label="Add a reaction" />
-        <Icon name="reply" label="Reply" />
+        <Icon name="reply" label="Reply" onClick={onReply} />
         <Icon name="more_vert" label="More" />
       </ActionsContainer>
     </TopBarContainer>

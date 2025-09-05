@@ -13,7 +13,7 @@ import dropdownArrow from '../../icons/dropdownarrow.png';
 // TEMP
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 
-const ReplyContainer = ({ email, replyType }) => {
+const ReplyContainer = ({ email, replyType, onClose }) => {
   const { loggedInUser } = useGlobalContext();
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
@@ -110,6 +110,9 @@ ${email.body}`;
 
   const handleDelete = () => {
     setContent({ html: '', plainText: '' });
+    if (onClose) {
+      onClose();
+    }
   }
 
   return (
