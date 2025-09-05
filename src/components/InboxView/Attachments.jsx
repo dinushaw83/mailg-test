@@ -48,14 +48,19 @@ const Overlay = styled.div`
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  gap: 5px;
   padding: 8px;
   background: rgba(158, 158, 158, 0.6); /* translucent gray */
   color: #fff;
   opacity: 0;
   transition: opacity 120ms ease-in-out;
   pointer-events: none; /* enabled on parent hover */
+`;
+
+const OverlayContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 const OverlayTop = styled.div`
@@ -87,30 +92,6 @@ const OverlayFilesize = styled.div`
 const OverlayActions = styled.div`
   display: flex;
   justify-content: flex-start;
-`;
-
-const ActionButton = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: #fff;
-  text-decoration: none;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  pointer-events: auto; /* clickable inside overlay */
-  transition: background 120ms ease-in-out, border-color 120ms ease-in-out;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.34);
-  }
-
-  .material-symbols-outlined {
-    font-size: 16px;
-  }
 `;
 
 const AttachmentsContainer = styled.div`
@@ -227,47 +208,51 @@ export const Attachments = ({ attachments = [] }) => {
       <AttachmentsContainer>
         {attachments.map((attachment) => (
           <ImageContainer key={attachment.id}>
-            <img loading="lazy" src={attachment.url} alt={attachment.name} />
+            <img loading="lazy" src={attachment.url} alt={attachment.name} width={20} />
             <Overlay className="overlay">
-              <OverlayTop>
-                <OverlayTitleRow title={attachment.name}>
-                  <span className="material-symbols-outlined">image</span>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
-                </OverlayTitleRow>
-                <OverlayFilesize>{attachment.size}</OverlayFilesize>
-              </OverlayTop>
-              <OverlayActions>
-                <Icon
-                  label="Download"
-                  placement="top"
-                  name="download"
-                  color="white"
-                  style={{
-                    borderRadius: "6px",
-                    width: "24px",
-                    height: "24px",
-                    background: "rgb(128, 134, 139)",
-                    "&:hover": { background: "#898F94" },
-                    marginRight: "8px",
-                  }}
-                />
+              <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                image
+              </span>
+              <OverlayContent>
+                <OverlayTop>
+                  <OverlayTitleRow title={attachment.name}>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
+                  </OverlayTitleRow>
+                  <OverlayFilesize>{attachment.size}</OverlayFilesize>
+                </OverlayTop>
+                <OverlayActions>
+                  <Icon
+                    label="Download"
+                    placement="top"
+                    name="download"
+                    color="white"
+                    style={{
+                      borderRadius: "6px",
+                      width: "24px",
+                      height: "24px",
+                      background: "rgb(128, 134, 139)",
+                      "&:hover": { background: "#898F94" },
+                      marginRight: "8px",
+                    }}
+                  />
 
-                <Icon
-                  label="Save to Drive"
-                  placement="top"
-                  name="drive_file_move"
-                  color="white"
-                  style={{
-                    borderRadius: "6px",
-                    width: "24px",
-                    height: "24px",
-                    padding: "5px",
-                    background: "rgb(128, 134, 139)",
-                    "&:hover": { background: "#898F94" },
-                    marginRight: "0px",
-                  }}
-                />
-              </OverlayActions>
+                  <Icon
+                    label="Save to Drive"
+                    placement="top"
+                    name="drive_file_move"
+                    color="white"
+                    style={{
+                      borderRadius: "6px",
+                      width: "24px",
+                      height: "24px",
+                      padding: "5px",
+                      background: "rgb(128, 134, 139)",
+                      "&:hover": { background: "#898F94" },
+                      marginRight: "0px",
+                    }}
+                  />
+                </OverlayActions>
+              </OverlayContent>
             </Overlay>
           </ImageContainer>
         ))}
