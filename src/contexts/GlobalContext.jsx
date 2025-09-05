@@ -18,6 +18,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
   const [composeOpen, setComposeOpen] = usePersistedState("composeOpen", false);
+  const [labels, setLabels] = usePersistedState("labels", initialLabels);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -28,7 +29,6 @@ export const GlobalContextProvider = ({ children }) => {
   });
 
   const [selected, setSelected] = useState(() => new Set());
-  const [labels, setLabels] = useState(initialLabels);
 
   // Clear selection on navigation (folder/label changes)
   const location = useLocation();

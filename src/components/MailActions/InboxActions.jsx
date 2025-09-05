@@ -7,6 +7,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { Icon } from "../InboxView/ActionBar";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 export default function InboxActions() {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
@@ -14,6 +15,7 @@ export default function InboxActions() {
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   const [spamModal, setSpamModal] = useState({
     open: false,
@@ -43,6 +45,12 @@ export default function InboxActions() {
 
   const handleMenuItemClick = async (item) => {
     const ids = [...selection.ids]; // Set → Array
+
+    if (item.id === "__create_label__") {
+      setCreateOpen(true);
+      return;
+    }
+
     if (!ids.length) return;
 
     try {
@@ -89,6 +97,69 @@ export default function InboxActions() {
       selection.clear();
     } catch (e) {
       console.error("Move failed:", e);
+    }
+  };
+
+  const handleOnAfterCreate = (newLabelName) => {
+    const ids = [...selection.ids];
+    if (!ids.length) return;
+
+    try {
+      const inCustomLabel = currentLabel && labels?.[currentLabel] && labels[currentLabel].system === false;
+
+      // Perform the move after creation
+      if (inCustomLabel) {
+        moveToLabelFrom(ids, currentLabel, newLabelName);
+      } else {
+        moveToLabel(ids, newLabelName);
+      }
+
+      selection.clear();
+
+      // --- UNDO action ---
+      setSnackbar({
+        open: true,
+        message: `Conversation moved to “${newLabelName}”.`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              try {
+                if (inCustomLabel) {
+                  // revert: new → old
+                  moveToLabelFrom(ids, newLabelName, currentLabel);
+                } else {
+                  // revert: just remove the newly-added label
+                  moveToLabel(ids, currentLabel);
+                }
+
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              } catch {
+                setSnackbar({
+                  open: true,
+                  message: "Could not undo.",
+                  autoHideDuration: 4000,
+                  action: null,
+                });
+              }
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      setSnackbar({
+        open: true,
+        message: "Could not move selected conversations.",
+        autoHideDuration: 4000,
+      });
     }
   };
 
@@ -154,15 +225,6 @@ export default function InboxActions() {
                       <Icon name="drive_file_move" label="Move" onClick={() => setOpen((s) => !s)} />
                     </div>
                   </div>
-
-                  {open && (
-                    <MoveToMenu
-                      anchorRef={anchorRef}
-                      labels={customLabels}
-                      onSelect={handleMenuItemClick}
-                      onClose={() => setOpen(false)}
-                    />
-                  )}
                 </React.Fragment>
               )}
 
@@ -207,6 +269,19 @@ export default function InboxActions() {
               moveToSpam(spamModal.ids);
               setSpamModal({ open: false, ids: [] });
             }}
+          />
+          {open && (
+            <MoveToMenu
+              anchorRef={anchorRef}
+              labels={customLabels}
+              onSelect={handleMenuItemClick}
+              onClose={() => setOpen(false)}
+            />
+          )}
+          <CreateLabelDialog
+            open={createOpen}
+            onClose={() => setCreateOpen(false)}
+            onAfterCreate={handleOnAfterCreate}
           />
         </div>
       </div>

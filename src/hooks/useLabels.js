@@ -13,10 +13,7 @@ export default function useLabels() {
         if (prev[trimmed]) return prev; // no dupes
         return {
           ...prev,
-          labels: {
-            ...prev,
-            [trimmed]: { system: false, color: null, ...meta },
-          },
+          [trimmed]: { system: false, color: null, ...meta },
         };
       });
     },
