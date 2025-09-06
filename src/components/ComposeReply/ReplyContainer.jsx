@@ -104,6 +104,9 @@ ${email.body}`;
       content,
       onClose: () => {
         setContent({ html: '', plainText: '' });
+        if (onClose) {
+          onClose();
+        }
       }
     });
   }
@@ -175,7 +178,7 @@ ${email.body}`;
           <RichTextEditor
             content={content.html}
             onChange={(html, plainText) => setContent({ html, plainText })}
-            className="reply-editor"
+            className="reply-text-editor"
           />
         </div>
         <div className={styles.composeToolbar}>

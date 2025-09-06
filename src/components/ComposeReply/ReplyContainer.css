@@ -60,7 +60,7 @@
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   z-index: 1000;
-  min-width: 150px;
+  min-width: 150px !important;
   padding: 4px 0px;
 }
 
@@ -90,4 +90,14 @@
   flex-grow: 1;
   padding-right: 10px;
   padding-left: 12px;
+}
+
+.reply-text-editor {
+  min-height: 100px !important;
+  max-height: 400px !important;
+  overflow-y: auto;
+}
+
+.reply-text-editor > div > .ProseMirror {
+  min-height: 100px !important;
 }

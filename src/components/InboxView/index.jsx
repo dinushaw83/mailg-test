@@ -7,7 +7,7 @@ import { Content } from "./Content";
 import { Subject } from "./Subject";
 import { Divider } from "@mui/material";
 import { Actions } from "./Actions";
-import EmailResponseView from "../Email/EmailResponseView";
+import ComposeReply from "../ComposeReply/ComposeReply";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
@@ -68,7 +68,7 @@ const InboxView = () => {
           </React.Fragment>
         ))}
         <Actions />
-        <EmailResponseView ref={responseViewRef} email={email} />
+        <ComposeReply ref={responseViewRef} email={email} />
       </InnerContainer>
     </InboxViewContainer>
   );

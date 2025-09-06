@@ -5,7 +5,7 @@ import replyAllImage from "../../icons/replyall.png";
 import forwardImage from "../../icons/forward.png";
 import ReplyContainer from './ReplyContainer';
 
-const EmailResponseView = React.forwardRef(({ email }, ref) => {
+const ComposeReply = React.forwardRef(({ email }, ref) => {
   React.useImperativeHandle(ref, () => ({
     handleReply
   }));
@@ -48,4 +48,4 @@ const EmailResponseView = React.forwardRef(({ email }, ref) => {
   );
 });
 
-export default React.memo(EmailResponseView);
+export default React.memo(ComposeReply);
