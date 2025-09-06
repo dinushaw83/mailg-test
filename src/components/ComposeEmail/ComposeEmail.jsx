@@ -254,7 +254,7 @@ export default function ComposeEmail({ composeWindow }) {
 
   const sendEmail = () => {
     // Use the draftId from the compose window if it exists, otherwise generate a new id
-    const newId = composeWindow?.draftId ? composeWindow?.draftId : generateNextEmailId(emails);
+    const newId = currentDraftId ? currentDraftId : generateNextEmailId(emails);
     const threadId = generateThreadId();
     const legacyThreadId = generateLegacyThreadId();
     const timestamp = new Date().toISOString();
@@ -312,7 +312,7 @@ export default function ComposeEmail({ composeWindow }) {
     setTimeout(() => {
       // Update emails array - replace draft with sent email if it was a draft, otherwise add new email
       const updatedEmails = isDraft
-        ? emails.map((email) => (email.id === newEmail.id ? newEmail : email))
+        ? emails.map((email) => (email.id?.toString() === newEmail.id?.toString() ? newEmail : email))
         : [newEmail, ...emails];
 
       // Update the global state
@@ -427,8 +427,10 @@ export default function ComposeEmail({ composeWindow }) {
     // Hide the snackbar
     setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
 
+    const threadId = lastSentEmailRef.current?.threadId.split(":")[1];
+
     // Navigate to the message in the sent items
-    navigate(`/sent/${lastSentEmailRef.current?.id}`);
+    navigate(`/sent/${threadId}`);
   };
 
   const handleSnackbarUndoDelete = () => {

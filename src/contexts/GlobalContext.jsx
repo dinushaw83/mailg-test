@@ -7,6 +7,7 @@ import { initialEmails } from "./fixtures/emails";
 import { recipients as initialRecipients } from "./fixtures/recipients";
 import { recipientLabels as initialRecipientLabels } from "./fixtures/recipientLabels";
 import { initialLabels } from "./fixtures/labels";
+import { normalizeEmails } from "../utils/emails";
 
 export const GlobalContext = createContext();
 
@@ -19,6 +20,9 @@ export const GlobalContextProvider = ({ children }) => {
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
   // Store multiple compose windows
   const [composeWindows, setComposeWindows] = usePersistedState("composeWindows", []);
+  const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
+  const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
+  const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 2);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -80,6 +84,10 @@ export const GlobalContextProvider = ({ children }) => {
     };
   }, [selected]);
 
+  const normalizedEmails = useMemo(() => {
+    return normalizeEmails(emails);
+  }, [emails]);
+
   const contextValue = {
     selection,
     loggedInUser,
@@ -100,6 +108,13 @@ export const GlobalContextProvider = ({ children }) => {
     setLabels,
     composeWindows,
     setComposeWindows,
+    sortOrder,
+    setSortOrder,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    normalizedEmails,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

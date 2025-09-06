@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
-import useLabelCounts from "./../LeftSidebar/useLabelCounts";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
 import useLabels from "../../hooks/useLabels";
