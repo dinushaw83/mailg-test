@@ -65,7 +65,7 @@ export default function ComposeEmail({ composeWindow }) {
     }
   };
 
-  // Load existing draft if draftId exists in the compose window when the component mounts
+  // Load existing draft if draftId exists in the compose window when the component mounts before painting to ui
   useLayoutEffect(() => {
     if (currentDraftId) {
       // Load existing draft

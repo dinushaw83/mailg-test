@@ -5,7 +5,7 @@ import { generateNextEmailId, generateThreadId, generateLegacyThreadId } from ".
 export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraftId }) => {
   const { emails, setEmails, loggedInUser } = useContext(GlobalContext);
   const [draftSaved, setDraftSaved] = useState(false);
-  const [isDraft, setIsDraft] = useState(false);
+  const [isDraft, setIsDraft] = useState(currentDraftId ? true : false);
   const [draftId, setDraftId] = useState(currentDraftId || null);
 
   const autoSaveTimeoutRef = useRef(null);
@@ -48,6 +48,22 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
       plainText: content.plainText.trim(),
     };
 
+    // If previous content is not set, but currentDraftId is passed, the content may be available in the emails state
+    if (!previousContentRef.current && currentDraftId) {
+      const draftEmail = emails.find((email) => email.id?.toString() === currentDraftId?.toString());
+      if (draftEmail) {
+        previousContentRef.current = {
+          to: draftEmail.to,
+          cc: draftEmail.cc,
+          bcc: draftEmail.bcc,
+          subject: draftEmail.subject === "(no subject)" ? "" : draftEmail.subject,
+          html: draftEmail.body,
+          plainText: draftEmail.preview,
+        };
+      }
+    }
+
+    // Check if the previous content is set
     if (!previousContentRef.current) {
       return true; // First time saving
     }
@@ -123,7 +139,7 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
 
       setEmails((prevEmails) => {
         // Remove existing draft if updating
-        const filteredEmails = draftId ? prevEmails.filter((email) => email.id !== draftId) : prevEmails;
+        const filteredEmails = draftId ? prevEmails.filter((email) => email.id?.toString() !== draftId?.toString()) : prevEmails;
 
         // Add new/updated draft at the beginning
         return [draftEmail, ...filteredEmails];
@@ -150,10 +166,10 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
           clearTimeout(draftSavedTimeoutRef.current);
         }
 
-        // Reset draft saved state after 2 seconds
+        // Reset draft saved state after 1 second
         draftSavedTimeoutRef.current = setTimeout(() => {
           setDraftSaved(false);
-        }, 2000);
+        }, 1000);
       }
 
       return true;
@@ -181,10 +197,10 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
       clearTimeout(autoSaveTimeoutRef.current);
     }
 
-    // Set new timeout for auto-save (2 seconds after last activity)
+    // Set new timeout for auto-save (1 second after last activity)
     autoSaveTimeoutRef.current = setTimeout(() => {
       saveDraft(true);
-    }, 2000);
+    }, 1000);
 
     // Cleanup timeout on unmount or dependency change
     return () => {
@@ -231,7 +247,7 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
   // Delete draft
   const deleteDraft = useCallback(() => {
     if (draftId) {
-      setEmails((prevEmails) => prevEmails.filter((email) => email.id !== draftId));
+      setEmails((prevEmails) => prevEmails.filter((email) => email.id?.toString() !== draftId?.toString()));
       setDraftId(null);
       setIsDraft(false);
     }
