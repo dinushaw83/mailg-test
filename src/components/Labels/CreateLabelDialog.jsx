@@ -67,7 +67,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
     const handleClose = () => { reset(); onClose?.(); };
 
     const handleCreate = () => {
-        // validate on submit (Gmail style)
+        // validate on submit
         if (missingName || isDup || missingParent) {
             setAttempted(true);
             return;
