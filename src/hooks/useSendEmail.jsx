@@ -4,7 +4,7 @@ import { Button } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
 import { generateThreadId, generateLegacyThreadId, generateNextEmailId } from "../utils/helperFunctions";
 
-export const useSendEmail = (replyTo, forward) => {
+export const useSendEmail = (replyTo, forward, originalEmail) => {
   const navigate = useNavigate();
   const { emails, setEmails, setSnackbar, loggedInUser } = useContext(GlobalContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -83,8 +83,9 @@ export const useSendEmail = (replyTo, forward) => {
 
   const sendEmail = ({ to, cc, bcc, subject, content, onClose }) => {
     const newId = generateNextEmailId(emails);
-    const threadId = generateThreadId();
-    const legacyThreadId = generateLegacyThreadId();
+    // Use original email's thread IDs for replies/forwards, or generate new ones
+    const threadId = (replyTo || forward) && originalEmail ? originalEmail.threadId : generateThreadId();
+    const legacyThreadId = (replyTo || forward) && originalEmail ? originalEmail.legacyThreadId : generateLegacyThreadId();
     const timestamp = new Date().toISOString();
     const timeDisplay = new Date().toLocaleTimeString("en-US", {
       hour: "numeric",

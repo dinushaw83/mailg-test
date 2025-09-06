@@ -67,8 +67,8 @@ const InboxView = () => {
             {index < messages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
           </React.Fragment>
         ))}
-        <Actions />
-        <ComposeReply ref={responseViewRef} email={email} />
+        {/* <Actions /> */}
+        <ComposeReply ref={responseViewRef} email={messages[messages.length - 1]} />
       </InnerContainer>
     </InboxViewContainer>
   );

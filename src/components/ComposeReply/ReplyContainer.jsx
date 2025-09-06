@@ -92,7 +92,8 @@ ${email.body}`;
 
   const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose } = useSendEmail(
     selectedReplyOption === 'forward' ? undefined : email.id,
-    selectedReplyOption === 'forward' ? email.id : undefined
+    selectedReplyOption === 'forward' ? email.id : undefined,
+    email
   );
 
   const handleSend = () => {
