@@ -4,8 +4,9 @@ import { generateAvatarColor } from "../../utils/helperFunctions";
 
 export default function RecipientChip({ recipient, onDelete }) {
   const isCustomRecipient = recipient.id && typeof recipient.id === "string" && recipient.id.startsWith("custom-");
-  const avatarColor = generateAvatarColor(recipient.name);
-  const initials = recipient.name.charAt(0).toUpperCase();
+  const name = recipient.name || recipient.email || "Unknown";
+  const avatarColor = generateAvatarColor(name);
+  const initials = name.charAt(0).toUpperCase();
 
   return (
     <Chip

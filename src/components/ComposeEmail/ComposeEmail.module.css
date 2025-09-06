@@ -2,7 +2,6 @@
 .composeModal {
   position: fixed;
   bottom: 0;
-  right: 60px;
   background: white;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
@@ -20,7 +19,7 @@
 /* Minimized state */
 .composeModal.minimized {
   width: 350px;
-  height: auto;
+  height: 40px;
 }
 
 /* Maximized state */
@@ -33,7 +32,7 @@
   height: 90vh;
   max-width: 1200px;
   max-height: 800px;
-  z-index: 1001;
+  z-index: 1002;
 }
 
 /* Modal overlay */
@@ -44,7 +43,7 @@
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: 1001;
 }
 
 /* Title Bar */

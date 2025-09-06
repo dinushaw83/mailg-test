@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
 import useLabels from "../../hooks/useLabels";
+import { useComposeModal } from "../../hooks/useComposeModal";
 
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
@@ -25,16 +25,21 @@ const HIDDEN_FOLDERS = [
 ];
 
 const LeftSidebar = () => {
-  const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
   const { emails, labels } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labelIndex } = useLabels();
+  const { addNewComposeWindow } = useComposeModal();
 
   const customLabels = Object.entries(labels || {})
     .filter(([name, meta]) => !meta.system)
     .map(([name]) => name)
     .sort();
+
+  // Open a new compose window
+  const openComposeWindow = () => {
+    addNewComposeWindow();
+  };
 
   return (
     <div
@@ -43,7 +48,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{ width: 187, height: 1001 }}
     >
-      <div className="aic" onClick={() => navigate("?compose=new")}>
+      <div className="aic" onClick={openComposeWindow}>
         <div className="z0">
           <div
             className="T-I T-I-KE L3"

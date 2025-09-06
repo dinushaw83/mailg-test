@@ -94,11 +94,6 @@ export default function RecipientsInput({
       }
 
       if (containerRef.current && !containerRef.current.contains(event.target)) {
-        // Update parent component with current state including input text
-        const toEmails = selectedRecipients.to.map((r) => r.email);
-        const ccEmails = selectedRecipients.cc.map((r) => r.email);
-        const bccEmails = selectedRecipients.bcc.map((r) => r.email);
-
         // Include input text as potential recipients for validation
         const toWithInput = [...selectedRecipients.to];
         const ccWithInput = [...selectedRecipients.cc];
@@ -498,7 +493,7 @@ export default function RecipientsInput({
             >
               {selectedRecipients.to.map((recipient) => (
                 <RecipientChip
-                  key={recipient.id}
+                  key={recipient.id || recipient.email}
                   recipient={recipient}
                   onDelete={() => handleChipDelete(recipient, "to")}
                 />
@@ -596,7 +591,7 @@ export default function RecipientsInput({
               >
                 {selectedRecipients.cc.map((recipient) => (
                   <RecipientChip
-                    key={recipient.id}
+                    key={recipient.id || recipient.email}
                     recipient={recipient}
                     onDelete={() => handleChipDelete(recipient, "cc")}
                   />
@@ -694,7 +689,7 @@ export default function RecipientsInput({
               >
                 {selectedRecipients.bcc.map((recipient) => (
                   <RecipientChip
-                    key={recipient.id}
+                    key={recipient.id || recipient.email}
                     recipient={recipient}
                     onDelete={() => handleChipDelete(recipient, "bcc")}
                   />

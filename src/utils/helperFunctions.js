@@ -6,6 +6,11 @@ export const generateAvatarColor = (name) => {
     "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800",
     "#ff5722", "#795548", "#607d8b"
   ];
+
+  // Handle undefined or null names
+  if (!name || typeof name !== "string") {
+    return colors[0];
+  }
   
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -23,8 +28,8 @@ export const generateThreadId = () => {
 
 // Generate a random legacy thread ID
 export const generateLegacyThreadId = () => {
-  const chars = '0123456789abcdef';
-  let result = '';
+  const chars = "0123456789abcdef";
+  let result = "";
   for (let i = 0; i < 16; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -34,6 +39,6 @@ export const generateLegacyThreadId = () => {
 // Generate the next email ID (highest existing ID + 1)
 export const generateNextEmailId = (emails) => {
   if (!emails || emails.length === 0) return 1;
-  const maxId = Math.max(...emails.map(email => email.id));
+  const maxId = Math.max(...emails.map((email) => email.id));
   return maxId + 1;
 };
