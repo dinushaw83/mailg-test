@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
-import useLabelCounts from "./../LeftSidebar/useLabelCounts";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
-import useLabels from "../../hooks/useLabels";
+import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
@@ -28,14 +27,26 @@ const HIDDEN_FOLDERS = [
 const LeftSidebar = () => {
   const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
-  const { emails, labels } = useGlobalContext();
+  const { emails } = useGlobalContext();
   const folders = useMailFolders(emails);
-  const { labelIndex } = useLabels();
+  const { labels, labelTree, labelIndex } = useLabels();
 
-  const customLabels = Object.entries(labels || {})
-    .filter(([name, meta]) => !meta.system)
-    .map(([name]) => name)
-    .sort();
+  // const customLabels = Object.entries(labels || {})
+  //   .filter(([name, meta]) => !meta.system)
+  //   .map(([name]) => name)
+  //   .sort();
+
+    const customLabels = useMemo(() => {
+      const flat = flattenTreeForSelect(labelTree);
+      return flat
+        .filter((item) => !labels?.[item.key]?.system)
+        .map((item) => ({
+          key: item.key, // composite key: "Work::Q4"
+          name: item.name, // just this node's name (for sidebar)
+          depth: item.depth, // for indent
+          unread: labelIndex[item.key]?.unread ?? 0,
+        }));
+    }, [labelTree, labels, labelIndex]);
 
   return (
     <div
@@ -166,11 +177,13 @@ const LeftSidebar = () => {
                         <div className="n3">
                           <div className="zw" gh="cl">
                             <div className="TK">
-                              {customLabels.map((name) => (
+                              {customLabels.map((l) => (
                                 <LabelItem
-                                  key={name}
-                                  name={name}
-                                  count={labelIndex[name]?.unread || 0}
+                                  key={l.key}
+                                  labelKey={l.key}
+                                  display={l.name}
+                                  depth={l.depth}
+                                  count={l.unread}
                                 />
                               ))}
                             </div>
