@@ -74,11 +74,7 @@ const LeftSidebar = () => {
       <div className="V3 aam">
         <div className="at9">
           <div className="Ls77Lb aZ6">
-            <div
-              jscontroller="DUNnfe"
-              className="pp"
-              style={{ userSelect: "none" }}
-            >
+            <div jscontroller="DUNnfe" className="pp" style={{ userSelect: "none" }}>
               <div id=":n8">
                 <div className="nM">
                   <div id=":mz" className="aic" />
@@ -108,19 +104,12 @@ const LeftSidebar = () => {
                           <span
                             role="button"
                             className="J-Ke n4 ah9"
-                            aria-label={
-                              showLess ? "More labels" : "Less labels"
-                            }
+                            aria-label={showLess ? "More labels" : "Less labels"}
                             tabIndex={0}
                             onClick={() => setShowLess(!showLess)}
                           >
-                            <span className="CJ">
-                              {showLess ? "More" : "Less"}
-                            </span>
-                            <span
-                              className="ait"
-                              style={{ marginRight: "18px" }}
-                            >
+                            <span className="CJ">{showLess ? "More" : "Less"}</span>
+                            <span className="ait" style={{ marginRight: "18px" }}>
                               <span
                                 className="material-symbols-outlined"
                                 style={{

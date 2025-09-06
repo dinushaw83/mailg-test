@@ -116,10 +116,10 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
         filtered = filtered.filter((r) => has(r, "Inbox"));
         break;
       case "starred":
-        filtered = filtered.filter((r) => r.starred);
+        filtered = filtered.filter((r) => r.starred && !has(r, "Spam") && !has(r, "Trash"));
         break;
-      case "important":
-        filtered = filtered.filter((r) => r.important);
+      case "snoozed":
+        filtered = filtered.filter((r) => has(r, "Snoozed") && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "sent":
         filtered = filtered.filter((r) => has(r, "Sent"));
@@ -127,11 +127,23 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
       case "drafts":
         filtered = filtered.filter((r) => has(r, "Drafts"));
         break;
+      case "important":
+        filtered = filtered.filter((r) => r.important && !has(r, "Spam") && !has(r, "Trash"));
+        break;
+      case "chats":
+        filtered = filtered.filter((r) => has(r, "Chats"));
+        break;
+      case "scheduled":
+        filtered = filtered.filter((r) => has(r, "Scheduled"));
+        break;
       case "spam":
         filtered = filtered.filter((r) => has(r, "Spam"));
         break;
       case "trash":
         filtered = filtered.filter((r) => has(r, "Trash"));
+        break;
+      case "categories":
+        filtered = filtered.filter((r) => has(r, "Categories"));
         break;
       case "all":
         filtered = filtered.filter((r) => !has(r, "Spam") && !has(r, "Trash"));
