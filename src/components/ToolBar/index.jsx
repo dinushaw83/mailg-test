@@ -163,7 +163,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
 
   const threadIds = emails.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
-  const allSelected = threadIds.every((threadId) => ids.has(threadId));
+  const allSelected = threadIds.length > 0 && threadIds.every((threadId) => ids.has(threadId));
 
   const toggleAllSelected = useCallback(() => {
     if (allSelected) {
