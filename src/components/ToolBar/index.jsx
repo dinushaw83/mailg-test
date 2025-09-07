@@ -15,7 +15,7 @@ const CheckboxContainer = styled.div`
   background-color: ${({ focused }) => (focused ? "rgba(239, 238, 237, 0.5)" : "transparent")};
 `;
 
-const CheckBox = ({ checked, toggle }) => {
+const CheckBox = ({ allSelected, partialSelected, toggle }) => {
   const [{ focused }, setState] = useState({
     focused: false,
   });
@@ -49,7 +49,7 @@ const CheckBox = ({ checked, toggle }) => {
               color: "rgb(68, 68, 68)",
             }}
           >
-            {checked ? "check_box" : "check_box_outline_blank"}
+            {allSelected ? "check_box" : partialSelected ? "indeterminate_check_box" : "check_box_outline_blank"}
           </span>
         </IconButton>
         <IconButton
@@ -164,9 +164,10 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
   const threadIds = emails.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
   const allSelected = threadIds.length > 0 && threadIds.every((threadId) => ids.has(threadId));
+  const partialSelected = threadIds.length > 0 && threadIds.some((threadId) => ids.has(threadId));
 
   const toggleAllSelected = useCallback(() => {
-    if (allSelected) {
+    if (allSelected || partialSelected) {
       selection.clear();
     } else {
       selection.setMany(threadIds);
@@ -178,7 +179,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
   return (
     <div className="G-atb">
       <LeftItemsContainer>
-        <CheckBox checked={allSelected} toggle={toggleAllSelected} />
+        <CheckBox allSelected={allSelected} partialSelected={partialSelected} toggle={toggleAllSelected} />
 
         {hasItemsSelected ? (
           <BulkActions isSpam={folder === "spam"} />
