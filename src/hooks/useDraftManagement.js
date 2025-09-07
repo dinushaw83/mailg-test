@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { generateNextEmailId, generateThreadId, generateLegacyThreadId } from "../utils/helperFunctions";
+import { generateNextIntegerId, generateThreadId, generateLegacyThreadId } from "../utils/helperFunctions";
 
 export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraftId }) => {
   const { emails, setEmails, loggedInUser } = useContext(GlobalContext);
@@ -95,7 +95,7 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
       });
 
       return {
-        id: id || generateNextEmailId(emails),
+        id: id || generateNextIntegerId(emails),
         threadId: generateThreadId(),
         legacyThreadId: generateLegacyThreadId(),
         legacyLastMessageId: generateLegacyThreadId(),

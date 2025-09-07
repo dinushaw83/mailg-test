@@ -19,7 +19,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
   // Store multiple compose windows
-  const [composeWindows, setComposeWindows] = usePersistedState("composeWindows", []);
+  const [composeWindows, setComposeWindows] = useState([]);
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
   const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 2);
@@ -40,6 +40,8 @@ export const GlobalContextProvider = ({ children }) => {
   useEffect(() => {
     setSelected(new Set());
   }, [location.pathname]);
+
+  // Reset compose windows
 
   const selection = useMemo(() => {
     const isSelected = (id) => selected.has(id);

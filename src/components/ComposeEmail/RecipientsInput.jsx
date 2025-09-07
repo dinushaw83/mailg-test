@@ -380,22 +380,22 @@ export default function RecipientsInput({
   // Handle inserting a recipient from select contacts
   const handleInsertSelectedContacts = (contacts) => {
     const fieldName = selectedContactsModal.field;
-    const newSelectedRecipients = { ...selectedRecipients };
-    // Push the contacts to the selectedRecipients of respective field if it doesn't exist
-    contacts.forEach((contact) => {
-      if (!newSelectedRecipients[fieldName].some((recipient) => recipient.id === contact.id)) {
-        newSelectedRecipients[fieldName].push(contact);
-      }
-    });
-    setSelectedRecipients(newSelectedRecipients);
-    
+    if (contacts.length > 0) {
+      const newSelectedRecipients = { ...selectedRecipients };
+
+      // Replace the selectedRecipients of respective field with the new contacts
+      newSelectedRecipients[fieldName] = [...contacts];
+
+      setSelectedRecipients(newSelectedRecipients);
+
+      // Update the parent component
+      if (selectedContactsModal.field === "to") onToChange(newSelectedRecipients[selectedContactsModal.field]);
+      if (selectedContactsModal.field === "cc") onCcChange(newSelectedRecipients[selectedContactsModal.field]);
+      if (selectedContactsModal.field === "bcc") onBccChange(newSelectedRecipients[selectedContactsModal.field]);
+    }
+
     // Reset modal state
     setSelectedContactsModal({ open: false, field: null });
-
-    // Update the parent component
-    if (selectedContactsModal.field === "to") onToChange(newSelectedRecipients[selectedContactsModal.field]);
-    if (selectedContactsModal.field === "cc") onCcChange(newSelectedRecipients[selectedContactsModal.field]);
-    if (selectedContactsModal.field === "bcc") onBccChange(newSelectedRecipients[selectedContactsModal.field]);
   };
 
   // Render option for autocomplete
@@ -806,7 +806,7 @@ export default function RecipientsInput({
           handleInsertContacts={handleInsertSelectedContacts}
           open={selectedContactsModal.open}
           onClose={() => setSelectedContactsModal((prev) => ({ ...prev, open: false }))}
-          selectedCount={selectedContactsModal.field ? selectedRecipients[selectedContactsModal.field].length : 0}
+          addedRecipients={selectedContactsModal.field ? selectedRecipients[selectedContactsModal.field] : []}
         />
       )}
     </div>
