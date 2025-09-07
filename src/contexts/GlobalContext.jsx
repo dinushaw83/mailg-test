@@ -18,6 +18,8 @@ export const GlobalContextProvider = ({ children }) => {
   const [recipientLabels, setRecipientLabels] = usePersistedState("recipientLabels", initialRecipientLabels);
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
+  const [composeOpen, setComposeOpen] = usePersistedState("composeOpen", false);
+  const [labels, setLabels] = usePersistedState("labels", initialLabels);
   // Store multiple compose windows
   const [composeWindows, setComposeWindows] = usePersistedState("composeWindows", []);
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
@@ -33,7 +35,6 @@ export const GlobalContextProvider = ({ children }) => {
   });
 
   const [selected, setSelected] = useState(() => new Set());
-  const [labels, setLabels] = useState(initialLabels);
 
   // Clear selection on navigation (folder/label changes)
   const location = useLocation();

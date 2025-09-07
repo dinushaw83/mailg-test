@@ -2,143 +2,240 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * ID utilities (thread-aware)
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const toArray = (v) =>
+  Array.isArray(v) ? v : v instanceof Set ? [...v] : v == null ? [] : [v];
+
+const buildIdIndex = (selection) =>
+  new Set(
+    toArray(selection)
+      .flatMap((item) => {
+        if (item && typeof item === "object") {
+          return [
+            item.id,
+            item.messageId,
+            item.threadId,
+            item?.threadId && String(item.threadId).replace("#thread-f:", ""),
+            item.legacyThreadId,
+            item.legacyLastMessageId,
+            item.legacyLastNonDraftMessageId,
+          ];
+        }
+        return [item];
+      })
+      .map((x) => String(x ?? "").trim())
+      .filter(Boolean)
+  );
+
+const collectKeysFromMessage = (m) => {
+  const out = [];
+  const add = (v) => {
+    if (v == null) return;
+    const s = String(v).trim();
+    if (s) out.push(s);
+  };
+  add(m.id);
+  add(m.messageId);
+  add(m.threadId);
+  add(m.threadId && String(m.threadId).replace("#thread-f:", ""));
+  add(m.legacyThreadId);
+  add(m.legacyLastMessageId);
+  add(m.legacyLastNonDraftMessageId);
+  return out;
+};
+
+const makeMatch = (selection) => {
+  const index = buildIdIndex(selection);
+  return (m) => collectKeysFromMessage(m).some((k) => index.has(k));
+};
+
+const normaliseLabels = (arr) => {
+  const out = [];
+  const seen = new Set();
+  for (const v of arr || []) {
+    const s = String(v).trim();
+    if (!s || seen.has(s)) continue;
+    seen.add(s);
+    out.push(s);
+  }
+  return out;
+};
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * Hook
+ * ────────────────────────────────────────────────────────────────────────── */
+
 export default function useMailActions() {
   const { setEmails } = useContext(GlobalContext);
 
-  const updateLabelsByIds = useCallback(
+  const updateByIds = useCallback(
     (ids, transform) => {
-      const idSet = new Set(ids.map((id) => String(id)));
+      const match = makeMatch(ids);
       setEmails((prev) =>
         prev.map((m) => {
-          if (!idSet.has(String(m.id))) return m;
+          if (!match(m)) return m;
           const labels = new Set(m.labels || []);
           transform(labels, m);
-          return { ...m, labels: Array.from(labels) };
+          return { ...m, labels: normaliseLabels([...labels]) };
         })
       );
     },
     [setEmails]
   );
 
-  const actions = useMemo(() => {
-    const addLabels = (ids, names = []) => updateLabelsByIds(ids, (labels) => names.forEach((n) => labels.add(n)));
+  const replaceWithSingleLabel = (label) => (labels) => {
+    labels.clear();
+    labels.add(label);
+  };
 
-    const removeLabels = (ids, names = []) =>
-      updateLabelsByIds(ids, (labels) => names.forEach((n) => labels.delete(n)));
+  const addLabels = useCallback(
+    (ids, names = []) =>
+      updateByIds(ids, (labels) => {
+        for (const n of names) {
+          if (!n) continue;
+          labels.add(String(n));
+        }
+      }),
+    [updateByIds]
+  );
 
-    const moveToInbox = (ids) =>
-      updateLabelsByIds(ids, (labels) => {
+  const removeLabels = useCallback(
+    (ids, names = []) =>
+      updateByIds(ids, (labels) => {
+        for (const n of names) labels.delete(String(n));
+      }),
+    [updateByIds]
+  );
+
+  const moveToInbox = useCallback(
+    (ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")),
+    [updateByIds]
+  );
+
+  const archive = useCallback(
+    (ids) => updateByIds(ids, replaceWithSingleLabel("Archive")),
+    [updateByIds]
+  );
+
+  const moveToSpam = useCallback(
+    (ids) =>
+      updateByIds(ids, (labels) => {
         labels.clear();
-        labels.add("Inbox");
-      });
+        labels.add("Spam");
+      }),
+    [updateByIds]
+  );
 
-    const archive = (ids) =>
-      updateLabelsByIds(ids, (labels) => {
+  const notSpam = useCallback(
+    (ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")),
+    [updateByIds]
+  );
+
+  const moveToTrash = useCallback(
+    (ids) => updateByIds(ids, replaceWithSingleLabel("Trash")),
+    [updateByIds]
+  );
+
+  const restoreFromTrash = useCallback(
+    (ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")),
+    [updateByIds]
+  );
+
+  const toggleStar = useCallback(
+    (ids) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: !m.starred } : m)));
+    },
+    [setEmails]
+  );
+
+  const markRead = useCallback(
+    (ids, read = true) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, read } : m)));
+    },
+    [setEmails]
+  );
+
+  const toggleImportant = useCallback(
+    (ids) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, important: !m.important } : m)));
+    },
+    [setEmails]
+  );
+
+  const setImportant = useCallback(
+    (ids, value = true) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, important: !!value } : m)));
+    },
+    [setEmails]
+  );
+
+  const moveToLabel = useCallback(
+    (ids, name) =>
+      updateByIds(ids, (labels) => {
         labels.clear();
-        labels.add("Archive");
-      });
+        if (name) labels.add(String(name));
+      }),
+    [updateByIds]
+  );
 
-    const moveToSpam = (ids) => {
-      const idSet = new Set(ids.map((id) => String(id)));
-      setEmails((prev) =>
-        prev.map((m) => {
-          if (!idSet.has(String(m.id))) return m;
-
-          const labels = new Set(m.labels || []);
-          labels.clear();
-          labels.add("Spam");
-
-          return {
-            ...m,
-            important: false,
-            labels: Array.from(labels),
-          };
-        })
-      );
-    };
-
-    const moveToTrash = (ids) =>
-      updateLabelsByIds(ids, (labels) => {
+  const moveToLabelFrom = useCallback(
+    (ids, _sourceLabel, dest) =>
+      updateByIds(ids, (labels) => {
         labels.clear();
-        labels.add("Trash");
-      });
+        if (dest) labels.add(String(dest));
+      }),
+    [updateByIds]
+  );
 
-    const restoreFromTrash = (ids) =>
-      updateLabelsByIds(ids, (labels) => {
-        labels.clear();
-        labels.add("Inbox");
-      });
+  const deleteForever = useCallback(
+    (ids) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.filter((m) => !match(m)));
+    },
+    [setEmails]
+  );
 
-    const toggleStar = (ids) =>
-      setEmails((prev) =>
-        prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, starred: !m.starred } : m))
-      );
-
-    const markRead = (ids, read = true) =>
-      setEmails((prev) => prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, read } : m)));
-
-    const toggleImportant = (ids) =>
-      setEmails((prev) =>
-        prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, important: !m.important } : m))
-      );
-
-    const setImportant = (ids, value = true) =>
-      setEmails((prev) =>
-        prev.map((m) => (ids.map((id) => String(id)).includes(String(m.id)) ? { ...m, important: value } : m))
-      );
-
-    const notSpam = (ids) =>
-      updateLabelsByIds(ids, (labels) => {
-        labels.clear();
-        labels.add("Inbox");
-      });
-
-    const moveToLabel = (ids, name) => {
-      const idSet = new Set(ids.map((id) => String(id)));
-      setEmails((prev) =>
-        prev.map((m) => {
-          if (!idSet.has(String(m.id))) return m;
-          const labels = new Set(m.labels || []);
-          labels.clear();
-          labels.add(name); // e.g. "Work"
-          return { ...m, labels: Array.from(labels) };
-        })
-      );
-    };
-
-    // When moving from one label view to another label,
-    // remove the current label and add the new one.
-    const moveToLabelFrom = (ids, sourceLabel, dest) => {
-      const idSet = new Set(ids.map((id) => String(id)));
-      setEmails((prev) =>
-        prev.map((m) => {
-          if (!idSet.has(String(m.id))) return m;
-          const labels = new Set(m.labels || []);
-          labels.clear();
-          if (sourceLabel) labels.delete(sourceLabel);
-          labels.add(dest);
-          return { ...m, labels: Array.from(labels) };
-        })
-      );
-    };
-
-    return {
+  return useMemo(
+    () => ({
       addLabels,
       removeLabels,
       moveToInbox,
       archive,
       moveToSpam,
+      notSpam,
       moveToTrash,
       restoreFromTrash,
+      moveToLabel,
+      moveToLabelFrom,
       toggleStar,
       markRead,
       toggleImportant,
       setImportant,
+      deleteForever,
+    }),
+    [
+      addLabels,
+      removeLabels,
+      moveToInbox,
+      archive,
+      moveToSpam,
       notSpam,
+      moveToTrash,
+      restoreFromTrash,
       moveToLabel,
       moveToLabelFrom,
-    };
-  }, [setEmails, updateLabelsByIds]);
-
-  return actions;
+      toggleStar,
+      markRead,
+      toggleImportant,
+      setImportant,
+      deleteForever,
+    ]
+  );
 }
