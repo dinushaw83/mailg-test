@@ -180,7 +180,14 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
       <LeftItemsContainer>
         <CheckBox checked={allSelected} toggle={toggleAllSelected} />
 
-        {hasItemsSelected ? <BulkActions isSpam={folder === "spam"} /> : <Icon name="refresh" />}
+        {hasItemsSelected ? (
+          <BulkActions isSpam={folder === "spam"} />
+        ) : (
+          <>
+            <Icon name="refresh" />
+            <Icon name="more_vert" />
+          </>
+        )}
       </LeftItemsContainer>
       <RightActions totalFilteredItems={totalFilteredItems} />
     </div>
