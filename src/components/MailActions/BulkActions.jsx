@@ -2,13 +2,13 @@ import Box from "@mui/material/Box";
 import { Icon } from "../InboxView/ActionBar";
 import React, { useMemo, useRef, useState } from "react";
 import Divider from "@mui/material/Divider";
-import SpamActions from "../MailActions/SpamActions";
-import MoveToMenu from "../MailActions/MoveToMenu";
+import SpamActions from "./SpamActions";
+import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import { useParams } from "react-router-dom";
 import Button from "@mui/material/Button";
-import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
+import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
 const BulkActions = ({ isSpam = false }) => {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
@@ -114,6 +114,8 @@ const BulkActions = ({ isSpam = false }) => {
       <Icon name="mark_email_unread" label="Mark as unread" />
       {/* The next icon does not exactly match */}
       <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
+
+      <Icon name="more_vert" />
 
       {moveToMenuOpen && (
         <MoveToMenu

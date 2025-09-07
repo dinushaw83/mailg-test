@@ -7,7 +7,7 @@ import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
-import BulkActions from "./BulkActions";
+import BulkActions from "../MailActions";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -180,11 +180,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
       <LeftItemsContainer>
         <CheckBox checked={allSelected} toggle={toggleAllSelected} />
 
-        {/* Refresh button */}
         {hasItemsSelected ? <BulkActions isSpam={folder === "spam"} /> : <Icon name="refresh" />}
-
-        {/* More button */}
-        <Icon name="more_vert" />
       </LeftItemsContainer>
       <RightActions totalFilteredItems={totalFilteredItems} />
     </div>
