@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
-import useLabels from "../../hooks/useLabels";
+import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 
 const DEFAULT_FOLDERS = [
@@ -26,15 +27,27 @@ const HIDDEN_FOLDERS = [
 
 const LeftSidebar = () => {
   const [showLess, setShowLess] = useState(true);
-  const { emails, labels } = useGlobalContext();
+  const { emails } = useGlobalContext();
   const folders = useMailFolders(emails);
-  const { labelIndex } = useLabels();
+  const { labels, labelTree, labelIndex } = useLabels();
   const { addNewComposeWindow } = useComposeModal();
 
-  const customLabels = Object.entries(labels || {})
-    .filter(([name, meta]) => !meta.system)
-    .map(([name]) => name)
-    .sort();
+  // const customLabels = Object.entries(labels || {})
+  //   .filter(([name, meta]) => !meta.system)
+  //   .map(([name]) => name)
+  //   .sort();
+
+  const customLabels = useMemo(() => {
+    const flat = flattenTreeForSelect(labelTree);
+    return flat
+      .filter((item) => !labels?.[item.key]?.system)
+      .map((item) => ({
+        key: item.key, // composite key: "Work::Q4"
+        name: item.name, // just this node's name (for sidebar)
+        depth: item.depth, // for indent
+        unread: labelIndex[item.key]?.unread ?? 0,
+      }));
+  }, [labelTree, labels, labelIndex]);
 
   // Open a new compose window
   const openComposeWindow = () => {
@@ -67,7 +80,11 @@ const LeftSidebar = () => {
       <div className="V3 aam">
         <div className="at9">
           <div className="Ls77Lb aZ6">
-            <div jscontroller="DUNnfe" className="pp" style={{ userSelect: "none" }}>
+            <div
+              jscontroller="DUNnfe"
+              className="pp"
+              style={{ userSelect: "none" }}
+            >
               <div id=":n8">
                 <div className="nM">
                   <div id=":mz" className="aic" />
@@ -97,12 +114,19 @@ const LeftSidebar = () => {
                           <span
                             role="button"
                             className="J-Ke n4 ah9"
-                            aria-label={showLess ? "More labels" : "Less labels"}
+                            aria-label={
+                              showLess ? "More labels" : "Less labels"
+                            }
                             tabIndex={0}
                             onClick={() => setShowLess(!showLess)}
                           >
-                            <span className="CJ">{showLess ? "More" : "Less"}</span>
-                            <span className="ait" style={{ marginRight: "18px" }}>
+                            <span className="CJ">
+                              {showLess ? "More" : "Less"}
+                            </span>
+                            <span
+                              className="ait"
+                              style={{ marginRight: "18px" }}
+                            >
                               <span
                                 className="material-symbols-outlined"
                                 style={{
@@ -159,8 +183,14 @@ const LeftSidebar = () => {
                         <div className="n3">
                           <div className="zw" gh="cl">
                             <div className="TK">
-                              {customLabels.map((name) => (
-                                <LabelItem key={name} name={name} count={labelIndex[name]?.unread || 0} />
+                              {customLabels.map((l) => (
+                                <LabelItem
+                                  key={l.key}
+                                  labelKey={l.key}
+                                  display={l.name}
+                                  depth={l.depth}
+                                  count={l.unread}
+                                />
                               ))}
                             </div>
                           </div>

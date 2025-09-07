@@ -343,7 +343,7 @@ export default function MoveToMenu({
             className="J-JK"
             label="Create new"
             padding="2px 48px"
-            onClick={() => alert("Create new")}
+            onClick={() => handleSelect({ id: "__create_label__", name: "Create new" })}
           />
 
           <HoverRow

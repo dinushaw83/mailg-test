@@ -125,7 +125,7 @@ export default function SpamOrUnsubModal({
                     </h3>
 
                     <p style={p}>
-                        Gmail can <strong>unsubscribe</strong> you from the sender.
+                        MailG can <strong>unsubscribe</strong> you from the sender.
                     </p>
                     <p style={p}>
                         If you didn't sign up to receive this message, <strong>Report spam</strong> instead to
