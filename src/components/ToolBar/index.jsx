@@ -1,154 +1,178 @@
 import Pagination from "./Pagination";
 
+import React, { useState } from "react";
 import MailActions from "../MailActions";
+import IconButton from "@mui/material/IconButton";
+import styled from "@emotion/styled";
+import { Icon } from "../InboxView/ActionBar";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+
+const CheckboxContainer = styled.div`
+  border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
+  border-radius: 5px;
+  background-color: ${({ focused }) => (focused ? "rgba(239, 238, 237, 0.5)" : "transparent")};
+`;
+
+const CheckBox = () => {
+  const [{ checked, open, focused }, setState] = useState({
+    checked: false,
+    open: false,
+    focused: false,
+  });
+
+  const toggleOpen = () => {
+    setState((prev) => ({
+      ...prev,
+      open: !prev.open,
+      focused: true,
+    }));
+  };
+
+  const toggle = () => {
+    setState((prev) => ({
+      ...prev,
+      checked: !prev.checked,
+      focused: true,
+    }));
+  };
+
+  return (
+    <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false }))}>
+      <CheckboxContainer focused={focused}>
+        <IconButton
+          onClick={toggle}
+          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "3px", paddingRight: "3px", borderRadius: "5px" }}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 20,
+              color: "rgb(68, 68, 68)",
+            }}
+          >
+            {checked ? "check_box" : "check_box_outline_blank"}
+          </span>
+        </IconButton>
+        <IconButton
+          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "1px", paddingRight: "1px", borderRadius: "5px" }}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 20,
+              color: "rgb(68, 68, 68)",
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleOpen();
+            }}
+          >
+            arrow_drop_down
+          </span>
+        </IconButton>
+      </CheckboxContainer>
+    </ClickAwayListener>
+  );
+};
+
+const ToggleSplitPaneButton = () => {
+  const [{ focused, open, splitPane }, setState] = useState({
+    focused: false,
+    open: false,
+    splitPane: false,
+  });
+
+  const toggleOpen = () => {
+    setState((prev) => ({
+      ...prev,
+      open: !prev.open,
+      focused: true,
+    }));
+  };
+
+  const toggleSplitPane = () => {
+    setState((prev) => ({
+      ...prev,
+      splitPane: !prev.splitPane,
+      focused: true,
+    }));
+  };
+
+  return (
+    <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false }))}>
+      <CheckboxContainer focused={focused}>
+        <IconButton
+          onClick={toggleSplitPane}
+          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "3px", paddingRight: "3px", borderRadius: "5px" }}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 20,
+              color: "rgb(68, 68, 68)",
+            }}
+          >
+            vertical_split
+          </span>
+        </IconButton>
+        <IconButton
+          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "1px", paddingRight: "1px", borderRadius: "5px" }}
+          onClick={toggleOpen}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 20,
+              color: "rgb(68, 68, 68)",
+            }}
+          >
+            {open ? "arrow_drop_up" : "arrow_drop_down"}
+          </span>
+        </IconButton>
+      </CheckboxContainer>
+    </ClickAwayListener>
+  );
+};
+
+const RightActionsContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const RightActions = ({ totalFilteredItems }) => {
+  return (
+    <RightActionsContainer>
+      <Pagination totalFilteredItems={totalFilteredItems} />
+      <ToggleSplitPaneButton />
+    </RightActionsContainer>
+  );
+};
+
+const LeftItemsContainer = ({ children }) => {
+  return (
+    <div className="bzn">
+      <div className="G-tF" style={{ display: "flex", alignItems: "center" }}>
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const ToolBar = ({ totalFilteredItems }) => {
+  // return <MailActions />;
+
   return (
-    <div className="D E G-atb" gh="tm">
-      <div className="G6" role="toolbar" aria-label="search refinement">
-        <div className="YhbRke sf-hidden" />
-      </div>
-      <div className="nH aqK">
-        <div className="Cq aqL" gh="mtb">
-          <div className="bzn" jslog="202616; u014N:xr6bB">
-            <div className="G-tF">
-              {/* Select button */}
-              <div className="G-Ni J-J5-Ji">
-                <div
-                  id=":2u"
-                  className="T-I J-J5-Ji T-Pm T-I-ax7 L3 J-JN-M-I"
-                  role="button"
-                  tabIndex={0}
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                  data-tooltip="Select"
-                  aria-label="Select"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="J-J5-Ji J-JN-M-I-Jm">
-                    <span
-                      className="T-Jo J-J5-Ji"
-                      jslog="170807; u014N:cOuCgd,Kr2w4b;"
-                      aria-checked="false"
-                      role="checkbox"
-                      dir="ltr"
-                      style={{ userSelect: "none" }}
-                    >
-                      <div className="T-Jo-auh sf-hidden" role="presentation" />
-                    </span>
-                    <div className="G-asx T-I-J3 J-J5-Ji" aria-hidden="true">
-                      &nbsp;
-                    </div>
-                  </div>
-                  <div className="J-J5-Ji J-JN-M-I-JG sf-hidden" aria-hidden="true">
-                    &nbsp;
-                  </div>
-                </div>
-              </div>
-              <div className="G-Ni G-aE J-J5-Ji" style={{ display: "none" }} />
-              <div className="G-Ni J-J5-Ji" style={{ display: "none" }} />
+    <div className="G-atb">
+      <LeftItemsContainer>
+        <CheckBox />
 
-              {/* Refresh button */}
-              <div className="G-Ni J-J5-Ji">
-                <div
-                  className="T-I J-J5-Ji nu T-I-ax7 L3"
-                  act={20}
-                  role="button"
-                  tabIndex={0}
-                  jslog="110081; u014N:xr6bB,cOuCgd,Kr2w4b"
-                  data-tooltip="Refresh"
-                  aria-label="Refresh"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="asa">
-                    <div className="asf T-I-J3 J-J5-Ji" />
-                  </div>
-                </div>
-              </div>
-              {/* <div className="J-J5-Ji">
-                <div className="T9" style={{ display: "none" }}>
-                  Fetching mail...
-                </div>
-              </div> */}
+        {/* Refresh button */}
+        <Icon name="refresh" />
 
-              {/* More button */}
-              <div className="G-Ni J-J5-Ji">
-                <div
-                  id=":2w"
-                  className="T-I J-J5-Ji nf T-I-ax7 L3"
-                  role="button"
-                  tabIndex={0}
-                  aria-label="More email options"
-                  aria-haspopup="false"
-                  aria-expanded="false"
-                  data-tooltip="More"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="asa">
-                    <div className="bjy T-I-J3 J-J5-Ji" />
-                  </div>
-                  <div className="G-asx T-I-J3 J-J5-Ji sf-hidden">&nbsp;</div>
-                </div>
-              </div>
-              {/* <div
-                className="J-M jQjAxd"
-                role="menu"
-                aria-haspopup="true"
-                style={{
-                  display: "none",
-                  userSelect: "none",
-                }}
-              /> */}
-            </div>
-          </div>
-        </div>
-        <div className="Cr aqJ">
-          <div className="ar5 J-J5-Ji">
-            <Pagination totalFilteredItems={totalFilteredItems} />
-          </div>
-
-          {/* Toggle split pane mode button */}
-          <div className="G-Ni J-J5-Ji" jslog="177396; u014N:cOuCgd,Kr2w4b,xr6bB;">
-            <div
-              id=":1w"
-              className="T-I J-J5-Ji apF T-I-Js-IF T-I-ax7 L3"
-              role="button"
-              tabIndex={0}
-              data-tooltip="Toggle split pane mode"
-              aria-label="Toggle split pane mode"
-              style={{ userSelect: "none" }}
-            >
-              <div className="asa">
-                <div className="apH T-I-J3 J-J5-Ji apK" />
-              </div>
-            </div>
-            <div
-              id=":1y"
-              className="T-I J-J5-Ji T-I-Js-Gs apG T-I-ax7 L3"
-              role="button"
-              tabIndex={0}
-              aria-expanded="false"
-              aria-haspopup="true"
-              style={{ userSelect: "none" }}
-            >
-              <div className="G-asx J-J5-Ji" />
-            </div>
-          </div>
-          <div
-            className="J-M apL jQjAxd"
-            role="menu"
-            aria-haspopup="true"
-            style={{
-              display: "none",
-              userSelect: "none",
-            }}
-          />
-        </div>
-        {/* <div className="dJ" /> */}
-      </div>
-      {/* <div className="LQDzGc" /> */}
-      {/* <div className="ciwp4" style={{ display: "none" }} /> */}
-      {/* <div className="r0yTaf" /> */}
+        {/* More button */}
+        <Icon name="more_vert" />
+      </LeftItemsContainer>
+      <RightActions totalFilteredItems={totalFilteredItems} />
     </div>
   );
 };
