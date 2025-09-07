@@ -8,6 +8,8 @@ import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { Icon } from "../InboxView/ActionBar";
 
+// look at these for reference:
+
 export default function InboxActions() {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
   const { selection, labels, emails, setSnackbar } = useGlobalContext();

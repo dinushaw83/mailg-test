@@ -1,13 +1,13 @@
 import Pagination from "./Pagination";
 
-import React, { useState } from "react";
-import MailActions from "../MailActions";
-import IconButton from "@mui/material/IconButton";
 import styled from "@emotion/styled";
-import { Icon } from "../InboxView/ActionBar";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
-import BulkActions from "./BulkActions";
+import IconButton from "@mui/material/IconButton";
+import React, { useCallback, useState } from "react";
+import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import { Icon } from "../InboxView/ActionBar";
+import BulkActions from "./BulkActions";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -16,7 +16,6 @@ const CheckboxContainer = styled.div`
 `;
 
 const CheckBox = ({ checked, toggle }) => {
-  console.log("CheckBox");
   const [{ focused }, setState] = useState({
     focused: false,
   });
@@ -158,20 +157,21 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems }) => {
-  console.log({ totalFilteredItems });
-  const [{ allSelected }, setState] = useState({
-    allSelected: false,
-  });
+const ToolBar = ({ totalFilteredItems, emails }) => {
+  const { folder = "inbox" } = useParams();
   const { selection } = useGlobalContext();
 
-  const toggleAllSelected = () => {
-    selection.clear();
-    setState((prev) => ({
-      ...prev,
-      allSelected: !prev.allSelected,
-    }));
-  };
+  const threadIds = emails.map((email) => email.threadId.split(":")[1]);
+  const { ids } = selection;
+  const allSelected = threadIds.every((threadId) => ids.has(threadId));
+
+  const toggleAllSelected = useCallback(() => {
+    if (allSelected) {
+      selection.clear();
+    } else {
+      selection.setMany(threadIds);
+    }
+  }, [allSelected, threadIds, selection]);
 
   const hasItemsSelected = allSelected || selection.hasSelection;
 
@@ -181,7 +181,7 @@ const ToolBar = ({ totalFilteredItems }) => {
         <CheckBox checked={allSelected} toggle={toggleAllSelected} />
 
         {/* Refresh button */}
-        {hasItemsSelected ? <BulkActions isSpam /> : <Icon name="refresh" />}
+        {hasItemsSelected ? <BulkActions isSpam={folder === "spam"} /> : <Icon name="refresh" />}
 
         {/* More button */}
         <Icon name="more_vert" />
