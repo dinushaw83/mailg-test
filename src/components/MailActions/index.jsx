@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import { Icon } from "../InboxView/ActionBar";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import Divider from "@mui/material/Divider";
 import SpamActions from "./SpamActions";
 import MoveToMenu from "./MoveToMenu";
@@ -9,16 +9,6 @@ import useMailActions from "../../hooks/useMailActions";
 import { useParams } from "react-router-dom";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
-
-const LABELS = [
-  { id: "notes", name: "Notes" },
-  { id: "receipts", name: "Receipts" },
-  { id: "work", name: "Work" },
-  { id: "social", name: "Social" },
-  { id: "updates", name: "Updates" },
-  { id: "forums", name: "Forums" },
-  { id: "promotions", name: "Promotions" },
-];
 
 const BulkActions = ({ isSpam = false }) => {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
@@ -46,54 +36,58 @@ const BulkActions = ({ isSpam = false }) => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [labels]);
 
-  const handleMenuItemClick = async (item) => {
-    if (!ids.length) return;
+  const handleMenuItemClick = useCallback(
+    async (item) => {
+      c;
+      if (![...ids].length) return;
 
-    try {
-      if (item.id === "__inbox__" || item.id === "inbox") {
-        moveToLabel(ids, "Inbox");
-      } else if (item.id === "__spam__" || item.id === "spam") {
-        setSpamModal({ open: true, ids });
-        // moveToSpam(ids);
-      } else if (item.id === "__trash__" || item.id === "trash") {
-        moveToTrash(ids);
-        // Show global snackbar with Undo action
-        setSnackbar({
-          open: true,
-          message: "Conversation moved to Trash.",
-          autoHideDuration: 10000,
-          action: (
-            <Button
-              sx={{ textTransform: "none" }}
-              size="small"
-              onClick={() => {
-                moveToInbox(ids);
-                // Follow-up confirmation snackbar
-                setSnackbar({
-                  open: true,
-                  message: "Action undone.",
-                  autoHideDuration: 3000,
-                  action: null,
-                });
-              }}
-            >
-              Undo
-            </Button>
-          ),
-        });
-      } else if (item.id.startsWith("__label__")) {
-        // moving between labels:
-        if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
-          moveToLabelFrom(ids, currentLabel, item.name);
-        } else {
-          moveToLabel(ids, item.name);
+      try {
+        if (item.id === "__inbox__" || item.id === "inbox") {
+          moveToLabel([...ids], "Inbox");
+        } else if (item.id === "__spam__" || item.id === "spam") {
+          setSpamModal({ open: true, ids: [...ids] });
+          // moveToSpam(ids);
+        } else if (item.id === "__trash__" || item.id === "trash") {
+          moveToTrash([...ids]);
+          // Show global snackbar with Undo action
+          setSnackbar({
+            open: true,
+            message: "Conversation moved to Trash.",
+            autoHideDuration: 10000,
+            action: (
+              <Button
+                sx={{ textTransform: "none" }}
+                size="small"
+                onClick={() => {
+                  moveToInbox([...ids]);
+                  // Follow-up confirmation snackbar
+                  setSnackbar({
+                    open: true,
+                    message: "Action undone.",
+                    autoHideDuration: 3000,
+                    action: null,
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            ),
+          });
+        } else if (item.id.startsWith("__label__")) {
+          // moving between labels:
+          if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
+            moveToLabelFrom([...ids], currentLabel, item.name);
+          } else {
+            moveToLabel([...ids], item.name);
+          }
         }
+        selection.clear();
+      } catch (e) {
+        console.error("Move failed:", e);
       }
-      selection.clear();
-    } catch (e) {
-      console.error("Move failed:", e);
-    }
-  };
+    },
+    [[...ids], moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
+  );
 
   const toggleMoveToMenu = () => {
     setState((prev) => ({
@@ -130,7 +124,7 @@ const BulkActions = ({ isSpam = false }) => {
       {moveToMenuOpen && (
         <MoveToMenu
           anchorRef={anchorRef}
-          labels={LABELS}
+          labels={customLabels}
           onSelect={handleMenuItemClick}
           onClose={() =>
             setState((prev) => ({
