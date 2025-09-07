@@ -5,6 +5,7 @@ import useMailFolders from "../../hooks/useMailFolders";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
 import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
+import { useComposeModal } from "../../hooks/useComposeModal";
 
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
@@ -25,28 +26,33 @@ const HIDDEN_FOLDERS = [
 ];
 
 const LeftSidebar = () => {
-  const navigate = useNavigate();
   const [showLess, setShowLess] = useState(true);
   const { emails } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labels, labelTree, labelIndex } = useLabels();
+  const { addNewComposeWindow } = useComposeModal();
 
   // const customLabels = Object.entries(labels || {})
   //   .filter(([name, meta]) => !meta.system)
   //   .map(([name]) => name)
   //   .sort();
 
-    const customLabels = useMemo(() => {
-      const flat = flattenTreeForSelect(labelTree);
-      return flat
-        .filter((item) => !labels?.[item.key]?.system)
-        .map((item) => ({
-          key: item.key, // composite key: "Work::Q4"
-          name: item.name, // just this node's name (for sidebar)
-          depth: item.depth, // for indent
-          unread: labelIndex[item.key]?.unread ?? 0,
-        }));
-    }, [labelTree, labels, labelIndex]);
+  const customLabels = useMemo(() => {
+    const flat = flattenTreeForSelect(labelTree);
+    return flat
+      .filter((item) => !labels?.[item.key]?.system)
+      .map((item) => ({
+        key: item.key, // composite key: "Work::Q4"
+        name: item.name, // just this node's name (for sidebar)
+        depth: item.depth, // for indent
+        unread: labelIndex[item.key]?.unread ?? 0,
+      }));
+  }, [labelTree, labels, labelIndex]);
+
+  // Open a new compose window
+  const openComposeWindow = () => {
+    addNewComposeWindow();
+  };
 
   return (
     <div
@@ -55,7 +61,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{ width: 187, height: 1001 }}
     >
-      <div className="aic" onClick={() => navigate("?compose=new")}>
+      <div className="aic" onClick={openComposeWindow}>
         <div className="z0">
           <div
             className="T-I T-I-KE L3"
@@ -74,7 +80,11 @@ const LeftSidebar = () => {
       <div className="V3 aam">
         <div className="at9">
           <div className="Ls77Lb aZ6">
-            <div jscontroller="DUNnfe" className="pp" style={{ userSelect: "none" }}>
+            <div
+              jscontroller="DUNnfe"
+              className="pp"
+              style={{ userSelect: "none" }}
+            >
               <div id=":n8">
                 <div className="nM">
                   <div id=":mz" className="aic" />
@@ -104,12 +114,19 @@ const LeftSidebar = () => {
                           <span
                             role="button"
                             className="J-Ke n4 ah9"
-                            aria-label={showLess ? "More labels" : "Less labels"}
+                            aria-label={
+                              showLess ? "More labels" : "Less labels"
+                            }
                             tabIndex={0}
                             onClick={() => setShowLess(!showLess)}
                           >
-                            <span className="CJ">{showLess ? "More" : "Less"}</span>
-                            <span className="ait" style={{ marginRight: "18px" }}>
+                            <span className="CJ">
+                              {showLess ? "More" : "Less"}
+                            </span>
+                            <span
+                              className="ait"
+                              style={{ marginRight: "18px" }}
+                            >
                               <span
                                 className="material-symbols-outlined"
                                 style={{

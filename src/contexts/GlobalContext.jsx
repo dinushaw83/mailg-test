@@ -20,6 +20,8 @@ export const GlobalContextProvider = ({ children }) => {
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
   const [composeOpen, setComposeOpen] = usePersistedState("composeOpen", false);
   const [labels, setLabels] = usePersistedState("labels", initialLabels);
+  // Store multiple compose windows
+  const [composeWindows, setComposeWindows] = usePersistedState("composeWindows", []);
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
   const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 2);
@@ -101,12 +103,12 @@ export const GlobalContextProvider = ({ children }) => {
     setCurrentView,
     selectedEmails,
     setSelectedEmails,
-    composeOpen,
-    setComposeOpen,
     snackbar,
     setSnackbar,
     labels,
     setLabels,
+    composeWindows,
+    setComposeWindows,
     sortOrder,
     setSortOrder,
     currentPage,

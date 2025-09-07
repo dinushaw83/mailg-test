@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 import useMailActions from "../hooks/useMailActions";
 import CheckBox from "./ui/CheckBox";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { useComposeModal } from "../hooks/useComposeModal";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
-  const { selection } = useGlobalContext();
+  const location = useLocation();
+  const { selection } = useGlobalContext();;
   const { toggleImportant, toggleStar } = useMailActions();
+  const { addNewComposeWindow } = useComposeModal();;
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -70,6 +73,23 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     return status.join(", ");
   };
 
+  // Navigate to the email details page
+  const navigateToEmailDetails = (email, threadId) => {
+    // If pathname is /drafts, then add new compose window with the draft id
+    if (location.pathname === "/drafts") {
+      addNewComposeWindow(email.id);
+    } else {
+      // If compose param is present in the url, include it while navigating
+      const urlParams = new URLSearchParams(location.search);
+      const composeParam = urlParams.get("compose");
+      if (composeParam) {
+        navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
+      } else {
+        navigate(`${location.pathname}/${threadId}`);
+      }
+    }
+  };
+
   return (
     <tbody>
       {emails.map((email, index) => {
@@ -83,7 +103,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             role="row"
             aria-labelledby={`:pj${index}`}
             draggable="false"
-            onClick={() => navigate(`/inbox/${threadId}`)}
+            onClick={() => navigateToEmailDetails(email, threadId)}
           >
             <td className="PF xY" />
             <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
@@ -157,8 +177,9 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                     email={email.from.email}
                     name={email.from.name}
                     data-hovercard-id={email.from.email}
+                    style={location.pathname === "/drafts" ? { color: "#dd4b39", fontWeight: 400 } : {}}
                   >
-                    {email.from.name}
+                    {location.pathname === "/drafts" ? "Draft" : email.from.name}
                   </span>
                 </span>
               </div>

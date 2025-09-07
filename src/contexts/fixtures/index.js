@@ -10,7 +10,6 @@ export const initialState = {
   emails: initialEmails,
   currentView: "inbox",
   selectedEmails: [],
-  composeOpen: false,
   labels: {
     // system "folders" (don’t delete/rename in UI)
     Inbox: { system: true, exclusive: false, color: null },
