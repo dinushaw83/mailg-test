@@ -6,6 +6,8 @@ import IconButton from "@mui/material/IconButton";
 import styled from "@emotion/styled";
 import { Icon } from "../InboxView/ActionBar";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
+import BulkActions from "./BulkActions";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -13,25 +15,23 @@ const CheckboxContainer = styled.div`
   background-color: ${({ focused }) => (focused ? "rgba(239, 238, 237, 0.5)" : "transparent")};
 `;
 
-const CheckBox = () => {
-  const [{ checked, open, focused }, setState] = useState({
-    checked: false,
-    open: false,
+const CheckBox = ({ checked, toggle }) => {
+  console.log("CheckBox");
+  const [{ focused }, setState] = useState({
     focused: false,
   });
 
-  const toggleOpen = () => {
+  const toggleFocus = () => {
     setState((prev) => ({
       ...prev,
-      open: !prev.open,
       focused: true,
     }));
   };
 
-  const toggle = () => {
+  const toggleChecked = () => {
+    toggle();
     setState((prev) => ({
       ...prev,
-      checked: !prev.checked,
       focused: true,
     }));
   };
@@ -40,7 +40,7 @@ const CheckBox = () => {
     <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false }))}>
       <CheckboxContainer focused={focused}>
         <IconButton
-          onClick={toggle}
+          onClick={toggleChecked}
           sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "3px", paddingRight: "3px", borderRadius: "5px" }}
         >
           <span
@@ -64,7 +64,7 @@ const CheckBox = () => {
             }}
             onClick={(e) => {
               e.stopPropagation();
-              toggleOpen();
+              toggleFocus();
             }}
           >
             arrow_drop_down
@@ -159,15 +159,29 @@ const LeftItemsContainer = ({ children }) => {
 };
 
 const ToolBar = ({ totalFilteredItems }) => {
-  // return <MailActions />;
+  console.log({ totalFilteredItems });
+  const [{ allSelected }, setState] = useState({
+    allSelected: false,
+  });
+  const { selection } = useGlobalContext();
+
+  const toggleAllSelected = () => {
+    selection.clear();
+    setState((prev) => ({
+      ...prev,
+      allSelected: !prev.allSelected,
+    }));
+  };
+
+  const hasItemsSelected = allSelected || selection.hasSelection;
 
   return (
     <div className="G-atb">
       <LeftItemsContainer>
-        <CheckBox />
+        <CheckBox checked={allSelected} toggle={toggleAllSelected} />
 
         {/* Refresh button */}
-        <Icon name="refresh" />
+        {hasItemsSelected ? <BulkActions isSpam /> : <Icon name="refresh" />}
 
         {/* More button */}
         <Icon name="more_vert" />
