@@ -1,14 +1,15 @@
-import React, { useState, useRef, useMemo, Fragment } from "react";
-import { useParams } from "react-router-dom";
-import { Button, Divider, Box } from "@mui/material";
-
+import Box from "@mui/material/Box";
+import { Icon } from "../InboxView/ActionBar";
+import React, { Fragment, useMemo, useRef, useState } from "react";
+import Divider from "@mui/material/Divider";
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
+import { useParams } from "react-router-dom";
+import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
-import { Icon } from "../InboxView/ActionBar";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey } from "../../hooks/useLabels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
-import useLabels, { flattenTreeForSelect, makeKey, getPathLabelFromKey } from "../../hooks/useLabels";
 
 export default function MailActions() {
   const { moveToSpam, notSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, deleteForever } =
@@ -263,38 +264,6 @@ export default function MailActions() {
     <div className="Cq aqL" gh="mtb">
       <div className="bzn" jslog="202616; u014N:xr6bB">
         <div className="G-tF">
-          <div className="G-Ni J-J5-Ji">
-            <div
-              id=":2u"
-              className="T-I J-J5-Ji T-Pm T-I-ax7 L3 J-JN-M-I"
-              role="button"
-              tabIndex={0}
-              aria-haspopup="true"
-              aria-expanded="false"
-              data-tooltip="Select"
-              aria-label="Select"
-              style={{ userSelect: "none" }}
-            >
-              <div className="J-J5-Ji J-JN-M-I-Jm">
-                <span
-                  className="T-Jo J-J5-Ji"
-                  jslog="170807; u014N:cOuCgd,Kr2w4b;"
-                  aria-checked="false"
-                  role="checkbox"
-                  dir="ltr"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="T-Jo-auh sf-hidden" role="presentation" />
-                </span>
-                <div className="G-asx T-I-J3 J-J5-Ji" aria-hidden="true">
-                  &nbsp;
-                </div>
-              </div>
-              <div className="J-J5-Ji J-JN-M-I-JG sf-hidden" aria-hidden="true">
-                &nbsp;
-              </div>
-            </div>
-          </div>
           <div>
             <Box
               sx={{
@@ -365,15 +334,19 @@ export default function MailActions() {
                             />
                           )}
                           <Icon name="report" label="Report spam" onClick={() => console.log("Report clicked")} />
-                          {!inTrash && <Icon
-                            name="delete"
-                            label="Delete"
-                            onClick={() => {
-                              handleMenuItemClick({ id: "trash" });
-                            }}
-                          />}
+                          {!inTrash && (
+                            <Icon
+                              name="delete"
+                              label="Delete"
+                              onClick={() => {
+                                handleMenuItemClick({ id: "trash" });
+                              }}
+                            />
+                          )}
                         </Fragment>
-                        {!inTrash && <Divider orientation="vertical" flexItem sx={{ mx: 1, height: 24, alignSelf: "center" }} />}
+                        {!inTrash && (
+                          <Divider orientation="vertical" flexItem sx={{ mx: 1, height: 24, alignSelf: "center" }} />
+                        )}
                       </>
                     )}
                     <Icon name="mail" label="Mark as read" onClick={() => console.log("Mail clicked")} />

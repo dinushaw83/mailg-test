@@ -9,9 +9,9 @@ import { useComposeModal } from "../hooks/useComposeModal";
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection } = useGlobalContext();;
+  const { selection } = useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
-  const { addNewComposeWindow } = useComposeModal();;
+  const { addNewComposeWindow } = useComposeModal();
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
