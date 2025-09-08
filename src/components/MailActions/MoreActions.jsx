@@ -3,12 +3,21 @@ import Icon from "../ui/Icon";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 
-const MenuItem = ({ icon, label, onClick, horizontal = false, rightIcon = null, filled = false, fontSize = 20 }) => {
+const MenuItem = ({
+  icon,
+  label,
+  onClick,
+  horizontal = false,
+  rightIcon = null,
+  filled = false,
+  fontSize = 20,
+  disabled = false,
+}) => {
+  if (disabled) return null;
   return (
     <Box
       sx={{
@@ -78,6 +87,8 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
     markRead(threadIds, true);
   }, [emails, markRead]);
 
+  const onlyOneItemSelected = selectedIds.length === 1;
+
   return (
     <Box>
       <Icon name="more_vert" onClick={handleClick} />
@@ -115,10 +126,16 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
               <MenuItem icon="schedule" label="Snooze" />
               <Divider sx={{ marginY: "6px" }} />
               <MenuItem icon="label" label="Label as" rightIcon="arrow_right" />
-              <MenuItem icon="star" label="Add star" />
-              <MenuItem icon="label_important" label="Mark as important" />
-              <MenuItem icon="label_important" label="Mark as not important" filled fontSize={18} />
-              <MenuItem icon="attach_file" label="Forward as attachment" horizontal />
+              <MenuItem icon="star" label="Add star" disabled={onlyOneItemSelected} />
+              <MenuItem icon="label_important" label="Mark as important" disabled={onlyOneItemSelected} />
+              <MenuItem
+                icon="label_important"
+                label="Mark as not important"
+                filled
+                fontSize={18}
+                disabled={onlyOneItemSelected}
+              />
+              <MenuItem icon="attach_file" label="Forward as attachment" horizontal disabled={onlyOneItemSelected} />
               <MenuItem icon="filter_list" label="Filter messages like these" />
               <MenuItem icon="volume_off" label="Mute" />
               <Divider sx={{ marginY: "6px" }} />
