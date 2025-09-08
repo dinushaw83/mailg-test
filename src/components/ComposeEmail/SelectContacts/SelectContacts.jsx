@@ -385,17 +385,19 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
           <Box sx={{ px: 3, pb: 1, pr: 4.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Checkbox
-                  checked={isAllSelected}
-                  onChange={handleSelectAll}
-                  size="medium"
-                  sx={{
-                    color: "#1f1f1f",
-                  }}
+                <FormControlLabel
+                  label="Select All"
+                  control={
+                    <Checkbox
+                      checked={isAllSelected}
+                      onChange={handleSelectAll}
+                      size="medium"
+                      sx={{
+                        color: "#1f1f1f",
+                      }}
+                    />
+                  }
                 />
-                <Typography component="p" sx={{ fontSize: "1rem", color: "#1f1f1f", lineHeight: "normal" }}>
-                  Select All
-                </Typography>
               </Box>
 
               {/* Manage Labels */}
