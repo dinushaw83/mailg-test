@@ -3,6 +3,7 @@ import EmailRecipients from '../common/EmailRecipients';
 import { useGlobalContext } from '../../contexts/GlobalContext';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import { useSendEmail } from '../../hooks/useSendEmail';
+import { useDraftManagement } from '../../hooks/useDraftManagement';
 import InfoModal from '../ComposeEmail/InfoModal';
 import "./ReplyContainer.css";
 import replyIcon from '../../icons/reply.png';
@@ -17,6 +18,7 @@ const ReplyContainer = ({ email, replyType, onClose, onUndoDelete }) => {
   const { loggedInUser } = useGlobalContext();
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
+  const [subject, setSubject] = useState(`${replyType === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
   
   const calculateRecipients = (type) => {
     const calculatedRecipients = {
@@ -38,29 +40,41 @@ const ReplyContainer = ({ email, replyType, onClose, onUndoDelete }) => {
   const [recipients, setRecipients] = useState(() => calculateRecipients(replyType));
   const [content, setContent] = useState({ html: '', plainText: '' });
 
+  // Draft management hook
+  const { deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } = useDraftManagement({
+    to: recipients.to,
+    cc: recipients.cc,
+    bcc: recipients.bcc,
+    subject,
+    content,
+    currentDraftId: undefined // No initial draft for replies
+  });
+
   useEffect(() => {
     setRecipients(calculateRecipients(selectedReplyOption));
 
-    // Add forwarded message header when forward is selected
-    if (selectedReplyOption === 'forward') {
-      const recipientsList = email.to.map(recipient => {
-        if (typeof recipient === 'string') {
-          return recipient;
-        }
-        return `${recipient.name} <${recipient.email}>`;
-      }).join(', ');
+    // Only set initial content when the reply type changes
+    if (!content.html && !content.plainText) {
+      // Add forwarded message header when forward is selected
+      if (selectedReplyOption === 'forward') {
+        const recipientsList = email.to.map(recipient => {
+          if (typeof recipient === 'string') {
+            return recipient;
+          }
+          return `${recipient.name} <${recipient.email}>`;
+        }).join(', ');
 
-      const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
+        const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
 
-      const forwardedHeader = `
+        const forwardedHeader = `
 <br /><br />
 ---------- Forwarded message ---------<br />
 From: ${email.from.name} <${email.from.email}><br />
@@ -71,14 +85,13 @@ Cc: ${(email.cc || []).join(', ')}<br />
 <br /><br />
 ${email.body}`;
 
-      setContent({ 
-        html: forwardedHeader, 
-        plainText: forwardedHeader 
-      });
-    } else {
-      setContent({ html: '', plainText: '' });
+        setContent({ 
+          html: forwardedHeader, 
+          plainText: forwardedHeader 
+        });
+      }
     }
-  }, [selectedReplyOption, email, loggedInUser.email]);
+  }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText]);
   
   const options = [
     { value: 'reply', label: 'Reply', icon: replyIcon },
@@ -103,7 +116,12 @@ ${email.body}`;
       bcc: recipients.bcc,
       subject: `${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`,
       content,
+      currentDraftId: draftId,
+      isDraft,
       onClose: () => {
+        if (isDraft && draftId) {
+          deleteDraft();
+        }
         setContent({ html: '', plainText: '' });
         if (onClose) {
           onClose();
@@ -113,6 +131,9 @@ ${email.body}`;
   }
 
   const handleDelete = () => {
+    if (isDraft && draftId) {
+      deleteDraft();
+    }
     setContent({ html: '', plainText: '' });
     if (onClose) {
       onClose();
@@ -174,6 +195,18 @@ ${email.body}`;
               setRecipients={setRecipients}
             />
           </div>
+          {draftSaved && (
+              <div style={{ 
+                color: '#666',
+                fontSize: '14px',
+                marginTop: '18px',
+                marginRight: '24px',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                Draft saved
+              </div>
+            )}
         </div>
         <div className="reply-editor-container">
           <RichTextEditor

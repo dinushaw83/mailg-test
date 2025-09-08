@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
@@ -11,6 +11,8 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastSentEmailRef = useRef(null);
   const lastDeletedDraftRef = useRef(null);
+  const sendTimeoutRef = useRef(null);
+
 
   // Validate email format
   const isValidEmail = (email) => {
@@ -18,7 +20,7 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
     return emailRegex.test(email);
   };
 
-  const handleSend = ({ to, cc, bcc, subject, content, rawInputText, onClose }) => {
+  const handleSend = ({ to, cc, bcc, subject, content, rawInputText, onClose, currentDraftId, isDraft }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
 
@@ -79,7 +81,7 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
     }
 
     // If all validations pass, send the email
-    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId: undefined, isDraft: false });
+    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft });
   };
 
   const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft }) => {
@@ -148,7 +150,10 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
     });
 
     // Simulate sending process
-    setTimeout(() => {
+    if (sendTimeoutRef.current) {
+      clearTimeout(sendTimeoutRef.current);
+    }
+    sendTimeoutRef.current = setTimeout(() => {
       // Update emails array - replace draft with sent email if it was a draft, otherwise add new email
       const updatedEmails = isDraft
         ? emails.map((email) => (email.id?.toString() === newEmail.id?.toString() ? newEmail : email))
@@ -182,6 +187,12 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
   };
 
   const handleSnackbarCancel = () => {
+    // Clear the send timeout
+    if (sendTimeoutRef.current) {
+      clearTimeout(sendTimeoutRef.current);
+      sendTimeoutRef.current = null;
+    }
+
     // Show "Cancelling..." message
     setSnackbar({
       open: true,
@@ -242,7 +253,9 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
         });
 
         // Navigate to the draft
-        navigate(`?compose=${emailToRestore.id}`);
+        if (!replyTo && !forward) {
+          navigate(`?compose=${emailToRestore.id}`);
+        }
 
         // Clear the ref after successful state update
         lastSentEmailRef.current = null;
