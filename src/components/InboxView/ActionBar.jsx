@@ -17,6 +17,7 @@ export const Icon = ({
   color = "rgb(68, 68, 68)",
   width = 36,
   height = 36,
+  _ref,
 }) => {
   return (
     <Tooltip title={label} placement={placement}>
@@ -31,6 +32,7 @@ export const Icon = ({
         }}
         onClick={onClick}
         disabled={disabled}
+        ref={_ref}
       >
         <span
           className="material-symbols-outlined"
