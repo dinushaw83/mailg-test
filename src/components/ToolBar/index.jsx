@@ -183,7 +183,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
         <CheckBox allSelected={allSelected} partialSelected={partialSelected} toggle={toggleAllSelected} />
 
         {hasItemsSelected ? (
-          <>{folder === "spam" ? <SpamActions /> : <BulkActions />}</>
+          <>{folder === "spam" ? <SpamActions /> : <BulkActions emails={emails} />}</>
         ) : (
           <>
             <Icon name="refresh" />

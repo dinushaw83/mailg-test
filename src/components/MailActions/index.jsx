@@ -10,15 +10,15 @@ import { useParams } from "react-router-dom";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
-const BulkActions = () => {
-  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive } = useMailActions();
+const BulkActions = ({ emails = [] }) => {
+  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead } = useMailActions();
   const [{ moveToMenuOpen, spamModalOpen }, setState] = useState({
     moveToMenuOpen: false,
     spamModalOpen: false,
   });
 
   const anchorRef = useRef(null);
-  const { selection, labels, emails, setSnackbar } = useGlobalContext();
+  const { selection, labels, setSnackbar } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedEmails = useMemo(
@@ -133,6 +133,18 @@ const BulkActions = () => {
     return selectedEmails.every((email) => email.labels.includes("Archive"));
   }, [selectedEmails]);
 
+  const hasUnreadEmails = useMemo(() => {
+    return selectedEmails.some((email) => !email.read);
+  }, [selectedEmails]);
+
+  const handleReadAction = useCallback(() => {
+    if (hasUnreadEmails) {
+      markRead(selectedIds, true); // Mark as read when there are unread emails
+    } else {
+      markRead(selectedIds, false); // Mark as unread when all are read
+    }
+  }, [hasUnreadEmails, selectedIds, markRead]);
+
   return (
     <Box display="flex" alignItems="center">
       <Icon name="archive" label="Archive" onClick={handleArchiveEmails} disabled={allAreArchived} />
@@ -141,7 +153,11 @@ const BulkActions = () => {
 
       <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
 
-      <Icon name="mark_email_unread" label="Mark as unread" />
+      <Icon
+        name={hasUnreadEmails ? "drafts" : "mark_email_unread"}
+        label={hasUnreadEmails ? "Mark as read" : "Mark as unread"}
+        onClick={handleReadAction}
+      />
       {/* The next icon does not exactly match */}
       <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
 
