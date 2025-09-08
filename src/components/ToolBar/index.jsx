@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
 import BulkActions from "../MailActions";
+import SpamActions from "../MailActions/SpamActions";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -182,7 +183,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
         <CheckBox allSelected={allSelected} partialSelected={partialSelected} toggle={toggleAllSelected} />
 
         {hasItemsSelected ? (
-          <BulkActions isSpam={folder === "spam"} />
+          <>{folder === "spam" ? <SpamActions /> : <BulkActions />}</>
         ) : (
           <>
             <Icon name="refresh" />

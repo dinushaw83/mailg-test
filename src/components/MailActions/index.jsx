@@ -10,7 +10,7 @@ import { useParams } from "react-router-dom";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
-const BulkActions = ({ isSpam = false }) => {
+const BulkActions = () => {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive } = useMailActions();
   const [{ moveToMenuOpen, spamModalOpen }, setState] = useState({
     moveToMenuOpen: false,
@@ -20,6 +20,11 @@ const BulkActions = ({ isSpam = false }) => {
   const anchorRef = useRef(null);
   const { selection, labels, emails, setSnackbar } = useGlobalContext();
   const { ids } = selection;
+  const selectedIds = useMemo(() => [...ids], [ids]);
+  const selectedEmails = useMemo(
+    () => emails.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
+    [emails, selectedIds]
+  );
 
   const [spamModal, setSpamModal] = useState({
     open: false,
@@ -37,10 +42,10 @@ const BulkActions = ({ isSpam = false }) => {
   }, [labels]);
 
   const handleArchiveEmails = useCallback(async () => {
-    if (![...ids].length) return;
+    if (!selectedIds.length) return;
 
     try {
-      archive([...ids]);
+      archive(selectedIds);
       selection.clear();
       setSnackbar({
         open: true,
@@ -51,20 +56,20 @@ const BulkActions = ({ isSpam = false }) => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [[...ids], archive, selection, setSnackbar]);
+  }, [selectedIds, archive, selection, setSnackbar]);
 
   const handleMoveEmails = useCallback(
     async (item) => {
-      if (![...ids].length) return;
+      if (!selectedIds.length) return;
 
       try {
         if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel([...ids], "Inbox");
+          moveToLabel(selectedIds, "Inbox");
         } else if (item.id === "__spam__" || item.id === "spam") {
-          setSpamModal({ open: true, ids: [...ids] });
+          setSpamModal({ open: true, ids: selectedIds });
           // moveToSpam(ids);
         } else if (item.id === "__trash__" || item.id === "trash") {
-          moveToTrash([...ids]);
+          moveToTrash(selectedIds);
           // Show global snackbar with Undo action
           setSnackbar({
             open: true,
@@ -75,7 +80,7 @@ const BulkActions = ({ isSpam = false }) => {
                 sx={{ textTransform: "none" }}
                 size="small"
                 onClick={() => {
-                  moveToInbox([...ids]);
+                  moveToInbox(selectedIds);
                   // Follow-up confirmation snackbar
                   setSnackbar({
                     open: true,
@@ -92,9 +97,9 @@ const BulkActions = ({ isSpam = false }) => {
         } else if (item.id.startsWith("__label__")) {
           // moving between labels:
           if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
-            moveToLabelFrom([...ids], currentLabel, item.name);
+            moveToLabelFrom(selectedIds, currentLabel, item.name);
           } else {
-            moveToLabel([...ids], item.name);
+            moveToLabel(selectedIds, item.name);
           }
         }
         selection.clear();
@@ -102,7 +107,7 @@ const BulkActions = ({ isSpam = false }) => {
         console.error("Move failed:", e);
       }
     },
-    [[...ids], moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
+    [selectedIds, moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
   );
 
   const toggleMoveToMenu = () => {
@@ -112,10 +117,6 @@ const BulkActions = ({ isSpam = false }) => {
     }));
   };
 
-  if (isSpam) {
-    return <SpamActions />;
-  }
-
   const toggleSpamModal = () => {
     setState((prev) => ({
       ...prev,
@@ -123,9 +124,13 @@ const BulkActions = ({ isSpam = false }) => {
     }));
   };
 
+  const allAreArchived = useMemo(() => {
+    return selectedEmails.every((email) => email.labels.includes("Archive"));
+  }, [selectedEmails]);
+
   return (
     <Box display="flex" alignItems="center">
-      <Icon name="archive" label="Archive" onClick={handleArchiveEmails} />
+      <Icon name="archive" label="Archive" onClick={handleArchiveEmails} disabled={allAreArchived} />
       <Icon name="report" label="Report" onClick={toggleSpamModal} />
       <Icon name="delete" label="Delete" />
 
@@ -157,11 +162,11 @@ const BulkActions = ({ isSpam = false }) => {
           toggleSpamModal();
         }}
         onReportSpam={() => {
-          moveToSpam([...ids]);
+          moveToSpam(selectedIds);
           toggleSpamModal();
         }}
         onUnsubscribe={() => {
-          moveToSpam([...ids]);
+          moveToSpam(selectedIds);
           toggleSpamModal();
         }}
       />
