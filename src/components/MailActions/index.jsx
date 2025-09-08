@@ -17,10 +17,11 @@ export default function MailActions() {
         moveToTrash,
         moveToLabel,
         moveToLabelFrom,
-        moveToInbox
+        moveToInbox,
+        archive
     } = useMailActions();
 
-    const { selection, setSnackbar } = useGlobalContext();
+    const { emails, selection, setSnackbar } = useGlobalContext();
     const { labels, labelTree } = useLabels()
 
     const [open, setOpen] = useState(false);
@@ -36,6 +37,7 @@ export default function MailActions() {
     const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
 
     const inSpam = folder === "spam";
+    const inAllMail = folder === "all";
 
     // Check if any selected emails are not in the inbox
     const menuItems = useMemo(() => {
@@ -48,6 +50,81 @@ export default function MailActions() {
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [labelTree, labels]);
+
+    const shouldDisableArchiveButton = useMemo(() => {
+        // No selection → disable
+        if (!selection?.ids?.size) return true;
+
+        // Normalise selected ids (can be message id, '#thread-f:...' or bare thread key)
+        const targets = new Set([...selection.ids].map((id) => String(id).trim()));
+
+        const matchesSelection = (m) => {
+            const keys = [
+                String(m.id),
+                String(m.threadId),
+                m.threadId && String(m.threadId).replace("#thread-f:", ""),
+            ].filter(Boolean);
+            return keys.some((k) => targets.has(k));
+        };
+
+        // Enable Archive if ANY matched message is in Inbox
+        const hasAnyInInbox = emails.some(
+            (m) => matchesSelection(m) && (m.labels || []).includes("Inbox")
+        );
+
+        // Disable only when none of the selected items are in Inbox
+        return !hasAnyInInbox;
+    }, [emails, selection?.ids]);
+
+    const onArchive = () => {
+        const ids = [...selection.ids];
+        if (!ids.length) return;
+        try {
+            archive(ids);
+            setSnackbar({
+                open: true,
+                message: "Conversation archived.",
+                autoHideDuration: 3000,
+                action: (
+                    <Button
+                        sx={{ textTransform: "none" }}
+                        size="small"
+                        onClick={() => {
+                            moveToInbox(ids);
+                            setSnackbar({
+                                open: true,
+                                message: "Action undone.",
+                                autoHideDuration: 3000,
+                                action: null,
+                            });
+                        }}
+                    >
+                        Undo
+                    </Button>
+                ),
+            });
+            selection.clear();
+        } catch (e) {
+            console.error("Archive failed:", e);
+        }
+    }
+
+    const onMoveArchivedMailToInbox = () => {
+        const ids = [...selection.ids];
+        if (!ids.length) return;
+        try {
+            moveToInbox(ids);
+            setSnackbar({
+                open: true,
+                message: "Conversation moved to Inbox.",
+                autoHideDuration: 3000,
+                action: null,
+            });
+            selection.clear();
+        } catch (e) {
+            console.error("Move to Inbox failed:", e);
+        }
+    };
 
     const handleMenuItemClick = async (item) => {
         const ids = [...selection.ids]; // Set → Array
@@ -255,7 +332,7 @@ export default function MailActions() {
 
                                     <Fragment>
                                         {!inSpam && <Fragment>
-                                            <Icon name="archive" label="Archive" onClick={() => console.log("Archive clicked")} />
+                                            <Icon name="archive" label="Archive" onClick={onArchive} disabled={shouldDisableArchiveButton} />
                                             <Icon name="report" label="Report" onClick={() => console.log("Report clicked")} />
                                             <Icon
                                                 name="delete"
@@ -267,9 +344,12 @@ export default function MailActions() {
                                         </Fragment>}
                                         <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
                                         <Icon name="mail" label="Mail" onClick={() => console.log("Mail clicked")} />
-                                        <div ref={anchorRef}>
+                                        {!inAllMail && <div ref={anchorRef}>
                                             <Icon name="drive_file_move" label="Move" onClick={() => setOpen((s) => !s)} />
-                                        </div>
+                                        </div>}
+                                        {inAllMail &&
+                                            <Icon name="move_to_inbox" label="Move to Inbox" onClick={onMoveArchivedMailToInbox} />
+                                        }
                                     </Fragment>
                                 </Fragment>
                             )}
