@@ -36,9 +36,9 @@ export const generateLegacyThreadId = () => {
   return result;
 };
 
-// Generate the next email ID (highest existing ID + 1)
-export const generateNextEmailId = (emails) => {
-  if (!emails || emails.length === 0) return 1;
-  const maxId = Math.max(...emails.map((email) => email.id));
+// Generate the next integer ID (highest existing ID + 1)
+export const generateNextIntegerId = (arr) => {
+  if (!arr || arr.length === 0) return 1;
+  const maxId = Math.max(...arr.map((item) => item.id));
   return maxId + 1;
 };

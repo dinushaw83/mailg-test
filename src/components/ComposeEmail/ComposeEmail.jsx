@@ -5,7 +5,7 @@ import RichTextEditor from "../RichTextEditor/RichTextEditor";
 import RecipientsInput from "./RecipientsInput";
 import InfoModal from "./InfoModal";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { generateThreadId, generateLegacyThreadId, generateNextEmailId } from "../../utils/helperFunctions";
+import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../../utils/helperFunctions";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import styles from "./ComposeEmail.module.css";
@@ -254,7 +254,7 @@ export default function ComposeEmail({ composeWindow }) {
 
   const sendEmail = () => {
     // Use the draftId from the compose window if it exists, otherwise generate a new id
-    const newId = currentDraftId ? currentDraftId : generateNextEmailId(emails);
+    const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     const threadId = generateThreadId();
     const legacyThreadId = generateLegacyThreadId();
     const timestamp = new Date().toISOString();
