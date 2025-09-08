@@ -65,8 +65,17 @@ const MenuItem = ({
 };
 
 const MoreActions = ({ hasItemsSelected, emails }) => {
-  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, setStar } =
-    useMailActions();
+  const {
+    moveToSpam,
+    moveToTrash,
+    moveToLabel,
+    moveToLabelFrom,
+    moveToInbox,
+    archive,
+    markRead,
+    setStar,
+    setImportant,
+  } = useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const { selection, labels, setSnackbar } = useGlobalContext();
   const { ids } = selection;
@@ -98,9 +107,25 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
     return selectedEmails.every((email) => email.starred);
   }, [selectedEmails]);
 
+  const allImportant = useMemo(() => {
+    return selectedEmails.every((email) => email.important);
+  }, [selectedEmails]);
+
+  const allNotImportant = useMemo(() => {
+    return selectedEmails.every((email) => !email.important);
+  }, [selectedEmails]);
+
   const handleStar = useCallback(() => {
     setStar(selectedIds, !allStarred);
   }, [selectedIds, setStar, allStarred]);
+
+  const handleImportant = useCallback(() => {
+    setImportant(selectedIds, true);
+  }, [selectedIds, setImportant, allImportant]);
+
+  const handleNotImportant = useCallback(() => {
+    setImportant(selectedIds, false);
+  }, [selectedIds, setImportant]);
 
   return (
     <Box>
@@ -145,13 +170,19 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
                 disabled={onlyOneItemSelected}
                 onClick={handleStar}
               />
-              <MenuItem icon="label_important" label="Mark as important" disabled={onlyOneItemSelected} />
+              <MenuItem
+                icon="label_important"
+                label="Mark as important"
+                disabled={onlyOneItemSelected || allImportant}
+                onClick={handleImportant}
+              />
               <MenuItem
                 icon="label_important"
                 label="Mark as not important"
                 filled
                 fontSize={18}
-                disabled={onlyOneItemSelected}
+                disabled={onlyOneItemSelected || allNotImportant}
+                onClick={handleNotImportant}
               />
               <MenuItem icon="attach_file" label="Forward as attachment" horizontal disabled={onlyOneItemSelected} />
               <MenuItem icon="filter_list" label="Filter messages like these" />
