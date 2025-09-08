@@ -65,11 +65,16 @@ const MenuItem = ({
 };
 
 const MoreActions = ({ hasItemsSelected, emails }) => {
-  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead } = useMailActions();
+  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, setStar } =
+    useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const { selection, labels, setSnackbar } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
+  const selectedEmails = useMemo(
+    () => emails.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
+    [emails, selectedIds]
+  );
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -88,6 +93,14 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
   }, [emails, markRead]);
 
   const onlyOneItemSelected = selectedIds.length === 1;
+
+  const allStarred = useMemo(() => {
+    return selectedEmails.every((email) => email.starred);
+  }, [selectedEmails]);
+
+  const handleStar = useCallback(() => {
+    setStar(selectedIds, !allStarred);
+  }, [selectedIds, setStar, allStarred]);
 
   return (
     <Box>
@@ -126,7 +139,12 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
               <MenuItem icon="schedule" label="Snooze" />
               <Divider sx={{ marginY: "6px" }} />
               <MenuItem icon="label" label="Label as" rightIcon="arrow_right" />
-              <MenuItem icon="star" label="Add star" disabled={onlyOneItemSelected} />
+              <MenuItem
+                icon="star"
+                label={allStarred ? "Remove star" : "Add star"}
+                disabled={onlyOneItemSelected}
+                onClick={handleStar}
+              />
               <MenuItem icon="label_important" label="Mark as important" disabled={onlyOneItemSelected} />
               <MenuItem
                 icon="label_important"

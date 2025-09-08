@@ -6,8 +6,7 @@ import { GlobalContext } from "../contexts/GlobalContext";
  * ID utilities (thread-aware)
  * ────────────────────────────────────────────────────────────────────────── */
 
-const toArray = (v) =>
-  Array.isArray(v) ? v : v instanceof Set ? [...v] : v == null ? [] : [v];
+const toArray = (v) => (Array.isArray(v) ? v : v instanceof Set ? [...v] : v == null ? [] : [v]);
 
 const buildIdIndex = (selection) =>
   new Set(
@@ -110,15 +109,9 @@ export default function useMailActions() {
     [updateByIds]
   );
 
-  const moveToInbox = useCallback(
-    (ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")),
-    [updateByIds]
-  );
+  const moveToInbox = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")), [updateByIds]);
 
-  const archive = useCallback(
-    (ids) => updateByIds(ids, replaceWithSingleLabel("Archive")),
-    [updateByIds]
-  );
+  const archive = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Archive")), [updateByIds]);
 
   const moveToSpam = useCallback(
     (ids) =>
@@ -129,25 +122,24 @@ export default function useMailActions() {
     [updateByIds]
   );
 
-  const notSpam = useCallback(
-    (ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")),
-    [updateByIds]
-  );
+  const notSpam = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")), [updateByIds]);
 
-  const moveToTrash = useCallback(
-    (ids) => updateByIds(ids, replaceWithSingleLabel("Trash")),
-    [updateByIds]
-  );
+  const moveToTrash = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Trash")), [updateByIds]);
 
-  const restoreFromTrash = useCallback(
-    (ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")),
-    [updateByIds]
-  );
+  const restoreFromTrash = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")), [updateByIds]);
 
   const toggleStar = useCallback(
     (ids) => {
       const match = makeMatch(ids);
       setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: !m.starred } : m)));
+    },
+    [setEmails]
+  );
+
+  const setStar = useCallback(
+    (ids, value = true) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: value } : m)));
     },
     [setEmails]
   );
@@ -219,6 +211,7 @@ export default function useMailActions() {
       toggleImportant,
       setImportant,
       deleteForever,
+      setStar,
     }),
     [
       addLabels,
@@ -236,6 +229,7 @@ export default function useMailActions() {
       toggleImportant,
       setImportant,
       deleteForever,
+      setStar,
     ]
   );
 }
