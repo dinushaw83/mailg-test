@@ -8,6 +8,53 @@ import Divider from "@mui/material/Divider";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 
+const MenuItem = ({ icon, label, onClick, horizontal = false, rightIcon = null, filled = false, fontSize = 20 }) => {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        paddingX: "16px",
+        height: "32px",
+        overflow: "hidden",
+        cursor: "pointer",
+        "&:hover": {
+          background: "#07070714",
+        },
+      }}
+      onClick={onClick}
+    >
+      <span
+        className={filled ? "material-symbols-filled" : "material-symbols-outlined"}
+        style={{
+          fontSize,
+          color: "rgb(68, 68, 68)",
+          ...(horizontal && {
+            // rotate 90 degrees
+            transform: "rotate(90deg)",
+          }),
+          width: "20px",
+        }}
+      >
+        {icon}
+      </span>
+
+      <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>{label}</Typography>
+
+      <span
+        className="material-symbols-outlined"
+        style={{
+          fontSize: 20,
+          color: "rgb(68, 68, 68)",
+        }}
+      >
+        {rightIcon}
+      </span>
+    </Box>
+  );
+};
+
 const MoreActions = ({ hasItemsSelected, emails }) => {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead } = useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -41,38 +88,10 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
-        <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px", maxHeight: "262px" }}>
+        <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px" }}>
           {!hasItemsSelected && (
             <>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  paddingX: "16px",
-                  height: "32px",
-                  overflow: "hidden",
-                  cursor: "pointer",
-                  "&:hover": {
-                    background: "#07070714",
-                  },
-                }}
-                onClick={markAllAsRead}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{
-                    fontSize: 20,
-                    color: "rgb(68, 68, 68)",
-                  }}
-                >
-                  drafts
-                </span>
-
-                <Typography sx={{ paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
-                  Mark all as read
-                </Typography>
-              </Box>
+              <MenuItem icon="drafts" label="Mark all as read" onClick={markAllAsRead} />
 
               <Divider sx={{ marginY: "6px" }} />
 
@@ -89,6 +108,21 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
                   Select messages to see more actions
                 </Typography>
               </Box>
+            </>
+          )}
+          {hasItemsSelected && (
+            <>
+              <MenuItem icon="schedule" label="Snooze" />
+              <Divider sx={{ marginY: "6px" }} />
+              <MenuItem icon="label" label="Label as" rightIcon="arrow_right" />
+              <MenuItem icon="star" label="Add star" />
+              <MenuItem icon="label_important" label="Mark as important" />
+              <MenuItem icon="label_important" label="Mark as not important" filled fontSize={18} />
+              <MenuItem icon="attach_file" label="Forward as attachment" horizontal />
+              <MenuItem icon="filter_list" label="Filter messages like these" />
+              <MenuItem icon="volume_off" label="Mute" />
+              <Divider sx={{ marginY: "6px" }} />
+              <MenuItem icon="swap_horiz" label="Switch to advanced toolbar" />
             </>
           )}
         </Box>
