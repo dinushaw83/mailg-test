@@ -58,6 +58,11 @@ const BulkActions = () => {
     }
   }, [selectedIds, archive, selection, setSnackbar]);
 
+  const handleDeleteEmails = useCallback(async () => {
+    if (!selectedIds.length) return;
+    moveToTrash(selectedIds);
+  }, [selectedIds, moveToTrash]);
+
   const handleMoveEmails = useCallback(
     async (item) => {
       if (!selectedIds.length) return;
@@ -132,7 +137,7 @@ const BulkActions = () => {
     <Box display="flex" alignItems="center">
       <Icon name="archive" label="Archive" onClick={handleArchiveEmails} disabled={allAreArchived} />
       <Icon name="report" label="Report" onClick={toggleSpamModal} />
-      <Icon name="delete" label="Delete" />
+      <Icon name="delete" label="Delete" onClick={handleDeleteEmails} />
 
       <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
 
