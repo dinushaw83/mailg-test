@@ -2,7 +2,7 @@ import React, { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { generateThreadId, generateLegacyThreadId, generateNextEmailId } from "../utils/helperFunctions";
+import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../utils/helperFunctions";
 
 export const useSendEmail = (replyTo, forward, originalEmail) => {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastSentEmailRef = useRef(null);
+  const lastDeletedDraftRef = useRef(null);
 
   // Validate email format
   const isValidEmail = (email) => {
@@ -78,11 +79,12 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
     }
 
     // If all validations pass, send the email
-    sendEmail({ to, cc, bcc, subject, content, onClose });
+    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId: undefined, isDraft: false });
   };
 
-  const sendEmail = ({ to, cc, bcc, subject, content, onClose }) => {
-    const newId = generateNextEmailId(emails);
+  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft }) => {
+    // Use the draftId if it exists, otherwise generate a new id
+    const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
     const threadId = (replyTo || forward) && originalEmail ? originalEmail.threadId : generateThreadId();
     const legacyThreadId = (replyTo || forward) && originalEmail ? originalEmail.legacyThreadId : generateLegacyThreadId();
@@ -104,9 +106,9 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
         name: loggedInUser.name,
         email: loggedInUser.email,
       },
-      to: to.map((recipient) => recipient.email || recipient),
-      cc: cc.length > 0 ? cc.map((recipient) => recipient.email || recipient) : [],
-      bcc: bcc.length > 0 ? bcc.map((recipient) => recipient.email || recipient) : [],
+      to: to.map((recipient) => recipient.email),
+      cc: cc.length > 0 ? cc.map((recipient) => recipient.email) : [],
+      bcc: bcc.length > 0 ? bcc.map((recipient) => recipient.email) : [],
       subject: subject.trim() || "(no subject)",
       body: content.html,
       preview: content.plainText,
@@ -147,8 +149,10 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
 
     // Simulate sending process
     setTimeout(() => {
-      // Add the new email to the beginning of the emails array
-      const updatedEmails = [newEmail, ...emails];
+      // Update emails array - replace draft with sent email if it was a draft, otherwise add new email
+      const updatedEmails = isDraft
+        ? emails.map((email) => (email.id?.toString() === newEmail.id?.toString() ? newEmail : email))
+        : [newEmail, ...emails];
 
       // Update the global state
       setEmails(updatedEmails);
@@ -216,22 +220,32 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
     setTimeout(() => {
       // Double-check that the email still exists
       if (lastSentEmailRef.current && lastSentEmailRef.current.id) {
-        const emailToRemove = lastSentEmailRef.current;
+        const emailToRestore = lastSentEmailRef.current;
 
         // Remove the email from the state
         setEmails((prevEmails) => {
-          const filteredEmails = prevEmails.filter((email) => email.id !== emailToRemove.id);
-
-          // Push compose parameter to URL if not a reply/forward
-          if (!replyTo && !forward) {
-            navigate(`?compose=${emailToRemove?.id}`);
-          }
-
-          // Clear the ref after successful state update
-          lastSentEmailRef.current = null;
-
-          return filteredEmails;
+          return prevEmails.map((email) =>
+            email.id === emailToRestore.id
+              ? {
+                  ...email,
+                  labels: ["Drafts"],
+                  labelColor: "#e1e3e1",
+                  timestamp: new Date().toISOString(),
+                  timeDisplay: new Date().toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  }),
+                }
+              : email
+          );
         });
+
+        // Navigate to the draft
+        navigate(`?compose=${emailToRestore.id}`);
+
+        // Clear the ref after successful state update
+        lastSentEmailRef.current = null;
       }
 
       setSnackbar({
@@ -246,8 +260,11 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
   const handleSnackbarViewMessage = () => {
     // Hide the snackbar
     setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
-    // TODO: Open the message from sent items
-    console.log("View message clicked");
+
+    const threadId = lastSentEmailRef.current?.threadId.split(":")[1];
+
+    // Navigate to the message in the sent items
+    navigate(`/sent/${threadId}`);
   };
 
   const handleErrorModalClose = () => {
@@ -255,10 +272,63 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
     setErrorMessage("Please specify at least one recipient."); // Reset to default message
   };
 
+  const handleSnackbarUndoDelete = (onUndoDelete) => {
+    if (lastDeletedDraftRef.current) {
+      const deletedDraft = lastDeletedDraftRef.current;
+
+      // Create a new draft email with the restored data
+      const restoredDraft = {
+        id: deletedDraft.id,
+        threadId: generateThreadId(),
+        legacyThreadId: generateLegacyThreadId(),
+        legacyLastMessageId: generateLegacyThreadId(),
+        legacyLastNonDraftMessageId: null,
+        from: {
+          name: loggedInUser.name,
+          email: loggedInUser.email,
+        },
+        to: deletedDraft.to.map((recipient) => recipient.email),
+        cc: deletedDraft.cc.length > 0 ? deletedDraft.cc.map((recipient) => recipient.email) : [],
+        bcc: deletedDraft.bcc.length > 0 ? deletedDraft.bcc.map((recipient) => recipient.email) : [],
+        subject: deletedDraft.subject.trim() || "(no subject)",
+        body: deletedDraft.content.html,
+        preview: deletedDraft.content.plainText,
+        timestamp: new Date().toISOString(),
+        timeDisplay: new Date().toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        read: true,
+        starred: false,
+        important: false,
+        labels: ["Drafts"],
+        labelColor: "#e1e3e1",
+      };
+
+      // Add the restored draft back to emails
+      setEmails((prevEmails) => [restoredDraft, ...prevEmails]);
+
+      // Call the callback with the restored draft ID
+      if (onUndoDelete) {
+        onUndoDelete(deletedDraft.id);
+      }
+
+      // Clear the ref
+      lastDeletedDraftRef.current = null;
+
+      // Hide the snackbar
+      setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
+    }
+  };
+
   return {
     handleSend,
     showErrorModal,
     errorMessage,
-    handleErrorModalClose
+    handleErrorModalClose,
+    handleSnackbarUndoDelete,
+    lastDeletedDraftRef,
+    lastSentEmailRef,
   };
 };

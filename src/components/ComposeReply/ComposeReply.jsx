@@ -42,6 +42,7 @@ const ComposeReply = React.forwardRef(({ email }, ref) => {
           email={email} 
           replyType={replyType} 
           onClose={() => setShowReplyContainer(false)} 
+          onUndoDelete={() => setShowReplyContainer(true)}
         />
       )}
     </div>

@@ -13,7 +13,7 @@ import dropdownArrow from '../../icons/dropdownarrow.png';
 // TEMP
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 
-const ReplyContainer = ({ email, replyType, onClose }) => {
+const ReplyContainer = ({ email, replyType, onClose, onUndoDelete }) => {
   const { loggedInUser } = useGlobalContext();
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
@@ -90,7 +90,7 @@ ${email.body}`;
     return options.find(option => option.value === selectedReplyOption)?.icon;
   };
 
-  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose } = useSendEmail(
+  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail(
     selectedReplyOption === 'forward' ? undefined : email.id,
     selectedReplyOption === 'forward' ? email.id : undefined,
     email
