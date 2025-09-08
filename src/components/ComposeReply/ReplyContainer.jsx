@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import EmailRecipients from '../common/EmailRecipients';
 import { useGlobalContext } from '../../contexts/GlobalContext';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
@@ -10,12 +10,13 @@ import replyIcon from '../../icons/reply.png';
 import replyAllIcon from '../../icons/replyall.png';
 import forwardIcon from '../../icons/forward.png';
 import dropdownArrow from '../../icons/dropdownarrow.png';
+import { Button } from "@mui/material";
 
 // TEMP
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 
-const ReplyContainer = ({ email, replyType, onClose, onUndoDelete }) => {
-  const { loggedInUser } = useGlobalContext();
+const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelete }) => {
+  const { loggedInUser, setSnackbar, emails } = useGlobalContext();
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
   const [subject, setSubject] = useState(`${replyType === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
@@ -40,21 +41,51 @@ const ReplyContainer = ({ email, replyType, onClose, onUndoDelete }) => {
   const [recipients, setRecipients] = useState(() => calculateRecipients(replyType));
   const [content, setContent] = useState({ html: '', plainText: '' });
 
+  // Convert simple string recipients to object form expected by draft/send hooks
+  const recipientsForDraft = useMemo(() => {
+    const toObjs = (recipients.to || []).map((addr) => ({ id: `custom-${addr}`, name: addr, email: addr }));
+    const ccObjs = (recipients.cc || []).map((addr) => ({ id: `custom-${addr}`, name: addr, email: addr }));
+    const bccObjs = (recipients.bcc || []).map((addr) => ({ id: `custom-${addr}`, name: addr, email: addr }));
+    return { to: toObjs, cc: ccObjs, bcc: bccObjs };
+  }, [recipients]);
+
   // Draft management hook
   const { deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } = useDraftManagement({
-    to: recipients.to,
-    cc: recipients.cc,
-    bcc: recipients.bcc,
+    to: recipientsForDraft.to,
+    cc: recipientsForDraft.cc,
+    bcc: recipientsForDraft.bcc,
     subject,
     content,
-    currentDraftId: undefined // No initial draft for replies
+    currentDraftId
   });
 
+  // Load an existing draft (e.g., after undo) into the reply UI
   useEffect(() => {
-    setRecipients(calculateRecipients(selectedReplyOption));
+    if (!currentDraftId) return;
+    const existingDraft = emails.find(
+      (e) => e.id?.toString() === currentDraftId?.toString() && e.labels?.includes('Drafts')
+    );
+    if (existingDraft) {
+      const to = (existingDraft.to || []).map((addr) => addr);
+      const cc = (existingDraft.cc || []).map((addr) => addr);
+      const bcc = (existingDraft.bcc || []).map((addr) => addr);
+      setRecipients({ to, cc, bcc });
+      setSubject(existingDraft.subject === '(no subject)' ? '' : existingDraft.subject);
+      setContent({ html: existingDraft.body, plainText: existingDraft.preview });
+    }
+  }, [currentDraftId, emails]);
 
+  useEffect(() => {
+    if (currentDraftId) return; // do not override restored draft
+    setRecipients(calculateRecipients(selectedReplyOption));
+  }, [selectedReplyOption, currentDraftId]);
+
+  useEffect(() => {
+    if (currentDraftId) return; // do not override restored draft content
     // Only set initial content when the reply type changes
     if (!content.html && !content.plainText) {
+      // Update subject to match selected reply option
+      setSubject(`${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
       // Add forwarded message header when forward is selected
       if (selectedReplyOption === 'forward') {
         const recipientsList = email.to.map(recipient => {
@@ -91,7 +122,7 @@ ${email.body}`;
         });
       }
     }
-  }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText]);
+  }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText, currentDraftId]);
   
   const options = [
     { value: 'reply', label: 'Reply', icon: replyIcon },
@@ -111,10 +142,10 @@ ${email.body}`;
 
   const handleSend = () => {
     handleSendEmail({
-      to: recipients.to,
-      cc: recipients.cc,
-      bcc: recipients.bcc,
-      subject: `${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`,
+      to: recipientsForDraft.to,
+      cc: recipientsForDraft.cc,
+      bcc: recipientsForDraft.bcc,
+      subject,
       content,
       currentDraftId: draftId,
       isDraft,
@@ -130,13 +161,46 @@ ${email.body}`;
     });
   }
 
+  const handleUndoDelete = () => {
+    handleSnackbarUndoDelete(onUndoDelete);
+  };
+
   const handleDelete = () => {
     if (isDraft && draftId) {
+      // Store the draft data for potential restoration
+      lastDeletedDraftRef.current = {
+        id: draftId,
+        to: recipientsForDraft.to,
+        cc: recipientsForDraft.cc,
+        bcc: recipientsForDraft.bcc,
+        subject,
+        content,
+      };
+
       deleteDraft();
-    }
-    setContent({ html: '', plainText: '' });
-    if (onClose) {
-      onClose();
+
+      setContent({ html: '', plainText: '' });
+      if (onClose) {
+        onClose();
+      }
+
+      // Show "Draft discarded" snackbar with undo button
+      setSnackbar({
+        open: true,
+        message: "Draft discarded.",
+        action: (
+          <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
+            Undo
+          </Button>
+        ),
+        autoHideDuration: 4000,
+      });
+    } else {
+      // If not a draft, just close
+      setContent({ html: '', plainText: '' });
+      if (onClose) {
+        onClose();
+      }
     }
   }
 

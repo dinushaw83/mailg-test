@@ -11,20 +11,24 @@ const ComposeReply = React.forwardRef(({ email }, ref) => {
   }));
   const [showReplyContainer, setShowReplyContainer] = useState(false);
   const [replyType, setReplyType] = useState(null);
+  const [currentDraftId, setCurrentDraftId] = useState(null);
 
   const handleReply = () => {
     setReplyType('reply');
     setShowReplyContainer(true);
+    setCurrentDraftId(null);
   };
 
   const handleReplyAll = () => {
     setReplyType('replyAll');
     setShowReplyContainer(true);
+    setCurrentDraftId(null);
   };
 
   const handleForward = () => {
     setReplyType('forward');
     setShowReplyContainer(true);
+    setCurrentDraftId(null);
   };
 
   return (
@@ -41,8 +45,12 @@ const ComposeReply = React.forwardRef(({ email }, ref) => {
         <ReplyContainer 
           email={email} 
           replyType={replyType} 
+          currentDraftId={currentDraftId}
           onClose={() => setShowReplyContainer(false)} 
-          onUndoDelete={() => setShowReplyContainer(true)}
+          onUndoDelete={(restoredId) => {
+            setCurrentDraftId(restoredId);
+            setShowReplyContainer(true);
+          }}
         />
       )}
     </div>
