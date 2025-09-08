@@ -38,7 +38,6 @@ const BulkActions = ({ isSpam = false }) => {
 
   const handleMenuItemClick = useCallback(
     async (item) => {
-      c;
       if (![...ids].length) return;
 
       try {
