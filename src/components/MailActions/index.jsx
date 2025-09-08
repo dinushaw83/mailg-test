@@ -11,7 +11,7 @@ import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
 const BulkActions = ({ isSpam = false }) => {
-  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox } = useMailActions();
+  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive } = useMailActions();
   const [{ moveToMenuOpen, spamModalOpen }, setState] = useState({
     moveToMenuOpen: false,
     spamModalOpen: false,
@@ -36,7 +36,24 @@ const BulkActions = ({ isSpam = false }) => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [labels]);
 
-  const handleMenuItemClick = useCallback(
+  const handleArchiveEmails = useCallback(async () => {
+    if (![...ids].length) return;
+
+    try {
+      archive([...ids]);
+      selection.clear();
+      setSnackbar({
+        open: true,
+        message: "Conversations archived.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+    } catch (e) {
+      console.error("Archive failed:", e);
+    }
+  }, [[...ids], archive, selection, setSnackbar]);
+
+  const handleMoveEmails = useCallback(
     async (item) => {
       if (![...ids].length) return;
 
@@ -108,7 +125,7 @@ const BulkActions = ({ isSpam = false }) => {
 
   return (
     <Box display="flex" alignItems="center">
-      <Icon name="archive" label="Archive" />
+      <Icon name="archive" label="Archive" onClick={handleArchiveEmails} />
       <Icon name="report" label="Report" onClick={toggleSpamModal} />
       <Icon name="delete" label="Delete" />
 
@@ -124,7 +141,7 @@ const BulkActions = ({ isSpam = false }) => {
         <MoveToMenu
           anchorRef={anchorRef}
           labels={customLabels}
-          onSelect={handleMenuItemClick}
+          onSelect={handleMoveEmails}
           onClose={() =>
             setState((prev) => ({
               ...prev,
