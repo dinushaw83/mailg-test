@@ -13,7 +13,7 @@ export default function RecipientChip({ recipient, onDelete }) {
       avatar={
         <Avatar
           sx={{
-            bgcolor: isCustomRecipient ? "#e3f2fd" : avatarColor,
+            bgcolor: isCustomRecipient ? "rgba(11, 87, 208, 0.3)" : avatarColor,
             color: isCustomRecipient ? "#1976d2" : "white",
             fontSize: "12px",
             width: 24,
@@ -21,7 +21,7 @@ export default function RecipientChip({ recipient, onDelete }) {
           }}
         >
           {isCustomRecipient ? (
-            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+            <span className="material-symbols-filled" style={{ fontSize: "22px" }}>
               person
             </span>
           ) : recipient.avatar ? (

@@ -13,7 +13,7 @@ import styles from "./ComposeEmail.module.css";
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { emails, setEmails, setSnackbar, loggedInUser, recipients, composeWindows, setComposeWindows } =
+  const { emails, setEmails, setSnackbar, loggedInUser, recipients, composeWindows, setComposeWindows, setRecipients } =
     useContext(GlobalContext);
   const { removeComposeWindow, toggleMinimize, toggleMaximize, visibleWindowCount, addNewComposeWindow } =
     useComposeModal();
@@ -292,6 +292,22 @@ export default function ComposeEmail({ composeWindow }) {
 
     // Store the email data for potential cancellation
     lastSentEmailRef.current = newEmail;
+
+    // Get all the recipients
+    const allRecipients = [...to, ...cc, ...bcc];
+
+    // If any of the recipients doesnot present in the recipients context, add them
+    const newRecipients = allRecipients.filter((recipient) => !recipients.some((r) => r.email === recipient.email));
+    if (newRecipients.length > 0) {
+      const updatedRecipients = [...recipients];
+      newRecipients.forEach((recipient, index) => {
+        updatedRecipients.push({
+          ...recipient,
+          id: generateNextIntegerId(recipients) + index,
+        });
+      });
+      setRecipients(updatedRecipients);
+    }
 
     // Close the compose modal
     handleClose(false);
