@@ -9,6 +9,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
 import BulkActions from "../MailActions";
 import SpamActions from "../MailActions/SpamActions";
+import MoreActions from "../MailActions/MoreActions";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -187,9 +188,10 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
         ) : (
           <>
             <Icon name="refresh" />
-            <Icon name="more_vert" />
           </>
         )}
+
+        <MoreActions hasItemsSelected={hasItemsSelected} emails={emails} />
       </LeftItemsContainer>
       <RightActions totalFilteredItems={totalFilteredItems} />
     </div>

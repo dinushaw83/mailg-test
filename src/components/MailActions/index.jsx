@@ -161,8 +161,6 @@ const BulkActions = ({ emails = [] }) => {
       {/* The next icon does not exactly match */}
       <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
 
-      <Icon name="more_vert" />
-
       {moveToMenuOpen && (
         <MoveToMenu
           anchorRef={anchorRef}
