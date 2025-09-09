@@ -292,9 +292,9 @@ export const useSendEmail = (replyTo, forward, originalEmail) => {
       // Create a new draft email with the restored data
       const restoredDraft = {
         id: deletedDraft.id,
-        threadId: generateThreadId(),
-        legacyThreadId: generateLegacyThreadId(),
-        legacyLastMessageId: generateLegacyThreadId(),
+        threadId: deletedDraft.threadId || generateThreadId(),
+        legacyThreadId: deletedDraft.legacyThreadId || generateLegacyThreadId(),
+        legacyLastMessageId: deletedDraft.legacyLastMessageId || generateLegacyThreadId(),
         legacyLastNonDraftMessageId: null,
         from: {
           name: loggedInUser.name,

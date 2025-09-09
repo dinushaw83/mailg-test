@@ -49,13 +49,18 @@ const InboxView = () => {
 
   const { messageIds } = emailThread;
   const messages = messageIds.map((id) => messagesById[id]);
+  const lastMessage = messages[messages.length - 1];
+  const isLastDraft = lastMessage?.labels?.includes('Drafts');
+  const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
+  const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
+  const draft = isLastDraft ? lastMessage : null;
 
   return (
     <InboxViewContainer>
       <ActionBar />
       <InnerContainer>
         <Subject subject={messages[0].subject} />
-        {messages.map((message, index) => (
+        {displayedMessages.map((message, index) => (
           <React.Fragment key={message.id}>
             <Content
               body={message.body}
@@ -64,11 +69,11 @@ const InboxView = () => {
               senderEmail={message.from.email}
               attachments={message.attachments}
             />
-            {index < messages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
+            {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
           </React.Fragment>
         ))}
         {/* <Actions /> */}
-        <ComposeReply ref={responseViewRef} email={messages[messages.length - 1]} />
+        <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />
       </InnerContainer>
     </InboxViewContainer>
   );

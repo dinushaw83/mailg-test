@@ -20,6 +20,7 @@ const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelet
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
   const [subject, setSubject] = useState(`${replyType === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   const calculateRecipients = (type) => {
     const calculatedRecipients = {
@@ -56,7 +57,9 @@ const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelet
     bcc: recipientsForDraft.bcc,
     subject,
     content,
-    currentDraftId
+    currentDraftId,
+    parentEmail: email,
+    replyType: selectedReplyOption
   });
 
   // Load an existing draft (e.g., after undo) into the reply UI
@@ -71,41 +74,46 @@ const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelet
       const bcc = (existingDraft.bcc || []).map((addr) => addr);
       setRecipients({ to, cc, bcc });
       setSubject(existingDraft.subject === '(no subject)' ? '' : existingDraft.subject);
+      if (existingDraft.replyType) {
+        setSelectedReplyOption(existingDraft.replyType);
+      }
       setContent({ html: existingDraft.body, plainText: existingDraft.preview });
     }
   }, [currentDraftId, emails]);
 
   useEffect(() => {
-    if (currentDraftId) return; // do not override restored draft
+    if (currentDraftId && isInitialLoad) {
+      setIsInitialLoad(false);
+      return;
+    }
     setRecipients(calculateRecipients(selectedReplyOption));
   }, [selectedReplyOption, currentDraftId]);
 
   useEffect(() => {
-    if (currentDraftId) return; // do not override restored draft content
+    if (currentDraftId && isInitialLoad) return; // do not override restored draft content
     // Only set initial content when the reply type changes
-    if (!content.html && !content.plainText) {
-      // Update subject to match selected reply option
-      setSubject(`${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
-      // Add forwarded message header when forward is selected
-      if (selectedReplyOption === 'forward') {
-        const recipientsList = email.to.map(recipient => {
-          if (typeof recipient === 'string') {
-            return recipient;
-          }
-          return `${recipient.name} <${recipient.email}>`;
-        }).join(', ');
+    // Update subject to match selected reply option
+    setSubject(`${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
+    // Add forwarded message header when forward is selected
+    if (selectedReplyOption === 'forward' && content.plainText.trim() === '') {
+      const recipientsList = email.to.map(recipient => {
+        if (typeof recipient === 'string') {
+          return recipient;
+        }
+        return `${recipient.name} <${recipient.email}>`;
+      }).join(', ');
 
-        const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        });
+      const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
 
-        const forwardedHeader = `
+      const forwardedHeader = `
 <br /><br />
 ---------- Forwarded message ---------<br />
 From: ${email.from.name} <${email.from.email}><br />
@@ -116,12 +124,14 @@ Cc: ${(email.cc || []).join(', ')}<br />
 <br /><br />
 ${email.body}`;
 
-        setContent({ 
-          html: forwardedHeader, 
-          plainText: forwardedHeader 
-        });
-      }
+      setContent({ 
+        html: forwardedHeader, 
+        plainText: forwardedHeader 
+      });
+    } else if (selectedReplyOption !== 'forward' && content.plainText.trim().startsWith('---------- Forwarded message ---------')) {
+      setContent({ html: "", plainText: "" });
     }
+
   }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText, currentDraftId]);
   
   const options = [
@@ -170,6 +180,9 @@ ${email.body}`;
       // Store the draft data for potential restoration
       lastDeletedDraftRef.current = {
         id: draftId,
+        threadId: email.threadId,
+        legacyThreadId: email.legacyThreadId,
+        legacyLastMessageId: email.legacyLastMessageId,
         to: recipientsForDraft.to,
         cc: recipientsForDraft.cc,
         bcc: recipientsForDraft.bcc,
