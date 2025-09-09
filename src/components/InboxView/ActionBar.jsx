@@ -17,6 +17,7 @@ export const Icon = ({
   color = "rgb(68, 68, 68)",
   width = 36,
   height = 36,
+  fontSize = 20,
   _ref,
 }) => {
   return (
@@ -37,7 +38,7 @@ export const Icon = ({
         <span
           className="material-symbols-outlined"
           style={{
-            fontSize: 20,
+            fontSize,
             color: disabled ? "#b8b8b8" : "rgb(68, 68, 68)",
           }}
         >

@@ -1,4 +1,5 @@
 import React from "react";
+import SearchBar from "./SearchBar";
 
 const Header = () => {
   return (
@@ -18,16 +19,8 @@ const Header = () => {
                   <div className="gb_gd">
                     <div className="gb_Qc">
                       <div className="gb_Rc gb_ie">
-                        <a
-                          className="gb_ce gb_Sc gb_ge"
-                          aria-label="MailG"
-                          href="#inbox"
-                        >
-                          <span
-                            className="gb_Xc gb_fe"
-                            aria-hidden="true"
-                            role="presentation"
-                          />
+                        <a className="gb_ce gb_Sc gb_ge" aria-label="MailG" href="#inbox">
+                          <span className="gb_Xc gb_fe" aria-hidden="true" role="presentation" />
                         </a>
                         <div className="gb_je sf-hidden">MailG</div>
                       </div>
@@ -61,23 +54,14 @@ const Header = () => {
                       <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                     </svg>
                   </div>
-                  <div
-                    className="gb_Zc gb_k gb_R sf-hidden"
-                    aria-label="Close"
-                    role="button"
-                    tabIndex={0}
-                  >
+                  <div className="gb_Zc gb_k gb_R sf-hidden" aria-label="Close" role="button" tabIndex={0}>
                     <svg viewBox="0 0 24 24">
                       <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                     </svg>
                   </div>
                   <div className="gb_Qc">
                     <div className="gb_Rc gb_ie">
-                      <a
-                        className="gb_ce gb_Sc gb_ge"
-                        aria-label="MailG"
-                        href="#inbox"
-                      >
+                      <a className="gb_ce gb_Sc gb_ge" aria-label="MailG" href="#inbox">
                         <img
                           className="gb_Xc"
                           src="/assets/images/mailg-logo.svg"
@@ -95,183 +79,7 @@ const Header = () => {
                 </div>
                 <div className="gb_Qd gb_Ud gb_Se gb_Te gb_Oe">
                   <div className="gb_j gb_qe" />
-                  <div className="gb_Fe">
-                    <form
-                      className="gb_Dd gb_ef bas aJf"
-                      role="search"
-                      id="aso_search_form_anchor"
-                    >
-                      <h2 className="mlYdaf">Search</h2>
-                      <button
-                        className="gb_Ie gb_df sf-hidden"
-                        aria-label="Close search"
-                        type="button"
-                      >
-                        <svg
-                          focusable="false"
-                          height="24px"
-                          viewBox="0 0 24 24"
-                          width="24px"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M0 0h24v24H0z" fill="none" />
-                          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                        </svg>
-                      </button>
-                      <div className="gb_ze gb_df" gh="sb">
-                        <table
-                          cellSpacing={0}
-                          cellPadding={0}
-                          className="gstl_50 gstt"
-                          role="presentation"
-                          style={{ height: 28 }}
-                        >
-                          <tbody>
-                            <tr>
-                              <td>
-                                <table
-                                  cellSpacing={0}
-                                  cellPadding={0}
-                                  style={{ width: "100%" }}
-                                >
-                                  <tbody>
-                                    <tr>
-                                      <td className="gsib_a gb_ye aJh">
-                                        <div
-                                          id="gs_lc50"
-                                          style={{ position: "relative" }}
-                                        >
-                                          <input
-                                            className="gb_ye aJh"
-                                            aria-label="Search mail"
-                                            autoComplete="off"
-                                            placeholder="Search mail"
-                                            defaultValue=""
-                                            name="q"
-                                            type="text"
-                                            jslog="72933; u014N:xr6bB; 41:W251bGwsbnVsbCxudWxsLG51bGwsW251bGwsbnVsbCxudWxsLG51bGwsbnVsbCwxXV0."
-                                            dir="ltr"
-                                            spellCheck="false"
-                                            aria-haspopup="true"
-                                            aria-live="off"
-                                            aria-owns="gs_sbt50"
-                                            style={{
-                                              border: "none",
-                                              padding: 0,
-                                              margin: 0,
-                                              height: "auto",
-                                              width: "100%",
-                                              position: "absolute",
-                                              zIndex: 6,
-                                              left: 0,
-                                            }}
-                                          />
-                                          <input
-                                            className="v1GPYd gb_ye aJh"
-                                            disabled=""
-                                            autoComplete="off"
-                                            autoCapitalize="off"
-                                            id="gs_taif50"
-                                            dir="ltr"
-                                            style={{
-                                              border: "none",
-                                              padding: 0,
-                                              margin: 0,
-                                              height: "auto",
-                                              width: "100%",
-                                              position: "absolute",
-                                              zIndex: 1,
-                                              backgroundColor: "transparent",
-                                              WebkitTextFillColor: "silver",
-                                              color: "silver",
-                                              left: 0,
-                                              visibility: "hidden",
-                                            }}
-                                            defaultValue=""
-                                          />
-                                          <div
-                                            className="etAEh pbiu3c"
-                                            aria-hidden="true"
-                                          >
-                                            <div className="pbiu3c sf-hidden" />
-                                            <div className="hNbco pbiu3c">
-                                              tab
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      <table
-                        cellSpacing={0}
-                        cellPadding={0}
-                        className="gstl_50 gssb_c"
-                        role="presentation"
-                        style={{
-                          width: "100%",
-                          display: "none",
-                          position: "relative",
-                        }}
-                      />
-                      <button
-                        className="gb_Le"
-                        type="button"
-                        gh="sda"
-                        role="button"
-                        data-tooltip="Show search options"
-                        aria-label="Advanced search options"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width={24}
-                          height={24}
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z" />
-                        </svg>
-                      </button>
-                      <button
-                        className="gb_Je"
-                        aria-label="Clear search"
-                        type="button"
-                      >
-                        <svg
-                          focusable="false"
-                          height="24px"
-                          viewBox="0 0 24 24"
-                          width="24px"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                          <path d="M0 0h24v24H0z" fill="none" />
-                        </svg>
-                      </button>
-                      <button
-                        className="gb_Me gb_df bEP"
-                        aria-label="Search mail"
-                        role="button"
-                        jslog="20278; u014N:cOuCgd,xr6bB; 41:W251bGwsbnVsbCxudWxsLG51bGwsW251bGwsbnVsbCxudWxsLG51bGwsbnVsbCwxXV0."
-                        aria-disabled="true"
-                      >
-                        <svg
-                          focusable="false"
-                          height="24px"
-                          viewBox="0 0 24 24"
-                          width="24px"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M20.49,19l-5.73-5.73C15.53,12.2,16,10.91,16,9.5C16,5.91,13.09,3,9.5,3S3,5.91,3,9.5C3,13.09,5.91,16,9.5,16 c1.41,0,2.7-0.47,3.77-1.24L19,20.49L20.49,19z M5,9.5C5,7.01,7.01,5,9.5,5S14,7.01,14,9.5S11.99,14,9.5,14S5,11.99,5,9.5z" />
-                          <path d="M0,0h24v24H0V0z" fill="none" />
-                        </svg>
-                      </button>
-                    </form>
-                  </div>
+                  <SearchBar />
                   <div className="gb_v gb_qe bGJ">
                     <div className="zo" data-tooltip="Support">
                       <a
@@ -306,11 +114,7 @@ const Header = () => {
                       aria-hidden="true"
                       style={{ display: "none" }}
                     />
-                    <div
-                      className="FI"
-                      data-tooltip="Settings"
-                      jslog="85046; u014N:cOuCgd,Kr2w4b,xr6bB;"
-                    >
+                    <div className="FI" data-tooltip="Settings" jslog="85046; u014N:cOuCgd,Kr2w4b,xr6bB;">
                       <a
                         className="FH"
                         role="button"
@@ -336,12 +140,7 @@ const Header = () => {
                 <div className="gb_Vd gb_rb gb_Qd gb_2d" data-ogsr-up="">
                   <div className="gb_Ad">
                     <div className="gb_hd">
-                      <div
-                        className="gb_J gb_td gb_0"
-                        data-ogsr-fb="true"
-                        data-ogsr-alt=""
-                        id="gbwa"
-                      >
+                      <div className="gb_J gb_td gb_0" data-ogsr-fb="true" data-ogsr-alt="" id="gbwa">
                         <div className="gb_D">
                           <a
                             className="gb_B"
@@ -351,11 +150,7 @@ const Header = () => {
                             role="button"
                             tabIndex={0}
                           >
-                            <svg
-                              className="gb_F"
-                              focusable="false"
-                              viewBox="0 0 24 24"
-                            >
+                            <svg className="gb_F" focusable="false" viewBox="0 0 24 24">
                               <path d="M6,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM6,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM12,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM16,6c0,1.1 0.9,2 2,2s2,-0.9 2,-2 -0.9,-2 -2,-2 -2,0.9 -2,2zM12,8c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,14c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2zM18,20c1.1,0 2,-0.9 2,-2s-0.9,-2 -2,-2 -2,0.9 -2,2 0.9,2 2,2z" />
                               <image
                                 src="#"
@@ -393,10 +188,7 @@ const Header = () => {
                               sizes=""
                             />
                           </span>
-                          <div
-                            className="gb_Q gb_R sf-hidden"
-                            aria-hidden="true"
-                          >
+                          <div className="gb_Q gb_R sf-hidden" aria-hidden="true">
                             <svg
                               className="gb_Ka"
                               height={14}
@@ -405,10 +197,7 @@ const Header = () => {
                               xmlns="http://www.w3.org/2000/svg"
                             >
                               <circle className="gb_La" cx={7} cy={7} r={7} />
-                              <path
-                                className="gb_Na"
-                                d="M6 10H8V12H6V10ZM6 2H8V8H6V2Z"
-                              />
+                              <path className="gb_Na" d="M6 10H8V12H6V10ZM6 2H8V8H6V2Z" />
                             </svg>
                           </div>
                         </a>
