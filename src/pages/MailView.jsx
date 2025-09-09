@@ -57,7 +57,7 @@ const Inbox = () => {
                         <h2 tabIndex={-1}>Conversations</h2>
                       </div>
                       <div className="afn sf-hidden" />
-                      <div className="aKh" jsaction="taiVP:.CLIENT">
+                      {/* <div className="aKh" jsaction="taiVP:.CLIENT">
                         <table className="aKk">
                           <tbody>
                             <tr
@@ -299,7 +299,7 @@ const Inbox = () => {
                             </tr>
                           </tbody>
                         </table>
-                      </div>
+                      </div> */}
                       <div />
                       <div className="aKB afn sf-hidden" />
                       <div
