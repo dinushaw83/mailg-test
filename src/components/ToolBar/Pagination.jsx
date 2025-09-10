@@ -34,7 +34,6 @@ const Pagination = ({ totalFilteredItems }) => {
   };
 
   const handleSortChange = (newSortOrder) => {
-    setSortOrder(newSortOrder);
     if (newSortOrder === "oldest") {
       setCurrentPage(totalPages);
     } else {

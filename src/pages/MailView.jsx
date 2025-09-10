@@ -8,7 +8,7 @@ import ToolBar from "../components/ToolBar";
 import { getThreadRows } from "../utils/emails";
 
 const Inbox = () => {
-  const { emails, sortOrder, currentPage, itemsPerPage } = useContext(GlobalContext);
+  const { emails, currentPage, itemsPerPage } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -25,19 +25,14 @@ const Inbox = () => {
     const sortedEmails = [...filteredRows].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
-
-      if (sortOrder === "newest") {
-        return dateB - dateA;
-      } else {
-        return dateA - dateB;
-      }
+      return dateB - dateA;
     });
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
     return sortedEmails.slice(startIndex, endIndex);
-  }, [filteredRows, sortOrder, currentPage, itemsPerPage]);
+  }, [filteredRows, currentPage, itemsPerPage]);
 
   return (
     <div className="nH bkK">

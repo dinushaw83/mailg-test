@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { usePersistedState } from "../hooks/usePersistedState";
+import { useSessionState } from "../hooks/useSessionState";
 
 import { initialUser } from "./fixtures/me";
 import { initialEmails } from "./fixtures/emails";
@@ -22,9 +23,8 @@ export const GlobalContextProvider = ({ children }) => {
   const [labels, setLabels] = usePersistedState("labels", initialLabels);
   // Store multiple compose windows
   const [composeWindows, setComposeWindows] = useState([]);
-  const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
-  const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
-  const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 2);
+  const [currentPage, setCurrentPage] = useSessionState("currentPage", 1);
+  const [itemsPerPage, setItemsPerPage] = useSessionState("itemsPerPage", 2);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -111,8 +111,6 @@ export const GlobalContextProvider = ({ children }) => {
     setLabels,
     composeWindows,
     setComposeWindows,
-    sortOrder,
-    setSortOrder,
     currentPage,
     setCurrentPage,
     itemsPerPage,
