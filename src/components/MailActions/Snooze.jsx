@@ -208,7 +208,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
   );
 };
 
-export const SnoozePopover = ({ anchorEl, open, onClose, onBack, selectedIds, snooze }) => {
+export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) => {
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [selectedDateTime, setSelectedDateTime] = useState(new Date());
   const today = new Date();

@@ -229,7 +229,6 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
           anchorEl={anchorEl}
           open={open}
           onClose={handleClose}
-          onBack={handleSnoozeBack}
           selectedIds={selectedIds}
           snooze={snooze}
         />
