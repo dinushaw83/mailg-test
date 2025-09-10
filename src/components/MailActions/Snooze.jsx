@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
@@ -134,6 +134,11 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
                 setTimeError(""); // Clear time error when using calendar
               }}
               disablePast
+              slotProps={{
+                actionBar: {
+                  actions: [],
+                },
+              }}
             />
             {/* <DateTimePicker
             label="Snooze until"
@@ -252,82 +257,86 @@ export const SnoozePopover = ({ anchorEl, open, onClose, onBack, selectedIds, sn
 
   const handleCalendarClose = () => {
     setCalendarModalOpen(false);
+    onClose();
   };
 
   const handleDateTimeConfirm = () => {
+    console.log("handleDateTimeConfirm", selectedDateTime);
     snooze(selectedIds, selectedDateTime);
     setCalendarModalOpen(false);
     onClose();
   };
 
   return (
-    <Popover
-      id="snooze-popover"
-      open={open}
-      anchorEl={anchorEl}
-      onClose={onClose}
-      anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-    >
-      <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px" }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            paddingX: "16px",
-            height: "32px",
-          }}
-        >
-          <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
-            Snooze until...
-          </Typography>
+    <>
+      <Popover
+        id="snooze-popover"
+        open={open}
+        anchorEl={anchorEl}
+        onClose={onClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              paddingX: "16px",
+              height: "32px",
+            }}
+          >
+            <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
+              Snooze until...
+            </Typography>
+          </Box>
+
+          {/* <Divider sx={{ marginY: "6px" }} /> */}
+
+          <ActionMenuItem
+            label="Later today"
+            rightText={formatTime(laterToday)}
+            onClick={() => {
+              snooze(selectedIds, laterToday);
+              onClose();
+            }}
+          />
+          <ActionMenuItem
+            label="Tomorrow"
+            rightText={formatTime(tomorrow)}
+            onClick={() => {
+              snooze(selectedIds, tomorrow);
+              onClose();
+            }}
+          />
+          <ActionMenuItem
+            label="Later this week"
+            rightText={formatTime(laterThisWeek)}
+            onClick={() => {
+              snooze(selectedIds, laterThisWeek);
+              onClose();
+            }}
+          />
+          <ActionMenuItem
+            label="This weekend"
+            rightText={formatTime(thisWeekend)}
+            onClick={() => {
+              snooze(selectedIds, thisWeekend);
+              onClose();
+            }}
+          />
+          <ActionMenuItem
+            label="Next week"
+            rightText={formatTime(nextWeek)}
+            onClick={() => {
+              snooze(selectedIds, nextWeek);
+              onClose();
+            }}
+          />
+          <Divider sx={{ marginY: "6px" }} />
+          <ActionMenuItem icon="calendar_month" label="Select date & time" onClick={handleCalendarOpen} />
         </Box>
-
-        {/* <Divider sx={{ marginY: "6px" }} /> */}
-
-        <ActionMenuItem
-          label="Later today"
-          rightText={formatTime(laterToday)}
-          onClick={() => {
-            snooze(selectedIds, laterToday);
-            onClose();
-          }}
-        />
-        <ActionMenuItem
-          label="Tomorrow"
-          rightText={formatTime(tomorrow)}
-          onClick={() => {
-            snooze(selectedIds, tomorrow);
-            onClose();
-          }}
-        />
-        <ActionMenuItem
-          label="Later this week"
-          rightText={formatTime(laterThisWeek)}
-          onClick={() => {
-            snooze(selectedIds, laterThisWeek);
-            onClose();
-          }}
-        />
-        <ActionMenuItem
-          label="This weekend"
-          rightText={formatTime(thisWeekend)}
-          onClick={() => {
-            snooze(selectedIds, thisWeekend);
-            onClose();
-          }}
-        />
-        <ActionMenuItem
-          label="Next week"
-          rightText={formatTime(nextWeek)}
-          onClick={() => {
-            snooze(selectedIds, nextWeek);
-            onClose();
-          }}
-        />
-        <Divider sx={{ marginY: "6px" }} />
-        <ActionMenuItem icon="calendar_month" label="Select date & time" onClick={handleCalendarOpen} />
-      </Box>
+      </Popover>
 
       <CalendarPickerModal
         open={calendarModalOpen}
@@ -336,6 +345,6 @@ export const SnoozePopover = ({ anchorEl, open, onClose, onBack, selectedIds, sn
         setSelectedDateTime={setSelectedDateTime}
         onConfirm={handleDateTimeConfirm}
       />
-    </Popover>
+    </>
   );
 };

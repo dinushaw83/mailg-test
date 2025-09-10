@@ -38,6 +38,7 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
   };
 
   const handleClose = () => {
+    console.log("handleClose");
     setAnchorEl(null);
     setCurrentPopover("main");
   };
