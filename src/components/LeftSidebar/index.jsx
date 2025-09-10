@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import LabelItem from "./LabelItem";
 import SidebarItem from "./SidebarItem";
 import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
@@ -31,11 +31,8 @@ const LeftSidebar = () => {
   const folders = useMailFolders(emails);
   const { labels, labelTree, labelIndex } = useLabels();
   const { addNewComposeWindow } = useComposeModal();
-
-  // const customLabels = Object.entries(labels || {})
-  //   .filter(([name, meta]) => !meta.system)
-  //   .map(([name]) => name)
-  //   .sort();
+  const [isCreateLabelModalOpen, setIsCreateLabelModalOpen] = useState(false);
+  const { setSnackbar } = useGlobalContext()
 
   const customLabels = useMemo(() => {
     const flat = flattenTreeForSelect(labelTree);
@@ -172,6 +169,7 @@ const LeftSidebar = () => {
                       tabIndex={0}
                       type="button"
                       jslog="167296; u014N:cOuCgd,Kr2w4b,xr6bB;"
+                      onClick={() => setIsCreateLabelModalOpen(true)}
                     />
                   </div>
                   <div className="yJ">
@@ -203,6 +201,17 @@ const LeftSidebar = () => {
             </div>
           </div>
         </div>
+        <CreateLabelDialog
+          open={isCreateLabelModalOpen}
+          onClose={() => setIsCreateLabelModalOpen(false)}
+          onAfterCreate={(name) => {
+            setSnackbar({
+              open: true,
+              message: `The label "${name}" was created.`,
+              autoHideDuration: 4000,
+            });
+          }}
+        />
       </div>
       <span className="I6agWe">
         <div className="Od0X9">
