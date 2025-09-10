@@ -197,7 +197,18 @@ export default function useMailActions() {
   const snooze = useCallback(
     (ids, snoozeUntil) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, snoozeUntil: snoozeUntil.toISOString() } : m)));
+      setEmails((prev) =>
+        prev.map((m) => {
+          if (match(m)) {
+            const currentLabels = m.labels || [];
+            const updatedLabels = currentLabels.includes("Snoozed") ? currentLabels : [...currentLabels, "Snoozed"];
+            // Remove from inbox when snoozed
+            const labelsWithoutInbox = updatedLabels.filter((label) => label !== "Inbox");
+            return { ...m, labels: labelsWithoutInbox, snoozeUntil: snoozeUntil.toISOString() };
+          }
+          return m;
+        })
+      );
     },
     [setEmails]
   );

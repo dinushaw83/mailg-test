@@ -261,7 +261,6 @@ export const SnoozePopover = ({ anchorEl, open, onClose, onBack, selectedIds, sn
   };
 
   const handleDateTimeConfirm = () => {
-    console.log("handleDateTimeConfirm", selectedDateTime);
     snooze(selectedIds, selectedDateTime);
     setCalendarModalOpen(false);
     onClose();
