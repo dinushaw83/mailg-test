@@ -194,6 +194,14 @@ export default function useMailActions() {
     [setEmails]
   );
 
+  const snooze = useCallback(
+    (ids, snoozeUntil) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, snoozeUntil: snoozeUntil.toISOString() } : m)));
+    },
+    [setEmails]
+  );
+
   return useMemo(
     () => ({
       addLabels,
@@ -212,6 +220,7 @@ export default function useMailActions() {
       setImportant,
       deleteForever,
       setStar,
+      snooze,
     }),
     [
       addLabels,
@@ -230,6 +239,7 @@ export default function useMailActions() {
       setImportant,
       deleteForever,
       setStar,
+      snooze,
     ]
   );
 }
