@@ -17,8 +17,6 @@ function normalizeText(text) {
 }
 
 export function buildSearchIndex(emails) {
-  console.log("Building simple search index with", emails.length, "emails");
-
   try {
     // Store email documents
     emailDocuments = emails.map((email) => ({
@@ -53,10 +51,8 @@ export function buildSearchIndex(emails) {
       });
     });
 
-    console.log("Search index built successfully with", emailDocuments.length, "documents");
     return true;
   } catch (error) {
-    console.error("Error building search index:", error);
     searchIndex = null;
     return false;
   }
@@ -72,17 +68,14 @@ export function searchEmails(query, options = {}) {
 
   try {
     const trimmedQuery = query.trim().toLowerCase();
-    console.log("Searching for:", trimmedQuery);
 
     // Try exact search first
     let results = searchIndex.search(trimmedQuery);
-    console.log("Exact search results:", results.length);
 
     // If no results, try with wildcards
-    if (results.length === 0 && trimmedQuery.length > 2) {
+    if (results.length === 0 && trimmedQuery.length > 1) {
       const wildcardQuery = trimmedQuery + "*";
       results = searchIndex.search(wildcardQuery);
-      console.log("Wildcard search results:", results.length);
     }
 
     // Map results back to email documents
@@ -91,10 +84,8 @@ export function searchEmails(query, options = {}) {
       .filter(Boolean)
       .slice(0, options.limit || 5);
 
-    console.log("Final results:", emailResults.length);
     return emailResults;
   } catch (error) {
-    console.error("Search error:", error);
     return [];
   }
 }

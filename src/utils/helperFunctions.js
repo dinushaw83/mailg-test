@@ -1,17 +1,31 @@
 // Generate a consistent color based on the name
 export const generateAvatarColor = (name) => {
   const colors = [
-    "#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5",
-    "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50",
-    "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800",
-    "#ff5722", "#795548", "#607d8b"
+    "#f44336",
+    "#e91e63",
+    "#9c27b0",
+    "#673ab7",
+    "#3f51b5",
+    "#2196f3",
+    "#03a9f4",
+    "#00bcd4",
+    "#009688",
+    "#4caf50",
+    "#8bc34a",
+    "#cddc39",
+    "#ffeb3b",
+    "#ffc107",
+    "#ff9800",
+    "#ff5722",
+    "#795548",
+    "#607d8b",
   ];
 
   // Handle undefined or null names
   if (!name || typeof name !== "string") {
     return colors[0];
   }
-  
+
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);

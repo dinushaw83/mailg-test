@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Box, Chip, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
+import { Box, Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener, Typography } from "@mui/material";
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -13,13 +13,6 @@ const SearchBar = () => {
 
   const handleFocus = () => {
     setIsFocused(true);
-  };
-
-  const handleBlur = (e) => {
-    // Only blur if the click is outside the search container
-    if (searchContainerRef.current && !searchContainerRef.current.contains(e.relatedTarget)) {
-      setIsFocused(false);
-    }
   };
 
   const handleInputChange = (e) => {
@@ -47,9 +40,8 @@ const SearchBar = () => {
       return [];
     }
     return getRecentSearchSuggestions(6);
-  }, [searchValue]);
+  }, [searchValue, isFocused]);
 
-  // What to show in expanded content
   const expandedContent = useMemo(() => {
     if (searchValue.trim()) {
       return searchResults;
@@ -61,158 +53,193 @@ const SearchBar = () => {
 
   const filterOptions = ["Has attachment", "Last 7 days", "From me"];
 
-  return (
-    <div className={styles.searchContainer} ref={searchContainerRef}>
-      <div className={`${styles.searchBar} ${isFocused ? styles.focused : ""}`}>
-        <div className={styles.searchInputContainer}>
-          <Icon
-            name="search"
-            label="Search"
-            size="medium"
-            fontSize={24}
-            style={{
-              marginRight: "0px !important",
-              position: "absolute",
-              left: "16px",
-            }}
-          />
-          <input
-            className={styles.searchInput}
-            placeholder="Search mail"
-            value={searchValue}
-            onChange={handleInputChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            autoComplete="off"
-          />
+  // Helper function to highlight search terms
+  const highlightSearchTerm = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
 
-          {searchValue && (
+    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+    const parts = text.split(regex);
+
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <strong key={index} style={{ fontWeight: "bold" }}>
+          {part}
+        </strong>
+      ) : (
+        part
+      )
+    );
+  };
+
+  return (
+    <ClickAwayListener onClickAway={() => setIsFocused(false)}>
+      <div className={styles.searchContainer} ref={searchContainerRef}>
+        <div className={`${styles.searchBar} ${isFocused ? styles.focused : ""}`}>
+          <div className={styles.searchInputContainer}>
             <Icon
-              name="close"
-              label="Clear search"
+              name="search"
+              label="Search"
+              size="medium"
+              fontSize={24}
+              style={{
+                marginRight: "0px !important",
+                position: "absolute",
+                left: "16px",
+              }}
+            />
+            <input
+              className={styles.searchInput}
+              placeholder="Search mail"
+              value={searchValue}
+              onChange={handleInputChange}
+              onFocus={handleFocus}
+              autoComplete="off"
+            />
+
+            {searchValue && (
+              <Icon
+                name="close"
+                label="Clear search"
+                size="medium"
+                fontSize={24}
+                style={{
+                  position: "absolute",
+                  right: "58px",
+                  marginRight: "0px !important",
+                }}
+                onClick={() => setSearchValue("")}
+              />
+            )}
+
+            <Icon
+              name="tune"
+              label="Show search options"
               size="medium"
               fontSize={24}
               style={{
                 position: "absolute",
-                right: "58px",
+                right: "16px",
                 marginRight: "0px !important",
               }}
-              onClick={() => setSearchValue("")}
+              onClick={() => setIsFocused(true)}
             />
-          )}
-
-          <Icon
-            name="tune"
-            label="Show search options"
-            size="medium"
-            fontSize={24}
-            style={{
-              position: "absolute",
-              right: "16px",
-              marginRight: "0px !important",
-            }}
-            onClick={() => setIsFocused(true)}
-          />
-        </div>
-      </div>
-
-      {/* Expanded content overlay */}
-      <div className={`${styles.expandedContent} ${isFocused ? styles.expanded : ""}`}>
-        {/* Filter pills */}
-        <div className={styles.filterPills}>
-          {filterOptions.map((filter, index) => (
-            <Chip key={index} label={filter} size="small" className={styles.filterChip} variant="outlined" />
-          ))}
-        </div>
-
-        {/* Search results or recent suggestions */}
-        <div className={styles.recentSearches}>
-          <List dense>
-            {expandedContent.length > 0 ? (
-              // Show search results or recent suggestions
-              expandedContent.map((item, index) => {
-                // Check if it's a search result (has id) or a suggestion (string)
-                if (typeof item === "object" && item.id) {
-                  // Search result
-                  return (
-                    <ListItem key={item.id} className={styles.searchSuggestion}>
-                      <ListItemIcon className={styles.clockIcon}>
-                        <span
-                          className="material-symbols-outlined"
-                          style={{
-                            fontSize: 20,
-                            color: "rgb(68, 68, 68)",
-                          }}
-                        >
-                          mail
-                        </span>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={item.subject}
-                        secondary={`${item.fromName} • ${new Date(item.timestamp).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}`}
-                        className={styles.suggestionText}
-                      />
-                    </ListItem>
-                  );
-                } else {
-                  // Recent suggestion (string)
-                  return (
-                    <ListItem key={index} className={styles.searchSuggestion}>
-                      <ListItemIcon className={styles.clockIcon}>
-                        <span
-                          className="material-symbols-outlined"
-                          style={{
-                            fontSize: 20,
-                            color: "rgb(68, 68, 68)",
-                          }}
-                        >
-                          schedule
-                        </span>
-                      </ListItemIcon>
-                      <ListItemText primary={item} className={styles.suggestionText} />
-                    </ListItem>
-                  );
-                }
-              })
-            ) : (
-              // Show placeholder when no results
-              <ListItem className={styles.searchSuggestion}>
-                <ListItemText
-                  primary="No recent searches"
-                  className={styles.suggestionText}
-                  style={{ color: "#999", fontStyle: "italic" }}
-                />
-              </ListItem>
-            )}
-          </List>
-        </div>
-
-        {/* TODO: Add description when no recent searches or top 5   results from emails */}
-
-        {/* All search result navigation */}
-        {searchValue && (
-          <div className={styles.allSearchResults}>
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 20,
-                color: "rgb(68, 68, 68)",
-              }}
-            >
-              search
-            </span>
-            <div>
-              All search results for <span className={styles.searchValue}>"{searchValue}"</span>
-            </div>
-
-            <span>Press ENTER</span>
           </div>
-        )}
+        </div>
+
+        {/* Expanded content overlay */}
+        <div className={`${styles.expandedContent} ${isFocused ? styles.expanded : ""}`}>
+          {/* Filter pills */}
+          <div className={styles.filterPills}>
+            {filterOptions.map((filter, index) => (
+              <Chip
+                key={index}
+                label={filter}
+                size="small"
+                className={styles.filterChip}
+                variant="outlined"
+                onClick={() => console.log("filter clicked")}
+              />
+            ))}
+          </div>
+
+          {/* Search results or suggestions */}
+          <div className={styles.recentSearches}>
+            <List dense>
+              {expandedContent.length > 0 ? (
+                // Show search results or suggestions
+                expandedContent.map((item, index) => {
+                  // Check if it's a search result (has id) or a suggestion (string)
+                  if (typeof item === "object" && item.id) {
+                    // Search result
+                    return (
+                      <ListItem key={item.id} className={styles.searchSuggestion}>
+                        <ListItemIcon className={styles.clockIcon}>
+                          <span
+                            className="material-symbols-outlined"
+                            style={{
+                              fontSize: 20,
+                              color: "rgb(68, 68, 68)",
+                            }}
+                          >
+                            mail
+                          </span>
+                        </ListItemIcon>
+
+                        <div className={styles.resultText}>
+                          <div className={styles.resultSubject}>{highlightSearchTerm(item.subject, searchValue)}</div>
+                          <div className={styles.resultFrom}>
+                            {highlightSearchTerm(`${item.fromName}, me`, searchValue)}
+                          </div>
+                        </div>
+
+                        <div className={styles.resultTimestamp}>{`${new Date(item.timestamp).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                          }
+                        )}`}</div>
+                      </ListItem>
+                    );
+                  } else {
+                    // Suggestions
+                    return (
+                      <ListItem key={index} className={styles.searchSuggestion}>
+                        <ListItemIcon className={styles.clockIcon}>
+                          <span
+                            className="material-symbols-outlined"
+                            style={{
+                              fontSize: 20,
+                              color: "rgb(68, 68, 68)",
+                            }}
+                          >
+                            schedule
+                          </span>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={highlightSearchTerm(item, searchValue)}
+                          className={styles.suggestionText}
+                        />
+                      </ListItem>
+                    );
+                  }
+                })
+              ) : (
+                <ListItem className={styles.searchSuggestion}>
+                  <ListItemText
+                    primary="No recent items matched your search"
+                    className={styles.suggestionText}
+                    style={{ color: "#999", fontStyle: "italic" }}
+                  />
+                </ListItem>
+              )}
+            </List>
+          </div>
+
+          {/* TODO: Add description when no recent searches or top 5   results from emails */}
+
+          {/* All search result navigation */}
+          {searchValue && (
+            <div className={styles.allSearchResults}>
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 20,
+                  color: "rgb(68, 68, 68)",
+                }}
+              >
+                search
+              </span>
+              <div style={{ color: "rgba(0, 0, 0, 0.87)" }}>
+                All search results for <span className={styles.searchValue}>"{searchValue}"</span>
+              </div>
+
+              <span style={{ marginLeft: "auto", fontSize: "12px" }}>Press ENTER</span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </ClickAwayListener>
   );
 };
 

@@ -117,6 +117,8 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
   border-radius: 0;
+  display: flex;
+  align-items: center;
 }
 
 .searchSuggestion:hover {
@@ -128,26 +130,33 @@
   font-size: 14px;
 }
 
-.suggestionText .MuiListItemText-primary {
-  font-size: 14px;
-  line-height: 1.4;
-  font-weight: 500;
+.resultText {
+  display: flex;
+  flex-direction: column;
 }
 
-.suggestionText .MuiListItemText-secondary {
+.resultSubject {
+  font-size: 14px;
+}
+
+.resultFrom {
   font-size: 12px;
+  line-height: 1.2em;
   color: rgba(0, 0, 0, 0.6);
-  margin-top: 2px;
+}
+
+.resultTimestamp {
+  font-size: 12px;
+  margin-left: auto;
 }
 
 /* All search results footer */
 .allSearchResults {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 12px 20px;
   border-top: 1px solid #e0e0e0;
-  background: rgba(0, 0, 0, 0.02);
+  background: white;
   color: rgba(0, 0, 0, 0.6);
   font-size: 14px;
 }
@@ -156,11 +165,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.searchValue {
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.87);
+  margin-left: 32px;
 }
 
 /* Responsive adjustments */
