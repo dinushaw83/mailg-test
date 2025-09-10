@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { usePersistedState } from "../hooks/usePersistedState";
 
@@ -35,6 +35,10 @@ export const GlobalContextProvider = ({ children }) => {
   });
 
   const [selected, setSelected] = useState(() => new Set());
+
+  const refreshEmails = useCallback(() => {
+    setEmails(initialEmails);
+  }, []);
 
   // Clear selection on navigation (folder/label changes)
   const location = useLocation();
@@ -116,6 +120,7 @@ export const GlobalContextProvider = ({ children }) => {
     itemsPerPage,
     setItemsPerPage,
     normalizedEmails,
+    refreshEmails,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

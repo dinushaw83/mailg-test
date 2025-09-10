@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useMemo } from "react";
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
@@ -18,6 +18,8 @@ const LABELS = [
 export default function SpamActions() {
   const { moveToSpam, moveToTrash, notSpam } = useMailActions();
   const { selection } = useGlobalContext();
+  const { ids } = selection;
+  const selectedIds = useMemo(() => [...ids], [ids]);
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
@@ -40,6 +42,11 @@ export default function SpamActions() {
     }
   };
 
+  const handleDeleteEmails = useCallback(async () => {
+    if (!selectedIds.length) return;
+    moveToTrash(selectedIds);
+  }, [selectedIds, moveToTrash]);
+
   return (
     <div className="G-tF" style={{ display: "flex", alignItems: "center" }}>
       {/* Delete forever button */}
@@ -50,6 +57,7 @@ export default function SpamActions() {
           "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
           marginLeft: "8px",
         }}
+        onClick={handleDeleteEmails}
       >
         Delete forever
       </Button>

@@ -161,7 +161,7 @@ const LeftItemsContainer = ({ children }) => {
 
 const ToolBar = ({ totalFilteredItems, emails }) => {
   const { folder = "inbox" } = useParams();
-  const { selection } = useGlobalContext();
+  const { selection, refreshEmails } = useGlobalContext();
   const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
 
   const threadIds = emails.map((email) => email.threadId.split(":")[1]);
@@ -190,7 +190,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
           </>
         ) : (
           <>
-            <Icon name="refresh" />
+            <Icon name="refresh" onClick={refreshEmails} label="Refresh" />
           </>
         )}
 
