@@ -17,6 +17,8 @@ export const Labels = ({
   labelAnchorEl,
   selectedIds,
   handleClose,
+  anchorOrigin = { vertical: "top", horizontal: "right" },
+  transformOrigin = { vertical: "top", horizontal: "left" },
 }) => {
   const { labels, setSnackbar, selectedEmails } = useGlobalContext();
   const { moveToLabel } = useMailActions();
@@ -100,8 +102,8 @@ export const Labels = ({
       open={Boolean(labelAnchorEl)}
       anchorEl={labelAnchorEl}
       onClose={handleLabelClose}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      transformOrigin={{ vertical: "top", horizontal: "left" }}
+      anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
       sx={{
         "& .MuiPopover-paper": {
           marginLeft: "0px",

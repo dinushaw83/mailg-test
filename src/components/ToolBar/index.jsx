@@ -162,6 +162,7 @@ const LeftItemsContainer = ({ children }) => {
 const ToolBar = ({ totalFilteredItems, emails }) => {
   const { folder = "inbox" } = useParams();
   const { selection } = useGlobalContext();
+  const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
 
   const threadIds = emails.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
@@ -184,14 +185,21 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
         <CheckBox allSelected={allSelected} partialSelected={partialSelected} toggle={toggleAllSelected} />
 
         {hasItemsSelected ? (
-          <>{folder === "spam" ? <SpamActions /> : <BulkActions emails={emails} />}</>
+          <>
+            {folder === "spam" ? <SpamActions /> : <BulkActions emails={emails} showAdvancedMenu={showAdvancedMenu} />}
+          </>
         ) : (
           <>
             <Icon name="refresh" />
           </>
         )}
 
-        <MoreActions hasItemsSelected={hasItemsSelected} emails={emails} />
+        <MoreActions
+          hasItemsSelected={hasItemsSelected}
+          emails={emails}
+          showAdvancedMenu={showAdvancedMenu}
+          setShowAdvancedMenu={setShowAdvancedMenu}
+        />
       </LeftItemsContainer>
       <RightActions totalFilteredItems={totalFilteredItems} />
     </div>

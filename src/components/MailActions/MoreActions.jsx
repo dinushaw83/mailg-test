@@ -10,7 +10,7 @@ import { SnoozePopover } from "./Snooze";
 import { ActionMenuItem } from "./ActionMenuItem";
 import { Labels } from "./Labels";
 
-const MoreActions = ({ hasItemsSelected, emails }) => {
+const MoreActions = ({ hasItemsSelected, emails, showAdvancedMenu, setShowAdvancedMenu }) => {
   const {
     moveToSpam,
     moveToTrash,
@@ -217,7 +217,14 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
                 <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
                 <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
                 <Divider sx={{ marginY: "6px" }} />
-                <ActionMenuItem icon="swap_horiz" label="Switch to advanced toolbar" onClick={() => {}} />
+                <ActionMenuItem
+                  icon="swap_horiz"
+                  label={showAdvancedMenu ? "Switch to simple toolbar" : "Switch to advanced toolbar"}
+                  onClick={() => {
+                    setShowAdvancedMenu((prev) => !prev);
+                    handleClose();
+                  }}
+                />
               </>
             )}
           </Box>

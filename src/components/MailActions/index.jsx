@@ -9,14 +9,14 @@ import { useParams } from "react-router-dom";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { SnoozePopover } from "./Snooze";
+import { Labels } from "./Labels";
 
-const BulkActions = ({ emails = [] }) => {
+const BulkActions = ({ emails = [], showAdvancedMenu }) => {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, snooze } =
     useMailActions();
-  const [{ moveToMenuOpen, spamModalOpen, showAdvancedActions }, setState] = useState({
+  const [{ moveToMenuOpen, spamModalOpen }, setState] = useState({
     moveToMenuOpen: false,
     spamModalOpen: false,
-    showAdvancedActions: true,
   });
 
   const snoozeAnchorElRef = useRef(null);
@@ -32,12 +32,17 @@ const BulkActions = ({ emails = [] }) => {
     [emails, selectedIds]
   );
 
+  const labelAnchorElRef = useRef(null);
+  const [labelAnchorEl, setLabelAnchorEl] = useState(null);
+
   const [spamModal, setSpamModal] = useState({
     open: false,
     ids: [],
   });
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
 
   const customLabels = useMemo(() => {
     const map = labels || {};
@@ -159,6 +164,14 @@ const BulkActions = ({ emails = [] }) => {
     setSnoozeAnchorEl(null);
   }, []);
 
+  const handleLabelAction = useCallback(() => {
+    setLabelAnchorEl(labelAnchorElRef.current);
+  }, []);
+
+  const handleLabelClose = useCallback(() => {
+    setLabelAnchorEl(null);
+  }, []);
+
   return (
     <Box display="flex" alignItems="center">
       <Icon name="archive" label="Archive" onClick={handleArchiveEmails} disabled={allAreArchived} />
@@ -172,11 +185,15 @@ const BulkActions = ({ emails = [] }) => {
         label={hasUnreadEmails ? "Mark as read" : "Mark as unread"}
         onClick={handleReadAction}
       />
-      {showAdvancedActions && (
-        <Icon name="schedule" label="Snooze" onClick={handleSnoozeAction} _ref={snoozeAnchorElRef} />
+      {showAdvancedMenu && (
+        <>
+          <Icon name="schedule" label="Snooze" onClick={handleSnoozeAction} _ref={snoozeAnchorElRef} />
+          <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+        </>
       )}
-      {/* The next icon does not exactly match */}
-      <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
+      <Icon name="move_to_inbox" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
+
+      {showAdvancedMenu && <Icon name="label" label="Labels" onClick={handleLabelAction} _ref={labelAnchorElRef} />}
 
       {moveToMenuOpen && (
         <MoveToMenu
@@ -216,6 +233,22 @@ const BulkActions = ({ emails = [] }) => {
           snooze={snooze}
         />
       )}
+
+      <Labels
+        {...{
+          searchQuery,
+          setSearchQuery,
+          setLabelAnchorEl,
+          setSelectedLabelKeys,
+          selectedLabelKeys,
+          labelAnchorEl,
+          selectedIds,
+          handleClose: handleLabelClose,
+          // position below the icon
+          anchorOrigin: { vertical: "bottom", horizontal: "left" },
+          transformOrigin: { vertical: "top", horizontal: "left" },
+        }}
+      />
     </Box>
   );
 };
