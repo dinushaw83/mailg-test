@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
@@ -10,8 +10,92 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ActionMenuItem } from "./ActionMenuItem";
+import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 
 const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateTime, onConfirm }) => {
+  const [dateError, setDateError] = useState("");
+  const [timeError, setTimeError] = useState("");
+  const [dateInput, setDateInput] = useState("");
+  const [timeInput, setTimeInput] = useState("");
+
+  // Helper function to safely format date
+  const formatDate = (date) => {
+    if (!date || typeof date.toLocaleDateString !== "function") {
+      return "";
+    }
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Helper function to safely format time
+  const formatTime = (date) => {
+    if (!date || typeof date.toLocaleTimeString !== "function") {
+      return "";
+    }
+    return date.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
+  // Helper function to validate date
+  const validateDate = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+    const inputDate = new Date(date);
+    inputDate.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+    if (isNaN(inputDate.getTime())) {
+      return "Invalid Date";
+    }
+    if (inputDate < today) {
+      return "Invalid Date";
+    }
+    return "";
+  };
+
+  // Helper function to validate time
+  const validateTime = (timeString, selectedDate) => {
+    const [hours, minutes] = timeString.split(":");
+
+    if (!hours || !minutes) {
+      return "Invalid time format";
+    }
+
+    const hour = parseInt(hours, 10);
+    const minute = parseInt(minutes, 10);
+
+    if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      return "Invalid time";
+    }
+
+    // If the selected date is today, check if time is in the future
+    const today = new Date();
+    const isToday = selectedDate.toDateString() === today.toDateString();
+
+    if (isToday) {
+      const now = new Date();
+      const inputTime = new Date(selectedDate);
+      inputTime.setHours(hour, minute, 0, 0);
+
+      if (inputTime <= now) {
+        return "Invalid time";
+      }
+    }
+
+    return "";
+  };
+
+  // Update input fields when selectedDateTime changes
+  useEffect(() => {
+    setDateInput(formatDate(selectedDateTime));
+    setTimeInput(formatTime(selectedDateTime));
+  }, [selectedDateTime]);
+
   return (
     <Modal
       open={open}
@@ -29,27 +113,82 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
+          width: 500,
           bgcolor: "background.paper",
-          borderRadius: 2,
+          borderRadius: 10,
           boxShadow: 24,
           p: 4,
         }}
       >
-        <Typography variant="h6" component="h2" sx={{ mb: 3, textAlign: "center" }}>
+        <Typography variant="h6" component="h2" sx={{ mb: 3 }}>
           Select Date & Time
         </Typography>
-
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <DateTimePicker
+        <Box sx={{ mb: 3, display: "flex" }}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <StaticDatePicker
+              displayStaticWrapperAs="desktop"
+              value={selectedDateTime}
+              onChange={(newValue) => {
+                setSelectedDateTime(newValue);
+                setDateError(""); // Clear date error when using calendar
+                setTimeError(""); // Clear time error when using calendar
+              }}
+              disablePast
+            />
+            {/* <DateTimePicker
             label="Snooze until"
             value={selectedDateTime}
             onChange={(newValue) => setSelectedDateTime(newValue)}
             renderInput={(params) => <TextField {...params} fullWidth />}
             minDateTime={new Date()}
             sx={{ mb: 3 }}
-          />
-        </LocalizationProvider>
+          /> */}
+          </LocalizationProvider>
+
+          <Box sx={{ display: "flex", gap: 2, flexDirection: "column" }}>
+            <TextField
+              label="Date"
+              value={dateInput}
+              onChange={(event) => setDateInput(event.target.value)}
+              error={!!dateError}
+              helperText={dateError}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  const error = validateDate(event.target.value);
+                  setDateError(error);
+                  if (!error) {
+                    const newDate = new Date(event.target.value);
+                    setSelectedDateTime(newDate);
+                  }
+                }
+              }}
+              sx={{ mb: 3 }}
+            />
+
+            <TextField
+              label="Time"
+              value={timeInput}
+              onChange={(event) => setTimeInput(event.target.value)}
+              error={!!timeError}
+              helperText={timeError}
+              placeholder="08:00"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  const timeString = event.target.value;
+                  const error = validateTime(timeString, selectedDateTime);
+                  setTimeError(error);
+                  if (!error) {
+                    const [hours, minutes] = timeString.split(":");
+                    const newDate = new Date(selectedDateTime);
+                    newDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+                    setSelectedDateTime(newDate);
+                  }
+                }
+              }}
+              sx={{ mb: 3 }}
+            />
+          </Box>
+        </Box>
 
         <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
           <Button onClick={onClose} variant="outlined">
