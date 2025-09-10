@@ -186,7 +186,11 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
 
         {hasItemsSelected ? (
           <>
-            {folder === "spam" ? <SpamActions /> : <BulkActions emails={emails} showAdvancedMenu={showAdvancedMenu} />}
+            {folder === "spam" ? (
+              <SpamActions emails={emails} />
+            ) : (
+              <BulkActions emails={emails} showAdvancedMenu={showAdvancedMenu} />
+            )}
           </>
         ) : (
           <>

@@ -15,11 +15,15 @@ const LABELS = [
   { id: "promotions", name: "Promotions" },
 ];
 
-export default function SpamActions() {
-  const { moveToSpam, moveToTrash, notSpam } = useMailActions();
+export default function SpamActions({ emails = [] }) {
+  const { moveToSpam, moveToTrash, notSpam, markRead } = useMailActions();
   const { selection } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
+  const selectedEmails = useMemo(
+    () => emails.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
+    [emails, selectedIds]
+  );
 
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
@@ -46,6 +50,18 @@ export default function SpamActions() {
     if (!selectedIds.length) return;
     moveToTrash(selectedIds);
   }, [selectedIds, moveToTrash]);
+
+  const hasUnreadEmails = useMemo(() => {
+    return selectedEmails.some((email) => !email.read);
+  }, [selectedEmails]);
+
+  const handleReadAction = useCallback(() => {
+    if (hasUnreadEmails) {
+      markRead(selectedIds, true); // Mark as read when there are unread emails
+    } else {
+      markRead(selectedIds, false); // Mark as unread when all are read
+    }
+  }, [hasUnreadEmails, selectedIds, markRead]);
 
   return (
     <div className="G-tF" style={{ display: "flex", alignItems: "center" }}>
@@ -78,7 +94,11 @@ export default function SpamActions() {
         Not Spam
       </Button>
 
-      <Icon name="mail" label="Mail" />
+      <Icon
+        name={hasUnreadEmails ? "drafts" : "mark_email_unread"}
+        label={hasUnreadEmails ? "Mark as read" : "Mark as unread"}
+        onClick={handleReadAction}
+      />
 
       <Icon name="drive_file_move" label="Move" onClick={() => setOpen((s) => !s)} _ref={anchorRef} />
 
