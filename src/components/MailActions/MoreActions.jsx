@@ -99,6 +99,7 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
   const markAllAsRead = useCallback(() => {
     const threadIds = emails.map((email) => email.threadId.split(":")[1]);
     markRead(threadIds, true);
+    handleClose();
   }, [emails, markRead]);
 
   const onlyOneItemSelected = selectedIds.length === 1;
@@ -117,14 +118,17 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
 
   const handleStar = useCallback(() => {
     setStar(selectedIds, !allStarred);
+    handleClose();
   }, [selectedIds, setStar, allStarred]);
 
   const handleImportant = useCallback(() => {
     setImportant(selectedIds, true);
+    handleClose();
   }, [selectedIds, setImportant, allImportant]);
 
   const handleNotImportant = useCallback(() => {
     setImportant(selectedIds, false);
+    handleClose();
   }, [selectedIds, setImportant]);
 
   return (
