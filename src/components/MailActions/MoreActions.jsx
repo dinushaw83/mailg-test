@@ -21,6 +21,7 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
     setStar,
     setImportant,
     snooze,
+    toggleMute,
   } = useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentPopover, setCurrentPopover] = React.useState("main"); // 'main' or 'snooze'
@@ -73,6 +74,10 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
     return selectedEmails.every((email) => !email.important);
   }, [selectedEmails]);
 
+  const allMuted = useMemo(() => {
+    return selectedEmails.every((email) => email.labels.includes("Muted"));
+  }, [selectedEmails]);
+
   const handleStar = useCallback(() => {
     setStar(selectedIds, !allStarred);
     handleClose();
@@ -87,6 +92,11 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
     setImportant(selectedIds, false);
     handleClose();
   }, [selectedIds, setImportant]);
+
+  const handleMute = useCallback(() => {
+    toggleMute(selectedIds, !allMuted);
+    handleClose();
+  }, [selectedIds, toggleMute, allMuted]);
 
   return (
     <Box>
@@ -194,7 +204,7 @@ const MoreActions = ({ hasItemsSelected, emails }) => {
                   onClick={() => {}}
                 />
                 <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
-                <ActionMenuItem icon="volume_off" label="Mute" onClick={() => {}} />
+                <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
                 <Divider sx={{ marginY: "6px" }} />
                 <ActionMenuItem icon="swap_horiz" label="Switch to advanced toolbar" onClick={() => {}} />
               </>

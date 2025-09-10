@@ -213,6 +213,29 @@ export default function useMailActions() {
     [setEmails]
   );
 
+  const toggleMute = useCallback(
+    (ids, value = true) => {
+      const match = makeMatch(ids);
+      setEmails((prev) =>
+        prev.map((m) => {
+          if (match(m)) {
+            const currentLabels = m.labels || [];
+            const updatedLabels = value
+              ? currentLabels.includes("Muted")
+                ? currentLabels
+                : [...currentLabels, "Muted"]
+              : currentLabels.filter((label) => label !== "Muted");
+            // Remove from inbox when muted
+            const labelsWithoutInbox = updatedLabels.filter((label) => label !== "Inbox");
+            return { ...m, labels: labelsWithoutInbox };
+          }
+          return m;
+        })
+      );
+    },
+    [setEmails]
+  );
+
   return useMemo(
     () => ({
       addLabels,
@@ -232,6 +255,7 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
+      toggleMute,
     }),
     [
       addLabels,
@@ -251,6 +275,7 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
+      toggleMute,
     ]
   );
 }
