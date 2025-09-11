@@ -7,7 +7,7 @@ import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
-import BulkActions from "../MailActions";
+import MailActions from "../MailActions";
 import SpamActions from "../MailActions/SpamActions";
 import MoreActions from "../MailActions/MoreActions";
 
@@ -186,10 +186,10 @@ const ToolBar = ({ totalFilteredItems, threads }) => {
 
         {hasItemsSelected ? (
           <>
-            {folder === "spam" ? (
+            {folder === "spam" || folder === "trash" ? (
               <SpamActions threads={threads} />
             ) : (
-              <BulkActions threads={threads} showAdvancedMenu={showAdvancedMenu} />
+              <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} />
             )}
           </>
         ) : (

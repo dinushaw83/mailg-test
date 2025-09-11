@@ -16,8 +16,8 @@ const LABELS = [
 ];
 
 export default function SpamActions({ threads = [] }) {
-  const { moveToSpam, moveToTrash, notSpam, markRead } = useMailActions();
-  const { selection } = useGlobalContext();
+  const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever } = useMailActions();
+  const { selection, setSnackbar } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
@@ -46,10 +46,23 @@ export default function SpamActions({ threads = [] }) {
     }
   };
 
-  const handleDeleteEmails = useCallback(async () => {
-    if (!selectedIds.length) return;
-    moveToTrash(selectedIds);
-  }, [selectedIds, moveToTrash]);
+  const onDeleteForever = () => {
+    const ids = [...selection.ids];
+    if (!ids.length) return;
+
+    try {
+      deleteForever(ids);
+      setSnackbar({
+        open: true,
+        message: "Conversation deleted forever.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      selection.clear();
+    } catch (e) {
+      console.error("Delete forever failed:", e);
+    }
+  };
 
   const hasUnreadEmails = useMemo(() => {
     return selectedThreads.some((thread) => !thread.read);
@@ -73,7 +86,7 @@ export default function SpamActions({ threads = [] }) {
           "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
           marginLeft: "8px",
         }}
-        onClick={handleDeleteEmails}
+        onClick={onDeleteForever}
       >
         Delete forever
       </Button>
