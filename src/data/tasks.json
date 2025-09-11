@@ -1,0 +1,58 @@
+{
+  "MAILG-COMPOSE-EMAIL-002": {
+    "prompt": "Compose a new email addressed to david.kim@acelogistics.com, cc: sarah.johnson@northwindretail.com, bcc: compliance@company.com. Subject should be 'Q3 Financial Forecast Submission'. The message body: 'Hi David, please find attached the updated Q3 financial forecast. We've incorporated the recent adjustments in marketing spend and logistics costs. Kindly review and confirm if these align with your records. Best, Laura'. Send it immediately.",
+    "result": {}
+  },
+  "MAILG-REPLY-EMAIL-002": {
+    "prompt": "Open the email from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT'. Reply directly to her with the message: 'Hi Emma, thank you for flagging this. Our finance team has identified the issue and a corrected invoice has been generated. You should receive it today by 5 PM UTC. Apologies for the inconvenience.' Keep the recipient only as Emma.",
+    "result": {}
+  },
+  "MAILG-REPLYALL-002": {
+    "prompt": "In the thread 'System downtime - urgent follow up' from john.smith@northwind.com (cc includes devops@company.com and support@company.com), use Reply All. Message: 'Thank you all for the detailed logs. Engineering confirmed a faulty load balancer configuration. A fix is rolling out within the next hour, and we will monitor closely.'",
+    "result": {}
+  },
+  "MAILG-FORWARD-EMAIL-002": {
+    "prompt": "Find the email from jane.smith@northwindretail.com with subject 'Contract renewal signed copy'. Forward it to legal@company.com. Add this note above the original thread: 'Legal team - please archive this renewal copy for compliance records.' Ensure the PDF attachment is included.",
+    "result": {}
+  },
+  "MAILG-DELETE-EMAIL-002": {
+    "prompt": "Delete the promotional email from deals@randomstore.com with subject 'Limited time 90% off on electronics'. Move it to Trash without opening the message.",
+    "result": {}
+  },
+  "MAILG-PERMDELETE-002": {
+    "prompt": "In Trash, locate all messages from newsletter@junkads.com, including the one titled 'Daily Coupon Blast - September 2025'. Permanently delete them so they cannot be recovered.",
+    "result": {}
+  },
+  "MAILG-MOVE-LABEL-002": {
+    "prompt": "Take the email from alex.green@northwindretail.com with subject 'Project Phoenix Kickoff Notes'. Move it from Inbox to the label 'Projects/Phoenix'. Keep the email in All Mail as well.",
+    "result": {}
+  },
+  "MAILG-STAR-UNSTAR-002": {
+    "prompt": "Star the email from logistics.manager@acelogistics.com with subject 'Tracking update for Order #56789'. Remove the star from the thread 'Weekly HR Digest - September Week 2'.",
+    "result": {}
+  },
+  "MAILG-ARCHIVE-EMAIL-002": {
+    "prompt": "Archive the thread 'Completed design mockups - Project Nova' sent by design.team@northwind.com. It should no longer appear in Inbox but remain accessible in All Mail.",
+    "result": {}
+  },
+  "MAILG-RESTORE-ARCHIVE-002": {
+    "prompt": "From All Mail, locate 'Customer signed NDA - Acme Corp' and move it back into Inbox so it is visible in the main view.",
+    "result": {}
+  },
+  "MAILG-UNDO-SEND-002": {
+    "prompt": "After sending an email draft to thomas.wu@northwind.com with subject 'Access credentials - do not share', quickly click Undo Send within the allowed time so the recipient does not receive it.",
+    "result": {}
+  },
+  "MAILG-DRAFT-MANAGE-002": {
+    "prompt": "Save a draft addressed to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline'. Body: 'Hi Jane, here are the sections I plan to include in the proposal: 1) Market Overview, 2) Budget Estimates, 3) Implementation Plan. Please add your thoughts.' Do not send, just leave it in Drafts.",
+    "result": {}
+  },
+  "MAILG-AUTOSAVE-002": {
+    "prompt": "Start a new email to support@northwind.com, subject 'Test auto-save feature'. Body: 'This is to test whether MailG saves drafts automatically.' Close without sending. Confirm it appears in Drafts.",
+    "result": {}
+  },
+  "MAILG-RECIPIENTS-002": {
+    "prompt": "Edit the draft to michael.lee@northwind.com, add cc: sarah.connor@company.com, add bcc: compliance@company.com, and remove tom.white@company.com from recipients before saving.",
+    "result": {}
+  }
+}
