@@ -98,11 +98,41 @@ const MailActions = ({ thread }) => {
 
   const handleArchive = useCallback(() => {
     archive([threadId]);
+    setSnackbar({
+      open: true,
+      message: "Conversation archived.",
+      autoHideDuration: 3000,
+      action: null,
+    });
   }, [threadId, archive]);
 
   const handleDelete = useCallback(() => {
     moveToTrash([threadId]);
-  }, [threadId, moveToTrash]);
+    // Show global snackbar with Undo action
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Trash.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            moveToInbox([threadId]);
+            // Follow-up confirmation snackbar
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [threadId, moveToTrash, setSnackbar]);
 
   const handleReadAction = useCallback(() => {
     markRead([threadId], !thread.read);

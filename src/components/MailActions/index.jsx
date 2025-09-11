@@ -73,6 +73,30 @@ const BulkActions = ({ threads = [], showAdvancedMenu }) => {
   const handleDeleteEmails = useCallback(async () => {
     if (!selectedIds.length) return;
     moveToTrash(selectedIds);
+    // Show global snackbar with Undo action
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Trash.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            moveToInbox(selectedIds);
+            // Follow-up confirmation snackbar
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
   }, [selectedIds, moveToTrash]);
 
   const handleMoveEmails = useCallback(
