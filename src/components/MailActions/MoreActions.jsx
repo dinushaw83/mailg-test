@@ -114,6 +114,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     } else {
       markRead(selectedIds, false); // Mark as unread when all are read
     }
+    handleClose();
   }, [hasUnreadEmails, selectedIds, markRead]);
 
   return (
