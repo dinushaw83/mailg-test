@@ -1,14 +1,18 @@
 export const recipientLabels = [
   {
     id: 1,
-    label: "Friends"
+    label: "My contacts"
   },
   {
     id: 2,
-    label: "Work"
+    label: "Friends"
   },
   {
     id: 3,
+    label: "Work"
+  },
+  {
+    id: 4,
     label: "Family"
   }
 ]

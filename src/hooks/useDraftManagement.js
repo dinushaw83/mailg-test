@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { generateNextEmailId, generateThreadId, generateLegacyThreadId } from "../utils/helperFunctions";
+import { generateNextIntegerId, generateThreadId, generateLegacyThreadId } from "../utils/helperFunctions";
 
-export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraftId }) => {
+export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraftId, parentEmail, replyType }) => {
   const { emails, setEmails, loggedInUser } = useContext(GlobalContext);
   const [draftSaved, setDraftSaved] = useState(false);
   const [isDraft, setIsDraft] = useState(currentDraftId ? true : false);
@@ -94,11 +94,23 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
         hour12: true,
       });
 
+      // Reuse existing thread identifiers if updating an existing draft
+      const effectiveId = id || null;
+      const existingDraft = effectiveId
+        ? emails.find((email) => email.id?.toString() === effectiveId?.toString())
+        : null;
+
+      // Resolve thread identifiers
+      const resolvedThreadId = existingDraft?.threadId || parentEmail?.threadId || generateThreadId();
+      const resolvedLegacyThreadId = existingDraft?.legacyThreadId || parentEmail?.legacyThreadId || generateLegacyThreadId();
+      const resolvedLegacyLastMessageId = existingDraft?.legacyLastMessageId || resolvedLegacyThreadId;
+
       return {
-        id: id || generateNextEmailId(emails),
-        threadId: generateThreadId(),
-        legacyThreadId: generateLegacyThreadId(),
-        legacyLastMessageId: generateLegacyThreadId(),
+        id: effectiveId || generateNextIntegerId(emails),
+        threadId: resolvedThreadId,
+        legacyThreadId: resolvedLegacyThreadId,
+        legacyLastMessageId: resolvedLegacyLastMessageId,
+        replyType: replyType || existingDraft?.replyType,
         legacyLastNonDraftMessageId: null, // Drafts don't have non-draft messages
         from: {
           name: loggedInUser.name,

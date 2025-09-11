@@ -85,11 +85,6 @@ export default function useMailActions() {
     [setEmails]
   );
 
-  const replaceWithSingleLabel = (label) => (labels) => {
-    labels.clear();
-    labels.add(label);
-  };
-
   const addLabels = useCallback(
     (ids, names = []) =>
       updateByIds(ids, (labels) => {
@@ -109,9 +104,21 @@ export default function useMailActions() {
     [updateByIds]
   );
 
-  const moveToInbox = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")), [updateByIds]);
+  const moveToInbox = useCallback(
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.add("Inbox");
+      }),
+    [updateByIds]
+  );
 
-  const archive = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Archive")), [updateByIds]);
+  const archive = useCallback(
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Inbox");
+      }),
+    [updateByIds]
+  );
 
   const moveToSpam = useCallback(
     (ids) =>
@@ -122,11 +129,33 @@ export default function useMailActions() {
     [updateByIds]
   );
 
-  const notSpam = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")), [updateByIds]);
+  const notSpam = useCallback(
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Spam");
+        labels.add("Inbox");
+      }),
+    [updateByIds]
+  );
 
-  const moveToTrash = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Trash")), [updateByIds]);
+  const moveToTrash = useCallback(
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Inbox");
+        labels.delete("Spam");
+        labels.add("Trash");
+      }),
+    [updateByIds]
+  );
 
-  const restoreFromTrash = useCallback((ids) => updateByIds(ids, replaceWithSingleLabel("Inbox")), [updateByIds]);
+  const restoreFromTrash = useCallback(
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Trash");
+        labels.add("Inbox");
+      }),
+    [updateByIds]
+  );
 
   const toggleStar = useCallback(
     (ids) => {

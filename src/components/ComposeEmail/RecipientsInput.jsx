@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { Tooltip, Autocomplete, TextField, Avatar, Box, Typography } from "@mui/material";
+import RecipientChip from "./RecipientChip";
+import SelectContacts from "./SelectContacts/SelectContacts";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { generateAvatarColor } from "../../utils/helperFunctions";
-import RecipientChip from "./RecipientChip";
 import styles from "./RecipientsInput.module.css";
 
 export default function RecipientsInput({
@@ -30,6 +31,7 @@ export default function RecipientsInput({
   });
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const containerRef = useRef(null);
+  const [selectedContactsModal, setSelectedContactsModal] = useState({ field: null, open: false });
 
   // Sync internal state with props when they change
   useEffect(() => {
@@ -80,7 +82,7 @@ export default function RecipientsInput({
   // Handle outside click to collapse all inputs
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Don't collapse if clicking on autocomplete dropdown elements
+      // Don't collapse if clicking on autocomplete dropdown elements or while select contact modal is open
       if (
         event.target.closest(".MuiAutocomplete-popper") ||
         event.target.closest(".MuiPaper-root") ||
@@ -88,7 +90,8 @@ export default function RecipientsInput({
         event.target.closest(".MuiAutocomplete-listbox") ||
         event.target.closest(".MuiAutocomplete-root") ||
         event.target.closest("[role='listbox']") ||
-        event.target.closest("[role='option']")
+        event.target.closest("[role='option']") ||
+        selectedContactsModal.open
       ) {
         return;
       }
@@ -374,6 +377,27 @@ export default function RecipientsInput({
     return filteredOptions.slice(0, 8);
   };
 
+  // Handle inserting a recipient from select contacts
+  const handleInsertSelectedContacts = (contacts) => {
+    const fieldName = selectedContactsModal.field;
+    if (contacts.length > 0) {
+      const newSelectedRecipients = { ...selectedRecipients };
+
+      // Replace the selectedRecipients of respective field with the new contacts
+      newSelectedRecipients[fieldName] = [...contacts];
+
+      setSelectedRecipients(newSelectedRecipients);
+
+      // Update the parent component
+      if (selectedContactsModal.field === "to") onToChange(newSelectedRecipients[selectedContactsModal.field]);
+      if (selectedContactsModal.field === "cc") onCcChange(newSelectedRecipients[selectedContactsModal.field]);
+      if (selectedContactsModal.field === "bcc") onBccChange(newSelectedRecipients[selectedContactsModal.field]);
+    }
+
+    // Reset modal state
+    setSelectedContactsModal({ open: false, field: null });
+  };
+
   // Render option for autocomplete
   const renderOption = (props, option, field) => {
     const { key, ...otherProps } = props;
@@ -483,7 +507,12 @@ export default function RecipientsInput({
                 },
               }}
             >
-              <span className={styles.recipientLabel}>To</span>
+              <span
+                className={styles.recipientLabel}
+                onClick={() => setSelectedContactsModal({ field: "to", open: true })}
+              >
+                To
+              </span>
             </Tooltip>
             <div
               className={styles.inputContainer}
@@ -581,7 +610,12 @@ export default function RecipientsInput({
                   },
                 }}
               >
-                <span className={styles.recipientLabel}>Cc</span>
+                <span
+                  className={styles.recipientLabel}
+                  onClick={() => setSelectedContactsModal({ field: "cc", open: true })}
+                >
+                  Cc
+                </span>
               </Tooltip>
               <div
                 className={styles.inputContainer}
@@ -679,7 +713,12 @@ export default function RecipientsInput({
                   },
                 }}
               >
-                <span className={styles.recipientLabel}>Bcc</span>
+                <span
+                  className={styles.recipientLabel}
+                  onClick={() => setSelectedContactsModal({ field: "bcc", open: true })}
+                >
+                  Bcc
+                </span>
               </Tooltip>
               <div
                 className={styles.inputContainer}
@@ -760,6 +799,15 @@ export default function RecipientsInput({
             </div>
           )}
         </div>
+      )}
+
+      {selectedContactsModal.open && (
+        <SelectContacts
+          handleInsertContacts={handleInsertSelectedContacts}
+          open={selectedContactsModal.open}
+          onClose={() => setSelectedContactsModal((prev) => ({ ...prev, open: false }))}
+          addedRecipients={selectedContactsModal.field ? selectedRecipients[selectedContactsModal.field] : []}
+        />
       )}
     </div>
   );

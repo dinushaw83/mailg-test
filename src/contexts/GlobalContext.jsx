@@ -21,10 +21,10 @@ export const GlobalContextProvider = ({ children }) => {
   const [composeOpen, setComposeOpen] = usePersistedState("composeOpen", false);
   const [labels, setLabels] = usePersistedState("labels", initialLabels);
   // Store multiple compose windows
-  const [composeWindows, setComposeWindows] = usePersistedState("composeWindows", []);
+  const [composeWindows, setComposeWindows] = useState([]);
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
   const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
-  const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 2);
+  const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -45,6 +45,8 @@ export const GlobalContextProvider = ({ children }) => {
   useEffect(() => {
     setSelected(new Set());
   }, [location.pathname]);
+
+  // Reset compose windows
 
   const selection = useMemo(() => {
     const isSelected = (id) => selected.has(id);

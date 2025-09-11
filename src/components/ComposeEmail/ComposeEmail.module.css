@@ -12,8 +12,9 @@
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Minimized state */
@@ -55,6 +56,11 @@
   align-items: center;
   user-select: none;
   cursor: pointer;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1002;
 }
 
 /* Content wrapper */
@@ -162,6 +168,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  background-color: #fff;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1002;
 }
 
 .sendButtonContainer {
