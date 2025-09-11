@@ -21,6 +21,7 @@ export function buildSearchIndex(emails) {
     // Store email documents
     emailDocuments = emails.map((email) => ({
       id: email.id,
+      threadId: email.threadId,
       subject: email.subject || "",
       body: email.body || "",
       preview: email.preview || "",

@@ -70,18 +70,14 @@ const SearchBar = () => {
   const highlightSearchTerm = (text, searchTerm) => {
     if (!searchTerm || !text) return text;
 
-    const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
-    const parts = text.split(regex);
+    const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    return parts.map((part, index) =>
-      regex.test(part) ? (
-        <strong key={index} style={{ fontWeight: "bold" }}>
-          {part}
-        </strong>
-      ) : (
-        part
-      )
-    );
+    const testRegex = new RegExp(`^${escaped}$`, "i"); // for exact-part testing
+    const splitRegex = new RegExp(`(${escaped})`, "i"); // for splitting (i = case-insensitive)
+
+    const parts = text.split(splitRegex);
+
+    return parts.map((part, index) => (testRegex.test(part) ? <strong key={index}>{part}</strong> : part));
   };
 
   const handleKeyDown = (e) => {
@@ -89,9 +85,19 @@ const SearchBar = () => {
       navigate(`/search/${searchValue}`);
       setIsFocused(false);
 
-      //blur the input
       e.target.blur();
     }
+  };
+
+  const handleResultClick = (item) => {
+    if (typeof item === "object" && item.id) {
+      // Extract threadId from the search result
+      const threadId = item.threadId ? item.threadId.split(":")[1] : item.id;
+      navigate(`/inbox/${threadId}`);
+    } else {
+      navigate(`/search/${item}`);
+    }
+    setIsFocused(false);
   };
 
   return (
@@ -176,7 +182,11 @@ const SearchBar = () => {
                   if (typeof item === "object" && item.id) {
                     // Search result
                     return (
-                      <ListItem key={item.id} className={styles.searchSuggestion}>
+                      <ListItem
+                        key={item.id}
+                        className={styles.searchSuggestion}
+                        onClick={() => handleResultClick(item)}
+                      >
                         <ListItemIcon className={styles.clockIcon}>
                           <span
                             className="material-symbols-outlined"
@@ -208,7 +218,7 @@ const SearchBar = () => {
                   } else {
                     // Suggestions
                     return (
-                      <ListItem key={index} className={styles.searchSuggestion}>
+                      <ListItem key={index} className={styles.searchSuggestion} onClick={() => handleResultClick(item)}>
                         <ListItemIcon className={styles.clockIcon}>
                           <span
                             className="material-symbols-outlined"
