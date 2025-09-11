@@ -1,6 +1,6 @@
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "@emotion/styled";
 import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
@@ -10,6 +10,8 @@ import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
 import MoveToMenu from "../MailActions/MoveToMenu";
 import Button from "@mui/material/Button";
 import { SnoozePopover } from "../MailActions/Snooze";
+import MoreActions from "./MoreActions";
+import { Labels } from "../MailActions/Labels";
 
 export const Icon = ({
   name,
@@ -65,6 +67,18 @@ const reducer = (state, action) => {
       return { ...state, snoozeAnchorEl: null };
     case "toggleShowAdvancedMenu":
       return { ...state, showAdvancedMenu: !state.showAdvancedMenu };
+    case "setLabelAnchorEl":
+      return { ...state, labelAnchorEl: action.labelAnchorEl };
+    case "clearLabelAnchorEl":
+      return { ...state, labelAnchorEl: null };
+    case "setSearchQuery":
+      return { ...state, searchQuery: action.searchQuery };
+    case "clearSearchQuery":
+      return { ...state, searchQuery: "" };
+    case "setSelectedLabelKeys":
+      return { ...state, selectedLabelKeys: action.selectedLabelKeys };
+    case "clearSelectedLabelKeys":
+      return { ...state, selectedLabelKeys: new Set() };
   }
 };
 
@@ -73,13 +87,17 @@ const initialState = {
   moveToMenuOpen: false,
   snoozeAnchorEl: null,
   showAdvancedMenu: false,
+  labelAnchorEl: null,
+  searchQuery: "",
+  selectedLabelKeys: new Set(),
 };
 
 const MailActions = ({ thread }) => {
   const navigate = useNavigate();
   const threadId = thread.threadId.split(":")[1];
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu } = state;
+  const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery } = state;
+  const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
   const { labels, setSnackbar } = useGlobalContext();
 
   const { label: labelParam } = useParams();
@@ -94,6 +112,7 @@ const MailActions = ({ thread }) => {
 
   const moveToMenuAnchorRef = useRef(null);
   const snoozeAnchorElRef = useRef(null);
+  const labelAnchorElRef = useRef(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
 
   const toggleSpamModal = useCallback(() => {
@@ -145,9 +164,14 @@ const MailActions = ({ thread }) => {
     });
   }, [threadId, moveToTrash, setSnackbar]);
 
-  const handleReadAction = useCallback(() => {
-    markRead([threadId], !thread.read);
-  }, [threadId, markRead]);
+  useEffect(() => {
+    markRead([threadId], true);
+  }, [markRead, threadId]);
+
+  const handleMarkUnread = useCallback(() => {
+    markRead([threadId], false);
+    navigate("/inbox");
+  }, []);
 
   const handleMoveEmails = useCallback(
     async (item) => {
@@ -209,6 +233,26 @@ const MailActions = ({ thread }) => {
     dispatch({ type: "toggleShowAdvancedMenu" });
   }, []);
 
+  const setSearchQuery = useCallback((searchQuery) => {
+    dispatch({ type: "setSearchQuery", searchQuery });
+  }, []);
+
+  const setLabelAnchorEl = useCallback((labelAnchorEl) => {
+    dispatch({ type: "setLabelAnchorEl", labelAnchorEl });
+  }, []);
+
+  const clearSelectedLabelKeys = useCallback(() => {
+    dispatch({ type: "clearSelectedLabelKeys" });
+  }, []);
+
+  const handleLabelClose = useCallback(() => {
+    dispatch({ type: "clearLabelAnchorEl" });
+  }, []);
+
+  const handleLabelAction = useCallback(() => {
+    dispatch({ type: "setLabelAnchorEl", labelAnchorEl: labelAnchorElRef.current });
+  }, []);
+
   return (
     <div
       className="iH bzn"
@@ -245,11 +289,7 @@ const MailActions = ({ thread }) => {
         <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
 
         <>
-          <Icon
-            name={!thread.read ? "drafts" : "mark_email_unread"}
-            label={!thread.read ? "Mark as read" : "Mark as unread"}
-            onClick={handleReadAction}
-          />
+          <Icon name="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />
           {showAdvancedMenu && (
             <>
               <Icon name="schedule" label="Snooze" onClick={handleSnoozeAction} _ref={snoozeAnchorElRef} />
@@ -258,7 +298,13 @@ const MailActions = ({ thread }) => {
           )}
           {/* The next icon does not exactly match */}
           <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
-          <Icon name="more_vert" label="More" />
+          {showAdvancedMenu && <Icon name="label" label="Labels" onClick={handleLabelAction} _ref={labelAnchorElRef} />}
+
+          <MoreActions
+            thread={thread}
+            showAdvancedMenu={showAdvancedMenu}
+            toggleShowAdvancedMenu={toggleShowAdvancedMenu}
+          />
         </>
       </div>
       <SpamOrUnsubModal
@@ -289,6 +335,21 @@ const MailActions = ({ thread }) => {
         onClose={handleSnoozeClose}
         selectedIds={[threadId]}
         snooze={snooze}
+      />
+      <Labels
+        {...{
+          searchQuery,
+          setSearchQuery,
+          setLabelAnchorEl,
+          setSelectedLabelKeys,
+          selectedLabelKeys,
+          labelAnchorEl,
+          selectedIds: [threadId],
+          handleClose: handleLabelClose,
+          // position below the icon
+          anchorOrigin: { vertical: "bottom", horizontal: "left" },
+          transformOrigin: { vertical: "top", horizontal: "left" },
+        }}
       />
     </div>
   );
