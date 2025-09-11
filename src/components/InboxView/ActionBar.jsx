@@ -1,11 +1,12 @@
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "@emotion/styled";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
 import useMailActions from "../../hooks/useMailActions";
+import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
 
 export const Icon = ({
   name,
@@ -49,9 +50,26 @@ export const Icon = ({
   );
 };
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "toggleSpamModal":
+      return { ...state, spamModalOpen: !state.spamModalOpen };
+  }
+};
+
+const initialState = {
+  spamModalOpen: false,
+};
+
 const MailActions = ({ thread }) => {
   const navigate = useNavigate();
   const threadId = thread.threadId.split(":")[1];
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { spamModalOpen } = state;
+
+  const toggleSpamModal = useCallback(() => {
+    dispatch({ type: "toggleSpamModal" });
+  }, [dispatch]);
 
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, snooze } =
     useMailActions();
@@ -97,7 +115,7 @@ const MailActions = ({ thread }) => {
 
         <>
           <Icon name="archive" label="Archive" onClick={handleArchive} />
-          <Icon name="report" label="Report spam" />
+          <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
           <Icon name="delete" label="Delete" onClick={handleDelete} />
         </>
 
@@ -114,6 +132,20 @@ const MailActions = ({ thread }) => {
           <Icon name="more_vert" label="More" />
         </>
       </div>
+      <SpamOrUnsubModal
+        open={spamModalOpen}
+        onClose={() => {
+          toggleSpamModal();
+        }}
+        onReportSpam={() => {
+          moveToSpam([threadId]);
+          toggleSpamModal();
+        }}
+        onUnsubscribe={() => {
+          moveToSpam([threadId]);
+          toggleSpamModal();
+        }}
+      />
     </div>
   );
 };
