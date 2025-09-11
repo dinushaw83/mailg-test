@@ -9,6 +9,7 @@ import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
 import MoveToMenu from "../MailActions/MoveToMenu";
 import Button from "@mui/material/Button";
+import { SnoozePopover } from "../MailActions/Snooze";
 
 export const Icon = ({
   name,
@@ -58,19 +59,27 @@ const reducer = (state, action) => {
       return { ...state, spamModalOpen: !state.spamModalOpen };
     case "toggleMoveToMenu":
       return { ...state, moveToMenuOpen: !state.moveToMenuOpen };
+    case "setSnoozeAnchorEl":
+      return { ...state, snoozeAnchorEl: action.snoozeAnchorEl };
+    case "clearSnoozeAnchorEl":
+      return { ...state, snoozeAnchorEl: null };
+    case "toggleShowAdvancedMenu":
+      return { ...state, showAdvancedMenu: !state.showAdvancedMenu };
   }
 };
 
 const initialState = {
   spamModalOpen: false,
   moveToMenuOpen: false,
+  snoozeAnchorEl: null,
+  showAdvancedMenu: false,
 };
 
 const MailActions = ({ thread }) => {
   const navigate = useNavigate();
   const threadId = thread.threadId.split(":")[1];
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { spamModalOpen, moveToMenuOpen } = state;
+  const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu } = state;
   const { labels, setSnackbar } = useGlobalContext();
 
   const { label: labelParam } = useParams();
@@ -84,6 +93,8 @@ const MailActions = ({ thread }) => {
   }, [labels]);
 
   const moveToMenuAnchorRef = useRef(null);
+  const snoozeAnchorElRef = useRef(null);
+  const showSnoozePopover = Boolean(snoozeAnchorEl);
 
   const toggleSpamModal = useCallback(() => {
     dispatch({ type: "toggleSpamModal" });
@@ -186,6 +197,18 @@ const MailActions = ({ thread }) => {
     [moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
   );
 
+  const handleSnoozeAction = useCallback(() => {
+    dispatch({ type: "setSnoozeAnchorEl", snoozeAnchorEl: snoozeAnchorElRef.current });
+  }, []);
+
+  const handleSnoozeClose = useCallback(() => {
+    dispatch({ type: "clearSnoozeAnchorEl" });
+  }, []);
+
+  const toggleShowAdvancedMenu = useCallback(() => {
+    dispatch({ type: "toggleShowAdvancedMenu" });
+  }, []);
+
   return (
     <div
       className="iH bzn"
@@ -227,6 +250,12 @@ const MailActions = ({ thread }) => {
             label={!thread.read ? "Mark as read" : "Mark as unread"}
             onClick={handleReadAction}
           />
+          {showAdvancedMenu && (
+            <>
+              <Icon name="schedule" label="Snooze" onClick={handleSnoozeAction} _ref={snoozeAnchorElRef} />
+              <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+            </>
+          )}
           {/* The next icon does not exactly match */}
           <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
           <Icon name="more_vert" label="More" />
@@ -254,6 +283,13 @@ const MailActions = ({ thread }) => {
           onClose={() => dispatch({ type: "toggleMoveToMenu" })}
         />
       )}
+      <SnoozePopover
+        anchorEl={snoozeAnchorEl}
+        open={showSnoozePopover}
+        onClose={handleSnoozeClose}
+        selectedIds={[threadId]}
+        snooze={snooze}
+      />
     </div>
   );
 };
