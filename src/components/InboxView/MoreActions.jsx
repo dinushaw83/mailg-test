@@ -4,7 +4,6 @@ import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
@@ -12,26 +11,13 @@ import { Labels } from "../MailActions/Labels";
 import { useNavigate } from "react-router-dom";
 
 const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
-  const {
-    moveToSpam,
-    moveToTrash,
-    moveToLabel,
-    moveToLabelFrom,
-    moveToInbox,
-    archive,
-    markRead,
-    setStar,
-    setImportant,
-    snooze,
-    toggleMute,
-  } = useMailActions();
+  const { markRead, setStar, setImportant, snooze, toggleMute } = useMailActions();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [currentPopover, setCurrentPopover] = React.useState("main"); // 'main' or 'snooze'
+  const [currentPopover, setCurrentPopover] = React.useState("main");
   const [labelAnchorEl, setLabelAnchorEl] = React.useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { labels, setSnackbar } = useGlobalContext();
 
   const threadId = thread.threadId.split(":")[1];
 
@@ -47,10 +33,6 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
 
   const handleSnoozeClick = () => {
     setCurrentPopover("snooze");
-  };
-
-  const handleSnoozeBack = () => {
-    setCurrentPopover("main");
   };
 
   const handleLabelClick = (event) => {
@@ -169,35 +151,14 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
                     filled={important}
                     fontSize={important ? 18 : 20}
                   />
+                  <ActionMenuItem
+                    icon="star"
+                    label={starred ? "Remove star" : "Add star"}
+                    onClick={handleStar}
+                    filled={starred}
+                  />
                 </>
               )}
-              {/* <ActionMenuItem
-                icon="star"
-                label={allStarred ? "Remove star" : "Add star"}
-                disabled={onlyOneItemSelected}
-                onClick={handleStar}
-              />
-              <ActionMenuItem
-                icon="label_important"
-                label="Mark as important"
-                disabled={onlyOneItemSelected || allImportant}
-                onClick={handleImportant}
-              />
-              <ActionMenuItem
-                icon="label_important"
-                label="Mark as not important"
-                filled
-                fontSize={18}
-                disabled={onlyOneItemSelected || allNotImportant}
-                onClick={handleNotImportant}
-              />
-              <ActionMenuItem
-                icon="attach_file"
-                label="Forward as attachment"
-                horizontal
-                disabled={onlyOneItemSelected}
-                onClick={() => {}}
-              /> */}
               <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
               <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
               <Divider sx={{ marginY: "6px" }} />
