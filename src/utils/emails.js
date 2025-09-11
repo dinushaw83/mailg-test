@@ -159,3 +159,53 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 
   return filtered;
 }
+
+// get a single thread row
+export const getThread = (messages, { threadId }) => {
+  const { messagesById, threadsById } = normalizeEmails(messages);
+
+  console.log({ threadsById });
+
+  const thread = threadsById[threadId];
+  if (!thread) {
+    return null;
+  }
+
+  const firstId = thread.messageIds[0];
+  const lastId = thread.lastMessageId || thread.messageIds[thread.messageIds.length - 1];
+  const first = messagesById[firstId];
+  const last = messagesById[lastId];
+
+  return {
+    // Keep navigation compatible with message details by using last message id
+    id: last.id,
+    // Preserve thread identity for attributes/analytics
+    threadId: thread.id,
+    legacyThreadId: last.legacyThreadId,
+    legacyLastMessageId: last.legacyLastMessageId,
+    legacyLastNonDraftMessageId: last.legacyLastNonDraftMessageId,
+
+    // Subject from first message, preview from last
+    subject: first.subject,
+    preview: last.preview,
+
+    // Read/star/important from last message (as requested)
+    read: !!last.read,
+    starred: !!last.starred,
+    important: !!last.important,
+
+    // Display info
+    timestamp: last.timestamp,
+    labelColor: last.labelColor,
+    from: last.from,
+    to: last.to,
+
+    // Aggregates
+    labels: thread.labels, // union
+    messageCount: thread.messageIds.length,
+    unreadCount: thread.unreadCount,
+    updatedAt: thread.updatedAt,
+
+    messageIds: thread.messageIds,
+  };
+};

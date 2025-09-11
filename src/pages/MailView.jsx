@@ -49,8 +49,8 @@ const Inbox = () => {
               <div id=":3" className="Tm" style={{ height: 985 }}>
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
-                    <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
-                      <ToolBar totalFilteredItems={filteredRows.length} emails={rows} />
+                    <div className="bGI nH oy8Mbf aE3 S4" role="main">
+                      <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
                       <div />
                       <div className="X3" />
                       <div className="a0V">

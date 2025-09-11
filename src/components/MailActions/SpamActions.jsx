@@ -15,14 +15,14 @@ const LABELS = [
   { id: "promotions", name: "Promotions" },
 ];
 
-export default function SpamActions({ emails = [] }) {
+export default function SpamActions({ threads = [] }) {
   const { moveToSpam, moveToTrash, notSpam, markRead } = useMailActions();
   const { selection } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
-  const selectedEmails = useMemo(
-    () => emails.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
-    [emails, selectedIds]
+  const selectedThreads = useMemo(
+    () => threads.filter((thread) => selectedIds.includes(thread.threadId.split(":")[1])),
+    [threads, selectedIds]
   );
 
   const [open, setOpen] = useState(false);
@@ -52,8 +52,8 @@ export default function SpamActions({ emails = [] }) {
   }, [selectedIds, moveToTrash]);
 
   const hasUnreadEmails = useMemo(() => {
-    return selectedEmails.some((email) => !email.read);
-  }, [selectedEmails]);
+    return selectedThreads.some((thread) => !thread.read);
+  }, [selectedThreads]);
 
   const handleReadAction = useCallback(() => {
     if (hasUnreadEmails) {

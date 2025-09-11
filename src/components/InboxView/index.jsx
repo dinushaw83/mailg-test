@@ -7,6 +7,7 @@ import { Content } from "./Content";
 import { Subject } from "./Subject";
 import { Divider } from "@mui/material";
 import { Actions } from "./Actions";
+import { getThread } from "../../utils/emails";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
@@ -26,13 +27,11 @@ const InboxView = () => {
 
   const { threadsById, messagesById } = normalizedEmails;
 
-  const emailThread = useMemo(() => {
-    if (!emails) return null;
-    // IDs in fixtures are numbers; support string compare just in case
-    return threadsById[`#thread-f:${threadId}`];
+  const thread = useMemo(() => {
+    return getThread(emails, { threadId: `#thread-f:${threadId}` });
   }, [emails, threadId]);
 
-  if (!emailThread) {
+  if (!thread) {
     return (
       <div className="nH bkK" style={{ padding: 24 }}>
         <h2 style={{ margin: 0 }}>Email not found</h2>
@@ -43,12 +42,12 @@ const InboxView = () => {
     );
   }
 
-  const { messageIds } = emailThread;
+  const { messageIds } = thread;
   const messages = messageIds.map((id) => messagesById[id]);
 
   return (
     <InboxViewContainer>
-      <ActionBar />
+      <ActionBar thread={thread} />
       <InnerContainer>
         <Subject subject={messages[0].subject} />
         {messages.map((message, index) => (

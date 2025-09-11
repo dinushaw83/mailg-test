@@ -11,7 +11,7 @@ import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { SnoozePopover } from "./Snooze";
 import { Labels } from "./Labels";
 
-const BulkActions = ({ emails = [], showAdvancedMenu }) => {
+const BulkActions = ({ threads = [], showAdvancedMenu }) => {
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, snooze } =
     useMailActions();
   const [{ moveToMenuOpen, spamModalOpen }, setState] = useState({
@@ -26,10 +26,11 @@ const BulkActions = ({ emails = [], showAdvancedMenu }) => {
   const anchorRef = useRef(null);
   const { selection, labels, setSnackbar } = useGlobalContext();
   const { ids } = selection;
+
   const selectedIds = useMemo(() => [...ids], [ids]);
-  const selectedEmails = useMemo(
-    () => emails.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
-    [emails, selectedIds]
+  const selectedThreads = useMemo(
+    () => threads.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
+    [threads, selectedIds]
   );
 
   const labelAnchorElRef = useRef(null);
@@ -141,12 +142,13 @@ const BulkActions = ({ emails = [], showAdvancedMenu }) => {
   };
 
   const allAreArchived = useMemo(() => {
-    return selectedEmails.every((email) => email.labels.includes("Archive"));
-  }, [selectedEmails]);
+    return selectedThreads.every((thread) => thread.labels.includes("Archive"));
+  }, [selectedThreads]);
 
   const hasUnreadEmails = useMemo(() => {
-    return selectedEmails.some((email) => !email.read);
-  }, [selectedEmails]);
+    // to reconsider this
+    return selectedThreads.some((thread) => !thread.read);
+  }, [selectedThreads]);
 
   const handleReadAction = useCallback(() => {
     if (hasUnreadEmails) {

@@ -1,10 +1,11 @@
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React, { useContext, useMemo } from "react";
+import React, { useCallback, useContext, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "@emotion/styled";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
+import useMailActions from "../../hooks/useMailActions";
 
 export const Icon = ({
   name,
@@ -48,8 +49,24 @@ export const Icon = ({
   );
 };
 
-const MailActions = () => {
+const MailActions = ({ thread }) => {
   const navigate = useNavigate();
+  const threadId = thread.threadId.split(":")[1];
+
+  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, snooze } =
+    useMailActions();
+
+  const handleArchive = useCallback(() => {
+    archive([threadId]);
+  }, [threadId, archive]);
+
+  const handleDelete = useCallback(() => {
+    moveToTrash([threadId]);
+  }, [threadId, moveToTrash]);
+
+  const handleReadAction = useCallback(() => {
+    markRead([threadId], !thread.read);
+  }, [threadId, markRead]);
 
   return (
     <div
@@ -79,15 +96,19 @@ const MailActions = () => {
         />
 
         <>
-          <Icon name="archive" label="Archive" />
+          <Icon name="archive" label="Archive" onClick={handleArchive} />
           <Icon name="report" label="Report spam" />
-          <Icon name="delete" label="Delete" />
+          <Icon name="delete" label="Delete" onClick={handleDelete} />
         </>
 
         <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
 
         <>
-          <Icon name="mark_email_unread" label="Mark as unread" />
+          <Icon
+            name={!thread.read ? "drafts" : "mark_email_unread"}
+            label={!thread.read ? "Mark as read" : "Mark as unread"}
+            onClick={handleReadAction}
+          />
           {/* The next icon does not exactly match */}
           <Icon name="drive_file_move" label="Move to" />
           <Icon name="more_vert" label="More" />
@@ -195,11 +216,11 @@ const ActionsContainer = styled.div`
   justify-content: space-between;
 `;
 
-export default function ActionBar() {
+export default function ActionBar({ thread }) {
   return (
     <ActionBarContainer>
       <ActionsContainer>
-        <MailActions />
+        <MailActions thread={thread} />
         <NavigationActions />
       </ActionsContainer>
       <Divider />

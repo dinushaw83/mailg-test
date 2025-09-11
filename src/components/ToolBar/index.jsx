@@ -159,12 +159,12 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems, emails }) => {
+const ToolBar = ({ totalFilteredItems, threads }) => {
   const { folder = "inbox" } = useParams();
   const { selection, refreshEmails } = useGlobalContext();
   const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
 
-  const threadIds = emails.map((email) => email.threadId.split(":")[1]);
+  const threadIds = threads.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
   const allSelected = threadIds.length > 0 && threadIds.every((threadId) => ids.has(threadId));
   const partialSelected = threadIds.length > 0 && threadIds.some((threadId) => ids.has(threadId));
@@ -187,9 +187,9 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
         {hasItemsSelected ? (
           <>
             {folder === "spam" ? (
-              <SpamActions emails={emails} />
+              <SpamActions threads={threads} />
             ) : (
-              <BulkActions emails={emails} showAdvancedMenu={showAdvancedMenu} />
+              <BulkActions threads={threads} showAdvancedMenu={showAdvancedMenu} />
             )}
           </>
         ) : (
@@ -200,7 +200,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
 
         <MoreActions
           hasItemsSelected={hasItemsSelected}
-          emails={emails}
+          threads={threads}
           showAdvancedMenu={showAdvancedMenu}
           setShowAdvancedMenu={setShowAdvancedMenu}
         />

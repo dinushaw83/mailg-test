@@ -10,7 +10,7 @@ import { SnoozePopover } from "./Snooze";
 import { ActionMenuItem } from "./ActionMenuItem";
 import { Labels } from "./Labels";
 
-const MoreActions = ({ hasItemsSelected, emails, showAdvancedMenu, setShowAdvancedMenu }) => {
+const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
   const {
     moveToSpam,
     moveToTrash,
@@ -32,9 +32,9 @@ const MoreActions = ({ hasItemsSelected, emails, showAdvancedMenu, setShowAdvanc
   const { selection, labels, setSnackbar } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
-  const selectedEmails = useMemo(
-    () => emails.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
-    [emails, selectedIds]
+  const selectedThreads = useMemo(
+    () => threads.filter((thread) => selectedIds.includes(thread.threadId.split(":")[1])),
+    [threads, selectedIds]
   );
 
   const handleClick = (event) => {
@@ -66,28 +66,28 @@ const MoreActions = ({ hasItemsSelected, emails, showAdvancedMenu, setShowAdvanc
   const id = open ? "more-actions-popover" : undefined;
 
   const markAllAsRead = useCallback(() => {
-    const threadIds = emails.map((email) => email.threadId.split(":")[1]);
+    const threadIds = threads.map((thread) => thread.threadId.split(":")[1]);
     markRead(threadIds, true);
     handleClose();
-  }, [emails, markRead]);
+  }, [threads, markRead]);
 
   const onlyOneItemSelected = selectedIds.length === 1;
 
   const allStarred = useMemo(() => {
-    return selectedEmails.every((email) => email.starred);
-  }, [selectedEmails]);
+    return selectedThreads.every((thread) => thread.starred);
+  }, [selectedThreads]);
 
   const allImportant = useMemo(() => {
-    return selectedEmails.every((email) => email.important);
-  }, [selectedEmails]);
+    return selectedThreads.every((thread) => thread.important);
+  }, [selectedThreads]);
 
   const allNotImportant = useMemo(() => {
-    return selectedEmails.every((email) => !email.important);
-  }, [selectedEmails]);
+    return selectedThreads.every((thread) => !thread.important);
+  }, [selectedThreads]);
 
   const allMuted = useMemo(() => {
-    return selectedEmails.every((email) => email.labels.includes("Muted"));
-  }, [selectedEmails]);
+    return selectedThreads.every((thread) => thread.labels.includes("Muted"));
+  }, [selectedThreads]);
 
   const handleStar = useCallback(() => {
     setStar(selectedIds, !allStarred);
