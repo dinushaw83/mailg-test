@@ -63,21 +63,12 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
   const open = Boolean(anchorEl);
   const id = open ? "more-actions-popover" : undefined;
 
-  const markAsRead = useCallback(() => {
-    markRead([threadId], true);
-    handleClose();
-  }, [threadId, markRead]);
-
   const starred = useMemo(() => {
     return thread.starred;
   }, [thread]);
 
   const important = useMemo(() => {
     return thread.important;
-  }, [thread]);
-
-  const notImportant = useMemo(() => {
-    return !thread.important;
   }, [thread]);
 
   const muted = useMemo(() => {
@@ -89,15 +80,13 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
     handleClose();
   }, [threadId, setStar, starred]);
 
-  const handleImportant = useCallback(() => {
-    setImportant([threadId], true);
-    handleClose();
-  }, [threadId, setImportant, important]);
-
-  const handleNotImportant = useCallback(() => {
-    setImportant([threadId], false);
-    handleClose();
-  }, [threadId, setImportant]);
+  const toggleImportant = useCallback(
+    (value) => {
+      setImportant([threadId], value);
+      handleClose();
+    },
+    [threadId, setImportant, important]
+  );
 
   const handleMute = useCallback(() => {
     toggleMute([threadId], !muted);
@@ -173,6 +162,13 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
               {showAdvancedMenu && (
                 <>
                   <ActionMenuItem icon="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />
+                  <ActionMenuItem
+                    icon={important ? "label_important" : "label_important_outline"}
+                    label={important ? "Mark as not important" : "Mark as important"}
+                    onClick={() => toggleImportant(!important)}
+                    filled={important}
+                    fontSize={important ? 18 : 20}
+                  />
                 </>
               )}
               {/* <ActionMenuItem
