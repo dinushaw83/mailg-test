@@ -79,10 +79,12 @@ export function searchEmails(query, options = {}) {
     }
 
     // Map results back to email documents
-    const emailResults = results
-      .map((result) => emailDocuments.find((doc) => doc.id == result.ref))
-      .filter(Boolean)
-      .slice(0, options.limit || 5);
+    let emailResults = results.map((result) => emailDocuments.find((doc) => doc.id == result.ref)).filter(Boolean);
+
+    // Apply limit only if specified
+    if (options.limit !== null && options.limit !== undefined) {
+      emailResults = emailResults.slice(0, options.limit || 5);
+    }
 
     return emailResults;
   } catch (error) {

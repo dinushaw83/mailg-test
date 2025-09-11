@@ -1,15 +1,21 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Box, Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener, Typography } from "@mui/material";
+import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } from "@mui/material";
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { buildSearchIndex, searchEmails, getRecentSearchSuggestions, isSearchIndexReady } from "../../utils/search";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const SearchBar = () => {
+  const { emails } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+
   const searchContainerRef = useRef(null);
-  const { emails } = useGlobalContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchQuery = location.pathname.startsWith("/search/") ? location.pathname.split("/search/")[1] : null;
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -25,6 +31,13 @@ const SearchBar = () => {
       buildSearchIndex(emails);
     }
   }, [emails]);
+
+  // Set search value when search query is present in the url
+  useEffect(() => {
+    if (searchQuery) {
+      setSearchValue(searchQuery);
+    }
+  }, [searchQuery]);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -71,6 +84,16 @@ const SearchBar = () => {
     );
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      navigate(`/search/${searchValue}`);
+      setIsFocused(false);
+
+      //blur the input
+      e.target.blur();
+    }
+  };
+
   return (
     <ClickAwayListener onClickAway={() => setIsFocused(false)}>
       <div className={styles.searchContainer} ref={searchContainerRef}>
@@ -93,6 +116,7 @@ const SearchBar = () => {
               value={searchValue}
               onChange={handleInputChange}
               onFocus={handleFocus}
+              onKeyDown={handleKeyDown}
               autoComplete="off"
             />
 
@@ -215,8 +239,6 @@ const SearchBar = () => {
               )}
             </List>
           </div>
-
-          {/* TODO: Add description when no recent searches or top 5   results from emails */}
 
           {/* All search result navigation */}
           {searchValue && (

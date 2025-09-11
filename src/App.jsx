@@ -8,6 +8,7 @@ import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 
 import { initialUser } from "./contexts/fixtures/me";
+import SearchResultsView from "./pages/SearchResultsView";
 
 function App() {
   useEffect(() => {
@@ -24,6 +25,7 @@ function App() {
             <Route path="/sent/:threadId" element={<EmailDetails />} />
             <Route path="/:folder" element={<MailView />} />
             <Route path="/label/:label" element={<MailView />} />
+            <Route path="/search/:query" element={<SearchResultsView />} />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
 
