@@ -11,19 +11,7 @@ import { ActionMenuItem } from "./ActionMenuItem";
 import { Labels } from "./Labels";
 
 const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
-  const {
-    moveToSpam,
-    moveToTrash,
-    moveToLabel,
-    moveToLabelFrom,
-    moveToInbox,
-    archive,
-    markRead,
-    setStar,
-    setImportant,
-    snooze,
-    toggleMute,
-  } = useMailActions();
+  const { markRead, setStar, setImportant, snooze, toggleMute } = useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentPopover, setCurrentPopover] = React.useState("main"); // 'main' or 'snooze'
   const [labelAnchorEl, setLabelAnchorEl] = React.useState(null);
@@ -89,15 +77,21 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     return selectedThreads.every((thread) => thread.labels.includes("Muted"));
   }, [selectedThreads]);
 
-  const handleStar = useCallback(() => {
-    setStar(selectedIds, !allStarred);
-    handleClose();
-  }, [selectedIds, setStar, allStarred]);
+  const handleStar = useCallback(
+    (value) => {
+      setStar(selectedIds, value);
+      handleClose();
+    },
+    [selectedIds, setStar]
+  );
 
-  const handleImportant = useCallback(() => {
-    setImportant(selectedIds, true);
-    handleClose();
-  }, [selectedIds, setImportant, allImportant]);
+  const handleImportant = useCallback(
+    (value) => {
+      setImportant(selectedIds, value);
+      handleClose();
+    },
+    [selectedIds, setImportant]
+  );
 
   const handleNotImportant = useCallback(() => {
     setImportant(selectedIds, false);
@@ -108,6 +102,19 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     toggleMute(selectedIds, !allMuted);
     handleClose();
   }, [selectedIds, toggleMute, allMuted]);
+
+  const hasUnreadEmails = useMemo(() => {
+    // to reconsider this
+    return selectedThreads.some((thread) => !thread.read);
+  }, [selectedThreads]);
+
+  const handleReadAction = useCallback(() => {
+    if (hasUnreadEmails) {
+      markRead(selectedIds, true); // Mark as read when there are unread emails
+    } else {
+      markRead(selectedIds, false); // Mark as unread when all are read
+    }
+  }, [hasUnreadEmails, selectedIds, markRead]);
 
   return (
     <Box>
@@ -145,77 +152,96 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
             )}
             {hasItemsSelected && (
               <>
-                <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
-                <Divider sx={{ marginY: "6px" }} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    paddingX: "16px",
-                    height: "32px",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    "&:hover": {
-                      background: "#07070714",
-                    },
-                  }}
-                  onClick={handleLabelClick}
-                >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: 20,
-                      color: "rgb(68, 68, 68)",
-                      width: "20px",
-                    }}
-                  >
-                    label
-                  </span>
+                {!showAdvancedMenu && (
+                  <>
+                    <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
+                    <Divider sx={{ marginY: "6px" }} />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        paddingX: "16px",
+                        height: "32px",
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        "&:hover": {
+                          background: "#07070714",
+                        },
+                      }}
+                      onClick={handleLabelClick}
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: 20,
+                          color: "rgb(68, 68, 68)",
+                          width: "20px",
+                        }}
+                      >
+                        label
+                      </span>
 
-                  <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
-                    Label as
-                  </Typography>
+                      <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
+                        Label as
+                      </Typography>
 
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: 20,
-                      color: "rgb(68, 68, 68)",
-                    }}
-                  >
-                    arrow_right
-                  </span>
-                </Box>
-                <ActionMenuItem
-                  icon="star"
-                  label={allStarred ? "Remove star" : "Add star"}
-                  disabled={onlyOneItemSelected}
-                  onClick={handleStar}
-                />
-                <ActionMenuItem
-                  icon="label_important"
-                  label="Mark as important"
-                  disabled={onlyOneItemSelected || allImportant}
-                  onClick={handleImportant}
-                />
-                <ActionMenuItem
-                  icon="label_important"
-                  label="Mark as not important"
-                  filled
-                  fontSize={18}
-                  disabled={onlyOneItemSelected || allNotImportant}
-                  onClick={handleNotImportant}
-                />
-                <ActionMenuItem
-                  icon="attach_file"
-                  label="Forward as attachment"
-                  horizontal
-                  disabled={onlyOneItemSelected}
-                  onClick={() => {}}
-                />
-                <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
-                <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: 20,
+                          color: "rgb(68, 68, 68)",
+                        }}
+                      >
+                        arrow_right
+                      </span>
+                    </Box>
+                    <ActionMenuItem
+                      icon="star"
+                      label={allStarred ? "Remove star" : "Add star"}
+                      filled={allStarred}
+                      onClick={() => handleStar(!allStarred)}
+                      disabled={onlyOneItemSelected}
+                    />
+                    <ActionMenuItem
+                      icon={allImportant ? "label_important" : "label_important_outline"}
+                      label={allImportant ? "Mark as not important" : "Mark as important"}
+                      onClick={() => handleImportant(!allImportant)}
+                      filled={allImportant}
+                      fontSize={allImportant ? 18 : 20}
+                      disabled={onlyOneItemSelected}
+                    />
+
+                    <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
+                    <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+                    <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
+                  </>
+                )}
+                {showAdvancedMenu && (
+                  <>
+                    <ActionMenuItem
+                      icon={hasUnreadEmails ? "drafts" : "mark_email_unread"}
+                      label={hasUnreadEmails ? "Mark as read" : "Mark as unread"}
+                      onClick={handleReadAction}
+                    />
+                    <ActionMenuItem
+                      icon={allImportant ? "label_important" : "label_important_outline"}
+                      label={allImportant ? "Mark as not important" : "Mark as important"}
+                      onClick={() => handleImportant(!allImportant)}
+                      filled={allImportant}
+                      fontSize={allImportant ? 18 : 20}
+                    />
+                    <ActionMenuItem
+                      icon="star"
+                      label={allStarred ? "Remove star" : "Add star"}
+                      filled={allStarred}
+                      onClick={() => handleStar(!allStarred)}
+                    />
+                    <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+                    <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
+                    <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
+                  </>
+                )}
                 <Divider sx={{ marginY: "6px" }} />
                 <ActionMenuItem
                   icon="swap_horiz"
