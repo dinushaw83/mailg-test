@@ -1,12 +1,14 @@
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useContext, useEffect, useMemo, useReducer } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "@emotion/styled";
-import { GlobalContext } from "../../contexts/GlobalContext";
+import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
 import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
+import MoveToMenu from "../MailActions/MoveToMenu";
+import Button from "@mui/material/Button";
 
 export const Icon = ({
   name,
@@ -54,21 +56,41 @@ const reducer = (state, action) => {
   switch (action.type) {
     case "toggleSpamModal":
       return { ...state, spamModalOpen: !state.spamModalOpen };
+    case "toggleMoveToMenu":
+      return { ...state, moveToMenuOpen: !state.moveToMenuOpen };
   }
 };
 
 const initialState = {
   spamModalOpen: false,
+  moveToMenuOpen: false,
 };
 
 const MailActions = ({ thread }) => {
   const navigate = useNavigate();
   const threadId = thread.threadId.split(":")[1];
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { spamModalOpen } = state;
+  const { spamModalOpen, moveToMenuOpen } = state;
+  const { labels, setSnackbar } = useGlobalContext();
+
+  const { label: labelParam } = useParams();
+  const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
+  const customLabels = useMemo(() => {
+    const map = labels || {};
+    return Object.entries(map)
+      .filter(([, meta]) => !meta.system)
+      .map(([name]) => ({ id: "__label__" + name, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [labels]);
+
+  const moveToMenuAnchorRef = useRef(null);
 
   const toggleSpamModal = useCallback(() => {
     dispatch({ type: "toggleSpamModal" });
+  }, [dispatch]);
+
+  const toggleMoveToMenu = useCallback(() => {
+    dispatch({ type: "toggleMoveToMenu" });
   }, [dispatch]);
 
   const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, snooze } =
@@ -85,6 +107,54 @@ const MailActions = ({ thread }) => {
   const handleReadAction = useCallback(() => {
     markRead([threadId], !thread.read);
   }, [threadId, markRead]);
+
+  const handleMoveEmails = useCallback(
+    async (item) => {
+      try {
+        if (item.id === "__inbox__" || item.id === "inbox") {
+          moveToLabel([threadId], "Inbox");
+        } else if (item.id === "__spam__" || item.id === "spam") {
+          toggleSpamModal();
+        } else if (item.id === "__trash__" || item.id === "trash") {
+          moveToTrash([threadId]);
+          // Show global snackbar with Undo action
+          setSnackbar({
+            open: true,
+            message: "Conversation moved to Trash.",
+            autoHideDuration: 10000,
+            action: (
+              <Button
+                sx={{ textTransform: "none" }}
+                size="small"
+                onClick={() => {
+                  moveToInbox([threadId]);
+                  // Follow-up confirmation snackbar
+                  setSnackbar({
+                    open: true,
+                    message: "Action undone.",
+                    autoHideDuration: 3000,
+                    action: null,
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            ),
+          });
+        } else if (item.id.startsWith("__label__")) {
+          // moving between labels:
+          if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
+            moveToLabelFrom([threadId], currentLabel, item.name);
+          } else {
+            moveToLabel([threadId], item.name);
+          }
+        }
+      } catch (e) {
+        console.error("Move failed:", e);
+      }
+    },
+    [moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
+  );
 
   return (
     <div
@@ -128,7 +198,7 @@ const MailActions = ({ thread }) => {
             onClick={handleReadAction}
           />
           {/* The next icon does not exactly match */}
-          <Icon name="drive_file_move" label="Move to" />
+          <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
           <Icon name="more_vert" label="More" />
         </>
       </div>
@@ -146,6 +216,14 @@ const MailActions = ({ thread }) => {
           toggleSpamModal();
         }}
       />
+      {moveToMenuOpen && (
+        <MoveToMenu
+          anchorRef={moveToMenuAnchorRef}
+          labels={customLabels}
+          onSelect={handleMoveEmails}
+          onClose={() => dispatch({ type: "toggleMoveToMenu" })}
+        />
+      )}
     </div>
   );
 };

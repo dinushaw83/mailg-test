@@ -193,7 +193,7 @@ const BulkActions = ({ threads = [], showAdvancedMenu }) => {
           <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
         </>
       )}
-      <Icon name="move_to_inbox" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
+      <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
 
       {showAdvancedMenu && <Icon name="label" label="Labels" onClick={handleLabelAction} _ref={labelAnchorElRef} />}
 
