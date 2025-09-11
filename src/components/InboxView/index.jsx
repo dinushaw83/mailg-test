@@ -24,7 +24,7 @@ const InnerContainer = styled.div`
 `;
 
 const InboxView = () => {
-  const { threadId } = useParams();
+  const { threadId, folder, label } = useParams();
   const { emails, normalizedEmails } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
 
@@ -37,11 +37,15 @@ const InboxView = () => {
   }, [emails, threadId]);
 
   if (!emailThread) {
+    // Determine the back link based on current context
+    const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || 'inbox'}`;
+    const backText = label ? `Label: ${label}` : (folder || 'Inbox');
+    
     return (
       <div className="nH bkK" style={{ padding: 24 }}>
         <h2 style={{ margin: 0 }}>Email not found</h2>
         <p style={{ marginTop: 8 }}>
-          The message you’re looking for doesn’t exist. Go back to <Link to="/">Inbox</Link>.
+          The message you're looking for doesn't exist. Go back to <Link to={backLink}>{backText}</Link>.
         </p>
       </div>
     );

@@ -1,10 +1,11 @@
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import React, { useContext, useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import styled from "@emotion/styled";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
+import { getThreadRows } from "../../utils/emails";
 
 export const Icon = ({
   name,
@@ -50,6 +51,14 @@ export const Icon = ({
 
 const MailActions = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the base path by removing the threadId from the current path
+  const getBasePath = () => {
+    const pathParts = location.pathname.split('/');
+    // Remove the last part (threadId) to get the base path
+    return pathParts.slice(0, -1).join('/') || '/inbox';
+  };
 
   return (
     <div
@@ -73,9 +82,9 @@ const MailActions = () => {
       >
         <Icon
           name="arrow_back"
-          onClick={() => navigate("/inbox")}
+          onClick={() => navigate(getBasePath())}
           style={{ marginRight: "20px" }}
-          label="Back to Inbox"
+          label="Back"
         />
 
         <>
@@ -118,39 +127,58 @@ const EmailPosition = ({ currentItem, totalItems }) => {
 };
 
 const NavigationActions = () => {
-  const { threadId } = useParams();
-  const { normalizedEmails } = useContext(GlobalContext);
-  const { threadIds } = normalizedEmails;
+  const { threadId, folder, label: labelParam } = useParams();
+  const { emails } = useContext(GlobalContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // use thread position in threadIds array to determine if there is a previous or next thread
+  // Get the base path by removing the threadId from the current path
+  const getBasePath = () => {
+    const pathParts = location.pathname.split('/');
+    // Remove the last part (threadId) to get the base path
+    return pathParts.slice(0, -1).join('/') || '/inbox';
+  };
+
+  // Get filtered threads based on current context (folder or label)
+  const filteredThreads = useMemo(() => {
+    const label = labelParam ? decodeURIComponent(labelParam) : null;
+    const activeFolder = folder || "inbox";
+    return getThreadRows(emails, { label, folder: activeFolder });
+  }, [emails, folder, labelParam]);
+
+  // Get thread IDs from filtered threads
+  const filteredThreadIds = useMemo(() => {
+    return filteredThreads.map(thread => thread.threadId);
+  }, [filteredThreads]);
+
+  // use thread position in filtered threadIds array to determine if there is a previous or next thread
   const threadPosition = useMemo(() => {
-    return threadIds.indexOf(`#thread-f:${threadId}`);
-  }, [threadIds, threadId]);
+    return filteredThreadIds.indexOf(`#thread-f:${threadId}`);
+  }, [filteredThreadIds, threadId]);
 
   const hasPreviousThread = useMemo(() => {
     return threadPosition > 0;
   }, [threadPosition]);
 
   const hasNextThread = useMemo(() => {
-    return threadPosition < threadIds.length - 1;
-  }, [threadPosition, threadIds]);
+    return threadPosition < filteredThreadIds.length - 1;
+  }, [threadPosition, filteredThreadIds]);
 
   const previousThread = useMemo(() => {
-    return (threadIds[threadPosition - 1] || "").split(":")[1];
-  }, [threadIds, threadPosition]);
+    return (filteredThreadIds[threadPosition - 1] || "").split(":")[1];
+  }, [filteredThreadIds, threadPosition]);
 
   const nextThread = useMemo(() => {
-    return (threadIds[threadPosition + 1] || "").split(":")[1];
-  }, [threadIds, threadPosition]);
+    return (filteredThreadIds[threadPosition + 1] || "").split(":")[1];
+  }, [filteredThreadIds, threadPosition]);
 
   const currentItem = useMemo(() => {
     return threadPosition + 1;
   }, [threadPosition]);
 
   const totalItems = useMemo(() => {
-    return threadIds.length;
-  }, [threadIds]);
+    return filteredThreadIds.length;
+  }, [filteredThreadIds]);
 
   return (
     <div
@@ -165,13 +193,13 @@ const NavigationActions = () => {
           name="chevron_left"
           label="Newer"
           disabled={!hasPreviousThread}
-          onClick={() => navigate(`/inbox/${previousThread}`)}
+          onClick={() => navigate(`${getBasePath()}/${previousThread}`)}
         />
         <Icon
           name="chevron_right"
           label="Older"
           disabled={!hasNextThread}
-          onClick={() => navigate(`/inbox/${nextThread}`)}
+          onClick={() => navigate(`${getBasePath()}/${nextThread}`)}
         />
       </div>
     </div>
