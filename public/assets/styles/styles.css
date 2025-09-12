@@ -14759,3 +14759,15 @@ img[src="data:,"],
 source[src="data:,"] {
   display: none !important;
 }
+
+.pM.aj0 {
+  opacity: 0;
+  pointer-events: none; /* prevents ghost clicks */
+  transition: opacity 0.2s ease;
+}
+
+/* show More icon only when hovering over a label row */
+.aim:hover .pM.aj0 {
+  opacity: 1;
+  pointer-events: auto;
+}

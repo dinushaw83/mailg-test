@@ -1,19 +1,19 @@
-import React, { useState, useContext, useRef, useLayoutEffect, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import Button from "@mui/material/Button";
+import React, { useState, useEffect, useMemo, useContext, useLayoutEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@mui/material";
 import RichTextEditor from "../RichTextEditor/RichTextEditor";
 import RecipientsInput from "./RecipientsInput";
 import InfoModal from "./InfoModal";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../../utils/helperFunctions";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useComposeModal } from "../../hooks/useComposeModal";
+import { useSendEmail } from "../../hooks/useSendEmail";
 import styles from "./ComposeEmail.module.css";
 
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { emails, setEmails, setSnackbar, loggedInUser, recipients, composeWindows, setComposeWindows, setRecipients } =
+  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows } =
     useContext(GlobalContext);
   const { removeComposeWindow, toggleMinimize, toggleMaximize, visibleWindowCount, addNewComposeWindow } =
     useComposeModal();
@@ -34,10 +34,6 @@ export default function ComposeEmail({ composeWindow }) {
     bcc: "",
   });
 
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
-  const lastSentEmailRef = useRef(null);
-  const lastDeletedDraftRef = useRef(null);
   const currentDraftId = composeWindow?.draftId;
 
   // Draft management hook
@@ -182,319 +178,24 @@ export default function ComposeEmail({ composeWindow }) {
     removeComposeWindow(composeWindow.id);
   };
 
-  // Validate email format
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail();
 
   const handleSend = () => {
-    // 1. Check if all recipient fields are empty
-    const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
-
-    if (hasNoRecipients) {
-      setShowErrorModal(true);
-      return;
-    }
-
-    // 2. Check if subject is missing
-    if (!subject.trim()) {
-      const confirmed = confirm("Send this message without a subject or text in the body?");
-      if (!confirmed) {
-        return;
-      }
-    }
-
-    // 3. Check for invalid emails (both in chips and raw input text)
-    const allRecipients = [...to, ...cc, ...bcc];
-
-    // Check chips for invalid emails
-    const invalidRecipient = allRecipients.find((recipient) => {
-      const email = recipient.email || recipient.name || recipient;
-      return !isValidEmail(email);
+    handleSendEmail({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      rawInputText,
+      onClose: handleClose,
+      currentDraftId: draftId,
+      isDraft: isDraft
     });
-
-    // Check raw input text for invalid emails
-    const rawInputs = [rawInputText.to, rawInputText.cc, rawInputText.bcc];
-    const fieldNames = ["To", "Cc", "Bcc"];
-
-    for (let i = 0; i < rawInputs.length; i++) {
-      const inputText = rawInputs[i].trim();
-      if (inputText && !isValidEmail(inputText)) {
-        setShowErrorModal(true);
-        setErrorMessage(
-          `The address "${inputText}" in the "${fieldNames[i]}" field was not recognized. Please make sure that all addresses are properly formed.`
-        );
-        return;
-      }
-    }
-
-    if (invalidRecipient) {
-      // Get the actual invalid text (could be email, name, or the recipient itself)
-      const invalidText = invalidRecipient.email || invalidRecipient.name || invalidRecipient;
-
-      // Determine which field the invalid email is in
-      let fieldName = "To";
-      if (cc.some((r) => (r.email || r.name || r) === invalidText)) {
-        fieldName = "Cc";
-      } else if (bcc.some((r) => (r.email || r.name || r) === invalidText)) {
-        fieldName = "Bcc";
-      }
-
-      setShowErrorModal(true);
-      setErrorMessage(
-        `The address "${invalidText}" in the "${fieldName}" field was not recognized. Please make sure that all addresses are properly formed.`
-      );
-      return;
-    }
-
-    // If all validations pass, send the email
-    sendEmail();
   };
 
-  const sendEmail = () => {
-    // Use the draftId from the compose window if it exists, otherwise generate a new id
-    const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
-    const threadId = generateThreadId();
-    const legacyThreadId = generateLegacyThreadId();
-    const timestamp = new Date().toISOString();
-    const timeDisplay = new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    // Create the new email object
-    const newEmail = {
-      id: newId,
-      threadId: threadId,
-      legacyThreadId: legacyThreadId,
-      legacyLastMessageId: legacyThreadId,
-      legacyLastNonDraftMessageId: legacyThreadId,
-      from: {
-        name: loggedInUser.name,
-        email: loggedInUser.email,
-      },
-      to: to.map((recipient) => recipient.email),
-      cc: cc.length > 0 ? cc.map((recipient) => recipient.email) : [],
-      bcc: bcc.length > 0 ? bcc.map((recipient) => recipient.email) : [],
-      subject: subject.trim() || "(no subject)",
-      body: content.html,
-      preview: content.plainText,
-      timestamp: timestamp,
-      timeDisplay: timeDisplay,
-      read: false,
-      starred: false,
-      important: false,
-      labels: ["Sent"],
-      labelColor: "#e1e3e1",
-    };
-
-    // Store the email data for potential cancellation
-    lastSentEmailRef.current = newEmail;
-
-    // Get all the recipients
-    const allRecipients = [...to, ...cc, ...bcc];
-
-    // If any of the recipients doesnot present in the recipients context, add them
-    const newRecipients = allRecipients.filter((recipient) => !recipients.some((r) => r.email === recipient.email));
-    if (newRecipients.length > 0) {
-      const updatedRecipients = [...recipients];
-      newRecipients.forEach((recipient, index) => {
-        updatedRecipients.push({
-          ...recipient,
-          id: generateNextIntegerId(recipients) + index,
-        });
-      });
-      setRecipients(updatedRecipients);
-    }
-
-    // Close the compose modal
-    handleClose(false);
-
-    // Show "Sending..." snackbar with Cancel button
-    setSnackbar({
-      open: true,
-      message: "Sending...",
-      action: (
-        <Button variant="text" size="medium" onClick={handleSnackbarCancel} sx={{ textTransform: "capitalize" }}>
-          Cancel
-        </Button>
-      ),
-      autoHideDuration: null,
-    });
-
-    // Simulate sending process
-    setTimeout(() => {
-      // Update emails array - replace draft with sent email if it was a draft, otherwise add new email
-      const updatedEmails = isDraft
-        ? emails.map((email) => (email.id?.toString() === newEmail.id?.toString() ? newEmail : email))
-        : [newEmail, ...emails];
-
-      // Update the global state
-      setEmails(updatedEmails);
-
-      // Then show "Message sent" snackbar with Undo and View message buttons
-      setSnackbar({
-        open: true,
-        message: "Message sent",
-        action: (
-          <React.Fragment>
-            <Button variant="text" size="medium" onClick={handleSnackbarUndo} sx={{ textTransform: "capitalize" }}>
-              Undo
-            </Button>
-            <Button
-              variant="text"
-              size="medium"
-              onClick={handleSnackbarViewMessage}
-              sx={{ textTransform: "capitalize" }}
-            >
-              View message
-            </Button>
-          </React.Fragment>
-        ),
-        autoHideDuration: 4000,
-      });
-    }, 500);
-  };
-
-  // Handle error modal close
-  const handleErrorModalClose = () => {
-    setShowErrorModal(false);
-    setErrorMessage("Please specify at least one recipient."); // Reset to default message
-  };
-
-  // Snackbar handlers
-  const handleSnackbarCancel = () => {
-    // Show "Cancelling..." message
-    setSnackbar({
-      open: true,
-      message: "Cancelling...",
-      action: null,
-      autoHideDuration: 1000,
-    });
-
-    // After 1 second, show "Sending canceled"
-    setTimeout(() => {
-      // Push compose parameter to URL
-      navigate(`?compose=${lastSentEmailRef.current?.id}`);
-
-      // Show "Sending canceled" snackbar
-      setSnackbar({
-        open: true,
-        message: "Sending canceled.",
-        action: null,
-        autoHideDuration: 5000,
-      });
-    }, 1000);
-  };
-
-  const handleSnackbarUndo = () => {
-    // Show "Undoing..." message
-    setSnackbar({
-      open: true,
-      message: "Undoing...",
-      action: null,
-      autoHideDuration: 1000,
-    });
-
-    // After 1 second, change sent email back to draft
-    setTimeout(() => {
-      // Double-check that the email still exists
-      if (lastSentEmailRef.current && lastSentEmailRef.current.id) {
-        const emailToRestore = lastSentEmailRef.current;
-
-        // Change the email from Sent back to Draft
-        setEmails((prevEmails) => {
-          return prevEmails.map((email) =>
-            email.id === emailToRestore.id
-              ? {
-                  ...email,
-                  labels: ["Drafts"],
-                  labelColor: "#e1e3e1",
-                  timestamp: new Date().toISOString(),
-                  timeDisplay: new Date().toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  }),
-                }
-              : email
-          );
-        });
-
-        // Navigate to the draft
-        navigate(`?compose=${emailToRestore.id}`);
-
-        // Clear the ref after successful state update
-        lastSentEmailRef.current = null;
-      }
-
-      setSnackbar({
-        open: true,
-        message: "Sending undone",
-        action: null,
-        autoHideDuration: 5000,
-      });
-    }, 1000);
-  };
-
-  const handleSnackbarViewMessage = () => {
-    // Hide the snackbar
-    setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
-
-    const threadId = lastSentEmailRef.current?.threadId.split(":")[1];
-
-    // Navigate to the message in the sent items
-    navigate(`/sent/${threadId}`);
-  };
-
-  const handleSnackbarUndoDelete = () => {
-    if (lastDeletedDraftRef.current) {
-      const deletedDraft = lastDeletedDraftRef.current;
-
-      // Create a new draft email with the restored data
-      const restoredDraft = {
-        id: deletedDraft.id,
-        threadId: generateThreadId(),
-        legacyThreadId: generateLegacyThreadId(),
-        legacyLastMessageId: generateLegacyThreadId(),
-        legacyLastNonDraftMessageId: null,
-        from: {
-          name: loggedInUser.name,
-          email: loggedInUser.email,
-        },
-        to: deletedDraft.to.map((recipient) => recipient.email),
-        cc: deletedDraft.cc.length > 0 ? deletedDraft.cc.map((recipient) => recipient.email) : [],
-        bcc: deletedDraft.bcc.length > 0 ? deletedDraft.bcc.map((recipient) => recipient.email) : [],
-        subject: deletedDraft.subject.trim() || "(no subject)",
-        body: deletedDraft.content.html,
-        preview: deletedDraft.content.plainText,
-        timestamp: new Date().toISOString(),
-        timeDisplay: new Date().toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
-        read: true,
-        starred: false,
-        important: false,
-        labels: ["Drafts"],
-        labelColor: "#e1e3e1",
-      };
-
-      // Add the restored draft back to emails
-      setEmails((prevEmails) => [restoredDraft, ...prevEmails]);
-
-      // Open a new compose window with the restored draft
-      addNewComposeWindow(deletedDraft.id);
-
-      // Clear the ref
-      lastDeletedDraftRef.current = null;
-
-      // Hide the snackbar
-      setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
-    }
+  const handleUndoDelete = () => {
+    handleSnackbarUndoDelete(addNewComposeWindow);
   };
 
   // Remove the email from draft
@@ -522,7 +223,7 @@ export default function ComposeEmail({ composeWindow }) {
         open: true,
         message: "Draft discarded.",
         action: (
-          <Button variant="text" size="medium" onClick={handleSnackbarUndoDelete} sx={{ textTransform: "capitalize" }}>
+          <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
             Undo
           </Button>
         ),

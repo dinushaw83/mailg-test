@@ -20,8 +20,8 @@ function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<Navigate to="/inbox" replace />} />
-            <Route path="/inbox/:threadId" element={<EmailDetails />} />
-            <Route path="/sent/:threadId" element={<EmailDetails />} />
+            <Route path="/:folder/:threadId" element={<EmailDetails />} />
+            <Route path="/label/:label/:threadId" element={<EmailDetails />} />
             <Route path="/:folder" element={<MailView />} />
             <Route path="/label/:label" element={<MailView />} />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
