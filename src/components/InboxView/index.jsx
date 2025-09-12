@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import ActionBar, { Icon } from "./ActionBar";
@@ -25,7 +25,7 @@ const InnerContainer = styled.div`
 
 const InboxView = () => {
   const { threadId, folder, label } = useParams();
-  const { emails, normalizedEmails } = useContext(GlobalContext);
+  const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
 
   const { threadsById, messagesById } = normalizedEmails;
@@ -38,9 +38,9 @@ const InboxView = () => {
 
   if (!emailThread) {
     // Determine the back link based on current context
-    const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || 'inbox'}`;
-    const backText = label ? `Label: ${label}` : (folder || 'Inbox');
-    
+    const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || "inbox"}`;
+    const backText = label ? `Label: ${label}` : folder || "Inbox";
+
     return (
       <div className="nH bkK" style={{ padding: 24 }}>
         <h2 style={{ margin: 0 }}>Email not found</h2>
@@ -54,10 +54,14 @@ const InboxView = () => {
   const { messageIds } = emailThread;
   const messages = messageIds.map((id) => messagesById[id]);
   const lastMessage = messages[messages.length - 1];
-  const isLastDraft = lastMessage?.labels?.includes('Drafts');
+  const isLastDraft = lastMessage?.labels?.includes("Drafts");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
+
+  useEffect(() => {
+    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+  }, []);
 
   return (
     <InboxViewContainer>

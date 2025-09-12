@@ -56,3 +56,95 @@ export const generateNextIntegerId = (arr) => {
   const maxId = Math.max(...arr.map((item) => item.id));
   return maxId + 1;
 };
+
+export const sortObjectKeys = (obj) => {
+  // Handle null, undefined and non-objects
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    // Check if array items are primitive values (not arrays or objects)
+    const hasPrimitiveItems = obj.some((item) => item !== null && typeof item !== "object");
+
+    if (hasPrimitiveItems) {
+      // Sort the array if it contains primitive values
+      return [...obj].sort();
+    } else {
+      // Recursively sort array elements if they are objects/arrays
+      return obj.map(sortObjectKeys);
+    }
+  }
+
+  // Sort object keys and build new object
+  return Object.keys(obj)
+    .sort()
+    .reduce((result, key) => {
+      result[key] = sortObjectKeys(obj[key]);
+      return result;
+    }, {});
+};
+
+export const processJsonWithHtmlTags = (obj, keysToProcess = []) => {
+  // Handle null, undefined and non-objects
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj)) {
+    return obj.map((item) => processJsonWithHtmlTags(item, keysToProcess));
+  }
+
+  // Process object
+  return Object.keys(obj).reduce((result, key) => {
+    const value = obj[key];
+
+    // If this is a key we should process and the value is a string
+    if (keysToProcess.includes(key) && typeof value === "string") {
+      result[key] = removeHtmlTags(value);
+    } else {
+      // Recursively process nested objects/arrays
+      result[key] = processJsonWithHtmlTags(value, keysToProcess);
+    }
+
+    return result;
+  }, {});
+};
+
+export const removeHtmlTags = (content) => {
+  if (typeof document !== "undefined") {
+    const div = document.createElement("div");
+    div.innerHTML = content;
+    return div.textContent.trim();
+  }
+};
+
+export const stringifyReplacer = (key, value) => {
+  const ignoredFields = [
+    "createdAt",
+    "updatedAt",
+    "lastUpdated",
+    "created_at",
+    "updated_at",
+    "last_updated",
+    "last_login_at",
+    "id",
+    "snapshots",
+    "versions",
+    "suspendedAt",
+    "time",
+    "html_body",
+    "timezone",
+    "timezoneOffset",
+    "timestamp",
+    "editedAt",
+    "solvedAt",
+    "timeDisplay",
+  ];
+  if (ignoredFields.includes(key) || /id$/i.test(key)) {
+    return undefined;
+  }
+  return value;
+};

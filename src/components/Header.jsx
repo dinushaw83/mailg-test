@@ -61,7 +61,7 @@ const Header = () => {
                   </div>
                   <div className="gb_Qc">
                     <div className="gb_Rc gb_ie">
-                      <a className="gb_ce gb_Sc gb_ge" aria-label="MailG" href="#inbox">
+                      <a className="gb_ce gb_Sc gb_ge" aria-label="MailG" href="/">
                         <img
                           className="gb_Xc"
                           src="/assets/images/mailg-logo.svg"
@@ -176,19 +176,20 @@ const Header = () => {
                           href="#"
                           tabIndex={0}
                           role="button"
+                          style={{
+                            backgroundColor: "#6EA034",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
                         >
-                          <span className="gb_ae">
-                            <img
-                              className="gb_P gbii"
-                              src="/assets/images/pr_2_image_2"
-                              srcSet=""
-                              alt=""
-                              aria-hidden="true"
-                              data-noaft=""
-                              sizes=""
-                            />
+                          <span
+                            className="gb_ae"
+                            style={{ fontWeight: "500", fontSize: "20px", color: "white" }}
+                          >
+                            J
                           </span>
-                          <div className="gb_Q gb_R sf-hidden" aria-hidden="true">
+                          {/* <div className="gb_Q gb_R sf-hidden" aria-hidden="true">
                             <svg
                               className="gb_Ka"
                               height={14}
@@ -199,7 +200,7 @@ const Header = () => {
                               <circle className="gb_La" cx={7} cy={7} r={7} />
                               <path className="gb_Na" d="M6 10H8V12H6V10ZM6 2H8V8H6V2Z" />
                             </svg>
-                          </div>
+                          </div> */}
                         </a>
                       </div>
                     </div>

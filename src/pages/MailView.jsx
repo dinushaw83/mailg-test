@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import EmailList from "../components/EmailList";
@@ -8,7 +8,7 @@ import ToolBar from "../components/ToolBar";
 import { getThreadRows } from "../utils/emails";
 
 const Inbox = () => {
-  const { emails, currentPage, itemsPerPage } = useContext(GlobalContext);
+  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -34,6 +34,10 @@ const Inbox = () => {
     return sortedEmails.slice(startIndex, endIndex);
   }, [filteredRows, currentPage, itemsPerPage]);
 
+  useEffect(() => {
+    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+  }, []);
+
   return (
     <div className="nH bkK">
       <div className="nH">
@@ -52,7 +56,7 @@ const Inbox = () => {
                         <h2 tabIndex={-1}>Conversations</h2>
                       </div>
                       <div className="afn sf-hidden" />
-                      <div className="aKh" jsaction="taiVP:.CLIENT">
+                      {/* <div className="aKh" jsaction="taiVP:.CLIENT">
                         <table className="aKk">
                           <tbody>
                             <tr
@@ -294,7 +298,7 @@ const Inbox = () => {
                             </tr>
                           </tbody>
                         </table>
-                      </div>
+                      </div> */}
                       <div />
                       <div className="aKB afn sf-hidden" />
                       <div
