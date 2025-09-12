@@ -76,7 +76,7 @@ const Header = () => {
                       <a
                         className="gb_ce gb_Sc gb_ge"
                         aria-label="MailG"
-                        href="#inbox"
+                        href="/"
                       >
                         <img
                           className="gb_Xc"
