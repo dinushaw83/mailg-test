@@ -1,4 +1,3 @@
-import { TextFields } from "@mui/icons-material";
 import { Stack } from "@mui/material";
 import { useCallback, useRef, useState } from "react";
 import {
@@ -9,6 +8,7 @@ import {
   insertImages,
   MenuButtonEditLink,
 } from "mui-tiptap";
+import FormatColorText from "@mui/icons-material/FormatColorText";
 import EditorMenuControls from "./EditorMenuControls";
 import useExtensions from "./useExtensions";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
@@ -130,7 +130,7 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
           MenuBarProps: {
             hide: !showMenuBar,
           },
-          footer: (
+          _footer: (
             <Stack
               direction="column"
               spacing={2}
@@ -138,7 +138,7 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
                 py: 1,
               }}
             >
-              {showMenuBar && <div style={{ width: "100%", height: "35px"}}></div>}
+              {showMenuBar && <div style={{ width: "100%", height: "35px" }}></div>}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: "relative", width: "100%" }}>
                   <div className={styles.sendButtonContainer}>
@@ -228,14 +228,11 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
                   {showMenuBar && <EditorMenuControls editor={rteRef.current?.editor} />}
                   <MenuButton
                     value="formatting"
-                    tooltipLabel={
-                      showMenuBar ? "Hide formatting" : "Show formatting"
-                    }
+                    tooltipLabel={showMenuBar ? "Hide formatting" : "Show formatting"}
                     size="small"
                     onClick={() => setShowMenuBar((currentState) => !currentState)}
                     selected={showMenuBar}
-                    IconComponent={TextFields}
-                  />
+                    IconComponent={FormatColorText} />
 
                   <MenuButtonEditLink />
                 </div>
@@ -246,9 +243,15 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
                   </button>
                 </div>
               </div>
-              
+
             </Stack>
           ),
+          get footer() {
+            return this._footer;
+          },
+          set footer(value) {
+            this._footer = value;
+          },
         }}
         sx={{
           px: 1,
