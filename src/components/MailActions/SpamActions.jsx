@@ -9,16 +9,6 @@ import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from ".
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
-const LABELS = [
-  { id: "notes", name: "Notes" },
-  { id: "receipts", name: "Receipts" },
-  { id: "work", name: "Work" },
-  { id: "social", name: "Social" },
-  { id: "updates", name: "Updates" },
-  { id: "forums", name: "Forums" },
-  { id: "promotions", name: "Promotions" },
-];
-
 export default function SpamActions({ threads = [], folder }) {
   const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever, moveToLabel, moveToLabelFrom, moveToInbox } =
     useMailActions();
