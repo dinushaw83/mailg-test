@@ -25,6 +25,9 @@ export const GlobalContextProvider = ({ children }) => {
   const [composeWindows, setComposeWindows] = useState([]);
   const [currentPage, setCurrentPage] = useSessionState("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = useSessionState("itemsPerPage", 2);
+  const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
+  const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
+  const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({

@@ -1,0 +1,27 @@
+.email-recipients-wrapper {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+  min-height: 32px;
+  width: 100%;
+}
+
+.email-recipients-options {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 8px;
+}
+
+.email-option {
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+  user-select: none;
+  border: none;
+  background-color: transparent;
+}
+
+.email-option:hover {
+  text-decoration: underline;
+  color: #333;
+}

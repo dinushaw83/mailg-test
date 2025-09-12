@@ -1,4 +1,7 @@
 import React from "react";
+
+import { IconButton } from "@mui/material";
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { NavLink, useMatch } from "react-router-dom";
 
 export default function LabelItem({ labelKey, display, depth = 0, count = 0 }) {
@@ -23,8 +26,15 @@ export default function LabelItem({ labelKey, display, depth = 0, count = 0 }) {
               <span className="nU">{display}</span>
               {count > 0 && <span className="ml-1 text-xs text-gray-500">({count})</span>}
             </div>
-            <div className="nL aig">
-              <div className="pM aj0 sf-hidden" tabIndex={0} aria-hidden="true" />
+            <div className="nL aig group">
+              <div className="pM aj0">
+                <IconButton size="small" onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}>
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              </div>
             </div>
           </div>
         </div>
