@@ -366,8 +366,6 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     // Store the email objects that are being deleted
     const deletedEmails = [];
 
-    // deleteForever(selectedIds);
-
     // Filter out selected draft emails
     setEmails((prevEmails) =>
       prevEmails.filter((email) => {
@@ -379,7 +377,6 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
         const emailThreadId = email.threadId.split(":")[1];
 
         if (selectedIds.includes(emailThreadId)) {
-          console.log("Discarding draft", email);
           deletedEmails.push(email);
           return false;
         }
