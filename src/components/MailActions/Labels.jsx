@@ -20,7 +20,7 @@ export const Labels = ({
   anchorOrigin = { vertical: "top", horizontal: "right" },
   transformOrigin = { vertical: "top", horizontal: "left" },
 }) => {
-  const { labels, setSnackbar, selectedEmails } = useGlobalContext();
+  const { labels, setSnackbar, selectedEmails, selection } = useGlobalContext();
   const { moveToLabel } = useMailActions();
 
   const handleLabelClose = () => {
@@ -91,11 +91,14 @@ export const Labels = ({
         moveToLabel(selectedIds, labelName);
       });
       setSnackbar({ message: `Applied ${selectedLabels.length} label(s)`, severity: "success" });
+
+      // Clear selection after applying labels
+      selection.clear();
     }
 
     handleLabelClose();
     handleClose();
-  }, [selectedLabelKeys, availableLabels, selectedIds, moveToLabel, setSnackbar]);
+  }, [selectedLabelKeys, availableLabels, selectedIds, moveToLabel, setSnackbar, selection]);
 
   return (
     <Popover

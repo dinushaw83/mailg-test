@@ -308,7 +308,7 @@ const Inbox = () => {
                         jsaction="rcuQ6b:npT2md;jo33Se:PhqmKf;Rb1Lod:ZpywWb;J0lErd:Oyw2Hb;nGJuB:OcHC8;ZvXgGe:Csi5td;fbYNtb:.CLIENT;UGzfzc:.CLIENT;njKHYb:.CLIENT"
                         gh="tl"
                       >
-                        <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100, height: 897 }}>
+                        <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100 }}>
                           <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
                             <div className="aDP">
                               <div

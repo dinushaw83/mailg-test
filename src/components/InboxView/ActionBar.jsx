@@ -108,12 +108,18 @@ const MailActions = ({ thread }) => {
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { setSnackbar } = useGlobalContext();
+  const { setSnackbar, emails } = useGlobalContext();
 
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
 
   const { labels, labelTree } = useLabels();
+
+  // Check if the current thread is not in inbox
+  const isThreadNotInInbox = useMemo(() => {
+    const email = emails.find(email => email.threadId.split(":")[1] === threadId);
+    return email && (!email.labels || !email.labels.includes("Inbox"));
+  }, [emails, threadId]);
 
   // Check if any selected emails are not in the inbox
   const menuItems = useMemo(() => {
@@ -298,6 +304,15 @@ const MailActions = ({ thread }) => {
     const ids = [threadId];
 
     try {
+      // Store original labels before the move
+      const originalLabels = {};
+      ids.forEach(id => {
+        const email = emails.find(email => email.threadId.split(":")[1] === id);
+        if (email) {
+          originalLabels[id] = [...(email.labels || [])];
+        }
+      });
+
       // Perform the move after creation
       const newKey = makeKey(childName, parentKey); // build composite key
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
@@ -311,19 +326,23 @@ const MailActions = ({ thread }) => {
       // --- UNDO action ---
       setSnackbar({
         open: true,
-        message: `Conversation moved to “${childName}”.`,
+        message: `Conversation moved to "${childName}".`,
         autoHideDuration: 10000,
         action: (
           <Button
             size="small"
             onClick={() => {
               try {
-                if (inCustomLabel) {
-                  moveToLabelFrom(ids, newKey, currentLabel);
-                } else {
-                  if (currentLabel) moveToLabel(ids, currentLabel);
-                  else moveToInbox(ids);
-                }
+                // Restore original labels for each email
+                setEmails(prevEmails => 
+                  prevEmails.map(email => {
+                    const emailThreadId = email.threadId.split(":")[1];
+                    if (ids.includes(emailThreadId) && originalLabels[emailThreadId]) {
+                      return { ...email, labels: originalLabels[emailThreadId] };
+                    }
+                    return email;
+                  })
+                );
 
                 setSnackbar({
                   open: true,
@@ -423,6 +442,9 @@ const MailActions = ({ thread }) => {
           labels={menuItems}
           onSelect={handleMenuItemClick}
           onClose={() => toggleMoveToMenu()}
+          showInbox={isThreadNotInInbox}
+          showSpam={true}
+          showTrash={true}
         />
       )}
       <SnoozePopover
