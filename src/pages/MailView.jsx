@@ -48,8 +48,8 @@ const Inbox = () => {
               <div id=":3" className="Tm" style={{ height: 985 }}>
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
-                    <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
-                      <ToolBar totalFilteredItems={filteredRows.length} emails={rows} />
+                    <div className="bGI nH oy8Mbf aE3 S4" role="main">
+                      <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
                       <div />
                       <div className="X3" />
                       <div className="a0V">
@@ -308,7 +308,7 @@ const Inbox = () => {
                         jsaction="rcuQ6b:npT2md;jo33Se:PhqmKf;Rb1Lod:ZpywWb;J0lErd:Oyw2Hb;nGJuB:OcHC8;ZvXgGe:Csi5td;fbYNtb:.CLIENT;UGzfzc:.CLIENT;njKHYb:.CLIENT"
                         gh="tl"
                       >
-                        <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100, height: 897 }}>
+                        <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100 }}>
                           <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
                             <div className="aDP">
                               <div
