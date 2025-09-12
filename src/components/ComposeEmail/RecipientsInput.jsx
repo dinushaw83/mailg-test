@@ -441,7 +441,7 @@ export default function RecipientsInput({
           }}
         >
           {isCustomRecipient ? (
-            <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+            <span className="material-symbols-filled" style={{ fontSize: "26px" }}>
               person
             </span>
           ) : option.avatar ? (
