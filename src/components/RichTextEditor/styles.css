@@ -1,4 +1,5 @@
 .container {
+  width: max-content;
   background-color: white;
   position: absolute;
   bottom: 50px;
@@ -8,4 +9,37 @@
 .MuiTiptap-ColorPicker-gradientPicker,
 .MuiTiptap-ColorPicker-colorTextInput {
   display: none !important;
+}
+
+.dual-color-picker > div {
+  padding: 16px 12px 12px !important;
+}
+
+/* Color swatch sizing and spacing */
+.MuiTiptap-ColorPicker-swatchGrid {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1px;  
+  row-gap: 1px;
+}
+
+.MuiTiptap-ColorPicker-swatchContainer {
+  display: grid !important;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 1px !important;
+}
+
+.MuiTiptap-ColorPicker-swatchContainer > button:nth-child(-n+16) {
+  margin-bottom: 4px !important;
+
+}
+
+.MuiTiptap-ColorPicker-swatchContainer > button {
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: 16px !important;
+  border-radius: 0 !important;
+  border: none !important;
+  padding: 0 !important;
 }

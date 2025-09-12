@@ -8,6 +8,7 @@ import {
   RichTextReadOnly,
   TableBubbleMenu,
   insertImages,
+  MenuButtonEditLink,
 } from "mui-tiptap";
 import EditorMenuControls from "./EditorMenuControls";
 import useExtensions from "./useExtensions";
@@ -238,18 +239,7 @@ export default function Editor({ content, onChange, onSend, onDelete }) {
                   IconComponent={TextFields}
                 />
 
-                <MenuButton
-                  value="formatting"
-                  tooltipLabel={
-                    isEditable
-                      ? "Prevent edits (use read-only mode)"
-                      : "Allow edits"
-                  }
-                  size="small"
-                  onClick={() => setIsEditable((currentState) => !currentState)}
-                  selected={!isEditable}
-                  IconComponent={isEditable ? Lock : LockOpen}
-                />
+                <MenuButtonEditLink />
               </div>
 
               <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
