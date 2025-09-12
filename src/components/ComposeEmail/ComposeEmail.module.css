@@ -142,6 +142,7 @@
 .composeBody {
   flex: 1;
   padding: 16px;
+  padding-inline: 8px 0px;
   min-height: 300px;
   display: flex;
   flex-direction: column;

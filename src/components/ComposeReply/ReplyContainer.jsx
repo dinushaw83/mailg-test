@@ -295,6 +295,8 @@ ${email.body}
             className="reply-text-editor"
             onSend={handleSend}
             onDelete={handleDelete}
+            textEditorMinHeight="90px"
+            textEditorMaxHeight="250px"
           />
         </div>
       </div>

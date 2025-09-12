@@ -1,11 +1,10 @@
-import { Lock, LockOpen, TextFields } from "@mui/icons-material";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { TextFields } from "@mui/icons-material";
+import { Stack } from "@mui/material";
 import { useCallback, useRef, useState } from "react";
 import {
   LinkBubbleMenu,
   MenuButton,
   RichTextEditor,
-  RichTextReadOnly,
   TableBubbleMenu,
   insertImages,
   MenuButtonEditLink,
@@ -24,7 +23,7 @@ function fileListToImageFiles(fileList) {
   });
 }
 
-export default function Editor({ content, onChange, onSend, onDelete }) {
+export default function Editor({ content, onChange, onSend, onDelete, textEditorMinHeight, textEditorMaxHeight }) {
   const extensions = useExtensions({
     placeholder: "",
   });
@@ -131,9 +130,6 @@ export default function Editor({ content, onChange, onSend, onDelete }) {
           MenuBarProps: {
             hide: !showMenuBar,
           },
-          // Below is an example of adding a toggle within the outlined field
-          // for showing/hiding the editor menu bar, and a "submit" button for
-          // saving/viewing the HTML content
           footer: (
             <Stack
               direction="column"
@@ -255,17 +251,15 @@ export default function Editor({ content, onChange, onSend, onDelete }) {
           ),
         }}
         sx={{
-          // An example of how editor styles can be overridden. In this case,
-          // setting where the scroll anchors to when jumping to headings. The
-          // scroll margin isn't built in since it will likely vary depending on
-          // where the editor itself is rendered (e.g. if there's a sticky nav
-          // bar on your site).
           px: 1,
           mb: 1,
           "& .ProseMirror": {
             "& h1, & h2, & h3, & h4, & h5, & h6": {
               scrollMarginTop: showMenuBar ? 50 : 0,
             },
+            minHeight: textEditorMinHeight,
+            maxHeight: textEditorMaxHeight,
+            overflowY: "auto",
           },
         }}
       >
