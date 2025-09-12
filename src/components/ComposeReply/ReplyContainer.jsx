@@ -40,7 +40,47 @@ const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelet
   };
 
   const [recipients, setRecipients] = useState(() => calculateRecipients(replyType));
-  const [content, setContent] = useState({ html: '', plainText: '' });
+
+  // Build forwarded header HTML when forwarding
+  const buildForwardedHeader = () => {
+    const recipientsList = email.to.map(recipient => {
+      if (typeof recipient === 'string') {
+        return recipient;
+      }
+      return `${recipient.name} <${recipient.email}>`;
+    }).join(', ');
+
+    const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    return `
+<p>
+<br /><br />
+---------- Forwarded message ---------<br />
+From: ${email.from.name} <${email.from.email}><br />
+Date: ${formattedDate}<br />
+Subject: ${email.subject}<br />
+To: ${recipientsList}<br />
+Cc: ${(email.cc || []).join(', ')}<br />
+<br /><br />
+${email.body}
+</p>`;
+  };
+
+  const [content, setContent] = useState(() => {
+    if (replyType === 'forward') {
+      const forwardedHeader = buildForwardedHeader();
+      return { html: forwardedHeader, plainText: forwardedHeader };
+    }
+    return { html: '', plainText: '' };
+  });
 
   // Convert simple string recipients to object form expected by draft/send hooks
   const recipientsForDraft = useMemo(() => {
@@ -96,35 +136,7 @@ const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelet
     setSubject(`${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
     // Add forwarded message header when forward is selected
     if (selectedReplyOption === 'forward' && content.plainText.trim() === '') {
-      const recipientsList = email.to.map(recipient => {
-        if (typeof recipient === 'string') {
-          return recipient;
-        }
-        return `${recipient.name} <${recipient.email}>`;
-      }).join(', ');
-
-      const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-
-      const forwardedHeader = `
-<p>
-<br /><br />
----------- Forwarded message ---------<br />
-From: ${email.from.name} <${email.from.email}><br />
-Date: ${formattedDate}<br />
-Subject: ${email.subject}<br />
-To: ${recipientsList}<br />
-Cc: ${(email.cc || []).join(', ')}<br />
-<br /><br />
-${email.body}
-</p>`;
+      const forwardedHeader = buildForwardedHeader();
 
       setContent({ 
         html: forwardedHeader, 
@@ -257,7 +269,18 @@ ${email.body}
                     key={option.value}
                     className="dropdown-option"
                     onClick={() => {
-                      setSelectedReplyOption(option.value);
+                      const newOption = option.value;
+                      // Prepare content first so initial render of new key has correct body
+                      if (newOption === 'forward') {
+                        const forwardedHeader = buildForwardedHeader();
+                        setContent({ html: forwardedHeader, plainText: forwardedHeader });
+                      } else {
+                        setContent({ html: '', plainText: '' });
+                      }
+                      // Update recipients immediately for the new option
+                      setRecipients(calculateRecipients(newOption));
+                      // Then switch the option (this also changes the key for the editor)
+                      setSelectedReplyOption(newOption);
                       document.getElementById('reply-options').classList.remove('show');
                     }}
                   >
