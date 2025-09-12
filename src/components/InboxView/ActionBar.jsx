@@ -13,6 +13,8 @@ import { SnoozePopover } from "../MailActions/Snooze";
 import MoreActions from "./MoreActions";
 import { Labels } from "../MailActions/Labels";
 import { getThreadRows } from "../../utils/emails";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 
 export const Icon = ({
   name,
@@ -80,6 +82,10 @@ const reducer = (state, action) => {
       return { ...state, selectedLabelKeys: action.selectedLabelKeys };
     case "clearSelectedLabelKeys":
       return { ...state, selectedLabelKeys: new Set() };
+    case "toggleCreateOpen":
+      return { ...state, createOpen: !state.createOpen };
+    case "closeMoveToMenu":
+      return { ...state, moveToMenuOpen: false };
   }
 };
 
@@ -91,25 +97,34 @@ const initialState = {
   labelAnchorEl: null,
   searchQuery: "",
   selectedLabelKeys: new Set(),
+  createOpen: false,
 };
 
 const MailActions = ({ thread }) => {
   const navigate = useNavigate();
   const threadId = thread.threadId.split(":")[1];
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery } = state;
+  const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
+    state;
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { labels, setSnackbar } = useGlobalContext();
+  const { setSnackbar } = useGlobalContext();
 
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
-  const customLabels = useMemo(() => {
-    const map = labels || {};
-    return Object.entries(map)
-      .filter(([, meta]) => !meta.system)
-      .map(([name]) => ({ id: "__label__" + name, name }))
+
+  const { labels, labelTree } = useLabels();
+
+  // Check if any selected emails are not in the inbox
+  const menuItems = useMemo(() => {
+    const flat = flattenTreeForSelect(labelTree); // [{ key, name, depth, system }]
+    return flat
+      .filter((item) => !labels?.[item.key]?.system)
+      .map((item) => ({
+        id: item.key,
+        name: getPathLabelFromKey(labels, item.key), // "Parent / Child / ..."
+      }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [labels]);
+  }, [labelTree, labels]);
 
   const moveToMenuAnchorRef = useRef(null);
   const snoozeAnchorElRef = useRef(null);
@@ -174,15 +189,24 @@ const MailActions = ({ thread }) => {
     navigate("/inbox");
   }, []);
 
-  const handleMoveEmails = useCallback(
+  const handleMenuItemClick = useCallback(
     async (item) => {
+      const selectedIds = [threadId];
+      if (item.id === "__create_label__") {
+        toggleCreateOpen();
+        return;
+      }
+
+      if (!selectedIds.length) return;
+
       try {
         if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel([threadId], "Inbox");
+          moveToLabel(selectedIds, "Inbox");
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
+          return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          moveToTrash([threadId]);
+          moveToTrash(selectedIds);
           // Show global snackbar with Undo action
           setSnackbar({
             open: true,
@@ -193,7 +217,7 @@ const MailActions = ({ thread }) => {
                 sx={{ textTransform: "none" }}
                 size="small"
                 onClick={() => {
-                  moveToInbox([threadId]);
+                  moveToInbox(selectedIds);
                   // Follow-up confirmation snackbar
                   setSnackbar({
                     open: true,
@@ -207,12 +231,15 @@ const MailActions = ({ thread }) => {
               </Button>
             ),
           });
-        } else if (item.id.startsWith("__label__")) {
-          // moving between labels:
-          if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
-            moveToLabelFrom([threadId], currentLabel, item.name);
+        } else {
+          // item.id is now the TARGET LABEL KEY
+          const targetKey = item.id;
+          const curMeta = currentLabel ? labels?.[currentLabel] : null;
+          const inCustomLabel = curMeta && curMeta.system === false;
+          if (inCustomLabel) {
+            moveToLabelFrom(selectedIds, currentLabel, targetKey);
           } else {
-            moveToLabel([threadId], item.name);
+            moveToLabel(selectedIds, targetKey); // pass key
           }
         }
       } catch (e) {
@@ -260,6 +287,70 @@ const MailActions = ({ thread }) => {
     const pathParts = location.pathname.split("/");
     // Remove the last part (threadId) to get the base path
     return pathParts.slice(0, -1).join("/") || "/inbox";
+  };
+
+  const toggleCreateOpen = useCallback(() => {
+    dispatch({ type: "toggleCreateOpen" });
+  }, []);
+
+  const handleOnAfterCreate = (childName, parentKey) => {
+    const ids = [threadId];
+
+    try {
+      // Perform the move after creation
+      const newKey = makeKey(childName, parentKey); // build composite key
+      const curMeta = currentLabel ? labels?.[currentLabel] : null;
+      const inCustomLabel = curMeta && curMeta.system === false;
+      if (inCustomLabel) {
+        moveToLabelFrom([ids], currentLabel, newKey);
+      } else {
+        moveToLabel(ids, newKey);
+      }
+
+      // --- UNDO action ---
+      setSnackbar({
+        open: true,
+        message: `Conversation moved to “${childName}”.`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              try {
+                if (inCustomLabel) {
+                  moveToLabelFrom(ids, newKey, currentLabel);
+                } else {
+                  if (currentLabel) moveToLabel(ids, currentLabel);
+                  else moveToInbox(ids);
+                }
+
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              } catch {
+                setSnackbar({
+                  open: true,
+                  message: "Could not undo.",
+                  autoHideDuration: 4000,
+                  action: null,
+                });
+              }
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      setSnackbar({
+        open: true,
+        message: "Could not move selected conversations.",
+        autoHideDuration: 4000,
+      });
+    }
   };
 
   return (
@@ -328,9 +419,9 @@ const MailActions = ({ thread }) => {
       {moveToMenuOpen && (
         <MoveToMenu
           anchorRef={moveToMenuAnchorRef}
-          labels={customLabels}
-          onSelect={handleMoveEmails}
-          onClose={() => dispatch({ type: "toggleMoveToMenu" })}
+          labels={menuItems}
+          onSelect={handleMenuItemClick}
+          onClose={() => toggleMoveToMenu()}
         />
       )}
       <SnoozePopover
@@ -355,6 +446,7 @@ const MailActions = ({ thread }) => {
           transformOrigin: { vertical: "top", horizontal: "left" },
         }}
       />
+      <CreateLabelDialog open={createOpen} onClose={() => toggleCreateOpen()} onAfterCreate={handleOnAfterCreate} />
     </div>
   );
 };
