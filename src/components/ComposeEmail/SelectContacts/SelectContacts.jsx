@@ -133,8 +133,23 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
   // Handle inserting selected contacts
   const handleInsert = () => {
     if (!recipients) return;
+
+    // Get custom recipients in addedRecipients which are selected
+    const customRecipients = addedRecipients.filter(
+      (recipient) =>
+        recipient.id &&
+        typeof recipient.id === "string" &&
+        recipient.id.startsWith("custom-") &&
+        selectedContacts.has(recipient.id)
+    );
+
+    // Get the selected recipients present in the recipients context
     const selectedRecipients = recipients.filter((recipient) => recipient && selectedContacts.has(recipient.id));
-    handleInsertContacts(selectedRecipients);
+
+    // Create a final recipients array with the selected recipients and the custom recipients
+    const finalRecipients = [...selectedRecipients, ...customRecipients];
+
+    handleInsertContacts(finalRecipients);
     onClose();
   };
 

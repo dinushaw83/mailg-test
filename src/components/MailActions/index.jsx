@@ -15,7 +15,7 @@ export default function MailActions() {
   const { moveToSpam, notSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, deleteForever } =
     useMailActions();
 
-  const { emails, selection, setSnackbar } = useGlobalContext();
+  const { emails, selection, setSnackbar, setEmails, setComposeWindows } = useGlobalContext();
   const { labels, labelTree } = useLabels();
 
   const [open, setOpen] = useState(false);
@@ -29,10 +29,12 @@ export default function MailActions() {
 
   const { label: labelParam, folder } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
+  const lastActionIds = useRef([]);
 
   const inSpam = folder === "spam";
   const inAllMail = folder === "all";
   const inTrash = folder === "trash";
+  const inDrafts = folder === "drafts";
 
   // Check if any selected emails are not in the inbox
   const menuItems = useMemo(() => {
@@ -260,6 +262,133 @@ export default function MailActions() {
     }
   };
 
+  // Handle discard drafts
+  const handleDiscardDrafts = () => {
+    if (![...selection.ids].length) return;
+
+    // Store the email objects that are being deleted
+    const deletedEmails = [];
+
+    // Filter out selected draft emails
+    setEmails((prevEmails) =>
+      prevEmails.filter((email) => {
+        // Only filter out emails that have "Drafts" label and are selected
+        if (!email.labels || !email.labels.includes("Drafts")) {
+          return true;
+        }
+
+        const emailThreadId = email.threadId.split(":")[1];
+
+        if ([...selection.ids].includes(emailThreadId)) {
+          deletedEmails.push(email);
+          return false;
+        }
+
+        return true;
+      })
+    );
+
+    // Update compose windows - set draftId to null for deleted drafts
+    setComposeWindows((prevWindows) =>
+      prevWindows.map((window) => {
+        const hasDeletedDraft = deletedEmails.some(
+          (deletedEmail) => window.draftId?.toString() === deletedEmail.id?.toString()
+        );
+
+        if (hasDeletedDraft) {
+          return { ...window, draftId: null };
+        }
+
+        return window;
+      })
+    );
+
+    // Show success snackbar
+    setSnackbar({
+      open: true,
+      message: "Drafts deleted",
+      autoHideDuration: 2000,
+      action: null,
+    });
+
+    // Clear selection
+    selection.clear();
+  };
+
+  // Handle undo move to inbox
+  const handleUndoMoveDraftsToInbox = () => {
+    const selectedIds = [...lastActionIds.current];
+
+    // Update the selected emails to remove Inbox label if it exists
+    setEmails((prevEmails) =>
+      prevEmails.map((email) => {
+        const emailThreadId = email.threadId.split(":")[1];
+        if (selectedIds.includes(emailThreadId) && email.labels.includes("Drafts")) {
+          return { ...email, labels: email.labels.filter((label) => label !== "Inbox") };
+        }
+        return email;
+      })
+    );
+
+    // Display snackbar with undo action
+    setSnackbar({
+      open: true,
+      message: "Action undone.",
+      action: null,
+      autoHideDuration: 3000,
+    });
+
+    lastActionIds.current = [];
+  };
+
+  // Handle move drafts to inbox
+  const handleMoveDraftsToInbox = () => {
+    const selectedIds = [...selection.ids];
+
+    // Check if the selected emails already have the Inbox label
+    const emailsAlreadyInInbox = emails.some((email) => {
+      const emailThreadId = email.threadId.split(":")[1];
+      return selectedIds.includes(emailThreadId) && email.labels.includes("Inbox");
+    });
+
+    if (emailsAlreadyInInbox) {
+      // Display snackbar conversation moved to inbox and return
+      setSnackbar({
+        open: true,
+        message: "Conversation moved to inbox.",
+        action: null,
+        autoHideDuration: 3000,
+      });
+      return;
+    }
+
+    // Update emails to include Inbox label
+    setEmails((prevEmails) =>
+      prevEmails.map((email) => {
+        const emailThreadId = email.threadId.split(":")[1];
+        if (email.labels.includes("Drafts") && selectedIds.includes(emailThreadId) && !email.labels.includes("Inbox")) {
+          return { ...email, labels: [...email.labels, "Inbox"] };
+        }
+        return email;
+      })
+    );
+
+    // Store the action ids
+    lastActionIds.current = [...selectedIds];
+
+    // Display snackbar with undo action
+    setSnackbar({
+      open: true,
+      message: "Convervation moved to inbox.",
+      action: (
+        <Button sx={{ textTransform: "none" }} size="medium" onClick={handleUndoMoveDraftsToInbox}>
+          Undo
+        </Button>
+      ),
+      autoHideDuration: 8000,
+    });
+  };
+
   return (
     <div className="Cq aqL" gh="mtb">
       <div className="bzn" jslog="202616; u014N:xr6bB">
@@ -321,8 +450,28 @@ export default function MailActions() {
                     </Fragment>
                   )}
 
+                  {/* Drafts */}
                   <Fragment>
-                    {!inSpam && (
+                    {inDrafts && (
+                      <Button
+                        sx={{
+                          textTransform: "none",
+                          color: "rgb(95,99,104)",
+                          fontWeight: 500,
+                          fontSize: "0.875rem",
+                          "&:hover": {
+                            backgroundColor: "rgba(32, 33, 36, 0.031)",
+                          },
+                        }}
+                        onClick={handleDiscardDrafts}
+                      >
+                        Discard drafts
+                      </Button>
+                    )}
+                  </Fragment>
+
+                  <Fragment>
+                    {!inSpam && !inDrafts && (
                       <>
                         <Fragment>
                           {!inTrash && (
@@ -350,13 +499,17 @@ export default function MailActions() {
                       </>
                     )}
                     <Icon name="mail" label="Mark as read" onClick={() => console.log("Mail clicked")} />
-                    {!inAllMail && (
+                    {!inAllMail && !inDrafts && (
                       <div ref={anchorRef}>
                         <Icon name="drive_file_move" label="Move to" onClick={() => setOpen((s) => !s)} />
                       </div>
                     )}
-                    {inAllMail && (
-                      <Icon name="move_to_inbox" label="Move to Inbox" onClick={onMoveArchivedMailToInbox} />
+                    {(inAllMail || inDrafts) && (
+                      <Icon
+                        name="move_to_inbox"
+                        label="Move to Inbox"
+                        onClick={inDrafts ? handleMoveDraftsToInbox : onMoveArchivedMailToInbox}
+                      />
                     )}
                   </Fragment>
                 </Fragment>
