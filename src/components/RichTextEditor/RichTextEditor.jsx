@@ -136,117 +136,119 @@ export default function Editor({ content, onChange, onSend, onDelete }) {
           // saving/viewing the HTML content
           footer: (
             <Stack
-              direction="row"
+              direction="column"
               spacing={2}
               sx={{
                 py: 1,
               }}
             >
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: "relative", width: "100%" }}>
-                <div className={styles.sendButtonContainer}>
-                  <div
-                    aria-label="Send ‪(⌘Enter)‬"
-                    role="button"
-                    tabIndex="1"
-                    style={{
-                      whiteSpace: "nowrap",
-                      textAlign: "center",
-                      verticalAlign: "middle",
-                      boxShadow: "none",
-                      WebkitUserDrag: "none",
-                      lineHeight: "18px",
-                      outline: "none",
-                      padding: "0px 16px",
-                      border: "none",
-                      WebkitBoxAlign: "center",
-                      alignItems: "center",
-                      display: "inline-flex",
-                      WebkitBoxPack: "center",
-                      justifyContent: "center",
-                      position: "relative",
-                      zIndex: 0,
-                      WebkitFontSmoothing: "antialiased",
-                      fontSize: "0.875rem",
-                      letterSpacing: "normal",
-                      backgroundImage: "none",
-                      boxSizing: "border-box",
-                      fontWeight: 500,
-                      height: "36px",
-                      color: "rgb(255, 255, 255)",
-                      margin: "0px",
-                      marginRight: "0px",
-                      maxWidth: "104px",
-                      minWidth: "72px",
-                      cursor: "pointer",
-                      borderRadius: "18px 0px 0px 18px",
-                      userSelect: "none",
-                    }}
-                    onClick={onSend}
-                  >
-                    Send
+              {showMenuBar && <div style={{ width: "100%", height: "35px"}}></div>}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: "relative", width: "100%" }}>
+                  <div className={styles.sendButtonContainer}>
+                    <div
+                      aria-label="Send ‪(⌘Enter)‬"
+                      role="button"
+                      tabIndex="1"
+                      style={{
+                        whiteSpace: "nowrap",
+                        textAlign: "center",
+                        verticalAlign: "middle",
+                        boxShadow: "none",
+                        WebkitUserDrag: "none",
+                        lineHeight: "18px",
+                        outline: "none",
+                        padding: "0px 16px",
+                        border: "none",
+                        WebkitBoxAlign: "center",
+                        alignItems: "center",
+                        display: "inline-flex",
+                        WebkitBoxPack: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                        zIndex: 0,
+                        WebkitFontSmoothing: "antialiased",
+                        fontSize: "0.875rem",
+                        letterSpacing: "normal",
+                        backgroundImage: "none",
+                        boxSizing: "border-box",
+                        fontWeight: 500,
+                        height: "36px",
+                        color: "rgb(255, 255, 255)",
+                        margin: "0px",
+                        marginRight: "0px",
+                        maxWidth: "104px",
+                        minWidth: "72px",
+                        cursor: "pointer",
+                        borderRadius: "18px 0px 0px 18px",
+                        userSelect: "none",
+                      }}
+                      onClick={onSend}
+                    >
+                      Send
+                    </div>
+                    <div
+                      aria-expanded="false"
+                      aria-haspopup="true"
+                      aria-label="More send options"
+                      role="button"
+                      tabIndex="1"
+                      style={{
+                        whiteSpace: "nowrap",
+                        textAlign: "center",
+                        boxShadow: "none",
+                        WebkitUserDrag: "none",
+                        lineHeight: "18px",
+                        outline: "none",
+                        border: "none",
+                        WebkitBoxAlign: "center",
+                        alignItems: "center",
+                        display: "inline-flex",
+                        WebkitBoxPack: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                        zIndex: 0,
+                        WebkitFontSmoothing: "antialiased",
+                        fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                        fontSize: "0.875rem",
+                        letterSpacing: "normal",
+                        backgroundImage: "none",
+                        boxSizing: "border-box",
+                        fontWeight: 500,
+                        height: "36px",
+                        color: "rgb(255, 255, 255)",
+                        padding: "0px 8px",
+                        minWidth: "24px",
+                        borderLeft: "1px solid rgb(6, 46, 111)",
+                        cursor: "pointer",
+                        borderRadius: "0px 18px 18px 0px",
+                        userSelect: "none",
+                      }}
+                    >
+                      <span className="material-symbols-outlined">arrow_drop_down</span>
+                    </div>
                   </div>
-                  <div
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                    aria-label="More send options"
-                    role="button"
-                    tabIndex="1"
-                    style={{
-                      whiteSpace: "nowrap",
-                      textAlign: "center",
-                      boxShadow: "none",
-                      WebkitUserDrag: "none",
-                      lineHeight: "18px",
-                      outline: "none",
-                      border: "none",
-                      WebkitBoxAlign: "center",
-                      alignItems: "center",
-                      display: "inline-flex",
-                      WebkitBoxPack: "center",
-                      justifyContent: "center",
-                      position: "relative",
-                      zIndex: 0,
-                      WebkitFontSmoothing: "antialiased",
-                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                      fontSize: "0.875rem",
-                      letterSpacing: "normal",
-                      backgroundImage: "none",
-                      boxSizing: "border-box",
-                      fontWeight: 500,
-                      height: "36px",
-                      color: "rgb(255, 255, 255)",
-                      padding: "0px 8px",
-                      minWidth: "24px",
-                      borderLeft: "1px solid rgb(6, 46, 111)",
-                      cursor: "pointer",
-                      borderRadius: "0px 18px 18px 0px",
-                      userSelect: "none",
-                    }}
-                  >
-                    <span className="material-symbols-outlined">arrow_drop_down</span>
-                  </div>
+
+                  {showMenuBar && <EditorMenuControls editor={rteRef.current?.editor} />}
+                  <MenuButton
+                    value="formatting"
+                    tooltipLabel={
+                      showMenuBar ? "Hide formatting" : "Show formatting"
+                    }
+                    size="small"
+                    onClick={() => setShowMenuBar((currentState) => !currentState)}
+                    selected={showMenuBar}
+                    IconComponent={TextFields}
+                  />
+
+                  <MenuButtonEditLink />
                 </div>
 
-                {showMenuBar && <EditorMenuControls editor={rteRef.current?.editor} />}
-                <MenuButton
-                  value="formatting"
-                  tooltipLabel={
-                    showMenuBar ? "Hide formatting" : "Show formatting"
-                  }
-                  size="small"
-                  onClick={() => setShowMenuBar((currentState) => !currentState)}
-                  selected={showMenuBar}
-                  IconComponent={TextFields}
-                />
-
-                <MenuButtonEditLink />
-              </div>
-
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
-
-                <button className={styles.deleteButton} onClick={onDelete} title="Delete">
-                  <span className="material-symbols-outlined">delete</span>
-                </button>
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <button className={styles.deleteButton} onClick={onDelete} title="Delete">
+                    <span className="material-symbols-outlined">delete</span>
+                  </button>
+                </div>
               </div>
               
             </Stack>
