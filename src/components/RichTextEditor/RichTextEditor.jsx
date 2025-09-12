@@ -1,4 +1,4 @@
-import { Stack } from "@mui/material";
+import { Stack, Popper, Paper, ClickAwayListener } from "@mui/material";
 import { useCallback, useRef, useState } from "react";
 import {
   LinkBubbleMenu,
@@ -6,17 +6,14 @@ import {
   RichTextEditor,
   TableBubbleMenu,
   insertImages,
-  MenuButtonEditLink,
 } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
+import InsertLink from "@mui/icons-material/InsertLink";
 import EditorMenuControls from "./EditorMenuControls";
 import useExtensions from "./useExtensions";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 
 function fileListToImageFiles(fileList) {
-  // You may want to use a package like attr-accept
-  // (https://www.npmjs.com/package/attr-accept) to restrict to certain file
-  // types.
   return Array.from(fileList).filter((file) => {
     const mimeType = (file.type || "").toLowerCase();
     return mimeType.startsWith("image/");
@@ -30,6 +27,10 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
   const rteRef = useRef(null);
   const [isEditable, setIsEditable] = useState(true);
   const [showMenuBar, setShowMenuBar] = useState(false);
+  const [linkAnchorEl, setLinkAnchorEl] = useState(null);
+  const [linkText, setLinkText] = useState("");
+  const [linkHref, setLinkHref] = useState("");
+  const [hasTextSelection, setHasTextSelection] = useState(false);
 
   const handleNewImageFiles = useCallback(
     (files, insertPosition) => {
@@ -68,8 +69,6 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
 
           handleNewImageFiles(imageFiles, insertPosition);
 
-          // Return true to treat the event as handled. We call preventDefault
-          // ourselves for good measure.
           event.preventDefault();
           return true;
         }
@@ -112,6 +111,43 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
     const plainText = editor.getText();
     onChange?.(html, plainText);
   }, [onChange]);
+
+  const openLinkPopover = (event) => {
+    const editor = rteRef.current?.editor;
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    const selectedText = editor.state.doc.textBetween(from, to, " ");
+    const currentHref = editor.getAttributes("link")?.href || "";
+    setLinkText(selectedText || "");
+    setLinkHref(currentHref || "");
+    setHasTextSelection(from !== to);
+    setLinkAnchorEl(event.currentTarget);
+  };
+
+  const closeLinkPopover = () => {
+    setLinkAnchorEl(null);
+  };
+
+  const applyLink = () => {
+    const editor = rteRef.current?.editor;
+    if (!editor) return;
+    if (!linkHref) {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      closeLinkPopover();
+      return;
+    }
+    const { from, to } = editor.state.selection;
+    const hasSelection = from !== to;
+    if (hasSelection) {
+      editor.chain().focus().extendMarkRange("link").setLink({ href: linkHref }).run();
+    } else {
+      const displayText = linkText || linkHref;
+      editor.chain().focus().insertContent(`<a href="${linkHref}">${displayText}</a>`).run();
+    }
+    closeLinkPopover();
+  };
+
+  const canApply = hasTextSelection ? (linkHref.trim().length > 0) : (linkText.trim().length > 0 && linkHref.trim().length > 0);
 
   return (
     <>
@@ -234,7 +270,88 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
                     selected={showMenuBar}
                     IconComponent={FormatColorText} />
 
-                  <MenuButtonEditLink />
+                  <MenuButton
+                    tooltipLabel="Insert link"
+                    size="small"
+                    onClick={openLinkPopover}
+                    IconComponent={InsertLink}
+                  />
+                  <Popper
+                    open={Boolean(linkAnchorEl)}
+                    anchorEl={linkAnchorEl}
+                    placement="top"
+                    style={{ zIndex: 1500 }}
+                  >
+                    <ClickAwayListener onClickAway={closeLinkPopover} mouseEvent="onMouseDown" touchEvent="onTouchStart">
+                      <Paper elevation={5} sx={{ p: 1, display: "flex", flexDirection: "column", gap: 0.5, padding: "16px 32px 16px 16px" }}>
+                        {!hasTextSelection && (
+                          <div style={{ position: "relative", width: 260 }}>
+                            <input
+                              type="text"
+                              value={linkText}
+                              onChange={(e) => setLinkText(e.target.value)}
+                              placeholder="Text"
+                              onFocus={(e) => { e.target.placeholder = ""; }}
+                              onBlur={(e) => { if (!e.target.value) e.target.placeholder = "Text"; }}
+                              onKeyDown={(e) => { if (e.key === "Enter") applyLink(); }}
+                              style={{
+                                width: "80%",
+                                padding: "6px 10px 6px 34px",
+                                fontSize: "14px",
+                                border: "1px solid rgba(0,0,0,0.23)",
+                                borderRadius: 4,
+                                outline: "none",
+                                marginBottom: "4px",
+                              }}
+                            />
+                            <svg focusable="false" viewBox="0 -960 960 960" height="20" width="20" style={{ position: "absolute", left: 8, top: "46%", transform: "translateY(-50%)", userSelect: "none", pointerEvents: "none", color: "rgba(0,0,0,0.6)" }}>
+                              <path d="M192-360v-72H576v72H192Zm0-168v-72H768v72H192Z" />
+                            </svg>
+                          </div>
+                        )}
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ position: "relative", width: 260 }}>
+                            <input
+                              type="text"
+                              value={linkHref}
+                              onChange={(e) => setLinkHref(e.target.value)}
+                              placeholder="URL"
+                              onFocus={(e) => { e.target.placeholder = ""; }}
+                              onBlur={(e) => { if (!e.target.value) e.target.placeholder = "URL"; }}
+                              onKeyDown={(e) => { if (e.key === "Enter") applyLink(); }}
+                              style={{
+                                width: "80%",
+                                padding: "6px 10px 6px 34px",
+                                fontSize: "14px",
+                                border: "1px solid rgba(0,0,0,0.23)",
+                                borderRadius: 4,
+                                outline: "none",
+                              }}
+                            />
+                            <svg focusable="false" viewBox="0 -960 960 960" height="20" width="20" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", userSelect: "none", pointerEvents: "none", color: "rgba(0,0,0,0.6)" }}>
+                              <path d="M432-288H288q-79.68,0-135.84-56.23T96-480.23T152.16-616T288-672H432v72H288q-50,0-85,35t-35,85t35,85t85,35H432v72ZM336-444v-72H624v72H336ZM528-288v-72H672q50,0 85-35t35-85t-35-85t-85-35H528v-72H672q79.68,0 135.84,56.23t56.16,136T807.84-344T672-288H528Z"></path>
+                            </svg>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!canApply}
+                            onClick={applyLink}
+                            style={{
+                              background: "transparent",
+                              border: "none",
+                              padding: "4px 6px",
+                              fontSize: 14,
+                              fontWeight: 500,
+                              color: canApply ? "#1a73e8" : "rgba(0,0,0,0.38)",
+                              cursor: canApply ? "pointer" : "default",
+                            }}
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </Paper>
+                    </ClickAwayListener>
+                  </Popper>
                 </div>
 
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
