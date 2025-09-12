@@ -25,19 +25,14 @@ const Inbox = () => {
     const sortedEmails = [...filteredRows].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
-
-      if (sortOrder === "newest") {
-        return dateB - dateA;
-      } else {
-        return dateA - dateB;
-      }
+      return dateB - dateA;
     });
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
     return sortedEmails.slice(startIndex, endIndex);
-  }, [filteredRows, sortOrder, currentPage, itemsPerPage]);
+  }, [filteredRows, currentPage, itemsPerPage]);
 
   useEffect(() => {
     document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;

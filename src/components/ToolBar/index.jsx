@@ -205,7 +205,7 @@ const ToolBar = ({ totalFilteredItems, threads }) => {
           setShowAdvancedMenu={setShowAdvancedMenu}
         />
       </LeftItemsContainer>
-      <RightActions totalFilteredItems={totalFilteredItems} />
+      {totalFilteredItems > 0 && <RightActions totalFilteredItems={totalFilteredItems} />}
     </div>
   );
 };
