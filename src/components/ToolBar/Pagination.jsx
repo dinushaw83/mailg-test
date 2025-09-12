@@ -3,7 +3,7 @@ import { Button, Box, MenuItem, Popper, Grow, Paper, ClickAwayListener, MenuList
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
 const Pagination = ({ totalFilteredItems }) => {
-  const { setSortOrder, currentPage, setCurrentPage, itemsPerPage } = useContext(GlobalContext);
+  const { currentPage, setCurrentPage, itemsPerPage } = useContext(GlobalContext);
   const anchorRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -34,7 +34,6 @@ const Pagination = ({ totalFilteredItems }) => {
   };
 
   const handleSortChange = (newSortOrder) => {
-    setSortOrder(newSortOrder);
     if (newSortOrder === "oldest") {
       setCurrentPage(totalPages);
     } else {

@@ -9,6 +9,7 @@ import GlobalSnackbar from "./components/GlobalSnackbar";
 import VerificationDashboard from "./pages/VerificationDashboard";
 
 import { initialUser } from "./contexts/fixtures/me";
+import SearchResultsView from "./pages/SearchResultsView";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/label/:label/:threadId" element={<EmailDetails />} />
             <Route path="/:folder" element={<MailView />} />
             <Route path="/label/:label" element={<MailView />} />
+            <Route path="/search/:query" element={<SearchResultsView />} />
             <Route path="/verify" element={<VerificationDashboard />} />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>

@@ -190,7 +190,7 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
           </>
         )}
       </LeftItemsContainer>
-      <RightActions totalFilteredItems={totalFilteredItems} />
+      {totalFilteredItems > 0 && <RightActions totalFilteredItems={totalFilteredItems} />}
     </div>
   );
 };
