@@ -260,7 +260,7 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
             "& h1, & h2, & h3, & h4, & h5, & h6": {
               scrollMarginTop: showMenuBar ? 50 : 0,
             },
-            minHeight: textEditorMinHeight,
+            minHeight: textEditorMinHeight === "390px" ? showMenuBar ? "339px" : "390px" : textEditorMinHeight,
             maxHeight: textEditorMaxHeight,
             overflowY: "auto",
           },

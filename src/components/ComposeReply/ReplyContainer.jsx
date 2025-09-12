@@ -12,8 +12,6 @@ import forwardIcon from '../../icons/forward.png';
 import dropdownArrow from '../../icons/dropdownarrow.png';
 import { Button } from "@mui/material";
 
-// TEMP
-import styles from "../ComposeEmail/ComposeEmail.module.css";
 
 const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelete }) => {
   const { loggedInUser, setSnackbar, emails } = useGlobalContext();
