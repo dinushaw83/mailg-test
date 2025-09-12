@@ -8,7 +8,7 @@ import { Subject } from "./Subject";
 import { Divider } from "@mui/material";
 import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
-import { Actions } from "./Actions";
+import useMailActions from '../../hooks/useMailActions';
 
 const InboxViewContainer = styled.div`
   padding: 24px;
@@ -26,10 +26,11 @@ const InnerContainer = styled.div`
 
 const InboxView = () => {
   const { threadId, folder, label } = useParams();
-  const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
+  const { emails, normalizedEmails, loggedInUser, setEmails } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
 
   const { threadsById, messagesById } = normalizedEmails;
+  const { markRead } = useMailActions();
 
   const thread = useMemo(() => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
@@ -59,8 +60,22 @@ const InboxView = () => {
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
 
+  // Mark unread emails as read
+  const markUnreadEmailsAsRead = () => {
+    // Get the unread emails ids
+    const unreadEmailsIds = messages.filter((email) => !email.read).map((email) => email.id);
+
+    // If there are unread emails, mark them as read
+    if (unreadEmailsIds.length > 0) {
+      markRead(unreadEmailsIds);
+    }
+  }
+
   useEffect(() => {
     document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+
+    // Mark unread emails in the email thread as read
+    markUnreadEmailsAsRead();
   }, []);
 
   return (

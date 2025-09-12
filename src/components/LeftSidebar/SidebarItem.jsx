@@ -67,7 +67,12 @@ export default function SidebarItem({ item }) {
               </span>
 
               <div className="aio UKr6le">
-                <span className={`nU ${isActive ? "n1" : ""}`}>{item.label}</span>
+                <span 
+                  className={`nU ${isActive ? "n1" : ""}`}
+                  style={item.key === "drafts" && item.count > 0 ? { fontWeight: 600 } : {}}
+                >
+                  {item.label}
+                </span>
 
                 {item.key !== "all" &&
                   typeof item.count === "number" &&
