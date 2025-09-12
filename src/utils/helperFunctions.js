@@ -86,7 +86,7 @@ export const sortObjectKeys = (obj) => {
     }, {});
 };
 
-export const processJsonWithHtmlTags = (obj, keysToProcess) => {
+export const processJsonWithHtmlTags = (obj, keysToProcess = []) => {
   // Handle null, undefined and non-objects
   if (obj === null || typeof obj !== "object") {
     return obj;
@@ -141,6 +141,7 @@ export const stringifyReplacer = (key, value) => {
     "timestamp",
     "editedAt",
     "solvedAt",
+    "timeDisplay",
   ];
   if (ignoredFields.includes(key) || /id$/i.test(key)) {
     return undefined;

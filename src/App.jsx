@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
@@ -11,10 +11,6 @@ import VerificationDashboard from "./pages/VerificationDashboard";
 import { initialUser } from "./contexts/fixtures/me";
 
 function App() {
-  useEffect(() => {
-    document.title = `Inbox(2) - ${initialUser.email} - MailG`;
-  }, []);
-
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <GlobalContextProvider>

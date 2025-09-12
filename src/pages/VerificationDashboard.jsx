@@ -2,7 +2,7 @@ import Button from "@mui/material/Button";
 import { createPatch } from "diff";
 import { parseDiff } from "react-diff-view";
 import "react-diff-view/style/index.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { UTCDate } from "@date-fns/utc";
 
@@ -23,17 +23,18 @@ const VerificationDashboard = () => {
   const [collapsedDescriptions, setCollapsedDescriptions] = useState(() => {
     const initial = {};
     Object.keys(tasks).forEach((promptId) => {
-      initial[promptId] = true; // Start collapsed
+      initial[promptId] = true;
     });
     return initial;
   });
-  const [testResults, setTestResults] = useState(() => {
+  const [collapsedDiffResults, setCollapsedDiffResults] = useState(() => {
     const initial = {};
     Object.keys(tasks).forEach((promptId) => {
-      initial[promptId] = { passed: false, executionTime: 0, diffFiles: [], ranAt: null };
+      initial[promptId] = true;
     });
     return initial;
   });
+  const [testResults, setTestResults] = useState({});
   const [banner, setBanner] = useState(null);
   const [ranAt, setRanAt] = useState(null);
   const [loading, setLoading] = useState(() => {
@@ -44,9 +45,26 @@ const VerificationDashboard = () => {
     return initial;
   });
 
+  const getTestStatus = (promptId) => {
+    if (!testResults[promptId]) return "Not Run";
+    return testResults[promptId].passed ? "Passed" : "Failed";
+  };
+
   const getTestStatusIcon = (promptId) => {
-    if (!isRunning[promptId]) return "⏰";
+    if (!testResults[promptId]) return "⏰";
     return testResults[promptId].passed ? "✅" : "❌";
+  };
+
+  const getTestStatusColor = (promptId) => {
+    if (!testResults[promptId]) return "#6B7280";
+    return testResults[promptId].passed ? "#10B981" : "#EF4444";
+  };
+
+  const toggleDiffResults = (promptId) => {
+    setCollapsedDiffResults((prev) => ({
+      ...prev,
+      [promptId]: !prev[promptId],
+    }));
   };
 
   const runVerification = (specificTaskId = null) => {
@@ -64,8 +82,8 @@ const VerificationDashboard = () => {
     const startTime = Date.now();
     for (const key of Object.keys(expectedResult)) {
       const actualRaw = localStorage.getItem(key);
-      const cleanedExpctedJson = processJsonWithHtmlTags(JSON.parse(expectedResult[key]), KEYS_TO_CLEAN);
-      const cleanedActualJson = processJsonWithHtmlTags(JSON.parse(actualRaw), KEYS_TO_CLEAN);
+      const cleanedExpctedJson = processJsonWithHtmlTags(JSON.parse(expectedResult[key]));
+      const cleanedActualJson = processJsonWithHtmlTags(JSON.parse(actualRaw));
 
       let patch = createPatch(
         key,
@@ -104,8 +122,20 @@ const VerificationDashboard = () => {
       setRanAt(new UTCDate());
       setLoading(false);
       setRunningPrompt(null);
+      setIsRunning((prev) => ({ ...prev, [taskToRun]: false }));
     }, 100);
   };
+
+  const clearResults = () => {
+    setTestResults({});
+    setRanAt(null);
+    localStorage.clear();
+    window.location.reload();
+  };
+
+  useEffect(() => {
+    document.title = "Task Verifier Dashboard";
+  }, []);
 
   return (
     <div style={{ width: "60%", height: "100%", margin: "2rem auto" }}>
@@ -121,7 +151,7 @@ const VerificationDashboard = () => {
       >
         <div>
           <h1 style={{ marginBottom: "4px" }}>Task Verifier Dashboard</h1>
-          {true && (
+          {/* {runId && (
             <div
               style={{
                 fontSize: "16px",
@@ -131,10 +161,10 @@ const VerificationDashboard = () => {
             >
               Run ID:{" "}
               <span style={{ fontWeight: 700, fontSize: "20px", color: "#374151", fontFamily: "monospace" }}>
-                {"true"}
+                {"runId"}
               </span>
             </div>
-          )}
+          )} */}
         </div>
         <div
           style={{
@@ -146,6 +176,7 @@ const VerificationDashboard = () => {
         >
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
             <Button
+              onClick={clearResults}
               style={{
                 backgroundColor: "#F56565",
                 borderColor: "#F56565",
@@ -186,7 +217,11 @@ const VerificationDashboard = () => {
         }}
       >
         {Object.keys(tasks).map((promptId, index) => {
+          const status = getTestStatus(promptId);
           const statusIcon = getTestStatusIcon(promptId);
+          const statusColor = getTestStatusColor(promptId);
+          const isDiffResultsCollapsed = collapsedDiffResults[promptId];
+          const result = testResults[promptId];
           return (
             <div
               key={promptId}
@@ -287,24 +322,21 @@ const VerificationDashboard = () => {
                     )}
 
                     {/* Status */}
-                    {/* <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                       <span
                         style={{
-                          color: "#6B7280",
+                          color: statusColor,
                           fontSize: "14px",
                           fontWeight: "500",
                         }}
                       >
-                        {isRunning ? "Running..." : "❌"}
-                        {testResults[promptId] && (
-                          <span style={{ marginLeft: "8px" }}>({testResults[promptId].executionTime}ms)</span>
-                        )}
+                        {isRunning[promptId] ? "Running..." : status}
+                        {result && <span style={{ marginLeft: "8px" }}>({result.executionTime}ms)</span>}
                       </span>
-                    </div> */}
+                    </div>
                   </div>
                 </div>
 
-                {/* Right side - Run Button */}
                 <Button
                   onClick={() => runVerification(promptId)}
                   disabled={isRunning[promptId]}
@@ -317,9 +349,85 @@ const VerificationDashboard = () => {
                     boxShadow: "0 2px 4px rgba(56, 161, 105, 0.3)",
                   }}
                 >
-                  {isRunning[promptId] ? "Running..." : "▶ Run"}
+                  {isRunning[promptId] ? "Running..." : status === "Not Run" ? "▶ Run" : "▶ Rerun"}
                 </Button>
               </div>
+              {result && result.diffFiles && result.diffFiles.length > 0 && (
+                <div style={{ marginTop: "20px", borderTop: "1px solid #E5E7EB", paddingTop: "20px" }}>
+                  <button
+                    onClick={() => toggleDiffResults(promptId)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: "0",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      color: "#6B7280",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                    }}
+                  >
+                    <span style={{ fontSize: "12px" }}>{isDiffResultsCollapsed ? "▶" : "▼"}</span>
+                    <span>Diff Results</span>
+                    <span
+                      style={{
+                        color: result.passed ? "#10B981" : "#EF4444",
+                        fontSize: "12px",
+                      }}
+                    >
+                      {result.passed ? "✅ Passed" : "❌ Failed"}
+                    </span>
+                  </button>
+
+                  {!isDiffResultsCollapsed && (
+                    <div style={{ marginTop: "16px" }}>
+                      {result.diffFiles.map(({ key, type, hunks, oldSource }, idx) => (
+                        <div key={key} style={{ marginBottom: "20px" }}>
+                          <h4
+                            style={{
+                              marginBottom: "12px",
+                              fontSize: "16px",
+                              fontWeight: "600",
+                              color: "#374151",
+                            }}
+                          >
+                            Comparison of{" "}
+                            <code
+                              style={{
+                                backgroundColor: "#F3F4F6",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {key}
+                            </code>{" "}
+                            {hunks?.length > 0 ? "❌" : "✅"}
+                          </h4>
+                          {hunks?.length > 0 ? (
+                            <DiffView hunks={hunks} onExpandRange={() => {}} oldSource={oldSource} />
+                          ) : (
+                            <div
+                              style={{
+                                color: "#10B981",
+                                backgroundColor: "#F0FDF4",
+                                padding: "12px",
+                                borderRadius: "6px",
+                                border: "1px solid #BBF7D0",
+                              }}
+                            >
+                              No differences. Everything was correctly added.
+                            </div>
+                          )}
+                          {idx !== result.diffFiles.length - 1 && <hr style={{ margin: "20px 0" }} />}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

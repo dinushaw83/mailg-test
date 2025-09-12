@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import ActionBar, { Icon } from "./ActionBar";
@@ -22,7 +22,7 @@ const InnerContainer = styled.div`
 
 const InboxView = () => {
   const { threadId } = useParams();
-  const { emails, normalizedEmails } = useContext(GlobalContext);
+  const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
 
   const { threadsById, messagesById } = normalizedEmails;
 
@@ -45,6 +45,10 @@ const InboxView = () => {
 
   const { messageIds } = emailThread;
   const messages = messageIds.map((id) => messagesById[id]);
+
+  useEffect(() => {
+    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+  }, []);
 
   return (
     <InboxViewContainer>
