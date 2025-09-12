@@ -1,8 +1,9 @@
 import { useTheme, Popper, Paper, Stack, Typography, ClickAwayListener } from "@mui/material";
 import { useState } from "react";
 import FormatColorText from "@mui/icons-material/FormatColorText";
+import KeyboardArrowUp from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
 import {
-  MenuButtonAddTable,
   MenuButtonBlockquote,
   MenuButtonBold,
   MenuButtonBulletedList,
@@ -17,10 +18,6 @@ import {
   MenuButtonRedo,
   MenuButtonRemoveFormatting,
   MenuButtonStrikethrough,
-  MenuButtonSubscript,
-  MenuButtonSuperscript,
-  MenuButtonTaskList,
-  MenuButtonTextColor,
   MenuButtonUnderline,
   MenuButtonUndo,
   MenuButtonUnindent,
@@ -28,24 +25,22 @@ import {
   MenuDivider,
   MenuSelectFontFamily,
   MenuSelectFontSize,
-  MenuSelectHeading,
   MenuSelectTextAlign,
-  MenuButtonColorPicker,
   MenuButton,
   ColorPicker,
   MenuButtonIndent,
-  ColorSwatchButton,
-  isTouchDevice,
 } from "mui-tiptap";
 
 import "./styles.css";
 
-export default function EditorMenuControls({ editor }) {
+export default function EditorMenuControls({ editor, useCompactFormatting = false }) {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [moreAnchorEl, setMoreAnchorEl] = useState(null);
   const [textColor, setTextColor] = useState("");
   const [bgColor, setBgColor] = useState("");
   const open = Boolean(anchorEl);
+  const isMoreOpen = Boolean(moreAnchorEl);
 
   const swatches = [
     // Grayscale
@@ -128,6 +123,12 @@ export default function EditorMenuControls({ editor }) {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const handleMoreOpen = (event) => {
+    setMoreAnchorEl(event.currentTarget);
+  };
+  const handleMoreClose = () => {
+    setMoreAnchorEl(null);
   };
   
   if (!editor) {
@@ -231,16 +232,50 @@ export default function EditorMenuControls({ editor }) {
       <MenuDivider />
 
       <MenuSelectTextAlign/>
-      <MenuButtonOrderedList />
-      <MenuButtonBulletedList />
-      <MenuButtonUnindent />
-      <MenuButtonIndent />
-      <MenuButtonBlockquote />
+      {useCompactFormatting ? (
+        <>
+          <MenuButton
+            tooltipLabel="More formatting"
+            onClick={(e) => (isMoreOpen ? handleMoreClose() : handleMoreOpen(e))}
+            IconComponent={isMoreOpen ? KeyboardArrowUp : KeyboardArrowDown}
+            aria-describedby="more-formatting-controls"
+          />
+          <Popper
+            id="more-formatting-controls"
+            open={isMoreOpen}
+            anchorEl={moreAnchorEl}
+            placement="top"
+            style={{ zIndex: theme.zIndex.tooltip }}
+          >
+            <ClickAwayListener onClickAway={handleMoreClose} mouseEvent="onMouseDown" touchEvent="onTouchStart">
+              <Paper elevation={5} sx={{ py: 0.5 }}>
+                <Stack direction="column" spacing={0} alignItems="flex-start">
+                  <MenuButtonOrderedList />
+                  <MenuButtonBulletedList />
+                  <MenuButtonUnindent />
+                  <MenuButtonIndent />
+                  <MenuButtonBlockquote />
+                  <MenuButtonStrikethrough />
+                  <MenuButtonRemoveFormatting />
+                </Stack>
+              </Paper>
+            </ClickAwayListener>
+          </Popper>
+        </>
+      ) : (
+        <>
+          <MenuButtonOrderedList />
+          <MenuButtonBulletedList />
+          <MenuButtonUnindent />
+          <MenuButtonIndent />
+          <MenuButtonBlockquote />
 
-      <MenuDivider />
+          <MenuDivider />
 
-      <MenuButtonStrikethrough />
-      <MenuButtonRemoveFormatting />
+          <MenuButtonStrikethrough />
+          <MenuButtonRemoveFormatting />
+        </>
+      )}
 
     </MenuControlsContainer>
   );

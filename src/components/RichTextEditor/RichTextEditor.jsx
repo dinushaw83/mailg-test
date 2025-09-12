@@ -23,7 +23,7 @@ function fileListToImageFiles(fileList) {
   });
 }
 
-export default function Editor({ content, onChange, onSend, onDelete, textEditorMinHeight, textEditorMaxHeight }) {
+export default function Editor({ content, onChange, onSend, onDelete, textEditorMinHeight, textEditorMaxHeight, useCompactFormatting = false }) {
   const extensions = useExtensions({
     placeholder: "",
   });
@@ -225,7 +225,7 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
                     </div>
                   </div>
 
-                  {showMenuBar && <EditorMenuControls editor={rteRef.current?.editor} />}
+                  {showMenuBar && <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={useCompactFormatting} />}
                   <MenuButton
                     value="formatting"
                     tooltipLabel={showMenuBar ? "Hide formatting" : "Show formatting"}

@@ -338,6 +338,7 @@ export default function ComposeEmail({ composeWindow }) {
               onDelete={handleDelete}
               textEditorMinHeight="390px"
               textEditorMaxHeight="390px"
+              useCompactFormatting={true}
             />
           </div>
 
