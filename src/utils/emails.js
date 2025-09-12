@@ -164,8 +164,6 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 export const getThread = (messages, { threadId }) => {
   const { messagesById, threadsById } = normalizeEmails(messages);
 
-  console.log({ threadsById });
-
   const thread = threadsById[threadId];
   if (!thread) {
     return null;
