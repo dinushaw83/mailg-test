@@ -530,8 +530,16 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
         </>
       )}
-      {folder !== "all" && <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />}
-      {folder === "all" && <Icon name="move_to_inbox" label="Move to Inbox" onClick={onMoveArchivedMailToInbox} />}
+      {!["all", "drafts"].includes(folder) && (
+        <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
+      )}
+      {["all", "drafts"].includes(folder) && (
+        <Icon
+          name="move_to_inbox"
+          label="Move to Inbox"
+          onClick={folder === "all" ? onMoveArchivedMailToInbox : handleMoveDraftsToInbox}
+        />
+      )}
 
       {showAdvancedMenu && <Icon name="label" label="Labels" onClick={handleLabelAction} _ref={labelAnchorElRef} />}
 
