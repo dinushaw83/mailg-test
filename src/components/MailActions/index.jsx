@@ -12,7 +12,7 @@ import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { SnoozePopover } from "./Snooze";
 import { Labels } from "./Labels";
 
-import useLabels, { flattenTreeForSelect, getPathLabelFromKey } from "../../hooks/useLabels";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 const MailActions = ({ threads = [], showAdvancedMenu }) => {
