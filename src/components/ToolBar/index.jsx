@@ -187,7 +187,7 @@ const ToolBar = ({ totalFilteredItems, threads }) => {
         {hasItemsSelected ? (
           <>
             {folder === "spam" || folder === "trash" ? (
-              <SpamActions threads={threads} />
+              <SpamActions threads={threads} folder={folder} />
             ) : (
               <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} />
             )}

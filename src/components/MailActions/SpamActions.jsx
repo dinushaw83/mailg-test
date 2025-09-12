@@ -4,6 +4,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import { Icon } from "../InboxView/ActionBar";
 import Button from "@mui/material/Button";
+import { useParams } from "react-router-dom";
 
 const LABELS = [
   { id: "notes", name: "Notes" },
@@ -15,7 +16,7 @@ const LABELS = [
   { id: "promotions", name: "Promotions" },
 ];
 
-export default function SpamActions({ threads = [] }) {
+export default function SpamActions({ threads = [], folder }) {
   const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever } = useMailActions();
   const { selection, setSnackbar } = useGlobalContext();
   const { ids } = selection;
@@ -92,20 +93,22 @@ export default function SpamActions({ threads = [] }) {
       </Button>
 
       {/* Not Spam button */}
-      <Button
-        sx={{
-          textTransform: "none",
-          color: "rgb(95,99,104)",
-          "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
-          marginLeft: "8px",
-          marginRight: "8px",
-        }}
-        onClick={() => {
-          notSpam([...selection.ids]);
-        }}
-      >
-        Not Spam
-      </Button>
+      {folder === "spam" && (
+        <Button
+          sx={{
+            textTransform: "none",
+            color: "rgb(95,99,104)",
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+            marginLeft: "8px",
+            marginRight: "8px",
+          }}
+          onClick={() => {
+            notSpam([...selection.ids]);
+          }}
+        >
+          Not Spam
+        </Button>
+      )}
 
       <Icon
         name={hasUnreadEmails ? "drafts" : "mark_email_unread"}

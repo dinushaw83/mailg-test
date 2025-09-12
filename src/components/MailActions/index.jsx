@@ -16,17 +16,8 @@ import useLabels, { flattenTreeForSelect, getPathLabelFromKey } from "../../hook
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 const MailActions = ({ threads = [], showAdvancedMenu }) => {
-  const {
-    moveToSpam,
-    moveToTrash,
-    moveToLabel,
-    moveToLabelFrom,
-    moveToInbox,
-    archive,
-    markRead,
-    snooze,
-    deleteForever,
-  } = useMailActions();
+  const { moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom, moveToInbox, archive, markRead, snooze } =
+    useMailActions();
   const [{ moveToMenuOpen, spamModalOpen, createOpen }, setState] = useState({
     moveToMenuOpen: false,
     spamModalOpen: false,
@@ -61,11 +52,6 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
   const labelAnchorElRef = useRef(null);
   const [labelAnchorEl, setLabelAnchorEl] = useState(null);
 
-  const [spamModal, setSpamModal] = useState({
-    open: false,
-    ids: [],
-  });
-
   const { label: labelParam, folder } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
   const [searchQuery, setSearchQuery] = useState("");
@@ -82,23 +68,6 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [labelTree, labels]);
-
-  const handleArchiveEmails = useCallback(async () => {
-    if (!selectedIds.length) return;
-
-    try {
-      archive(selectedIds);
-      selection.clear();
-      setSnackbar({
-        open: true,
-        message: "Conversations archived.",
-        autoHideDuration: 3000,
-        action: null,
-      });
-    } catch (e) {
-      console.error("Archive failed:", e);
-    }
-  }, [selectedIds, archive, selection, setSnackbar]);
 
   const handleDeleteEmails = useCallback(async () => {
     if (!selectedIds.length) return;
@@ -129,16 +98,100 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     });
   }, [selectedIds, moveToTrash]);
 
-  const handleMoveEmails = useCallback(
+  const shouldDisableArchiveButton = useMemo(() => {
+    // No selection → disable
+    if (!selectedIds.length) return true;
+
+    // Normalize selected ids (can be message id, '#thread-f:...' or bare thread key)
+    const targets = new Set(selectedIds.map((id) => String(id).trim()));
+
+    const matchesSelection = (m) => {
+      const keys = [
+        String(m.id),
+        String(m.threadId),
+        m.threadId && String(m.threadId).replace("#thread-f:", ""),
+      ].filter(Boolean);
+      return keys.some((k) => targets.has(k));
+    };
+
+    // Enable Archive if ANY matched message is in Inbox
+    const hasAnyInInbox = threads.some((m) => matchesSelection(m) && (m.labels || []).includes("Inbox"));
+
+    // Disable only when none of the selected items are in Inbox
+    return !hasAnyInInbox;
+  }, [threads, selectedIds]);
+
+  const handleArchiveEmails = useCallback(() => {
+    if (!selectedIds.length) return;
+    try {
+      archive(selectedIds);
+      setSnackbar({
+        open: true,
+        message: "Conversation archived.",
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              moveToInbox(selectedIds);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+      selection.clear();
+    } catch (e) {
+      console.error("Archive failed:", e);
+    }
+  }, [selectedIds, archive, selection, setSnackbar]);
+
+  const toggleSpamModal = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      spamModalOpen: !prev.spamModalOpen,
+    }));
+  }, []);
+
+  const onMoveArchivedMailToInbox = () => {
+    const ids = [...selection.ids];
+    if (!ids.length) return;
+    try {
+      moveToInbox(ids);
+      setSnackbar({
+        open: true,
+        message: "Conversation moved to Inbox.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      selection.clear();
+    } catch (e) {
+      console.error("Move to Inbox failed:", e);
+    }
+  };
+
+  const handleMenuItemClick = useCallback(
     async (item) => {
+      if (item.id === "__create_label__") {
+        setCreateOpen(true);
+        return;
+      }
+
       if (!selectedIds.length) return;
 
       try {
         if (item.id === "__inbox__" || item.id === "inbox") {
           moveToLabel(selectedIds, "Inbox");
         } else if (item.id === "__spam__" || item.id === "spam") {
-          setSpamModal({ open: true, ids: selectedIds });
-          // moveToSpam(ids);
+          toggleSpamModal();
+          return;
         } else if (item.id === "__trash__" || item.id === "trash") {
           moveToTrash(selectedIds);
           // Show global snackbar with Undo action
@@ -165,14 +218,21 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
               </Button>
             ),
           });
-        } else if (item.id.startsWith("__label__")) {
-          // moving between labels:
-          if (currentLabel && labels?.[currentLabel] && labels?.[currentLabel]["system"] === false) {
-            moveToLabelFrom(selectedIds, currentLabel, item.name);
+        } else {
+          // item.id is now the TARGET LABEL KEY
+          const targetKey = item.id;
+          const curMeta = currentLabel ? labels?.[currentLabel] : null;
+          const inCustomLabel = curMeta && curMeta.system === false;
+          if (inCustomLabel) {
+            moveToLabelFrom(selectedIds, currentLabel, targetKey);
           } else {
-            moveToLabel(selectedIds, item.name);
+            moveToLabel(selectedIds, targetKey); // pass key
           }
         }
+        setState((prev) => ({
+          ...prev,
+          moveToMenuOpen: false,
+        }));
         selection.clear();
       } catch (e) {
         console.error("Move failed:", e);
@@ -180,164 +240,6 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     },
     [selectedIds, moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
   );
-
-  const shouldDisableArchiveButton = useMemo(() => {
-    // No selection → disable
-    if (!selection?.ids?.size) return true;
-
-    // Normalise selected ids (can be message id, '#thread-f:...' or bare thread key)
-    const targets = new Set([...selection.ids].map((id) => String(id).trim()));
-
-    const matchesSelection = (m) => {
-      const keys = [
-        String(m.id),
-        String(m.threadId),
-        m.threadId && String(m.threadId).replace("#thread-f:", ""),
-      ].filter(Boolean);
-      return keys.some((k) => targets.has(k));
-    };
-
-    // Enable Archive if ANY matched message is in Inbox
-    const hasAnyInInbox = threads.some((m) => matchesSelection(m) && (m.labels || []).includes("Inbox"));
-
-    // Disable only when none of the selected items are in Inbox
-    return !hasAnyInInbox;
-  }, [threads, selection?.ids]);
-
-  const onArchive = () => {
-    const ids = [...selection.ids];
-    if (!ids.length) return;
-    try {
-      archive(ids);
-      setSnackbar({
-        open: true,
-        message: "Conversation archived.",
-        autoHideDuration: 3000,
-        action: (
-          <Button
-            sx={{ textTransform: "none" }}
-            size="small"
-            onClick={() => {
-              moveToInbox(ids);
-              setSnackbar({
-                open: true,
-                message: "Action undone.",
-                autoHideDuration: 3000,
-                action: null,
-              });
-            }}
-          >
-            Undo
-          </Button>
-        ),
-      });
-      selection.clear();
-    } catch (e) {
-      console.error("Archive failed:", e);
-    }
-  };
-
-  const toggleSpamModal = () => {
-    setState((prev) => ({
-      ...prev,
-      spamModalOpen: !prev.spamModalOpen,
-    }));
-  };
-
-  const onMoveArchivedMailToInbox = () => {
-    const ids = [...selection.ids];
-    if (!ids.length) return;
-    try {
-      moveToInbox(ids);
-      setSnackbar({
-        open: true,
-        message: "Conversation moved to Inbox.",
-        autoHideDuration: 3000,
-        action: null,
-      });
-      selection.clear();
-    } catch (e) {
-      console.error("Move to Inbox failed:", e);
-    }
-  };
-
-  const onDeleteForever = () => {
-    const ids = [...selection.ids];
-    if (!ids.length) return;
-
-    try {
-      deleteForever(ids);
-      setSnackbar({
-        open: true,
-        message: "Conversation deleted forever.",
-        autoHideDuration: 3000,
-        action: null,
-      });
-      selection.clear();
-    } catch (e) {
-      console.error("Delete forever failed:", e);
-    }
-  };
-
-  const handleMenuItemClick = async (item) => {
-    const ids = [...selection.ids]; // Set → Array
-
-    if (item.id === "__create_label__") {
-      setCreateOpen(true);
-      return;
-    }
-
-    if (!ids.length) return;
-
-    try {
-      if (item.id === "__inbox__" || item.id === "inbox") {
-        moveToLabel(ids, "Inbox");
-      } else if (item.id === "__spam__" || item.id === "spam") {
-        setSpamModal({ open: true, ids });
-        // moveToSpam(ids);
-      } else if (item.id === "__trash__" || item.id === "trash") {
-        moveToTrash(ids);
-        // Show global snackbar with Undo action
-        setSnackbar({
-          open: true,
-          message: "Conversation moved to Trash.",
-          autoHideDuration: 10000,
-          action: (
-            <Button
-              sx={{ textTransform: "none" }}
-              size="small"
-              onClick={() => {
-                moveToInbox(ids);
-                // Follow-up confirmation snackbar
-                setSnackbar({
-                  open: true,
-                  message: "Action undone.",
-                  autoHideDuration: 3000,
-                  action: null,
-                });
-              }}
-            >
-              Undo
-            </Button>
-          ),
-        });
-      } else {
-        // item.id is now the TARGET LABEL KEY
-        const targetKey = item.id;
-        const curMeta = currentLabel ? labels?.[currentLabel] : null;
-        const inCustomLabel = curMeta && curMeta.system === false;
-        if (inCustomLabel) {
-          moveToLabelFrom(ids, currentLabel, targetKey);
-        } else {
-          moveToLabel(ids, targetKey); // pass key
-        }
-      }
-      setOpen(false);
-      selection.clear();
-    } catch (e) {
-      console.error("Move failed:", e);
-    }
-  };
 
   const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
@@ -444,7 +346,12 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
 
   return (
     <Box display="flex" alignItems="center">
-      <Icon name="archive" label="Archive" onClick={handleArchiveEmails} disabled={allAreArchived} />
+      <Icon
+        name="archive"
+        label="Archive"
+        onClick={handleArchiveEmails}
+        disabled={allAreArchived || shouldDisableArchiveButton}
+      />
       <Icon name="report" label="Report" onClick={toggleSpamModal} />
       <Icon name="delete" label="Delete" onClick={handleDeleteEmails} />
 
@@ -461,15 +368,16 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
         </>
       )}
-      <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
+      {folder !== "all" && <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />}
+      {folder === "all" && <Icon name="move_to_inbox" label="Move to Inbox" onClick={onMoveArchivedMailToInbox} />}
 
       {showAdvancedMenu && <Icon name="label" label="Labels" onClick={handleLabelAction} _ref={labelAnchorElRef} />}
 
       {moveToMenuOpen && (
         <MoveToMenu
           anchorRef={anchorRef}
-          labels={customLabels}
-          onSelect={handleMoveEmails}
+          labels={menuItems}
+          onSelect={handleMenuItemClick}
           onClose={() =>
             setState((prev) => ({
               ...prev,
