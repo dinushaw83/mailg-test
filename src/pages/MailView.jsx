@@ -374,8 +374,8 @@ const Inbox = () => {
                                       </div>
                                       <div className="aiG" jslog="108910; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd">
                                         <div className="aiD">
-                                          <span dir="ltr">15%</span>
-                                          of <span dir="ltr">15 GB</span>
+                                          <span dir="ltr">15%&nbsp;</span>
+                                          of <span dir="ltr">15&nbsp;GB&nbsp;</span>
                                           used
                                         </div>
                                         <div className="aiz" role="img" aria-label="Follow link to manage storage" />
