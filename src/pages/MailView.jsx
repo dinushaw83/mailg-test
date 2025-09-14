@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 import EmailList from "../components/EmailList";
@@ -9,7 +9,8 @@ import { getThreadRows } from "../utils/emails";
 import Banner from "../components/Banners";
 
 const Inbox = () => {
-  const { emails, sortOrder, currentPage, itemsPerPage } = useContext(GlobalContext);
+  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser } =
+    useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -26,19 +27,18 @@ const Inbox = () => {
     const sortedEmails = [...filteredRows].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
-
-      if (sortOrder === "newest") {
-        return dateB - dateA;
-      } else {
-        return dateA - dateB;
-      }
+      return dateB - dateA;
     });
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
     return sortedEmails.slice(startIndex, endIndex);
-  }, [filteredRows, sortOrder, currentPage, itemsPerPage]);
+  }, [filteredRows, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+  }, []);
 
   return (
     <div className="nH bkK">
@@ -50,8 +50,15 @@ const Inbox = () => {
               <div id=":3" className="Tm" style={{ height: 985 }}>
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
-                    <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
-                      <ToolBar totalFilteredItems={filteredRows.length} emails={rows} />
+                    <div
+                      className="bGI nH oy8Mbf aE3 S4"
+                      role="main"
+                      jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd"
+                    >
+                      <ToolBar
+                        totalFilteredItems={filteredRows.length}
+                        emails={rows}
+                      />
                       <div className="a0V">
                         <h2 tabIndex={-1}>Conversations</h2>
                       </div>
@@ -63,7 +70,11 @@ const Inbox = () => {
                         jsaction="rcuQ6b:npT2md;jo33Se:PhqmKf;Rb1Lod:ZpywWb;J0lErd:Oyw2Hb;nGJuB:OcHC8;ZvXgGe:Csi5td;fbYNtb:.CLIENT;UGzfzc:.CLIENT;njKHYb:.CLIENT"
                         gh="tl"
                       >
-                        <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100, height: 897 }}>
+                        <div
+                          className="Nu tf aZ6"
+                          jsname="xSLh2d"
+                          style={{ flexGrow: 100 }}
+                        >
                           <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
                             <div className="aDP">
                               <div
@@ -75,7 +86,10 @@ const Inbox = () => {
                               >
                                 <div>
                                   <div className="Wg aAD aAz sf-hidden" />
-                                  <div className="aVj" style={{ display: "none" }} />
+                                  <div
+                                    className="aVj"
+                                    style={{ display: "none" }}
+                                  />
                                 </div>
                                 <div className="Cp">
                                   <div>
@@ -90,7 +104,10 @@ const Inbox = () => {
                                     </table>
                                   </div>
                                 </div>
-                                <div className="VNyZ8c" style={{ display: "none" }} />
+                                <div
+                                  className="VNyZ8c"
+                                  style={{ display: "none" }}
+                                />
                               </div>
                               <div
                                 className="ae4 aDM"
@@ -124,16 +141,29 @@ const Inbox = () => {
                                 <div className="ajd">
                                   <div className="aiF">
                                     <a className="bcB" href="#">
-                                      <div className="aiC" jslog="108909; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd">
-                                        <div className="aiA" style={{ width: "15%" }} />
+                                      <div
+                                        className="aiC"
+                                        jslog="108909; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd"
+                                      >
+                                        <div
+                                          className="aiA"
+                                          style={{ width: "15%" }}
+                                        />
                                       </div>
-                                      <div className="aiG" jslog="108910; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd">
+                                      <div
+                                        className="aiG"
+                                        jslog="108910; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd"
+                                      >
                                         <div className="aiD">
                                           <span dir="ltr">15%</span>
                                           of <span dir="ltr">15 GB</span>
                                           used
                                         </div>
-                                        <div className="aiz" role="img" aria-label="Follow link to manage storage" />
+                                        <div
+                                          className="aiz"
+                                          role="img"
+                                          aria-label="Follow link to manage storage"
+                                        />
                                       </div>
                                     </a>
                                   </div>
@@ -162,8 +192,15 @@ const Inbox = () => {
                             <div id=":2n" className="ae3">
                               <div>
                                 <div className="l6">
-                                  <div>Last account activity: 25 minutes ago</div>
-                                  <span id=":o8" className="l8 LJOhwe" tabIndex={0} role="link">
+                                  <div>
+                                    Last account activity: 25 minutes ago
+                                  </div>
+                                  <span
+                                    id=":o8"
+                                    className="l8 LJOhwe"
+                                    tabIndex={0}
+                                    role="link"
+                                  >
                                     Details
                                   </span>
                                 </div>

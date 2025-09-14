@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
@@ -6,14 +6,12 @@ import EmailDetails from "./pages/EmailDetails";
 import MailView from "./pages/MailView";
 import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
+import VerificationDashboard from "./pages/VerificationDashboard";
 
 import { initialUser } from "./contexts/fixtures/me";
+import SearchResultsView from "./pages/SearchResultsView";
 
 function App() {
-  useEffect(() => {
-    document.title = `Inbox(2) - ${initialUser.email} - MailG`;
-  }, []);
-
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <GlobalContextProvider>
@@ -24,6 +22,8 @@ function App() {
             <Route path="/label/:label/:threadId" element={<EmailDetails />} />
             <Route path="/:folder" element={<MailView />} />
             <Route path="/label/:label" element={<MailView />} />
+            <Route path="/search/:query" element={<SearchResultsView />} />
+            <Route path="/verify" element={<VerificationDashboard />} />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
 

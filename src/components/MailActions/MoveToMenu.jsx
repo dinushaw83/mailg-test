@@ -33,6 +33,8 @@ export default function MoveToMenu({
   onSelect,
   onClose,
   showInbox = false,
+  showSpam = true,
+  showTrash = true,
 }) {
   const menuRef = useRef(null);
   const inputRef = useRef(null);
@@ -73,9 +75,7 @@ export default function MoveToMenu({
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const base = needle
-      ? labels.filter((l) => l.name.toLowerCase().includes(needle))
-      : labels;
+    const base = needle ? labels.filter((l) => l.name.toLowerCase().includes(needle)) : labels;
     return [...base];
   }, [labels, q]);
 
@@ -110,14 +110,7 @@ export default function MoveToMenu({
   }
 
   return createPortal(
-    <div
-      ref={menuRef}
-      role="menu"
-      aria-label="Move to"
-      style={style}
-      onKeyDown={onKeyDown}
-      tabIndex={-1}
-    >
+    <div ref={menuRef} role="menu" aria-label="Move to" style={style} onKeyDown={onKeyDown} tabIndex={-1}>
       <div
         className="J-M agd aYO jQjAxd aX2"
         aria-haspopup="true"
@@ -137,8 +130,7 @@ export default function MoveToMenu({
           WebkitFontSmoothing: "antialiased",
           fontSize: "0.875rem",
           letterSpacing: "normal",
-          fontFamily:
-            '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+          fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
           lineHeight: "20px",
           userSelect: "none",
         }}
@@ -152,10 +144,7 @@ export default function MoveToMenu({
             userSelect: "none",
           }}
         >
-          <div
-            className="asc"
-            style={{ padding: "8px 8px 0", userSelect: "none" }}
-          >
+          <div className="asc" style={{ padding: "8px 8px 0", userSelect: "none" }}>
             Move to:
             <span
               className="aW1"
@@ -200,8 +189,7 @@ export default function MoveToMenu({
                 setActive(0);
               }}
               style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 lineHeight: "20px",
                 paddingBottom: "4px",
                 paddingRight: "36px",
@@ -311,22 +299,11 @@ export default function MoveToMenu({
             }}
           />
 
-          {showInbox && (
-            <HoverRow
-              label="Inbox"
-              onClick={() => handleSelect({ id: "__inbox__", name: "Inbox" })}
-            />
-          )}
+          {showInbox && <HoverRow label="Inbox" onClick={() => handleSelect({ id: "__inbox__", name: "Inbox" })} />}
 
-          <HoverRow
-            label="Spam"
-            onClick={() => handleSelect({ id: "__spam__", name: "Spam" })}
-          />
+          {showSpam && <HoverRow label="Spam" onClick={() => handleSelect({ id: "__spam__", name: "Spam" })} />}
 
-          <HoverRow
-            label="Trash"
-            onClick={() => handleSelect({ id: "__trash__", name: "Trash" })}
-          />
+          {showTrash && <HoverRow label="Trash" onClick={() => handleSelect({ id: "__trash__", name: "Trash" })} />}
 
           <div
             className="J-Kh"
@@ -346,12 +323,7 @@ export default function MoveToMenu({
             onClick={() => handleSelect({ id: "__create_label__", name: "Create new" })}
           />
 
-          <HoverRow
-            className="J-JK"
-            label="Manage labels"
-            padding="2px 48px"
-            onClick={() => alert("Manage labels")}
-          />
+          <HoverRow className="J-JK" label="Manage labels" padding="2px 48px" onClick={() => alert("Manage labels")} />
         </div>
       </div>
     </div>,

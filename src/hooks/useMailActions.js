@@ -6,8 +6,7 @@ import { GlobalContext } from "../contexts/GlobalContext";
  * ID utilities (thread-aware)
  * ────────────────────────────────────────────────────────────────────────── */
 
-const toArray = (v) =>
-  Array.isArray(v) ? v : v instanceof Set ? [...v] : v == null ? [] : [v];
+const toArray = (v) => (Array.isArray(v) ? v : v instanceof Set ? [...v] : v == null ? [] : [v]);
 
 const buildIdIndex = (selection) =>
   new Set(
@@ -106,12 +105,18 @@ export default function useMailActions() {
   );
 
   const moveToInbox = useCallback(
-    (ids) => updateByIds(ids, (labels) => { labels.add("Inbox"); }),
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.add("Inbox");
+      }),
     [updateByIds]
   );
 
   const archive = useCallback(
-    (ids) => updateByIds(ids, (labels) => { labels.delete("Inbox"); }),
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Inbox");
+      }),
     [updateByIds]
   );
 
@@ -125,27 +130,30 @@ export default function useMailActions() {
   );
 
   const notSpam = useCallback(
-    (ids) => updateByIds(ids, (labels) => {
-      labels.delete("Spam");
-      labels.add("Inbox");
-    }),
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Spam");
+        labels.add("Inbox");
+      }),
     [updateByIds]
   );
 
   const moveToTrash = useCallback(
-    (ids) => updateByIds(ids, (labels) => {
-      labels.delete("Inbox");
-      labels.delete("Spam");
-      labels.add("Trash");
-    }),
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Inbox");
+        labels.delete("Spam");
+        labels.add("Trash");
+      }),
     [updateByIds]
   );
 
   const restoreFromTrash = useCallback(
-    (ids) => updateByIds(ids, (labels) => {
-      labels.delete("Trash");
-      labels.add("Inbox");
-    }),
+    (ids) =>
+      updateByIds(ids, (labels) => {
+        labels.delete("Trash");
+        labels.add("Inbox");
+      }),
     [updateByIds]
   );
 
@@ -153,6 +161,14 @@ export default function useMailActions() {
     (ids) => {
       const match = makeMatch(ids);
       setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: !m.starred } : m)));
+    },
+    [setEmails]
+  );
+
+  const setStar = useCallback(
+    (ids, value = true) => {
+      const match = makeMatch(ids);
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: value } : m)));
     },
     [setEmails]
   );
@@ -207,6 +223,48 @@ export default function useMailActions() {
     [setEmails]
   );
 
+  const snooze = useCallback(
+    (ids, snoozeUntil) => {
+      const match = makeMatch(ids);
+      setEmails((prev) =>
+        prev.map((m) => {
+          if (match(m)) {
+            const currentLabels = m.labels || [];
+            const updatedLabels = currentLabels.includes("Snoozed") ? currentLabels : [...currentLabels, "Snoozed"];
+            // Remove from inbox when snoozed
+            const labelsWithoutInbox = updatedLabels.filter((label) => label !== "Inbox");
+            return { ...m, labels: labelsWithoutInbox, snoozeUntil: snoozeUntil.toISOString() };
+          }
+          return m;
+        })
+      );
+    },
+    [setEmails]
+  );
+
+  const toggleMute = useCallback(
+    (ids, value = true) => {
+      const match = makeMatch(ids);
+      setEmails((prev) =>
+        prev.map((m) => {
+          if (match(m)) {
+            const currentLabels = m.labels || [];
+            const updatedLabels = value
+              ? currentLabels.includes("Muted")
+                ? currentLabels
+                : [...currentLabels, "Muted"]
+              : currentLabels.filter((label) => label !== "Muted");
+            // Remove from inbox when muted
+            const labelsWithoutInbox = updatedLabels.filter((label) => label !== "Inbox");
+            return { ...m, labels: labelsWithoutInbox };
+          }
+          return m;
+        })
+      );
+    },
+    [setEmails]
+  );
+
   return useMemo(
     () => ({
       addLabels,
@@ -224,6 +282,9 @@ export default function useMailActions() {
       toggleImportant,
       setImportant,
       deleteForever,
+      setStar,
+      snooze,
+      toggleMute,
     }),
     [
       addLabels,
@@ -241,6 +302,9 @@ export default function useMailActions() {
       toggleImportant,
       setImportant,
       deleteForever,
+      setStar,
+      snooze,
+      toggleMute,
     ]
   );
 }

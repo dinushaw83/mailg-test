@@ -14771,3 +14771,109 @@ source[src="data:,"] {
   opacity: 1;
   pointer-events: auto;
 }
+
+.brC-dA-I-Jw {
+  z-index: 2;
+}
+.brC-dA-I-Jw:not(.brC-aMv-bta):not(.brC-aMv-auO) .brC-dA-I .aT5-aOt-I-JX {
+  fill: #1f1f1f;
+}
+.brC-dA-I-Jw {
+  bottom: 0;
+  display: -webkit-flex;
+  display: -webkit-box;
+  display: flex;
+  height: 56px;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  width: 56px;
+}
+
+.brC-dA-I {
+  bottom: 0;
+}
+.brC-dA-I .aT5-aOt-I-JX-Jw,
+.brC-dA-I .aT5-aOt-I-JX-atM {
+  border-radius: 38px;
+}
+.brC-dA-I.aT5-aOt-I-Jp .aT5-aOt-I-JX-atM {
+  background-color: #fff;
+}
+.brC-dA-I.aT5-aOt-I-Jp {
+  right: -24px;
+}
+.brC-dA-I.aT5-aOt-I-Jp .aT5-aOt-I-JX-Jw,
+.brC-dA-I.aT5-aOt-I-Jp .aT5-aOt-I-JX-atM {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  height: 20px;
+  left: 0;
+  margin: 8px 0 8px 8px;
+  padding: 10px 0 10px 10px;
+  top: 0;
+  width: 38px;
+}
+.brC-dA-I.aT5-aOt-I-Jp .aT5-aOt-I-JX-atM {
+  box-shadow: 0 1px 1px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+.brC-dA-I .aT5-aOt-I-JX {
+  left: 10px;
+  position: absolute;
+  top: 10px;
+}
+.brC-dA-I.aT5-aOt-I-Jp .aT5-aOt-I-JX {
+  margin-left: -6px;
+  -webkit-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.aT5-aOt-I-JX-Jw {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 20px 20px;
+  display: -webkit-flex;
+  display: -webkit-box;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  align-items: center;
+  pointer-events: auto;
+  position: absolute;
+  -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aT5-aOt-I-JX-Jw {
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 20px 20px;
+  display: -webkit-flex;
+  display: -webkit-box;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  align-items: center;
+  pointer-events: auto;
+  position: absolute;
+  -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.aT5-aOt-I-JX-atM {
+  display: -webkit-flex;
+  display: -webkit-box;
+  display: flex;
+  position: absolute;
+  -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.aT5-aOt-I-JX {
+  display: block;
+  fill: #5f6368;
+  margin: auto;
+  -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

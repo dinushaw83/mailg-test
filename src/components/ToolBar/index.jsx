@@ -7,7 +7,9 @@ import React, { useCallback, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
-import BulkActions from "../MailActions";
+import MailActions from "../MailActions";
+import SpamActions from "../MailActions/SpamActions";
+import MoreActions from "../MailActions/MoreActions";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -157,11 +159,12 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems, emails }) => {
+const ToolBar = ({ totalFilteredItems, threads }) => {
   const { folder = "inbox" } = useParams();
-  const { selection } = useGlobalContext();
+  const { selection, refreshEmails } = useGlobalContext();
+  const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
 
-  const threadIds = emails.map((email) => email.threadId.split(":")[1]);
+  const threadIds = threads.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
   const allSelected = threadIds.length > 0 && threadIds.every((threadId) => ids.has(threadId));
   const partialSelected = threadIds.length > 0 && threadIds.some((threadId) => ids.has(threadId));
@@ -182,15 +185,27 @@ const ToolBar = ({ totalFilteredItems, emails }) => {
         <CheckBox allSelected={allSelected} partialSelected={partialSelected} toggle={toggleAllSelected} />
 
         {hasItemsSelected ? (
-          <BulkActions isSpam={folder === "spam"} />
+          <>
+            {folder === "spam" || folder === "trash" ? (
+              <SpamActions threads={threads} folder={folder} />
+            ) : (
+              <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} />
+            )}
+          </>
         ) : (
           <>
-            <Icon name="refresh" />
-            <Icon name="more_vert" />
+            <Icon name="refresh" onClick={refreshEmails} label="Refresh" />
           </>
         )}
+
+        <MoreActions
+          hasItemsSelected={hasItemsSelected}
+          threads={threads}
+          showAdvancedMenu={showAdvancedMenu}
+          setShowAdvancedMenu={setShowAdvancedMenu}
+        />
       </LeftItemsContainer>
-      <RightActions totalFilteredItems={totalFilteredItems} />
+      {totalFilteredItems > 0 && <RightActions totalFilteredItems={totalFilteredItems} />}
     </div>
   );
 };

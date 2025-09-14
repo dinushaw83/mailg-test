@@ -1,12 +1,12 @@
-import React, { useContext, useMemo } from "react";
+import React, { useContext, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import ActionBar, { Icon } from "./ActionBar";
+import ActionBar from "./ActionBar";
 import styled from "@emotion/styled";
 import { Content } from "./Content";
 import { Subject } from "./Subject";
 import { Divider } from "@mui/material";
-import { Actions } from "./Actions";
+import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
 
 const InboxViewContainer = styled.div`
@@ -25,22 +25,20 @@ const InnerContainer = styled.div`
 
 const InboxView = () => {
   const { threadId, folder, label } = useParams();
-  const { emails, normalizedEmails } = useContext(GlobalContext);
+  const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
 
   const { threadsById, messagesById } = normalizedEmails;
 
-  const emailThread = useMemo(() => {
-    if (!emails) return null;
-    // IDs in fixtures are numbers; support string compare just in case
-    return threadsById[`#thread-f:${threadId}`];
+  const thread = useMemo(() => {
+    return getThread(emails, { threadId: `#thread-f:${threadId}` });
   }, [emails, threadId]);
 
-  if (!emailThread) {
+  if (!thread) {
     // Determine the back link based on current context
-    const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || 'inbox'}`;
-    const backText = label ? `Label: ${label}` : (folder || 'Inbox');
-    
+    const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || "inbox"}`;
+    const backText = label ? `Label: ${label}` : folder || "Inbox";
+
     return (
       <div className="nH bkK" style={{ padding: 24 }}>
         <h2 style={{ margin: 0 }}>Email not found</h2>
@@ -51,17 +49,21 @@ const InboxView = () => {
     );
   }
 
-  const { messageIds } = emailThread;
+  const { messageIds } = thread;
   const messages = messageIds.map((id) => messagesById[id]);
   const lastMessage = messages[messages.length - 1];
-  const isLastDraft = lastMessage?.labels?.includes('Drafts');
+  const isLastDraft = lastMessage?.labels?.includes("Drafts");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
 
+  useEffect(() => {
+    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+  }, []);
+
   return (
     <InboxViewContainer>
-      <ActionBar />
+      <ActionBar thread={thread} />
       <InnerContainer>
         <Subject subject={messages[0].subject} />
         {displayedMessages.map((message, index) => (

@@ -75,8 +75,8 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
 
   // Navigate to the email details page
   const navigateToEmailDetails = (email, threadId) => {
-    // If pathname is /drafts, then add new compose window with the draft id
-    if (location.pathname === "/drafts") {
+    // If labels includes Drafts, then add new compose window with the draft id
+    if (email.labels.includes("Drafts")) {
       addNewComposeWindow(email.id);
     } else {
       // If compose param is present in the url, include it while navigating
@@ -89,6 +89,14 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
       }
     }
   };
+
+  // Get the label badges
+  const getLabelBadges = (email) => {
+    const path = location.pathname.replace("/", "");
+
+    // If Inbox label is present in path other than inbox, return it
+    return email.labels.filter(label => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
+  }
 
   return (
     <tbody>
@@ -177,9 +185,9 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                     email={email.from.email}
                     name={email.from.name}
                     data-hovercard-id={email.from.email}
-                    style={location.pathname === "/drafts" ? { color: "#dd4b39", fontWeight: 400 } : {}}
+                    style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                   >
-                    {location.pathname === "/drafts" ? "Draft" : email.from.name}
+                    {email.labels.includes("Drafts") ? "Draft" : email.from.name}
                   </span>
                 </span>
               </div>
@@ -210,6 +218,24 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                     </div>
                     <div className="y6">
                       <span id={`:pr${index}`} className="bog">
+                        {getLabelBadges(email).map(label => (
+                          <div
+                            key={`Badge-${label}`}
+                            style={{
+                              backgroundColor: email?.labelColor ?? "#e1e3e1",
+                              color: "#444746",
+                              fontSize: "0.75rem",
+                              padding: "0 4px",
+                              textDecoration: "none",
+                              width: "fit-content",
+                              borderRadius: "4px",
+                              marginRight: "6px",
+                              display: "inline-block",
+                            }}
+                          >
+                            {label}
+                          </div>
+                        ))}
                         <span
                           className={email.read ? "" : "bqe"}
                           data-thread-id={email.threadId}
