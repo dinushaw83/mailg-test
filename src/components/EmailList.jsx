@@ -9,7 +9,7 @@ import { useComposeModal } from "../hooks/useComposeModal";
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection } = useGlobalContext();
+  const { selection, composeWindows } = useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
@@ -77,7 +77,12 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigateToEmailDetails = (email, threadId) => {
     // If labels includes Drafts, then add new compose window with the draft id
     if (email.labels.includes("Drafts")) {
-      addNewComposeWindow(email.id);
+      // Check if already a compose window with the draft id exists
+      const composeWindow = composeWindows.find((window) => window?.draftId?.toString() === email.id.toString());
+      // If compose window with the draft id doesn't exist, then add new compose window with the draft id
+      if (!composeWindow) {
+        addNewComposeWindow(email.id);
+      }
     } else {
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
