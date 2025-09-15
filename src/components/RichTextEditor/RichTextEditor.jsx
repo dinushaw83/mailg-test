@@ -1,5 +1,5 @@
 import { Stack, Popper, Paper, ClickAwayListener } from "@mui/material";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import {
   LinkBubbleMenu,
   MenuButton,
@@ -111,6 +111,17 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
     const plainText = editor.getText();
     onChange?.(html, plainText);
   }, [onChange]);
+
+  // Handle content prop updates after initial render
+  useEffect(() => {
+    if (rteRef.current?.editor && content !== undefined) {
+      const currentContent = rteRef.current.editor.getHTML();
+      // Only update if the content has actually changed to avoid unnecessary updates
+      if (currentContent !== content) {
+        rteRef.current.editor.commands.setContent(content, false);
+      }
+    }
+  }, [content]);
 
   const openLinkPopover = (event) => {
     const editor = rteRef.current?.editor;
