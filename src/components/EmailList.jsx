@@ -40,7 +40,8 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     toggleStar,
     archive,
     moveToInbox,
-    moveToTrash
+    moveToTrash,
+    markRead
   } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
@@ -181,6 +182,14 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
       ),
     });
   }, [moveToTrash, setSnackbar]);
+
+  const handleReadAction = useCallback((email) => {
+    if (!email.read) {
+      markRead([email.id], true);
+    } else {
+      markRead([email.id], false);
+    }
+  }, [markRead]);
 
   return (
     <tbody>
@@ -365,7 +374,10 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   e.stopPropagation();
                   handleDelete(email.threadId)
                 }} />
-                <Icon name="mark_email_unread" label="Mark as unread" marginRight="3px" />
+                <Icon name="mark_email_unread" label="Mark as unread" marginRight="3px" onClick={(e) => {
+                  e.stopPropagation();
+                  handleReadAction(email)
+                }} />
                 <Icon name="schedule" label="Snooze" marginRight="0" />
               </HoverDiv>
             </td>
