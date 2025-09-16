@@ -33,9 +33,15 @@ const HoverDiv = styled.div`
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
-  const location = useLocation(); useMailActions();
+  const location = useLocation();
   const { selection, composeWindows, setSnackbar } = useGlobalContext();
-  const { toggleImportant, toggleStar, archive, moveToInbox } = useMailActions();
+  const {
+    toggleImportant,
+    toggleStar,
+    archive,
+    moveToInbox,
+    moveToTrash
+  } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
   const formatDate = (timestamp) => {
@@ -148,6 +154,33 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
       console.error("Archive failed:", e);
     }
   }, [archive, setSnackbar]);
+
+  const handleDelete = useCallback((threadId) => {
+    moveToTrash([threadId]);
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Trash.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            moveToInbox([threadId]);
+            // Follow-up confirmation snackbar
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [moveToTrash, setSnackbar]);
 
   return (
     <tbody>
@@ -328,7 +361,10 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   e.stopPropagation();
                   handleArchive(email.threadId)
                 }} />
-                <Icon name="delete" label="Delete" marginRight="3px" />
+                <Icon name="delete" label="Delete" marginRight="3px" onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(email.threadId)
+                }} />
                 <Icon name="mark_email_unread" label="Mark as unread" marginRight="3px" />
                 <Icon name="schedule" label="Snooze" marginRight="0" />
               </HoverDiv>
