@@ -378,7 +378,10 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   e.stopPropagation();
                   handleDelete(email.threadId)
                 }} />
-                <Icon name="mark_email_unread" label="Mark as unread" marginRight="3px" onClick={(e) => {
+                <Icon
+                  name="mark_email_unread"
+                  label={email.read ? `Mark as unread` : `Mark as read`}
+                  marginRight="3px" onClick={(e) => {
                   e.stopPropagation();
                   handleReadAction(email)
                 }} />
