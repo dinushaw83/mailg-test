@@ -10,6 +10,7 @@ const Icon = ({
     placement = "bottom",
     size = "small",
     marginRight = "10px",
+    _ref
 }) => {
     return (
         <Tooltip title={label} placement={placement}>
@@ -22,6 +23,7 @@ const Icon = ({
                     marginRight: marginRight,
                     ...style,
                 }}
+                ref={_ref}
                 onClick={onClick}
                 disabled={disabled}
             >

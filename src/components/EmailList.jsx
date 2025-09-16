@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useRef, useCallback, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, isThisYear } from "date-fns";
 
@@ -9,25 +9,27 @@ import { useComposeModal } from "../hooks/useComposeModal";
 import { Box, Button } from "@mui/material";
 import Icon from "./ui/Icon";
 import styled from "@emotion/styled";
+import { SnoozePopover } from "./MailActions/Snooze";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
   display: block;
 
-  /* when any ancestor .zA is hovered, hide this */
-  .zA:hover & {
+  /* hide on hover or when row is active */
+  .zA:hover &,
+  .zA.active & {
     display: none;
   }
 `;
 
-// Hidden by default, show when .zA is hovered
 const HoverDiv = styled.div`
   display: none;
   align-items: center;
   gap: 8px;
 
-  .zA:hover & {
-    display: flex;
+  .zA:hover &,
+  .zA.active & {
+    display: flex; /* use flex consistently */
   }
 `;
 
@@ -41,9 +43,14 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     archive,
     moveToInbox,
     moveToTrash,
-    markRead
+    markRead,
+    snooze
   } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
+  const snoozeAnchorElRef = useRef(null);
+  const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
+  const showSnoozePopover = Boolean(snoozeAnchorEl);
+  const [snoozeId, setSnoozeId] = useState(null);
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -63,12 +70,9 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   };
 
   const getRowClassName = (email) => {
-    let className = "zA";
-    if (email.read) {
-      className += " yO";
-    } else {
-      className += " zE";
-    }
+    const isActive = showSnoozePopover && snoozeId === email.id;
+    let className = `zA ${isActive ? "active" : ""}`;
+    className += email.read ? " yO" : " zE";
     return className;
   };
 
@@ -192,7 +196,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   }, [markRead]);
 
   return (
-    <tbody>
+    <tbody class>
       {emails.map((email, index) => {
         const threadId = email.threadId.split(":")[1];
         return (
@@ -378,7 +382,11 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   e.stopPropagation();
                   handleReadAction(email)
                 }} />
-                <Icon name="schedule" label="Snooze" marginRight="0" />
+                <Icon name="schedule" label="Snooze" marginRight="0" onClick={(e) => {
+                    e.stopPropagation();
+                    setSnoozeId(email.id);
+                    setSnoozeAnchorEl(e.currentTarget);
+                }} _ref={snoozeAnchorElRef} />
               </HoverDiv>
             </td>
             <td className="bq4 xY sf-hidden" />
@@ -386,6 +394,19 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
           </tr>
         );
       })}
+
+      {showSnoozePopover && (
+        <SnoozePopover
+          anchorEl={snoozeAnchorEl}
+          open={showSnoozePopover}
+          onClose={() => {
+              setSnoozeAnchorEl(null);
+              setSnoozeId(null);
+          }}
+          selectedIds={[snoozeId]}
+          snooze={snooze}
+        />
+      )}
     </tbody>
   );
 };
