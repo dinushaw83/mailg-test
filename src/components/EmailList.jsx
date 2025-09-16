@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, isThisYear } from "date-fns";
 
@@ -6,12 +6,36 @@ import useMailActions from "../hooks/useMailActions";
 import CheckBox from "./ui/CheckBox";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { useComposeModal } from "../hooks/useComposeModal";
+import { Box, Button } from "@mui/material";
+import Icon from "./ui/Icon";
+import styled from "@emotion/styled";
+
+// Show by default, hide when .zA is hovered
+const TimestampBox = styled(Box)`
+  display: block;
+
+  /* when any ancestor .zA is hovered, hide this */
+  .zA:hover & {
+    display: none;
+  }
+`;
+
+// Hidden by default, show when .zA is hovered
+const HoverDiv = styled.div`
+  display: none;
+  align-items: center;
+  gap: 8px;
+
+  .zA:hover & {
+    display: flex;
+  }
+`;
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { selection, composeWindows } = useGlobalContext();
-  const { toggleImportant, toggleStar } = useMailActions();
+  const location = useLocation(); useMailActions();
+  const { selection, composeWindows, setSnackbar } = useGlobalContext();
+  const { toggleImportant, toggleStar, archive, moveToInbox } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
   const formatDate = (timestamp) => {
@@ -94,6 +118,36 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     // If Inbox label is present in path other than inbox, return it
     return email.labels.filter(label => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
   }
+
+  const handleArchive = useCallback((threadId) => {
+    try {
+      archive([threadId]);
+      setSnackbar({
+        open: true,
+        message: "Conversation archived.",
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              moveToInbox([threadId]);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      console.error("Archive failed:", e);
+    }
+  }, [archive, setSnackbar]);
 
   return (
     <tbody>
@@ -257,13 +311,27 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             <td className="byZ xY sf-hidden" role="gridcell" tabIndex={-1} />
             <td className="yf xY">&nbsp;</td>
             <td className="xW xY" role="gridcell" tabIndex={-1}>
-              <span
-                title={new Date(email.timestamp).toLocaleString()}
-                id={`:pu${index}`}
-                aria-label={new Date(email.timestamp).toLocaleString()}
-              >
-                <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
-              </span>
+              <TimestampBox>
+                <span
+                  title={new Date(email.timestamp).toLocaleString()}
+                  id={`:pu${index}`}
+                  aria-label={new Date(email.timestamp).toLocaleString()}
+                >
+                  <span className={email.read ? "" : "bq3"}>
+                    {formatDate(email.timestamp)}
+                  </span>
+                </span>
+              </TimestampBox>
+
+              <HoverDiv>
+                <Icon name="archive" label="Archive" marginRight="3px" onClick={(e) => {
+                  e.stopPropagation();
+                  handleArchive(email.threadId)
+                }} />
+                <Icon name="delete" label="Delete" marginRight="3px" />
+                <Icon name="mark_email_unread" label="Mark as unread" marginRight="3px" />
+                <Icon name="schedule" label="Snooze" marginRight="0" />
+              </HoverDiv>
             </td>
             <td className="bq4 xY sf-hidden" />
             <td className="xY" />
