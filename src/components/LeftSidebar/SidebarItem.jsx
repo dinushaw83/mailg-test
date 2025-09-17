@@ -13,6 +13,13 @@ export default function SidebarItem({ item }) {
       : null;
   const isActive = !!(exactMatch || nestedMatch);
 
+  const handleClick = (e) => {
+    if (item.onClick) {
+      e.preventDefault();
+      item.onClick(item);
+    }
+  };
+
   return (
     <NavLink
       to={`/${item.key}`}
@@ -20,6 +27,7 @@ export default function SidebarItem({ item }) {
       className="J-Ke n0"
       style={{ textDecoration: "none", color: "inherit" }}
       aria-label={item.label}
+      onClick={handleClick}
     >
       <div className={`aim ${isActive ? "ain" : ""}`}>
         <div className={`TO n6 ${isActive ? "aBP nZ aiq" : ""}`}>
