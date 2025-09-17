@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, Button, Checkbox, FormControlLabel,
@@ -23,6 +23,10 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
 
     const trimmed = name.trim();
     const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;
+
+    useEffect(() => {
+        setNest(Boolean(parentKey));
+    }, [parentKey]);
 
     const isDup = useMemo(() => {
         if (!trimmed) return false;
@@ -116,7 +120,6 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
-                    inputProps={{ "aria-label": "New label name" }}
                     error={showError && (missingName || isDup)}
                     helperText=" "
                 />
@@ -131,17 +134,22 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                     sx={{ mt: 0.5 }}
                 />
 
-                <FormControl fullWidth disabled={!nest} sx={{ mb: 1 }}>
+                <FormControl fullWidth>
                     <InputLabel id="nest-under-label">Choose label</InputLabel>
                     <Select
                         value={parentKey ?? ""}
                         onChange={(e) => setParentKey(e.target.value || null)}
                         labelId="nest-under-label"
                         label="Choose label"
-                        MenuProps={{ PaperProps: { style: { maxHeight: 280 } } }}
+                        MenuProps={{ PaperProps: { style: { maxHeight: 280, backgroundColor: "#f0f4fa" } } }}
                     >
+                        <MenuItem disabled sx={{ my: 2 }}>
+                            <span style={{ display: "inline-block" }}>
+                                Please select a parent...
+                            </span>
+                        </MenuItem>
                         {parentChoices.map(opt => (
-                            <MenuItem key={opt.key} value={opt.key}>
+                            <MenuItem key={opt.key} value={opt.key} sx={{ py: 1.5 }}>
                                 <span style={{ paddingLeft: 12 + opt.depth * 14, display: "inline-block" }}>
                                     {opt.name}
                                 </span>
