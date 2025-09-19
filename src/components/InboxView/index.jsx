@@ -54,6 +54,7 @@ const InboxView = () => {
   const messages = messageIds.map((id) => messagesById[id]);
   const lastMessage = messages[messages.length - 1];
   const isLastDraft = lastMessage?.labels?.includes("Drafts");
+  const isLastScheduled = lastMessage?.labels?.includes("Scheduled");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
@@ -80,7 +81,9 @@ const InboxView = () => {
           </React.Fragment>
         ))}
         {/* <Actions /> */}
-        <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />
+        {!isLastScheduled &&
+          <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />
+        }
       </InnerContainer>
     </InboxViewContainer>
   );
