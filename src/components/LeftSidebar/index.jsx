@@ -46,6 +46,44 @@ const LeftSidebar = () => {
       }));
   }, [labelTree, labels, labelIndex]);
 
+  // Build a Set of keys that have children
+  const parentsWithChildren = useMemo(() => {
+    const set = new Set();
+    const walk = (nodes) => {
+      nodes?.forEach((n) => {
+        if (n.children && n.children.length > 0) set.add(n.key);
+        walk(n.children);
+      });
+    };
+    walk(labelTree);
+    return set;
+  }, [labelTree]);
+
+  // Keep collapsed state (collapsed[key] === true means closed)
+  const [collapsed, setCollapsed] = useState({}); // key -> boolean
+
+  const toggleOpen = (key) => {
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Get ancestors from a composite key like "Work::kjj::kkk"
+  const getAncestors = (key) => {
+    const parts = key.split("::");
+    const acc = [];
+    for (let i = 0; i < parts.length - 1; i++) {
+      acc.push(parts.slice(0, i + 1).join("::"));
+    }
+    return acc;
+  };
+
+  // Only show items whose ancestors are all open (not collapsed)
+  const visibleCustomLabels = useMemo(() => {
+    return customLabels.filter((item) => {
+      const ancestors = getAncestors(item.key);
+      return ancestors.every((a) => !collapsed[a]); // default open if not in map
+    });
+  }, [customLabels, collapsed]);
+
   // Open a new compose window
   const openComposeWindow = () => {
     addNewComposeWindow();
@@ -181,13 +219,16 @@ const LeftSidebar = () => {
                         <div className="n3">
                           <div className="zw" gh="cl">
                             <div className="TK">
-                              {customLabels.map((l) => (
+                              {visibleCustomLabels.map((l) => (
                                 <LabelItem
                                   key={l.key}
                                   labelKey={l.key}
                                   display={l.name}
                                   depth={l.depth}
                                   count={l.unread}
+                                  hasChildren={parentsWithChildren.has(l.key)}
+                                  isOpen={!collapsed[l.key]}
+                                  onToggle={() => toggleOpen(l.key)}
                                 />
                               ))}
                             </div>
