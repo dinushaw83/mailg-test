@@ -22,7 +22,7 @@ function fileListToImageFiles(fileList) {
   });
 }
 
-export default function Editor({ content, onChange, onSend, onDelete, textEditorMinHeight, textEditorMaxHeight, useCompactFormatting = false }) {
+export default function Editor({ content, onChange, onSend, onDelete, onSchedule, textEditorMinHeight, textEditorMaxHeight, useCompactFormatting = false }) {
   const extensions = useExtensions({
     placeholder: "",
   });
@@ -184,7 +184,17 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
 
   const handleSelectSchedule = (scheduleOption) => {
     console.log("Schedule selected:", scheduleOption);
-    // TODO: Implement actual scheduling logic
+    if (onSchedule) {
+      onSchedule({
+        scheduledDate: scheduleOption.date.toLocaleDateString(),
+        scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      });
+    }
+    setScheduleModalOpen(false);
   };
 
   const handleOpenDateTimePicker = () => {
@@ -198,7 +208,16 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
 
   const handleDateTimeSchedule = (scheduleOption) => {
     console.log("Date/Time scheduled:", scheduleOption);
-    // TODO: Implement actual scheduling logic
+    if (onSchedule) {
+      onSchedule({
+        scheduledDate: scheduleOption.date.toLocaleDateString(),
+        scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      });
+    }
     setDateTimePickerOpen(false);
   };
 

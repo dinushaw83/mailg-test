@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
 import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../utils/helperFunctions";
 
-export const useSendEmail = (replyType = null, originalEmail = null) => {
+export const useScheduleEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
   const { emails, setEmails, setSnackbar, loggedInUser, recipients, setRecipients } = useContext(GlobalContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
-  const lastSentEmailRef = useRef(null);
-  const lastDeletedDraftRef = useRef(null);
-  const sendTimeoutRef = useRef(null);
+  const lastScheduledEmailRef = useRef(null);
 
   // Validate email format
   const isValidEmail = (email) => {
@@ -19,7 +17,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     return emailRegex.test(email);
   };
 
-  const handleSend = ({ to, cc, bcc, subject, content, rawInputText, onClose, currentDraftId, isDraft }) => {
+  const handleSchedule = ({ to, cc, bcc, subject, content, rawInputText, onClose, currentDraftId, isDraft, scheduledDate, scheduledTime }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
 
@@ -30,7 +28,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
 
     // 2. Check if subject is missing - only for new emails, not for replies/forwards
     if (!subject.trim() && !replyType) {
-      const confirmed = confirm("Send this message without a subject or text in the body?");
+      const confirmed = confirm("Schedule this message without a subject or text in the body?");
       if (!confirmed) {
         return;
       }
@@ -79,11 +77,11 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       return;
     }
 
-    // If all validations pass, send the email
-    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft });
+    // If all validations pass, schedule the email
+    scheduleEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, scheduledDate, scheduledTime });
   };
 
-  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft }) => {
+  const scheduleEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, scheduledDate, scheduledTime }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
@@ -119,8 +117,10 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       read: false,
       starred: false,
       important: false,
-      labels: ["Sent"],
+      labels: ["Scheduled"], // Changed from "Sent" to "Scheduled"
       labelColor: "#e1e3e1",
+      scheduledDate: scheduledDate, // Store the scheduled date as string
+      scheduledTime: scheduledTime, // Store the scheduled time as string
     };
 
     // Add reply/forward reference if applicable
@@ -132,12 +132,12 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     }
 
     // Store the email data for potential cancellation
-    lastSentEmailRef.current = newEmail;
+    lastScheduledEmailRef.current = newEmail;
 
     // Get all the recipients
     const allRecipients = [...to, ...cc, ...bcc];
 
-    // If any of the recipients doesnot present in the recipients context, add them
+    // If any of the recipients does not present in the recipients context, add them
     const newRecipients = allRecipients.filter((recipient) => !recipients.some((r) => r.email === recipient.email));
     if (newRecipients.length > 0) {
       const updatedRecipients = [...recipients];
@@ -153,85 +153,57 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // Close the compose modal
     onClose();
 
-    // Show "Sending..." snackbar with Cancel button
+    // Show "Scheduling..." snackbar
     setSnackbar({
       open: true,
-      message: "Sending...",
-      action: (
-        <Button variant="text" size="medium" onClick={handleSnackbarCancel} sx={{ textTransform: "capitalize" }}>
-          Cancel
-        </Button>
-      ),
-      autoHideDuration: null,
+      message: "Scheduling...",
+      action: null,
+      autoHideDuration: 2000,
     });
 
-    // Simulate sending process
-    if (sendTimeoutRef.current) {
-      clearTimeout(sendTimeoutRef.current);
-    }
-    sendTimeoutRef.current = setTimeout(() => {
-      // Update emails array - replace draft with sent email if it was a draft, otherwise add new email
-      const updatedEmails = isDraft
-        ? emails.map((email) => (email.id?.toString() === newEmail.id?.toString() ? newEmail : email))
-        : [newEmail, ...emails];
+    // Update emails array - replace draft with scheduled email if it was a draft, otherwise add new email
+    const updatedEmails = isDraft
+      ? emails.map((email) => (email.id?.toString() === newEmail.id?.toString() ? newEmail : email))
+      : [newEmail, ...emails];
 
-      // Update the global state
-      setEmails(updatedEmails);
+    // Update the global state
+    setEmails(updatedEmails);
 
-      // Then show "Message sent" snackbar with Undo and View message buttons
+    // Show "Message scheduled" snackbar with specific date and time
+    setTimeout(() => {
+      // Format the scheduled date and time
+      const formatScheduledDateTime = (dateStr, timeStr) => {
+        const date = new Date(dateStr);
+        
+        // Format date as "Mon, Sep 29"
+        const dateOptions = { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric' 
+        };
+        const formattedDate = date.toLocaleDateString('en-US', dateOptions);
+        
+        // Simply use the time string as-is
+        const formattedTime = timeStr;
+        
+        return `${formattedDate}, ${formattedTime}`;
+      };
+
+      const scheduledDateTime = formatScheduledDateTime(scheduledDate, scheduledTime);
+      
       setSnackbar({
         open: true,
-        message: "Message sent",
+        message: `Send scheduled for ${scheduledDateTime}`,
         action: (
           <React.Fragment>
             <Button variant="text" size="medium" onClick={handleSnackbarUndo} sx={{ textTransform: "capitalize" }}>
               Undo
-            </Button>
-            <Button
-              variant="text"
-              size="medium"
-              onClick={handleSnackbarViewMessage}
-              sx={{ textTransform: "capitalize" }}
-            >
-              View message
             </Button>
           </React.Fragment>
         ),
         autoHideDuration: 4000,
       });
     }, 500);
-  };
-
-  const handleSnackbarCancel = () => {
-    // Clear the send timeout
-    if (sendTimeoutRef.current) {
-      clearTimeout(sendTimeoutRef.current);
-      sendTimeoutRef.current = null;
-    }
-
-    // Show "Cancelling..." message
-    setSnackbar({
-      open: true,
-      message: "Cancelling...",
-      action: null,
-      autoHideDuration: 1000,
-    });
-
-    // After 1 second, show "Sending canceled"
-    setTimeout(() => {
-      // Push compose parameter to URL if not a reply/forward
-      if (!replyType) {
-        navigate(`?compose=${lastSentEmailRef.current?.id}`);
-      }
-
-      // Show "Sending canceled" snackbar
-      setSnackbar({
-        open: true,
-        message: "Sending canceled.",
-        action: null,
-        autoHideDuration: 5000,
-      });
-    }, 1000);
   };
 
   const handleSnackbarUndo = () => {
@@ -243,30 +215,33 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       autoHideDuration: 1000,
     });
 
-    // After 1 second, remove email from state and show "Sending undone"
+    // After 1 second, remove email from state and show "Scheduling undone"
     setTimeout(() => {
       // Double-check that the email still exists
-      if (lastSentEmailRef.current && lastSentEmailRef.current.id) {
-        const emailToRestore = lastSentEmailRef.current;
+      if (lastScheduledEmailRef.current && lastScheduledEmailRef.current.id) {
+        const emailToRestore = lastScheduledEmailRef.current;
 
-        // Remove the email from the state
-        setEmails((prevEmails) => {
-          return prevEmails.map((email) =>
-            email.id === emailToRestore.id
-              ? {
-                  ...email,
-                  labels: ["Drafts"],
-                  labelColor: "#e1e3e1",
-                  timestamp: new Date().toISOString(),
-                  timeDisplay: new Date().toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  }),
-                }
-              : email
-          );
-        });
+         // Remove the email from the state
+         setEmails((prevEmails) => {
+           return prevEmails.map((email) => {
+             return email.id === emailToRestore.id
+               ? {
+                   ...email,
+                   labels: ["Drafts"],
+                   labelColor: "#e1e3e1",
+                   timestamp: new Date().toISOString(),
+                   timeDisplay: new Date().toLocaleTimeString("en-US", {
+                     hour: "numeric",
+                     minute: "2-digit",
+                     hour12: true,
+                   }),
+                   scheduledDate: undefined,
+                   scheduledTime: undefined,
+                 }
+               : email
+           }
+           );
+         });
 
         // Navigate to the draft
         if (!replyType) {
@@ -274,12 +249,12 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
         }
 
         // Clear the ref after successful state update
-        lastSentEmailRef.current = null;
+        lastScheduledEmailRef.current = null;
       }
 
       setSnackbar({
         open: true,
-        message: "Sending undone",
+        message: "Scheduling undone",
         action: null,
         autoHideDuration: 5000,
       });
@@ -290,10 +265,10 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // Hide the snackbar
     setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
 
-    const threadId = lastSentEmailRef.current?.threadId.split(":")[1];
+    const threadId = lastScheduledEmailRef.current?.threadId.split(":")[1];
 
-    // Navigate to the message in the sent items
-    navigate(`/sent/${threadId}`);
+    // Navigate to the message in the scheduled items
+    navigate(`/scheduled/${threadId}`);
   };
 
   const handleErrorModalClose = () => {
@@ -301,64 +276,11 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     setErrorMessage("Please specify at least one recipient."); // Reset to default message
   };
 
-  const handleSnackbarUndoDelete = (onUndoDelete) => {
-    if (lastDeletedDraftRef.current) {
-      const deletedDraft = lastDeletedDraftRef.current;
-
-      // Create a new draft email with the restored data
-      const restoredDraft = {
-        id: deletedDraft.id,
-        threadId: deletedDraft.threadId || generateThreadId(),
-        legacyThreadId: deletedDraft.legacyThreadId || generateLegacyThreadId(),
-        legacyLastMessageId: deletedDraft.legacyLastMessageId || generateLegacyThreadId(),
-        legacyLastNonDraftMessageId: null,
-        from: {
-          name: loggedInUser.name,
-          email: loggedInUser.email,
-        },
-        to: deletedDraft.to.map((recipient) => recipient.email),
-        cc: deletedDraft.cc.length > 0 ? deletedDraft.cc.map((recipient) => recipient.email) : [],
-        bcc: deletedDraft.bcc.length > 0 ? deletedDraft.bcc.map((recipient) => recipient.email) : [],
-        subject: deletedDraft.subject.trim() || "(no subject)",
-        body: deletedDraft.content.html,
-        preview: deletedDraft.content.plainText,
-        timestamp: new Date().toISOString(),
-        timeDisplay: new Date().toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
-        read: true,
-        replyType: deletedDraft.replyType,
-        starred: false,
-        important: false,
-        labels: ["Drafts"],
-        labelColor: "#e1e3e1",
-      };
-
-      // Add the restored draft back to emails
-      setEmails((prevEmails) => [restoredDraft, ...prevEmails]);
-
-      // Call the callback with the restored draft ID
-      if (onUndoDelete) {
-        onUndoDelete(deletedDraft.id);
-      }
-
-      // Clear the ref
-      lastDeletedDraftRef.current = null;
-
-      // Hide the snackbar
-      setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
-    }
-  };
-
   return {
-    handleSend,
+    handleSchedule,
     showErrorModal,
     errorMessage,
     handleErrorModalClose,
-    handleSnackbarUndoDelete,
-    lastDeletedDraftRef,
-    lastSentEmailRef,
+    lastScheduledEmailRef,
   };
 };

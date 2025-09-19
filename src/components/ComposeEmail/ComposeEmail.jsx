@@ -8,6 +8,7 @@ import { GlobalContext } from "../../contexts/GlobalContext";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import { useSendEmail } from "../../hooks/useSendEmail";
+import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 import styles from "./ComposeEmail.module.css";
 
 export default function ComposeEmail({ composeWindow }) {
@@ -178,7 +179,8 @@ export default function ComposeEmail({ composeWindow }) {
     removeComposeWindow(composeWindow.id);
   };
 
-  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail();
+  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail(null);
+  const { handleSchedule: handleScheduleEmail, showErrorModal: showScheduleErrorModal, errorMessage: scheduleErrorMessage, handleErrorModalClose: handleScheduleErrorModalClose } = useScheduleEmail(null);
 
   const handleSend = () => {
     handleSendEmail({
@@ -196,6 +198,22 @@ export default function ComposeEmail({ composeWindow }) {
 
   const handleUndoDelete = () => {
     handleSnackbarUndoDelete(addNewComposeWindow);
+  };
+
+  const handleSchedule = (scheduleData) => {
+    handleScheduleEmail({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      rawInputText,
+      onClose: handleClose,
+      currentDraftId: draftId,
+      isDraft: isDraft,
+      scheduledDate: scheduleData.scheduledDate,
+      scheduledTime: scheduleData.scheduledTime,
+    });
   };
 
   // Remove the email from draft
@@ -336,6 +354,7 @@ export default function ComposeEmail({ composeWindow }) {
               className={styles.composeEditor}
               onSend={handleSend}
               onDelete={handleDelete}
+              onSchedule={handleSchedule}
               textEditorMinHeight="390px"
               textEditorMaxHeight="390px"
               useCompactFormatting={true}
@@ -359,6 +378,22 @@ export default function ComposeEmail({ composeWindow }) {
           },
         ]}
         modalBoxStyle={{ width: errorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
+      />
+
+      {/* Schedule Error Modal */}
+      <InfoModal
+        isOpen={showScheduleErrorModal}
+        onClose={handleScheduleErrorModalClose}
+        title="Error"
+        message={scheduleErrorMessage}
+        buttons={[
+          {
+            text: "OK",
+            onClick: handleScheduleErrorModalClose,
+            className: "primary",
+          },
+        ]}
+        modalBoxStyle={{ width: scheduleErrorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
       />
     </>
   );
