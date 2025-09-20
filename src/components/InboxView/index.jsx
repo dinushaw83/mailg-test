@@ -9,6 +9,7 @@ import { Box, Divider } from "@mui/material";
 import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
 import { PanelFooter } from "../EmailList/Footer";
+import useMailActions from "../../hooks/useMailActions";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
@@ -23,15 +24,37 @@ const InnerContainer = styled.div`
   padding-right: 10px;
 `;
 
-export const EmailContent = ({ threadId, folder, label, showActionBar = true, isPreview = false }) => {
-  const { emails, normalizedEmails, panelState } = useContext(GlobalContext);
+export const EmailContent = ({
+  threadId,
+  folder,
+  label,
+  showActionBar = true,
+  isPreview = false,
+  markAsReadAfter = 3000,
+}) => {
+  const { emails, normalizedEmails } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
+  const { markRead } = useMailActions();
 
   const { messagesById } = normalizedEmails;
 
   const thread = useMemo(() => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
   }, [emails, threadId]);
+
+  useEffect(() => {
+    let timeoutId = null;
+    if (markAsReadAfter) {
+      timeoutId = setTimeout(() => {
+        markRead([threadId], true);
+      }, markAsReadAfter);
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [markAsReadAfter, threadId]);
 
   if (!threadId && isPreview) {
     return (
