@@ -37,7 +37,7 @@ export const EmailContent = ({ threadId, folder, label, showActionBar = true, is
 
   if (!threadId && isPreview) {
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", height: "100%", backgroundColor: "pink" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <Box
           sx={{
             paddingTop: "3em",

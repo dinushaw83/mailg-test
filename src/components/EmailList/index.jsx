@@ -8,7 +8,7 @@ import { useComposeModal } from "../../hooks/useComposeModal";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { EmailContent } from "../InboxView";
 import Table from "./Table";
-import Footer, { PanelFooter } from "./Footer";
+import Footer from "./Footer";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
@@ -103,13 +103,14 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     return email.labels.filter((label) => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
   };
 
-  const { direction, showPanel } = panelState;
+  const { direction: internalDirection, showPanel } = panelState;
+  const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
 
   return (
     <div className="Nu tf aZ6" style={{ flex: 1, display: "flex" }}>
       <div style={{ flex: 1, minWidth: "518px" }}>
         <PanelGroup direction={direction}>
-          <Panel defaultSize={50}>
+          <Panel defaultSize={50} minSize={25}>
             <Table
               {...{
                 emails,
