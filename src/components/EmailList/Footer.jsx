@@ -60,35 +60,38 @@ const StorageUsage = ({ width = "15%", centerText = false }) => {
   );
 };
 
+const Dot = styled.div`
+  width: 2px;
+  height: 2px;
+  background-color: #5e5e5e;
+  border-radius: 50%;
+`;
+
 const TermsPrivacyProgramPolicies = ({ centerText = false }) => {
   return (
     <div
       className="aeU"
       style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         ...(centerText && {
           width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
         }),
       }}
     >
-      <div id=":2p">
-        <div>
-          <div className="ma">
-            <a href="#" className="l9">
-              Terms
-            </a>
-            ·{" "}
-            <a href="#" className="l9">
-              Privacy
-            </a>
-            ·{" "}
-            <a href="#" className="l9">
-              Program Policies
-            </a>
-          </div>
-        </div>
+      <div className="ma" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <a href="#" className="l9">
+          Terms
+        </a>
+        <Dot />
+        <a href="#" className="l9">
+          Privacy
+        </a>
+        <Dot />
+        <a href="#" className="l9">
+          Program Policies
+        </a>
       </div>
     </div>
   );
@@ -129,6 +132,7 @@ export const PanelFooter = () => {
         flexDirection: "column",
         gap: "1em",
         alignItems: "center",
+        flex: 1,
       }}
     >
       <StorageUsage centerText />

@@ -13,15 +13,14 @@ import { PanelFooter } from "../EmailList/Footer";
 const InboxViewContainer = styled.div`
   padding: 24px;
   width: 100%;
+  height: calc(100vh - 11rem);
+  overflow-y: auto;
 `;
 
 const InnerContainer = styled.div`
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 10rem);
   padding-right: 10px;
-  overflow-y: auto;
 `;
 
 export const EmailContent = ({ threadId, folder, label, showActionBar = true, isPreview = false }) => {
@@ -37,16 +36,19 @@ export const EmailContent = ({ threadId, folder, label, showActionBar = true, is
 
   if (!threadId && isPreview) {
     return (
-      <Box
-        sx={{
-          paddingTop: "3em",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "1rem",
-        }}
-      >
-        No conversations selected
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <Box
+          sx={{
+            paddingTop: "3em",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "1rem",
+          }}
+        >
+          No conversations selected
+        </Box>
+        <PanelFooter />
       </Box>
     );
   }
