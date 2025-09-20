@@ -45,7 +45,7 @@ const Inbox = () => {
           <div>
             <div id=":4" className="aeH" />
             <div className="AO">
-              <div id=":3" className="Tm" style={{ height: 985 }}>
+              <div id=":3" className="Tm">
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
                     <div className="bGI nH oy8Mbf aE3 S4" role="main">
