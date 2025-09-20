@@ -28,7 +28,7 @@ const Table = ({
   };
 
   return (
-    <div style={{ flex: 1, height: "100%" }}>
+    <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
         cellPadding={0}
         id=":2x"

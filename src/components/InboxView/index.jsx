@@ -13,7 +13,7 @@ import { PanelFooter } from "../EmailList/Footer";
 const InboxViewContainer = styled.div`
   padding: 24px;
   width: 100%;
-  height: ${({ isVerticalSplit }) => (isVerticalSplit ? `100%;` : `calc(100vh - 11rem)`)};
+  height: 100%;
   overflow-y: auto;
 `;
 
@@ -24,12 +24,10 @@ const InnerContainer = styled.div`
 `;
 
 export const EmailContent = ({ threadId, folder, label, showActionBar = true, isPreview = false }) => {
-  console.log({ threadId });
   const { emails, normalizedEmails, panelState } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
 
   const { messagesById } = normalizedEmails;
-  const isVerticalSplit = panelState.direction === "vertical" && panelState.showPanel;
 
   const thread = useMemo(() => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
@@ -78,7 +76,7 @@ export const EmailContent = ({ threadId, folder, label, showActionBar = true, is
   const draft = isLastDraft ? lastMessage : null;
 
   return (
-    <InboxViewContainer isVerticalSplit={isVerticalSplit}>
+    <InboxViewContainer>
       {showActionBar && <ActionBar thread={thread} />}
       <InnerContainer>
         <Subject subject={messages[0].subject} />
