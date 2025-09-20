@@ -60,63 +60,8 @@ const Inbox = () => {
                       <div />
                       <div className="aKB afn sf-hidden" />
                       <div className="Nr UI S2 vy">
-                        <div className="Nu tf aZ6" style={{ flex: 1, display: "flex" }}>
-                          <EmailList emails={rows} />
+                        <EmailList emails={rows} />
 
-                          <div className="l2 pfiaof V4" role="contentinfo">
-                            <div id=":2q" className="aeV">
-                              <div>
-                                <div className="ajd">
-                                  <div className="aiF">
-                                    <a className="bcB" href="#">
-                                      <div className="aiC" jslog="108909; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd">
-                                        <div className="aiA" style={{ width: "15%" }} />
-                                      </div>
-                                      <div className="aiG" jslog="108910; u014N:cOuCgd,Kr2w4b,xr6bB; 40:WzFd">
-                                        <div className="aiD">
-                                          <span dir="ltr">15%</span>
-                                          of <span dir="ltr">15 GB</span>
-                                          used
-                                        </div>
-                                        <div className="aiz" role="img" aria-label="Follow link to manage storage" />
-                                      </div>
-                                    </a>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="aeU">
-                              <div id=":2p">
-                                <div>
-                                  <div className="ma">
-                                    <a href="#" className="l9">
-                                      Terms
-                                    </a>
-                                    ·{" "}
-                                    <a href="#" className="l9">
-                                      Privacy
-                                    </a>
-                                    ·{" "}
-                                    <a href="#" className="l9">
-                                      Program Policies
-                                    </a>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div id=":2n" className="ae3">
-                              <div>
-                                <div className="l6">
-                                  <div>Last account activity: 25 minutes ago</div>
-                                  <span id=":o8" className="l8 LJOhwe" tabIndex={0} role="link">
-                                    Details
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <div style={{ clear: "both" }} />
-                          </div>
-                        </div>
                         <div className="Nt sf-hidden" jsname="dt0bVc" />
                         <div
                           className="Nu S3 aZ6 sf-hidden"

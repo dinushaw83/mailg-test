@@ -5,7 +5,7 @@ import ActionBar from "./ActionBar";
 import styled from "@emotion/styled";
 import { Content } from "./Content";
 import { Subject } from "./Subject";
-import { Divider } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
 
@@ -23,7 +23,8 @@ const InnerContainer = styled.div`
   overflow-y: auto;
 `;
 
-export const EmailContent = ({ threadId, folder, label, showActionBar = true }) => {
+export const EmailContent = ({ threadId, folder, label, showActionBar = true, isPreview = false }) => {
+  console.log({ threadId });
   const { emails, normalizedEmails } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
 
@@ -32,6 +33,22 @@ export const EmailContent = ({ threadId, folder, label, showActionBar = true }) 
   const thread = useMemo(() => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
   }, [emails, threadId]);
+
+  if (!threadId && isPreview) {
+    return (
+      <Box
+        sx={{
+          paddingTop: "3em",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "1rem",
+        }}
+      >
+        No conversations selected
+      </Box>
+    );
+  }
 
   if (!thread) {
     // Determine the back link based on current context
