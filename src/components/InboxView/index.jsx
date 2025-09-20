@@ -8,6 +8,7 @@ import { Subject } from "./Subject";
 import { Box, Divider } from "@mui/material";
 import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
+import { PanelFooter } from "../EmailList/Footer";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
@@ -93,6 +94,7 @@ export const EmailContent = ({ threadId, folder, label, showActionBar = true, is
         {/* <Actions /> */}
         <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />
       </InnerContainer>
+      {isPreview && <PanelFooter />}
     </InboxViewContainer>
   );
 };

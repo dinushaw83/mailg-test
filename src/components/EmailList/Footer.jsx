@@ -42,7 +42,7 @@ const UsageAnnotation = styled.div`
 
 const StorageUsage = ({ width = "15%", centerText = false }) => {
   return (
-    <StorageUsageContainer>
+    <StorageUsageContainer style={{ flex: 1 }}>
       <ProgressBarContainer>
         <a style={{ textDecoration: "none" }} href="#">
           <ProgressBar>
@@ -60,9 +60,19 @@ const StorageUsage = ({ width = "15%", centerText = false }) => {
   );
 };
 
-const TermsPrivacyProgramPolicies = () => {
+const TermsPrivacyProgramPolicies = ({ centerText = false }) => {
   return (
-    <div className="aeU">
+    <div
+      className="aeU"
+      style={{
+        ...(centerText && {
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }),
+      }}
+    >
       <div id=":2p">
         <div>
           <div className="ma">
@@ -84,16 +94,15 @@ const TermsPrivacyProgramPolicies = () => {
   );
 };
 
-const LastAccountActivity = () => {
+const LastAccountActivity = ({ centerText = false }) => {
+  const style = centerText ? { width: "100%", display: "flex", alignItems: "center", justifyContent: "center" } : {};
   return (
-    <div id=":2n" className="ae3">
-      <div>
-        <div className="l6">
-          <div>Last account activity: 25 minutes ago</div>
-          <span id=":o8" className="l8 LJOhwe" tabIndex={0} role="link">
-            Details
-          </span>
-        </div>
+    <div id=":2n" className="ae3" style={style}>
+      <div className="l6">
+        <div style={style}>Last account activity: 25 minutes ago</div>
+        <span id=":o8" className="l8 LJOhwe" tabIndex={0} role="link" style={style}>
+          Details
+        </span>
       </div>
     </div>
   );
@@ -123,8 +132,8 @@ export const PanelFooter = () => {
       }}
     >
       <StorageUsage centerText />
-      <TermsPrivacyProgramPolicies />
-      <LastAccountActivity />
+      <LastAccountActivity centerText />
+      <TermsPrivacyProgramPolicies centerText />
     </Box>
   );
 };
