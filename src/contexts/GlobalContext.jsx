@@ -28,7 +28,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
   const [panelState, setPanelState] = useState({
     showPanel: false,
-    direction: "horizontal",
+    direction: "vertical",
   });
   const [previewEmail, setPreviewEmail] = useState(null);
 
