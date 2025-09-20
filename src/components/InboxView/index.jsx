@@ -16,6 +16,26 @@ const InboxViewContainer = styled.div`
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95, 99, 104, 0.6) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(95, 99, 104, 0.6);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(95, 99, 104, 0.75);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 `;
 
 const InnerContainer = styled.div`

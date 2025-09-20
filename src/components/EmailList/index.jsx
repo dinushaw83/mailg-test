@@ -110,7 +110,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     <div className="Nu tf aZ6" style={{ flex: 1, display: "flex" }}>
       <div style={{ height: "100%", minWidth: "518px", overflowY: "hidden" }}>
         <PanelGroup direction={direction}>
-          <Panel defaultSize={50} minSize={20}>
+          <Panel defaultSize={40} minSize={25}>
             <Table
               {...{
                 emails,
