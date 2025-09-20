@@ -22,7 +22,7 @@ const Inbox = () => {
   // pick rows based on folder/label, then sort and paginate
   const rows = useMemo(() => {
     // Sort emails based on sortOrder
-    const sortedEmails = [...filteredRows].sort((a, b) => {
+    const sortedThreads = [...filteredRows].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
       return dateB - dateA;
@@ -31,7 +31,7 @@ const Inbox = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
-    return sortedEmails.slice(startIndex, endIndex);
+    return sortedThreads.slice(startIndex, endIndex);
   }, [filteredRows, currentPage, itemsPerPage]);
 
   useEffect(() => {

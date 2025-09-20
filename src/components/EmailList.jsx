@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 
 import useMailActions from "../hooks/useMailActions";
 import CheckBox from "./ui/CheckBox";
@@ -7,6 +7,7 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 import { useComposeModal } from "../hooks/useComposeModal";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { EmailContent } from "./InboxView";
 
 const Table = ({
   emails,
@@ -22,6 +23,15 @@ const Table = ({
   getLabelBadges,
   formatDate,
 }) => {
+  const { setPreviewEmail, panelState } = useGlobalContext();
+  const handleClickRow = (email, threadId) => {
+    if (panelState.showPanel) {
+      setPreviewEmail(email);
+    } else {
+      navigateToEmailDetails(email, threadId);
+    }
+  };
+
   return (
     <div style={{ flex: 1, height: "100%" }}>
       <table
@@ -44,7 +54,7 @@ const Table = ({
                 role="row"
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
-                onClick={() => navigateToEmailDetails(email, threadId)}
+                onClick={() => handleClickRow(email, threadId)}
               >
                 <td className="PF xY" />
                 <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
@@ -216,9 +226,10 @@ const Table = ({
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, panelState } = useGlobalContext();
+  const { selection, panelState, previewEmail } = useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
+  const { folder, label } = useParams();
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -338,7 +349,12 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
               }}
             />
             <Panel defaultSize={50}>
-              <div style={{ height: "100%" }}>Hello World!</div>
+              <EmailContent
+                threadId={previewEmail?.threadId.split(":")[1]}
+                folder={folder}
+                label={label}
+                showActionBar={false}
+              />
             </Panel>
           </>
         )}

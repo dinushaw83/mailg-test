@@ -23,12 +23,11 @@ const InnerContainer = styled.div`
   overflow-y: auto;
 `;
 
-const InboxView = () => {
-  const { threadId, folder, label } = useParams();
-  const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
+export const EmailContent = ({ threadId, folder, label, showActionBar = true }) => {
+  const { emails, normalizedEmails } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
 
-  const { threadsById, messagesById } = normalizedEmails;
+  const { messagesById } = normalizedEmails;
 
   const thread = useMemo(() => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
@@ -57,13 +56,9 @@ const InboxView = () => {
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
 
-  useEffect(() => {
-    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
-  }, []);
-
   return (
     <InboxViewContainer>
-      <ActionBar thread={thread} />
+      {showActionBar && <ActionBar thread={thread} />}
       <InnerContainer>
         <Subject subject={messages[0].subject} />
         {displayedMessages.map((message, index) => (
@@ -83,6 +78,17 @@ const InboxView = () => {
       </InnerContainer>
     </InboxViewContainer>
   );
+};
+
+const InboxView = () => {
+  const { threadId, folder, label } = useParams();
+  const { loggedInUser } = useContext(GlobalContext);
+
+  useEffect(() => {
+    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+  }, []);
+
+  return <EmailContent threadId={threadId} folder={folder} label={label} />;
 };
 
 export default InboxView;

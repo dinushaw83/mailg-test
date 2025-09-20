@@ -30,6 +30,7 @@ export const GlobalContextProvider = ({ children }) => {
     showPanel: false,
     direction: "horizontal",
   });
+  const [previewEmail, setPreviewEmail] = useState(null);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -128,6 +129,8 @@ export const GlobalContextProvider = ({ children }) => {
     refreshEmails,
     panelState,
     setPanelState,
+    previewEmail,
+    setPreviewEmail,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
