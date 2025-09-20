@@ -77,6 +77,7 @@ const CheckBox = ({ allSelected, partialSelected, toggle }) => {
 };
 
 const ToggleSplitPaneButton = () => {
+  const { panelState, setPanelState } = useGlobalContext();
   const [{ focused, open, splitPane }, setState] = useState({
     focused: false,
     open: false,
@@ -92,12 +93,17 @@ const ToggleSplitPaneButton = () => {
   };
 
   const toggleSplitPane = () => {
-    setState((prev) => ({
+    setPanelState((prev) => ({
       ...prev,
-      splitPane: !prev.splitPane,
-      focused: true,
+      showPanel: !prev.showPanel,
     }));
   };
+
+  const icon = panelState.showPanel
+    ? "reorder"
+    : panelState.direction === "horizontal"
+    ? "vertical_split"
+    : "horizontal_split";
 
   return (
     <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false }))}>
@@ -113,7 +119,7 @@ const ToggleSplitPaneButton = () => {
               color: "rgb(68, 68, 68)",
             }}
           >
-            vertical_split
+            {icon}
           </span>
         </IconButton>
         <IconButton
