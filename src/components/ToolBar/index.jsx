@@ -10,6 +10,9 @@ import { Icon } from "../InboxView/ActionBar";
 import MailActions from "../MailActions";
 import SpamActions from "../MailActions/SpamActions";
 import MoreActions from "../MailActions/MoreActions";
+import Popover from "@mui/material/Popover";
+import Box from "@mui/material/Box";
+import { ActionMenuItem } from "../MailActions/ActionMenuItem";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -78,18 +81,19 @@ const CheckBox = ({ allSelected, partialSelected, toggle }) => {
 
 const ToggleSplitPaneButton = () => {
   const { panelState, setPanelState } = useGlobalContext();
-  const [{ focused, open, splitPane }, setState] = useState({
+  const [{ focused, open }, setState] = useState({
     focused: false,
     open: false,
-    splitPane: false,
   });
+  const [anchorEl, setAnchorEl] = React.useState(null);
 
-  const toggleOpen = () => {
-    setState((prev) => ({
-      ...prev,
-      open: !prev.open,
+  const toggleOpen = (event) => {
+    setAnchorEl(open ? null : event.currentTarget);
+
+    setState({
+      open: !open,
       focused: true,
-    }));
+    });
   };
 
   const toggleSplitPane = () => {
@@ -105,38 +109,86 @@ const ToggleSplitPaneButton = () => {
     ? "vertical_split"
     : "horizontal_split";
 
+  const handleSplitPane = ({ direction, showPanel }) => {
+    setPanelState((prev) => ({
+      ...prev,
+      ...(direction !== undefined ? { direction } : {}),
+      ...(showPanel !== undefined ? { showPanel } : {}),
+    }));
+    setState((prev) => ({ ...prev, open: false }));
+  };
+
   return (
-    <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false }))}>
-      <CheckboxContainer focused={focused}>
-        <IconButton
-          onClick={toggleSplitPane}
-          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "3px", paddingRight: "3px", borderRadius: "5px" }}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 20,
-              color: "rgb(68, 68, 68)",
+    <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false, open: false }))}>
+      <Box>
+        <CheckboxContainer focused={focused}>
+          <IconButton
+            onClick={toggleSplitPane}
+            sx={{
+              paddingTop: "8px",
+              paddingBottom: "8px",
+              paddingLeft: "3px",
+              paddingRight: "3px",
+              borderRadius: "5px",
             }}
           >
-            {icon}
-          </span>
-        </IconButton>
-        <IconButton
-          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "1px", paddingRight: "1px", borderRadius: "5px" }}
-          onClick={toggleOpen}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 20,
-              color: "rgb(68, 68, 68)",
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20,
+                color: "rgb(68, 68, 68)",
+              }}
+            >
+              {icon}
+            </span>
+          </IconButton>
+          <IconButton
+            sx={{
+              paddingTop: "8px",
+              paddingBottom: "8px",
+              paddingLeft: "1px",
+              paddingRight: "1px",
+              borderRadius: "5px",
             }}
+            onClick={toggleOpen}
           >
-            {open ? "arrow_drop_up" : "arrow_drop_down"}
-          </span>
-        </IconButton>
-      </CheckboxContainer>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20,
+                color: "rgb(68, 68, 68)",
+              }}
+            >
+              {open ? "arrow_drop_up" : "arrow_drop_down"}
+            </span>
+          </IconButton>
+        </CheckboxContainer>
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={() => setState((prev) => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        >
+          <ActionMenuItem
+            label="No Spit"
+            onClick={() => {
+              handleSplitPane({ showPanel: false });
+            }}
+          />
+          <ActionMenuItem
+            label="Vertical Spit"
+            onClick={() => {
+              handleSplitPane({ direction: "vertical", showPanel: true });
+            }}
+          />
+          <ActionMenuItem
+            label="Horizontal Spit"
+            onClick={() => {
+              handleSplitPane({ direction: "horizontal", showPanel: true });
+            }}
+          />
+        </Popover>
+      </Box>
     </ClickAwayListener>
   );
 };
