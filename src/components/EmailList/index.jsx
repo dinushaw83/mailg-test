@@ -8,7 +8,7 @@ import { useComposeModal } from "../../hooks/useComposeModal";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { EmailContent } from "../InboxView";
 import Table from "./Table";
-import Footer from "./Footer";
+import Footer, { PanelFooter } from "./Footer";
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
@@ -144,12 +144,13 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   showActionBar={false}
                   isPreview
                 />
+                <PanelFooter />
               </Panel>
             </>
           )}
         </PanelGroup>
       </div>
-      <Footer />
+      {!showPanel && <Footer />}
     </div>
   );
 };
