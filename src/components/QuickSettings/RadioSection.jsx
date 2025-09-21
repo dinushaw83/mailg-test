@@ -6,8 +6,21 @@ import Typography from "@mui/material/Typography";
 import React, { useState } from "react";
 
 const RadioItem = ({ value, label, selectedValue, handleChange, handleCustomize, imgSrc }) => {
+  const handleItemClick = (event) => {
+    // Don't trigger if clicking on the customize button
+    if (event.target.closest("button")) {
+      return;
+    }
+    // Create a synthetic event for the radio button
+    const syntheticEvent = {
+      target: { value: value },
+    };
+    handleChange(syntheticEvent);
+  };
+
   return (
     <Box
+      onClick={handleItemClick}
       sx={{
         display: "flex",
         flexDirection: "row",
@@ -15,6 +28,9 @@ const RadioItem = ({ value, label, selectedValue, handleChange, handleCustomize,
         alignItems: "center",
         justifyContent: "space-between",
         marginBottom: "0.5rem",
+        cursor: "pointer",
+        padding: "0.25rem",
+        borderRadius: "4px",
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "row", gap: "1rem", alignItems: "center" }}>
