@@ -34,25 +34,16 @@ const initialState = {
 };
 
 const QuickSettings = () => {
-  const { showQuickSettings, setShowQuickSettings, panelState, setPanelState } = useGlobalContext();
-  const [{ density, inboxType, threading }, setState] = useState(initialState);
-  const setDensity = (value) => {
-    setState((prev) => ({ ...prev, density: value }));
-  };
-  const setInboxType = (value) => {
-    setState((prev) => ({ ...prev, inboxType: value }));
-  };
-  const setReadingPane = (value) => {
-    if (value === "no-split") {
-      setPanelState({ ...panelState, showPanel: false });
-    } else {
-      setPanelState({ ...panelState, direction: value, showPanel: true });
-    }
-  };
-
-  const setThreading = (value) => {
-    setState((prev) => ({ ...prev, threading: value }));
-  };
+  const {
+    showQuickSettings,
+    setShowQuickSettings,
+    panelState,
+    setPanelState,
+    density,
+    setDensity,
+    inboxType,
+    setInboxType,
+  } = useGlobalContext();
 
   const densities = [
     {

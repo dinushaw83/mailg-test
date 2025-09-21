@@ -32,6 +32,9 @@ export const GlobalContextProvider = ({ children }) => {
   });
   const [previewEmail, setPreviewEmail] = useState(null);
   const [showQuickSettings, setShowQuickSettings] = useState(false);
+  const [density, setDensity] = useState("default");
+  const [threading, setThreading] = useState(true);
+  const [inboxType, setInboxType] = useState("default");
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -134,6 +137,12 @@ export const GlobalContextProvider = ({ children }) => {
     setPreviewEmail,
     showQuickSettings,
     setShowQuickSettings,
+    density,
+    setDensity,
+    inboxType,
+    setInboxType,
+    threading,
+    setThreading,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
