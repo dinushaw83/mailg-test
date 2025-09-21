@@ -15,11 +15,13 @@ const Container = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
+  height: calc(100vh - 80px); /* Match the height of EmailListContainer */
 `;
 
 const QuickSettingsContent = styled.div`
   flex: 1;
   overflow-y: auto;
+  min-height: 0; /* This is important for flex children to be scrollable */
 `;
 
 const QuickSettings = () => {
@@ -42,6 +44,66 @@ const QuickSettings = () => {
       value: "compact",
       label: "Compact",
       imgSrc: "/assets/images/Compact.png",
+    },
+  ];
+
+  const inboxTypes = [
+    {
+      value: "default",
+      label: "Default",
+      imgSrc: "/assets/images/Classic.png",
+      handleCustomize: () => {
+        console.log("customize");
+      },
+    },
+    {
+      value: "important-first",
+      label: "Important first",
+      imgSrc: "/assets/images/Importantfirst.png",
+    },
+    {
+      value: "unread-first",
+      label: "Unread first",
+      imgSrc: "/assets/images/Unreadfirst.png",
+    },
+    {
+      value: "starred-first",
+      label: "Starred first",
+      imgSrc: "/assets/images/Starredfirst.png",
+    },
+    {
+      value: "priority-inbox",
+      label: "Priority Inbox",
+      imgSrc: "/assets/images/Priorityinbox.png",
+      handleCustomize: () => {
+        console.log("priority inbox");
+      },
+    },
+    {
+      value: "multiple-inboxes",
+      label: "Multiple Inboxes",
+      imgSrc: "/assets/images/MultipleInboxes.png",
+      handleCustomize: () => {
+        console.log("multiple inboxes");
+      },
+    },
+  ];
+
+  const readingPanes = [
+    {
+      value: "no-split",
+      label: "No split",
+      imgSrc: "/assets/images/Previewpaneoff.png",
+    },
+    {
+      value: "right-of-inbox",
+      label: "Right of inbox",
+      imgSrc: "/assets/images/Previewpaneright.png",
+    },
+    {
+      value: "below-inbox",
+      label: "Below inbox",
+      imgSrc: "/assets/images/Previewpanebottom.png",
     },
   ];
 
@@ -81,7 +143,8 @@ const QuickSettings = () => {
 
       <QuickSettingsContent>
         <RadioSection title="Density" defaultValue="default" items={densities} />
-        <p style={{ margin: 0, color: "#666", fontSize: 14 }}>Configure your email preferences and settings here.</p>
+        <RadioSection title="Inbox type" defaultValue="default" items={inboxTypes} />
+        <RadioSection title="Reading pane" defaultValue="default" items={readingPanes} />
       </QuickSettingsContent>
     </Container>
   );

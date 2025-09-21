@@ -94,6 +94,7 @@ const RadioSection = ({ title, items, defaultValue }) => {
             selectedValue={selectedValue}
             handleChange={handleChange}
             imgSrc={item.imgSrc}
+            handleCustomize={item.handleCustomize}
           />
         ))}
       </Box>
