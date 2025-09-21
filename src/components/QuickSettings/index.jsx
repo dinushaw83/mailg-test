@@ -27,12 +27,6 @@ const QuickSettingsContent = styled.div`
   min-height: 0; /* This is important for flex children to be scrollable */
 `;
 
-const initialState = {
-  density: "default",
-  inboxType: "default",
-  threading: true,
-};
-
 const QuickSettings = () => {
   const {
     showQuickSettings,

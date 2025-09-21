@@ -3,6 +3,27 @@ import { Link } from "react-router-dom";
 
 import CheckBox from "../ui/CheckBox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+
+const getAttachmentIcon = (attachment) => {
+  const isYouTubeVideo = attachment.name.includes("youtube");
+  if (isYouTubeVideo) {
+    return <img src="/assets/images/icon_2_youtube_x16.png" alt="YouTube Video" width={16} />;
+  }
+  const extension = attachment.name.split(".").pop();
+
+  switch (extension) {
+    case "pdf":
+      return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" width={16} />;
+    case "doc":
+    case "docx":
+    case "xls":
+      return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" width={16} />;
+    default:
+      return <img src="/assets/images/icon_1_image_x32.png" alt="Document" width={16} />;
+  }
+};
 
 const Table = ({
   emails,
@@ -18,7 +39,7 @@ const Table = ({
   getLabelBadges,
   formatDate,
 }) => {
-  const { setPreviewEmail, panelState } = useGlobalContext();
+  const { setPreviewEmail, panelState, density } = useGlobalContext();
   const handleClickRow = (email, threadId) => {
     if (panelState.showPanel) {
       setPreviewEmail(email);
@@ -39,6 +60,7 @@ const Table = ({
       >
         <tbody>
           {emails.map((email, index) => {
+            console.log("email", email);
             const threadId = email.threadId.split(":")[1];
             return (
               <tr
@@ -50,6 +72,14 @@ const Table = ({
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
                 onClick={() => handleClickRow(email, threadId)}
+                read={email.read}
+                style={{
+                  ...(density === "compact"
+                    ? {
+                        padding: 2,
+                      }
+                    : {}),
+                }}
               >
                 <td className="PF xY" />
                 <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
@@ -60,6 +90,7 @@ const Table = ({
                     onChange={() => selection.toggle(threadId)}
                   />
                 </td>
+                {/* Star */}
                 <td className={`apU ${email.starred ? "" : "xY"}`}>
                   <button
                     type="button"
@@ -90,6 +121,7 @@ const Table = ({
                     </span>
                   </button>
                 </td>
+                {/* Important */}
                 <td className="WA xY">
                   <div
                     className="pG"
@@ -113,6 +145,7 @@ const Table = ({
                     <div className="bnj" />
                   </div>
                 </td>
+                {/* Sender */}
                 <td className="yX xY" role="gridcell" tabIndex={-1}>
                   <div id={`:pj${index}`} className="afn sf-hidden">
                     {getAccessibilityText(email)}
@@ -132,6 +165,7 @@ const Table = ({
                     </span>
                   </div>
                 </td>
+                {/* Subject */}
                 <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
                   <div className="a4X">
                     <Link to={`${location.pathname}/${threadId}`} className="xS" role="link">
@@ -193,8 +227,37 @@ const Table = ({
                         </span>
                       </div>
                     </Link>
-                    <span className="aKS sf-hidden" />
                   </div>
+                  {density === "default" && email.attachments.length > 0 && (
+                    <div style={{ display: "flex", gap: "5px", marginTop: "5px" }}>
+                      {email.attachments.map((attachment) => (
+                        <Button
+                          variant="outlined"
+                          sx={{
+                            borderRadius: 10,
+                            color: "rgb(95, 99, 104)",
+                            textTransform: "none",
+                            maxWidth: "160px",
+                            border: "none",
+                            boxShadow: "inset 0 0 0 1px rgba(100,121,143,0.12)",
+                          }}
+                          size="small"
+                          startIcon={getAttachmentIcon(attachment)}
+                        >
+                          <Typography
+                            sx={{
+                              textOverflow: "ellipsis",
+                              overflow: "hidden",
+                              whiteSpace: "nowrap",
+                              fontSize: "0.875rem",
+                            }}
+                          >
+                            {attachment.name}sdsd
+                          </Typography>
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </td>
                 <td className="byZ xY sf-hidden" role="gridcell" tabIndex={-1} />
                 <td className="yf xY">&nbsp;</td>
