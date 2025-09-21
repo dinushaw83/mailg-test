@@ -60,7 +60,6 @@ const Table = ({
       >
         <tbody>
           {emails.map((email, index) => {
-            console.log("email", email);
             const threadId = email.threadId.split(":")[1];
             return (
               <tr
