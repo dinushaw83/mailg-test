@@ -7,6 +7,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import RadioSection from "./RadioSection";
+import Apps from "./Apps";
 
 const Container = styled.div`
   width: 300px; /* Fixed width for the right panel */
@@ -142,6 +143,7 @@ const QuickSettings = () => {
       <Divider sx={{ marginLeft: "0.2rem", marginRight: "0.5rem" }} />
 
       <QuickSettingsContent>
+        <Apps />
         <RadioSection title="Density" defaultValue="default" items={densities} />
         <RadioSection title="Inbox type" defaultValue="default" items={inboxTypes} />
         <RadioSection title="Reading pane" defaultValue="default" items={readingPanes} />
