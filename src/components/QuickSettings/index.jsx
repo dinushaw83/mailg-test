@@ -9,6 +9,7 @@ import Divider from "@mui/material/Divider";
 import RadioSection from "./RadioSection";
 import Apps from "./Apps";
 import Themes from "./Themes";
+import Threading from "./Threading";
 
 const Container = styled.div`
   width: 300px; /* Fixed width for the right panel */
@@ -149,6 +150,7 @@ const QuickSettings = () => {
         <Themes />
         <RadioSection title="Inbox type" defaultValue="default" items={inboxTypes} />
         <RadioSection title="Reading pane" defaultValue="default" items={readingPanes} />
+        <Threading />
       </QuickSettingsContent>
     </Container>
   );
