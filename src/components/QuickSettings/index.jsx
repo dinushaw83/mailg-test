@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import Button from "@mui/material/Button";
 import { Icon } from "../InboxView/ActionBar";
@@ -27,10 +27,32 @@ const QuickSettingsContent = styled.div`
   min-height: 0; /* This is important for flex children to be scrollable */
 `;
 
+const initialState = {
+  density: "default",
+  inboxType: "default",
+  threading: true,
+};
+
 const QuickSettings = () => {
   const { showQuickSettings, setShowQuickSettings, panelState, setPanelState } = useGlobalContext();
+  const [{ density, inboxType, threading }, setState] = useState(initialState);
+  const setDensity = (value) => {
+    setState((prev) => ({ ...prev, density: value }));
+  };
+  const setInboxType = (value) => {
+    setState((prev) => ({ ...prev, inboxType: value }));
+  };
+  const setReadingPane = (value) => {
+    if (value === "no-split") {
+      setPanelState({ ...panelState, showPanel: false });
+    } else {
+      setPanelState({ ...panelState, direction: value, showPanel: true });
+    }
+  };
 
-  if (!showQuickSettings) return null;
+  const setThreading = (value) => {
+    setState((prev) => ({ ...prev, threading: value }));
+  };
 
   const densities = [
     {
@@ -93,23 +115,8 @@ const QuickSettings = () => {
   ];
 
   const handlePaneChange = (value) => {
-    if (value === "no-split") {
-      setPanelState({ ...panelState, showPanel: false });
-    } else if (value === "right-of-inbox") {
-      setPanelState({ ...panelState, direction: "vertical", showPanel: true });
-    } else if (value === "below-inbox") {
-      setPanelState({ ...panelState, direction: "horizontal", showPanel: true });
-    }
-  };
-
-  const paneValue = () => {
-    if (panelState.direction === "vertical") {
-      return "right-of-inbox";
-    } else if (panelState.direction === "horizontal") {
-      return "below-inbox";
-    } else {
-      return "no-split";
-    }
+    const showPanel = value === "no-split" ? false : true;
+    setPanelState({ ...panelState, direction: value, showPanel });
   };
 
   const readingPanes = [
@@ -119,16 +126,18 @@ const QuickSettings = () => {
       imgSrc: "/assets/images/Previewpaneoff.png",
     },
     {
-      value: "right-of-inbox",
+      value: "vertical",
       label: "Right of inbox",
       imgSrc: "/assets/images/Previewpaneright.png",
     },
     {
-      value: "below-inbox",
+      value: "horizontal",
       label: "Below inbox",
       imgSrc: "/assets/images/Previewpanebottom.png",
     },
   ];
+
+  if (!showQuickSettings) return null;
 
   return (
     <Container>
@@ -166,14 +175,14 @@ const QuickSettings = () => {
 
       <QuickSettingsContent>
         <Apps />
-        <RadioSection title="Density" defaultValue="default" items={densities} />
+        <RadioSection title="Density" value={density} items={densities} setValue={setDensity} />
         <Themes />
-        <RadioSection title="Inbox type" defaultValue="default" items={inboxTypes} />
+        <RadioSection title="Inbox type" value={inboxType} items={inboxTypes} setValue={setInboxType} />
         <RadioSection
           title="Reading pane"
-          defaultValue={paneValue()}
+          value={panelState.direction}
+          setValue={handlePaneChange}
           items={readingPanes}
-          onChange={handlePaneChange}
         />
         <Threading />
       </QuickSettingsContent>

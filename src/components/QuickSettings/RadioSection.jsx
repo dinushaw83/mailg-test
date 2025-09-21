@@ -80,14 +80,7 @@ const RadioItem = ({ value, label, selectedValue, handleChange, handleCustomize,
   );
 };
 
-const RadioSection = ({ title, items, defaultValue, onChange }) => {
-  const [selectedValue, setSelectedValue] = useState(defaultValue);
-
-  const handleChange = (event) => {
-    setSelectedValue(event.target.value);
-    onChange?.(event.target.value);
-  };
-
+const RadioSection = ({ title, items, value, setValue }) => {
   return (
     <Box>
       <Box sx={{ padding: "1rem", paddingBottom: "0" }}>
@@ -108,8 +101,8 @@ const RadioSection = ({ title, items, defaultValue, onChange }) => {
             key={item.value}
             value={item.value}
             label={item.label}
-            selectedValue={selectedValue}
-            handleChange={handleChange}
+            selectedValue={value}
+            handleChange={(e) => setValue(e.target.value)}
             imgSrc={item.imgSrc}
             handleCustomize={item.handleCustomize}
           />
