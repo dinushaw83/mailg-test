@@ -21,6 +21,7 @@ const QuickSettingsContent = styled.div`
   flex: 1;
   padding: 1rem;
   padding-top: 0;
+  overflow-y: auto;
 `;
 
 const QuickSettings = () => {
@@ -60,7 +61,7 @@ const QuickSettings = () => {
         </Button>
       </Box>
 
-      <Divider sx={{ marginLeft: "0.2rem", marginRight: "0.2rem" }} />
+      <Divider sx={{ marginLeft: "0.2rem", marginRight: "0.5rem" }} />
 
       <QuickSettingsContent>
         <p style={{ margin: 0, color: "#666", fontSize: 14 }}>Configure your email preferences and settings here.</p>
