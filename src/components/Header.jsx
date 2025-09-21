@@ -1,7 +1,9 @@
 import React from "react";
 import SearchBar from "./SearchBar";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 const Header = () => {
+  const { showQuickSettings, setShowQuickSettings } = useGlobalContext();
   return (
     <div className="nH">
       <div className="w-asV bbg aiw">
@@ -122,6 +124,7 @@ const Header = () => {
                         aria-label="Settings"
                         aria-expanded="false"
                         aria-haspopup="true"
+                        onClick={() => setShowQuickSettings(!showQuickSettings)}
                       >
                         <svg
                           className="Xy"
@@ -183,10 +186,7 @@ const Header = () => {
                             justifyContent: "center",
                           }}
                         >
-                          <span
-                            className="gb_ae"
-                            style={{ fontWeight: "500", fontSize: "20px", color: "white" }}
-                          >
+                          <span className="gb_ae" style={{ fontWeight: "500", fontSize: "20px", color: "white" }}>
                             J
                           </span>
                           {/* <div className="gb_Q gb_R sf-hidden" aria-hidden="true">

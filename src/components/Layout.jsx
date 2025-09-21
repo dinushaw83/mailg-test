@@ -2,6 +2,13 @@ import React from "react";
 import LeftSidebar from "./LeftSidebar";
 import Header from "./Header";
 import RightSidebar from "./RightSidebar";
+import styled from "@emotion/styled";
+
+const ContentContainer = styled.div`
+  background-color: transparent;
+  position: relative;
+  display: flex;
+`;
 
 const Layout = ({ children }) => {
   return (
@@ -10,11 +17,11 @@ const Layout = ({ children }) => {
       <div className="nH">
         <div className="nH" style={{ position: "relative" }}>
           <Header />
-          <div className="nH aqk aql bkL">
+          <ContentContainer id="content-container">
             <LeftSidebar />
             {children}
             <RightSidebar />
-          </div>
+          </ContentContainer>
         </div>
       </div>
     </div>

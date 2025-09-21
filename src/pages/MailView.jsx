@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useEffect } from "react";
+import React, { useContext, useMemo, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import EmailList from "../components/EmailList";
@@ -6,9 +6,72 @@ import { GlobalContext } from "../contexts/GlobalContext";
 import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
+import styled from "@emotion/styled";
+
+const Container = styled.div`
+  overflow: hidden;
+  flex: 1;
+  min-height: 795px;
+  display: flex;
+  max-width: 100%;
+`;
+
+const EmailListContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 80px);
+  background-color: #a9f3a9;
+  flex: 1;
+  min-width: 0; /* Allows flex item to shrink below content size */
+`;
+
+const QuickSettings = styled.div`
+  width: 300px; /* Fixed width for the right panel */
+  min-width: 200px; /* Minimum width */
+  background-color: #f0f0f0;
+  border-left: 1px solid #ddd;
+  padding: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+
+  &:hover {
+    background-color: #e0e0e0;
+    color: #333;
+  }
+
+  &:focus {
+    outline: 2px solid #4285f4;
+    outline-offset: 2px;
+  }
+`;
+
+const QuickSettingsContent = styled.div`
+  margin-top: 24px;
+  flex: 1;
+`;
 
 const Inbox = () => {
-  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);
+  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser, showQuickSettings, setShowQuickSettings } =
+    useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -39,47 +102,34 @@ const Inbox = () => {
   }, []);
 
   return (
-    <div className="nH bkK">
-      <div className="nH">
-        <div className="nH ar4 z">
-          <div>
-            <div id=":4" className="aeH" />
-            <div className="AO">
-              <div id=":3" className="Tm">
-                <div id=":1" className="aeF" style={{ minHeight: 795 }}>
-                  <div className="nH">
-                    <div className="bGI nH oy8Mbf aE3 S4" role="main">
-                      <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
-                      <div />
-                      <div className="X3" />
-                      <div className="a0V">
-                        <h2 tabIndex={-1}>Conversations</h2>
-                      </div>
-                      <div className="afn sf-hidden" />
-
-                      <div />
-                      <div className="aKB afn sf-hidden" />
-                      <div className="Nr UI S2 vy">
-                        <EmailList emails={rows} />
-
-                        <div className="Nt sf-hidden" jsname="dt0bVc" />
-                        <div
-                          className="Nu S3 aZ6 sf-hidden"
-                          id=":1d"
-                          jsname="h50Ewe"
-                          style={{ flexGrow: 0, height: 0 }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div id=":2" className="aeG" style={{ display: "none" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Container id="cont-123">
+      <EmailListContainer role="main">
+        <ToolBar
+          totalFilteredItems={filteredRows.length}
+          threads={rows}
+          showQuickSettings={showQuickSettings}
+          onToggleQuickSettings={() => setShowQuickSettings(!showQuickSettings)}
+        />
+        <EmailList emails={rows} />
+      </EmailListContainer>
+      {showQuickSettings && (
+        <QuickSettings>
+          <CloseButton
+            onClick={() => setShowQuickSettings(false)}
+            aria-label="Close Quick Settings"
+            title="Close Quick Settings"
+          >
+            ×
+          </CloseButton>
+          <QuickSettingsContent>
+            <h3 style={{ margin: 0, marginBottom: 16, fontSize: 16, fontWeight: 500 }}>Quick Settings</h3>
+            <p style={{ margin: 0, color: "#666", fontSize: 14 }}>
+              Configure your email preferences and settings here.
+            </p>
+          </QuickSettingsContent>
+        </QuickSettings>
+      )}
+    </Container>
   );
 };
 

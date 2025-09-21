@@ -107,7 +107,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
 
   return (
-    <div className="Nu tf aZ6" style={{ flex: 1, display: "flex" }}>
+    <div className="Nu tf aZ6" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ height: "100%", minWidth: "518px", overflowY: "hidden" }}>
         <PanelGroup direction={direction}>
           <Panel defaultSize={40} minSize={25}>

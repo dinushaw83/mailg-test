@@ -111,14 +111,20 @@ const LastAccountActivity = ({ centerText = false }) => {
   );
 };
 
+const FooterContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 const Footer = () => {
   return (
-    <div className="l2 pfiaof V4" role="contentinfo">
+    <FooterContainer>
       <StorageUsage />
       <TermsPrivacyProgramPolicies />
       <LastAccountActivity />
       <div style={{ clear: "both" }} />
-    </div>
+    </FooterContainer>
   );
 };
 

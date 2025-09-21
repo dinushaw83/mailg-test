@@ -172,7 +172,7 @@ const ToggleSplitPaneButton = () => {
           <ActionMenuItem
             label="No Spit"
             onClick={() => {
-              handleSplitPane({ showPanel: false });
+              handleSplitPane({ direction: "vertical", showPanel: false });
             }}
           />
           <ActionMenuItem
