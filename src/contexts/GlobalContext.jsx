@@ -36,6 +36,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [threading, setThreading] = useState(true);
   const [inboxType, setInboxType] = useState("default");
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
+  const [rightSidebarExpanded, setRightSidebarExpanded] = usePersistedState("rightSidebarExpanded", true);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -146,6 +147,8 @@ export const GlobalContextProvider = ({ children }) => {
     setThreading,
     isLeftSidebarExpanded,
     setIsLeftSidebarExpanded,
+    rightSidebarExpanded,
+    setRightSidebarExpanded,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

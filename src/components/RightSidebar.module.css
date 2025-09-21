@@ -1,0 +1,81 @@
+.rightSidebar {
+  background-color: #f8fafd !important;
+  height: calc(100vh - 64px) !important;
+  transition: width 0.3s ease-in-out;
+  display: flex;
+}
+
+.rightSidebarContentTabsWrapper {
+  width: 320px;
+  backgroundcolor: "#fff";
+  display: flex;
+  flex-direction: column;
+}
+
+.rightSidebarContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 5px;
+  justify-content: space-between;
+  padding-bottom: 15px;
+  position: relative;
+  height: calc(100vh - 79px) !important;
+}
+
+.rightSidebarContentTabs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rightSidebarTabIconWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.tabIconBorder {
+  background-color: transparent;
+  height: 40px;
+  width: 3px;
+  float: left;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.tabIconBorder[data-active="true"] {
+  background-color: #4285f4;
+  border-radius: 0 3px 3px 0;
+}
+
+.showHideSidebar {
+  position: relative;
+  right: 0;
+  zindex: 10;
+  padding-right: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.showHideSidebar[data-expanded="false"] {
+  right: 15px;
+  border-top-left-radius: 38px;
+  border-bottom-left-radius: 38px;
+  box-shadow: 0 1px 1px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  background-color: #fff;
+  padding-right: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.showHideSidebar[data-expanded="false"]:hover {
+  cursor: pointer;
+  padding-right: 50px;
+  background-color: #f8fafd;
+}
+
+.showHideSidebar[data-expanded="false"]:not(:hover) .showHideSidebarIcon {
+  padding-left: 2px !important;
+}
