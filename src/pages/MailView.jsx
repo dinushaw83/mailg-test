@@ -7,6 +7,7 @@ import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
 import styled from "@emotion/styled";
+import QuickSettings from "../components/QuickSettings";
 
 const Container = styled.div`
   overflow: hidden;
@@ -20,58 +21,12 @@ const EmailListContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - 80px);
-  background-color: #a9f3a9;
   flex: 1;
   min-width: 0; /* Allows flex item to shrink below content size */
 `;
 
-const QuickSettings = styled.div`
-  width: 300px; /* Fixed width for the right panel */
-  min-width: 200px; /* Minimum width */
-  background-color: #f0f0f0;
-  border-left: 1px solid #ddd;
-  padding: 16px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: #666;
-  padding: 4px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-
-  &:hover {
-    background-color: #e0e0e0;
-    color: #333;
-  }
-
-  &:focus {
-    outline: 2px solid #4285f4;
-    outline-offset: 2px;
-  }
-`;
-
-const QuickSettingsContent = styled.div`
-  margin-top: 24px;
-  flex: 1;
-`;
-
 const Inbox = () => {
-  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser, showQuickSettings, setShowQuickSettings } =
-    useContext(GlobalContext);
+  const { emails, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -107,23 +62,7 @@ const Inbox = () => {
         <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
         <EmailList emails={rows} />
       </EmailListContainer>
-      {showQuickSettings && (
-        <QuickSettings>
-          <CloseButton
-            onClick={() => setShowQuickSettings(false)}
-            aria-label="Close Quick Settings"
-            title="Close Quick Settings"
-          >
-            ×
-          </CloseButton>
-          <QuickSettingsContent>
-            <h3 style={{ margin: 0, marginBottom: 16, fontSize: 16, fontWeight: 500 }}>Quick Settings</h3>
-            <p style={{ margin: 0, color: "#666", fontSize: 14 }}>
-              Configure your email preferences and settings here.
-            </p>
-          </QuickSettingsContent>
-        </QuickSettings>
-      )}
+      <QuickSettings />
     </Container>
   );
 };
