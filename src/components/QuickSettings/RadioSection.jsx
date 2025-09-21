@@ -80,11 +80,12 @@ const RadioItem = ({ value, label, selectedValue, handleChange, handleCustomize,
   );
 };
 
-const RadioSection = ({ title, items, defaultValue }) => {
+const RadioSection = ({ title, items, defaultValue, onChange }) => {
   const [selectedValue, setSelectedValue] = useState(defaultValue);
 
   const handleChange = (event) => {
     setSelectedValue(event.target.value);
+    onChange?.(event.target.value);
   };
 
   return (

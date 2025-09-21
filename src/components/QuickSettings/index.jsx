@@ -28,7 +28,7 @@ const QuickSettingsContent = styled.div`
 `;
 
 const QuickSettings = () => {
-  const { showQuickSettings, setShowQuickSettings } = useGlobalContext();
+  const { showQuickSettings, setShowQuickSettings, panelState, setPanelState } = useGlobalContext();
 
   if (!showQuickSettings) return null;
 
@@ -92,6 +92,26 @@ const QuickSettings = () => {
     },
   ];
 
+  const handlePaneChange = (value) => {
+    if (value === "no-split") {
+      setPanelState({ ...panelState, showPanel: false });
+    } else if (value === "right-of-inbox") {
+      setPanelState({ ...panelState, direction: "vertical", showPanel: true });
+    } else if (value === "below-inbox") {
+      setPanelState({ ...panelState, direction: "horizontal", showPanel: true });
+    }
+  };
+
+  const paneValue = () => {
+    if (panelState.direction === "vertical") {
+      return "right-of-inbox";
+    } else if (panelState.direction === "horizontal") {
+      return "below-inbox";
+    } else {
+      return "no-split";
+    }
+  };
+
   const readingPanes = [
     {
       value: "no-split",
@@ -149,7 +169,12 @@ const QuickSettings = () => {
         <RadioSection title="Density" defaultValue="default" items={densities} />
         <Themes />
         <RadioSection title="Inbox type" defaultValue="default" items={inboxTypes} />
-        <RadioSection title="Reading pane" defaultValue="default" items={readingPanes} />
+        <RadioSection
+          title="Reading pane"
+          defaultValue={paneValue()}
+          items={readingPanes}
+          onChange={handlePaneChange}
+        />
         <Threading />
       </QuickSettingsContent>
     </Container>
