@@ -104,12 +104,7 @@ const Inbox = () => {
   return (
     <Container id="cont-123">
       <EmailListContainer role="main">
-        <ToolBar
-          totalFilteredItems={filteredRows.length}
-          threads={rows}
-          showQuickSettings={showQuickSettings}
-          onToggleQuickSettings={() => setShowQuickSettings(!showQuickSettings)}
-        />
+        <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
         <EmailList emails={rows} />
       </EmailListContainer>
       {showQuickSettings && (
