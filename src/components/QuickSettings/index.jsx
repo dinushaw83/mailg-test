@@ -6,6 +6,7 @@ import { Icon } from "../InboxView/ActionBar";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
+import RadioSection from "./RadioSection";
 
 const Container = styled.div`
   width: 300px; /* Fixed width for the right panel */
@@ -17,10 +18,7 @@ const Container = styled.div`
 `;
 
 const QuickSettingsContent = styled.div`
-  margin-top: 24px;
   flex: 1;
-  padding: 1rem;
-  padding-top: 0;
   overflow-y: auto;
 `;
 
@@ -28,6 +26,24 @@ const QuickSettings = () => {
   const { showQuickSettings, setShowQuickSettings } = useGlobalContext();
 
   if (!showQuickSettings) return null;
+
+  const densities = [
+    {
+      value: "default",
+      label: "Default",
+      imgSrc: "/assets/images/Default.png",
+    },
+    {
+      value: "comfortable",
+      label: "Comfortable",
+      imgSrc: "/assets/images/Comfortable.png",
+    },
+    {
+      value: "compact",
+      label: "Compact",
+      imgSrc: "/assets/images/Compact.png",
+    },
+  ];
 
   return (
     <Container>
@@ -64,6 +80,7 @@ const QuickSettings = () => {
       <Divider sx={{ marginLeft: "0.2rem", marginRight: "0.5rem" }} />
 
       <QuickSettingsContent>
+        <RadioSection title="Density" defaultValue="default" items={densities} />
         <p style={{ margin: 0, color: "#666", fontSize: 14 }}>Configure your email preferences and settings here.</p>
       </QuickSettingsContent>
     </Container>
