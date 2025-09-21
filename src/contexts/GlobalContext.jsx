@@ -26,6 +26,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
   const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
+  const [rightSidebarExpanded, setRightSidebarExpanded] = usePersistedState("rightSidebarExpanded", true);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -122,6 +123,8 @@ export const GlobalContextProvider = ({ children }) => {
     setItemsPerPage,
     normalizedEmails,
     refreshEmails,
+    rightSidebarExpanded,
+    setRightSidebarExpanded,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
