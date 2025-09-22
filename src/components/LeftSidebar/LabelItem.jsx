@@ -187,7 +187,7 @@ const handleColorChange = (color) => {
                 </span>
               )}
 
-              <div className="qj aEe qr" style={{ backgroundColor: selectedColor?.rgb }} />
+              <div className="qj aEe qr" style={{ backgroundColor: selectedColor?.rgb, opacity: selectedColor?.rgb ? 1 : 0.5 }} />
 
               <div className="aio aip">
                 <span className="nU">{display}</span>
