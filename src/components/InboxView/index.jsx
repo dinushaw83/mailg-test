@@ -76,6 +76,10 @@ const InboxView = () => {
               senderName={message.from.name}
               senderEmail={message.from.email}
               attachments={message.attachments}
+              isScheduled={message.labels?.includes("Scheduled")}
+              scheduledDate={message.scheduledDate}
+              scheduledTime={message.scheduledTime}
+              emailId={message.id}
             />
             {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
           </React.Fragment>
