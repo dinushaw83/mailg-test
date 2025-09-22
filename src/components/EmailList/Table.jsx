@@ -60,13 +60,27 @@ const OneColumnData = ({ email, threadId, getAccessibilityText, getSenderClassNa
               </span>
             </div>
           </Box>
-          <span
-            title={new Date(email.timestamp).toLocaleString()}
-            id={`:pu${index}`}
-            aria-label={new Date(email.timestamp).toLocaleString()}
-          >
-            <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
-          </span>
+          <Box>
+            {email.attachments.length > 0 && (
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "18px", color: "rgb(95,99,104)", marginRight: "8px" }}
+              >
+                attachment
+              </span>
+            )}
+
+            <span
+              title={new Date(email.timestamp).toLocaleString()}
+              id={`:pu${index}`}
+              aria-label={new Date(email.timestamp).toLocaleString()}
+              style={{
+                fontSize: "0.75rem",
+              }}
+            >
+              <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+            </span>
+          </Box>
         </Box>
       </td>
     </>
