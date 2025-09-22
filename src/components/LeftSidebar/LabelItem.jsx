@@ -8,6 +8,7 @@ import { Menu } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import useLabels from "../../hooks/useLabels";
 import ChangeLabelColorModal, { SCOPES } from "./ChangeLabelColorModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const Swatch = styled("div")(({ theme, rgb, text }) => ({
   height: 20,
@@ -63,19 +64,16 @@ export default function LabelItem({
   onToggle, // () => void
 }) {
   const { setLabelColor, labels } = useLabels();
+  const { setLabels } = useGlobalContext()
   const label = labels[labelKey];
   const selectedColor = label?.color;
-
-const handleColorChange = (color) => {
-  setLabelColor(labelKey, color);
-};
 
   // Route like /label/:label where :label is encodeURIComponent(labelKey)
   const match = useMatch("/label/:label");
   const currentKey = match?.params?.label ? decodeURIComponent(match.params.label) : "";
   const active = currentKey === labelKey;
-  const [inLabelList, setInLabelList] = useState("show");
-  const [inMessageList, setInMessageList] = useState("show");
+  const inLabelList = label?.inLabelList ?? "show";
+  const inMessageList = label?.inMessageList ?? "show";
   const [pendingColor, setPendingColor] = useState(null);
 
   // Main menu
@@ -86,7 +84,7 @@ const handleColorChange = (color) => {
   const [colorAnchorEl, setColorAnchorEl] = useState(null);
   const colorOpen = Boolean(colorAnchorEl);
   const [colorModalOpen, setColorModalOpen] = useState(false);
-  
+
   const handleMenuButtonClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -258,7 +256,14 @@ const handleColorChange = (color) => {
             return (
               <MenuItem
                 key={opt.key}
-                onClick={() => { setInLabelList(opt.key); handleMenuClose() }}
+                onClick={() => {
+                  setLabels(prev => {
+                    const next = { ...prev };
+                    next[labelKey] = { ...next[labelKey], inLabelList: opt.key };
+                    return next;
+                  });
+                  handleMenuClose()
+                }}
                 // selected={selected}
                 role="menuitemradio"
                 aria-checked={selected}
@@ -282,7 +287,14 @@ const handleColorChange = (color) => {
             return (
               <MenuItem
                 key={opt.key}
-                onClick={() => { setInMessageList(opt.key); handleMenuClose() }}
+                onClick={() => {
+                  setLabels(prev => {
+                    const next = { ...prev };
+                    next[labelKey] = { ...next[labelKey], inMessageList: opt.key };
+                    return next;
+                  });
+                  handleMenuClose()
+                }}
                 // selected={selected}
                 role="menuitemradio"
                 aria-checked={selected}
