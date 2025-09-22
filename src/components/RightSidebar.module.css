@@ -79,3 +79,7 @@
 .showHideSidebar[data-expanded="false"]:not(:hover) .showHideSidebarIcon {
   padding-left: 2px !important;
 }
+
+.hideContent {
+  display: none;
+}
