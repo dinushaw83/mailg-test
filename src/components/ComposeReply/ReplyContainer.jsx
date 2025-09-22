@@ -3,6 +3,7 @@ import EmailRecipients from '../common/EmailRecipients';
 import { useGlobalContext } from '../../contexts/GlobalContext';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import { useSendEmail } from '../../hooks/useSendEmail';
+import { useScheduleEmail } from '../../hooks/useScheduleEmail';
 import { useDraftManagement } from '../../hooks/useDraftManagement';
 import InfoModal from '../ComposeEmail/InfoModal';
 import "./ReplyContainer.css";
@@ -157,8 +158,12 @@ ${email.body}
   };
 
   const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail(
-    selectedReplyOption === 'forward' ? undefined : email.id,
-    selectedReplyOption === 'forward' ? email.id : undefined,
+    selectedReplyOption,
+    email
+  );
+
+  const { handleSchedule: handleScheduleEmail, showErrorModal: showScheduleErrorModal, errorMessage: scheduleErrorMessage, handleErrorModalClose: handleScheduleErrorModalClose } = useScheduleEmail(
+    selectedReplyOption,
     email
   );
 
@@ -187,6 +192,29 @@ ${email.body}
     handleSnackbarUndoDelete(onUndoDelete);
   };
 
+  const handleSchedule = (scheduleData) => {
+    handleScheduleEmail({
+      to: recipientsForDraft.to,
+      cc: recipientsForDraft.cc,
+      bcc: recipientsForDraft.bcc,
+      subject,
+      content,
+      onClose: () => {
+        if (isDraft && draftId) {
+          deleteDraft();
+        }
+        setContent({ html: '', plainText: '' });
+        if (onClose) {
+          onClose();
+        }
+      },
+      currentDraftId: draftId,
+      isDraft: isDraft,
+      scheduledDate: scheduleData.scheduledDate,
+      scheduledTime: scheduleData.scheduledTime,
+    });
+  };
+
   const handleDelete = () => {
     if (isDraft && draftId) {
       // Store the draft data for potential restoration
@@ -198,6 +226,7 @@ ${email.body}
         to: recipientsForDraft.to,
         cc: recipientsForDraft.cc,
         bcc: recipientsForDraft.bcc,
+        replyType: selectedReplyOption,
         subject,
         content,
       };
@@ -316,6 +345,7 @@ ${email.body}
             className="reply-text-editor"
             onSend={handleSend}
             onDelete={handleDelete}
+            onSchedule={handleSchedule}
             textEditorMinHeight="90px"
             textEditorMaxHeight="250px"
           />
@@ -337,6 +367,22 @@ ${email.body}
           },
         ]}
         modalBoxStyle={{ width: errorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
+      />
+
+      {/* Schedule Error Modal */}
+      <InfoModal
+        isOpen={showScheduleErrorModal}
+        onClose={handleScheduleErrorModalClose}
+        title="Error"
+        message={scheduleErrorMessage}
+        buttons={[
+          {
+            text: "OK",
+            onClick: handleScheduleErrorModalClose,
+            className: "primary",
+          },
+        ]}
+        modalBoxStyle={{ width: scheduleErrorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
       />
     </>
   )

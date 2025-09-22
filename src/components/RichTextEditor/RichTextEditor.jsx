@@ -11,6 +11,8 @@ import FormatColorText from "@mui/icons-material/FormatColorText";
 import InsertLink from "@mui/icons-material/InsertLink";
 import EditorMenuControls from "./EditorMenuControls";
 import useExtensions from "./useExtensions";
+import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
+import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 
 function fileListToImageFiles(fileList) {
@@ -20,7 +22,7 @@ function fileListToImageFiles(fileList) {
   });
 }
 
-export default function Editor({ content, onChange, onSend, onDelete, textEditorMinHeight, textEditorMaxHeight, useCompactFormatting = false }) {
+export default function Editor({ content, onChange, onSend, onDelete, onSchedule, textEditorMinHeight, textEditorMaxHeight, useCompactFormatting = false }) {
   const extensions = useExtensions({
     placeholder: "",
   });
@@ -31,6 +33,9 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
   const [linkText, setLinkText] = useState("");
   const [linkHref, setLinkHref] = useState("");
   const [hasTextSelection, setHasTextSelection] = useState(false);
+  const [sendOptionsAnchorEl, setSendOptionsAnchorEl] = useState(null);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [dateTimePickerOpen, setDateTimePickerOpen] = useState(false);
 
   const handleNewImageFiles = useCallback(
     (files, insertPosition) => {
@@ -160,6 +165,62 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
 
   const canApply = hasTextSelection ? (linkHref.trim().length > 0) : (linkText.trim().length > 0 && linkHref.trim().length > 0);
 
+  const openSendOptionsPopover = (event) => {
+    setSendOptionsAnchorEl(event.currentTarget);
+  };
+
+  const closeSendOptionsPopover = () => {
+    setSendOptionsAnchorEl(null);
+  };
+
+  const handleScheduleSend = () => {
+    setScheduleModalOpen(true);
+    closeSendOptionsPopover();
+  };
+
+  const handleCloseScheduleModal = () => {
+    setScheduleModalOpen(false);
+  };
+
+  const handleSelectSchedule = (scheduleOption) => {
+    console.log("Schedule selected:", scheduleOption);
+    if (onSchedule) {
+      onSchedule({
+        scheduledDate: scheduleOption.date.toLocaleDateString(),
+        scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      });
+    }
+    setScheduleModalOpen(false);
+  };
+
+  const handleOpenDateTimePicker = () => {
+    setDateTimePickerOpen(true);
+    setScheduleModalOpen(false);
+  };
+
+  const handleCloseDateTimePicker = () => {
+    setDateTimePickerOpen(false);
+  };
+
+  const handleDateTimeSchedule = (scheduleOption) => {
+    console.log("Date/Time scheduled:", scheduleOption);
+    if (onSchedule) {
+      onSchedule({
+        scheduledDate: scheduleOption.date.toLocaleDateString(),
+        scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      });
+    }
+    setDateTimePickerOpen(false);
+  };
+
   return (
     <>
       <RichTextEditor
@@ -231,11 +292,12 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
                       Send
                     </div>
                     <div
-                      aria-expanded="false"
+                      aria-expanded={Boolean(sendOptionsAnchorEl)}
                       aria-haspopup="true"
                       aria-label="More send options"
                       role="button"
                       tabIndex="1"
+                      onClick={openSendOptionsPopover}
                       style={{
                         whiteSpace: "nowrap",
                         textAlign: "center",
@@ -363,6 +425,44 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
+
+                  {/* Send Options Dropdown */}
+                  <Popper
+                    open={Boolean(sendOptionsAnchorEl)}
+                    anchorEl={sendOptionsAnchorEl}
+                    placement="top"
+                    style={{ zIndex: 1500 }}
+                  >
+                    <ClickAwayListener onClickAway={closeSendOptionsPopover} mouseEvent="onMouseDown" touchEvent="onTouchStart">
+                      <Paper elevation={5} sx={{ p: 0, minWidth: 160 }}>
+                        <div
+                          onClick={handleScheduleSend}
+                          style={{
+                            padding: "12px 16px",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            color: "rgb(60, 64, 67)",
+                            borderBottom: "1px solid rgba(0,0,0,0.1)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            transition: "background-color 0.1s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "rgba(0,0,0,0.04)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "transparent";
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "rgb(95, 99, 104)" }}>
+                            schedule
+                          </span>
+                          Schedule send
+                        </div>
+                      </Paper>
+                    </ClickAwayListener>
+                  </Popper>
                 </div>
 
                 <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -402,6 +502,20 @@ export default function Editor({ content, onChange, onSend, onDelete, textEditor
         )}
       </RichTextEditor>
 
+      {/* Schedule Email Modal */}
+      <ScheduleEmailModal
+        open={scheduleModalOpen}
+        onClose={handleCloseScheduleModal}
+        onSelectSchedule={handleSelectSchedule}
+        onOpenDateTimePicker={handleOpenDateTimePicker}
+      />
+
+      {/* Date Time Picker Modal */}
+      <DateTimePickerModal
+        open={dateTimePickerOpen}
+        onClose={handleCloseDateTimePicker}
+        onSchedule={handleDateTimeSchedule}
+      />
     </>
   );
 }
