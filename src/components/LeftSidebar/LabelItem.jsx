@@ -1,8 +1,55 @@
-import React from "react";
-import { IconButton } from "@mui/material";
+import React, { useState, useMemo } from "react";
+import { Box, IconButton, Popover, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { NavLink, useMatch } from "react-router-dom";
 import Icon from "../ui/Icon";
+import { MenuItem, ListItemIcon, Divider, ListItemText } from "@mui/material";
+// import ColorLensIcon from "@mui/icons-material/ColorLens";
+import { Menu } from "@mui/material";
+import { styled } from "@mui/material/styles";
+
+const Swatch = styled("div")(({ theme, rgb, text }) => ({
+  height: 20,
+  width: 20,
+  borderRadius: "50%",
+  backgroundColor: rgb,
+  color: text,
+  fontSize: "0.875rem",
+  fontWeight: 500,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  lineHeight: "19px",
+  cursor: "pointer",
+  transition: "box-shadow 0.2s ease",
+  "&:hover": {
+    boxShadow: `0 0 0 3px ${theme.palette.action.hover}`,
+  },
+}));
+
+function ColorCell({ rgb, text, check, onClick = () => { } }) {
+  return (
+    <td role="gridcell" style={{ padding: 2, textAlign: "center" }} onClick={onClick}>
+      <Swatch rgb={rgb} text={text} style={{ position: "relative" }}>
+        {check ? (
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 20,
+              color: text,
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            check
+          </span>
+        ) : "a"}
+      </Swatch>
+    </td>
+  );
+}
 
 export default function LabelItem({
   labelKey,
@@ -17,6 +64,88 @@ export default function LabelItem({
   const match = useMatch("/label/:label");
   const currentKey = match?.params?.label ? decodeURIComponent(match.params.label) : "";
   const active = currentKey === labelKey;
+  const [inLabelList, setInLabelList] = useState("show");
+  const [inMessageList, setInMessageList] = useState("show");
+
+  // Main menu
+  const [anchorEl, setAnchorEl] = useState(null);
+  const menuOpen = Boolean(anchorEl);
+
+  // Submenu (Label color)
+  const [colorAnchorEl, setColorAnchorEl] = useState(null);
+  const colorOpen = Boolean(colorAnchorEl);
+
+  const [selectedColor, setSelectedColor] = useState(null);
+
+  const handleMenuButtonClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setColorAnchorEl(null); // ensure submenu closes too
+  };
+
+  const handleColorMenuClose = () => {
+    setColorAnchorEl(null);
+  };
+
+  const IN_LABEL_LIST = [
+    { key: "show", label: "Show" },
+    { key: "show_if_unread", label: "Show if unread" },
+    { key: "hide", label: "Hide" },
+  ];
+
+  const IN_MESSAGE_LIST = [
+    { key: "show", label: "Show" },
+    { key: "hide", label: "Hide" },
+  ];
+
+  const COLORS = [
+    // row 1
+    [
+      { rgb: "rgb(231, 231, 231)", text: "rgb(70, 70, 70)" },
+      { rgb: "rgb(182, 207, 245)", text: "rgb(13, 52, 114)" },
+      {
+        rgb: "rgb(152, 215, 228)",
+        text: "rgb(13, 59, 68)",
+        selected: true,
+        check: true,
+      },
+      { rgb: "rgb(227, 215, 255)", text: "rgb(61, 24, 142)" },
+      { rgb: "rgb(251, 211, 224)", text: "rgb(113, 26, 54)" },
+      { rgb: "rgb(242, 178, 168)", text: "rgb(138, 28, 10)" },
+    ],
+    // row 2
+    [
+      { rgb: "rgb(194, 194, 194)", text: "rgb(255, 255, 255)" },
+      { rgb: "rgb(73, 134, 231)", text: "rgb(255, 255, 255)" },
+      { rgb: "rgb(45, 162, 187)", text: "rgb(255, 255, 255)" },
+      { rgb: "rgb(185, 154, 255)", text: "rgb(255, 255, 255)" },
+      { rgb: "rgb(246, 145, 178)", text: "rgb(153, 74, 100)" },
+      { rgb: "rgb(251, 76, 47)", text: "rgb(255, 255, 255)" },
+    ],
+    // row 3
+    [
+      { rgb: "rgb(255, 200, 175)", text: "rgb(122, 46, 11)" },
+      { rgb: "rgb(255, 222, 181)", text: "rgb(122, 71, 6)" },
+      { rgb: "rgb(251, 233, 131)", text: "rgb(89, 76, 5)" },
+      { rgb: "rgb(253, 237, 193)", text: "rgb(104, 78, 7)" },
+      { rgb: "rgb(179, 239, 211)", text: "rgb(11, 79, 48)" },
+      { rgb: "rgb(162, 220, 193)", text: "rgb(4, 80, 46)" },
+    ],
+    // row 4
+    [
+      { rgb: "rgb(255, 117, 55)", text: "rgb(255, 255, 255)" },
+      { rgb: "rgb(255, 173, 70)", text: "rgb(255, 255, 255)" },
+      { rgb: "rgb(235, 219, 222)", text: "rgb(102, 46, 55)" },
+      { rgb: "rgb(204, 166, 172)", text: "rgb(255, 255, 255)" },
+      { rgb: "rgb(66, 214, 146)", text: "rgb(9, 66, 40)" },
+      { rgb: "rgb(22, 167, 101)", text: "rgb(255, 255, 255)" },
+    ],
+  ];
 
   return (
     <NavLink
@@ -41,13 +170,13 @@ export default function LabelItem({
                 role="button"
               >
                 {!isOpen
-                  ? <Icon name="arrow_right" style={{ width: 16, height: 16, marginRight: "2px", marginLeft: "-15px", shape: "square" }}/>
-                  : <Icon name="arrow_drop_down" style={{ width: 16, height: 16, marginRight: "2px", marginLeft: "-15px", shape: "square" }}/>
+                  ? <Icon name="arrow_right" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
+                  : <Icon name="arrow_drop_down" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
                 }
               </span>
             )}
 
-            <Icon name="label" style={{ width: 16, height: 16 }} />
+            <div className="qj aEe qr" />
 
             <div className="aio aip">
               <span className="nU">{display}</span>
@@ -58,10 +187,8 @@ export default function LabelItem({
               <div className="pM aj0">
                 <IconButton
                   size="small"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
+                  aria-controls={menuOpen ? `label-menu-${labelKey}` : undefined}
+                  onClick={handleMenuButtonClick}
                 >
                   <MoreVertIcon fontSize="small" />
                 </IconButton>
@@ -70,6 +197,166 @@ export default function LabelItem({
           </div>
         </div>
       </div>
+
+      <Menu
+        id={`label-menu-${labelKey}`}
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        keepMounted
+        slotProps={{
+          paper: {
+            sx: {
+              minWidth: 230,
+            },
+          },
+        }}
+      >
+        {/* Opens the color submenu – keep the main menu open */}
+        <MenuItem
+          onMouseEnter={(e) => setColorAnchorEl(e.currentTarget)}
+          onClick={(e) => { e.stopPropagation(); setColorAnchorEl(e.currentTarget); }}
+          aria-haspopup="menu"
+          aria-controls={colorOpen ? `label-color-${labelKey}` : undefined}
+          sx={{
+            "&:hover": { backgroundColor: (theme) => theme.palette.action.hover },
+            ...(colorOpen && {
+              backgroundColor: (theme) => theme.palette.action.hover,
+            }),
+          }}
+        >
+          <ListItemIcon>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 20,
+                height: 20,
+                borderRadius: "50%",
+                fontSize: 14,
+                fontWeight: 500,
+                boxSizing: "border-box",
+                boxShadow: "inset 0 0 1px 0 rgba(0,0,0,.26)"
+              }}
+            >
+              a
+            </span>
+          </ListItemIcon>
+          <ListItemText primary={<Typography fontSize={14}>Label color</Typography>} />
+          <ListItemIcon sx={{ justifyContent: "flex-end", minWidth: "auto" }}>
+            <Icon name="arrow_right" style={{ width: 20, height: 20 }} />
+          </ListItemIcon>
+        </MenuItem>
+
+
+        <Divider />
+
+        <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
+          In label list
+        </Typography>
+        {IN_LABEL_LIST.map((opt) => {
+          const selected = inLabelList === opt.key;
+          return (
+            <MenuItem
+              key={opt.key}
+              onClick={() => { setInLabelList(opt.key); handleMenuClose() }}
+              // selected={selected}
+              role="menuitemradio"
+              aria-checked={selected}
+            >
+              <ListItemIcon sx={{ minWidth: 28 }}>
+                {selected && (
+                  <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
+                )}
+              </ListItemIcon>
+              <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
+            </MenuItem>
+          );
+        })}
+        <Divider />
+
+        <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
+          In message list
+        </Typography>
+        {IN_MESSAGE_LIST.map((opt) => {
+          const selected = inMessageList === opt.key;
+          return (
+            <MenuItem
+              key={opt.key}
+              onClick={() => { setInMessageList(opt.key); handleMenuClose() }}
+              // selected={selected}
+              role="menuitemradio"
+              aria-checked={selected}
+            >
+              <ListItemIcon sx={{ minWidth: 28 }}>
+                {selected && (
+                  <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
+                )}
+              </ListItemIcon>
+              <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
+            </MenuItem>
+          );
+        })}
+
+        <Divider />
+
+        <MenuItem>
+          <ListItemText primary={<Typography fontSize={14}>Edit</Typography>} sx={{ ml: 5 }} />
+        </MenuItem>
+        <MenuItem>
+          <ListItemText primary={<Typography fontSize={14}>Remove label</Typography>} sx={{ ml: 5 }} />
+        </MenuItem>
+        <MenuItem>
+          <ListItemText
+            primary={<Typography fontSize={14}>Add sublabel</Typography>}
+            sx={{ ml: 5 }}
+          />
+        </MenuItem>
+      </Menu>
+
+      {/* Color submenu */}
+      <Menu
+        id={`label-color-${labelKey}`}
+        anchorEl={colorAnchorEl}
+        open={colorOpen}
+        onClose={handleColorMenuClose}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        MenuListProps={{
+          onMouseLeave: handleColorMenuClose,
+        }}
+        keepMounted
+      >
+        <Typography sx={{ px: 2, py: 1 }}>Label color</Typography>
+        <div style={{ padding: "0 48px", fontSize: "0.875rem" }}>
+          <table style={{ borderCollapse: "collapse" }}>
+            <tbody>
+              {COLORS.map((row, i) => (
+                <tr key={i}>
+                  {row.map((cell, j) => (
+                    <ColorCell
+                      key={j}
+                      {...cell}
+                      onClick={() => {
+                        setSelectedColor(cell);
+                        handleColorMenuClose();
+                        handleMenuClose()
+                      }}
+                      check={selectedColor && selectedColor.rgb === cell.rgb && selectedColor.text === cell.text}
+                    />
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <Box sx={{ py: 1 }}></Box>
+        <MenuItem sx={{ fontSize: 14, pl: 6 }}>Add custom color</MenuItem>
+        <MenuItem sx={{ fontSize: 14, pl: 6 }}>Remove color</MenuItem>
+      </Menu>
     </NavLink>
   );
 }
