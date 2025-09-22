@@ -235,6 +235,24 @@ export default function useLabels() {
     return map;
   }, [emails]);
 
+  const setLabelColor = (key, color, { withSublabels = false } = {}) => {
+    setLabels(prev => {
+      const next = { ...prev };
+      const update = (k) => {
+        if (next[k]) {
+          next[k] = { ...next[k], color };
+          if (withSublabels) {
+            Object.entries(next)
+              .filter(([_, v]) => v.parentKey === k)
+              .forEach(([childKey]) => update(childKey));
+          }
+        }
+      };
+      update(key);
+      return next;
+    });
+  };
+
   const labelTree = useMemo(() => buildTree(labels || {}), [labels]);
 
   return {
@@ -248,5 +266,6 @@ export default function useLabels() {
     ROOT,
     makeKey,
     splitKey,
+    setLabelColor,
   };
 }

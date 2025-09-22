@@ -1,12 +1,13 @@
-import React, { useState, useMemo } from "react";
-import { Box, IconButton, Popover, Typography } from "@mui/material";
+import React, { useState } from "react";
+import { Box, IconButton, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { NavLink, useMatch } from "react-router-dom";
 import Icon from "../ui/Icon";
 import { MenuItem, ListItemIcon, Divider, ListItemText } from "@mui/material";
-// import ColorLensIcon from "@mui/icons-material/ColorLens";
 import { Menu } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import useLabels from "../../hooks/useLabels";
+import ChangeLabelColorModal, { SCOPES } from "./ChangeLabelColorModal";
 
 const Swatch = styled("div")(({ theme, rgb, text }) => ({
   height: 20,
@@ -61,12 +62,21 @@ export default function LabelItem({
   isOpen = true,
   onToggle, // () => void
 }) {
+  const { setLabelColor, labels } = useLabels();
+  const label = labels[labelKey];
+  const selectedColor = label?.color;
+
+const handleColorChange = (color) => {
+  setLabelColor(labelKey, color);
+};
+
   // Route like /label/:label where :label is encodeURIComponent(labelKey)
   const match = useMatch("/label/:label");
   const currentKey = match?.params?.label ? decodeURIComponent(match.params.label) : "";
   const active = currentKey === labelKey;
   const [inLabelList, setInLabelList] = useState("show");
   const [inMessageList, setInMessageList] = useState("show");
+  const [pendingColor, setPendingColor] = useState(null);
 
   // Main menu
   const [anchorEl, setAnchorEl] = useState(null);
@@ -75,9 +85,8 @@ export default function LabelItem({
   // Submenu (Label color)
   const [colorAnchorEl, setColorAnchorEl] = useState(null);
   const colorOpen = Boolean(colorAnchorEl);
-
-  const [selectedColor, setSelectedColor] = useState(null);
-
+  const [colorModalOpen, setColorModalOpen] = useState(false);
+  
   const handleMenuButtonClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -149,200 +158,223 @@ export default function LabelItem({
   ];
 
   return (
-    <NavLink
-      to={`/label/${encodeURIComponent(labelKey)}`}
-      className="J-Ke n0"
-      style={{ textDecoration: "none", color: "inherit" }}
-      aria-label={`${display} label`}
-    >
-      <div className={`aim n6 ${active ? "ain" : ""}`}>
-        <div className={`TO ah9 ${active ? "aBP nZ aiq" : ""}`}>
-          <div className="TN aY7xie aEc aHS-bnr" style={{ marginLeft: depth * 16 }}>
-            {/* Arrow (only if it has children) */}
-            {hasChildren && (
-              <span
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onToggle?.();
-                }}
-                style={{ cursor: "pointer", display: "inline-flex" }}
-                aria-label={isOpen ? "Collapse" : "Expand"}
-                role="button"
-              >
-                {!isOpen
-                  ? <Icon name="arrow_right" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
-                  : <Icon name="arrow_drop_down" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
-                }
-              </span>
-            )}
-
-            <div className="qj aEe qr" />
-
-            <div className="aio aip">
-              <span className="nU">{display}</span>
-              {count > 0 && <span className="ml-1 text-xs text-gray-500">({count})</span>}
-            </div>
-
-            <div className="nL aig group">
-              <div className="pM aj0">
-                <IconButton
-                  size="small"
-                  aria-controls={menuOpen ? `label-menu-${labelKey}` : undefined}
-                  onClick={handleMenuButtonClick}
+    <>
+      <NavLink
+        to={`/label/${encodeURIComponent(labelKey)}`}
+        className="J-Ke n0"
+        style={{ textDecoration: "none", color: "inherit" }}
+        aria-label={`${display} label`}
+      >
+        <div className={`aim n6 ${active ? "ain" : ""}`}>
+          <div className={`TO ah9 ${active ? "aBP nZ aiq" : ""}`}>
+            <div className="TN aY7xie aEc aHS-bnr" style={{ marginLeft: depth * 16 }}>
+              {/* Arrow (only if it has children) */}
+              {hasChildren && (
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggle?.();
+                  }}
+                  style={{ cursor: "pointer", display: "inline-flex" }}
+                  aria-label={isOpen ? "Collapse" : "Expand"}
+                  role="button"
                 >
-                  <MoreVertIcon fontSize="small" />
-                </IconButton>
+                  {!isOpen
+                    ? <Icon name="arrow_right" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
+                    : <Icon name="arrow_drop_down" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
+                  }
+                </span>
+              )}
+
+              <div className="qj aEe qr" style={{ backgroundColor: selectedColor?.rgb }} />
+
+              <div className="aio aip">
+                <span className="nU">{display}</span>
+                {count > 0 && <span className="ml-1 text-xs text-gray-500">({count})</span>}
+              </div>
+
+              <div className="nL aig group">
+                <div className="pM aj0">
+                  <IconButton
+                    size="small"
+                    aria-controls={menuOpen ? `label-menu-${labelKey}` : undefined}
+                    onClick={handleMenuButtonClick}
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <Menu
-        id={`label-menu-${labelKey}`}
-        anchorEl={anchorEl}
-        open={menuOpen}
-        onClose={handleMenuClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        keepMounted
-        slotProps={{
-          paper: {
-            sx: {
-              minWidth: 230,
+        <Menu
+          id={`label-menu-${labelKey}`}
+          anchorEl={anchorEl}
+          open={menuOpen}
+          onClose={handleMenuClose}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          keepMounted
+          slotProps={{
+            paper: {
+              sx: {
+                minWidth: 230,
+              },
             },
-          },
-        }}
-      >
-        {/* Opens the color submenu – keep the main menu open */}
-        <MenuItem
-          onMouseEnter={(e) => setColorAnchorEl(e.currentTarget)}
-          onClick={(e) => { e.stopPropagation(); setColorAnchorEl(e.currentTarget); }}
-          aria-haspopup="menu"
-          aria-controls={colorOpen ? `label-color-${labelKey}` : undefined}
-          sx={{
-            "&:hover": { backgroundColor: (theme) => theme.palette.action.hover },
-            ...(colorOpen && {
-              backgroundColor: (theme) => theme.palette.action.hover,
-            }),
           }}
         >
-          <ListItemIcon>
-            <ColorCell rgb={selectedColor?.rgb} text={selectedColor?.text} check={selectedColor?.check} />
-          </ListItemIcon>
-          <ListItemText primary={<Typography fontSize={14}>Label color</Typography>} />
-          <ListItemIcon sx={{ justifyContent: "flex-end", minWidth: "auto" }}>
-            <Icon name="arrow_right" style={{ width: 20, height: 20 }} />
-          </ListItemIcon>
-        </MenuItem>
+          {/* Opens the color submenu – keep the main menu open */}
+          <MenuItem
+            onMouseEnter={(e) => setColorAnchorEl(e.currentTarget)}
+            onClick={(e) => { e.stopPropagation(); setColorAnchorEl(e.currentTarget); }}
+            aria-haspopup="menu"
+            aria-controls={colorOpen ? `label-color-${labelKey}` : undefined}
+            sx={{
+              "&:hover": { backgroundColor: (theme) => theme.palette.action.hover },
+              ...(colorOpen && {
+                backgroundColor: (theme) => theme.palette.action.hover,
+              }),
+            }}
+          >
+            <ListItemIcon>
+              <ColorCell rgb={selectedColor?.rgb} text={selectedColor?.text} check={selectedColor?.check} />
+            </ListItemIcon>
+            <ListItemText primary={<Typography fontSize={14}>Label color</Typography>} />
+            <ListItemIcon sx={{ justifyContent: "flex-end", minWidth: "auto" }}>
+              <Icon name="arrow_right" style={{ width: 20, height: 20 }} />
+            </ListItemIcon>
+          </MenuItem>
 
 
-        <Divider />
+          <Divider />
 
-        <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
-          In label list
-        </Typography>
-        {IN_LABEL_LIST.map((opt) => {
-          const selected = inLabelList === opt.key;
-          return (
-            <MenuItem
-              key={opt.key}
-              onClick={() => { setInLabelList(opt.key); handleMenuClose() }}
-              // selected={selected}
-              role="menuitemradio"
-              aria-checked={selected}
-            >
-              <ListItemIcon sx={{ minWidth: 28 }}>
-                {selected && (
-                  <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
-                )}
-              </ListItemIcon>
-              <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
-            </MenuItem>
-          );
-        })}
-        <Divider />
+          <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
+            In label list
+          </Typography>
+          {IN_LABEL_LIST.map((opt) => {
+            const selected = inLabelList === opt.key;
+            return (
+              <MenuItem
+                key={opt.key}
+                onClick={() => { setInLabelList(opt.key); handleMenuClose() }}
+                // selected={selected}
+                role="menuitemradio"
+                aria-checked={selected}
+              >
+                <ListItemIcon sx={{ minWidth: 28 }}>
+                  {selected && (
+                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
+                  )}
+                </ListItemIcon>
+                <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
+              </MenuItem>
+            );
+          })}
+          <Divider />
 
-        <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
-          In message list
-        </Typography>
-        {IN_MESSAGE_LIST.map((opt) => {
-          const selected = inMessageList === opt.key;
-          return (
-            <MenuItem
-              key={opt.key}
-              onClick={() => { setInMessageList(opt.key); handleMenuClose() }}
-              // selected={selected}
-              role="menuitemradio"
-              aria-checked={selected}
-            >
-              <ListItemIcon sx={{ minWidth: 28 }}>
-                {selected && (
-                  <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
-                )}
-              </ListItemIcon>
-              <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
-            </MenuItem>
-          );
-        })}
+          <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
+            In message list
+          </Typography>
+          {IN_MESSAGE_LIST.map((opt) => {
+            const selected = inMessageList === opt.key;
+            return (
+              <MenuItem
+                key={opt.key}
+                onClick={() => { setInMessageList(opt.key); handleMenuClose() }}
+                // selected={selected}
+                role="menuitemradio"
+                aria-checked={selected}
+              >
+                <ListItemIcon sx={{ minWidth: 28 }}>
+                  {selected && (
+                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
+                  )}
+                </ListItemIcon>
+                <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
+              </MenuItem>
+            );
+          })}
 
-        <Divider />
+          <Divider />
 
-        <MenuItem>
-          <ListItemText primary={<Typography fontSize={14}>Edit</Typography>} sx={{ ml: 5 }} />
-        </MenuItem>
-        <MenuItem>
-          <ListItemText primary={<Typography fontSize={14}>Remove label</Typography>} sx={{ ml: 5 }} />
-        </MenuItem>
-        <MenuItem>
-          <ListItemText
-            primary={<Typography fontSize={14}>Add sublabel</Typography>}
-            sx={{ ml: 5 }}
-          />
-        </MenuItem>
-      </Menu>
+          <MenuItem>
+            <ListItemText primary={<Typography fontSize={14}>Edit</Typography>} sx={{ ml: 5 }} />
+          </MenuItem>
+          <MenuItem>
+            <ListItemText primary={<Typography fontSize={14}>Remove label</Typography>} sx={{ ml: 5 }} />
+          </MenuItem>
+          <MenuItem>
+            <ListItemText
+              primary={<Typography fontSize={14}>Add sublabel</Typography>}
+              sx={{ ml: 5 }}
+            />
+          </MenuItem>
+        </Menu>
 
-      {/* Color submenu */}
-      <Menu
-        id={`label-color-${labelKey}`}
-        anchorEl={colorAnchorEl}
-        open={colorOpen}
-        onClose={handleColorMenuClose}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        MenuListProps={{
-          onMouseLeave: handleColorMenuClose,
+        {/* Color submenu */}
+        <Menu
+          id={`label-color-${labelKey}`}
+          anchorEl={colorAnchorEl}
+          open={colorOpen}
+          onClose={handleColorMenuClose}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          MenuListProps={{
+            onMouseLeave: handleColorMenuClose,
+          }}
+          keepMounted
+        >
+          <Typography sx={{ px: 2, py: 1 }}>Label color</Typography>
+          <div style={{ padding: "0 48px", fontSize: "0.875rem" }}>
+            <table style={{ borderCollapse: "collapse" }}>
+              <tbody>
+                {COLORS.map((row, i) => (
+                  <tr key={i}>
+                    {row.map((cell, j) => (
+                      <ColorCell
+                        key={j}
+                        {...cell}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          // handleColorChange(cell);
+                          // setSelectedColor(cell);
+                          setPendingColor(cell);
+                          handleColorMenuClose();
+                          handleMenuClose()
+                          setColorModalOpen(true);
+                        }}
+                        check={selectedColor && selectedColor.rgb === cell.rgb && selectedColor.text === cell.text}
+                      />
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Box sx={{ py: 1 }}></Box>
+          <MenuItem sx={{ fontSize: 14, pl: 6 }}>Add custom color</MenuItem>
+          <MenuItem sx={{ fontSize: 14, pl: 6 }}>Remove color</MenuItem>
+        </Menu>
+      </NavLink>
+
+      <ChangeLabelColorModal
+        open={colorModalOpen}
+        onClose={() => setColorModalOpen(false)}
+        labelName={display}
+        onConfirm={(scope) => {
+          if (pendingColor) {
+            if (scope === SCOPES.SINGLE) {
+              setLabelColor(labelKey, pendingColor);
+            } else if (scope === SCOPES.WITH_SUBLABELS) {
+              setLabelColor(labelKey, pendingColor, { withSublabels: true });
+            }
+          }
+          setPendingColor(null);
         }}
-        keepMounted
-      >
-        <Typography sx={{ px: 2, py: 1 }}>Label color</Typography>
-        <div style={{ padding: "0 48px", fontSize: "0.875rem" }}>
-          <table style={{ borderCollapse: "collapse" }}>
-            <tbody>
-              {COLORS.map((row, i) => (
-                <tr key={i}>
-                  {row.map((cell, j) => (
-                    <ColorCell
-                      key={j}
-                      {...cell}
-                      onClick={() => {
-                        setSelectedColor(cell);
-                        handleColorMenuClose();
-                        handleMenuClose()
-                      }}
-                      check={selectedColor && selectedColor.rgb === cell.rgb && selectedColor.text === cell.text}
-                    />
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <Box sx={{ py: 1 }}></Box>
-        <MenuItem sx={{ fontSize: 14, pl: 6 }}>Add custom color</MenuItem>
-        <MenuItem sx={{ fontSize: 14, pl: 6 }}>Remove color</MenuItem>
-      </Menu>
-    </NavLink>
+      />
+    </>
   );
 }
