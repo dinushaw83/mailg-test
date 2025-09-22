@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import useDimensions from "../../hooks/useDimensions";
 import { useElementDimensions } from "../../hooks/useElementDimensions";
 import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
 
 export const getAttachmentIcon = (attachment, size = 16) => {
   const style = { width: size, height: size };
@@ -29,10 +30,18 @@ export const getAttachmentIcon = (attachment, size = 16) => {
   }
 };
 
-const OneColumnData = ({ email, threadId, getAccessibilityText, getSenderClassName, index, formatDate }) => {
+const OneColumnData = ({
+  email,
+  getAccessibilityText,
+  getSenderClassName,
+  index,
+  formatDate,
+  toggleStar,
+  height = "60px",
+}) => {
   return (
-    <>
-      <td className="xY" style={{ width: "90%" }}>
+    <td className="xY" style={{ width: "90%", height }}>
+      <Box sx={{ width: "100%", overflow: "hidden" }}>
         <Box
           sx={{
             display: "flex",
@@ -82,8 +91,54 @@ const OneColumnData = ({ email, threadId, getAccessibilityText, getSenderClassNa
             </span>
           </Box>
         </Box>
-      </td>
-    </>
+        <Box>
+          <div className="a4X">
+            <div className="xT">
+              <div className="y6">
+                <span id={`:pr${index}`} className="bog">
+                  <span
+                    className={email.read ? "" : "bqe"}
+                    data-thread-id={email.threadId}
+                    data-legacy-thread-id={email.legacyThreadId}
+                    data-legacy-last-message-id={email.legacyLastMessageId}
+                    data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
+                  >
+                    {email.subject}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box className="y2">
+            <span id={`:ps${index}`}>{email.preview}</span>
+          </Box>
+          <IconButton
+            aria-label={email.starred ? "Unstar" : "Star"}
+            aria-pressed={email.starred}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleStar([email.id]);
+            }}
+            sx={{
+              color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 18,
+                verticalAlign: "middle",
+                fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`,
+              }}
+            >
+              star
+            </span>
+          </IconButton>
+        </Box>
+      </Box>
+    </td>
   );
 };
 
@@ -105,8 +160,6 @@ const Table = ({
   const [ref, dimensions] = useElementDimensions();
 
   const renderOneColumn = dimensions.width < 525;
-
-  console.log({ dimensions, renderOneColumn });
 
   const handleClickRow = (email, threadId) => {
     if (panelState.showPanel) {
@@ -161,11 +214,11 @@ const Table = ({
                 {renderOneColumn ? (
                   <OneColumnData
                     email={email}
-                    threadId={threadId}
                     getAccessibilityText={getAccessibilityText}
                     getSenderClassName={getSenderClassName}
                     index={index}
                     formatDate={formatDate}
+                    toggleStar={toggleStar}
                   />
                 ) : (
                   <>
