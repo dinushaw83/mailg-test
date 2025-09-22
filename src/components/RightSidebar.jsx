@@ -1,19 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { IconButton, Tooltip } from "@mui/material";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import RightSideBarTabs from "./RightSidebarTabs/RightSideBarTabs";
 import styles from "./RightSidebar.module.css";
 
 const RightSidebar = () => {
-  const { rightSidebarExpanded, setRightSidebarExpanded } = useGlobalContext();
-  const [activeTab, setActiveTab] = useState(null);
+  const { rightSidebarExpanded, setRightSidebarExpanded, rightSidebarActiveTab, setRightSidebarActiveTab } =
+    useGlobalContext();
 
   // Handle the right sidebar tab icon click
   const handleTabIconClick = (tabName) => {
-    if (tabName === activeTab) {
-      setActiveTab(null);
+    if (tabName === rightSidebarActiveTab) {
+      setRightSidebarActiveTab(null);
     } else {
-      setActiveTab(tabName);
+      setRightSidebarActiveTab(tabName);
     }
   };
 
@@ -21,19 +21,17 @@ const RightSidebar = () => {
     <div
       className={`nH ${styles.rightSidebar}`}
       style={{
-        width: rightSidebarExpanded ? (activeTab ? "376px" : "56px") : "16px",
+        width: rightSidebarExpanded ? (rightSidebarActiveTab ? "376px" : "56px") : "16px",
       }}
     >
       {/* Tab Content Area - Left side */}
-      {activeTab && rightSidebarExpanded && (
-        <div className={styles.rightSidebarContentTabsWrapper}>
-          <RightSideBarTabs
-            activeTab={activeTab}
-            isVisible={activeTab && rightSidebarExpanded}
-            onClose={() => setActiveTab(null)}
-          />
-        </div>
-      )}
+      <div
+        className={`${styles.rightSidebarContentTabsWrapper} ${
+          (!rightSidebarActiveTab || !rightSidebarExpanded) && styles.hideContent
+        }`}
+      >
+        <RightSideBarTabs />
+      </div>
 
       {/* Sidebar Icons - Right side */}
       <div className="aUx" style={{ width: "56px" }}>
@@ -119,15 +117,15 @@ const RightSidebar = () => {
                 </div>
                 {/* Contacts */}
                 <div className={styles.rightSidebarTabIconWrapper}>
-                  <div className={styles.tabIconBorder} data-active={activeTab === "CONTACTS"} />
+                  <div className={styles.tabIconBorder} data-active={rightSidebarActiveTab === "CONTACTS"} />
                   <Tooltip title="Contacts" placement="bottom">
                     <IconButton
                       size="medium"
                       onClick={() => handleTabIconClick("CONTACTS")}
                       sx={{
-                        backgroundColor: activeTab === "CONTACTS" ? "#e8f0fe" : "transparent",
+                        backgroundColor: rightSidebarActiveTab === "CONTACTS" ? "#e8f0fe" : "transparent",
                         "&:hover": {
-                          backgroundColor: activeTab === "CONTACTS" ? "#d2e3fc" : "action.hover",
+                          backgroundColor: rightSidebarActiveTab === "CONTACTS" ? "#d2e3fc" : "action.hover",
                         },
                       }}
                     >
@@ -203,7 +201,7 @@ const RightSidebar = () => {
             </div>
           </div>
 
-          {activeTab ? (
+          {rightSidebarActiveTab ? (
             // About
             <div style={{ marginBottom: "12px" }}>
               <Tooltip title="About" placement="top">

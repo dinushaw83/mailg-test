@@ -1,7 +1,8 @@
 import React from "react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import ContactsTab from "./ContactsTab";
+import ContactsTab from "./ContactsTab/ContactsTab";
+import { useGlobalContext } from '../../contexts/GlobalContext';
 
 const TabPanel = ({ children, value, tabName, ...other }) => {
   return (
@@ -12,22 +13,24 @@ const TabPanel = ({ children, value, tabName, ...other }) => {
       aria-labelledby={`vertical-tab-${tabName}`}
       {...other}
     >
-      {value === tabName && (
-        <Box sx={{ py: 2, px: 0.5, height: "100%" }}>
-          <Typography component="div">{children}</Typography>
-        </Box>
-      )}
+      <Box sx={{ py: 2, px: 0.5, height: "100%" }}>
+        <Typography component="div">{children}</Typography>
+      </Box>
     </div>
   );
 };
 
-const RightSideBarTabs = ({ activeTab, isVisible, onClose }) => {
-  if (!isVisible) return null;
+const RightSideBarTabs = () => {
+  const { rightSidebarActiveTab, setRightSidebarActiveTab } = useGlobalContext();
+
+  // Handle the tab close
+  const handleTabClose = () => {
+    setRightSidebarActiveTab(null);
+  };
 
   return (
     <Box
       sx={{
-        flexGrow: 1,
         bgcolor: "background.paper",
         display: "flex",
         flexDirection: "column",
@@ -36,8 +39,8 @@ const RightSideBarTabs = ({ activeTab, isVisible, onClose }) => {
     >
       {/* Tab content area */}
       <Box sx={{ flex: 1, overflow: "auto" }}>
-        <TabPanel value={activeTab} tabName="CONTACTS">
-          <ContactsTab onClose={onClose} />
+        <TabPanel value={rightSidebarActiveTab} tabName="CONTACTS">
+          <ContactsTab onClose={handleTabClose} />
         </TabPanel>
       </Box>
     </Box>
