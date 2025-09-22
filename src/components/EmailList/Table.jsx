@@ -37,6 +37,7 @@ const OneColumnData = ({
   index,
   formatDate,
   toggleStar,
+  density,
   height = "60px",
 }) => {
   return (
@@ -123,6 +124,7 @@ const OneColumnData = ({
             }}
             sx={{
               color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+              ...(density === "compact" ? { padding: "1px" } : {}),
             }}
           >
             <span
@@ -219,6 +221,7 @@ const Table = ({
                     index={index}
                     formatDate={formatDate}
                     toggleStar={toggleStar}
+                    density={density}
                   />
                 ) : (
                   <>
