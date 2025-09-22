@@ -8,6 +8,7 @@ import { GlobalContext } from "../../contexts/GlobalContext";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import { useSendEmail } from "../../hooks/useSendEmail";
+import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 import styles from "./ComposeEmail.module.css";
 
 export default function ComposeEmail({ composeWindow }) {
@@ -178,7 +179,8 @@ export default function ComposeEmail({ composeWindow }) {
     removeComposeWindow(composeWindow.id);
   };
 
-  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail();
+  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail(null);
+  const { handleSchedule: handleScheduleEmail, showErrorModal: showScheduleErrorModal, errorMessage: scheduleErrorMessage, handleErrorModalClose: handleScheduleErrorModalClose } = useScheduleEmail(null);
 
   const handleSend = () => {
     handleSendEmail({
@@ -196,6 +198,22 @@ export default function ComposeEmail({ composeWindow }) {
 
   const handleUndoDelete = () => {
     handleSnackbarUndoDelete(addNewComposeWindow);
+  };
+
+  const handleSchedule = (scheduleData) => {
+    handleScheduleEmail({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      rawInputText,
+      onClose: handleClose,
+      currentDraftId: draftId,
+      isDraft: isDraft,
+      scheduledDate: scheduleData.scheduledDate,
+      scheduledTime: scheduleData.scheduledTime,
+    });
   };
 
   // Remove the email from draft
@@ -334,100 +352,15 @@ export default function ComposeEmail({ composeWindow }) {
               content={content.html}
               onChange={(html, plainText) => setContent({ html, plainText })}
               className={styles.composeEditor}
+              onSend={handleSend}
+              onDelete={handleDelete}
+              onSchedule={handleSchedule}
+              textEditorMinHeight="390px"
+              textEditorMaxHeight="390px"
+              useCompactFormatting={true}
             />
           </div>
 
-          {/* Bottom Toolbar */}
-          <div className={styles.composeToolbar}>
-            <div className={styles.sendButtonContainer}>
-              <div
-                aria-label="Send ‪(⌘Enter)‬"
-                role="button"
-                tabIndex="1"
-                style={{
-                  whiteSpace: "nowrap",
-                  textAlign: "center",
-                  verticalAlign: "middle",
-                  boxShadow: "none",
-                  WebkitUserDrag: "none",
-                  lineHeight: "18px",
-                  outline: "none",
-                  padding: "0px 16px",
-                  border: "none",
-                  WebkitBoxAlign: "center",
-                  alignItems: "center",
-                  display: "inline-flex",
-                  WebkitBoxPack: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                  zIndex: 0,
-                  WebkitFontSmoothing: "antialiased",
-                  fontSize: "0.875rem",
-                  letterSpacing: "normal",
-                  backgroundImage: "none",
-                  boxSizing: "border-box",
-                  fontWeight: 500,
-                  height: "36px",
-                  color: "rgb(255, 255, 255)",
-                  margin: "0px",
-                  marginRight: "0px",
-                  maxWidth: "104px",
-                  minWidth: "72px",
-                  cursor: "pointer",
-                  borderRadius: "18px 0px 0px 18px",
-                  userSelect: "none",
-                }}
-                onClick={handleSend}
-              >
-                Send
-              </div>
-              <div
-                className={styles.sendOptionsArrow}
-                aria-expanded="false"
-                aria-haspopup="true"
-                aria-label="More send options"
-                role="button"
-                tabIndex="1"
-                style={{
-                  whiteSpace: "nowrap",
-                  textAlign: "center",
-                  boxShadow: "none",
-                  WebkitUserDrag: "none",
-                  lineHeight: "18px",
-                  outline: "none",
-                  border: "none",
-                  WebkitBoxAlign: "center",
-                  alignItems: "center",
-                  display: "inline-flex",
-                  WebkitBoxPack: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                  zIndex: 0,
-                  WebkitFontSmoothing: "antialiased",
-                  fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                  fontSize: "0.875rem",
-                  letterSpacing: "normal",
-                  backgroundImage: "none",
-                  boxSizing: "border-box",
-                  fontWeight: 500,
-                  height: "36px",
-                  color: "rgb(255, 255, 255)",
-                  padding: "0px 8px",
-                  minWidth: "24px",
-                  borderLeft: "1px solid rgb(6, 46, 111)",
-                  cursor: "pointer",
-                  borderRadius: "0px 18px 18px 0px",
-                  userSelect: "none",
-                }}
-              >
-                <span className="material-symbols-outlined">arrow_drop_down</span>
-              </div>
-            </div>
-
-            <button className={styles.deleteButton} onClick={handleDelete} title="Delete">
-              <span className="material-symbols-outlined">delete</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -445,6 +378,22 @@ export default function ComposeEmail({ composeWindow }) {
           },
         ]}
         modalBoxStyle={{ width: errorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
+      />
+
+      {/* Schedule Error Modal */}
+      <InfoModal
+        isOpen={showScheduleErrorModal}
+        onClose={handleScheduleErrorModalClose}
+        title="Error"
+        message={scheduleErrorMessage}
+        buttons={[
+          {
+            text: "OK",
+            onClick: handleScheduleErrorModalClose,
+            className: "primary",
+          },
+        ]}
+        modalBoxStyle={{ width: scheduleErrorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
       />
     </>
   );
