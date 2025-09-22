@@ -5,6 +5,9 @@ import CheckBox from "../ui/CheckBox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import useDimensions from "../../hooks/useDimensions";
+import { useElementDimensions } from "../../hooks/useElementDimensions";
+import Box from "@mui/material/Box";
 
 export const getAttachmentIcon = (attachment, size = 16) => {
   const style = { width: size, height: size };
@@ -26,6 +29,50 @@ export const getAttachmentIcon = (attachment, size = 16) => {
   }
 };
 
+const OneColumnData = ({ email, threadId, getAccessibilityText, getSenderClassName, index, formatDate }) => {
+  return (
+    <>
+      <td className="xY" style={{ width: "90%" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <Box>
+            <div id={`:pj${index}`} className="afn sf-hidden">
+              {getAccessibilityText(email)}
+            </div>
+            <div id={`:po${index}`} className="yW">
+              <span className="bA4">
+                <span
+                  translate="no"
+                  className={getSenderClassName(email)}
+                  email={email.from.email}
+                  name={email.from.name}
+                  data-hovercard-id={email.from.email}
+                  style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
+                >
+                  {email.labels.includes("Drafts") ? "Draft" : email.from.name}
+                </span>
+              </span>
+            </div>
+          </Box>
+          <span
+            title={new Date(email.timestamp).toLocaleString()}
+            id={`:pu${index}`}
+            aria-label={new Date(email.timestamp).toLocaleString()}
+          >
+            <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+          </span>
+        </Box>
+      </td>
+    </>
+  );
+};
+
 const Table = ({
   emails,
   getRowClassName,
@@ -41,6 +88,12 @@ const Table = ({
   formatDate,
 }) => {
   const { setPreviewEmail, panelState, density } = useGlobalContext();
+  const [ref, dimensions] = useElementDimensions();
+
+  const renderOneColumn = dimensions.width < 525;
+
+  console.log({ dimensions, renderOneColumn });
+
   const handleClickRow = (email, threadId) => {
     if (panelState.showPanel) {
       setPreviewEmail(email);
@@ -58,6 +111,7 @@ const Table = ({
         role="grid"
         aria-readonly="true"
         style={{ width: "100%", height: "100%" }}
+        ref={ref}
       >
         <tbody>
           {emails.map((email, index) => {
@@ -90,188 +144,201 @@ const Table = ({
                     onChange={() => selection.toggle(threadId)}
                   />
                 </td>
-                {/* Star */}
-                <td className={`apU ${email.starred ? "" : "xY"}`}>
-                  <button
-                    type="button"
-                    aria-label={email.starred ? "Unstar" : "Star"}
-                    aria-pressed={email.starred}
-                    className="T-Jo"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleStar([email.id]);
-                    }}
-                    style={{
-                      background: "transparent",
-                      border: 0,
-                      padding: 0,
-                      cursor: "pointer",
-                      color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
-                    }}
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      style={{
-                        fontSize: 18,
-                        verticalAlign: "middle",
-                        fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`,
-                      }}
-                    >
-                      star
-                    </span>
-                  </button>
-                </td>
-                {/* Important */}
-                <td className="WA xY">
-                  <div
-                    className="pG"
-                    data-tooltip-contained="true"
-                    data-tooltip-align="b,l"
-                    data-tooltip-delay={1500}
-                    aria-label={getImportantAriaLabel(email)}
-                    role="switch"
-                    aria-checked={email.important.toString()}
-                    id={`:pn${index}`}
-                    data-is-important={email.important.toString()}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleImportant && toggleImportant([email.id]);
-                    }}
-                  >
-                    <div className="T-ays-a45 sf-hidden">
-                      {email.important && "Important according to Google magic."}
-                    </div>
-                    <div className={getImportantClassName(email)} />
-                    <div className="bnj" />
-                  </div>
-                </td>
-                {/* Sender */}
-                <td className="yX xY" role="gridcell" tabIndex={-1}>
-                  <div id={`:pj${index}`} className="afn sf-hidden">
-                    {getAccessibilityText(email)}
-                  </div>
-                  <div id={`:po${index}`} className="yW">
-                    <span className="bA4">
-                      <span
-                        translate="no"
-                        className={getSenderClassName(email)}
-                        email={email.from.email}
-                        name={email.from.name}
-                        data-hovercard-id={email.from.email}
-                        style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
+                {renderOneColumn ? (
+                  <OneColumnData
+                    email={email}
+                    threadId={threadId}
+                    getAccessibilityText={getAccessibilityText}
+                    getSenderClassName={getSenderClassName}
+                    index={index}
+                    formatDate={formatDate}
+                  />
+                ) : (
+                  <>
+                    {/* Star */}
+                    <td className={`apU ${email.starred ? "" : "xY"}`}>
+                      <button
+                        type="button"
+                        aria-label={email.starred ? "Unstar" : "Star"}
+                        aria-pressed={email.starred}
+                        className="T-Jo"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStar([email.id]);
+                        }}
+                        style={{
+                          background: "transparent",
+                          border: 0,
+                          padding: 0,
+                          cursor: "pointer",
+                          color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+                        }}
                       >
-                        {email.labels.includes("Drafts") ? "Draft" : email.from.name}
-                      </span>
-                    </span>
-                  </div>
-                </td>
-                {/* Subject */}
-                <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
-                  <div className="a4X">
-                    <Link to={`${location.pathname}/${threadId}`} className="xS" role="link">
-                      <div className="xT">
-                        <div className="yi" id={`:pq${index}`}>
-                          <div className="ar as">
-                            <div
-                              className="at"
-                              title={email.labels[0]}
-                              style={{
-                                backgroundColor: email.labelColor,
-                                borderColor: email.labelColor,
-                              }}
-                            >
-                              <div
-                                className="au"
-                                style={{
-                                  borderColor: email.labelColor,
-                                }}
-                              />
-                            </div>
-                          </div>
-                          <div className="as sf-hidden">&nbsp;</div>
+                        <span
+                          className="material-symbols-outlined"
+                          style={{
+                            fontSize: 18,
+                            verticalAlign: "middle",
+                            fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`,
+                          }}
+                        >
+                          star
+                        </span>
+                      </button>
+                    </td>
+                    {/* Important */}
+                    <td className="WA xY">
+                      <div
+                        className="pG"
+                        data-tooltip-contained="true"
+                        data-tooltip-align="b,l"
+                        data-tooltip-delay={1500}
+                        aria-label={getImportantAriaLabel(email)}
+                        role="switch"
+                        aria-checked={email.important.toString()}
+                        id={`:pn${index}`}
+                        data-is-important={email.important.toString()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleImportant && toggleImportant([email.id]);
+                        }}
+                      >
+                        <div className="T-ays-a45 sf-hidden">
+                          {email.important && "Important according to Google magic."}
                         </div>
-                        <div className="y6">
-                          <span id={`:pr${index}`} className="bog">
-                            {getLabelBadges(email).map((label) => (
-                              <div
-                                key={`Badge-${label}`}
-                                style={{
-                                  backgroundColor: email?.labelColor ?? "#e1e3e1",
-                                  color: "#444746",
-                                  fontSize: "0.75rem",
-                                  padding: "0 4px",
-                                  textDecoration: "none",
-                                  width: "fit-content",
-                                  borderRadius: "4px",
-                                  marginRight: "6px",
-                                  display: "inline-block",
-                                }}
-                              >
-                                {label}
-                              </div>
-                            ))}
-                            <span
-                              className={email.read ? "" : "bqe"}
-                              data-thread-id={email.threadId}
-                              data-legacy-thread-id={email.legacyThreadId}
-                              data-legacy-last-message-id={email.legacyLastMessageId}
-                              data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
-                            >
-                              {email.subject}
-                            </span>
+                        <div className={getImportantClassName(email)} />
+                        <div className="bnj" />
+                      </div>
+                    </td>
+                    {/* Sender */}
+                    <td className="yX xY" role="gridcell" tabIndex={-1}>
+                      <div id={`:pj${index}`} className="afn sf-hidden">
+                        {getAccessibilityText(email)}
+                      </div>
+                      <div id={`:po${index}`} className="yW">
+                        <span className="bA4">
+                          <span
+                            translate="no"
+                            className={getSenderClassName(email)}
+                            email={email.from.email}
+                            name={email.from.name}
+                            data-hovercard-id={email.from.email}
+                            style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
+                          >
+                            {email.labels.includes("Drafts") ? "Draft" : email.from.name}
                           </span>
-                        </div>
-                        <span id={`:ps${index}`} className="y2">
-                          <span className="Zt">&nbsp;-&nbsp;</span>
-                          {email.preview}
                         </span>
                       </div>
-                    </Link>
-                  </div>
-                  {density === "default" && email.attachments.length > 0 && (
-                    <div style={{ display: "flex", gap: "5px", marginTop: "5px" }}>
-                      {email.attachments.map((attachment) => (
-                        <Button
-                          variant="outlined"
-                          sx={{
-                            borderRadius: 10,
-                            color: "rgb(95, 99, 104)",
-                            textTransform: "none",
-                            maxWidth: "160px",
-                            border: "none",
-                            boxShadow: "inset 0 0 0 1px rgba(100,121,143,0.12)",
-                          }}
-                          size="small"
-                          startIcon={getAttachmentIcon(attachment)}
-                        >
-                          <Typography
-                            sx={{
-                              textOverflow: "ellipsis",
-                              overflow: "hidden",
-                              whiteSpace: "nowrap",
-                              fontSize: "0.875rem",
-                            }}
-                          >
-                            {attachment.name}sdsd
-                          </Typography>
-                        </Button>
-                      ))}
-                    </div>
-                  )}
-                </td>
-                <td className="byZ xY sf-hidden" role="gridcell" tabIndex={-1} />
-                <td className="yf xY">&nbsp;</td>
-                <td className="xW xY" role="gridcell" tabIndex={-1}>
-                  <span
-                    title={new Date(email.timestamp).toLocaleString()}
-                    id={`:pu${index}`}
-                    aria-label={new Date(email.timestamp).toLocaleString()}
-                  >
-                    <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
-                  </span>
-                </td>
-                <td className="bq4 xY sf-hidden" />
-                <td className="xY" />
+                    </td>
+                    {/* Subject */}
+                    <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
+                      <div className="a4X">
+                        <Link to={`${location.pathname}/${threadId}`} className="xS" role="link">
+                          <div className="xT">
+                            <div className="yi" id={`:pq${index}`}>
+                              <div className="ar as">
+                                <div
+                                  className="at"
+                                  title={email.labels[0]}
+                                  style={{
+                                    backgroundColor: email.labelColor,
+                                    borderColor: email.labelColor,
+                                  }}
+                                >
+                                  <div
+                                    className="au"
+                                    style={{
+                                      borderColor: email.labelColor,
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                              <div className="as sf-hidden">&nbsp;</div>
+                            </div>
+                            <div className="y6">
+                              <span id={`:pr${index}`} className="bog">
+                                {getLabelBadges(email).map((label) => (
+                                  <div
+                                    key={`Badge-${label}`}
+                                    style={{
+                                      backgroundColor: email?.labelColor ?? "#e1e3e1",
+                                      color: "#444746",
+                                      fontSize: "0.75rem",
+                                      padding: "0 4px",
+                                      textDecoration: "none",
+                                      width: "fit-content",
+                                      borderRadius: "4px",
+                                      marginRight: "6px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    {label}
+                                  </div>
+                                ))}
+                                <span
+                                  className={email.read ? "" : "bqe"}
+                                  data-thread-id={email.threadId}
+                                  data-legacy-thread-id={email.legacyThreadId}
+                                  data-legacy-last-message-id={email.legacyLastMessageId}
+                                  data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
+                                >
+                                  {email.subject}
+                                </span>
+                              </span>
+                            </div>
+                            <span id={`:ps${index}`} className="y2">
+                              <span className="Zt">&nbsp;-&nbsp;</span>
+                              {email.preview}
+                            </span>
+                          </div>
+                        </Link>
+                      </div>
+                      {density === "default" && email.attachments.length > 0 && (
+                        <div style={{ display: "flex", gap: "5px", marginTop: "5px" }}>
+                          {email.attachments.map((attachment) => (
+                            <Button
+                              variant="outlined"
+                              sx={{
+                                borderRadius: 10,
+                                color: "rgb(95, 99, 104)",
+                                textTransform: "none",
+                                maxWidth: "160px",
+                                border: "none",
+                                boxShadow: "inset 0 0 0 1px rgba(100,121,143,0.12)",
+                              }}
+                              size="small"
+                              startIcon={getAttachmentIcon(attachment)}
+                            >
+                              <Typography
+                                sx={{
+                                  textOverflow: "ellipsis",
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                  fontSize: "0.875rem",
+                                }}
+                              >
+                                {attachment.name}sdsd
+                              </Typography>
+                            </Button>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="byZ xY sf-hidden" role="gridcell" tabIndex={-1} />
+                    <td className="yf xY">&nbsp;</td>
+                    <td className="xW xY" role="gridcell" tabIndex={-1}>
+                      <span
+                        title={new Date(email.timestamp).toLocaleString()}
+                        id={`:pu${index}`}
+                        aria-label={new Date(email.timestamp).toLocaleString()}
+                      >
+                        <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                      </span>
+                    </td>
+                    <td className="bq4 xY sf-hidden" />
+                    <td className="xY" />
+                  </>
+                )}
               </tr>
             );
           })}

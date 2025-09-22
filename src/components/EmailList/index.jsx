@@ -21,25 +21,22 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 1) {
+    // Check if it's the same day
+    const isToday = date.toDateString() === now.toDateString();
+
+    if (isToday) {
+      // Return time in 24-hour format like "09:12", "21:23"
       return date.toLocaleTimeString("en-US", {
-        hour: "numeric",
+        hour: "2-digit",
         minute: "2-digit",
-        hour12: true,
-      });
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
+        hour12: false,
       });
     } else {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
+      // Return date format like "21 Sept", "12 Aug"
+      return date.toLocaleDateString("en-GB", {
         day: "numeric",
-        year: "numeric",
+        month: "short",
       });
     }
   };
