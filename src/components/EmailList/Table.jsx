@@ -6,22 +6,23 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
-const getAttachmentIcon = (attachment) => {
+export const getAttachmentIcon = (attachment, size = 16) => {
+  const style = { width: size, height: size };
   const isYouTubeVideo = attachment.name.includes("youtube");
   if (isYouTubeVideo) {
-    return <img src="/assets/images/icon_2_youtube_x16.png" alt="YouTube Video" width={16} />;
+    return <img src="/assets/images/icon_2_youtube_x16.png" alt="YouTube Video" style={style} />;
   }
   const extension = attachment.name.split(".").pop();
 
   switch (extension) {
     case "pdf":
-      return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" width={16} />;
+      return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" style={style} />;
     case "doc":
     case "docx":
     case "xls":
-      return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" width={16} />;
+      return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
     default:
-      return <img src="/assets/images/icon_1_image_x32.png" alt="Document" width={16} />;
+      return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
   }
 };
 
