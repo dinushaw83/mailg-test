@@ -22,6 +22,7 @@ const Swatch = styled("div")(({ theme, rgb, text }) => ({
   lineHeight: "19px",
   cursor: "pointer",
   transition: "box-shadow 0.2s ease",
+  boxShadow: "inset 0 0 1px 0 rgba(0,0,0,.26)",
   "&:hover": {
     boxShadow: `0 0 0 3px ${theme.palette.action.hover}`,
   },
@@ -228,22 +229,7 @@ export default function LabelItem({
           }}
         >
           <ListItemIcon>
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 20,
-                height: 20,
-                borderRadius: "50%",
-                fontSize: 14,
-                fontWeight: 500,
-                boxSizing: "border-box",
-                boxShadow: "inset 0 0 1px 0 rgba(0,0,0,.26)"
-              }}
-            >
-              a
-            </span>
+            <ColorCell rgb={selectedColor?.rgb} text={selectedColor?.text} check={selectedColor?.check} />
           </ListItemIcon>
           <ListItemText primary={<Typography fontSize={14}>Label color</Typography>} />
           <ListItemIcon sx={{ justifyContent: "flex-end", minWidth: "auto" }}>
