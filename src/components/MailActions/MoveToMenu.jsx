@@ -206,7 +206,6 @@ export default function MoveToMenu({
             />
             <div
               className="A0"
-              aria-hidden
               style={{
                 position: "absolute",
                 right: 8,

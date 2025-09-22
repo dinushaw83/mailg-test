@@ -15,16 +15,6 @@ const DEFAULT_FOLDERS = [
   { key: "drafts", label: "Drafts", icon: "draft", count: 0 },
 ];
 
-const HIDDEN_FOLDERS = [
-  { key: "important", label: "Important", icon: "label_important" },
-  { key: "chats", label: "Chats", icon: "chat" },
-  { key: "scheduled", label: "Scheduled", icon: "schedule_send" },
-  { key: "all", label: "All Mail", icon: "mail" },
-  { key: "spam", label: "Spam", icon: "report", count: 0 },
-  { key: "trash", label: "Trash", icon: "delete" },
-  { key: "categories", label: "Categories", icon: "label" },
-];
-
 const LeftSidebar = () => {
   const [showLess, setShowLess] = useState(true);
   const { emails } = useGlobalContext();
@@ -50,6 +40,31 @@ const LeftSidebar = () => {
   const openComposeWindow = () => {
     addNewComposeWindow();
   };
+
+  const handleCreateNewLabel = () => {
+    setIsCreateLabelModalOpen(true);
+  };
+
+  const manageLabels = () => {
+    return null
+  };
+
+  const manageSubscriptions = () => {
+    return null
+  };
+
+  const HIDDEN_FOLDERS = [
+    { key: "important", label: "Important", icon: "label_important" },
+    { key: "chats", label: "Chats", icon: "chat" },
+    { key: "scheduled", label: "Scheduled", icon: "schedule_send" },
+    { key: "all", label: "All Mail", icon: "mail" },
+    { key: "spam", label: "Spam", icon: "report", count: 0 },
+    { key: "trash", label: "Trash", icon: "delete" },
+    { key: "categories", label: "Categories", icon: "label" },
+    { key: "manage-subscriptions", label: "Manage subscriptions", icon: "unsubscribe", onClick: manageSubscriptions },
+    { key: "manage-labels", label: "Manage labels", icon: "settings", onClick: manageLabels },
+    { key: "create-new-label", label: "Create new label", icon: "add", onClick: handleCreateNewLabel},
+  ];
 
   return (
     <div
