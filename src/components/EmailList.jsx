@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { format, isToday, isThisYear } from "date-fns";
 
 import useMailActions from "../hooks/useMailActions";
 import CheckBox from "./ui/CheckBox";
@@ -9,34 +10,25 @@ import { useComposeModal } from "../hooks/useComposeModal";
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection } = useGlobalContext();
+  const { selection, composeWindows } = useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 1) {
-      return date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } else {
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+    // If it's today, show only time
+    if (isToday(date)) {
+      return format(date, "h:mm a");
     }
+    
+    // If it's current year, show month and day
+    if (isThisYear(date)) {
+      return format(date, "MMM d");
+    }
+    
+    // If it's previous year, show "d/M/yy" format like "5/9/24"
+    return format(date, "d/M/yy");
   };
 
   const getRowClassName = (email) => {
@@ -77,7 +69,12 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigateToEmailDetails = (email, threadId) => {
     // If labels includes Drafts, then add new compose window with the draft id
     if (email.labels.includes("Drafts")) {
-      addNewComposeWindow(email.id);
+      // Check if already a compose window with the draft id exists
+      const composeWindow = composeWindows.find((window) => window?.draftId?.toString() === email.id.toString());
+      // If compose window with the draft id doesn't exist, then add new compose window with the draft id
+      if (!composeWindow) {
+        addNewComposeWindow(email.id);
+      }
     } else {
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
@@ -194,7 +191,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             </td>
             <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
               <div className="a4X">
-                <Link to={`${location.pathname}/${threadId}`} className="xS" role="link">
+                <Link to={`${location.pathname}/${threadId}`} className="xS" role="link" style={{ textDecoration: "none" }}>
                   <div className="xT">
                     <div className="yi" id={`:pq${index}`}>
                       <div className="ar as">
@@ -242,6 +239,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                           data-legacy-thread-id={email.legacyThreadId}
                           data-legacy-last-message-id={email.legacyLastMessageId}
                           data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
+                          style={{ color: "#3f4042" }}
                         >
                           {email.subject}
                         </span>
