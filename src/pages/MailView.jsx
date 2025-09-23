@@ -57,7 +57,7 @@ const Inbox = () => {
                     >
                       <ToolBar
                         totalFilteredItems={filteredRows.length}
-                        emails={rows}
+                        threads={rows}
                       />
                       <div className="a0V">
                         <h2 tabIndex={-1}>Conversations</h2>
