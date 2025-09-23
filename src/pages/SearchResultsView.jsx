@@ -5,7 +5,7 @@ import { GlobalContext } from "../contexts/GlobalContext";
 import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
-import { buildSearchIndex, searchEmails, isSearchIndexReady } from "../utils/search";
+import { buildSearchIndex, searchEmails, isSearchIndexReady, initializeSearchIndex } from "../utils/search";
 import SearchResultFilters from "../components/SearchResultFilters";
 
 const SearchResultsView = () => {
@@ -13,6 +13,12 @@ const SearchResultsView = () => {
 
   const { query } = useParams();
   const searchQuery = query ? decodeURIComponent(query) : "";
+
+  // Initialize search index on component mount
+  useEffect(() => {
+    // Try to restore from localStorage first
+    initializeSearchIndex();
+  }, []);
 
   // Build search index when emails are available
   useEffect(() => {
@@ -28,7 +34,7 @@ const SearchResultsView = () => {
     }
     // Remove limit for search results page - we want all results
     return searchEmails(searchQuery, { limit: null });
-  }, [searchQuery]);
+  }, [searchQuery, emails]); // Add emails dependency to re-run when index is rebuilt
 
   // Convert search results to thread rows format
   const filteredRows = useMemo(() => {
