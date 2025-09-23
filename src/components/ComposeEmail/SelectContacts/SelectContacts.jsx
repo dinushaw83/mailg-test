@@ -23,6 +23,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Snackbar,
+  Tooltip,
 } from "@mui/material";
 import ManageLabels from "./ManageLabels";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
@@ -391,9 +392,24 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
               }}
             />
 
-            <IconButton onClick={handleClose} size="medium">
-              <span className="material-symbols-outlined">close</span>
-            </IconButton>
+            <Tooltip
+              title="Close"
+              placement="bottom"
+              slotProps={{
+                popper: {
+                  sx: {
+                    "& .MuiTooltip-tooltip": {
+                      backgroundColor: "rgba(0, 0, 0, 0.8)",
+                      color: "white",
+                    },
+                  },
+                },
+              }}
+            >
+              <IconButton onClick={handleClose} size="medium">
+                <span className="material-symbols-outlined">close</span>
+              </IconButton>
+            </Tooltip>
           </Box>
 
           {/* Toolbar */}
@@ -617,15 +633,31 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
 
               {/* Delete */}
               {selectedLabel !== "All contacts" && selectedLabel !== "My contacts" && addedRecipients.length === 0 && (
-                <IconButton
-                  size="small"
-                  sx={{ "& .MuiIconButton-sizeSmall": { width: "24px", height: "24px" } }}
-                  onClick={() => handleDeleteLabel(selectedLabel)}
+                <Tooltip
+                  title="Delete label"
+                  placement="bottom"
+                  arrow
+                  slotProps={{
+                    popper: {
+                      sx: {
+                        "& .MuiTooltip-tooltip": {
+                          backgroundColor: "rgba(0, 0, 0, 0.8)",
+                          color: "white",
+                        },
+                      },
+                    },
+                  }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
-                    delete
-                  </span>
-                </IconButton>
+                  <IconButton
+                    size="small"
+                    sx={{ "& .MuiIconButton-sizeSmall": { width: "24px", height: "24px" } }}
+                    onClick={() => handleDeleteLabel(selectedLabel)}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
+                      delete
+                    </span>
+                  </IconButton>
+                </Tooltip>
               )}
             </Box>
 
