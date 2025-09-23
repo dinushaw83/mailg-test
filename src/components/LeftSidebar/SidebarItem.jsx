@@ -4,13 +4,14 @@ import { NavLink, useMatch } from "react-router-dom";
 
 const hsClass = (key) => `aHS-bn${key}`;
 
-export default function SidebarItem({ item }) {
+export default function SidebarItem({ item, expanded }) {
   // make sure item.key doesn't start with "/"
   const key = item.key?.startsWith("/") ? item.key.slice(1) : item.key;
 
+  // Exact match for base path
   const exactMatch = useMatch({ path: `/${key}`, end: true });
-  const nestedMatch = useMatch({ path: `/${key}/*`, end: false });
-
+  // For Inbox, also match nested paths like /inbox/:inboxId
+  const nestedMatch = item.key === "inbox" ? useMatch({ path: `/${key}/*`, end: false }) : null;
   const isActive = Boolean(exactMatch || nestedMatch);
 
   const handleClick = (e) => {
@@ -41,11 +42,24 @@ export default function SidebarItem({ item }) {
         aria-label={item.label}
         onClick={handleClick}
       >
-        <div className={`aim ${isActive ? "ain" : ""}`}>
+        <div
+          className={`aim ${isActive ? "ain" : ""}`}
+          style={
+            expanded
+              ? {}
+              : {
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  overflowX: "hidden",
+                  marginLeft: "20px",
+                }
+          }
+        >
           <div className={`TO n6 ${isActive ? "aBP nZ aiq" : ""}`}>
             <div
               className={`TN bzz ah9 ${hsClass(item.key)}`}
-              style={{ marginLeft: 0 }}
+              style={{ marginLeft: 0, ...(expanded ? {} : { paddingLeft: "6px" }) }}
             >
               <span
                 className={
@@ -67,9 +81,14 @@ export default function SidebarItem({ item }) {
               </span>
 
               <div className="aio UKr6le">
-                <span className={`nU ${isActive ? "n1" : ""}`}>{item.label}</span>
+                <span 
+                  className={`nU ${isActive ? "n1" : ""}`}
+                  style={item.key === "drafts" && item.count > 0 ? { fontWeight: 600 } : {}}
+                >
+                  {item.label}
+                </span>
 
-                {item.key !== "all" &&
+                {(item.key === "inbox" || item.key === "drafts") &&
                   typeof item.count === "number" &&
                   item.count > 0 && <div className="bsU">{item.count}</div>}
               </div>

@@ -116,7 +116,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       preview: content.plainText,
       timestamp: timestamp,
       timeDisplay: timeDisplay,
-      read: false,
+      read: true,
       starred: false,
       important: false,
       labels: ["Sent"],
