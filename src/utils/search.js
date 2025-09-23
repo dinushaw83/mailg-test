@@ -5,6 +5,51 @@ let searchIndex = null;
 let emailDocuments = [];
 let lastEmailHash = null; // Track when emails change to rebuild index
 
+// Search history management
+const SEARCH_HISTORY_KEY = "mailg_search_history";
+const MAX_SEARCH_HISTORY = 10;
+
+function getSearchHistory() {
+  try {
+    const history = localStorage.getItem(SEARCH_HISTORY_KEY);
+    return history ? JSON.parse(history) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveSearchHistory(history) {
+  try {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+  } catch (error) {
+    console.warn("Failed to save search history:", error);
+  }
+}
+
+export function addToSearchHistory(query) {
+  if (!query || !query.trim()) return;
+
+  const trimmedQuery = query.trim();
+  let history = getSearchHistory();
+
+  // Remove if already exists (to move to front)
+  history = history.filter((item) => item !== trimmedQuery);
+
+  history.unshift(trimmedQuery);
+
+  // Limit to max history size
+  history = history.slice(0, MAX_SEARCH_HISTORY);
+
+  saveSearchHistory(history);
+}
+
+/**
+ * Get search history
+ */
+export function getSearchHistoryItems() {
+  return getSearchHistory();
+}
+
 /**
  * basic text normalization
  */
@@ -175,12 +220,15 @@ export function searchEmails(query, options = {}) {
 }
 
 /**
- * Get recent search suggestions
+ * Get recent search suggestions with search history priority
  */
 export function getRecentSearchSuggestions(limit = 6) {
   if (!emailDocuments || emailDocuments.length === 0) {
     return [];
   }
+
+  // Get search history first
+  const searchHistory = getSearchHistory();
 
   // Get recent emails and extract subjects
   const recentEmails = emailDocuments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
@@ -195,8 +243,28 @@ export function getRecentSearchSuggestions(limit = 6) {
     }
   });
 
-  // Remove duplicates and limit
-  return [...new Set(suggestions)].slice(0, limit);
+  // Remove duplicates from recent suggestions
+  const recentSuggestions = [...new Set(suggestions)];
+
+  // Combine search history with recent suggestions
+  // Search history items come first, then fill remaining slots with recent suggestions
+  const combinedSuggestions = [];
+
+  // Add search history items first (up to the limit)
+  searchHistory.forEach((historyItem) => {
+    if (combinedSuggestions.length < limit) {
+      combinedSuggestions.push(historyItem);
+    }
+  });
+
+  // Fill remaining slots with recent suggestions (excluding those already in history)
+  recentSuggestions.forEach((suggestion) => {
+    if (combinedSuggestions.length < limit && !searchHistory.includes(suggestion)) {
+      combinedSuggestions.push(suggestion);
+    }
+  });
+
+  return combinedSuggestions;
 }
 
 /**
