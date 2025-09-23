@@ -351,12 +351,14 @@ export default function LabelItem({
                         onClick={(e) => {
                           e.stopPropagation();
                           e.preventDefault();
-                          // handleColorChange(cell);
-                          // setSelectedColor(cell);
                           setPendingColor(cell);
                           handleColorMenuClose();
                           handleMenuClose()
-                          setColorModalOpen(true);
+                          if (hasChildren) {
+                            setColorModalOpen(true);
+                          } else { 
+                            setLabelColor(labelKey, cell);
+                          }
                         }}
                         check={selectedColor && selectedColor.rgb === cell.rgb && selectedColor.text === cell.text}
                       />
