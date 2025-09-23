@@ -68,6 +68,8 @@ export default function LabelItem({
   const label = labels[labelKey];
   const selectedColor = label?.color;
 
+  const isParent = !labelKey?.includes("::");
+
   // Route like /label/:label where :label is encodeURIComponent(labelKey)
   const match = useMatch("/label/:label");
   const currentKey = match?.params?.label ? decodeURIComponent(match.params.label) : "";
@@ -245,39 +247,42 @@ export default function LabelItem({
             </ListItemIcon>
           </MenuItem>
 
-
           <Divider />
 
-          <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
-            In label list
-          </Typography>
-          {IN_LABEL_LIST.map((opt) => {
-            const selected = inLabelList === opt.key;
-            return (
-              <MenuItem
-                key={opt.key}
-                onClick={() => {
-                  setLabels(prev => {
-                    const next = { ...prev };
-                    next[labelKey] = { ...next[labelKey], inLabelList: opt.key };
-                    return next;
-                  });
-                  handleMenuClose()
-                }}
-                // selected={selected}
-                role="menuitemradio"
-                aria-checked={selected}
-              >
-                <ListItemIcon sx={{ minWidth: 28 }}>
-                  {selected && (
-                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
-                  )}
-                </ListItemIcon>
-                <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
-              </MenuItem>
-            );
-          })}
-          <Divider />
+          {isParent && [
+            <Typography key="label-list-title" sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
+              In label list {JSON.stringify(isParent)} {labelKey}
+            </Typography>,
+
+            ...IN_LABEL_LIST.map((opt) => {
+              const selected = inLabelList === opt.key;
+              return (
+                <MenuItem
+                  key={opt.key}
+                  onClick={() => {
+                    setLabels(prev => {
+                      const next = { ...prev };
+                      next[labelKey] = { ...next[labelKey], inLabelList: opt.key };
+                      return next;
+                    });
+                    handleMenuClose()
+                  }}
+                  // selected={selected}
+                  role="menuitemradio"
+                  aria-checked={selected}
+                >
+                  <ListItemIcon sx={{ minWidth: 28 }}>
+                    {selected && (
+                      <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
+                    )}
+                  </ListItemIcon>
+                  <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
+                </MenuItem>
+              );
+            }),
+
+            <Divider key="label-list-divider" />
+          ]}
 
           <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
             In message list
@@ -356,7 +361,7 @@ export default function LabelItem({
                           handleMenuClose()
                           if (hasChildren) {
                             setColorModalOpen(true);
-                          } else { 
+                          } else {
                             setLabelColor(labelKey, cell);
                           }
                         }}
