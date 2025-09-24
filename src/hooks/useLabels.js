@@ -48,7 +48,13 @@ function buildTree(labels) {
 // Useful for <Select> and MoveTo menus: makes [{key, name, depth}] flat list
 export function flattenTreeForSelect(roots, depth = 0, out = []) {
   for (const node of roots) {
-    out.push({ key: node.key, name: node.name, depth, system: node.system });
+    out.push({
+      key: node.key,
+      name: node.name,
+      depth,
+      system: node.system,
+      children: node.children?.map(c => c.key) ?? [], // keep child keys
+    });
     if (node.children?.length) flattenTreeForSelect(node.children, depth + 1, out);
   }
   return out;

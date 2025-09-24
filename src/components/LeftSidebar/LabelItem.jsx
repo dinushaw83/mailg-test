@@ -9,6 +9,7 @@ import { styled } from "@mui/material/styles";
 import useLabels from "../../hooks/useLabels";
 import ChangeLabelColorModal, { SCOPES } from "./ChangeLabelColorModal";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import RemoveLabelModal from "./RemoveLabelModal";
 
 const Swatch = styled("div")(({ theme, rgb, text }) => ({
   height: 20,
@@ -63,8 +64,11 @@ export default function LabelItem({
   isOpen = true,
   onToggle, // () => void
   expanded = true,
+  conversationCount = 0,
+  childrenArray = [],
+  multipleLabels = [],
 }) {
-  const { setLabelColor, labels } = useLabels();
+  const { setLabelColor, labels, deleteLabel, labelIndex } = useLabels();
   const { setLabels } = useGlobalContext()
   const label = labels[labelKey];
   const selectedColor = label?.color;
@@ -87,6 +91,9 @@ export default function LabelItem({
   const [colorAnchorEl, setColorAnchorEl] = useState(null);
   const colorOpen = Boolean(colorAnchorEl);
   const [colorModalOpen, setColorModalOpen] = useState(false);
+
+  // remove label modal
+  const [removeModalOpen, setRemoveModalOpen] = useState(false);
 
   const handleMenuButtonClick = (e) => {
     e.preventDefault();
@@ -269,7 +276,7 @@ export default function LabelItem({
 
         {isParent && [
           <Typography key="label-list-title" sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
-            In label list {JSON.stringify(isParent)} {labelKey}
+            In label list
           </Typography>,
 
           ...IN_LABEL_LIST.map((opt) => {
@@ -338,7 +345,10 @@ export default function LabelItem({
           <ListItemText primary={<Typography fontSize={14}>Edit</Typography>} sx={{ ml: 5 }} />
         </MenuItem>
         <MenuItem>
-          <ListItemText primary={<Typography fontSize={14}>Remove label</Typography>} sx={{ ml: 5 }} />
+          <ListItemText primary={<Typography fontSize={14}>Remove label</Typography>} sx={{ ml: 5 }} onClick={() => {
+            handleMenuClose()
+            setRemoveModalOpen(true)
+          }} />
         </MenuItem>
         <MenuItem>
           <ListItemText
@@ -409,6 +419,18 @@ export default function LabelItem({
             }
           }
           setPendingColor(null);
+        }}
+      />
+
+      <RemoveLabelModal 
+        open={removeModalOpen}
+        onClose={() => setRemoveModalOpen(false)}
+        labelName={display}
+        conversationCount={conversationCount}
+        multipleLabels={multipleLabels}
+        onConfirm={() => {
+          deleteLabel(labelKey);
+          setRemoveModalOpen(false);
         }}
       />
     </>

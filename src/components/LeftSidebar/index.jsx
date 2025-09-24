@@ -7,6 +7,30 @@ import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
+function findNode(tree, key) {
+  for (const node of tree) {
+    if (node.key === key) return node;
+    const child = findNode(node.children || [], key);
+    if (child) return child;
+  }
+  return null;
+}
+
+function collectSubtree(node, labelIndex, depth = 0) {
+  const all = [
+    {
+      key: node.key,
+      name: node.name,
+      count: labelIndex[node.key]?.total ?? 0,
+      depth,
+    },
+  ];
+  node.children?.forEach(child => {
+    all.push(...collectSubtree(child, labelIndex, depth + 1));
+  });
+  return all;
+}
+
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
   { key: "starred", label: "Starred", icon: "star" },
@@ -35,6 +59,8 @@ const LeftSidebar = () => {
         name: item.name, // just this node's name (for sidebar)
         depth: item.depth, // for indent
         unread: labelIndex[item.key]?.unread ?? 0,
+        total: labelIndex[item.key]?.total ?? 0,
+        children: item.children,
       }));
   }, [labelTree, labels, labelIndex]);
 
@@ -262,19 +288,26 @@ const LeftSidebar = () => {
                         <div className="n3">
                           <div className="zw" gh="cl">
                             <div className="TK">
-                              {visibleCustomLabels.map((l) => (
-                                <LabelItem
-                                  key={l.key}
-                                  labelKey={l.key}
-                                  display={l.name}
-                                  depth={l.depth}
-                                  count={l.unread}
-                                  hasChildren={parentsWithChildren.has(l.key)}
-                                  isOpen={!collapsed[l.key]}
-                                  onToggle={() => toggleOpen(l.key)}
-                                  expanded={sidebarExpanded}
-                                />
-                              ))}
+                              {visibleCustomLabels.map((l) => {
+                                const node = findNode(labelTree, l.key);  // full tree node
+                                const multipleLabels = collectSubtree(node, labelIndex);
+                                return (
+                                  <LabelItem
+                                    key={l.key}
+                                    labelKey={l.key}
+                                    display={l.name}
+                                    depth={l.depth}
+                                    count={l.unread}
+                                    childrenArray={l.children}
+                                    hasChildren={parentsWithChildren.has(l.key)}
+                                    isOpen={!collapsed[l.key]}
+                                    onToggle={() => toggleOpen(l.key)}
+                                    expanded={sidebarExpanded}
+                                    conversationCount={l.total}
+                                    multipleLabels={multipleLabels}
+                                  />
+                                )
+                              })}
                             </div>
                           </div>
                         </div>
