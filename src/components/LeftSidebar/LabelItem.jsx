@@ -66,6 +66,8 @@ export default function LabelItem({
   expanded = true,
   conversationCount = 0,
   multipleLabels = [],
+  setIsCreateLabelModalOpen = () => {},
+  setDefaultParentKey = () => {},
 }) {
   const { setLabelColor, labels, deleteLabel } = useLabels();
   const { setLabels, setSnackbar } = useGlobalContext()
@@ -353,6 +355,11 @@ export default function LabelItem({
           <ListItemText
             primary={<Typography fontSize={14}>Add sublabel</Typography>}
             sx={{ ml: 5 }}
+            onClick={() => {
+              handleMenuClose()
+              setIsCreateLabelModalOpen(true)
+              setDefaultParentKey(labelKey)
+            }}
           />
         </MenuItem>
       </Menu>

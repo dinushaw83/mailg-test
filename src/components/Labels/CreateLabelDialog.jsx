@@ -7,13 +7,12 @@ import {
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useLabels, { flattenTreeForSelect, ROOT, splitKey } from "../../hooks/useLabels";
 
-export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
+export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey }) {
     const { setSnackbar } = useGlobalContext();
     const { labels, createLabel, labelTree } = useLabels();
-
     const [name, setName] = useState("");
     const [nest, setNest] = useState(false);
-    const [parentKey, setParentKey] = useState(null);
+    const [parentKey, setParentKey] = useState(defaultParentKey ?? null);
     const [attempted, setAttempted] = useState(false);
 
     const parentChoices = useMemo(
@@ -27,6 +26,10 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
     useEffect(() => {
         setNest(Boolean(parentKey));
     }, [parentKey]);
+
+    useEffect(() => {
+        setParentKey(defaultParentKey ?? null);
+    }, [defaultParentKey]);
 
     const isDup = useMemo(() => {
         if (!trimmed) return false;

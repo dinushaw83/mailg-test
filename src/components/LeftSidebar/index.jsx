@@ -7,10 +7,6 @@ import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
-function getLabelPath(key) {
-  return key.split("::").join("/");
-}
-
 function findNode(tree, key) {
   for (const node of tree) {
     if (node.key === key) return node;
@@ -56,6 +52,8 @@ const LeftSidebar = () => {
   const [isLeftSidebarHovered, setIsLeftSidebarHovered] = useState(false);
   // Sidebar is expanded if it is expanded or hovered
   const sidebarExpanded = isLeftSidebarExpanded || isLeftSidebarHovered;
+
+  const [defaultParentKey, setDefaultParentKey] = useState(null);
 
   const customLabels = useMemo(() => {
     const flat = flattenTreeForSelect(labelTree);
@@ -116,6 +114,7 @@ const LeftSidebar = () => {
 
   const handleCreateNewLabel = () => {
     setIsCreateLabelModalOpen(true);
+    setDefaultParentKey(null);
   };
 
   const manageLabels = () => {
@@ -312,6 +311,8 @@ const LeftSidebar = () => {
                                     expanded={sidebarExpanded}
                                     conversationCount={l.total}
                                     multipleLabels={multipleLabels}
+                                    setIsCreateLabelModalOpen={setIsCreateLabelModalOpen}
+                                    setDefaultParentKey={setDefaultParentKey}
                                   />
                                 )
                               })}
@@ -329,6 +330,7 @@ const LeftSidebar = () => {
         <CreateLabelDialog
           open={isCreateLabelModalOpen}
           onClose={() => setIsCreateLabelModalOpen(false)}
+          defaultParentKey={defaultParentKey}
           onAfterCreate={(name) => {
             setSnackbar({
               open: true,
