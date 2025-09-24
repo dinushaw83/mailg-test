@@ -15,6 +15,8 @@ const Container = styled.div`
   min-height: 795px;
   display: flex;
   max-width: 100%;
+  border-radius: 16px;
+  background-color: #fff;
 `;
 
 const EmailListContainer = styled.div`

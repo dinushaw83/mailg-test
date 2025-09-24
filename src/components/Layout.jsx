@@ -13,7 +13,22 @@ const ContentContainer = styled.div`
 `;
 
 const Layout = ({ children }) => {
-  const { isLeftSidebarExpanded } = useGlobalContext();
+  const { isLeftSidebarExpanded, rightSidebarExpanded, rightSidebarActiveTab } = useGlobalContext();
+
+  // Calculate the empty div width when left sidebar is collapsed
+  const calculateEmptyDivWidth = () => {
+    if (!isLeftSidebarExpanded) {
+      if (rightSidebarExpanded && rightSidebarActiveTab.activeTab) {
+        return "114px";
+      } else if (rightSidebarExpanded && !rightSidebarActiveTab.activeTab) {
+        return "92px";
+      } else {
+        return "90px";
+      }
+    } else {
+      return 0;
+    }
+  };
 
   return (
     <div className="tVu25">
@@ -23,7 +38,7 @@ const Layout = ({ children }) => {
           <Header />
           <ContentContainer id="content-container">
             <LeftSidebar />
-            {!isLeftSidebarExpanded && <div style={{ width: "72px" }} />}
+            {!isLeftSidebarExpanded && <div style={{ width: calculateEmptyDivWidth() }} />}
             {children}
             <RightSidebar />
           </ContentContainer>

@@ -30,6 +30,8 @@ const RightSideBarTabs = () => {
         display: "flex",
         flexDirection: "column",
         height: "100%",
+        marginLeft: "10px",
+        borderRadius: "16px",
       }}
     >
       {/* Tab content area */}
