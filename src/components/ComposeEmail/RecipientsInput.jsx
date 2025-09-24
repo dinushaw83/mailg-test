@@ -15,7 +15,9 @@ export default function RecipientsInput({
   onBccChange,
   placeholder = "Recipients",
 }) {
-  const { recipients } = useContext(GlobalContext);
+  const { recipients: globalRecipients } = useContext(GlobalContext);
+  // Include only the recipients that has an email
+  const recipients = globalRecipients.filter((recipient) => recipient.email);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);

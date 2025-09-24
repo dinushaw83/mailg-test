@@ -41,7 +41,7 @@ const Inbox = () => {
   }, []);
 
   return (
-    <div className="nH bkK">
+    <div className="nH bkK" style={{ borderRadius: "16px", backgroundColor: "#fff" }}>
       <div className="nH">
         <div className="nH ar4 z">
           <div>

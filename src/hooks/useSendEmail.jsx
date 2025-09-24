@@ -144,6 +144,12 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       newRecipients.forEach((recipient, index) => {
         updatedRecipients.push({
           ...recipient,
+          emails: [
+            {
+              value: recipient.email,
+              label: "",
+            },
+          ],
           id: generateNextIntegerId(recipients) + index,
         });
       });

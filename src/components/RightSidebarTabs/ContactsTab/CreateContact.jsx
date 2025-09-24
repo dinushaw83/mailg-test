@@ -779,6 +779,8 @@ const CreateContact = ({ onClose, onTabClose }) => {
           id: contactToUpdate?.id || generateNextIntegerId(recipients),
           avatar: contactToUpdate?.avatar || null,
           labels,
+          // First email should be the primary email if it exists
+          email: formData.emails[0].value || null,
         };
 
         // Save the original contact in case of edit contact or the new contact
