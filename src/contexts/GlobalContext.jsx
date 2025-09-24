@@ -15,8 +15,12 @@ export const GlobalContext = createContext();
 export const GlobalContextProvider = ({ children }) => {
   const [loggedInUser, setLoggedInUser] = usePersistedState("loggedInUser", initialUser);
   const [emails, setEmails] = usePersistedState("emails", initialEmails);
+
+  // Recipients / Contacts
   const [recipients, setRecipients] = usePersistedState("recipients", initialRecipients);
   const [recipientLabels, setRecipientLabels] = usePersistedState("recipientLabels", initialRecipientLabels);
+  const [deletedRecipients, setDeletedRecipients] = usePersistedState("deletedRecipients", []);
+
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
   const [composeOpen, setComposeOpen] = usePersistedState("composeOpen", false);
@@ -28,7 +32,10 @@ export const GlobalContextProvider = ({ children }) => {
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
   // Right sidebar states
   const [rightSidebarExpanded, setRightSidebarExpanded] = usePersistedState("rightSidebarExpanded", true);
-  const [rightSidebarActiveTab, setRightSidebarActiveTab] = usePersistedState("rightSidebarActiveTab", null);
+  const [rightSidebarActiveTab, setRightSidebarActiveTab] = usePersistedState("rightSidebarActiveTab", {
+    contact: { screen: "CONTACTS" },
+    activeTab: null,
+  });
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -36,6 +43,7 @@ export const GlobalContextProvider = ({ children }) => {
     message: "",
     action: null,
     autoHideDuration: null,
+    hideClose: false,
   });
 
   const [selected, setSelected] = useState(() => new Set());
@@ -129,6 +137,8 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarExpanded,
     rightSidebarActiveTab,
     setRightSidebarActiveTab,
+    deletedRecipients,
+    setDeletedRecipients,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

@@ -43,7 +43,7 @@ const EmptyContacts = ({ title, description, onClickCreateContact, titleStyle })
           },
         }}
       >
-        <span class="material-symbols-outlined" style={{ fontSize: "20px", marginRight: "8px" }}>
+        <span className="material-symbols-outlined" style={{ fontSize: "20px", marginRight: "8px" }}>
           add
         </span>
         Create contact
