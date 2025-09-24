@@ -10,6 +10,7 @@ import useLabels from "../../hooks/useLabels";
 import ChangeLabelColorModal, { SCOPES } from "./ChangeLabelColorModal";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import RemoveLabelModal from "./RemoveLabelModal";
+import EditLabelDialog from "../Labels/EditLabelDialog";
 
 const Swatch = styled("div")(({ theme, rgb, text }) => ({
   height: 20,
@@ -68,6 +69,8 @@ export default function LabelItem({
   multipleLabels = [],
   setIsCreateLabelModalOpen = () => {},
   setDefaultParentKey = () => {},
+  setLabelDefaultName = () => { },
+  setLabelDefaultKey = () => {},
 }) {
   const { setLabelColor, labels, deleteLabel } = useLabels();
   const { setLabels, setSnackbar } = useGlobalContext()
@@ -84,6 +87,8 @@ export default function LabelItem({
   const inMessageList = label?.inMessageList ?? "show";
   const [pendingColor, setPendingColor] = useState(null);
 
+  const parentKey = label?.parentKey;
+
   // Main menu
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
@@ -95,6 +100,8 @@ export default function LabelItem({
 
   // remove label modal
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
+
+  const [editLabelModalOpen, setEditLabelModalOpen] = useState(false);
 
   const handleMenuButtonClick = (e) => {
     e.preventDefault();
@@ -216,7 +223,6 @@ export default function LabelItem({
 
               <div className="aio aip">
                 <span className="nU">{display}</span>
-                {count > 0 && <span className="ml-1 text-xs text-gray-500">({count})</span>}
               </div>
 
               <div className="nL aig group">
@@ -343,7 +349,10 @@ export default function LabelItem({
         <Divider />
 
         <MenuItem>
-          <ListItemText primary={<Typography fontSize={14}>Edit</Typography>} sx={{ ml: 5 }} />
+          <ListItemText primary={<Typography fontSize={14}>Edit</Typography>} sx={{ ml: 5 }} onClick={() => {
+            handleMenuClose()
+            setEditLabelModalOpen(true)
+          }} />
         </MenuItem>
         <MenuItem>
           <ListItemText primary={<Typography fontSize={14}>Remove label</Typography>} sx={{ ml: 5 }} onClick={() => {
@@ -450,6 +459,21 @@ export default function LabelItem({
           });
         }}
       />
+
+      {editLabelModalOpen && <EditLabelDialog
+        open={editLabelModalOpen}
+        onClose={() => setEditLabelModalOpen(false)}
+        defaultParentKey={parentKey}
+        labelDefaultName={display}
+        labelDefaultKey={labelKey}
+        onAfterCreate={(name) => {
+          setSnackbar({
+            open: true,
+            message: `The label "${name}" was saved.`,
+            autoHideDuration: 4000,
+          });
+        }}
+      />}
     </>
   );
 }

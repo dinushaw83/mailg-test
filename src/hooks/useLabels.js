@@ -69,7 +69,7 @@ export function getPathLabelFromKey(labelsMap, key) {
     const nm = labelsMap?.[k]?.name ?? parts[i];      // fallback to raw segment
     paths.push(nm);
   }
-  return paths.join(" / ");
+  return paths.join("/");
 }
 
 export default function useLabels() {
@@ -109,7 +109,7 @@ export default function useLabels() {
 
   // Rekey an entire subtree when a node is renamed
   const renameLabel = useCallback(
-    (key, newName) => {
+    (key, newName, newParentKey = undefined) => {
       const nm = String(newName || "").trim();
       if (!nm) return;
 
@@ -118,37 +118,39 @@ export default function useLabels() {
         const lbl = cur[key];
         if (!lbl) return prev;
 
-        // sibling uniqueness
+        const targetParent = newParentKey ?? lbl.parentKey;
+        const newKey = makeKey(nm, targetParent);
+
+        // prevent parent loops
+        if (newKey.startsWith(key + "::")) return prev;
+
         const dup = Object.entries(cur).some(([k, v]) =>
-          v.parentKey === lbl.parentKey &&
+          (v.parentKey ?? ROOT) === targetParent &&
           (v.name || "").toLowerCase() === nm.toLowerCase() &&
           k !== key
         );
         if (dup) return prev;
 
-        const newKey = makeKey(nm, lbl.parentKey);
-
-        // Fast path: key unchanged (case-only rename)
         if (newKey === key) {
-          cur[key] = { ...lbl, name: nm };
+          cur[key] = { ...lbl, name: nm, parentKey: targetParent };
           return cur;
         }
 
-        // Build parent→children index to walk the whole subtree
+        // Build parent→children index
         const childrenByParent = {};
         for (const [k, v] of Object.entries(cur)) {
           const p = v.parentKey ?? ROOT;
           (childrenByParent[p] ||= []).push(k);
         }
 
-        // Collect subtree (BFS)
+        // Collect subtree
         const oldToNew = new Map();
         const queue = [key];
         oldToNew.set(key, newKey);
 
         while (queue.length) {
           const oldK = queue.shift();
-          const mappedParent = oldToNew.get(oldK); // new parent key for its children
+          const mappedParent = oldToNew.get(oldK);
           const childKeys = childrenByParent[oldK] || [];
           for (const ck of childKeys) {
             const child = cur[ck];
@@ -158,30 +160,29 @@ export default function useLabels() {
           }
         }
 
-        // Apply rekey operations
+        // Apply changes
         const next = { ...cur };
-        // 1) create new entries
         for (const [oldK, newK] of oldToNew.entries()) {
           const v = next[oldK];
           if (!v) continue;
           const isRoot = oldK === key;
-          const newParentKey = isRoot ? v.parentKey : oldToNew.get(v.parentKey) || v.parentKey;
-          next[newK] = { ...v, name: isRoot ? nm : v.name, parentKey: newParentKey };
+          const newParent = isRoot ? targetParent : oldToNew.get(v.parentKey) || v.parentKey;
+          next[newK] = { ...v, name: isRoot ? nm : v.name, parentKey: newParent };
         }
-        // 2) delete old keys
         for (const oldK of oldToNew.keys()) {
           delete next[oldK];
         }
 
-        // Update emails for the **renamed node only**
-        // (descendant keys are not in emails unless assigned; if they are, they’ve been rekeyed above)
+        // Update emails
         const renamedOldKey = key;
         const renamedNewKey = newKey;
         if (renamedOldKey !== renamedNewKey) {
           setEmails(prevEmails =>
             (prevEmails || []).map(m => ({
               ...m,
-              labels: (m.labels || []).map(l => (l === renamedOldKey ? renamedNewKey : l)),
+              labels: (m.labels || []).map(l =>
+                oldToNew.get(l) || l
+              ),
             }))
           );
         }
