@@ -1,12 +1,14 @@
-import React, { useMemo, useState } from "react";
-import { List, Typography, Box, IconButton, Button, Tooltip, TextField } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import { List, Typography, Box, IconButton, Button, TextField } from "@mui/material";
 import ContactListItem from "./ContactListItem";
 import CreateContact from "./CreateContact";
+import ContactDetails from "./ContactDetails";
+import { ActionIconButton } from "./ContactComponents";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
 import EmptyContacts from "./EmptyContacts";
 
-const ContactsTab = ({ onClose }) => {
-  const { recipients } = useGlobalContext();
+const ContactsTab = () => {
+  const { recipients, rightSidebarActiveTab, setRightSidebarActiveTab } = useGlobalContext();
   const [displaySearch, setDisplaySearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
@@ -17,12 +19,20 @@ const ContactsTab = ({ onClose }) => {
     () => searchResults.filter((recipient) => recipient.labels.includes("My contacts")),
     [searchResults]
   );
+  const favoriteContacts = useMemo(
+    () => recipients.filter((recipient) => recipient.labels.includes("Favorites")),
+    [recipients]
+  );
   // Contacts in search results that are not in my contacts
   const otherContacts = useMemo(
     () => searchResults.filter((recipient) => !recipient.labels.includes("My contacts")),
     [searchResults]
   );
-  const [displayCreateContact, setDisplayCreateContact] = useState(false);
+
+  // Update search results when recipients change
+  useEffect(() => {
+    setSearchResults(recipients.filter((recipient) => recipient.labels.includes("My contacts")));
+  }, [recipients]);
 
   // Handle search
   const handleSearch = (value) => {
@@ -50,21 +60,53 @@ const ContactsTab = ({ onClose }) => {
     setSearchResults(recipients.filter((recipient) => recipient.labels.includes("My contacts")));
   };
 
-  // Display create contact
-  if (displayCreateContact) {
-    return <CreateContact onClose={() => setDisplayCreateContact(false)} />;
+  // View contact details
+  const handleViewContactDetails = (contact) => {
+    setRightSidebarActiveTab((prev) => ({ ...prev, contact: { screen: "CONTACT_DETAILS", contactId: contact.id } }));
+  };
+
+  // Display create or edit contact
+  if (
+    rightSidebarActiveTab.contact.screen === "CREATE_CONTACT" ||
+    (rightSidebarActiveTab.contact.screen === "EDIT_CONTACT" && rightSidebarActiveTab.contact.contactId)
+  ) {
+    return (
+      <CreateContact
+        onClose={() =>
+          setRightSidebarActiveTab((prev) => ({
+            ...prev,
+            contact: {
+              screen: rightSidebarActiveTab.contact.screen === "CREATE_CONTACT" ? "CONTACTS" : "CONTACT_DETAILS",
+              contactId:
+                rightSidebarActiveTab.contact.screen === "CREATE_CONTACT"
+                  ? null
+                  : rightSidebarActiveTab.contact.contactId,
+            },
+          }))
+        }
+        onTabClose={() => setRightSidebarActiveTab((prev) => ({ ...prev, activeTab: null }))}
+      />
+    );
+  }
+
+  // View contact details
+  if (rightSidebarActiveTab.contact.screen === "CONTACT_DETAILS" && rightSidebarActiveTab.contact.contactId) {
+    return <ContactDetails />;
   }
 
   return (
-    <Box sx={{ height: "100%", overflow: "auto" }}>
+    <Box sx={{ height: "calc(100vh - 100px)", overflow: "hidden", position: "relative" }}>
       {/* Header */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          mb: 3,
-          ml: 1.5,
+          p: 1,
+          position: "fixed",
+          backgroundColor: "white",
+          zIndex: 2,
+          width: "288px",
         }}
       >
         {displaySearch ? (
@@ -116,7 +158,7 @@ const ContactsTab = ({ onClose }) => {
                   justifyContent: "center",
                 }}
               >
-                <span class="material-symbols-outlined" style={{ color: "white", fontSize: "18px" }}>
+                <span className="material-symbols-outlined" style={{ color: "white", fontSize: "18px" }}>
                   close_small
                 </span>
               </div>
@@ -128,147 +170,128 @@ const ContactsTab = ({ onClose }) => {
               Contacts
             </Typography>
             <div style={{ display: "flex", alignItems: "center" }}>
-              <Tooltip
+              {/* Search */}
+              <ActionIconButton
+                iconName="search"
                 title="Search"
-                placement="bottom"
-                slotProps={{
-                  popper: {
-                    sx: {
-                      "& .MuiTooltip-tooltip": {
-                        backgroundColor: "rgba(0, 0, 0, 0.7)",
-                        color: "white",
-                        fontSize: "13px",
-                        fontWeight: 200,
-                      },
-                    },
-                  },
-                }}
-              >
-                <IconButton size="medium" aria-label="search" onClick={() => setDisplaySearch(true)}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 21, color: "#444746" }}>
-                    search
-                  </span>
-                </IconButton>
-              </Tooltip>
-              <Tooltip
-                title="Open in new tab"
-                placement="bottom"
-                slotProps={{
-                  popper: {
-                    sx: {
-                      "& .MuiTooltip-tooltip": {
-                        backgroundColor: "rgba(0, 0, 0, 0.7)",
-                        color: "white",
-                        fontSize: "13px",
-                        fontWeight: 200,
-                      },
-                    },
-                  },
-                }}
-              >
-                <IconButton size="medium" aria-label="open-in-new-tab">
-                  <span className="material-symbols-outlined" style={{ fontSize: 21, color: "#444746" }}>
-                    open_in_new
-                  </span>
-                </IconButton>
-              </Tooltip>
-              <Tooltip
+                onClick={() => setDisplaySearch(true)}
+                color="#444746"
+              />
+
+              {/* Open in new tab */}
+              <ActionIconButton iconName="open_in_new" title="Open in new tab" color="#444746" />
+
+              {/* Close */}
+              <ActionIconButton
+                iconName="close"
                 title="Close"
-                placement="bottom"
-                slotProps={{
-                  popper: {
-                    sx: {
-                      "& .MuiTooltip-tooltip": {
-                        backgroundColor: "rgba(0, 0, 0, 0.7)",
-                        color: "white",
-                        fontSize: "13px",
-                        fontWeight: 200,
-                      },
-                    },
-                  },
-                }}
-              >
-                <IconButton size="medium" aria-label="Close tabs" onClick={onClose}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#444746" }}>
-                    close
-                  </span>
-                </IconButton>
-              </Tooltip>
+                onClick={() =>
+                  setRightSidebarActiveTab((prev) => ({ ...prev, activeTab: null, contact: { screen: "CONTACTS" } }))
+                }
+                iconSize={22}
+                color="#444746"
+              />
             </div>
           </>
         )}
       </Box>
 
-      {/* Create contact */}
-      {(hasSearched ? searchResults.length > 0 : myContacts.length > 0) && (
-        <Button
-          size="medium"
-          sx={{
-            textTransform: "none",
-            width: "100%",
-            borderRadius: "50px",
-            justifyContent: "flex-start",
-            fontWeight: 400,
-            fontSize: "0.875rem",
-            color: "#0b57d0",
-            mb: 1,
-            "&:hover": {
-              backgroundColor: "rgba(11, 87, 208, 0.08)",
-            },
-          }}
-          onClick={() => setDisplayCreateContact(true)}
-        >
-          <span class="material-symbols-outlined" style={{ fontSize: "20px", marginRight: "8px" }}>
-            add
-          </span>
-          Create contact
-        </Button>
-      )}
+      {/* Scrollable Content */}
+      <Box sx={{ overflowY: "auto", py: 2, px: 1, mt: 7, height: "calc(100vh - 188px)" }}>
+        {/* Create contact */}
+        {(hasSearched ? searchResults.length > 0 : myContacts.length > 0) && (
+          <Button
+            size="medium"
+            sx={{
+              textTransform: "none",
+              width: "100%",
+              borderRadius: "50px",
+              justifyContent: "flex-start",
+              fontWeight: 400,
+              fontSize: "0.875rem",
+              color: "#0b57d0",
+              mb: 1,
+              "&:hover": {
+                backgroundColor: "rgba(11, 87, 208, 0.08)",
+              },
+            }}
+            onClick={() => setRightSidebarActiveTab((prev) => ({ ...prev, contact: { screen: "CREATE_CONTACT" } }))}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "20px", marginRight: "8px" }}>
+              add
+            </span>
+            Create contact
+          </Button>
+        )}
 
-      {/* Contacts list in my contacts*/}
-      {myContacts.length > 0 && (
-        <>
-          <p style={{ fontSize: "0.6875rem", fontWeight: 400, color: "#444746", marginLeft: "6px" }}>
-            Contacts {hasSearched ? "" : `(${myContacts.length})`}
-          </p>
-          <List sx={{ p: 0, pl: 1 }}>
-            {myContacts.map((contact) => (
-              <ContactListItem key={contact.id} contact={contact} />
-            ))}
-          </List>
-        </>
-      )}
+        {/* Favorite contacts */}
+        {!hasSearched && favoriteContacts.length > 0 && (
+          <div style={{ marginBottom: "20px" }}>
+            <p style={{ fontSize: "0.6875rem", fontWeight: 400, color: "#444746", marginLeft: "6px" }}>
+              <span className="material-symbols-filled" style={{ fontSize: "16px", marginRight: "4px" }}>
+                star
+              </span>
+              Favorites ({favoriteContacts.length})
+            </p>
+            <List sx={{ p: 0, pl: 1 }}>
+              {favoriteContacts.map((contact) => (
+                <ContactListItem key={contact.id} contact={contact} onClick={() => handleViewContactDetails(contact)} />
+              ))}
+            </List>
+          </div>
+        )}
 
-      {/* Other contacts in search results */}
-      {hasSearched && otherContacts.length > 0 && (
-        <>
-          <p style={{ fontSize: "0.6875rem", fontWeight: 400, color: "#444746", marginLeft: "6px" }}>Other Contacts</p>
-          <List sx={{ p: 0, pl: 1 }}>
-            {otherContacts.map((contact) => (
-              <ContactListItem key={contact.id} contact={contact} />
-            ))}
-          </List>
-        </>
-      )}
+        {/* Contacts list in my contacts*/}
+        {myContacts.length > 0 && (
+          <>
+            <p style={{ fontSize: "0.6875rem", fontWeight: 400, color: "#444746", marginLeft: "6px" }}>
+              Contacts {hasSearched ? "" : `(${myContacts.length})`}
+            </p>
+            <List sx={{ p: 0, pl: 1 }}>
+              {myContacts.map((contact) => (
+                <ContactListItem key={contact.id} contact={contact} onClick={() => handleViewContactDetails(contact)} />
+              ))}
+            </List>
+          </>
+        )}
 
-      {/* Empty contacts */}
-      {hasSearched && searchResults.length === 0 ? (
-        <EmptyContacts
-          title="No results found"
-          description="Check spelling and try again"
-          onClickCreateContact={() => setDisplayCreateContact(true)}
-        />
-      ) : (
-        !hasSearched &&
-        myContacts.length === 0 && (
+        {/* Other contacts in search results */}
+        {hasSearched && otherContacts.length > 0 && (
+          <>
+            <p style={{ fontSize: "0.6875rem", fontWeight: 400, color: "#444746", marginLeft: "6px" }}>
+              Other Contacts
+            </p>
+            <List sx={{ p: 0, pl: 1 }}>
+              {otherContacts.map((contact) => (
+                <ContactListItem key={contact.id} contact={contact} onClick={() => handleViewContactDetails(contact)} />
+              ))}
+            </List>
+          </>
+        )}
+
+        {/* Empty contacts */}
+        {hasSearched && searchResults.length === 0 ? (
           <EmptyContacts
-            title="No contacts yet"
-            description="Google Contacts makes your contacts organized and clutter-free so you never lose touch"
-            onClickCreateContact={() => setDisplayCreateContact(true)}
-            titleStyle={{ fontSize: "1rem", fontWeight: 500 }}
+            title="No results found"
+            description="Check spelling and try again"
+            onClickCreateContact={() =>
+              setRightSidebarActiveTab((prev) => ({ ...prev, contact: { screen: "CREATE_CONTACT" } }))
+            }
           />
-        )
-      )}
+        ) : (
+          !hasSearched &&
+          myContacts.length === 0 && (
+            <EmptyContacts
+              title="No contacts yet"
+              description="Google Contacts makes your contacts organized and clutter-free so you never lose touch"
+              onClickCreateContact={() =>
+                setRightSidebarActiveTab((prev) => ({ ...prev, contact: { screen: "CREATE_CONTACT" } }))
+              }
+              titleStyle={{ fontSize: "1rem", fontWeight: 500 }}
+            />
+          )
+        )}
+      </Box>
     </Box>
   );
 };

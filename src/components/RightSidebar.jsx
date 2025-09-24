@@ -10,10 +10,10 @@ const RightSidebar = () => {
 
   // Handle the right sidebar tab icon click
   const handleTabIconClick = (tabName) => {
-    if (tabName === rightSidebarActiveTab) {
-      setRightSidebarActiveTab(null);
+    if (tabName === rightSidebarActiveTab.activeTab) {
+      setRightSidebarActiveTab(prev => ({ ...prev, activeTab: null }));
     } else {
-      setRightSidebarActiveTab(tabName);
+      setRightSidebarActiveTab(prev => ({ ...prev, activeTab: tabName }));
     }
   };
 
@@ -21,13 +21,13 @@ const RightSidebar = () => {
     <div
       className={`nH ${styles.rightSidebar}`}
       style={{
-        width: rightSidebarExpanded ? (rightSidebarActiveTab ? "376px" : "56px") : "16px",
+        width: rightSidebarExpanded ? (rightSidebarActiveTab.activeTab ? "376px" : "56px") : "16px",
       }}
     >
       {/* Tab Content Area - Left side */}
       <div
         className={`${styles.rightSidebarContentTabsWrapper} ${
-          (!rightSidebarActiveTab || !rightSidebarExpanded) && styles.hideContent
+          (!rightSidebarActiveTab.activeTab || !rightSidebarExpanded) && styles.hideContent
         }`}
       >
         <RightSideBarTabs />
@@ -117,15 +117,15 @@ const RightSidebar = () => {
                 </div>
                 {/* Contacts */}
                 <div className={styles.rightSidebarTabIconWrapper}>
-                  <div className={styles.tabIconBorder} data-active={rightSidebarActiveTab === "CONTACTS"} />
+                  <div className={styles.tabIconBorder} data-active={rightSidebarActiveTab.activeTab === "contact"} />
                   <Tooltip title="Contacts" placement="bottom">
                     <IconButton
                       size="medium"
-                      onClick={() => handleTabIconClick("CONTACTS")}
+                      onClick={() => handleTabIconClick("contact")}
                       sx={{
-                        backgroundColor: rightSidebarActiveTab === "CONTACTS" ? "#e8f0fe" : "transparent",
+                        backgroundColor: rightSidebarActiveTab.activeTab === "contact" ? "#e8f0fe" : "transparent",
                         "&:hover": {
-                          backgroundColor: rightSidebarActiveTab === "CONTACTS" ? "#d2e3fc" : "action.hover",
+                          backgroundColor: rightSidebarActiveTab.activeTab === "contact" ? "#d2e3fc" : "action.hover",
                         },
                       }}
                     >
@@ -201,12 +201,12 @@ const RightSidebar = () => {
             </div>
           </div>
 
-          {rightSidebarActiveTab ? (
+          {rightSidebarActiveTab.activeTab ? (
             // About
             <div style={{ marginBottom: "12px" }}>
               <Tooltip title="About" placement="top">
                 <IconButton size="medium">
-                  <span class="material-symbols-outlined" style={{ fontSize: 21 }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 21 }}>
                     info
                   </span>
                 </IconButton>

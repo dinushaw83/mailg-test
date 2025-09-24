@@ -21,12 +21,7 @@ const TabPanel = ({ children, value, tabName, ...other }) => {
 };
 
 const RightSideBarTabs = () => {
-  const { rightSidebarActiveTab, setRightSidebarActiveTab } = useGlobalContext();
-
-  // Handle the tab close
-  const handleTabClose = () => {
-    setRightSidebarActiveTab(null);
-  };
+  const { rightSidebarActiveTab } = useGlobalContext();
 
   return (
     <Box
@@ -39,8 +34,8 @@ const RightSideBarTabs = () => {
     >
       {/* Tab content area */}
       <Box sx={{ flex: 1, overflow: "auto" }}>
-        <TabPanel value={rightSidebarActiveTab} tabName="CONTACTS">
-          <ContactsTab onClose={handleTabClose} />
+        <TabPanel value={rightSidebarActiveTab.activeTab} tabName="contact">
+          <ContactsTab />
         </TabPanel>
       </Box>
     </Box>

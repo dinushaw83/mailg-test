@@ -2,7 +2,7 @@ import React from "react";
 import { ListItem, ListItemText, ListItemAvatar, Avatar, Tooltip } from "@mui/material";
 import { generateAvatarColor } from "../../../utils/helperFunctions";
 
-const ContactListItem = ({ contact }) => {
+const ContactListItem = ({ contact, onClick }) => {
   const avatarColor = generateAvatarColor(contact.name);
   const initials = contact.name.charAt(0).toUpperCase();
 
@@ -32,6 +32,7 @@ const ContactListItem = ({ contact }) => {
             cursor: "pointer",
           },
         }}
+        onClick={onClick}
       >
         <ListItemAvatar sx={{ minWidth: 32, mr: 2 }}>
           <Avatar
