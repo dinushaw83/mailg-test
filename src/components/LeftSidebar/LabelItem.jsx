@@ -65,11 +65,10 @@ export default function LabelItem({
   onToggle, // () => void
   expanded = true,
   conversationCount = 0,
-  childrenArray = [],
   multipleLabels = [],
 }) {
-  const { setLabelColor, labels, deleteLabel, labelIndex } = useLabels();
-  const { setLabels } = useGlobalContext()
+  const { setLabelColor, labels, deleteLabel } = useLabels();
+  const { setLabels, setSnackbar } = useGlobalContext()
   const label = labels[labelKey];
   const selectedColor = label?.color;
 
@@ -422,7 +421,7 @@ export default function LabelItem({
         }}
       />
 
-      <RemoveLabelModal 
+      <RemoveLabelModal
         open={removeModalOpen}
         onClose={() => setRemoveModalOpen(false)}
         labelName={display}
@@ -431,6 +430,17 @@ export default function LabelItem({
         onConfirm={() => {
           deleteLabel(labelKey);
           setRemoveModalOpen(false);
+
+          setSnackbar({
+            open: true,
+            message: `${multipleLabels.length > 1
+              ? `${multipleLabels.length} labels were removed`
+              : `The label ${multipleLabels[0].fullPath} was removed.`}`,
+            action: (
+              null
+            ),
+            autoHideDuration: 4000,
+          });
         }}
       />
     </>
