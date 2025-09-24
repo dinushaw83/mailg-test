@@ -170,19 +170,19 @@ const ToggleSplitPaneButton = () => {
           anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         >
           <ActionMenuItem
-            label="No Spit"
+            label="No split"
             onClick={() => {
               handleSplitPane({ direction: "vertical", showPanel: false });
             }}
           />
           <ActionMenuItem
-            label="Vertical Spit"
+            label="Vertical split"
             onClick={() => {
               handleSplitPane({ direction: "vertical", showPanel: true });
             }}
           />
           <ActionMenuItem
-            label="Horizontal Spit"
+            label="Horizontal split"
             onClick={() => {
               handleSplitPane({ direction: "horizontal", showPanel: true });
             }}
