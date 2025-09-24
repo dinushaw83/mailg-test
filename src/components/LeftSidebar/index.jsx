@@ -7,6 +7,10 @@ import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
+function getLabelPath(key) {
+  return key.split("::").join("/");
+}
+
 function findNode(tree, key) {
   for (const node of tree) {
     if (node.key === key) return node;
@@ -16,18 +20,21 @@ function findNode(tree, key) {
   return null;
 }
 
-function collectSubtree(node, labelIndex, depth = 0) {
-  const all = [
-    {
-      key: node.key,
-      name: node.name,
-      count: labelIndex[node.key]?.total ?? 0,
-      depth,
-    },
-  ];
+function collectSubtree(node, labelIndex, isRoot = true) {
+  const entry = {
+    key: node.key,
+    name: node.name,
+    fullPath: isRoot ? node.key.replace(/::/g, "/") : node.name,
+    depth: node.key.split("::").length - 1,
+    count: labelIndex[node.key]?.total ?? 0,
+  };
+
+  const all = [entry];
+
   node.children?.forEach(child => {
-    all.push(...collectSubtree(child, labelIndex, depth + 1));
+    all.push(...collectSubtree(child, labelIndex, false));
   });
+
   return all;
 }
 

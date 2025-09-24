@@ -11,9 +11,7 @@ import {
 export default function RemoveLabelModal({
     open,
     onClose,
-    labelName,
     onConfirm,
-    conversationCount,
     multipleLabels = [],
 }) {
     const handleConfirm = () => {
@@ -29,12 +27,13 @@ export default function RemoveLabelModal({
                     The following labels will be removed from your messages and then deleted.
                     No messages will be deleted.
                 </Typography>
-                {multipleLabels.map((lbl) => (
+                {multipleLabels.map((lbl, i) => (
                     <Typography
                         key={lbl.key}
-                        sx={{ fontSize: 14, ml: 2 + lbl.depth * 2 }} // indent by depth
+                        sx={{ fontSize: 14, ml: i === 0 ? 0 : lbl.depth }} // indent only children
                     >
-                        <strong>{lbl.name}</strong> ({lbl.count} {lbl.count === 1 ? "conversation" : "conversations"})
+                        <strong>{i === 0 ? lbl.fullPath : lbl.name}</strong>
+                        {lbl.count > 0 && <span className="ajO"> ({lbl.count} {lbl.count === 1 ? "conversation" : "conversations"})</span>}
                     </Typography>
                 ))}
             </>
@@ -44,8 +43,8 @@ export default function RemoveLabelModal({
         content = (
             <Typography sx={{ mb: 2, fontSize: 14 }}>
                 {lbl.count
-                    ? <>Remove the label "<strong>{lbl.name}</strong>" from {lbl.count} {lbl.count === 1 ? "conversation" : "conversations"} and delete the label?</>
-                    : <>Delete the label "<strong>{lbl.name}</strong>"?</>}
+                    ? <>Remove the label "<strong>{lbl.fullPath}</strong>" from {lbl.count} {lbl.count === 1 ? "conversation" : "conversations"} and delete the label?</>
+                    : <>Delete the label "<strong>{lbl.fullPath}</strong>"?</>}
             </Typography>
         );
     }
