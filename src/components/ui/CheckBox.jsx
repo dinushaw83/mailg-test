@@ -36,7 +36,6 @@ export default function CheckBox({ id, labelledBy, checked, onChange }) {
         >
             <span
                 className="material-symbols-outlined"
-                aria-hidden
                 style={{
                     fontSize: size,
                     lineHeight: `${size}px`,

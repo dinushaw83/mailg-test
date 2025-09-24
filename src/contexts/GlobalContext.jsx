@@ -30,6 +30,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
   const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
+  const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
   // Right sidebar states
   const [rightSidebarExpanded, setRightSidebarExpanded] = usePersistedState("rightSidebarExpanded", true);
   const [rightSidebarActiveTab, setRightSidebarActiveTab] = usePersistedState("rightSidebarActiveTab", {
@@ -133,6 +134,8 @@ export const GlobalContextProvider = ({ children }) => {
     setItemsPerPage,
     normalizedEmails,
     refreshEmails,
+    isLeftSidebarExpanded,
+    setIsLeftSidebarExpanded,
     rightSidebarExpanded,
     setRightSidebarExpanded,
     rightSidebarActiveTab,

@@ -3,6 +3,7 @@ import EmailRecipients from '../common/EmailRecipients';
 import { useGlobalContext } from '../../contexts/GlobalContext';
 import RichTextEditor from '../RichTextEditor/RichTextEditor';
 import { useSendEmail } from '../../hooks/useSendEmail';
+import { useScheduleEmail } from '../../hooks/useScheduleEmail';
 import { useDraftManagement } from '../../hooks/useDraftManagement';
 import InfoModal from '../ComposeEmail/InfoModal';
 import "./ReplyContainer.css";
@@ -12,8 +13,6 @@ import forwardIcon from '../../icons/forward.png';
 import dropdownArrow from '../../icons/dropdownarrow.png';
 import { Button } from "@mui/material";
 
-// TEMP
-import styles from "../ComposeEmail/ComposeEmail.module.css";
 
 const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelete }) => {
   const { loggedInUser, setSnackbar, emails } = useGlobalContext();
@@ -40,7 +39,47 @@ const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelet
   };
 
   const [recipients, setRecipients] = useState(() => calculateRecipients(replyType));
-  const [content, setContent] = useState({ html: '', plainText: '' });
+
+  // Build forwarded header HTML when forwarding
+  const buildForwardedHeader = () => {
+    const recipientsList = email.to.map(recipient => {
+      if (typeof recipient === 'string') {
+        return recipient;
+      }
+      return `${recipient.name} <${recipient.email}>`;
+    }).join(', ');
+
+    const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    return `
+<p>
+<br /><br />
+---------- Forwarded message ---------<br />
+From: ${email.from.name} <${email.from.email}><br />
+Date: ${formattedDate}<br />
+Subject: ${email.subject}<br />
+To: ${recipientsList}<br />
+Cc: ${(email.cc || []).join(', ')}<br />
+<br /><br />
+${email.body}
+</p>`;
+  };
+
+  const [content, setContent] = useState(() => {
+    if (replyType === 'forward') {
+      const forwardedHeader = buildForwardedHeader();
+      return { html: forwardedHeader, plainText: forwardedHeader };
+    }
+    return { html: '', plainText: '' };
+  });
 
   // Convert simple string recipients to object form expected by draft/send hooks
   const recipientsForDraft = useMemo(() => {
@@ -96,33 +135,7 @@ const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelet
     setSubject(`${selectedReplyOption === 'forward' ? 'Fwd: ' : 'Re: '}${email.subject}`);
     // Add forwarded message header when forward is selected
     if (selectedReplyOption === 'forward' && content.plainText.trim() === '') {
-      const recipientsList = email.to.map(recipient => {
-        if (typeof recipient === 'string') {
-          return recipient;
-        }
-        return `${recipient.name} <${recipient.email}>`;
-      }).join(', ');
-
-      const formattedDate = new Date(email.timestamp).toLocaleString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-
-      const forwardedHeader = `
-<br /><br />
----------- Forwarded message ---------<br />
-From: ${email.from.name} <${email.from.email}><br />
-Date: ${formattedDate}<br />
-Subject: ${email.subject}<br />
-To: ${recipientsList}<br />
-Cc: ${(email.cc || []).join(', ')}<br />
-<br /><br />
-${email.body}`;
+      const forwardedHeader = buildForwardedHeader();
 
       setContent({ 
         html: forwardedHeader, 
@@ -145,8 +158,12 @@ ${email.body}`;
   };
 
   const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail(
-    selectedReplyOption === 'forward' ? undefined : email.id,
-    selectedReplyOption === 'forward' ? email.id : undefined,
+    selectedReplyOption,
+    email
+  );
+
+  const { handleSchedule: handleScheduleEmail, showErrorModal: showScheduleErrorModal, errorMessage: scheduleErrorMessage, handleErrorModalClose: handleScheduleErrorModalClose } = useScheduleEmail(
+    selectedReplyOption,
     email
   );
 
@@ -175,6 +192,29 @@ ${email.body}`;
     handleSnackbarUndoDelete(onUndoDelete);
   };
 
+  const handleSchedule = (scheduleData) => {
+    handleScheduleEmail({
+      to: recipientsForDraft.to,
+      cc: recipientsForDraft.cc,
+      bcc: recipientsForDraft.bcc,
+      subject,
+      content,
+      onClose: () => {
+        if (isDraft && draftId) {
+          deleteDraft();
+        }
+        setContent({ html: '', plainText: '' });
+        if (onClose) {
+          onClose();
+        }
+      },
+      currentDraftId: draftId,
+      isDraft: isDraft,
+      scheduledDate: scheduleData.scheduledDate,
+      scheduledTime: scheduleData.scheduledTime,
+    });
+  };
+
   const handleDelete = () => {
     if (isDraft && draftId) {
       // Store the draft data for potential restoration
@@ -186,6 +226,7 @@ ${email.body}`;
         to: recipientsForDraft.to,
         cc: recipientsForDraft.cc,
         bcc: recipientsForDraft.bcc,
+        replyType: selectedReplyOption,
         subject,
         content,
       };
@@ -255,7 +296,18 @@ ${email.body}`;
                     key={option.value}
                     className="dropdown-option"
                     onClick={() => {
-                      setSelectedReplyOption(option.value);
+                      const newOption = option.value;
+                      // Prepare content first so initial render of new key has correct body
+                      if (newOption === 'forward') {
+                        const forwardedHeader = buildForwardedHeader();
+                        setContent({ html: forwardedHeader, plainText: forwardedHeader });
+                      } else {
+                        setContent({ html: '', plainText: '' });
+                      }
+                      // Update recipients immediately for the new option
+                      setRecipients(calculateRecipients(newOption));
+                      // Then switch the option (this also changes the key for the editor)
+                      setSelectedReplyOption(newOption);
                       document.getElementById('reply-options').classList.remove('show');
                     }}
                   >
@@ -287,101 +339,17 @@ ${email.body}`;
         </div>
         <div className="reply-editor-container">
           <RichTextEditor
+            key={selectedReplyOption}
             content={content.html}
             onChange={(html, plainText) => setContent({ html, plainText })}
             className="reply-text-editor"
+            onSend={handleSend}
+            onDelete={handleDelete}
+            onSchedule={handleSchedule}
+            textEditorMinHeight="90px"
+            textEditorMaxHeight="250px"
           />
         </div>
-        <div className={styles.composeToolbar}>
-            <div className={styles.sendButtonContainer}>
-              <div
-                aria-label="Send ‪(⌘Enter)‬"
-                role="button"
-                tabIndex="1"
-                style={{
-                  whiteSpace: "nowrap",
-                  textAlign: "center",
-                  verticalAlign: "middle",
-                  boxShadow: "none",
-                  WebkitUserDrag: "none",
-                  lineHeight: "18px",
-                  outline: "none",
-                  padding: "0px 16px",
-                  border: "none",
-                  WebkitBoxAlign: "center",
-                  alignItems: "center",
-                  display: "inline-flex",
-                  WebkitBoxPack: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                  zIndex: 0,
-                  WebkitFontSmoothing: "antialiased",
-                  fontSize: "0.875rem",
-                  letterSpacing: "normal",
-                  backgroundImage: "none",
-                  boxSizing: "border-box",
-                  fontWeight: 500,
-                  height: "36px",
-                  color: "rgb(255, 255, 255)",
-                  margin: "0px",
-                  marginRight: "0px",
-                  maxWidth: "104px",
-                  minWidth: "72px",
-                  cursor: "pointer",
-                  borderRadius: "18px 0px 0px 18px",
-                  userSelect: "none",
-                }}
-                onClick={handleSend}
-              >
-                Send
-              </div>
-              <div
-                className={styles.sendOptionsArrow}
-                aria-expanded="false"
-                aria-haspopup="true"
-                aria-label="More send options"
-                role="button"
-                tabIndex="1"
-                style={{
-                  whiteSpace: "nowrap",
-                  textAlign: "center",
-                  boxShadow: "none",
-                  WebkitUserDrag: "none",
-                  lineHeight: "18px",
-                  outline: "none",
-                  border: "none",
-                  WebkitBoxAlign: "center",
-                  alignItems: "center",
-                  display: "inline-flex",
-                  WebkitBoxPack: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                  zIndex: 0,
-                  WebkitFontSmoothing: "antialiased",
-                  fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                  fontSize: "0.875rem",
-                  letterSpacing: "normal",
-                  backgroundImage: "none",
-                  boxSizing: "border-box",
-                  fontWeight: 500,
-                  height: "36px",
-                  color: "rgb(255, 255, 255)",
-                  padding: "0px 8px",
-                  minWidth: "24px",
-                  borderLeft: "1px solid rgb(6, 46, 111)",
-                  cursor: "pointer",
-                  borderRadius: "0px 18px 18px 0px",
-                  userSelect: "none",
-                }}
-              >
-                <span className="material-symbols-outlined">arrow_drop_down</span>
-              </div>
-            </div>
-
-            <button className={styles.deleteButton} onClick={handleDelete} title="Delete">
-              <span className="material-symbols-outlined">delete</span>
-            </button>
-          </div>
       </div>
     </div>
 
@@ -399,6 +367,22 @@ ${email.body}`;
           },
         ]}
         modalBoxStyle={{ width: errorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
+      />
+
+      {/* Schedule Error Modal */}
+      <InfoModal
+        isOpen={showScheduleErrorModal}
+        onClose={handleScheduleErrorModalClose}
+        title="Error"
+        message={scheduleErrorMessage}
+        buttons={[
+          {
+            text: "OK",
+            onClick: handleScheduleErrorModalClose,
+            className: "primary",
+          },
+        ]}
+        modalBoxStyle={{ width: scheduleErrorMessage === "Please specify at least one recipient." ? "250px" : "500px" }}
       />
     </>
   )
