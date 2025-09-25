@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import useLabels from "../../hooks/useLabels";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 import { styled } from "@mui/material/styles"
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { Button } from "@mui/material";
 
 const DISPLAY_SYSTEM_LABELS = ["Inbox", "Spam", "Trash"];
 
@@ -71,9 +73,10 @@ const GTooltip = styled(({ className, ...props }) => (
 }));
 
 export default function EmailLabelChips({ message }) {
+    const { setSnackbar } = useGlobalContext()
     const labels = message.labels;
 
-    const { labels: allLabels, removeLabelFromThread } = useLabels()
+    const { labels: allLabels, removeLabelFromThread, addLabelToThread } = useLabels()
     const normalizeLabelName = (name) => name.replace(/::/g, "/");
 
     const navigate = useNavigate();
@@ -101,6 +104,29 @@ export default function EmailLabelChips({ message }) {
 
     const handleRemoveLabel = (label) => {
         removeLabelFromThread(message.threadId, label);
+
+        setSnackbar({
+            open: true,
+            message: `Conversation removed from '${label}'.`,
+            autoHideDuration: 4000,
+            action: (
+                <Button
+                    size="small"
+                    sx={{ textTransform: "none" }}
+                    onClick={() => {
+                        console.log(message.threadId, label, "<---message.threadId, label")
+                        addLabelToThread(message.threadId, label);
+                        setSnackbar({
+                            open: true,
+                            message: "Action undone.",
+                            autoHideDuration: 3000,
+                        });
+                    }}
+                >
+                    Undo
+                </Button>
+            ),
+        });
     };
 
     return (
