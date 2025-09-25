@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { generateNextIntegerId, generateThreadId, generateLegacyThreadId } from "../utils/helperFunctions";
+import {
+  generateNextIntegerId,
+  generateThreadId,
+  generateLegacyThreadId,
+  isValidEmail,
+} from "../utils/helperFunctions";
 
 export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraftId, parentEmail, replyType }) => {
   const { emails, setEmails, loggedInUser } = useContext(GlobalContext);
@@ -11,12 +16,6 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
   const autoSaveTimeoutRef = useRef(null);
   const draftSavedTimeoutRef = useRef(null);
   const previousContentRef = useRef(null);
-
-  // Validate email format
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   // Filter valid recipients
   const getValidRecipients = (recipients) => {
@@ -102,7 +101,8 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
 
       // Resolve thread identifiers
       const resolvedThreadId = existingDraft?.threadId || parentEmail?.threadId || generateThreadId();
-      const resolvedLegacyThreadId = existingDraft?.legacyThreadId || parentEmail?.legacyThreadId || generateLegacyThreadId();
+      const resolvedLegacyThreadId =
+        existingDraft?.legacyThreadId || parentEmail?.legacyThreadId || generateLegacyThreadId();
       const resolvedLegacyLastMessageId = existingDraft?.legacyLastMessageId || resolvedLegacyThreadId;
 
       return {
@@ -151,7 +151,9 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
 
       setEmails((prevEmails) => {
         // Remove existing draft if updating
-        const filteredEmails = draftId ? prevEmails.filter((email) => email.id?.toString() !== draftId?.toString()) : prevEmails;
+        const filteredEmails = draftId
+          ? prevEmails.filter((email) => email.id?.toString() !== draftId?.toString())
+          : prevEmails;
 
         // Add new/updated draft at the beginning
         return [draftEmail, ...filteredEmails];

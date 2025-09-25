@@ -9,13 +9,20 @@ import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import { useSendEmail } from "../../hooks/useSendEmail";
 import { useScheduleEmail } from "../../hooks/useScheduleEmail";
+import { restructureRecipients } from "../../utils/helperFunctions";
 import styles from "./ComposeEmail.module.css";
 
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows } =
+  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows, rightSidebarActiveTab } =
     useContext(GlobalContext);
+
+  // Create restructured recipients array for proper lookup
+  const restructuredRecipients = useMemo(() => {
+    return restructureRecipients(recipients.filter((recipient) => recipient.email));
+  }, [recipients]);
+
   const { removeComposeWindow, toggleMinimize, toggleMaximize, visibleWindowCount, addNewComposeWindow } =
     useComposeModal();
 
@@ -72,7 +79,7 @@ export default function ComposeEmail({ composeWindow }) {
       if (existingDraft) {
         setTo(
           existingDraft.to.map((email) => {
-            const recipientObj = recipients.find((r) => r.email === email);
+            const recipientObj = restructuredRecipients.find((r) => r.email === email);
             if (recipientObj) {
               return recipientObj;
             }
@@ -87,7 +94,7 @@ export default function ComposeEmail({ composeWindow }) {
         );
         setCc(
           existingDraft.cc.map((email) => {
-            const recipientObj = recipients.find((r) => r.email === email);
+            const recipientObj = restructuredRecipients.find((r) => r.email === email);
             if (recipientObj) {
               return recipientObj;
             }
@@ -102,7 +109,7 @@ export default function ComposeEmail({ composeWindow }) {
         );
         setBcc(
           existingDraft.bcc.map((email) => {
-            const recipientObj = recipients.find((r) => r.email === email);
+            const recipientObj = restructuredRecipients.find((r) => r.email === email);
             if (recipientObj) {
               return recipientObj;
             }
@@ -138,7 +145,7 @@ export default function ComposeEmail({ composeWindow }) {
     // Find the index of current window from list
     const windowIndex = windows.findIndex((window) => window.id === composeWindow.id);
 
-    let rightPosition = 60; // Base right position
+    let rightPosition = rightSidebarActiveTab.activeTab ? 390 : 70; // Base right position
 
     // If it's the last window, return base position
     if (windowIndex === windows.length - 1) {
@@ -156,7 +163,7 @@ export default function ComposeEmail({ composeWindow }) {
     }
 
     return rightPosition;
-  }, [composeWindows, visibleWindowCount, composeWindow.id]);
+  }, [composeWindows, visibleWindowCount, composeWindow.id, rightSidebarActiveTab.activeTab]);
 
   // Toggle minimize/restore modal
   const handleToggleMinimize = () => {
@@ -179,8 +186,20 @@ export default function ComposeEmail({ composeWindow }) {
     removeComposeWindow(composeWindow.id);
   };
 
-  const { handleSend: handleSendEmail, showErrorModal, errorMessage, handleErrorModalClose, handleSnackbarUndoDelete, lastDeletedDraftRef } = useSendEmail(null);
-  const { handleSchedule: handleScheduleEmail, showErrorModal: showScheduleErrorModal, errorMessage: scheduleErrorMessage, handleErrorModalClose: handleScheduleErrorModalClose } = useScheduleEmail(null);
+  const {
+    handleSend: handleSendEmail,
+    showErrorModal,
+    errorMessage,
+    handleErrorModalClose,
+    handleSnackbarUndoDelete,
+    lastDeletedDraftRef,
+  } = useSendEmail(null);
+  const {
+    handleSchedule: handleScheduleEmail,
+    showErrorModal: showScheduleErrorModal,
+    errorMessage: scheduleErrorMessage,
+    handleErrorModalClose: handleScheduleErrorModalClose,
+  } = useScheduleEmail(null);
 
   const handleSend = () => {
     handleSendEmail({
@@ -192,7 +211,7 @@ export default function ComposeEmail({ composeWindow }) {
       rawInputText,
       onClose: handleClose,
       currentDraftId: draftId,
-      isDraft: isDraft
+      isDraft: isDraft,
     });
   };
 
@@ -360,7 +379,6 @@ export default function ComposeEmail({ composeWindow }) {
               useCompactFormatting={true}
             />
           </div>
-
         </div>
       </div>
 

@@ -2,11 +2,17 @@ export const recipients = [
   {
     id: 1,
     name: "Jane Smith",
+    firstName: "Jane",
+    lastName: "Smith",
     email: "jane.smith@example.com",
     emails: [
       {
         value: "jane.smith@example.com",
         label: "Home"
+      },
+      {
+        value: "jane.smith.work@example.com",
+        label: "Work"
       }
     ],
     avatar: null,
@@ -15,6 +21,8 @@ export const recipients = [
   {
     id: 2,
     name: "Michael Johnson",
+    firstName: "Michael",
+    lastName: "Johnson",
     email: "michael.johnson@example.com",
     emails: [
       {
@@ -28,6 +36,8 @@ export const recipients = [
   {
     id: 3,
     name: "Sarah Wilson",
+    firstName: "Sarah",
+    lastName: "Wilson",
     email: "sarah.wilson@example.com",
     emails: [
       {
@@ -41,6 +51,8 @@ export const recipients = [
   {
     id: 4,
     name: "David Brown",
+    firstName: "David",
+    lastName: "Brown",
     email: "david.brown@example.com",
     emails: [
       {
@@ -54,6 +66,8 @@ export const recipients = [
   {
     id: 5,
     name: "Emily Davis",
+    firstName: "Emily",
+    lastName: "Davis",
     email: "emily.davis@example.com",
     emails: [
       {
@@ -67,6 +81,8 @@ export const recipients = [
   {
     id: 6,
     name: "Robert Miller",
+    firstName: "Robert",
+    lastName: "Miller",
     email: "robert.miller@example.com",
     emails: [
       {
@@ -80,6 +96,8 @@ export const recipients = [
   {
     id: 7,
     name: "Lisa Garcia",
+    firstName: "Lisa",
+    lastName: "Garcia",
     email: "lisa.garcia@example.com",
     emails: [
       {
@@ -93,6 +111,8 @@ export const recipients = [
   {
     id: 8,
     name: "James Rodriguez",
+    firstName: "James",
+    lastName: "Rodriguez",
     email: "james.rodriguez@example.com",
     emails: [
       {
@@ -106,6 +126,8 @@ export const recipients = [
   {
     id: 9,
     name: "Amanda Taylor",
+    firstName: "Amanda",
+    lastName: "Taylor",
     email: "amanda.taylor@example.com",
     emails: [
       {
@@ -119,6 +141,8 @@ export const recipients = [
   {
     id: 10,
     name: "Christopher Lee",
+    firstName: "Christopher",
+    lastName: "Lee",
     email: "christopher.lee@example.com",
     emails: [
       {

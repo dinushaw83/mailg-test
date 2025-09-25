@@ -21,6 +21,7 @@
 .composeModal.minimized {
   width: 350px;
   height: 40px;
+  min-height: 40px;
 }
 
 /* Maximized state */

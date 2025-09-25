@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   Button,
   Popper,
@@ -22,19 +22,19 @@ import { generateNextIntegerId } from "../../../utils/helperFunctions";
 
 export default function ManageLabels({ selectedContacts, recipients, recipientLabels }) {
   const { setRecipientLabels, setRecipients } = useGlobalContext();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [open, setOpen] = React.useState(false);
-  const [createLabelDialogOpen, setCreateLabelDialogOpen] = React.useState(false);
-  const [labelName, setLabelName] = React.useState("");
-  const [labelNameError, setLabelNameError] = React.useState("");
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
-  const [snackbarMessage, setSnackbarMessage] = React.useState("");
-  const [localLabelChanges, setLocalLabelChanges] = React.useState(new Set());
-  const [showApplyButton, setShowApplyButton] = React.useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [createLabelDialogOpen, setCreateLabelDialogOpen] = useState(false);
+  const [labelName, setLabelName] = useState("");
+  const [labelNameError, setLabelNameError] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [localLabelChanges, setLocalLabelChanges] = useState(new Set());
+  const [showApplyButton, setShowApplyButton] = useState(false);
 
   // Get selected contact objects
-  const selectedContactObjects = React.useMemo(() => {
-    return recipients.filter((recipient) => selectedContacts.has(recipient.id));
+  const selectedContactObjects = useMemo(() => {
+    return recipients.filter((recipient) => selectedContacts.has(`${recipient.email}-${recipient.id}`));
   }, [recipients, selectedContacts]);
 
   // Check if all selected contacts have a specific label (considering local changes)
@@ -55,7 +55,7 @@ export default function ManageLabels({ selectedContacts, recipients, recipientLa
   };
 
   // Filter out "My contacts" from recipientLabels
-  const filteredRecipientLabels = React.useMemo(() => {
+  const filteredRecipientLabels = useMemo(() => {
     return recipientLabels.filter((label) => label.label !== "My contacts");
   }, [recipientLabels]);
 
@@ -146,7 +146,7 @@ export default function ManageLabels({ selectedContacts, recipients, recipientLa
     if (selectedContacts.size > 0) {
       setRecipients((prev) =>
         prev.map((recipient) => {
-          if (selectedContacts.has(recipient.id)) {
+          if (selectedContacts.has(`${recipient.email}-${recipient.id}`)) {
             return {
               ...recipient,
               labels: [...recipient.labels, trimmedLabelName],
@@ -193,7 +193,7 @@ export default function ManageLabels({ selectedContacts, recipients, recipientLa
     // Apply changes to recipients
     setRecipients((prev) =>
       prev.map((recipient) => {
-        if (selectedContacts.has(recipient.id)) {
+        if (selectedContacts.has(`${recipient.email}-${recipient.id}`)) {
           let newLabels = [...recipient.labels];
 
           // Remove labels
