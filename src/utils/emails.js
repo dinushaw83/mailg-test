@@ -208,5 +208,8 @@ export const getThread = (messages, { threadId }) => {
     updatedAt: thread.updatedAt,
 
     messageIds: thread.messageIds,
+
+    // Attachments
+    attachments: last.attachments || [],
   };
 };
