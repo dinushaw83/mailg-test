@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
-import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import useLabels from "../../hooks/useLabels";
+import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
+import { styled } from "@mui/material/styles"
 
 const DISPLAY_SYSTEM_LABELS = ["Inbox", "Spam", "Trash"];
 
@@ -54,6 +55,21 @@ const CloseButton = styled("div")({
     },
 });
 
+const GTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+        padding: "8px 12px",
+        maxWidth: 200,
+        backgroundColor: "#444746",
+        color: "#e1e3e1",
+        borderRadius: "4px",
+    },
+    [`& .${tooltipClasses.arrow}`]: {
+        color: "#333",
+    },
+}));
+
 export default function EmailLabelChips({ message }) {
     const labels = message.labels;
 
@@ -84,7 +100,6 @@ export default function EmailLabelChips({ message }) {
     };
 
     const handleRemoveLabel = (label) => {
-        console.log("Removing label:", label, message);
         removeLabelFromThread(message.threadId, label);
     };
 
@@ -92,14 +107,32 @@ export default function EmailLabelChips({ message }) {
         <LabelContainer>
             {filteredLabels.map((label) => (
                 <LabelWrapper key={label}>
-                    <LabelText onClick={() => handleNavigateToLabel(label)}>{normalizeLabelName(label)}</LabelText>
+                    <GTooltip title={`Search for all messages with label ${label}`} placement="top" PopperProps={{
+                        modifiers: [
+                            {
+                                name: "offset",
+                                options: { offset: [0, -8] }, // moves tooltip closer/further
+                            },
+                        ],
+                    }}>
+                        <LabelText onClick={() => handleNavigateToLabel(label)}>{normalizeLabelName(label)}</LabelText>
+                    </GTooltip>
                     <CloseButton role="button" tabIndex={0} onClick={() => handleRemoveLabel(label)}>
-                        <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: 16}}
-                        >
-                            close
-                        </span>
+                        <GTooltip title={`Remove label ${label} from this conversation`} placement="top" PopperProps={{
+                            modifiers: [
+                                {
+                                    name: "offset",
+                                    options: { offset: [0, -8] }, // moves tooltip closer/further
+                                },
+                            ],
+                        }}>
+                            <span
+                                className="material-symbols-outlined"
+                                style={{ fontSize: 16}}
+                            >
+                                close
+                            </span>
+                        </GTooltip>
                     </CloseButton>
                 </LabelWrapper>
             ))}
