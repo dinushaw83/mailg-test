@@ -37,15 +37,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selection, composeWindows, setSnackbar } = useGlobalContext();
-  const {
-    toggleImportant,
-    toggleStar,
-    archive,
-    moveToInbox,
-    moveToTrash,
-    markRead,
-    snooze
-  } = useMailActions();
+  const { toggleImportant, toggleStar, archive, moveToInbox, moveToTrash, markRead, snooze } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
   const snoozeAnchorElRef = useRef(null);
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
@@ -59,12 +51,12 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     if (isToday(date)) {
       return format(date, "h:mm a");
     }
-    
+
     // If it's current year, show month and day
     if (isThisYear(date)) {
       return format(date, "MMM d");
     }
-    
+
     // If it's previous year, show "d/M/yy" format like "5/9/24"
     return format(date, "d/M/yy");
   };
@@ -127,73 +119,8 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     const path = location.pathname.replace("/", "");
 
     // If Inbox label is present in path other than inbox, return it
-    return email.labels.filter(label => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
-  }
-
-  const handleArchive = useCallback((threadId) => {
-    try {
-      archive([threadId]);
-      setSnackbar({
-        open: true,
-        message: "Conversation archived.",
-        autoHideDuration: 3000,
-        action: (
-          <Button
-            sx={{ textTransform: "none" }}
-            size="small"
-            onClick={() => {
-              moveToInbox([threadId]);
-              setSnackbar({
-                open: true,
-                message: "Action undone.",
-                autoHideDuration: 3000,
-                action: null,
-              });
-            }}
-          >
-            Undo
-          </Button>
-        ),
-      });
-    } catch (e) {
-      console.error("Archive failed:", e);
-    }
-  }, [archive, setSnackbar]);
-
-  const handleDelete = useCallback((threadId) => {
-    moveToTrash([threadId]);
-    setSnackbar({
-      open: true,
-      message: "Conversation moved to Trash.",
-      autoHideDuration: 10000,
-      action: (
-        <Button
-          sx={{ textTransform: "none" }}
-          size="small"
-          onClick={() => {
-            moveToInbox([threadId]);
-            // Follow-up confirmation snackbar
-            setSnackbar({
-              open: true,
-              message: "Action undone.",
-              autoHideDuration: 3000,
-              action: null,
-            });
-          }}
-        >
-          Undo
-        </Button>
-      ),
-    });
-  }, [moveToTrash, setSnackbar]);
-
-  const handleReadAction = useCallback((email) => {
-    if (!email.read) {
-      markRead([email.id], true);
-    } else {
-      markRead([email.id], false);
-    }
-  }, [markRead]);
+    return email.labels.filter((label) => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
+  };
 
   return (
     <tbody class>
@@ -291,7 +218,12 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             </td>
             <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
               <div className="a4X">
-                <Link to={`${location.pathname}/${threadId}`} className="xS" role="link" style={{ textDecoration: "none" }}>
+                <Link
+                  to={`${location.pathname}/${threadId}`}
+                  className="xS"
+                  role="link"
+                  style={{ textDecoration: "none" }}
+                >
                   <div className="xT">
                     <div className="yi" id={`:pq${index}`}>
                       <div className="ar as">
@@ -315,7 +247,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                     </div>
                     <div className="y6">
                       <span id={`:pr${index}`} className="bog">
-                        {getLabelBadges(email).map(label => (
+                        {getLabelBadges(email).map((label) => (
                           <div
                             key={`Badge-${label}`}
                             style={{
@@ -363,33 +295,49 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   id={`:pu${index}`}
                   aria-label={new Date(email.timestamp).toLocaleString()}
                 >
-                  <span className={email.read ? "" : "bq3"}>
-                    {formatDate(email.timestamp)}
-                  </span>
+                  <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
                 </span>
               </TimestampBox>
 
               <HoverDiv>
-                <Icon name="archive" label="Archive" marginRight="3px" onClick={(e) => {
-                  e.stopPropagation();
-                  handleArchive(email.threadId)
-                }} />
-                <Icon name="delete" label="Delete" marginRight="3px" onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(email.threadId)
-                }} />
+                <Icon
+                  name="archive"
+                  label="Archive"
+                  marginRight="3px"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleArchive(email.threadId);
+                  }}
+                />
+                <Icon
+                  name="delete"
+                  label="Delete"
+                  marginRight="3px"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(email.threadId);
+                  }}
+                />
                 <Icon
                   name="mark_email_unread"
                   label={email.read ? `Mark as unread` : `Mark as read`}
-                  marginRight="3px" onClick={(e) => {
-                  e.stopPropagation();
-                  handleReadAction(email)
-                }} />
-                <Icon name="schedule" label="Snooze" marginRight="0" onClick={(e) => {
+                  marginRight="3px"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReadAction(email);
+                  }}
+                />
+                <Icon
+                  name="schedule"
+                  label="Snooze"
+                  marginRight="0"
+                  onClick={(e) => {
                     e.stopPropagation();
                     setSnoozeId(email.id);
                     setSnoozeAnchorEl(e.currentTarget);
-                }} _ref={snoozeAnchorElRef} />
+                  }}
+                  _ref={snoozeAnchorElRef}
+                />
               </HoverDiv>
             </td>
             <td className="bq4 xY sf-hidden" />
@@ -403,8 +351,8 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
           anchorEl={snoozeAnchorEl}
           open={showSnoozePopover}
           onClose={() => {
-              setSnoozeAnchorEl(null);
-              setSnoozeId(null);
+            setSnoozeAnchorEl(null);
+            setSnoozeId(null);
           }}
           selectedIds={[snoozeId]}
           snooze={snooze}
