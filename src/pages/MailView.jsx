@@ -25,8 +25,10 @@ const EmailListContainer = styled.div`
   min-width: 0; /* Allows flex item to shrink below content size */
 `;
 
+import Banner from "../components/Banners";
+
 const Inbox = () => {
-  const { emails, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);
+  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -60,6 +62,7 @@ const Inbox = () => {
     <Container id="cont-123">
       <EmailListContainer role="main">
         <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
+        <Banner rows={rows} />
         <EmailList emails={rows} />
       </EmailListContainer>
       <QuickSettings />

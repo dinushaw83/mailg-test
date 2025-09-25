@@ -15,24 +15,16 @@ const DEFAULT_FOLDERS = [
   { key: "drafts", label: "Drafts", icon: "draft", count: 0 },
 ];
 
-const HIDDEN_FOLDERS = [
-  { key: "important", label: "Important", icon: "label_important" },
-  { key: "chats", label: "Chats", icon: "chat" },
-  { key: "scheduled", label: "Scheduled", icon: "schedule_send" },
-  { key: "all", label: "All Mail", icon: "mail" },
-  { key: "spam", label: "Spam", icon: "report", count: 0 },
-  { key: "trash", label: "Trash", icon: "delete" },
-  { key: "categories", label: "Categories", icon: "label" },
-];
-
 const LeftSidebar = () => {
   const [showLess, setShowLess] = useState(true);
-  const { emails } = useGlobalContext();
+  const { emails, setSnackbar, isLeftSidebarExpanded } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labels, labelTree, labelIndex } = useLabels();
   const { addNewComposeWindow } = useComposeModal();
   const [isCreateLabelModalOpen, setIsCreateLabelModalOpen] = useState(false);
-  const { setSnackbar } = useGlobalContext()
+  const [isLeftSidebarHovered, setIsLeftSidebarHovered] = useState(false);
+  // Sidebar is expanded if it is expanded or hovered
+  const sidebarExpanded = isLeftSidebarExpanded || isLeftSidebarHovered;
 
   const customLabels = useMemo(() => {
     const flat = flattenTreeForSelect(labelTree);
@@ -51,18 +43,61 @@ const LeftSidebar = () => {
     addNewComposeWindow();
   };
 
+  const handleCreateNewLabel = () => {
+    setIsCreateLabelModalOpen(true);
+  };
+
+  const manageLabels = () => {
+    return null
+  };
+
+  const manageSubscriptions = () => {
+    return null
+  };
+
+  const HIDDEN_FOLDERS = [
+    { key: "important", label: "Important", icon: "label_important" },
+    { key: "chats", label: "Chats", icon: "chat" },
+    { key: "scheduled", label: "Scheduled", icon: "schedule_send" },
+    { key: "all", label: "All Mail", icon: "mail" },
+    { key: "spam", label: "Spam", icon: "report", count: 0 },
+    { key: "trash", label: "Trash", icon: "delete" },
+    { key: "categories", label: "Categories", icon: "label" },
+    { key: "manage-subscriptions", label: "Manage subscriptions", icon: "unsubscribe", onClick: manageSubscriptions },
+    { key: "manage-labels", label: "Manage labels", icon: "settings", onClick: manageLabels },
+    { key: "create-new-label", label: "Create new label", icon: "add", onClick: handleCreateNewLabel},
+  ];
+
   return (
     <div
-      className="aeN WR baA nH oy8Mbf"
+      className={`${sidebarExpanded ? "aeN" : ""} WR baA nH oy8Mbf`}
       role="navigation"
       jslog="88024; u014N:xr6bB;"
-      style={{ width: 187, height: 1001 }}
+      style={{
+        width: 187,
+        height: "calc(100vh - 64px)",
+        ...(sidebarExpanded
+          ? {}
+          : {
+              width: "72px",
+              minWidth: "72px",
+              maxWidth: "72px",
+            }),
+        transition: "width 0.3s ease-in-out",
+        ...(!isLeftSidebarExpanded && { position: "absolute", zIndex: 900, backgroundColor: "#fff" }),
+      }}
+      onMouseEnter={() => setIsLeftSidebarHovered(true)}
+      onMouseLeave={() => setIsLeftSidebarHovered(false)}
     >
-      <div className="aic" onClick={openComposeWindow}>
+      <div className="aic">
         <div className="z0">
           <div
+            onClick={openComposeWindow}
             className="T-I T-I-KE L3"
-            style={{ userSelect: "none" }}
+            style={{
+              userSelect: "none",
+              ...(sidebarExpanded ? {} : { width: "56px", minWidth: "56px", padding: 0 }),
+            }}
             role="button"
             tabIndex={0}
             jscontroller="eIu7Db"
@@ -70,18 +105,14 @@ const LeftSidebar = () => {
             jslog="20510; u014N:cOuCgd,Kr2w4b"
             gh="cm"
           >
-            Compose
+            {sidebarExpanded ? "Compose" : ""}
           </div>
         </div>
       </div>
       <div className="V3 aam">
         <div className="at9">
           <div className="Ls77Lb aZ6">
-            <div
-              jscontroller="DUNnfe"
-              className="pp"
-              style={{ userSelect: "none" }}
-            >
+            <div jscontroller="DUNnfe" className="pp" style={{ userSelect: "none" }}>
               <div id=":n8">
                 <div className="nM">
                   <div id=":mz" className="aic" />
@@ -99,30 +130,41 @@ const LeftSidebar = () => {
                                   key={item.key}
                                   item={{
                                     ...item,
-                                    count: folders[item.key]?.length || 0,
+                                    // For inbox the count should be the number of unread emails
+                                    count:
+                                      item.key === "inbox"
+                                        ? folders[item.key]?.filter((email) => !email.read).length || 0
+                                        : folders[item.key]?.length || 0,
                                   }}
+                                  expanded={sidebarExpanded}
                                 />
                               ))}
                             </div>
                           </div>
                           <div className="byl aJZ a0L TA sf-hidden" />
                         </div>
-                        <div className="n6">
+                        <div
+                          className="n6"
+                          style={
+                            sidebarExpanded
+                              ? {}
+                              : { width: "32px", borderRadius: "50%", marginLeft: "20px", overflowX: "hidden" }
+                          }
+                        >
                           <span
                             role="button"
                             className="J-Ke n4 ah9"
-                            aria-label={
-                              showLess ? "More labels" : "Less labels"
-                            }
+                            aria-label={showLess ? "More labels" : "Less labels"}
                             tabIndex={0}
                             onClick={() => setShowLess(!showLess)}
+                            style={sidebarExpanded ? {} : { padding: 0 }}
                           >
-                            <span className="CJ">
+                            <span className="CJ" style={sidebarExpanded ? {} : { display: "none" }}>
                               {showLess ? "More" : "Less"}
                             </span>
                             <span
                               className="ait"
-                              style={{ marginRight: "18px" }}
+                              style={{ marginRight: "18px", ...(sidebarExpanded ? {} : { paddingLeft: "6px" }) }}
                             >
                               <span
                                 className="material-symbols-outlined"
@@ -147,6 +189,7 @@ const LeftSidebar = () => {
                                       ...item,
                                       count: folders[item.key]?.length || 0,
                                     }}
+                                    expanded={sidebarExpanded}
                                   />
                                 ))}
                               </div>
@@ -157,7 +200,7 @@ const LeftSidebar = () => {
                     </div>
                   </div>
                   <div className="aAw FgKVne">
-                    <span className="aAv" role="heading">
+                    <span className="aAv" role="heading" style={sidebarExpanded ? {} : { display: "none" }}>
                       Labels
                     </span>
                     <div
@@ -188,6 +231,7 @@ const LeftSidebar = () => {
                                   display={l.name}
                                   depth={l.depth}
                                   count={l.unread}
+                                  expanded={sidebarExpanded}
                                 />
                               ))}
                             </div>

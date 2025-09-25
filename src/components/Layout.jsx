@@ -4,6 +4,8 @@ import Header from "./Header";
 import RightSidebar from "./RightSidebar";
 import styled from "@emotion/styled";
 
+import { useGlobalContext } from "../contexts/GlobalContext";
+
 const ContentContainer = styled.div`
   background-color: transparent;
   position: relative;
@@ -11,6 +13,8 @@ const ContentContainer = styled.div`
 `;
 
 const Layout = ({ children }) => {
+  const { isLeftSidebarExpanded } = useGlobalContext();
+
   return (
     <div className="tVu25">
       <div tabIndex={0} />
@@ -19,6 +23,7 @@ const Layout = ({ children }) => {
           <Header />
           <ContentContainer id="content-container">
             <LeftSidebar />
+            {!isLeftSidebarExpanded && <div style={{ width: "72px" }} />}
             {children}
             <RightSidebar />
           </ContentContainer>

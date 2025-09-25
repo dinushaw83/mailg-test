@@ -7,8 +7,6 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
   const { recipients: globalRecipients } = useContext(GlobalContext);
   const [isAnyInputFocused, setIsAnyInputFocused] = useState(false);
   
-  // Track which inputs are visible
-  console.log(recipients);
   const [visibleInputs, setVisibleInputs] = useState({
     to: true,    // 'To' is always visible
     cc: recipients.cc?.length > 0,
