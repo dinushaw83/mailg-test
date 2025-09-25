@@ -3,6 +3,52 @@ import lunr from "lunr";
 // Basic search implementation
 let searchIndex = null;
 let emailDocuments = [];
+let lastEmailHash = null; // Track when emails change to rebuild index
+
+// Search history management
+const SEARCH_HISTORY_KEY = "mailg_search_history";
+const MAX_SEARCH_HISTORY = 10;
+
+function getSearchHistory() {
+  try {
+    const history = localStorage.getItem(SEARCH_HISTORY_KEY);
+    return history ? JSON.parse(history) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveSearchHistory(history) {
+  try {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+  } catch (error) {
+    console.warn("Failed to save search history:", error);
+  }
+}
+
+export function addToSearchHistory(query) {
+  if (!query || !query.trim()) return;
+
+  const trimmedQuery = query.trim();
+  let history = getSearchHistory();
+
+  // Remove if already exists (to move to front)
+  history = history.filter((item) => item !== trimmedQuery);
+
+  history.unshift(trimmedQuery);
+
+  // Limit to max history size
+  history = history.slice(0, MAX_SEARCH_HISTORY);
+
+  saveSearchHistory(history);
+}
+
+/**
+ * Get search history
+ */
+export function getSearchHistoryItems() {
+  return getSearchHistory();
+}
 
 /**
  * basic text normalization
@@ -16,9 +62,85 @@ function normalizeText(text) {
     .trim();
 }
 
+/**
+ * Generate a simple hash for emails to detect changes
+ */
+function generateEmailHash(emails) {
+  if (!emails || emails.length === 0) return "";
+  return emails
+    .map((email) => `${email.id}-${email.timestamp}-${email.subject || ""}`)
+    .join("|")
+    .slice(0, 100); // Use first 100 chars for performance
+}
+
+/**
+ * Save search index to localStorage
+ */
+function saveSearchIndexToStorage() {
+  if (!searchIndex || !emailDocuments.length) return;
+
+  try {
+    const indexData = {
+      index: searchIndex.toJSON(),
+      documents: emailDocuments,
+      emailHash: lastEmailHash,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("searchIndex", JSON.stringify(indexData));
+  } catch (error) {
+    console.warn("Failed to save search index to localStorage:", error);
+  }
+}
+
+/**
+ * Load search index from localStorage
+ */
+function loadSearchIndexFromStorage() {
+  try {
+    const stored = localStorage.getItem("searchIndex");
+    if (!stored) return false;
+
+    const indexData = JSON.parse(stored);
+
+    // Check if stored data is recent (within 24 hours)
+    const isRecent = Date.now() - indexData.timestamp < 24 * 60 * 60 * 1000;
+    if (!isRecent) {
+      localStorage.removeItem("searchIndex");
+      return false;
+    }
+
+    // Restore the index
+    searchIndex = lunr.Index.load(indexData.index);
+    emailDocuments = indexData.documents;
+    lastEmailHash = indexData.emailHash;
+
+    return true;
+  } catch (error) {
+    console.warn("Failed to load search index from localStorage:", error);
+    localStorage.removeItem("searchIndex");
+    return false;
+  }
+}
+
 export function buildSearchIndex(emails) {
   try {
-    // Store email documents
+    // Generate hash for current emails
+    const currentEmailHash = generateEmailHash(emails);
+
+    // If we have a cached index and emails haven't changed, use it
+    if (searchIndex && lastEmailHash === currentEmailHash) {
+      return true;
+    }
+
+    // Try to load from localStorage first
+    if (!searchIndex && loadSearchIndexFromStorage()) {
+      // Check if the loaded index matches current emails
+      if (lastEmailHash === currentEmailHash) {
+        return true;
+      }
+    }
+
+    // Build new index
     emailDocuments = emails.map((email) => ({
       id: email.id,
       threadId: email.threadId,
@@ -51,6 +173,10 @@ export function buildSearchIndex(emails) {
         this.add(doc);
       });
     });
+
+    // Update hash and save to localStorage
+    lastEmailHash = currentEmailHash;
+    saveSearchIndexToStorage();
 
     return true;
   } catch (error) {
@@ -94,12 +220,15 @@ export function searchEmails(query, options = {}) {
 }
 
 /**
- * Get recent search suggestions
+ * Get recent search suggestions with search history priority
  */
 export function getRecentSearchSuggestions(limit = 6) {
   if (!emailDocuments || emailDocuments.length === 0) {
     return [];
   }
+
+  // Get search history first
+  const searchHistory = getSearchHistory();
 
   // Get recent emails and extract subjects
   const recentEmails = emailDocuments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
@@ -114,8 +243,28 @@ export function getRecentSearchSuggestions(limit = 6) {
     }
   });
 
-  // Remove duplicates and limit
-  return [...new Set(suggestions)].slice(0, limit);
+  // Remove duplicates from recent suggestions
+  const recentSuggestions = [...new Set(suggestions)];
+
+  // Combine search history with recent suggestions
+  // Search history items come first, then fill remaining slots with recent suggestions
+  const combinedSuggestions = [];
+
+  // Add search history items first (up to the limit)
+  searchHistory.forEach((historyItem) => {
+    if (combinedSuggestions.length < limit) {
+      combinedSuggestions.push(historyItem);
+    }
+  });
+
+  // Fill remaining slots with recent suggestions (excluding those already in history)
+  recentSuggestions.forEach((suggestion) => {
+    if (combinedSuggestions.length < limit && !searchHistory.includes(suggestion)) {
+      combinedSuggestions.push(suggestion);
+    }
+  });
+
+  return combinedSuggestions;
 }
 
 /**
@@ -134,4 +283,26 @@ export function getSearchStats() {
     totalEmails: emailDocuments.length,
     indexSize: searchIndex ? "built" : "not built",
   };
+}
+
+/**
+ * Initialize search index from persisted data
+ * This should be called on app startup
+ */
+export function initializeSearchIndex() {
+  // Try to load from localStorage
+  if (loadSearchIndexFromStorage()) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Clear search index and localStorage
+ */
+export function clearSearchIndex() {
+  searchIndex = null;
+  emailDocuments = [];
+  lastEmailHash = null;
+  localStorage.removeItem("searchIndex");
 }
