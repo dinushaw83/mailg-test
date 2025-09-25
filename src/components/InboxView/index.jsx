@@ -108,7 +108,7 @@ export const EmailContent = ({
     <InboxViewContainer>
       {showActionBar && <ActionBar thread={thread} />}
       <InnerContainer>
-        <Subject subject={messages[0].subject} />
+        <Subject subject={messages[0].subject} message={messages[0]} />
         {displayedMessages.map((message, index) => (
           <React.Fragment key={message.id}>
             <Content

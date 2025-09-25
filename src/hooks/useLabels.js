@@ -3,6 +3,14 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 
 export const ROOT = null;
 
+const getThreadKey = (m) => {
+  if (!m) return null;
+  if (m.threadId) {
+    return String(m.threadId).replace(/^#thread-f:/, "");
+  }
+  return m.legacyThreadId || null;
+};
+
 export function makeKey(name, parentKey = ROOT) {
   return parentKey ? `${parentKey}::${name}` : name;
 }
@@ -228,6 +236,20 @@ export default function useLabels() {
     [setLabels, setEmails]
   );
 
+  const removeLabelFromThread = useCallback(
+    (threadId, labelKey) => {
+      const normalizedThreadId = String(threadId).replace(/^#thread-f:/, "");
+      setEmails((prev) =>
+        (prev || []).map((m) =>
+          getThreadKey(m) === normalizedThreadId
+            ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) }
+            : m
+        )
+      );
+    },
+    [setEmails]
+  );
+
   // Counts by label key
   const labelIndex = useMemo(() => {
     const map = {};
@@ -274,5 +296,6 @@ export default function useLabels() {
     makeKey,
     splitKey,
     setLabelColor,
+    removeLabelFromThread,
   };
 }
