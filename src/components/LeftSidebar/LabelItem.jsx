@@ -215,7 +215,7 @@ export default function LabelItem({
           <div className={`TO ah9 ${active ? "aBP nZ aiq" : ""}`}>
             <div
               className="TN aY7xie aEc aHS-bnr"
-              style={{ marginLeft: 12 + depth * 16, ...(expanded ? {} : { paddingLeft: "6px", marginLeft: 0 }) }}
+              style={{ marginLeft: depth * 16, ...(expanded ? {} : { paddingLeft: "6px", marginLeft: 0 }) }}
             >
               {/* Arrow (only if it has children) */}
               {hasChildren && (
