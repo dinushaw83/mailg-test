@@ -1,14 +1,39 @@
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import CheckBox from "../ui/CheckBox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import useDimensions from "../../hooks/useDimensions";
 import { useElementDimensions } from "../../hooks/useElementDimensions";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
+import styled from "@emotion/styled";
+import Icon from "../ui/Icon";
+import useMailActions from "../../hooks/useMailActions";
+import { SnoozePopover } from "../MailActions/Snooze";
+
+// Show by default, hide when .zA is hovered
+const TimestampBox = styled(Box)`
+  display: block;
+
+  /* hide on hover or when row is active */
+  .zA:hover &,
+  .zA.active & {
+    display: none;
+  }
+`;
+
+const HoverDiv = styled.div`
+  display: none;
+  align-items: center;
+  gap: 8px;
+
+  .zA:hover &,
+  .zA.active & {
+    display: flex; /* use flex consistently */
+  }
+`;
 
 export const getAttachmentIcon = (attachment, size = 16) => {
   const style = { width: size, height: size };
@@ -158,8 +183,13 @@ const Table = ({
   getLabelBadges,
   formatDate,
 }) => {
-  const { setPreviewEmail, panelState, density } = useGlobalContext();
+  const { setPreviewEmail, panelState, density, setSnackbar } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
+  const { archive, moveToInbox, moveToTrash, markRead, snooze } = useMailActions();
+  const [snoozeId, setSnoozeId] = useState(null);
+  const snoozeAnchorElRef = useRef(null);
+  const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
+  const showSnoozePopover = Boolean(snoozeAnchorEl);
 
   const renderOneColumn = dimensions.width < 525;
 
@@ -170,6 +200,80 @@ const Table = ({
       navigateToEmailDetails(email, threadId);
     }
   };
+
+  const handleArchive = useCallback(
+    (threadId) => {
+      try {
+        archive([threadId]);
+        setSnackbar({
+          open: true,
+          message: "Conversation archived.",
+          autoHideDuration: 3000,
+          action: (
+            <Button
+              sx={{ textTransform: "none" }}
+              size="small"
+              onClick={() => {
+                moveToInbox([threadId]);
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              }}
+            >
+              Undo
+            </Button>
+          ),
+        });
+      } catch (e) {
+        console.error("Archive failed:", e);
+      }
+    },
+    [archive, setSnackbar]
+  );
+
+  const handleDelete = useCallback(
+    (threadId) => {
+      moveToTrash([threadId]);
+      setSnackbar({
+        open: true,
+        message: "Conversation moved to Trash.",
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              moveToInbox([threadId]);
+              // Follow-up confirmation snackbar
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [moveToTrash, setSnackbar]
+  );
+
+  const handleReadAction = useCallback(
+    (email) => {
+      if (!email.read) {
+        markRead([email.id], true);
+      } else {
+        markRead([email.id], false);
+      }
+    },
+    [markRead]
+  );
 
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
@@ -185,10 +289,11 @@ const Table = ({
         <tbody>
           {emails.map((email, index) => {
             const threadId = email.threadId.split(":")[1];
+            const isActive = showSnoozePopover && snoozeId === email.id;
             return (
               <tr
                 key={threadId}
-                className={getRowClassName(email)}
+                className={getRowClassName(email, isActive)}
                 id={`:pi${index}`}
                 tabIndex={-1}
                 role="row"
@@ -303,7 +408,12 @@ const Table = ({
                     {/* Subject */}
                     <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
                       <div className="a4X">
-                        <Link to={`${location.pathname}/${threadId}`} className="xS" role="link">
+                        <Link
+                          to={`${location.pathname}/${threadId}`}
+                          className="xS"
+                          role="link"
+                          style={{ textDecoration: "none" }}
+                        >
                           <div className="xT">
                             <div className="yi" id={`:pq${index}`}>
                               <div className="ar as">
@@ -351,6 +461,7 @@ const Table = ({
                                   data-legacy-thread-id={email.legacyThreadId}
                                   data-legacy-last-message-id={email.legacyLastMessageId}
                                   data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
+                                  style={{ color: "#3f4042" }}
                                 >
                                   {email.subject}
                                 </span>
@@ -397,13 +508,55 @@ const Table = ({
                     <td className="byZ xY sf-hidden" role="gridcell" tabIndex={-1} />
                     <td className="yf xY">&nbsp;</td>
                     <td className="xW xY" role="gridcell" tabIndex={-1}>
-                      <span
-                        title={new Date(email.timestamp).toLocaleString()}
-                        id={`:pu${index}`}
-                        aria-label={new Date(email.timestamp).toLocaleString()}
-                      >
-                        <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
-                      </span>
+                      <TimestampBox>
+                        <span
+                          title={new Date(email.timestamp).toLocaleString()}
+                          id={`:pu${index}`}
+                          aria-label={new Date(email.timestamp).toLocaleString()}
+                        >
+                          <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                        </span>
+                      </TimestampBox>
+                      <HoverDiv>
+                        <Icon
+                          name="archive"
+                          label="Archive"
+                          marginRight="3px"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchive(email.threadId);
+                          }}
+                        />
+                        <Icon
+                          name="delete"
+                          label="Delete"
+                          marginRight="3px"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(email.threadId);
+                          }}
+                        />
+                        <Icon
+                          name="mark_email_unread"
+                          label={email.read ? `Mark as unread` : `Mark as read`}
+                          marginRight="3px"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReadAction(email);
+                          }}
+                        />
+                        <Icon
+                          name="schedule"
+                          label="Snooze"
+                          marginRight="0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSnoozeId(email.id);
+                            setSnoozeAnchorEl(e.currentTarget);
+                          }}
+                          _ref={snoozeAnchorElRef}
+                        />
+                      </HoverDiv>
                     </td>
                     <td className="bq4 xY sf-hidden" />
                     <td className="xY" />
@@ -412,6 +565,18 @@ const Table = ({
               </tr>
             );
           })}
+          {showSnoozePopover && (
+            <SnoozePopover
+              anchorEl={snoozeAnchorEl}
+              open={showSnoozePopover}
+              onClose={() => {
+                setSnoozeAnchorEl(null);
+                setSnoozeId(null);
+              }}
+              selectedIds={[snoozeId]}
+              snooze={snooze}
+            />
+          )}
         </tbody>
       </table>
     </div>

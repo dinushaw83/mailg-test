@@ -13,9 +13,10 @@ import Footer from "./Footer";
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, panelState, previewEmail } = useGlobalContext();
+  const { selection, composeWindows, panelState, previewEmail } = useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
+
   const { folder, label } = useParams();
 
   const formatDate = (timestamp) => {
@@ -41,13 +42,9 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     }
   };
 
-  const getRowClassName = (email) => {
-    let className = "zA";
-    if (email.read) {
-      className += " yO";
-    } else {
-      className += " zE";
-    }
+  const getRowClassName = (email, isActive) => {
+    let className = `zA ${isActive ? "active" : ""}`;
+    className += email.read ? " yO" : " zE";
     return className;
   };
 
@@ -79,7 +76,12 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigateToEmailDetails = (email, threadId) => {
     // If labels includes Drafts, then add new compose window with the draft id
     if (email.labels.includes("Drafts")) {
-      addNewComposeWindow(email.id);
+      // Check if already a compose window with the draft id exists
+      const composeWindow = composeWindows.find((window) => window?.draftId?.toString() === email.id.toString());
+      // If compose window with the draft id doesn't exist, then add new compose window with the draft id
+      if (!composeWindow) {
+        addNewComposeWindow(email.id);
+      }
     } else {
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
