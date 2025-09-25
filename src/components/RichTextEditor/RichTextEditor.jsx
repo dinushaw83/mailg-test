@@ -1,4 +1,4 @@
-import { Stack, Popper, Paper, ClickAwayListener } from "@mui/material";
+import { Stack, Popper, Paper, ClickAwayListener, Box } from "@mui/material";
 import { useCallback, useRef, useState, useEffect } from "react";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
@@ -52,6 +52,8 @@ export default function Editor({
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [dateTimePickerOpen, setDateTimePickerOpen] = useState(false);
   const nativeFilePickerRef = useRef(null);
+
+  const [attachments, setAttachments] = useState([]);
 
   const handleNewImageFiles = useCallback((files, insertPosition) => {
     if (!rteRef.current?.editor) {
@@ -242,21 +244,20 @@ export default function Editor({
   const handleNativeFilePickerChange = (e) => {
     const { files = [] } = e.target;
 
+    const newFiles = [];
     for (const file of files) {
-      console.log({ file });
-      // const metadata = {
-      //   src: URL.createObjectURL(file),
-      //   alt: file.name,
-      //   size: file.size,
-      //   type: file.type,
-      //   duration: file.duration,
-      //   width: file.width,
-      //   height: file.height,
-      // };
+      const metadata = {
+        // id:
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      };
+      newFiles.push(metadata);
     }
-    // if (files.length > 0) {
-    //   // handleNewImageFiles(files, rteRef.current.editor.state.selection.to);
-    // }
+
+    // A file should not be added if it already exists in the attachments array
+    const uniqueFiles = newFiles.filter((file) => !attachments.some((attachment) => attachment.name === file.name));
+    setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
   };
 
   return (
@@ -285,6 +286,11 @@ export default function Editor({
               }}
             >
               {showMenuBar && <div style={{ width: "100%", height: "35px" }}></div>}
+              <Box>
+                {attachments.map((attachment) => (
+                  <div key={attachment.name}>{attachment.name}</div>
+                ))}
+              </Box>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", position: "relative", width: "100%" }}>
                   <div className={styles.sendButtonContainer}>
