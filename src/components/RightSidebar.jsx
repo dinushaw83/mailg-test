@@ -11,9 +11,9 @@ const RightSidebar = () => {
   // Handle the right sidebar tab icon click
   const handleTabIconClick = (tabName) => {
     if (tabName === rightSidebarActiveTab.activeTab) {
-      setRightSidebarActiveTab(prev => ({ ...prev, activeTab: null }));
+      setRightSidebarActiveTab((prev) => ({ ...prev, activeTab: null }));
     } else {
-      setRightSidebarActiveTab(prev => ({ ...prev, activeTab: tabName }));
+      setRightSidebarActiveTab((prev) => ({ ...prev, activeTab: tabName }));
     }
   };
 
@@ -129,9 +129,7 @@ const RightSidebar = () => {
                         },
                       }}
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: 21, color: "#3B82F6" }}>
-                        contacts_product
-                      </span>
+                      <img src="assets/images/pr_2_image_11.png" alt="Contacts" style={{ width: 21, height: 21 }} />
                     </IconButton>
                   </Tooltip>
                 </div>

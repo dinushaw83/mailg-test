@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect, useContext, useMemo } from "react";
 import { Tooltip, Autocomplete, TextField, Avatar, Box, Typography } from "@mui/material";
 import RecipientChip from "./RecipientChip";
 import SelectContacts from "./SelectContacts/SelectContacts";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { generateAvatarColor } from "../../utils/helperFunctions";
+import { generateAvatarColor, restructureRecipients, isValidEmail } from "../../utils/helperFunctions";
 import styles from "./RecipientsInput.module.css";
 
 export default function RecipientsInput({
@@ -16,8 +16,20 @@ export default function RecipientsInput({
   placeholder = "Recipients",
 }) {
   const { recipients: globalRecipients } = useContext(GlobalContext);
-  // Include only the recipients that has an email
-  const recipients = globalRecipients.filter((recipient) => recipient.email);
+
+  // Include only the recipients that has an email and restructure them
+  const recipients = useMemo(() => {
+    // First restructure, then filter out duplicate emails
+    const restructured = restructureRecipients(globalRecipients.filter((recipient) => recipient.email));
+    const seenEmails = new Set();
+    return restructured.filter((recipient) => {
+      const emailLower = recipient.email.toLowerCase();
+      if (seenEmails.has(emailLower)) return false;
+      seenEmails.add(emailLower);
+      return true;
+    });
+  }, [globalRecipients]);
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
@@ -62,12 +74,6 @@ export default function RecipientsInput({
     const parts = text.split(regex);
 
     return parts.map((part, index) => (regex.test(part) ? <strong key={`${part}-${index}`}>{part}</strong> : part));
-  };
-
-  // Validate email format
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   };
 
   // Create custom recipient for valid email
@@ -212,7 +218,9 @@ export default function RecipientsInput({
 
       if (highlightedIndex >= 0 && highlightedIndex < filteredOptions.length) {
         const option = filteredOptions[highlightedIndex];
-        const isAlreadySelected = selectedRecipients[field].some((selected) => selected.id === option.id);
+        const isAlreadySelected = selectedRecipients[field].some(
+          (selected) => selected.email === option.email && selected.id === option.id
+        );
 
         if (!isAlreadySelected) {
           // Add the selected option
@@ -239,7 +247,7 @@ export default function RecipientsInput({
   const handleChipDelete = (recipientToRemove, field) => {
     const newSelectedRecipients = { ...selectedRecipients };
     newSelectedRecipients[field] = newSelectedRecipients[field].filter(
-      (recipient) => recipient.id !== recipientToRemove.id
+      (recipient) => `${recipient.email}-${recipient.id}` !== `${recipientToRemove.email}-${recipientToRemove.id}`
     );
     setSelectedRecipients(newSelectedRecipients);
 
@@ -403,19 +411,21 @@ export default function RecipientsInput({
   // Render option for autocomplete
   const renderOption = (props, option, field) => {
     const { key, ...otherProps } = props;
-    const isAlreadySelected = selectedRecipients[field].some((selected) => selected.id === option.id);
+    const isAlreadySelected = selectedRecipients[field].some(
+      (selected) => selected.email === option.email && selected.id === option.id
+    );
     const isCustomRecipient = option.id && typeof option.id === "string" && option.id.startsWith("custom-");
     const avatarColor = generateAvatarColor(option.name);
     const initials = option.name.charAt(0).toUpperCase();
 
     // Get the current filtered options to determine if this option is highlighted
     const filteredOptions = filterOptions(recipients || [], { inputValue: inputValues[field] });
-    const currentIndex = filteredOptions.findIndex((opt) => opt.id === option.id);
+    const currentIndex = filteredOptions.findIndex((opt) => opt.email === option.email && opt.id === option.id);
     const isHighlighted = currentIndex === highlightedIndex;
 
     return (
       <Box
-        key={key}
+        key={`${key}-${option.id}`}
         component="li"
         {...otherProps}
         sx={{
@@ -524,7 +534,7 @@ export default function RecipientsInput({
             >
               {selectedRecipients.to.map((recipient) => (
                 <RecipientChip
-                  key={recipient.id || recipient.email}
+                  key={`${recipient.email}-${recipient.id}`}
                   recipient={recipient}
                   onDelete={() => handleChipDelete(recipient, "to")}
                 />
@@ -627,7 +637,7 @@ export default function RecipientsInput({
               >
                 {selectedRecipients.cc.map((recipient) => (
                   <RecipientChip
-                    key={recipient.id || recipient.email}
+                    key={`${recipient.email}-${recipient.id}`}
                     recipient={recipient}
                     onDelete={() => handleChipDelete(recipient, "cc")}
                   />
@@ -730,7 +740,7 @@ export default function RecipientsInput({
               >
                 {selectedRecipients.bcc.map((recipient) => (
                   <RecipientChip
-                    key={recipient.id || recipient.email}
+                    key={`${recipient.email}-${recipient.id}`}
                     recipient={recipient}
                     onDelete={() => handleChipDelete(recipient, "bcc")}
                   />

@@ -774,7 +774,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
 
         const contact = {
           ...formData,
-          name: `${formData.prefix} ${formData.firstName} ${formData.lastName}`,
+          name: [formData.prefix, formData.firstName, formData.lastName].filter(Boolean).join(" "),
           // Id should be from the contact to update in case of edit contact
           id: contactToUpdate?.id || generateNextIntegerId(recipients),
           avatar: contactToUpdate?.avatar || null,

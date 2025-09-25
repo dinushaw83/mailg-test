@@ -27,10 +27,17 @@ import {
 } from "@mui/material";
 import ManageLabels from "./ManageLabels";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
+import { restructureRecipients } from "../../../utils/helperFunctions";
 import styles from "./SelectContacts.module.css";
 
 export default function SelectContacts({ open, onClose, handleInsertContacts, addedRecipients = [] }) {
-  const { recipients, recipientLabels, setRecipients, setRecipientLabels } = useGlobalContext();
+  const { recipients: globalRecipients, recipientLabels, setRecipients, setRecipientLabels } = useGlobalContext();
+
+  // Create restructured recipients array to display all email variants
+  const recipients = useMemo(() => {
+    return restructureRecipients(globalRecipients.filter((recipient) => recipient.email));
+  }, [globalRecipients]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -45,7 +52,9 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
   // Initialize selectedContacts with addedRecipients when component opens
   useEffect(() => {
     if (open && addedRecipients.length > 0) {
-      const addedRecipientIds = new Set(addedRecipients.map((recipient) => recipient.id).filter(Boolean));
+      const addedRecipientIds = new Set(
+        addedRecipients.map((recipient) => `${recipient.email}-${recipient.id}`).filter(Boolean)
+      );
       setSelectedContacts(addedRecipientIds);
     }
   }, [open, addedRecipients]);
@@ -116,17 +125,17 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
     if (selectedContacts.size === filteredContacts.length) {
       setSelectedContacts(new Set());
     } else {
-      setSelectedContacts(new Set(filteredContacts.map((contact) => contact.id)));
+      setSelectedContacts(new Set(filteredContacts.map((contact) => `${contact.email}-${contact.id}`)));
     }
   };
 
   // Handle contact select
-  const handleContactSelect = (contactId) => {
+  const handleContactSelect = (contact) => {
     const newSelected = new Set(selectedContacts);
-    if (newSelected.has(contactId)) {
-      newSelected.delete(contactId);
+    if (newSelected.has(`${contact.email}-${contact.id}`)) {
+      newSelected.delete(`${contact.email}-${contact.id}`);
     } else {
-      newSelected.add(contactId);
+      newSelected.add(`${contact.email}-${contact.id}`);
     }
     setSelectedContacts(newSelected);
   };
@@ -141,14 +150,23 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
         recipient.id &&
         typeof recipient.id === "string" &&
         recipient.id.startsWith("custom-") &&
-        selectedContacts.has(recipient.id)
+        selectedContacts.has(`${recipient.email}-${recipient.id}`)
     );
 
     // Get the selected recipients present in the recipients context
-    const selectedRecipients = recipients.filter((recipient) => recipient && selectedContacts.has(recipient.id));
+    const selectedRecipients = recipients.filter(
+      (recipient) => recipient && selectedContacts.has(`${recipient.email}-${recipient.id}`)
+    );
 
     // Create a final recipients array with the selected recipients and the custom recipients
-    const finalRecipients = [...selectedRecipients, ...customRecipients];
+    // If multiple users have the same email, only include the first one
+    const seenEmails = new Set();
+    const finalRecipients = [...selectedRecipients, ...customRecipients].filter((recipient) => {
+      const email = recipient.email;
+      if (seenEmails.has(email)) return false;
+      seenEmails.add(email);
+      return true;
+    });
 
     handleInsertContacts(finalRecipients);
     onClose();
@@ -509,10 +527,10 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
                 <List sx={{ p: 0, pb: 1.5 }}>
                   {addedRecipients.map((contact) => {
                     if (!contact || !contact.id) return null;
-                    const isSelected = selectedContacts.has(contact.id);
+                    const isSelected = selectedContacts.has(`${contact.email}-${contact.id}`);
                     return (
                       <ListItem
-                        key={contact.id}
+                        key={`${contact.email}-${contact.id}`}
                         sx={{
                           px: 2,
                           py: 1,
@@ -530,7 +548,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
                             },
                           },
                         }}
-                        onClick={() => handleContactSelect(contact.id)}
+                        onClick={() => handleContactSelect(contact)}
                       >
                         {/* Checkbox - visible when selected or on hover */}
                         <Box
@@ -546,7 +564,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
                         >
                           <Checkbox
                             checked={isSelected}
-                            onChange={() => handleContactSelect(contact.id)}
+                            onChange={() => handleContactSelect(contact)}
                             size="medium"
                             sx={{
                               color: "rgba(0, 0, 0, 0.6)",
@@ -685,10 +703,10 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
               <List sx={{ p: 0, pb: selectedContacts.size > 0 ? "50px" : "0" }}>
                 {filteredContacts.map((contact) => {
                   if (!contact || !contact.id) return null;
-                  const isSelected = selectedContacts.has(contact.id);
+                  const isSelected = selectedContacts.has(`${contact.email}-${contact.id}`);
                   return (
                     <ListItem
-                      key={contact.id}
+                      key={`${contact.email}-${contact.id}`}
                       sx={{
                         px: 2,
                         py: 1,
@@ -706,7 +724,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
                           },
                         },
                       }}
-                      onClick={() => handleContactSelect(contact.id)}
+                      onClick={() => handleContactSelect(contact)}
                     >
                       {/* Checkbox - visible when selected or on hover */}
                       <Box
@@ -722,7 +740,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
                       >
                         <Checkbox
                           checked={isSelected}
-                          onChange={() => handleContactSelect(contact.id)}
+                          onChange={() => handleContactSelect(contact)}
                           size="medium"
                           sx={{
                             color: "rgba(0, 0, 0, 0.6)",
