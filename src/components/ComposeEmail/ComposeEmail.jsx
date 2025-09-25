@@ -374,8 +374,10 @@ export default function ComposeEmail({ composeWindow }) {
               onSend={handleSend}
               onDelete={handleDelete}
               onSchedule={handleSchedule}
-              textEditorMinHeight="420px"
-              textEditorMaxHeight="calc(100vh - 340px)"
+              textEditorMinHeight={composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "420px"}
+              textEditorMaxHeight={
+                composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "calc(100vh - 340px)"
+              }
               useCompactFormatting={true}
             />
           </div>

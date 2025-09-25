@@ -780,7 +780,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
           avatar: contactToUpdate?.avatar || null,
           labels,
           // First email should be the primary email if it exists
-          email: formData.emails[0].value || null,
+          email: Array.isArray(formData.emails) && formData.emails.length > 0 ? formData.emails[0].value : null,
         };
 
         // Save the original contact in case of edit contact or the new contact
@@ -1320,6 +1320,26 @@ const CreateContact = ({ onClose, onTabClose }) => {
                           borderWidth: "3px",
                         },
                       }}
+                      MenuProps={{
+                        anchorOrigin: {
+                          vertical: "top",
+                          horizontal: "left",
+                        },
+                        transformOrigin: {
+                          vertical: "bottom",
+                          horizontal: "left",
+                        },
+                        PaperProps: {
+                          sx: {
+                            backgroundColor: "#f0f4f9",
+                            maxHeight: "400px",
+                            maxWidth: "200px",
+                            "& .MuiMenuItem-root": {
+                              padding: "2px 12px",
+                            },
+                          },
+                        },
+                      }}
                     >
                       {countries.map((country) => (
                         <MenuItem key={country.code2} value={country.code2}>
@@ -1373,6 +1393,26 @@ const CreateContact = ({ onClose, onTabClose }) => {
                           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                             borderColor: "#0b57d0",
                             borderWidth: "3px",
+                          },
+                        }}
+                        MenuProps={{
+                          anchorOrigin: {
+                            vertical: "top",
+                            horizontal: "left",
+                          },
+                          transformOrigin: {
+                            vertical: "bottom",
+                            horizontal: "left",
+                          },
+                          PaperProps: {
+                            sx: {
+                              backgroundColor: "#f0f4f9",
+                              maxHeight: "400px",
+                              maxWidth: "200px",
+                              "& .MuiMenuItem-root": {
+                                padding: "2px 12px",
+                              },
+                            },
                           },
                         }}
                       >
