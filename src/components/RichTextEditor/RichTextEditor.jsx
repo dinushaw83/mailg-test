@@ -9,6 +9,7 @@ import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
 import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 import React from "react";
+import Attachments from "./Attachments";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -286,11 +287,7 @@ export default function Editor({
               }}
             >
               {showMenuBar && <div style={{ width: "100%", height: "35px" }}></div>}
-              <Box>
-                {attachments.map((attachment) => (
-                  <div key={attachment.name}>{attachment.name}</div>
-                ))}
-              </Box>
+              <Attachments attachments={attachments} setAttachments={setAttachments} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", position: "relative", width: "100%" }}>
                   <div className={styles.sendButtonContainer}>
