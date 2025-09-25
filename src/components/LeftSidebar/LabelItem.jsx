@@ -102,6 +102,7 @@ export default function LabelItem({
   const [removeModalOpen, setRemoveModalOpen] = useState(false);
 
   const [editLabelModalOpen, setEditLabelModalOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleMenuButtonClick = (e) => {
     e.preventDefault();
@@ -211,6 +212,8 @@ export default function LabelItem({
                 marginLeft: "20px",
               }
           }
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
           <div className={`TO ah9 ${active ? "aBP nZ aiq" : ""}`}>
             <div
@@ -240,9 +243,22 @@ export default function LabelItem({
 
               <div className="aio aip">
                 <span className="nU">{display}</span>
+                {count > 0 && !isHovered && <div className="bsU">{count}</div>}
               </div>
 
-              <div className="nL aig group">
+              <div 
+                className="nL aig group"
+                style={{
+                  position: "absolute",
+                  right: "8px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  opacity: isHovered ? 1 : 0,
+                  transition: "opacity 0.2s ease",
+                  pointerEvents: isHovered ? "auto" : "none",
+                  width: "24px",
+                }}
+              >
                 <div className="pM aj0">
                   <IconButton
                     size="small"
