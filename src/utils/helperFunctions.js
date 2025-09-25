@@ -33,11 +33,15 @@ export const generateAvatarColor = (name) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-// Generate a random thread ID
-export const generateThreadId = () => {
+export const generateRandomId = () => {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000000000000000000);
-  return `#thread-f:${timestamp}${random}`;
+  return `${timestamp}${random}`;
+};
+
+// Generate a random thread ID
+export const generateThreadId = () => {
+  return `#thread-f:${generateRandomId()}`;
 };
 
 // Generate a random legacy thread ID

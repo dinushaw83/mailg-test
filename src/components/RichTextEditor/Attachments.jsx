@@ -1,10 +1,11 @@
-import styled from "@emotion/styled";
 import { Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import React, { useState } from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const Attachments = ({ attachments, setAttachments }) => {
   const [activeAttachment, setActiveAttachment] = useState();
+  const { db } = useGlobalContext();
 
   const formatSize = (size) => {
     // return values such as 1024 -> 1K, 1024 * 1024 -> 1M, 1024 * 1024 * 1024 -> 1G
@@ -17,6 +18,14 @@ const Attachments = ({ attachments, setAttachments }) => {
     } else {
       return `${(size / 1024 / 1024 / 1024).toFixed(1)}G`;
     }
+  };
+
+  const handleRemoveAttachment = async (e, attachment) => {
+    e.stopPropagation();
+    setAttachments((prevAttachments) => prevAttachments.filter((a) => a.name !== attachment.name));
+    setActiveAttachment(null);
+
+    await db.delete("attachments", attachment.id);
   };
 
   return (
@@ -79,11 +88,7 @@ const Attachments = ({ attachments, setAttachments }) => {
           <span
             className="material-symbols-outlined"
             style={{ fontSize: "14px", color: "rgb(95, 99, 104)", cursor: "pointer" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setAttachments((prevAttachments) => prevAttachments.filter((a) => a.name !== attachment.name));
-              setActiveAttachment(null);
-            }}
+            onClick={(e) => handleRemoveAttachment(e, attachment)}
           >
             close
           </span>

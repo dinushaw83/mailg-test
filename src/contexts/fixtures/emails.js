@@ -50,13 +50,13 @@ export const initialEmails = [
     labelColor: "#e1e3e1",
     attachments: [
       {
-        id: 1,
+        id: 18420873664227694521,
         name: "attachment.webp",
         url: "/assets/images/attachment.webp",
         size: "1.2 MB",
       },
       {
-        id: 2,
+        id: 18320873464227694522,
         name: "attachment2.webp",
         url: "/assets/images/attachment.webp",
         size: "980 KB",
@@ -87,7 +87,7 @@ export const initialEmails = [
     labelColor: "#e1e3e1",
     attachments: [
       {
-        id: 1,
+        id: 18420850830872087601,
         name: "attachment.webp",
         url: "/assets/images/attachment.webp",
         size: "1.3 MB",
@@ -257,10 +257,8 @@ export const initialEmails = [
     },
     to: ["noreply@github.com"],
     subject: "Re: [GitHub] Please verify your device",
-    body:
-      "Hi GitHub team, this was me. I successfully verified my device. Thanks!",
-    preview:
-      "Hi GitHub team, this was me. I successfully verified my device.",
+    body: "Hi GitHub team, this was me. I successfully verified my device. Thanks!",
+    preview: "Hi GitHub team, this was me. I successfully verified my device.",
     timestamp: "2025-09-01T21:35:00.000Z",
     timeDisplay: "Sep 1",
     read: true,
@@ -281,10 +279,8 @@ export const initialEmails = [
     },
     to: ["john.doe@example.com"],
     subject: "Re: [GitHub] Please verify your device",
-    body:
-      "Thanks for confirming, John. If this wasn’t you, reset your password immediately. This email address is not monitored.",
-    preview:
-      "Thanks for confirming, John. If this wasn’t you, reset your password immediately.",
+    body: "Thanks for confirming, John. If this wasn’t you, reset your password immediately. This email address is not monitored.",
+    preview: "Thanks for confirming, John. If this wasn’t you, reset your password immediately.",
     timestamp: "2025-09-01T21:36:00.000Z",
     timeDisplay: "Sep 1",
     read: false,
@@ -305,10 +301,8 @@ export const initialEmails = [
     },
     to: ["john.doe@example.com"],
     subject: "[GitHub] New sign-in from Chrome on Mac",
-    body:
-      "We noticed a new sign-in to your account from Chrome on macOS. If this was you, no further action is required.",
-    preview:
-      "New sign-in to your account from Chrome on macOS.",
+    body: "We noticed a new sign-in to your account from Chrome on macOS. If this was you, no further action is required.",
+    preview: "New sign-in to your account from Chrome on macOS.",
     timestamp: "2025-09-01T21:25:00.000Z",
     timeDisplay: "Sep 1",
     read: true,
@@ -331,8 +325,7 @@ export const initialEmails = [
     to: ["john.doe@example.com", "robert.miller@example.com"],
     subject: "IMPORTANT: Discussion on the Acme Project",
     body: "We want to discuss the Acme Project with you. Please let us know your availability.",
-    preview:
-      "We want to discuss the Acme Project with you. Please let us know your availability.",
+    preview: "We want to discuss the Acme Project with you. Please let us know your availability.",
     timestamp: "2025-09-02T11:19:00.000Z",
     timeDisplay: "11:19 AM",
     read: false,

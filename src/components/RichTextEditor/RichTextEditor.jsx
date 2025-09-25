@@ -10,6 +10,8 @@ import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 import React from "react";
 import Attachments from "./Attachments";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { generateRandomId } from "../../utils/helperFunctions";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -38,6 +40,7 @@ export default function Editor({
   textEditorMinHeight,
   textEditorMaxHeight,
   useCompactFormatting = false,
+  messageId,
 }) {
   const extensions = useExtensions({
     placeholder: "",
@@ -55,6 +58,7 @@ export default function Editor({
   const nativeFilePickerRef = useRef(null);
 
   const [attachments, setAttachments] = useState([]);
+  const { db } = useGlobalContext();
 
   const handleNewImageFiles = useCallback((files, insertPosition) => {
     if (!rteRef.current?.editor) {
@@ -247,19 +251,26 @@ export default function Editor({
 
     const newFiles = [];
     for (const file of files) {
+      const id = generateRandomId();
+      const url = URL.createObjectURL(file);
       const metadata = {
-        // id:
+        id,
         name: file.name,
         size: file.size,
         type: file.type,
+        url,
       };
       newFiles.push(metadata);
+
+      db.put("attachments", { id, file });
     }
 
     // A file should not be added if it already exists in the attachments array
     const uniqueFiles = newFiles.filter((file) => !attachments.some((attachment) => attachment.name === file.name));
     setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
   };
+
+  console.log({ messageId, db, attachments });
 
   return (
     <>
