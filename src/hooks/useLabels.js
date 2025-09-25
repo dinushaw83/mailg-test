@@ -243,6 +243,22 @@ export default function useLabels() {
     [setEmails]
   );
 
+  const addLabelToThread = useCallback(
+    (threadId, labelKey) => {
+      setEmails(prev =>
+        (prev || []).map(m =>
+          getThreadKey(m) === String(threadId).replace("#thread-f:", "")
+            ? {
+              ...m,
+              labels: Array.from(new Set([...(m.labels || []), labelKey])),
+            }
+            : m
+        )
+      );
+    },
+    [setEmails]
+  );
+
   // Counts by label key
   const labelIndex = useMemo(() => {
     const map = {};
@@ -271,5 +287,6 @@ export default function useLabels() {
     makeKey,
     splitKey,
     removeLabelFromThread,
+    addLabelToThread,
   };
 }
