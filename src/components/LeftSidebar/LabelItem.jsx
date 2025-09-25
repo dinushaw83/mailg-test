@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Box, IconButton, Typography } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { NavLink, useMatch } from "react-router-dom";
@@ -116,6 +116,23 @@ export default function LabelItem({
 
   const handleColorMenuClose = () => {
     setColorAnchorEl(null);
+  };
+
+  const timerRef = useRef(null);
+
+  const openColorMenu = (el) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setColorAnchorEl(el);
+  };
+
+  const closeColorMenuWithDelay = () => {
+    timerRef.current = setTimeout(() => {
+      setColorAnchorEl(null);
+    }, 500); // 250ms feels Gmail-like
+  };
+
+  const cancelClose = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
   };
 
   const IN_LABEL_LIST = [
@@ -259,8 +276,11 @@ export default function LabelItem({
       >
         {/* Opens the color submenu – keep the main menu open */}
         <MenuItem
-          onMouseEnter={(e) => setColorAnchorEl(e.currentTarget)}
-          onClick={(e) => { e.stopPropagation(); setColorAnchorEl(e.currentTarget); }}
+          onMouseEnter={(e) => openColorMenu(e.currentTarget)}
+          onClick={(e) => {
+            e.stopPropagation();
+            openColorMenu(e.currentTarget);
+          }}
           aria-haspopup="menu"
           aria-controls={colorOpen ? `label-color-${labelKey}` : undefined}
           sx={{
@@ -382,7 +402,8 @@ export default function LabelItem({
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
         MenuListProps={{
-          onMouseLeave: handleColorMenuClose,
+          onMouseEnter: cancelClose,
+          onMouseLeave: closeColorMenuWithDelay,
         }}
         keepMounted
       >
