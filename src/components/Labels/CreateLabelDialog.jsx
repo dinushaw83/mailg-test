@@ -7,13 +7,12 @@ import {
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useLabels, { flattenTreeForSelect, ROOT, splitKey } from "../../hooks/useLabels";
 
-export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
+export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName }) {
     const { setSnackbar } = useGlobalContext();
-    const { labels, createLabel, labelTree } = useLabels();
-
-    const [name, setName] = useState("");
+    const { labels, createLabel, labelTree, renameLabel } = useLabels();
+    const [name, setName] = useState(labelDefaultName ?? "");
     const [nest, setNest] = useState(false);
-    const [parentKey, setParentKey] = useState(null);
+    const [parentKey, setParentKey] = useState(defaultParentKey ?? null);
     const [attempted, setAttempted] = useState(false);
 
     const parentChoices = useMemo(
@@ -24,9 +23,19 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
     const trimmed = name.trim();
     const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;
 
+    const isEditing = useMemo(() => !!labelDefaultName, [labelDefaultName]);
+
     useEffect(() => {
         setNest(Boolean(parentKey));
     }, [parentKey]);
+
+    useEffect(() => {
+        setParentKey(defaultParentKey ?? null);
+    }, [defaultParentKey]);
+
+    useEffect(() => {
+        setName(labelDefaultName ?? "");
+    }, [labelDefaultName]);
 
     const isDup = useMemo(() => {
         if (!trimmed) return false;
@@ -91,6 +100,17 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
         }
     };
 
+    const handleSave = () => {
+        renameLabel(currentLabelKey, trimmed);
+        onAfterCreate?.(trimmed, parentKey);
+        setSnackbar?.({
+            open: true,
+            message: `The label "${trimmed}" was saved.`,
+            autoHideDuration: 4000,
+        });
+        handleClose();
+    };
+
     return (
         <Dialog
             open={open}
@@ -117,7 +137,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                 <TextField
                     autoFocus
                     fullWidth
-                    value={name}
+                    value={name ?? defaultName}
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
                     error={showError && (missingName || isDup)}
@@ -165,11 +185,11 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate }) {
                 </Button>
                 <Button
                     variant="contained"
-                    onClick={handleCreate}
+                    onClick={isEditing ? handleSave : handleCreate}
                     disabled={!canSubmit} // keep enabled; validation happens on submit
                     sx={{ borderRadius: "20px", textTransform: "none", px: 3 }}
                 >
-                    Create
+                    {isEditing ? "Save" : "Create"}
                 </Button>
             </DialogActions>
         </Dialog>
