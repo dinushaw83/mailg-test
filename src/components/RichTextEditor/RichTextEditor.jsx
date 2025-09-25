@@ -270,8 +270,6 @@ export default function Editor({
     setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
   };
 
-  console.log({ messageId, db, attachments });
-
   return (
     <>
       <RichTextEditor
@@ -339,7 +337,7 @@ export default function Editor({
                         borderRadius: "18px 0px 0px 18px",
                         userSelect: "none",
                       }}
-                      onClick={onSend}
+                      onClick={() => onSend(attachments)}
                     >
                       Send
                     </div>

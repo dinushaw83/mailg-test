@@ -19,7 +19,18 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     return emailRegex.test(email);
   };
 
-  const handleSend = ({ to, cc, bcc, subject, content, rawInputText, onClose, currentDraftId, isDraft }) => {
+  const handleSend = ({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    rawInputText,
+    onClose,
+    currentDraftId,
+    isDraft,
+    attachments,
+  }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
 
@@ -80,10 +91,10 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     }
 
     // If all validations pass, send the email
-    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft });
+    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments });
   };
 
-  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft }) => {
+  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
@@ -121,13 +132,14 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       important: false,
       labels: ["Sent"],
       labelColor: "#e1e3e1",
+      attachments,
     };
 
     // Add reply/forward reference if applicable
-    if (replyType === 'reply' && originalEmail) {
+    if (replyType === "reply" && originalEmail) {
       newEmail.replyToEmailId = originalEmail.id;
     }
-    if (replyType === 'forward' && originalEmail) {
+    if (replyType === "forward" && originalEmail) {
       newEmail.forwardedEmailId = originalEmail.id;
     }
 

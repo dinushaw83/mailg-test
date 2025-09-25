@@ -176,7 +176,7 @@ ${email.body}
     handleErrorModalClose: handleScheduleErrorModalClose,
   } = useScheduleEmail(selectedReplyOption, email);
 
-  const handleSend = () => {
+  const handleSend = ({ attachments = [] }) => {
     handleSendEmail({
       to: recipientsForDraft.to,
       cc: recipientsForDraft.cc,
@@ -194,6 +194,7 @@ ${email.body}
           onClose();
         }
       },
+      attachments,
     });
   };
 
