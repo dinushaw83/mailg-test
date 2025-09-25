@@ -189,7 +189,7 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
   const handleCancelSend = () => {
     setEmails((prevEmails) => {
       return prevEmails.map((email) => {
-        if (email.id === emailId) {
+        if (email.id.toString() === emailId) {
           return {
             ...email,
             labels: ["Drafts"],

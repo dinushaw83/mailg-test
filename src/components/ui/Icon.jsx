@@ -27,11 +27,21 @@ const Icon = ({
     placement = 'bottom',
     size = 'small',
     shape = 'round', // "round" or "square"
+    marginRight = "10px",
+    _ref
 }) => {
     return (
         <Tooltip title={label} placement={placement}>
             <StyledIconButton
                 size={size}
+                sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    marginRight: marginRight,
+                    ...style,
+                }}
+                ref={_ref}
                 onClick={onClick}
                 disabled={disabled}
                 shape={shape} // Custom prop used in styled()

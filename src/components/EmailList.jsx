@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useCallback, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { format, isToday, isThisYear } from "date-fns";
 
@@ -6,13 +6,51 @@ import useMailActions from "../hooks/useMailActions";
 import CheckBox from "./ui/CheckBox";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { useComposeModal } from "../hooks/useComposeModal";
+import { Box, Button } from "@mui/material";
+import Icon from "./ui/Icon";
+import styled from "@emotion/styled";
+import { SnoozePopover } from "./MailActions/Snooze";
+
+// Show by default, hide when .zA is hovered
+const TimestampBox = styled(Box)`
+  display: block;
+
+  /* hide on hover or when row is active */
+  .zA:hover &,
+  .zA.active & {
+    display: none;
+  }
+`;
+
+const HoverDiv = styled.div`
+  display: none;
+  align-items: center;
+  gap: 8px;
+
+  .zA:hover &,
+  .zA.active & {
+    display: flex; /* use flex consistently */
+  }
+`;
 
 const EmailList = ({ emails = [], showCheckboxes = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, composeWindows } = useGlobalContext();
-  const { toggleImportant, toggleStar } = useMailActions();
+  const { selection, composeWindows, setSnackbar } = useGlobalContext();
+  const {
+    toggleImportant,
+    toggleStar,
+    archive,
+    moveToInbox,
+    moveToTrash,
+    markRead,
+    snooze
+  } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
+  const snoozeAnchorElRef = useRef(null);
+  const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
+  const showSnoozePopover = Boolean(snoozeAnchorEl);
+  const [snoozeId, setSnoozeId] = useState(null);
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -32,12 +70,9 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
   };
 
   const getRowClassName = (email) => {
-    let className = "zA";
-    if (email.read) {
-      className += " yO";
-    } else {
-      className += " zE";
-    }
+    const isActive = showSnoozePopover && snoozeId === email.id;
+    let className = `zA ${isActive ? "active" : ""}`;
+    className += email.read ? " yO" : " zE";
     return className;
   };
 
@@ -95,8 +130,73 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     return email.labels.filter(label => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
   }
 
+  const handleArchive = useCallback((threadId) => {
+    try {
+      archive([threadId]);
+      setSnackbar({
+        open: true,
+        message: "Conversation archived.",
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              moveToInbox([threadId]);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      console.error("Archive failed:", e);
+    }
+  }, [archive, setSnackbar]);
+
+  const handleDelete = useCallback((threadId) => {
+    moveToTrash([threadId]);
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Trash.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            moveToInbox([threadId]);
+            // Follow-up confirmation snackbar
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [moveToTrash, setSnackbar]);
+
+  const handleReadAction = useCallback((email) => {
+    if (!email.read) {
+      markRead([email.id], true);
+    } else {
+      markRead([email.id], false);
+    }
+  }, [markRead]);
+
   return (
-    <tbody>
+    <tbody class>
       {emails.map((email, index) => {
         const threadId = email.threadId.split(":")[1];
         return (
@@ -257,19 +357,59 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
             <td className="byZ xY sf-hidden" role="gridcell" tabIndex={-1} />
             <td className="yf xY">&nbsp;</td>
             <td className="xW xY" role="gridcell" tabIndex={-1}>
-              <span
-                title={new Date(email.timestamp).toLocaleString()}
-                id={`:pu${index}`}
-                aria-label={new Date(email.timestamp).toLocaleString()}
-              >
-                <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
-              </span>
+              <TimestampBox>
+                <span
+                  title={new Date(email.timestamp).toLocaleString()}
+                  id={`:pu${index}`}
+                  aria-label={new Date(email.timestamp).toLocaleString()}
+                >
+                  <span className={email.read ? "" : "bq3"}>
+                    {formatDate(email.timestamp)}
+                  </span>
+                </span>
+              </TimestampBox>
+
+              <HoverDiv>
+                <Icon name="archive" label="Archive" marginRight="3px" onClick={(e) => {
+                  e.stopPropagation();
+                  handleArchive(email.threadId)
+                }} />
+                <Icon name="delete" label="Delete" marginRight="3px" onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(email.threadId)
+                }} />
+                <Icon
+                  name="mark_email_unread"
+                  label={email.read ? `Mark as unread` : `Mark as read`}
+                  marginRight="3px" onClick={(e) => {
+                  e.stopPropagation();
+                  handleReadAction(email)
+                }} />
+                <Icon name="schedule" label="Snooze" marginRight="0" onClick={(e) => {
+                    e.stopPropagation();
+                    setSnoozeId(email.id);
+                    setSnoozeAnchorEl(e.currentTarget);
+                }} _ref={snoozeAnchorElRef} />
+              </HoverDiv>
             </td>
             <td className="bq4 xY sf-hidden" />
             <td className="xY" />
           </tr>
         );
       })}
+
+      {showSnoozePopover && (
+        <SnoozePopover
+          anchorEl={snoozeAnchorEl}
+          open={showSnoozePopover}
+          onClose={() => {
+              setSnoozeAnchorEl(null);
+              setSnoozeId(null);
+          }}
+          selectedIds={[snoozeId]}
+          snooze={snooze}
+        />
+      )}
     </tbody>
   );
 };
