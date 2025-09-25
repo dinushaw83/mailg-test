@@ -110,42 +110,15 @@ export const GlobalContextProvider = ({ children }) => {
   // Handle IndexedDB as a state
   const [db, setDb] = useState(null);
 
-  const initialAttachments = useCallback((emails) => {
-    const attachments = emails.reduce((acc, email) => {
-      acc.push(...(email.attachments || []));
-      return acc;
-    }, []);
-
-    return attachments;
-  }, []);
-
   useEffect(() => {
     const initDB = async () => {
       try {
-        const attachments = [];
-        for (const attachment of initialAttachments(initialEmails)) {
-          const res = await fetch(attachment.url);
-          const blob = await res.blob();
-          const file = new File([blob], attachment.name || "download", {
-            type: blob.type || "application/octet-stream",
-            lastModified: Date.now(),
-          });
-          attachments.push({
-            id: attachment.id,
-            file,
-          });
-        }
-
         const database = await openDB("my-database", 1, {
           upgrade(db, oldVer, newVer, tx) {
             // runs only when version > oldVer
             if (!db.objectStoreNames.contains("attachments")) {
               const store = db.createObjectStore("attachments", { keyPath: "id" }); // primary key
               store.createIndex("name", "name", { unique: false }); // secondary index
-            }
-
-            for (const attachment of attachments) {
-              tx.objectStore("attachments").put(attachment);
             }
           },
         });

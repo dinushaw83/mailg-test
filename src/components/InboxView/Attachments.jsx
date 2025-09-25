@@ -212,6 +212,21 @@ export const Attachments = ({ attachments = [] }) => {
   if (attachments.length === 0) return null;
   const count = attachments.length > 1 ? `${attachments.length} attachments` : "One attachment";
 
+  const handleDownload = async (attachment) => {
+    const a = document.createElement("a");
+    a.href = attachment.url;
+    a.download = attachment.name;
+    a.click();
+  };
+
+  const handleSaveToDrive = async (attachment) => {
+    console.log("save to drive", attachment);
+  };
+
+  const openInNewTab = async (attachment) => {
+    window.open(attachment.url, "_blank");
+  };
+
   return (
     <div>
       <Divider sx={{ borderStyle: "dotted", marginTop: "1rem", marginBottom: "1rem" }} />
@@ -225,7 +240,7 @@ export const Attachments = ({ attachments = [] }) => {
       </AttachmentsHeaderContainer>
       <AttachmentsContainer>
         {attachments.map((attachment) => (
-          <ImageContainer key={attachment.id}>
+          <ImageContainer key={attachment.id} onClick={() => openInNewTab(attachment)}>
             <img loading="lazy" src={attachment.url} alt={attachment.name} width={20} />
             <Overlay className="overlay">
               {getAttachmentIcon(attachment)}
@@ -250,6 +265,10 @@ export const Attachments = ({ attachments = [] }) => {
                       "&:hover": { background: "#898F94" },
                       marginRight: "8px",
                     }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownload(attachment);
+                    }}
                   />
 
                   <Icon
@@ -265,6 +284,10 @@ export const Attachments = ({ attachments = [] }) => {
                       background: "rgb(128, 134, 139)",
                       "&:hover": { background: "#898F94" },
                       marginRight: "0px",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSaveToDrive(attachment);
                     }}
                   />
                 </OverlayActions>
