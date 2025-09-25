@@ -14877,3 +14877,9 @@ source[src="data:,"] {
   -webkit-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.ajO {
+  margin-left: 1em;
+  color: #777;
+  font-style: italic;
+}
