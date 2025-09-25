@@ -101,6 +101,9 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
       messageCount: t.messageIds.length,
       unreadCount: t.unreadCount,
       updatedAt: t.updatedAt,
+
+      // Attachments
+      attachments: last.attachments || [],
     };
   });
 

@@ -3,8 +3,7 @@ import SearchBar from "./SearchBar";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 const Header = () => {
-  const { setIsLeftSidebarExpanded } = useGlobalContext();
-
+  const { showQuickSettings, setShowQuickSettings, setIsLeftSidebarExpanded } = useGlobalContext();
   return (
     <div className="nH">
       <div className="w-asV bbg aiw">
@@ -34,7 +33,6 @@ const Header = () => {
               </div>
               <div className="gb_Id gb_Ld gb_0d">
                 <div className="gb_Qd gb_pd gb_qd" style={{ minWidth: 238 }}>
-
                   {/* Expand/Collapse Left Sidebar button */}
                   <div
                     className="gb_Zc"
@@ -43,7 +41,7 @@ const Header = () => {
                     data-ogmb={1}
                     role="button"
                     tabIndex={0}
-                    onClick={() => setIsLeftSidebarExpanded(prev => !prev)}
+                    onClick={() => setIsLeftSidebarExpanded((prev) => !prev)}
                   >
                     <svg focusable="false" viewBox="0 0 24 24">
                       <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
@@ -128,6 +126,7 @@ const Header = () => {
                         aria-label="Settings"
                         aria-expanded="false"
                         aria-haspopup="true"
+                        onClick={() => setShowQuickSettings(!showQuickSettings)}
                       >
                         <svg
                           className="Xy"

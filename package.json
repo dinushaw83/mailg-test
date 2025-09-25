@@ -57,6 +57,7 @@
     "react-diff-view": "^3.3.2",
     "react-dom": "^18.2.0",
     "react-is": "^18.2.0",
+    "react-resizable-panels": "^3.0.6",
     "react-router-dom": "^6.8.1",
     "tippy.js": "^6.2.5"
   },

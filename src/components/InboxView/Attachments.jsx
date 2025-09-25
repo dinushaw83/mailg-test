@@ -4,6 +4,7 @@ import React from "react";
 import { Icon } from "./ActionBar";
 import Popover from "@mui/material/Popover";
 import Link from "@mui/material/Link";
+import { getAttachmentIcon } from "../EmailList/Table";
 
 const ImageContainer = styled.div`
   width: 180px;
@@ -227,9 +228,7 @@ export const Attachments = ({ attachments = [] }) => {
           <ImageContainer key={attachment.id}>
             <img loading="lazy" src={attachment.url} alt={attachment.name} width={20} />
             <Overlay className="overlay">
-              <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                image
-              </span>
+              {getAttachmentIcon(attachment)}
               <OverlayContent>
                 <OverlayTop>
                   <OverlayTitleRow title={attachment.name}>

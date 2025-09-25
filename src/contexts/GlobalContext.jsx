@@ -26,6 +26,15 @@ export const GlobalContextProvider = ({ children }) => {
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
   const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
+  const [panelState, setPanelState] = useState({
+    showPanel: false,
+    direction: "vertical",
+  });
+  const [previewEmail, setPreviewEmail] = useState(null);
+  const [showQuickSettings, setShowQuickSettings] = useState(false);
+  const [density, setDensity] = useState("default");
+  const [threading, setThreading] = useState(true);
+  const [inboxType, setInboxType] = useState("default");
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
 
   // Global snackbar state
@@ -123,6 +132,18 @@ export const GlobalContextProvider = ({ children }) => {
     setItemsPerPage,
     normalizedEmails,
     refreshEmails,
+    panelState,
+    setPanelState,
+    previewEmail,
+    setPreviewEmail,
+    showQuickSettings,
+    setShowQuickSettings,
+    density,
+    setDensity,
+    inboxType,
+    setInboxType,
+    threading,
+    setThreading,
     isLeftSidebarExpanded,
     setIsLeftSidebarExpanded,
   };
