@@ -119,7 +119,7 @@ export default function EditLabelDialog({ open, onClose, onAfterCreate, defaultP
 
             <DialogContent sx={{ px: 3, pt: 0, pb: 1.5 }}>
                 <div style={{ marginBottom: 12, fontSize: 14 }}>
-                    {showError ? errorText : "Please enter a new label name:"}
+                    {showError ? errorText : "Label name:"}
                 </div>
 
                 <TextField
