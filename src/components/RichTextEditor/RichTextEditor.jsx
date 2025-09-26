@@ -337,7 +337,7 @@ export default function Editor({
                         borderRadius: "18px 0px 0px 18px",
                         userSelect: "none",
                       }}
-                      onClick={() => onSend(attachments)}
+                      onClick={() => onSend({ attachments })}
                     >
                       Send
                     </div>
