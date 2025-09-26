@@ -36,6 +36,7 @@ const HoverDiv = styled.div`
 `;
 
 export const getAttachmentIcon = (attachment, size = 16) => {
+  console.log({ attachment });
   const style = { width: size, height: size };
   const isYouTubeVideo = attachment.name.includes("youtube");
   const isVideo = attachment.type.startsWith("video/") || isYouTubeVideo;
@@ -276,6 +277,11 @@ const Table = ({
     [markRead]
   );
 
+  const openInNewTab = async (e, attachment) => {
+    e.stopPropagation();
+    window.open(attachment.url, "_blank");
+  };
+
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -490,6 +496,7 @@ const Table = ({
                               }}
                               size="small"
                               startIcon={getAttachmentIcon(attachment)}
+                              onClick={(e) => openInNewTab(e, attachment)}
                             >
                               <Typography
                                 sx={{
