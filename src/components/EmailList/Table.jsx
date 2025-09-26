@@ -38,7 +38,8 @@ const HoverDiv = styled.div`
 export const getAttachmentIcon = (attachment, size = 16) => {
   const style = { width: size, height: size };
   const isYouTubeVideo = attachment.name.includes("youtube");
-  if (isYouTubeVideo) {
+  const isVideo = attachment.type.startsWith("video/") || isYouTubeVideo;
+  if (isVideo) {
     return <img src="/assets/images/icon_2_youtube_x16.png" alt="YouTube Video" style={style} />;
   }
   const extension = attachment.name.split(".").pop();

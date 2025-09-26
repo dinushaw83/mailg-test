@@ -6,7 +6,7 @@ import Popover from "@mui/material/Popover";
 import Link from "@mui/material/Link";
 import { getAttachmentIcon } from "../EmailList/Table";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { imageFileToThumbnailFile } from "./thumb";
+import { imageFileToThumbnailFile, videoFileToThumbnailFile } from "./thumb";
 
 const ImageContainer = styled.div`
   width: 180px;
@@ -296,6 +296,11 @@ export const Attachments = ({ attachments = [] }) => {
       const { file } = await db.get("attachments", attachment.id);
       if (file.type.startsWith("image/")) {
         const thumb = await imageFileToThumbnailFile(file);
+        const url = URL.createObjectURL(file);
+        const previewURL = URL.createObjectURL(thumb);
+        return { ...attachment, url, previewURL };
+      } else if (file.type.startsWith("video/")) {
+        const thumb = await videoFileToThumbnailFile(file);
         const url = URL.createObjectURL(file);
         const previewURL = URL.createObjectURL(thumb);
         return { ...attachment, url, previewURL };
