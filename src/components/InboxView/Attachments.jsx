@@ -139,7 +139,7 @@ const PopupContainer = styled.div`
   padding: 12px;
 `;
 
-const isSpreadsheet = (attachment) => {
+export const isSpreadsheet = (attachment) => {
   return (
     attachment.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
     attachment.type === "application/vnd.ms-excel" ||
@@ -147,7 +147,7 @@ const isSpreadsheet = (attachment) => {
   );
 };
 
-const isPresentation = (attachment) => {
+export const isPresentation = (attachment) => {
   return (
     attachment.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
     attachment.type === "application/vnd.ms-powerpoint" ||
@@ -155,7 +155,7 @@ const isPresentation = (attachment) => {
   );
 };
 
-const isDocument = (attachment) => {
+export const isDocument = (attachment) => {
   return (
     attachment.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     attachment.type === "application/vnd.ms-word" ||
@@ -168,7 +168,7 @@ const isDocument = (attachment) => {
   );
 };
 
-const isCompressed = (attachment) => {
+export const isCompressed = (attachment) => {
   return (
     attachment.type === "application/zip" ||
     attachment.type === "application/x-compressed-tar" ||

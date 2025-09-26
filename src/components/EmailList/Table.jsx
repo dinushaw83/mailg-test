@@ -12,6 +12,7 @@ import styled from "@emotion/styled";
 import Icon from "../ui/Icon";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
+import { isDocument, isSpreadsheet, isPresentation } from "../InboxView/Attachments";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -42,18 +43,26 @@ export const getAttachmentIcon = (attachment, size = 16) => {
   if (isVideo) {
     return <img src="/assets/images/icon_2_youtube_x16.png" alt="YouTube Video" style={style} />;
   }
+
+  if (isDocument(attachment)) {
+    return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
+  }
+
+  if (isSpreadsheet(attachment)) {
+    return <img src="/assets/images/spreadsheet_icon.png" alt="DOC" style={style} />;
+  }
+
+  if (isPresentation(attachment)) {
+    return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
+  }
+
   const extension = attachment.name.split(".").pop();
 
-  switch (extension) {
-    case "pdf":
-      return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" style={style} />;
-    case "doc":
-    case "docx":
-    case "xls":
-      return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
-    default:
-      return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
+  if (extension === "pdf") {
+    return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" style={style} />;
   }
+
+  return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
 };
 
 const OneColumnData = ({
