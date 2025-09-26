@@ -296,8 +296,8 @@ export const Attachments = ({ attachments = [] }) => {
       const { file } = await db.get("attachments", attachment.id);
       if (file.type.startsWith("image/")) {
         const thumb = await imageFileToThumbnailFile(file);
-        const url = URL.createObjectURL(thumb);
-        const previewURL = getDefaultDocumentPreviewURL(attachment) || url;
+        const url = URL.createObjectURL(file);
+        const previewURL = URL.createObjectURL(thumb);
         return { ...attachment, url, previewURL };
       } else {
         const url = URL.createObjectURL(file);
