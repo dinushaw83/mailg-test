@@ -13,6 +13,7 @@ const ProfileImageContainer = styled.div`
 
 const ContentContainer = styled.div`
   display: flex;
+  contain: layout style paint;
 `;
 
 const BodyContainer = styled.div`
@@ -20,6 +21,7 @@ const BodyContainer = styled.div`
   flex: 1;
   flex-direction: column;
   gap: 1rem;
+  contain: layout style paint;
 `;
 
 const SenderContainer = styled.div`
@@ -304,34 +306,36 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
   );
 };
 
-const EmailHtmlBody = ({ body }) => {
+const EmailHtmlBody = React.memo(({ body }) => {
   return <div dangerouslySetInnerHTML={{ __html: body }} />;
-};
+});
 
-export const Content = ({
-  body,
-  timestamp,
-  senderName,
-  senderEmail,
-  attachments = [],
-  isScheduled,
-  scheduledDate,
-  scheduledTime,
-  emailId,
-}) => {
-  return (
-    <ContentContainer>
-      <ProfileImageContainer>
-        <Avatar>{senderName.charAt(0)}</Avatar>
-      </ProfileImageContainer>
-      <BodyContainer>
-        <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
-        {isScheduled && (
-          <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />
-        )}
-        <EmailHtmlBody body={body} />
-        <Attachments attachments={attachments} />
-      </BodyContainer>
-    </ContentContainer>
-  );
-};
+export const Content = React.memo(
+  ({
+    body,
+    timestamp,
+    senderName,
+    senderEmail,
+    attachments = [],
+    isScheduled,
+    scheduledDate,
+    scheduledTime,
+    emailId,
+  }) => {
+    return (
+      <ContentContainer>
+        <ProfileImageContainer>
+          <Avatar>{senderName.charAt(0)}</Avatar>
+        </ProfileImageContainer>
+        <BodyContainer>
+          <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
+          {isScheduled && (
+            <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />
+          )}
+          <EmailHtmlBody body={body} />
+          <Attachments attachments={attachments} />
+        </BodyContainer>
+      </ContentContainer>
+    );
+  }
+);

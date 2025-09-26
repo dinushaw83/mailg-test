@@ -26,6 +26,9 @@ const ScrollableContent = styled.div`
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(95, 99, 104, 0.6) transparent;
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     width: 8px;
