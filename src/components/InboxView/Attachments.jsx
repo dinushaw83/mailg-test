@@ -159,7 +159,12 @@ const isDocument = (attachment) => {
   return (
     attachment.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
     attachment.type === "application/vnd.ms-word" ||
-    attachment.type === "application/vnd.oasis.opendocument.text"
+    attachment.type === "application/msword" ||
+    attachment.type === "application/vnd.oasis.opendocument.text" ||
+    attachment.type === "text/plain" ||
+    attachment.type === "text/html" ||
+    attachment.type === "text/markdown" ||
+    attachment.type === "text/csv"
   );
 };
 
