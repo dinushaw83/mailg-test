@@ -295,7 +295,6 @@ const LeftSidebar = () => {
                           <div className="zw" gh="cl">
                             <div className="TK">
                               {visibleCustomLabels.map((l) => {
-                                console.log(l)
                                 const node = findNode(labelTree, l.key);  // full tree node
                                 const multipleLabels = collectSubtree(node, labelIndex);
                                 return (

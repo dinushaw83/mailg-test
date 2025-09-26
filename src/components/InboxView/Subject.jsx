@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import React from "react";
 import { Icon } from "./ActionBar";
+import EmailLabelChips from "../Labels/EmailLabelChips";
 
 const StyledSubject = styled.h2`
   font-weight: 400;
@@ -16,10 +17,16 @@ const SubjectContainer = styled.div`
   margin-bottom: 1.25rem;
 `;
 
-export const Subject = ({ subject }) => {
+export const Subject = ({ subject, message }) => {
   return (
     <SubjectContainer>
-      <StyledSubject>{subject}</StyledSubject>
+      {/* Left side: subject + labels */}
+      <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+        <StyledSubject>{subject}</StyledSubject>
+        <EmailLabelChips onRemove={() => { }} message={message} />
+      </div>
+
+      {/* Right side: action icons */}
       <div>
         <Icon name="print" label="Print all" placement="top" />
         <Icon name="open_in_new" label="In new window" placement="top" />
