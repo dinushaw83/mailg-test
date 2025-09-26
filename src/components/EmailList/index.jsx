@@ -136,7 +136,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                   cursor: "col-resize",
                 }}
               />
-              <Panel defaultSize={60} id="email-content-panel">
+              <Panel defaultSize={60} id="email-content-panel" style={{ height: "100%", overflow: "hidden" }}>
                 <EmailContent threadId={previewEmailId} folder={folder} label={label} showActionBar={false} isPreview />
               </Panel>
             </>
