@@ -302,6 +302,50 @@ export default function useLabels() {
 
   const labelTree = useMemo(() => buildTree(labels || {}), [labels]);
 
+  const getSelectionLabels = useCallback((selectedIds) => {
+    const ids = new Set(Array.from(selectedIds ?? []).map(String));
+
+    const hasAnyId = (m) => {
+      const keys = [
+        m.id,
+        m.messageId,
+        m.threadId,
+        m.threadId && String(m.threadId).replace(/^#thread-f:/, ""),
+        m.legacyThreadId,
+        m.legacyLastMessageId,
+        m.legacyLastNonDraftMessageId,
+      ]
+        .map((v) => String(v ?? "").trim())
+        .filter(Boolean);
+
+      return keys.some((k) => ids.has(k));
+    };
+
+    const selectedList = (emails || []).filter(hasAnyId);
+    const nSel = selectedList.length;
+
+    // count labels across selected
+    const labelCounts = new Map();
+    for (const m of selectedList) {
+      for (const l of m.labels ?? []) {
+        labelCounts.set(l, (labelCounts.get(l) || 0) + 1);
+      }
+    }
+
+    // intersection (labels on ALL selected)
+    const currentLabels =
+      nSel === 0
+        ? new Set()
+        : new Set(
+          [...labelCounts.entries()]
+            .filter(([_, c]) => c === nSel)
+            .map(([l]) => l)
+        );
+
+    return { currentLabels, labelCounts, nSel };
+  }, [emails]);
+
+
   return {
     labels, 
     createLabel,
@@ -316,5 +360,6 @@ export default function useLabels() {
     setLabelColor,
     removeLabelFromThread,
     addLabelToThread,
+    getSelectionLabels,
   };
 }

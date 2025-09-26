@@ -204,10 +204,8 @@ export default function useMailActions() {
     (ids, name) =>
       updateByIds(ids, (labels) => {
         if (!name) return;
-        if (labels.has(String(name))) {
-          labels.delete(String(name));   // remove if already present
-        } else {
-          labels.add(String(name));      // add if not present
+        if (!labels.has(String(name))) {
+          labels.add(String(name)); // add if not present
         }
       }),
     [updateByIds]

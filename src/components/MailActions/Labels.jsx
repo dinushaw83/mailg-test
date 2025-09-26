@@ -7,7 +7,7 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import { normalizeLabelName } from "../../hooks/useLabels";
+import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
 
 export const Labels = ({
   searchQuery,
@@ -21,8 +21,10 @@ export const Labels = ({
   anchorOrigin = { vertical: "top", horizontal: "right" },
   transformOrigin = { vertical: "top", horizontal: "left" },
 }) => {
-  const { labels, setSnackbar, selectedEmails, selection } = useGlobalContext();
-  const { moveToLabel } = useMailActions();
+  const { labels, setSnackbar, selection } = useGlobalContext();
+  const { addLabels, removeLabels } = useMailActions();
+  const { getSelectionLabels } = useLabels()
+  const [overrides, setOverrides] = useState({});
 
   const handleLabelClose = () => {
     setLabelAnchorEl(null);
@@ -30,38 +32,10 @@ export const Labels = ({
     setSelectedLabelKeys(new Set());
   };
 
-  const handleLabelToggle = (labelKey) => {
-    setSelectedLabelKeys((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(labelKey)) {
-        newSet.delete(labelKey);
-      } else {
-        newSet.add(labelKey);
-      }
-      return newSet;
-    });
-  };
-
-  const hasNewSelections = selectedLabelKeys.size > 0;
+  const hasChanges = Object.keys(overrides).length > 0;
 
   // Get currently applied labels for selected emails
-  const currentLabels = useMemo(() => {
-    if (selectedEmails.length === 0) return new Set();
-
-    const labelCounts = {};
-    selectedEmails.forEach((email) => {
-      email.labels.forEach((label) => {
-        labelCounts[label] = (labelCounts[label] || 0) + 1;
-      });
-    });
-
-    // Return labels that are applied to ALL selected emails
-    return new Set(
-      Object.entries(labelCounts)
-        .filter(([_, count]) => count === selectedEmails.length)
-        .map(([label]) => label)
-    );
-  }, [selectedEmails]);
+  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds);
 
   const availableLabels = useMemo(() => {
     return (
@@ -79,27 +53,33 @@ export const Labels = ({
   }, [labels, searchQuery, currentLabels]);
 
   const handleApplyLabels = useCallback(() => {
-    const selectedLabels = Array.from(selectedLabelKeys)
-      .map((key) => {
-        const label = availableLabels.find((l) => l.key === key);
-        return label?.key;
-      })
-      .filter(Boolean);
-
-    if (selectedLabels.length > 0) {
-      // Apply all selected labels
-      selectedLabels.forEach((labelName) => {
-        moveToLabel(selectedIds, labelName);
-      });
-      setSnackbar({ message: `Applied ${selectedLabels.length} label(s)`, severity: "success" });
-
-      // Clear selection after applying labels
-      selection.clear();
+    for (const [labelKey, finalState] of Object.entries(overrides)) {
+      if (finalState === "checked" && !currentLabels.has(labelKey)) {
+        addLabels(selectedIds, [labelKey]);
+      }
+      if (finalState === "unchecked" && currentLabels.has(labelKey)) {
+        removeLabels(selectedIds, [labelKey]);
+      }
+      // "indeterminate" means leave it as-is
     }
+
+    setSnackbar({ message: "Labels updated", severity: "success" });
+    selection.clear();
+    setOverrides({}); // reset
 
     handleLabelClose();
     handleClose();
-  }, [selectedLabelKeys, availableLabels, selectedIds, moveToLabel, setSnackbar, selection]);
+  }, [
+    overrides,
+    currentLabels,
+    addLabels,
+    removeLabels,
+    setSnackbar,
+    selection,
+    handleLabelClose,
+    handleClose,
+    selectedIds,
+  ]);
 
   return (
     <Popover
@@ -177,30 +157,67 @@ export const Labels = ({
               </Typography>
             </Box>
           ) : (
-            availableLabels.map((label) => (
-              <Box
-                key={label.key}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  paddingX: "16px",
-                  paddingY: "4px",
-                  cursor: "pointer",
-                  "&:hover": {
-                    background: "#07070714",
-                  },
-                }}
-                onClick={() => handleLabelToggle(label.key)}
-              >
-                <Checkbox
-                  checked={label.isCurrentlyApplied || selectedLabelKeys.has(label.key)}
-                  size="small"
-                  sx={{ padding: "4px", pointerEvents: "none" }}
-                />
-                <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>{normalizeLabelName(label.key)}</Typography>
-              </Box>
-            ))
+              availableLabels.map((label) => {
+                const count = labelCounts.get(label.key) || 0;
+                const baselineChecked = nSel > 0 && count === nSel;
+                const baselineSome = nSel > 1 && count > 0 && count < nSel;
+
+                let baselineState = "unchecked";
+                if (baselineChecked) baselineState = "checked";
+                else if (baselineSome) baselineState = "indeterminate";
+
+                const effectiveState = overrides[label.key] || baselineState;
+
+                const cycleState = (prev, baseline) => {
+                  if (baseline === "indeterminate") {
+                    // Gmail 3-state cycle
+                    if (prev === "indeterminate") return "checked";
+                    if (prev === "checked") return "unchecked";
+                    return baseline;
+                  } else {
+                    // Normal 2-state toggle
+                    return prev === "checked" ? "unchecked" : "checked";
+                  }
+                };
+
+                const handleClick = () => {
+                  setOverrides((prev) => ({
+                    ...prev,
+                    [label.key]: cycleState(effectiveState, baselineState),
+                  }));
+                };
+
+                const checked = effectiveState === "checked";
+                const indeterminate = effectiveState === "indeterminate";
+
+                return (
+                  <Box
+                    key={label.key}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                      paddingX: "16px",
+                      paddingY: "4px",
+                      cursor: "pointer",
+                      "&:hover": { background: "#07070714" },
+                    }}
+                    onClick={handleClick}
+                  >
+                    <Checkbox
+                      checked={checked}
+                      indeterminate={indeterminate}
+                      icon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box_outline_blank</span>}
+                      checkedIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box</span>}
+                      indeterminateIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>indeterminate_check_box</span>}
+                      sx={{ padding: "4px", pointerEvents: "none" }}
+                    />
+                    <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>
+                      {normalizeLabelName(label.key)}
+                    </Typography>
+                  </Box>
+                );
+              })
           )}
         </Box>
 
@@ -208,7 +225,7 @@ export const Labels = ({
         <Box>
           <Divider />
           <Box sx={{ paddingY: "6px" }}>
-            {hasNewSelections ? (
+            {hasChanges ? (
               <Box
                 sx={{
                   display: "flex",
