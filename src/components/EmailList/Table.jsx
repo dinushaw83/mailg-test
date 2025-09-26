@@ -36,7 +36,6 @@ const HoverDiv = styled.div`
 `;
 
 export const getAttachmentIcon = (attachment, size = 16) => {
-  console.log({ attachment });
   const style = { width: size, height: size };
   const isYouTubeVideo = attachment.name.includes("youtube");
   const isVideo = attachment.type.startsWith("video/") || isYouTubeVideo;
@@ -185,7 +184,7 @@ const Table = ({
   getLabelBadges,
   formatDate,
 }) => {
-  const { setPreviewEmailId, panelState, density, setSnackbar } = useGlobalContext();
+  const { setPreviewEmailId, panelState, density, setSnackbar, db } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
   const { archive, moveToInbox, moveToTrash, markRead, snooze } = useMailActions();
   const [snoozeId, setSnoozeId] = useState(null);
@@ -277,9 +276,13 @@ const Table = ({
     [markRead]
   );
 
-  const openInNewTab = async (e, attachment) => {
+  const openInNewTab = async (e, attachment, db) => {
     e.stopPropagation();
-    window.open(attachment.url, "_blank");
+    if (attachment.url.startsWith("/")) {
+      window.open(attachment.url, "_blank");
+    }
+    const { file } = await db.get("attachments", attachment.id);
+    window.open(URL.createObjectURL(file), "_blank");
   };
 
   return (
@@ -496,7 +499,7 @@ const Table = ({
                               }}
                               size="small"
                               startIcon={getAttachmentIcon(attachment)}
-                              onClick={(e) => openInNewTab(e, attachment)}
+                              onClick={(e) => openInNewTab(e, attachment, db)}
                             >
                               <Typography
                                 sx={{
@@ -506,7 +509,7 @@ const Table = ({
                                   fontSize: "0.875rem",
                                 }}
                               >
-                                {attachment.name}sdsd
+                                {attachment.name}
                               </Typography>
                             </Button>
                           ))}

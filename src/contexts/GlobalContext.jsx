@@ -48,10 +48,6 @@ export const GlobalContextProvider = ({ children }) => {
 
   const [selected, setSelected] = useState(() => new Set());
 
-  const refreshEmails = useCallback(() => {
-    setEmails(initialEmails);
-  }, []);
-
   // Clear selection on navigation (folder/label changes)
   const location = useLocation();
   useEffect(() => {
@@ -130,6 +126,16 @@ export const GlobalContextProvider = ({ children }) => {
     };
 
     initDB();
+  }, []);
+
+  const refreshEmails = useCallback(async () => {
+    setEmails(initialEmails);
+
+    // reset the database, delete all attachments
+    if (db) {
+      // delete all attachments
+      await db.delete("attachments", { key: "*" });
+    }
   }, []);
 
   const contextValue = {
