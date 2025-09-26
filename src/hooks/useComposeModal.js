@@ -2,16 +2,18 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
-const NORMAL_WINDOW_WIDTH = 550;
-const MINIMIZED_WINDOW_WIDTH = 350;
-const TOTAL_MARGINS = 120; // 60px left + 60px right
-const TOTAL_GAPS = 10; // 10px for gaps between windows
-
 export const useComposeModal = () => {
-  const { composeWindows, setComposeWindows, emails } = useGlobalContext();
+  const { composeWindows, setComposeWindows, emails, rightSidebarActiveTab } = useGlobalContext();
   const [visibleWindowCount, setVisibleWindowCount] = useState(3);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Constants needed for the compose modal visible window count calculation
+  const NORMAL_WINDOW_WIDTH = 550;
+  const MINIMIZED_WINDOW_WIDTH = 350;
+  // 70px left + (right sidebar active tab ? 390px : 70px) right
+  const TOTAL_MARGINS = rightSidebarActiveTab.activeTab ? 460 : 140;
+  const TOTAL_GAPS = 10; // 10px for gaps between windows
 
   // Calculate visible window count based on available space
   const getVisibleWindowCount = useCallback(
@@ -92,74 +94,77 @@ export const useComposeModal = () => {
       setVisibleWindowCount(visibleCount);
       return visibleCount;
     },
-    [composeWindows, setComposeWindows]
+    [composeWindows, setComposeWindows, rightSidebarActiveTab.activeTab]
   );
 
   // Add new compose window with proper minimized state management
-  const addNewComposeWindow = useCallback((draftId = null) => {
-    const windowWidth = window.innerWidth;
-    const availableSpace = windowWidth - TOTAL_MARGINS - TOTAL_GAPS;
+  const addNewComposeWindow = useCallback(
+    (draftId = null) => {
+      const windowWidth = window.innerWidth;
+      const availableSpace = windowWidth - TOTAL_MARGINS - TOTAL_GAPS;
 
-    // Calculate how many normal windows can fit
-    const maxNormalWindows = Math.floor(availableSpace / NORMAL_WINDOW_WIDTH);
-    const allowedNormalWindows = Math.min(maxNormalWindows, 2); // Max 2 normal windows
+      // Calculate how many normal windows can fit
+      const maxNormalWindows = Math.floor(availableSpace / NORMAL_WINDOW_WIDTH);
+      const allowedNormalWindows = Math.min(maxNormalWindows, 2); // Max 2 normal windows
 
-    // Get current windows (excluding the new one we're about to add)
-    const currentWindows = composeWindows.map((w) => ({
-      ...w,
-      isMinimized: w.isMinimized ?? false,
-    }));
+      // Get current windows (excluding the new one we're about to add)
+      const currentWindows = composeWindows.map((w) => ({
+        ...w,
+        isMinimized: w.isMinimized ?? false,
+      }));
 
-    // Count current normal windows
-    const currentNormalCount = currentWindows.filter((w) => !w.isMinimized).length;
+      // Count current normal windows
+      const currentNormalCount = currentWindows.filter((w) => !w.isMinimized).length;
 
-    // Create new window
-    const newWindow = {
-      id: Date.now(),
-      draftId: draftId || null,
-      isMinimized: false,
-      isMaximized: false,
-    };
+      // Create new window
+      const newWindow = {
+        id: Date.now(),
+        draftId: draftId || null,
+        isMinimized: false,
+        isMaximized: false,
+      };
 
-    // Check if we need to minimize any existing windows
-    if (currentNormalCount >= allowedNormalWindows) {
-      // We have too many normal windows, need to minimize the first one
-      const windowsToUpdate = [];
+      // Check if we need to minimize any existing windows
+      if (currentNormalCount >= allowedNormalWindows) {
+        // We have too many normal windows, need to minimize the first one
+        const windowsToUpdate = [];
 
-      // Find the first normal window to minimize
-      let foundFirst = false;
-      for (let i = 0; i < currentWindows.length; i++) {
-        const window = currentWindows[i];
-        if (!window.isMinimized && !foundFirst) {
-          windowsToUpdate.push({ id: window.id, isMinimized: true });
-          foundFirst = true;
+        // Find the first normal window to minimize
+        let foundFirst = false;
+        for (let i = 0; i < currentWindows.length; i++) {
+          const window = currentWindows[i];
+          if (!window.isMinimized && !foundFirst) {
+            windowsToUpdate.push({ id: window.id, isMinimized: true });
+            foundFirst = true;
+          }
         }
+
+        // Add new window and update existing windows
+        setComposeWindows((prev) => {
+          const updatedWindows = prev.map((window) => {
+            const update = windowsToUpdate.find((u) => u.id === window.id);
+            if (update) {
+              return { ...window, isMinimized: update.isMinimized };
+            }
+            return window;
+          });
+
+          return [...updatedWindows, newWindow];
+        });
+      } else {
+        // We have space for the new normal window
+        setComposeWindows((prev) => [...prev, newWindow]);
       }
 
-      // Add new window and update existing windows
-      setComposeWindows((prev) => {
-        const updatedWindows = prev.map((window) => {
-          const update = windowsToUpdate.find((u) => u.id === window.id);
-          if (update) {
-            return { ...window, isMinimized: update.isMinimized };
-          }
-          return window;
-        });
-
-        return [...updatedWindows, newWindow];
-      });
-    } else {
-      // We have space for the new normal window
-      setComposeWindows((prev) => [...prev, newWindow]);
-    }
-
-    // Update URL with compose parameter
-    const newSearchParams = new URLSearchParams(location.search);
-    newSearchParams.set("compose", draftId ? draftId.toString() : "new");
-    const newSearch = newSearchParams.toString();
-    const newUrl = `${location.pathname}?${newSearch}`;
-    navigate(newUrl);
-  }, [composeWindows, setComposeWindows, location, navigate]);
+      // Update URL with compose parameter
+      const newSearchParams = new URLSearchParams(location.search);
+      newSearchParams.set("compose", draftId ? draftId.toString() : "new");
+      const newSearch = newSearchParams.toString();
+      const newUrl = `${location.pathname}?${newSearch}`;
+      navigate(newUrl);
+    },
+    [composeWindows, setComposeWindows, location, navigate]
+  );
 
   // Remove compose window and update URL accordingly
   const removeComposeWindow = useCallback(

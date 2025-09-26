@@ -1,8 +1,14 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../utils/helperFunctions";
+import {
+  generateThreadId,
+  generateLegacyThreadId,
+  generateNextIntegerId,
+  isValidEmail,
+  restructureRecipients,
+} from "../utils/helperFunctions";
 
 export const useSendEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
@@ -12,12 +18,6 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
   const lastSentEmailRef = useRef(null);
   const lastDeletedDraftRef = useRef(null);
   const sendTimeoutRef = useRef(null);
-
-  // Validate email format
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const handleSend = ({ to, cc, bcc, subject, content, rawInputText, onClose, currentDraftId, isDraft }) => {
     // 1. Check if all recipient fields are empty
@@ -124,10 +124,10 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     };
 
     // Add reply/forward reference if applicable
-    if (replyType === 'reply' && originalEmail) {
+    if (replyType === "reply" && originalEmail) {
       newEmail.replyToEmailId = originalEmail.id;
     }
-    if (replyType === 'forward' && originalEmail) {
+    if (replyType === "forward" && originalEmail) {
       newEmail.forwardedEmailId = originalEmail.id;
     }
 
@@ -137,13 +137,22 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // Get all the recipients
     const allRecipients = [...to, ...cc, ...bcc];
 
+    // Create restructured recipients for proper comparison
+    const restructuredRecipients = restructureRecipients(recipients);
+
     // If any of the recipients doesnot present in the recipients context, add them
-    const newRecipients = allRecipients.filter((recipient) => !recipients.some((r) => r.email === recipient.email));
+    const newRecipients = allRecipients.filter((recipient) => !restructuredRecipients.some((r) => r.email === recipient.email));
     if (newRecipients.length > 0) {
       const updatedRecipients = [...recipients];
       newRecipients.forEach((recipient, index) => {
         updatedRecipients.push({
           ...recipient,
+          emails: [
+            {
+              value: recipient.email,
+              label: "",
+            },
+          ],
           id: generateNextIntegerId(recipients) + index,
         });
       });

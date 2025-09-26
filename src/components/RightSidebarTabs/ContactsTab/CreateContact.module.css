@@ -1,0 +1,135 @@
+/* Container for each input group (email, phone, address) */
+.inputGroup {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  width: 100%;
+}
+
+.inputGroup:hover .closeButton,
+.inputGroup:focus-within .closeButton {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Close button styling */
+.closeButton {
+  color: #666;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.closeButton span {
+  font-size: 23px;
+}
+
+/* Input fields container */
+.inputFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* Phone input row */
+.phoneInputRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+/* Dropdown label styling */
+.dropdownLabel {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  background-color: white;
+  padding: 0 4px;
+  font-size: 16px;
+  color: #666;
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.dropdownContainer:focus-within .dropdownLabel,
+.dropdownLabel.floating {
+  top: -8px;
+  left: 14px;
+  font-size: 12px;
+  color: #0b57d0;
+}
+
+/* Label input container */
+.labelInputContainer {
+  position: relative;
+}
+
+/* Dropdown styling */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #f0f4f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* upward label dropdown - positioned above the input */
+.upwardLabelDropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background-color: #f0f4f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 4px;
+}
+
+/* Dropdown option styling */
+.dropdownOption {
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.dropdownOption:hover {
+  background-color: rgba(0, 0, 0, 0.07);
+}
+
+.birthdaySection {
+  display: flex;
+  align-items: flex-start;
+  marginBottom: 1rem;
+}
+
+.birthdaySection:hover .closeButton,
+.birthdaySection:focus-within .closeButton {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.notesSection {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  margin-top: 18px;
+}
+
+.notesSection:hover .closeButton,
+.notesSection:focus-within .closeButton {
+  opacity: 1;
+  pointer-events: auto;
+}
