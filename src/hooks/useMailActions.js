@@ -203,17 +203,21 @@ export default function useMailActions() {
   const moveToLabel = useCallback(
     (ids, name) =>
       updateByIds(ids, (labels) => {
-        labels.clear();
-        if (name) labels.add(String(name));
+        if (!name) return;
+        if (labels.has(String(name))) {
+          labels.delete(String(name));   // remove if already present
+        } else {
+          labels.add(String(name));      // add if not present
+        }
       }),
     [updateByIds]
   );
 
   const moveToLabelFrom = useCallback(
-    (ids, _sourceLabel, dest) =>
+    (ids, sourceLabel, dest) =>
       updateByIds(ids, (labels) => {
-        labels.clear();
-        if (dest) labels.add(String(dest));
+        if (sourceLabel) labels.delete(String(sourceLabel)); // remove old
+        if (dest) labels.add(String(dest));                 // add new
       }),
     [updateByIds]
   );

@@ -11,6 +11,8 @@ const getThreadKey = (m) => {
   return m.legacyThreadId || null;
 };
 
+export const normalizeLabelName = (name) => name.replace(/::/g, "/");
+
 export function makeKey(name, parentKey = ROOT) {
   return parentKey ? `${parentKey}::${name}` : name;
 }

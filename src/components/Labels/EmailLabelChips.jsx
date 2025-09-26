@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import useLabels from "../../hooks/useLabels";
+import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 import { styled } from "@mui/material/styles"
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -77,7 +77,6 @@ export default function EmailLabelChips({ message }) {
     const labels = message.labels;
 
     const { labels: allLabels, removeLabelFromThread, addLabelToThread } = useLabels()
-    const normalizeLabelName = (name) => name.replace(/::/g, "/");
 
     const navigate = useNavigate();
 
@@ -107,14 +106,13 @@ export default function EmailLabelChips({ message }) {
 
         setSnackbar({
             open: true,
-            message: `Conversation removed from '${label}'.`,
+            message: `Conversation removed from '${normalizeLabelName(label)}'.`,
             autoHideDuration: 4000,
             action: (
                 <Button
                     size="small"
                     sx={{ textTransform: "none" }}
                     onClick={() => {
-                        console.log(message.threadId, label, "<---message.threadId, label")
                         addLabelToThread(message.threadId, label);
                         setSnackbar({
                             open: true,
@@ -133,11 +131,11 @@ export default function EmailLabelChips({ message }) {
         <LabelContainer>
             {filteredLabels.map((label) => (
                 <LabelWrapper key={label}>
-                    <GTooltip title={`Search for all messages with label ${label}`} placement="top" PopperProps={{
+                    <GTooltip title={`Search for all messages with label ${normalizeLabelName(label)}`} placement="top" PopperProps={{
                         modifiers: [
                             {
                                 name: "offset",
-                                options: { offset: [0, -8] }, // moves tooltip closer/further
+                                options: { offset: [0, -8] },
                             },
                         ],
                     }}>
@@ -148,7 +146,7 @@ export default function EmailLabelChips({ message }) {
                             modifiers: [
                                 {
                                     name: "offset",
-                                    options: { offset: [0, -8] }, // moves tooltip closer/further
+                                    options: { offset: [0, -8] },
                                 },
                             ],
                         }}>

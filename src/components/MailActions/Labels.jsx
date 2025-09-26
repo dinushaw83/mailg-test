@@ -7,6 +7,7 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
+import { normalizeLabelName } from "../../hooks/useLabels";
 
 export const Labels = ({
   searchQuery,
@@ -70,7 +71,7 @@ export const Labels = ({
           key,
           name: meta.name || key,
           color: meta.color,
-          isCurrentlyApplied: currentLabels.has(meta.name || key),
+          isCurrentlyApplied: currentLabels.has(key),
         }))
         .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
         .sort((a, b) => a.name.localeCompare(b.name))
@@ -81,7 +82,7 @@ export const Labels = ({
     const selectedLabels = Array.from(selectedLabelKeys)
       .map((key) => {
         const label = availableLabels.find((l) => l.key === key);
-        return label?.name;
+        return label?.key;
       })
       .filter(Boolean);
 
@@ -197,7 +198,7 @@ export const Labels = ({
                   size="small"
                   sx={{ padding: "4px", pointerEvents: "none" }}
                 />
-                <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>{label.name}</Typography>
+                <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>{normalizeLabelName(label.key)}</Typography>
               </Box>
             ))
           )}
