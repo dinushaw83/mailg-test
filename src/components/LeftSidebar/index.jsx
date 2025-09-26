@@ -27,7 +27,7 @@ function collectSubtree(node, labelIndex, isRoot = true) {
 
   const all = [entry];
 
-  node.children?.forEach(child => {
+  node.children?.forEach((child) => {
     all.push(...collectSubtree(child, labelIndex, false));
   });
 
@@ -118,11 +118,11 @@ const LeftSidebar = () => {
   };
 
   const manageLabels = () => {
-    return null
+    return null;
   };
 
   const manageSubscriptions = () => {
-    return null
+    return null;
   };
 
   const HIDDEN_FOLDERS = [
@@ -149,10 +149,10 @@ const LeftSidebar = () => {
         ...(sidebarExpanded
           ? {}
           : {
-            width: "72px",
-            minWidth: "72px",
-            maxWidth: "72px",
-          }),
+              width: "72px",
+              minWidth: "72px",
+              maxWidth: "72px",
+            }),
         transition: "width 0.3s ease-in-out",
         ...(!isLeftSidebarExpanded && { position: "absolute", zIndex: 900, backgroundColor: "#fff" }),
       }}
@@ -295,8 +295,7 @@ const LeftSidebar = () => {
                           <div className="zw" gh="cl">
                             <div className="TK">
                               {visibleCustomLabels.map((l) => {
-                                console.log(l)
-                                const node = findNode(labelTree, l.key);  // full tree node
+                                const node = findNode(labelTree, l.key); // full tree node
                                 const multipleLabels = collectSubtree(node, labelIndex);
                                 return (
                                   <LabelItem
@@ -315,7 +314,7 @@ const LeftSidebar = () => {
                                     setIsCreateLabelModalOpen={setIsCreateLabelModalOpen}
                                     setDefaultParentKey={setDefaultParentKey}
                                   />
-                                )
+                                );
                               })}
                             </div>
                           </div>

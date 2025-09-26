@@ -183,7 +183,7 @@ const Table = ({
   getLabelBadges,
   formatDate,
 }) => {
-  const { setPreviewEmail, panelState, density, setSnackbar } = useGlobalContext();
+  const { setPreviewEmailId, panelState, density, setSnackbar } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
   const { archive, moveToInbox, moveToTrash, markRead, snooze } = useMailActions();
   const [snoozeId, setSnoozeId] = useState(null);
@@ -195,7 +195,7 @@ const Table = ({
 
   const handleClickRow = (email, threadId) => {
     if (panelState.showPanel) {
-      setPreviewEmail(email);
+      setPreviewEmailId(threadId);
     } else {
       navigateToEmailDetails(email, threadId);
     }
@@ -299,7 +299,7 @@ const Table = ({
                 role="row"
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
-                onClick={() => handleClickRow(email, threadId)}
+                onClick={(e) => handleClickRow(email, threadId)}
                 read={email.read}
                 style={{
                   ...(density === "compact"

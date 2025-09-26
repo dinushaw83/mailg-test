@@ -31,7 +31,7 @@ export const GlobalContextProvider = ({ children }) => {
     showPanel: false,
     direction: "vertical",
   });
-  const [previewEmail, setPreviewEmail] = useState(null);
+  const [previewEmailId, setPreviewEmailId] = useState(null);
   const [showQuickSettings, setShowQuickSettings] = useState(false);
   const [density, setDensity] = useState("default");
   const [threading, setThreading] = useState(true);
@@ -160,8 +160,8 @@ export const GlobalContextProvider = ({ children }) => {
     refreshEmails,
     panelState,
     setPanelState,
-    previewEmail,
-    setPreviewEmail,
+    previewEmailId,
+    setPreviewEmailId,
     showQuickSettings,
     setShowQuickSettings,
     density,
