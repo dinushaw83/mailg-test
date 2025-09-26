@@ -3,7 +3,6 @@ import React, { useContext } from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
 import { Attachments } from "./Attachments";
-import { Actions } from "./Actions";
 import { GlobalContext } from "../../contexts/GlobalContext";
 
 const ProfileImageContainer = styled.div`
@@ -168,18 +167,18 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
   // Format the scheduled date and time
   const formatScheduledDateTime = (dateStr, timeStr) => {
     const date = new Date(dateStr);
-    
+
     // Format date as "Mon, Sep 29"
-    const dateOptions = { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
+    const dateOptions = {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
     };
-    const formattedDate = date.toLocaleDateString('en-US', dateOptions);
-    
+    const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+
     // Simply use the time string as-is
     const formattedTime = timeStr;
-    
+
     return `${formattedDate}, ${formattedTime}`;
   };
 
@@ -220,46 +219,46 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
   return (
     <div
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: '#f5f5f5',
-        padding: '8px 12px',
+        display: "flex",
+        alignItems: "center",
+        backgroundColor: "#f5f5f5",
+        padding: "8px 12px",
       }}
     >
       {/* Icon with paper airplane and clock overlay */}
       <div
         style={{
-          position: 'relative',
-          marginRight: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          position: "relative",
+          marginRight: "12px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         {/* Paper airplane icon */}
-        <span 
+        <span
           className="material-symbols-outlined"
-          style={{ 
-            fontSize: '20px', 
-            color: '#5f6368',
-            position: 'relative',
-            zIndex: 1
+          style={{
+            fontSize: "20px",
+            color: "#5f6368",
+            position: "relative",
+            zIndex: 1,
           }}
         >
           send
         </span>
         {/* Clock overlay */}
-        <span 
+        <span
           className="material-symbols-outlined"
-          style={{ 
-            fontSize: '12px', 
-            color: '#5f6368',
-            position: 'absolute',
-            bottom: '-2px',
-            right: '-2px',
-            backgroundColor: '#f5f5f5',
-            borderRadius: '50%',
-            padding: '1px'
+          style={{
+            fontSize: "12px",
+            color: "#5f6368",
+            position: "absolute",
+            bottom: "-2px",
+            right: "-2px",
+            backgroundColor: "#f5f5f5",
+            borderRadius: "50%",
+            padding: "1px",
           }}
         >
           schedule
@@ -270,9 +269,9 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
       <span
         style={{
           flex: 1,
-          fontSize: '14px',
-          color: '#3c4043',
-          fontWeight: '400',
+          fontSize: "14px",
+          color: "#3c4043",
+          fontWeight: "400",
         }}
       >
         Send scheduled for {scheduledDateTime}
@@ -282,21 +281,21 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
       <button
         onClick={handleCancelSend}
         style={{
-          color: '#1a73e8',
-          fontSize: '14px',
-          fontWeight: '500',
-          textTransform: 'none',
-          padding: '4px 8px',
-          minWidth: 'auto',
-          border: 'none',
-          background: 'none',
-          cursor: 'pointer',
+          color: "#1a73e8",
+          fontSize: "14px",
+          fontWeight: "500",
+          textTransform: "none",
+          padding: "4px 8px",
+          minWidth: "auto",
+          border: "none",
+          background: "none",
+          cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = 'rgba(26, 115, 232, 0.04)';
+          e.target.style.backgroundColor = "rgba(26, 115, 232, 0.04)";
         }}
         onMouseLeave={(e) => {
-          e.target.style.backgroundColor = 'transparent';
+          e.target.style.backgroundColor = "transparent";
         }}
       >
         Cancel send
@@ -309,7 +308,17 @@ const EmailHtmlBody = ({ body }) => {
   return <div dangerouslySetInnerHTML={{ __html: body }} />;
 };
 
-export const Content = ({ body, timestamp, senderName, senderEmail, attachments, isScheduled, scheduledDate, scheduledTime, emailId }) => {
+export const Content = ({
+  body,
+  timestamp,
+  senderName,
+  senderEmail,
+  attachments = [],
+  isScheduled,
+  scheduledDate,
+  scheduledTime,
+  emailId,
+}) => {
   return (
     <ContentContainer>
       <ProfileImageContainer>
@@ -317,7 +326,9 @@ export const Content = ({ body, timestamp, senderName, senderEmail, attachments,
       </ProfileImageContainer>
       <BodyContainer>
         <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
-        {isScheduled && <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />}
+        {isScheduled && (
+          <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />
+        )}
         <EmailHtmlBody body={body} />
         <Attachments attachments={attachments} />
       </BodyContainer>
