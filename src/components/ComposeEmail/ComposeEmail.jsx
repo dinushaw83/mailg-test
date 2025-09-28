@@ -15,7 +15,7 @@ import styles from "./ComposeEmail.module.css";
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows, rightSidebarActiveTab } =
+  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows, rightSidebarActiveTab, loggedInUser } =
     useContext(GlobalContext);
 
   // Create restructured recipients array for proper lookup
@@ -69,6 +69,24 @@ export default function ComposeEmail({ composeWindow }) {
     }
   };
 
+  // Create custom recipient for valid email
+  const createCustomRecipient = (email) => {
+    // If the email is the logged in user's email, then return the logged in user object
+    if (email === loggedInUser.email || loggedInUser.emails.some((emailObj) => emailObj.value === email)) {
+      return {
+        ...loggedInUser,
+        id: loggedInUser.email,
+      };
+    }
+    return {
+      id: `custom-${email}`,
+      name: email, // Use email as name since we don't know the actual name
+      email: email,
+      avatar: null,
+      labels: [],
+    };
+  };
+
   // Load existing draft if draftId exists in the compose window when the component mounts before painting to ui
   useLayoutEffect(() => {
     if (currentDraftId) {
@@ -83,13 +101,7 @@ export default function ComposeEmail({ composeWindow }) {
             if (recipientObj) {
               return recipientObj;
             }
-            return {
-              id: `custom-${email}`,
-              name: email,
-              email: email,
-              avatar: null,
-              labels: [],
-            };
+            return createCustomRecipient(email);
           })
         );
         setCc(
@@ -98,13 +110,7 @@ export default function ComposeEmail({ composeWindow }) {
             if (recipientObj) {
               return recipientObj;
             }
-            return {
-              id: `custom-${email}`,
-              name: email,
-              email: email,
-              avatar: null,
-              labels: [],
-            };
+            return createCustomRecipient(email);
           })
         );
         setBcc(
@@ -113,13 +119,7 @@ export default function ComposeEmail({ composeWindow }) {
             if (recipientObj) {
               return recipientObj;
             }
-            return {
-              id: `custom-${email}`,
-              name: email,
-              email: email,
-              avatar: null,
-              labels: [],
-            };
+            return createCustomRecipient(email);
           })
         );
         setSubject(existingDraft.subject === "(no subject)" ? "" : existingDraft.subject);

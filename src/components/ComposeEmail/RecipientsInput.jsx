@@ -15,7 +15,7 @@ export default function RecipientsInput({
   onBccChange,
   placeholder = "Recipients",
 }) {
-  const { recipients: globalRecipients } = useContext(GlobalContext);
+  const { recipients: globalRecipients, loggedInUser } = useContext(GlobalContext);
 
   // Include only the recipients that has an email and restructure them
   const recipients = useMemo(() => {
@@ -78,6 +78,13 @@ export default function RecipientsInput({
 
   // Create custom recipient for valid email
   const createCustomRecipient = (email) => {
+    // If the email is the logged in user's email, then return the logged in user object
+    if (email === loggedInUser.email || loggedInUser.emails.some((emailObj) => emailObj.value === email)) {
+      return {
+        ...loggedInUser,
+        id: loggedInUser.email,
+      };
+    }
     return {
       id: `custom-${email}`,
       name: email, // Use email as name since we don't know the actual name
