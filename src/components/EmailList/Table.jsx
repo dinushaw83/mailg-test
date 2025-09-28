@@ -285,12 +285,11 @@ const Table = ({
     id: MENU_ID,
   });
 
-  function handleContextMenu(event, threadId) {
-    console.log("handleContextMenu", event);
+  function handleContextMenu(event, thread) {
     show({
       event,
       props: {
-        threadId,
+        thread,
       },
     });
   }
@@ -328,7 +327,7 @@ const Table = ({
                       }
                     : {}),
                 }}
-                onContextMenu={(e) => handleContextMenu(e, threadId)}
+                onContextMenu={(e) => handleContextMenu(e, email)}
               >
                 <td className="PF xY" />
                 <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
