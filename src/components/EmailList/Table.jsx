@@ -192,7 +192,7 @@ const Table = ({
 }) => {
   const { setPreviewEmail, panelState, density, setSnackbar } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
-  const { archive, moveToInbox, moveToTrash, markRead, snooze } = useMailActions();
+  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMute } = useMailActions();
   const [snoozeId, setSnoozeId] = useState(null);
   const snoozeAnchorElRef = useRef(null);
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
@@ -311,6 +311,13 @@ const Table = ({
       }
     }, 200);
   }, []);
+
+  const handleMuteAction = useCallback(
+    (threadId) => {
+      toggleMute([threadId]);
+    },
+    [toggleMute]
+  );
 
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
@@ -622,6 +629,7 @@ const Table = ({
             handleReadAction={handleReadAction}
             handleSnoozeAction={handleSnoozeAction}
             contextRow={contextRow}
+            handleMuteAction={handleMuteAction}
           />
         </tbody>
       </table>

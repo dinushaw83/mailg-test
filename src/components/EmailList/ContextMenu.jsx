@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
 
-const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, handleSnoozeAction, contextRow }) => {
-  const isRead = contextRow.read;
+const ContextMenu = ({
+  menuId,
+  handleArchive,
+  handleDelete,
+  handleReadAction,
+  handleSnoozeAction,
+  contextRow,
+  handleMuteAction,
+}) => {
+  const isRead = contextRow?.read;
 
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
@@ -21,6 +29,9 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
       case "snooze":
         handleSnoozeAction(threadId);
         break;
+      case "mute":
+        handleMuteAction(threadId);
+        break;
       //etc...
     }
   };
@@ -30,21 +41,25 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
       id: "reply",
       label: "Reply",
       icon: "reply",
+      disabled: true,
     },
     {
       id: "reply_all",
       label: "Reply all",
       icon: "reply_all",
+      disabled: true,
     },
     {
       id: "forward",
       label: "Forward",
       icon: "forward",
+      disabled: true,
     },
     {
       id: "forward_as_attachment",
       label: "Forward as attachment",
       icon: "attachment",
+      disabled: true,
     },
   ];
 
@@ -83,6 +98,7 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
       id: "add_to_tasks",
       label: "Add to tasks",
       icon: "task_alt",
+      disabled: true,
     },
   ];
 
@@ -97,7 +113,7 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
       }}
     >
       {sectionOneItems.map((item) => (
-        <Item id={item.id} onClick={handleItemClick}>
+        <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
           <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
             {item.icon}
           </span>
@@ -108,7 +124,7 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
       <Separator />
 
       {sectionTwoItems.map((item) => (
-        <Item id={item.id} onClick={handleItemClick}>
+        <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
           <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
             {item.icon}
           </span>
@@ -194,11 +210,11 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
 
       <Separator />
 
-      <Item id="new_tab" onClick={handleItemClick}>
+      <Item id="new_tab" onClick={handleItemClick} disabled>
         <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
           open_in_new
         </span>
-        Open in new tab
+        Open in new window
       </Item>
     </Menu>
   );
