@@ -203,7 +203,7 @@ const ContextMenu = ({
 
       <Separator />
 
-      <Item id="search" onClick={handleItemClick}>
+      <Item id="search" onClick={handleItemClick} disabled>
         <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
           search
         </span>
