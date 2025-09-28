@@ -215,7 +215,7 @@ export default function useMailActions() {
     (ids, sourceLabel, dest) =>
       updateByIds(ids, (labels) => {
         if (sourceLabel) labels.delete(String(sourceLabel)); // remove old
-        if (dest) labels.add(String(dest));                 // add new
+        if (dest) labels.add(String(dest)); // add new
       }),
     [updateByIds]
   );

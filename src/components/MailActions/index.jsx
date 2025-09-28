@@ -547,7 +547,13 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       />
       {showAdvancedMenu && (
         <>
-          <Icon name="schedule" label="Snooze" onClick={handleSnoozeAction} _ref={snoozeAnchorElRef} />
+          <Icon
+            id="snooze-toolbar-icon"
+            name="schedule"
+            label="Snooze"
+            onClick={handleSnoozeAction}
+            _ref={snoozeAnchorElRef}
+          />
           <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
         </>
       )}

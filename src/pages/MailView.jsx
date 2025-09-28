@@ -36,6 +36,8 @@ const Inbox = () => {
   const label = labelParam ? decodeURIComponent(labelParam) : null;
   const activeFolder = folder || "inbox";
 
+  const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
+
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
     return getThreadRows(emails, { label, folder: activeFolder });
@@ -63,9 +65,14 @@ const Inbox = () => {
   return (
     <Container id="cont-123">
       <EmailListContainer role="main">
-        <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
+        <ToolBar
+          totalFilteredItems={filteredRows.length}
+          threads={rows}
+          showAdvancedMenu={showAdvancedMenu}
+          setShowAdvancedMenu={setShowAdvancedMenu}
+        />
         <Banner rows={rows} />
-        <EmailList emails={rows} />
+        <EmailList emails={rows} setShowAdvancedMenu={setShowAdvancedMenu} /> {/* TODO: some stuff */}
       </EmailListContainer>
       <QuickSettings />
     </Container>

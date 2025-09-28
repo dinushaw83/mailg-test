@@ -17,6 +17,7 @@ import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 
 export const Icon = ({
+  id,
   name,
   label,
   onClick,
@@ -33,6 +34,7 @@ export const Icon = ({
   return (
     <Tooltip title={label} placement={placement}>
       <IconButton
+        id={id}
         size={size}
         sx={{
           width,
@@ -117,7 +119,7 @@ const MailActions = ({ thread }) => {
 
   // Check if the current thread is not in inbox
   const isThreadNotInInbox = useMemo(() => {
-    const email = emails.find(email => email.threadId.split(":")[1] === threadId);
+    const email = emails.find((email) => email.threadId.split(":")[1] === threadId);
     return email && (!email.labels || !email.labels.includes("Inbox"));
   }, [emails, threadId]);
 
@@ -306,8 +308,8 @@ const MailActions = ({ thread }) => {
     try {
       // Store original labels before the move
       const originalLabels = {};
-      ids.forEach(id => {
-        const email = emails.find(email => email.threadId.split(":")[1] === id);
+      ids.forEach((id) => {
+        const email = emails.find((email) => email.threadId.split(":")[1] === id);
         if (email) {
           originalLabels[id] = [...(email.labels || [])];
         }
@@ -334,8 +336,8 @@ const MailActions = ({ thread }) => {
             onClick={() => {
               try {
                 // Restore original labels for each email
-                setEmails(prevEmails => 
-                  prevEmails.map(email => {
+                setEmails((prevEmails) =>
+                  prevEmails.map((email) => {
                     const emailThreadId = email.threadId.split(":")[1];
                     if (ids.includes(emailThreadId) && originalLabels[emailThreadId]) {
                       return { ...email, labels: originalLabels[emailThreadId] };

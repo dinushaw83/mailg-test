@@ -2,7 +2,7 @@ import React from "react";
 import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
 
-const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction }) => {
+const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, handleSnoozeAction }) => {
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
@@ -15,6 +15,9 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction }) 
       case "mark_as_read":
       case "mark_as_unread":
         handleReadAction(props.thread);
+        break;
+      case "snooze":
+        handleSnoozeAction(threadId);
         break;
       //etc...
     }

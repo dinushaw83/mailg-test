@@ -10,7 +10,7 @@ import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
 
-const EmailList = ({ emails = [], showCheckboxes = true }) => {
+const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selection, composeWindows, panelState, previewEmail } = useGlobalContext();
@@ -124,6 +124,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                 getSenderClassName,
                 getLabelBadges,
                 formatDate,
+                setShowAdvancedMenu,
               }}
             />
           </Panel>

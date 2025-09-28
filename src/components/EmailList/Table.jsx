@@ -188,6 +188,7 @@ const Table = ({
   getSenderClassName,
   getLabelBadges,
   formatDate,
+  setShowAdvancedMenu,
 }) => {
   const { setPreviewEmail, panelState, density, setSnackbar } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
@@ -196,6 +197,8 @@ const Table = ({
   const snoozeAnchorElRef = useRef(null);
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
+
+  const snoozeButtonRef = useRef(null);
 
   const renderOneColumn = dimensions.width < 525;
 
@@ -293,6 +296,19 @@ const Table = ({
       },
     });
   }
+
+  const handleSnoozeAction = useCallback((threadId) => {
+    setShowAdvancedMenu(true);
+    selection.setMany([threadId]);
+
+    setTimeout(() => {
+      const element = document.getElementById("snooze-toolbar-icon");
+
+      if (element) {
+        setSnoozeAnchorEl(element);
+      }
+    }, 200);
+  }, []);
 
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
@@ -593,7 +609,7 @@ const Table = ({
                 setSnoozeAnchorEl(null);
                 setSnoozeId(null);
               }}
-              selectedIds={[snoozeId]}
+              selectedIds={selection.ids}
               snooze={snooze}
             />
           )}
@@ -602,6 +618,7 @@ const Table = ({
             handleArchive={handleArchive}
             handleDelete={handleDelete}
             handleReadAction={handleReadAction}
+            handleSnoozeAction={handleSnoozeAction}
           />
         </tbody>
       </table>
