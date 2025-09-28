@@ -147,7 +147,6 @@ const CreateContact = ({ onClose, onTabClose }) => {
       contactToUpdate?.relatedPersons?.length > 0 ||
       contactToUpdate?.customFields?.length > 0
   );
-
   const [isFavorite, setIsFavorite] = useState(contactToUpdate?.labels?.includes("Favorites") || false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   // Reference for the saved contact

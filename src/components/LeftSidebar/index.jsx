@@ -7,6 +7,33 @@ import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
+function findNode(tree, key) {
+  for (const node of tree) {
+    if (node.key === key) return node;
+    const child = findNode(node.children || [], key);
+    if (child) return child;
+  }
+  return null;
+}
+
+function collectSubtree(node, labelIndex, isRoot = true) {
+  const entry = {
+    key: node.key,
+    name: node.name,
+    fullPath: isRoot ? node.key.replace(/::/g, "/") : node.name,
+    depth: node.key.split("::").length - 1,
+    count: labelIndex[node.key]?.total ?? 0,
+  };
+
+  const all = [entry];
+
+  node.children?.forEach(child => {
+    all.push(...collectSubtree(child, labelIndex, false));
+  });
+
+  return all;
+}
+
 const DEFAULT_FOLDERS = [
   { key: "inbox", label: "Inbox", icon: "inbox", count: 0 },
   { key: "starred", label: "Starred", icon: "star" },
@@ -26,6 +53,8 @@ const LeftSidebar = () => {
   // Sidebar is expanded if it is expanded or hovered
   const sidebarExpanded = isLeftSidebarExpanded || isLeftSidebarHovered;
 
+  const [defaultParentKey, setDefaultParentKey] = useState(null);
+
   const customLabels = useMemo(() => {
     const flat = flattenTreeForSelect(labelTree);
     return flat
@@ -35,8 +64,48 @@ const LeftSidebar = () => {
         name: item.name, // just this node's name (for sidebar)
         depth: item.depth, // for indent
         unread: labelIndex[item.key]?.unread ?? 0,
+        total: labelIndex[item.key]?.total ?? 0,
+        children: item.children,
       }));
   }, [labelTree, labels, labelIndex]);
+
+  // Build a Set of keys that have children
+  const parentsWithChildren = useMemo(() => {
+    const set = new Set();
+    const walk = (nodes) => {
+      nodes?.forEach((n) => {
+        if (n.children && n.children.length > 0) set.add(n.key);
+        walk(n.children);
+      });
+    };
+    walk(labelTree);
+    return set;
+  }, [labelTree]);
+
+  // Keep collapsed state (collapsed[key] === true means closed)
+  const [collapsed, setCollapsed] = useState({}); // key -> boolean
+
+  const toggleOpen = (key) => {
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Get ancestors from a composite key like "Work::kjj::kkk"
+  const getAncestors = (key) => {
+    const parts = key.split("::");
+    const acc = [];
+    for (let i = 0; i < parts.length - 1; i++) {
+      acc.push(parts.slice(0, i + 1).join("::"));
+    }
+    return acc;
+  };
+
+  // Only show items whose ancestors are all open (not collapsed)
+  const visibleCustomLabels = useMemo(() => {
+    return customLabels.filter((item) => {
+      const ancestors = getAncestors(item.key);
+      return ancestors.every((a) => !collapsed[a]); // default open if not in map
+    });
+  }, [customLabels, collapsed]);
 
   // Open a new compose window
   const openComposeWindow = () => {
@@ -45,6 +114,7 @@ const LeftSidebar = () => {
 
   const handleCreateNewLabel = () => {
     setIsCreateLabelModalOpen(true);
+    setDefaultParentKey(null);
   };
 
   const manageLabels = () => {
@@ -65,7 +135,7 @@ const LeftSidebar = () => {
     { key: "categories", label: "Categories", icon: "label" },
     { key: "manage-subscriptions", label: "Manage subscriptions", icon: "unsubscribe", onClick: manageSubscriptions },
     { key: "manage-labels", label: "Manage labels", icon: "settings", onClick: manageLabels },
-    { key: "create-new-label", label: "Create new label", icon: "add", onClick: handleCreateNewLabel},
+    { key: "create-new-label", label: "Create new label", icon: "add", onClick: handleCreateNewLabel },
   ];
 
   return (
@@ -79,10 +149,10 @@ const LeftSidebar = () => {
         ...(sidebarExpanded
           ? {}
           : {
-              width: "72px",
-              minWidth: "72px",
-              maxWidth: "72px",
-            }),
+            width: "72px",
+            minWidth: "72px",
+            maxWidth: "72px",
+          }),
         transition: "width 0.3s ease-in-out",
         backgroundColor: "#f8fafd",
         ...(!isLeftSidebarExpanded && { position: "absolute", zIndex: 900 }),
@@ -225,16 +295,28 @@ const LeftSidebar = () => {
                         <div className="n3">
                           <div className="zw" gh="cl">
                             <div className="TK">
-                              {customLabels.map((l) => (
-                                <LabelItem
-                                  key={l.key}
-                                  labelKey={l.key}
-                                  display={l.name}
-                                  depth={l.depth}
-                                  count={l.unread}
-                                  expanded={sidebarExpanded}
-                                />
-                              ))}
+                              {visibleCustomLabels.map((l) => {
+                                const node = findNode(labelTree, l.key);  // full tree node
+                                const multipleLabels = collectSubtree(node, labelIndex);
+                                return (
+                                  <LabelItem
+                                    key={l.key}
+                                    labelKey={l.key}
+                                    display={l.name}
+                                    depth={l.depth}
+                                    count={l.unread}
+                                    childrenArray={l.children}
+                                    hasChildren={parentsWithChildren.has(l.key)}
+                                    isOpen={!collapsed[l.key]}
+                                    onToggle={() => toggleOpen(l.key)}
+                                    expanded={sidebarExpanded}
+                                    conversationCount={l.total}
+                                    multipleLabels={multipleLabels}
+                                    setIsCreateLabelModalOpen={setIsCreateLabelModalOpen}
+                                    setDefaultParentKey={setDefaultParentKey}
+                                  />
+                                )
+                              })}
                             </div>
                           </div>
                         </div>
@@ -249,6 +331,7 @@ const LeftSidebar = () => {
         <CreateLabelDialog
           open={isCreateLabelModalOpen}
           onClose={() => setIsCreateLabelModalOpen(false)}
+          defaultParentKey={defaultParentKey}
           onAfterCreate={(name) => {
             setSnackbar({
               open: true,

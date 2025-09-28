@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
@@ -10,8 +10,15 @@ import VerificationDashboard from "./pages/VerificationDashboard";
 
 import { initialUser } from "./contexts/fixtures/me";
 import SearchResultsView from "./pages/SearchResultsView";
+import { initializeSearchIndex } from "./utils/search";
 
 function App() {
+  useEffect(() => {
+    document.title = `Inbox(2) - ${initialUser.email} - MailG`;
+    // Initialize search index on app startup
+    initializeSearchIndex();
+  }, []);
+
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <GlobalContextProvider>

@@ -5,15 +5,24 @@ import {
     FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import useLabels, { flattenTreeForSelect, ROOT, splitKey } from "../../hooks/useLabels";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey, ROOT, splitKey } from "../../hooks/useLabels";
 
-export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName }) {
+export default function EditLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName, labelDefaultKey }) {
     const { setSnackbar } = useGlobalContext();
-    const { labels, createLabel, labelTree, renameLabel } = useLabels();
+    const { labels, labelTree, renameLabel } = useLabels();
     const [name, setName] = useState(labelDefaultName ?? "");
     const [nest, setNest] = useState(false);
     const [parentKey, setParentKey] = useState(defaultParentKey ?? null);
     const [attempted, setAttempted] = useState(false);
+    const [currentLabelKey, setCurrentLabelKey] = useState(labelDefaultKey ?? null);
+
+    useEffect(() => {
+        setCurrentLabelKey(labelDefaultKey ?? null);
+    }, [labelDefaultKey]);
+
+    useEffect(() => {
+        setParentKey(defaultParentKey ?? null);
+    }, [defaultParentKey]);
 
     const parentChoices = useMemo(
         () => flattenTreeForSelect(labelTree).filter(opt => !labels?.[opt.key]?.system),
@@ -23,15 +32,9 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
     const trimmed = name.trim();
     const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;
 
-    const isEditing = useMemo(() => !!labelDefaultName, [labelDefaultName]);
-
     useEffect(() => {
         setNest(Boolean(parentKey));
     }, [parentKey]);
-
-    useEffect(() => {
-        setParentKey(defaultParentKey ?? null);
-    }, [defaultParentKey]);
 
     useEffect(() => {
         setName(labelDefaultName ?? "");
@@ -77,35 +80,20 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
         setParentKey(null);
         setAttempted(false);
     };
+
     const handleClose = () => { reset(); onClose?.(); };
 
-    const handleCreate = () => {
-        // validate on submit
-        if (missingName || isDup || missingParent) {
-            setAttempted(true);
-            return;
-        }
-        try {
-            const pk = nest ? parentKey : ROOT;
-            createLabel(trimmed, { parentKey: pk });
-            onAfterCreate?.(trimmed, pk);
-
-            handleClose();
-        } catch (e) {
-            setSnackbar?.({
-                open: true,
-                message: e?.message || "Could not create label.",
-                autoHideDuration: 4000,
-            });
-        }
-    };
-
     const handleSave = () => {
-        renameLabel(currentLabelKey, trimmed);
+        const oldPath = getPathLabelFromKey(labels, currentLabelKey);
+        const newPath = parentKey && parentKey !== ROOT
+            ? `${getPathLabelFromKey(labels, parentKey)}/${trimmed}`
+            : trimmed;
+        
+        renameLabel(currentLabelKey, trimmed, parentKey);
         onAfterCreate?.(trimmed, parentKey);
         setSnackbar?.({
             open: true,
-            message: `The label "${trimmed}" was saved.`,
+            message: `The label ${oldPath} was renamed to ${newPath}.`,
             autoHideDuration: 4000,
         });
         handleClose();
@@ -127,19 +115,19 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                 },
             }}
         >
-            <DialogTitle sx={{ px: 3, pt: 3, pb: 1.5 }}>New label</DialogTitle>
+            <DialogTitle sx={{ px: 3, pt: 3, pb: 1.5 }}>Edit label</DialogTitle>
 
             <DialogContent sx={{ px: 3, pt: 0, pb: 1.5 }}>
-                <div style={{ marginBottom: 12, fontSize: 14}}>
-                    {showError ? errorText : "Please enter a new label name:"}
+                <div style={{ marginBottom: 12, fontSize: 14 }}>
+                    {showError ? errorText : "Label name:"}
                 </div>
 
                 <TextField
                     autoFocus
                     fullWidth
-                    value={name ?? defaultName}
+                    value={name}
                     onChange={(e) => setName(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSave(); } }}
                     error={showError && (missingName || isDup)}
                     helperText=" "
                 />
@@ -185,11 +173,11 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                 </Button>
                 <Button
                     variant="contained"
-                    onClick={isEditing ? handleSave : handleCreate}
+                    onClick={handleSave}
                     disabled={!canSubmit} // keep enabled; validation happens on submit
                     sx={{ borderRadius: "20px", textTransform: "none", px: 3 }}
                 >
-                    {isEditing ? "Save" : "Create"}
+                    Save
                 </Button>
             </DialogActions>
         </Dialog>

@@ -3,13 +3,20 @@ import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } f
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { buildSearchIndex, searchEmails, getRecentSearchSuggestions, isSearchIndexReady } from "../../utils/search";
+import {
+  buildSearchIndex,
+  searchEmails,
+  getRecentSearchSuggestions,
+  isSearchIndexReady,
+  addToSearchHistory,
+} from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const SearchBar = () => {
   const { emails } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [previousLocation, setPreviousLocation] = useState(null);
 
   const searchContainerRef = useRef(null);
   const navigate = useNavigate();
@@ -38,6 +45,21 @@ const SearchBar = () => {
       setSearchValue(searchQuery);
     }
   }, [searchQuery]);
+
+  // Track location changes and clear search input when navigating away from search results
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const isCurrentlyOnSearchResults = currentPath.startsWith("/search/");
+    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search/");
+
+    // If we were on search results page and now we're not, clear the search input
+    if (wasOnSearchResults && !isCurrentlyOnSearchResults && searchValue.trim()) {
+      setSearchValue("");
+    }
+
+    // Update previous location for next comparison
+    setPreviousLocation(currentPath);
+  }, [location.pathname, previousLocation, searchValue]);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -82,6 +104,11 @@ const SearchBar = () => {
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
+      // Add search query to history when submitted
+      if (searchValue.trim()) {
+        addToSearchHistory(searchValue);
+      }
+
       navigate(`/search/${searchValue}`);
       setIsFocused(false);
 
@@ -95,6 +122,10 @@ const SearchBar = () => {
       const threadId = item.threadId ? item.threadId.split(":")[1] : item.id;
       navigate(`/inbox/${threadId}`);
     } else {
+      // Add search query to history when clicked from suggestions
+      if (item && item.trim()) {
+        addToSearchHistory(item);
+      }
       navigate(`/search/${item}`);
     }
     setIsFocused(false);

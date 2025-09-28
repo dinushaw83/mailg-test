@@ -1,53 +1,97 @@
-import React, { useContext, useMemo, useEffect } from "react";
+import React, { useContext, useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import ActionBar from "./ActionBar";
 import styled from "@emotion/styled";
 import { Content } from "./Content";
 import { Subject } from "./Subject";
-import { Divider } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
-import useMailActions from '../../hooks/useMailActions';
+import { PanelFooter } from "../EmailList/Footer";
+import useMailActions from "../../hooks/useMailActions";
 
 const InboxViewContainer = styled.div`
   padding: 24px;
   width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(95, 99, 104, 0.6) transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(95, 99, 104, 0.6);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(95, 99, 104, 0.75);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 `;
 
 const InnerContainer = styled.div`
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 10rem);
   padding-right: 10px;
-  overflow-y: auto;
 `;
 
-const InboxView = () => {
-  const { threadId, folder, label } = useParams();
+export const EmailContent = ({
+  threadId,
+  folder,
+  label,
+  showActionBar = true,
+  isPreview = false,
+  markAsReadAfter = 3000,
+}) => {
   const { emails, normalizedEmails, loggedInUser, setEmails } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
-
-  const { threadsById, messagesById } = normalizedEmails;
   const { markRead } = useMailActions();
+
+  const { messagesById } = normalizedEmails;
 
   const thread = useMemo(() => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
   }, [emails, threadId]);
 
-  if (!thread) {
-    // Determine the back link based on current context
-    const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || "inbox"}`;
-    const backText = label ? `Label: ${label}` : folder || "Inbox";
+  useEffect(() => {
+    let timeoutId = null;
+    if (markAsReadAfter) {
+      timeoutId = setTimeout(() => {
+        markRead([threadId], true);
+      }, markAsReadAfter);
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [markAsReadAfter, threadId]);
 
+  if (!thread) {
     return (
-      <div className="nH bkK" style={{ padding: 24 }}>
-        <h2 style={{ margin: 0 }}>Email not found</h2>
-        <p style={{ marginTop: 8 }}>
-          The message you're looking for doesn't exist. Go back to <Link to={backLink}>{backText}</Link>.
-        </p>
-      </div>
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <Box
+          sx={{
+            paddingTop: "3em",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "1rem",
+          }}
+        >
+          No conversations selected
+        </Box>
+        <PanelFooter />
+      </Box>
     );
   }
 
@@ -60,29 +104,11 @@ const InboxView = () => {
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
 
-  // Mark unread emails as read
-  const markUnreadEmailsAsRead = () => {
-    // Get the unread emails ids
-    const unreadEmailsIds = messages.filter((email) => !email.read).map((email) => email.id);
-
-    // If there are unread emails, mark them as read
-    if (unreadEmailsIds.length > 0) {
-      markRead(unreadEmailsIds);
-    }
-  }
-
-  useEffect(() => {
-    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
-
-    // Mark unread emails in the email thread as read
-    markUnreadEmailsAsRead();
-  }, []);
-
   return (
     <InboxViewContainer>
-      <ActionBar thread={thread} />
+      {showActionBar && <ActionBar thread={thread} />}
       <InnerContainer>
-        <Subject subject={messages[0].subject} />
+        <Subject subject={messages[0].subject} message={messages[0]} />
         {displayedMessages.map((message, index) => (
           <React.Fragment key={message.id}>
             <Content
@@ -100,12 +126,65 @@ const InboxView = () => {
           </React.Fragment>
         ))}
         {/* <Actions /> */}
-        {!isLastScheduled &&
-          <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />
-        }
+        {!isLastScheduled && <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />}
       </InnerContainer>
+      {isPreview && <PanelFooter />}
     </InboxViewContainer>
   );
+};
+
+const InboxView = () => {
+  const { threadId, folder, label } = useParams();
+  const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
+  const { markRead } = useMailActions();
+  const { messagesById } = normalizedEmails;
+
+  // Mark unread emails as read
+  const markUnreadEmailsAsRead = useCallback(
+    (messages) => {
+      // Get the unread emails ids
+      const unreadEmailsIds = messages.filter((email) => !email.read).map((email) => email.id);
+
+      // If there are unread emails, mark them as read
+      if (unreadEmailsIds.length > 0) {
+        markRead(unreadEmailsIds);
+      }
+    },
+    [markRead]
+  );
+
+  const thread = useMemo(() => {
+    return getThread(emails, { threadId: `#thread-f:${threadId}` });
+  }, [emails, threadId]);
+
+  useEffect(() => {
+    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+
+    if (!thread) return;
+
+    const { messageIds } = thread;
+
+    // Mark unread emails in the email thread as read
+    const messages = messageIds.map((id) => messagesById[id]);
+    markUnreadEmailsAsRead(messages);
+  }, [thread, messagesById, markUnreadEmailsAsRead]);
+
+  if (!thread) {
+    // Determine the back link based on current context
+    const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || "inbox"}`;
+    const backText = label ? `Label: ${label}` : folder || "Inbox";
+
+    return (
+      <div className="nH bkK" style={{ padding: 24 }}>
+        <h2 style={{ margin: 0 }}>Email not found</h2>
+        <p style={{ marginTop: 8 }}>
+          The message you're looking for doesn't exist. Go back to <Link to={backLink}>{backText}</Link>.
+        </p>
+      </div>
+    );
+  }
+
+  return <EmailContent threadId={threadId} folder={folder} label={label} />;
 };
 
 export default InboxView;
