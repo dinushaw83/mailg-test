@@ -5,7 +5,7 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 const Header = () => {
   const { showQuickSettings, setShowQuickSettings, setIsLeftSidebarExpanded } = useGlobalContext();
   return (
-    <div className="nH">
+    <div className="nH" style={{ backgroundColor: "#f8fafd" }}>
       <div className="w-asV bbg aiw">
         <div id=":d">
           <div id=":7" style={{ display: "none" }} />

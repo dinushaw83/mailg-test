@@ -1,9 +1,40 @@
 import React from "react";
+import { IconButton, Tooltip } from "@mui/material";
+import { useGlobalContext } from "../contexts/GlobalContext";
+import RightSideBarTabs from "./RightSidebarTabs/RightSideBarTabs";
+import styles from "./RightSidebar.module.css";
 
 const RightSidebar = () => {
+  const { rightSidebarExpanded, setRightSidebarExpanded, rightSidebarActiveTab, setRightSidebarActiveTab } =
+    useGlobalContext();
+
+  // Handle the right sidebar tab icon click
+  const handleTabIconClick = (tabName) => {
+    if (tabName === rightSidebarActiveTab.activeTab) {
+      setRightSidebarActiveTab((prev) => ({ ...prev, activeTab: null }));
+    } else {
+      setRightSidebarActiveTab((prev) => ({ ...prev, activeTab: tabName }));
+    }
+  };
+
   return (
-    <div className="nH" style={{ width: "16px" }}>
-      <div className="aUx" jsaction="cZRHAe:.CLIENT;CyXzrf:.CLIENT" style={{ height: 985 }}>
+    <div
+      className={`nH ${styles.rightSidebar}`}
+      style={{
+        width: rightSidebarExpanded ? (rightSidebarActiveTab.activeTab ? "376px" : "56px") : "16px",
+      }}
+    >
+      {/* Tab Content Area - Left side */}
+      <div
+        className={`${styles.rightSidebarContentTabsWrapper} ${
+          (!rightSidebarActiveTab.activeTab || !rightSidebarExpanded) && styles.hideContent
+        }`}
+      >
+        <RightSideBarTabs />
+      </div>
+
+      {/* Sidebar Icons - Right side */}
+      <div className="aUx" style={{ width: "56px" }}>
         <div className="WN9Ejb br3" jsaction="oqYoCb:.CLIENT;LbSNDf:.CLIENT;ETEZVb:.CLIENT">
           <div className="brC-brG" style={{ display: "none" }}>
             <div className="brC-brG-bsf-Jz-Jw">
@@ -17,10 +48,10 @@ const RightSidebar = () => {
             <div className="brC-brG-a9i-Jz-Jw" />
           </div>
         </div>
-        <div className="bAw bcf it" jsaction="cZRHAe:.CLIENT">
-          <div className="brC-aT5-aOt-Jw" role="complementary" aria-label="Side panel" style={{ display: "none" }}>
+        <div className={`bAw bcf it ${styles.rightSidebarContent}`} jsaction="cZRHAe:.CLIENT">
+          <div className="brC-aT5-aOt-Jw" role="complementary" aria-label="Side panel">
             <div className="brC-aT5-aOt-bsf-Jw">
-              <div className="brC-bsf-aT5-aOt" role="tablist" tabIndex={0} style={{ userSelect: "none" }}>
+              <div className={`brC-bsf-aT5-aOt ${styles.rightSidebarContentTabs}`} role="tablist" tabIndex={0}>
                 <div
                   id="gsc-gab-6"
                   className="bse-bvF-I aT5-aOt-I bse-bvF-aLp"
@@ -29,7 +60,7 @@ const RightSidebar = () => {
                   aria-label="Calendar"
                   aria-disabled="false"
                   aria-selected="false"
-                  style={{ userSelect: "none" }}
+                  style={{ userSelect: "none", display: "none" }}
                 >
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-Kv" style={{ userSelect: "none" }} />
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-J6" style={{ userSelect: "none" }} />
@@ -50,7 +81,7 @@ const RightSidebar = () => {
                   aria-label="Keep"
                   aria-disabled="false"
                   aria-selected="false"
-                  style={{ userSelect: "none" }}
+                  style={{ userSelect: "none", display: "none" }}
                 >
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-Kv" style={{ userSelect: "none" }} />
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-J6" style={{ userSelect: "none" }} />
@@ -71,7 +102,7 @@ const RightSidebar = () => {
                   aria-label="Tasks"
                   aria-disabled="false"
                   aria-selected="false"
-                  style={{ userSelect: "none" }}
+                  style={{ userSelect: "none", display: "none" }}
                 >
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-Kv" style={{ userSelect: "none" }} />
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-J6" style={{ userSelect: "none" }} />
@@ -84,31 +115,28 @@ const RightSidebar = () => {
                   />
                   <div className="bse-bvF-JX-axQ-avS Gs-avS" style={{ userSelect: "none" }} />
                 </div>
-                <div
-                  id="gsc-gab-9"
-                  className="bse-bvF-I aT5-aOt-I bse-bvF-aLp"
-                  data-guest-app-id={9}
-                  role="tab"
-                  aria-label="Contacts"
-                  aria-disabled="false"
-                  aria-selected="false"
-                  style={{ userSelect: "none" }}
-                >
-                  <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-Kv" style={{ userSelect: "none" }} />
-                  <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-J6" style={{ userSelect: "none" }} />
-                  <div
-                    className="aT5-aOt-I-JX-Jw"
-                    style={{
-                      backgroundImage: 'url("https://www.gstatic.com/companion/icon_assets/contacts_2022_2x.png")',
-                      userSelect: "none",
-                    }}
-                  />
-                  <div className="bse-bvF-JX-axQ-avS Gs-avS" style={{ userSelect: "none" }} />
+                {/* Contacts */}
+                <div className={styles.rightSidebarTabIconWrapper}>
+                  <div className={styles.tabIconBorder} data-active={rightSidebarActiveTab.activeTab === "contact"} />
+                  <Tooltip title="Contacts" placement="bottom">
+                    <IconButton
+                      size="medium"
+                      onClick={() => handleTabIconClick("contact")}
+                      sx={{
+                        backgroundColor: rightSidebarActiveTab.activeTab === "contact" ? "#e8f0fe" : "transparent",
+                        "&:hover": {
+                          backgroundColor: rightSidebarActiveTab.activeTab === "contact" ? "#d2e3fc" : "action.hover",
+                        },
+                      }}
+                    >
+                      <img src="assets/images/pr_2_image_11.png" alt="Contacts" style={{ width: 21, height: 21 }} />
+                    </IconButton>
+                  </Tooltip>
                 </div>
                 <div
                   className="brC-aT5-aOt-axR"
                   role="separator"
-                  style={{ userSelect: "none" }}
+                  style={{ userSelect: "none", display: "none" }}
                   aria-hidden="false"
                   aria-disabled="true"
                   id=":o7"
@@ -153,7 +181,7 @@ const RightSidebar = () => {
                   aria-expanded="false"
                   aria-haspopup="true"
                   id=":os"
-                  style={{ userSelect: "none" }}
+                  style={{ userSelect: "none", display: "none" }}
                   aria-hidden="false"
                 >
                   <div className="aT5-aOt-I-JX-atM aT5-aOt-I-JX-atM-Kv" />
@@ -169,56 +197,43 @@ const RightSidebar = () => {
                 </div>
               </div>
             </div>
-            <div style={{ display: "none" }}>
-              <div
-                className="aT5-aOt-I brC-by0-P6-I aT5-aOt-I-JE"
-                role="button"
-                aria-label="About"
-                aria-expanded="false"
-                aria-haspopup="false"
-                aria-disabled="true"
-                style={{ userSelect: "none" }}
-              >
-                <div className="aT5-aOt-I-JX-atM" />
-                <div className="aT5-aOt-I-JX-Jw">
-                  <svg className="aT5-aOt-I-JX" width="20px" height="20px" viewBox="0 0 48 48" fill="#5F6368">
-                    <path d="M0 0h48v48H0z" fill="none" />
-                    <path d="M22 34h4V22h-4v12zm2-30C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 36c-8.82 0-16-7.18-16-16S15.18 8 24 8s16 7.18 16 16-7.18 16-16 16zm-2-22h4v-4h-4v4z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
           </div>
-          <div className="brC-dA-I-Jw">
-            <div
-              className="aT5-aOt-I brC-dA-I aT5-aOt-I-Jp"
-              aria-pressed="true"
-              role="button"
-              aria-label="Show side panel"
-              tabIndex={0}
-              style={{ userSelect: "none" }}
-            >
-              <div className="aT5-aOt-I-JX-atM" />
-              <div className="aT5-aOt-I-JX-Jw">
-                <svg
-                  className="aT5-aOt-I-JX"
-                  version="1.1"
-                  id="Layer_1"
-                  x="0px"
-                  y="0px"
-                  width="20px"
-                  height="20px"
-                  viewBox="0 0 24 24"
-                  enableBackground="new 0 0 24 24"
-                  xmlSpace="preserve"
-                  fill="#5F6368"
+
+          {rightSidebarActiveTab.activeTab ? (
+            // About
+            <div style={{ marginBottom: "12px" }}>
+              <Tooltip title="About" placement="top">
+                <IconButton size="medium">
+                  <span className="material-symbols-outlined" style={{ fontSize: 21 }}>
+                    info
+                  </span>
+                </IconButton>
+              </Tooltip>
+            </div>
+          ) : (
+            // Show/Hide Sidebar
+            <div className={styles.showHideSidebar} data-expanded={rightSidebarExpanded}>
+              <Tooltip title={rightSidebarExpanded ? "Hide side panel" : "Show side panel"} placement="top">
+                <IconButton
+                  size="medium"
+                  onClick={() => setRightSidebarExpanded((prev) => !prev)}
+                  className={styles.showHideSidebarIcon}
                 >
-                  <path d="M8.59,16.59L13.17,12L8.59,7.41L10,6l6,6l-6,6L8.59,16.59z" />
-                  <path fill="none" d="M0,0h24v24H0V0z" />
-                </svg>
-              </div>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{
+                      transform: rightSidebarExpanded ? "rotate(-180deg)" : "rotate(0deg)",
+                      transition: "transform 0.3s ease-in-out",
+                      fontSize: 22,
+                      color: "#000",
+                    }}
+                  >
+                    chevron_left
+                  </span>
+                </IconButton>
+              </Tooltip>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

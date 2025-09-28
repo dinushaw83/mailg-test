@@ -12,7 +12,7 @@ export default function GlobalSnackbar() {
     }
 
     // Reset the snackbar
-    setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
+    setSnackbar({ open: false, action: null, autoHideDuration: null, message: "", hideClose: false });
   };
 
   return (
@@ -24,11 +24,16 @@ export default function GlobalSnackbar() {
       action={
         <React.Fragment>
           {snackbar.action}
-          <IconButton size="medium" aria-label="close" color="inherit" onClick={handleClose}>
-            <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "rgb(95,99,104)" }}>
-              close
-            </span>
-          </IconButton>
+          {snackbar?.hideClose ? null : (
+            <IconButton size="medium" aria-label="close" color="inherit" onClick={handleClose}>
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: "22px", color: snackbar?.closeIconColor || "rgb(95,99,104)" }}
+              >
+                close
+              </span>
+            </IconButton>
+          )}
         </React.Fragment>
       }
       sx={{
@@ -41,6 +46,7 @@ export default function GlobalSnackbar() {
           fontSize: "14px",
           borderRadius: "5px",
         },
+        ...(snackbar?.style ? { ...snackbar.style } : {}),
       }}
     />
   );

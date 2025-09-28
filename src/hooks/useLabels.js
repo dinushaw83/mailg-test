@@ -3,6 +3,16 @@ import { useGlobalContext } from "../contexts/GlobalContext";
 
 export const ROOT = null;
 
+const getThreadKey = (m) => {
+  if (!m) return null;
+  if (m.threadId) {
+    return String(m.threadId).replace(/^#thread-f:/, "");
+  }
+  return m.legacyThreadId || null;
+};
+
+export const normalizeLabelName = (name) => name.replace(/::/g, "/");
+
 export function makeKey(name, parentKey = ROOT) {
   return parentKey ? `${parentKey}::${name}` : name;
 }
@@ -228,6 +238,36 @@ export default function useLabels() {
     [setLabels, setEmails]
   );
 
+  const removeLabelFromThread = useCallback(
+    (threadId, labelKey) => {
+      const normalizedThreadId = String(threadId).replace(/^#thread-f:/, "");
+      setEmails((prev) =>
+        (prev || []).map((m) =>
+          getThreadKey(m) === normalizedThreadId
+            ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) }
+            : m
+        )
+      );
+    },
+    [setEmails]
+  );
+
+  const addLabelToThread = useCallback(
+    (threadId, labelKey) => {
+      setEmails(prev =>
+        (prev || []).map(m =>
+          getThreadKey(m) === String(threadId).replace("#thread-f:", "")
+            ? {
+              ...m,
+              labels: Array.from(new Set([...(m.labels || []), labelKey])),
+            }
+            : m
+        )
+      );
+    },
+    [setEmails]
+  );
+
   // Counts by label key
   const labelIndex = useMemo(() => {
     const map = {};
@@ -262,6 +302,50 @@ export default function useLabels() {
 
   const labelTree = useMemo(() => buildTree(labels || {}), [labels]);
 
+  const getSelectionLabels = useCallback((selectedIds) => {
+    const ids = new Set(Array.from(selectedIds ?? []).map(String));
+
+    const hasAnyId = (m) => {
+      const keys = [
+        m.id,
+        m.messageId,
+        m.threadId,
+        m.threadId && String(m.threadId).replace(/^#thread-f:/, ""),
+        m.legacyThreadId,
+        m.legacyLastMessageId,
+        m.legacyLastNonDraftMessageId,
+      ]
+        .map((v) => String(v ?? "").trim())
+        .filter(Boolean);
+
+      return keys.some((k) => ids.has(k));
+    };
+
+    const selectedList = (emails || []).filter(hasAnyId);
+    const nSel = selectedList.length;
+
+    // count labels across selected
+    const labelCounts = new Map();
+    for (const m of selectedList) {
+      for (const l of m.labels ?? []) {
+        labelCounts.set(l, (labelCounts.get(l) || 0) + 1);
+      }
+    }
+
+    // intersection (labels on ALL selected)
+    const currentLabels =
+      nSel === 0
+        ? new Set()
+        : new Set(
+          [...labelCounts.entries()]
+            .filter(([_, c]) => c === nSel)
+            .map(([l]) => l)
+        );
+
+    return { currentLabels, labelCounts, nSel };
+  }, [emails]);
+
+
   return {
     labels, 
     createLabel,
@@ -274,5 +358,8 @@ export default function useLabels() {
     makeKey,
     splitKey,
     setLabelColor,
+    removeLabelFromThread,
+    addLabelToThread,
+    getSelectionLabels,
   };
 }

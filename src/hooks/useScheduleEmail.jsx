@@ -2,7 +2,13 @@ import React, { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../utils/helperFunctions";
+import {
+  generateThreadId,
+  generateLegacyThreadId,
+  generateNextIntegerId,
+  restructureRecipients,
+  isValidEmail,
+} from "../utils/helperFunctions";
 
 export const useScheduleEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
@@ -11,13 +17,19 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastScheduledEmailRef = useRef(null);
 
-  // Validate email format
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const handleSchedule = ({ to, cc, bcc, subject, content, rawInputText, onClose, currentDraftId, isDraft, scheduledDate, scheduledTime }) => {
+  const handleSchedule = ({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    rawInputText,
+    onClose,
+    currentDraftId,
+    isDraft,
+    scheduledDate,
+    scheduledTime,
+  }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
 
@@ -81,7 +93,18 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     scheduleEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, scheduledDate, scheduledTime });
   };
 
-  const scheduleEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, scheduledDate, scheduledTime }) => {
+  const scheduleEmail = ({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    onClose,
+    currentDraftId,
+    isDraft,
+    scheduledDate,
+    scheduledTime,
+  }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
@@ -124,10 +147,10 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     };
 
     // Add reply/forward reference if applicable
-    if (replyType === 'reply' && originalEmail) {
+    if (replyType === "reply" && originalEmail) {
       newEmail.replyToEmailId = originalEmail.id;
     }
-    if (replyType === 'forward' && originalEmail) {
+    if (replyType === "forward" && originalEmail) {
       newEmail.forwardedEmailId = originalEmail.id;
     }
 
@@ -137,8 +160,13 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     // Get all the recipients
     const allRecipients = [...to, ...cc, ...bcc];
 
+    // Create restructured recipients for proper comparison
+    const restructuredRecipients = restructureRecipients(recipients);
+
     // If any of the recipients does not present in the recipients context, add them
-    const newRecipients = allRecipients.filter((recipient) => !recipients.some((r) => r.email === recipient.email));
+    const newRecipients = allRecipients.filter(
+      (recipient) => !restructuredRecipients.some((r) => r.email === recipient.email)
+    );
     if (newRecipients.length > 0) {
       const updatedRecipients = [...recipients];
       newRecipients.forEach((recipient, index) => {
@@ -174,23 +202,23 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
       // Format the scheduled date and time
       const formatScheduledDateTime = (dateStr, timeStr) => {
         const date = new Date(dateStr);
-        
+
         // Format date as "Mon, Sep 29"
-        const dateOptions = { 
-          weekday: 'short', 
-          month: 'short', 
-          day: 'numeric' 
+        const dateOptions = {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
         };
-        const formattedDate = date.toLocaleDateString('en-US', dateOptions);
-        
+        const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+
         // Simply use the time string as-is
         const formattedTime = timeStr;
-        
+
         return `${formattedDate}, ${formattedTime}`;
       };
 
       const scheduledDateTime = formatScheduledDateTime(scheduledDate, scheduledTime);
-      
+
       setSnackbar({
         open: true,
         message: `Send scheduled for ${scheduledDateTime}`,
@@ -221,27 +249,26 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
       if (lastScheduledEmailRef.current && lastScheduledEmailRef.current.id) {
         const emailToRestore = lastScheduledEmailRef.current;
 
-         // Remove the email from the state
-         setEmails((prevEmails) => {
-           return prevEmails.map((email) => {
-             return email.id === emailToRestore.id
-               ? {
-                   ...email,
-                   labels: ["Drafts"],
-                   labelColor: "#e1e3e1",
-                   timestamp: new Date().toISOString(),
-                   timeDisplay: new Date().toLocaleTimeString("en-US", {
-                     hour: "numeric",
-                     minute: "2-digit",
-                     hour12: true,
-                   }),
-                   scheduledDate: undefined,
-                   scheduledTime: undefined,
-                 }
-               : email
-           }
-           );
-         });
+        // Remove the email from the state
+        setEmails((prevEmails) => {
+          return prevEmails.map((email) => {
+            return email.id === emailToRestore.id
+              ? {
+                  ...email,
+                  labels: ["Drafts"],
+                  labelColor: "#e1e3e1",
+                  timestamp: new Date().toISOString(),
+                  timeDisplay: new Date().toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  }),
+                  scheduledDate: undefined,
+                  scheduledTime: undefined,
+                }
+              : email;
+          });
+        });
 
         // Navigate to the draft
         if (!replyType) {

@@ -154,7 +154,8 @@ const LeftSidebar = () => {
               maxWidth: "72px",
             }),
         transition: "width 0.3s ease-in-out",
-        ...(!isLeftSidebarExpanded && { position: "absolute", zIndex: 900, backgroundColor: "#fff" }),
+        backgroundColor: "#f8fafd",
+        ...(!isLeftSidebarExpanded && { position: "absolute", zIndex: 900 }),
       }}
       onMouseEnter={() => setIsLeftSidebarHovered(true)}
       onMouseLeave={() => setIsLeftSidebarHovered(false)}
