@@ -597,7 +597,12 @@ const Table = ({
               snooze={snooze}
             />
           )}
-          <ContextMenu menuId={MENU_ID} />
+          <ContextMenu
+            menuId={MENU_ID}
+            handleArchive={handleArchive}
+            handleDelete={handleDelete}
+            handleReadAction={handleReadAction}
+          />
         </tbody>
       </table>
     </div>

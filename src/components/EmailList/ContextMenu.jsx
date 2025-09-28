@@ -2,16 +2,19 @@ import React from "react";
 import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
 
-const ContextMenu = ({ menuId }) => {
-  // I'm using a single event handler for all items
-  // but you don't have too :)
+const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction }) => {
   const handleItemClick = ({ id, event, props }) => {
+    const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
-      case "reply":
-        console.log("reply", { event, props });
+      case "archive":
+        handleArchive(threadId);
         break;
-      case "reply_all":
-        console.log("reply_all", { event, props });
+      case "delete":
+        handleDelete(threadId);
+        break;
+      case "mark_as_read":
+      case "mark_as_unread":
+        handleReadAction(props.thread);
         break;
       //etc...
     }
