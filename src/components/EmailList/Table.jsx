@@ -197,6 +197,7 @@ const Table = ({
   const snoozeAnchorElRef = useRef(null);
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
+  const [contextRow, setContextRow] = useState(null);
 
   const snoozeButtonRef = useRef(null);
 
@@ -289,6 +290,7 @@ const Table = ({
   });
 
   function handleContextMenu(event, thread) {
+    setContextRow(thread);
     show({
       event,
       props: {
@@ -619,6 +621,7 @@ const Table = ({
             handleDelete={handleDelete}
             handleReadAction={handleReadAction}
             handleSnoozeAction={handleSnoozeAction}
+            contextRow={contextRow}
           />
         </tbody>
       </table>

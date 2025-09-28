@@ -2,7 +2,9 @@ import React from "react";
 import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
 
-const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, handleSnoozeAction }) => {
+const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, handleSnoozeAction, contextRow }) => {
+  const isRead = contextRow.read;
+
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
@@ -57,16 +59,21 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
       label: "Delete",
       icon: "delete",
     },
-    {
-      id: "mark_as_read",
-      label: "Mark as read",
-      icon: "drafts",
-    },
-    {
-      id: "mark_as_unread",
-      label: "Mark as unread",
-      icon: "mark_email_unread",
-    },
+    ...(isRead
+      ? [
+          {
+            id: "mark_as_unread",
+            label: "Mark as unread",
+            icon: "mark_email_unread",
+          },
+        ]
+      : [
+          {
+            id: "mark_as_read",
+            label: "Mark as read",
+            icon: "drafts",
+          },
+        ]),
     {
       id: "snooze",
       label: "Snooze",
@@ -74,7 +81,7 @@ const ContextMenu = ({ menuId, handleArchive, handleDelete, handleReadAction, ha
     },
     {
       id: "add_to_tasks",
-      label: "Add to task",
+      label: "Add to tasks",
       icon: "task_alt",
     },
   ];
