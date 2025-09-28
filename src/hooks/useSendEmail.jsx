@@ -174,6 +174,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
             },
           ],
           id: generateNextIntegerId(recipients) + index,
+          labels: [],
         });
       });
       setRecipients(updatedRecipients);
