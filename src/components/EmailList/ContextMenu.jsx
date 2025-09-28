@@ -12,6 +12,8 @@ const ContextMenu = ({
   handleMuteAction,
 }) => {
   const isRead = contextRow?.read;
+  const senderName = contextRow?.from?.name;
+  console.log("contextRow", contextRow);
 
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
@@ -205,7 +207,7 @@ const ContextMenu = ({
         <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
           search
         </span>
-        Find emails from this sender
+        Find emails from {senderName}
       </Item>
 
       <Separator />
