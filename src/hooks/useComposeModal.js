@@ -99,7 +99,7 @@ export const useComposeModal = () => {
 
   // Add new compose window with proper minimized state management
   const addNewComposeWindow = useCallback(
-    (draftId = null) => {
+    (draftId = null, fields = {}) => {
       const windowWidth = window.innerWidth;
       const availableSpace = windowWidth - TOTAL_MARGINS - TOTAL_GAPS;
 
@@ -122,6 +122,7 @@ export const useComposeModal = () => {
         draftId: draftId || null,
         isMinimized: false,
         isMaximized: false,
+        fields: fields || {},
       };
 
       // Check if we need to minimize any existing windows
@@ -328,6 +329,7 @@ export const useComposeModal = () => {
         draftId: null,
         isMinimized: false,
         isMaximized: false,
+        fields: {},
       };
       setComposeWindows([newWindow]);
     } else {
@@ -342,6 +344,7 @@ export const useComposeModal = () => {
           draftId: validDraft.id,
           isMinimized: false,
           isMaximized: false,
+          fields: {},
         };
         setComposeWindows([newWindow]);
       } else {

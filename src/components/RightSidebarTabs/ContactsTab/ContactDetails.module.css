@@ -1,0 +1,24 @@
+.contactActionIconButtonOverlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 74, 119, 0.08);
+  opacity: 0;
+  transition: opacity 120ms ease-in-out;
+}
+
+.contactActionIconButton:hover .contactActionIconButtonOverlay {
+  opacity: 1;
+}
+
+.sendFeedbackBtn {
+  color: #444746;
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-align: center;
+  margin-top: 25px;
+}
+
+.sendFeedbackBtn:hover {
+  color: #0b57d0;
+  cursor: pointer;
+}

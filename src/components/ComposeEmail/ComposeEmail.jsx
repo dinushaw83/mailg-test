@@ -126,6 +126,23 @@ export default function ComposeEmail({ composeWindow }) {
         setContent({ html: existingDraft.body, plainText: existingDraft.preview });
         setRawInputText({ to: "", cc: "", bcc: "" });
       }
+    } else if (composeWindow?.fields && Object.keys(composeWindow?.fields).length > 0) {
+      // Only add these if the states are empty
+      if (to.length === 0 && composeWindow?.fields?.to) {
+        setTo(composeWindow?.fields?.to);
+      }
+      if (cc.length === 0 && composeWindow?.fields?.cc) {
+        setCc(composeWindow?.fields?.cc);
+      }
+      if (bcc.length === 0 && composeWindow?.fields?.bcc) {
+        setBcc(composeWindow?.fields?.bcc);
+      }
+      if (subject === "" && composeWindow?.fields?.subject) {
+        setSubject(composeWindow?.fields?.subject);
+      }
+      if (content.html === "" && composeWindow?.fields?.content) {
+        setContent({ html: composeWindow?.fields?.content, plainText: composeWindow?.fields?.content });
+      }
     }
   }, [emails, currentDraftId]);
 
