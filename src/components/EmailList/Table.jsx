@@ -1,6 +1,9 @@
 import React, { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
+import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
+import "react-contexify/ReactContexify.css";
+
 import CheckBox from "../ui/CheckBox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import Button from "@mui/material/Button";
@@ -12,6 +15,7 @@ import styled from "@emotion/styled";
 import Icon from "../ui/Icon";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
+import ContextMenu from "./ContextMenu";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -169,6 +173,8 @@ const OneColumnData = ({
   );
 };
 
+const MENU_ID = "row-item-menu";
+
 const Table = ({
   emails,
   getRowClassName,
@@ -275,6 +281,20 @@ const Table = ({
     [markRead]
   );
 
+  const { show } = useContextMenu({
+    id: MENU_ID,
+  });
+
+  function handleContextMenu(event, threadId) {
+    console.log("handleContextMenu", event);
+    show({
+      event,
+      props: {
+        threadId,
+      },
+    });
+  }
+
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -308,6 +328,7 @@ const Table = ({
                       }
                     : {}),
                 }}
+                onContextMenu={(e) => handleContextMenu(e, threadId)}
               >
                 <td className="PF xY" />
                 <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
@@ -577,6 +598,7 @@ const Table = ({
               snooze={snooze}
             />
           )}
+          <ContextMenu menuId={MENU_ID} />
         </tbody>
       </table>
     </div>
