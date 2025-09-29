@@ -157,46 +157,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                   <>
                     <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
                     <Divider sx={{ marginY: "6px" }} />
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        paddingX: "16px",
-                        height: "32px",
-                        overflow: "hidden",
-                        cursor: "pointer",
-                        "&:hover": {
-                          background: "#07070714",
-                        },
-                      }}
-                      onClick={handleLabelClick}
-                    >
-                      <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: 20,
-                          color: "rgb(68, 68, 68)",
-                          width: "20px",
-                        }}
-                      >
-                        label
-                      </span>
-
-                      <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
-                        Label as
-                      </Typography>
-
-                      <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: 20,
-                          color: "rgb(68, 68, 68)",
-                        }}
-                      >
-                        arrow_right
-                      </span>
-                    </Box>
                     <ActionMenuItem
                       icon="star"
                       label={allStarred ? "Remove star" : "Add star"}
