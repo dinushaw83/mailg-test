@@ -100,6 +100,7 @@ const OverlayActions = styled.div`
 const AttachmentsContainer = styled.div`
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 `;
 
 const AttachmentsHeaderContainer = styled.div`
