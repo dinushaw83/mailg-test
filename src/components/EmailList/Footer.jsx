@@ -136,9 +136,10 @@ export const PanelFooter = () => {
         marginTop: "3em",
         display: "flex",
         flexDirection: "column",
-        gap: "1em",
+        gap: "1.5em",
         alignItems: "center",
-        flex: 1,
+        paddingBottom: "4em",
+        paddingTop: "2em",
       }}
     >
       <StorageUsage centerText />

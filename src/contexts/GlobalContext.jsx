@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { usePersistedState } from "../hooks/usePersistedState";
-import { useSessionState } from "../hooks/useSessionState";
 
 import { initialUser } from "./fixtures/me";
 import { initialEmails } from "./fixtures/emails";
@@ -9,6 +8,7 @@ import { recipients as initialRecipients } from "./fixtures/recipients";
 import { recipientLabels as initialRecipientLabels } from "./fixtures/recipientLabels";
 import { initialLabels } from "./fixtures/labels";
 import { normalizeEmails } from "../utils/emails";
+import { openDB } from "idb";
 
 export const GlobalContext = createContext();
 
@@ -33,7 +33,7 @@ export const GlobalContextProvider = ({ children }) => {
     showPanel: false,
     direction: "vertical",
   });
-  const [previewEmail, setPreviewEmail] = useState(null);
+  const [previewEmailId, setPreviewEmailId] = useState(null);
   const [showQuickSettings, setShowQuickSettings] = useState(false);
   const [density, setDensity] = useState("default");
   const [threading, setThreading] = useState(true);
@@ -56,10 +56,6 @@ export const GlobalContextProvider = ({ children }) => {
   });
 
   const [selected, setSelected] = useState(() => new Set());
-
-  const refreshEmails = useCallback(() => {
-    setEmails(initialEmails);
-  }, []);
 
   // Clear selection on navigation (folder/label changes)
   const location = useLocation();
@@ -116,6 +112,42 @@ export const GlobalContextProvider = ({ children }) => {
     return normalizeEmails(emails);
   }, [emails]);
 
+  // Handle IndexedDB as a state
+  const [db, setDb] = useState(null);
+
+  useEffect(() => {
+    const initDB = async () => {
+      try {
+        const database = await openDB("my-database", 1, {
+          upgrade(db, oldVer, newVer, tx) {
+            // runs only when version > oldVer
+            if (!db.objectStoreNames.contains("attachments")) {
+              const store = db.createObjectStore("attachments", { keyPath: "id" }); // primary key
+              store.createIndex("name", "name", { unique: false }); // secondary index
+            }
+          },
+        });
+
+        setDb(database);
+      } catch (error) {
+        console.error("Failed to open database:", error);
+      }
+    };
+
+    initDB();
+  }, []);
+
+  const refreshEmails = useCallback(async () => {
+    setEmails(initialEmails);
+
+    // reset the database, delete all attachments
+    if (db) {
+      console.log(`deleting all attachments`);
+      const attachmentStore = db.transaction("attachments", "readwrite").objectStore("attachments");
+      await attachmentStore.clear();
+    }
+  }, [db]);
+
   const contextValue = {
     selection,
     loggedInUser,
@@ -144,8 +176,8 @@ export const GlobalContextProvider = ({ children }) => {
     refreshEmails,
     panelState,
     setPanelState,
-    previewEmail,
-    setPreviewEmail,
+    previewEmailId,
+    setPreviewEmailId,
     showQuickSettings,
     setShowQuickSettings,
     density,
@@ -156,6 +188,7 @@ export const GlobalContextProvider = ({ children }) => {
     setThreading,
     isLeftSidebarExpanded,
     setIsLeftSidebarExpanded,
+    db,
     rightSidebarExpanded,
     setRightSidebarExpanded,
     rightSidebarActiveTab,
