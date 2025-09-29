@@ -141,9 +141,9 @@ export const PanelFooter = () => {
         flex: 1,
       }}
     >
-      {/* <StorageUsage centerText />
+      <StorageUsage centerText />
       <LastAccountActivity centerText />
-      <TermsPrivacyProgramPolicies centerText /> */}
+      <TermsPrivacyProgramPolicies centerText />
     </Box>
   );
 };

@@ -35,16 +35,6 @@ const SearchBar = () => {
 
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
 
-  // console.log(decodeFromPath(location.pathname.split("/search/advanced/")[1]), "decodeFromPath");
-  // const getSearchQuery = () => {
-  //   if (isAdvancedSearch) {
-  //     return queryToSearchBarString(searchQuery);
-  //   }
-  //   return searchQuery;
-  // };
-
-  console.log(searchQuery, "searchQuery");
-
   const handleSearchBarFocus = () => {
     setShowAdvancedSearch(false);
     setIsFocused(true);
@@ -69,12 +59,10 @@ const SearchBar = () => {
       buildSearchIndex(emails);
     }
   }, [emails]);
-  console.log(isOnSearchResults, "isOnSearchResults");
+
   // Set search value when search query is present in the url
   useEffect(() => {
     if (searchQuery && isAdvancedSearch) {
-      console.log(searchQuery, "searchQuery");
-      console.log(queryToSearchBarString(searchQuery), "queryToSearchBarString");
       setSearchValue(queryToSearchBarString(searchQuery));
     } else if (searchQuery) {
       setSearchValue(searchQuery);

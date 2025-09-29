@@ -21,7 +21,6 @@ const SearchResultsView = () => {
   const location = useLocation();
 
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
-  console.log(searchQuery, "searchQuery");
 
   // Check if this is an advanced search
   const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
