@@ -30,7 +30,8 @@ const SearchBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isOnSearchResults = location.pathname.startsWith("/search/");
+  console.log(location.pathname);
+
   const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
 
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);

@@ -88,6 +88,14 @@ const EmailList = ({ emails = [], showCheckboxes = true, showFooter = true }) =>
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
       const composeParam = urlParams.get("compose");
+      const pathname = location.pathname;
+
+      if (pathname.startsWith("/search")) {
+        const composeQuery = composeParam ? `?compose=${composeParam}` : "";
+        navigate(`/inbox/${threadId}${composeQuery}`);
+        return;
+      }
+
       if (composeParam) {
         navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
       } else {
