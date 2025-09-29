@@ -89,7 +89,7 @@ const Inbox = () => {
   useEffect(() => {
     document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
   }, []);
-  console.log(rows)
+
   return (
     <Container id="cont-123">
       <EmailListContainer role="main">
