@@ -1,8 +1,14 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { generateThreadId, generateLegacyThreadId, generateNextIntegerId } from "../utils/helperFunctions";
+import {
+  generateThreadId,
+  generateLegacyThreadId,
+  generateNextIntegerId,
+  isValidEmail,
+  restructureRecipients,
+} from "../utils/helperFunctions";
 
 export const useSendEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
@@ -19,7 +25,18 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     return emailRegex.test(email);
   };
 
-  const handleSend = ({ to, cc, bcc, subject, content, rawInputText, onClose, currentDraftId, isDraft }) => {
+  const handleSend = ({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    rawInputText,
+    onClose,
+    currentDraftId,
+    isDraft,
+    attachments,
+  }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
 
@@ -80,10 +97,10 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     }
 
     // If all validations pass, send the email
-    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft });
+    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments });
   };
 
-  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft }) => {
+  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
@@ -121,13 +138,14 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       important: false,
       labels: ["Sent"],
       labelColor: "#e1e3e1",
+      attachments,
     };
 
     // Add reply/forward reference if applicable
-    if (replyType === 'reply' && originalEmail) {
+    if (replyType === "reply" && originalEmail) {
       newEmail.replyToEmailId = originalEmail.id;
     }
-    if (replyType === 'forward' && originalEmail) {
+    if (replyType === "forward" && originalEmail) {
       newEmail.forwardedEmailId = originalEmail.id;
     }
 
@@ -137,14 +155,26 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // Get all the recipients
     const allRecipients = [...to, ...cc, ...bcc];
 
+    // Create restructured recipients for proper comparison
+    const restructuredRecipients = restructureRecipients(recipients);
+
     // If any of the recipients doesnot present in the recipients context, add them
-    const newRecipients = allRecipients.filter((recipient) => !recipients.some((r) => r.email === recipient.email));
+    const newRecipients = allRecipients.filter(
+      (recipient) => !restructuredRecipients.some((r) => r.email === recipient.email)
+    );
     if (newRecipients.length > 0) {
       const updatedRecipients = [...recipients];
       newRecipients.forEach((recipient, index) => {
         updatedRecipients.push({
           ...recipient,
+          emails: [
+            {
+              value: recipient.email,
+              label: "",
+            },
+          ],
           id: generateNextIntegerId(recipients) + index,
+          labels: [],
         });
       });
       setRecipients(updatedRecipients);

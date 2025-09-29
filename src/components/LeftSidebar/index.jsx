@@ -154,7 +154,8 @@ const LeftSidebar = () => {
               maxWidth: "72px",
             }),
         transition: "width 0.3s ease-in-out",
-        ...(!isLeftSidebarExpanded && { position: "absolute", zIndex: 900, backgroundColor: "#fff" }),
+        backgroundColor: "#f8fafd",
+        ...(!isLeftSidebarExpanded && { position: "absolute", zIndex: 900 }),
       }}
       onMouseEnter={() => setIsLeftSidebarHovered(true)}
       onMouseLeave={() => setIsLeftSidebarHovered(false)}
@@ -295,7 +296,6 @@ const LeftSidebar = () => {
                           <div className="zw" gh="cl">
                             <div className="TK">
                               {visibleCustomLabels.map((l) => {
-                                // console.log(l)
                                 const node = findNode(labelTree, l.key); // full tree node
                                 const multipleLabels = collectSubtree(node, labelIndex);
                                 return (

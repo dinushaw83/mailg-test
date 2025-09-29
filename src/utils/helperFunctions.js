@@ -33,11 +33,15 @@ export const generateAvatarColor = (name) => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-// Generate a random thread ID
-export const generateThreadId = () => {
+export const generateRandomId = () => {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000000000000000000);
-  return `#thread-f:${timestamp}${random}`;
+  return `${timestamp}${random}`;
+};
+
+// Generate a random thread ID
+export const generateThreadId = () => {
+  return `#thread-f:${generateRandomId()}`;
 };
 
 // Generate a random legacy thread ID
@@ -267,3 +271,44 @@ export function buildSearchBarFromUrl(urlOrLocation) {
 
   return parts.join(" ").trim();
 }
+// Validate email format
+export const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Function to restructure recipients to expand multiple emails into separate items
+export const restructureRecipients = (recipients) => {
+  const restructured = [];
+
+  recipients.forEach((recipient) => {
+    if (recipient.emails && recipient.emails.length > 0) {
+      // Track seen emails for this specific user to avoid duplicates within the same user
+      const seenEmailsForUser = new Set();
+
+      // If recipient has multiple emails, create separate items for each
+      recipient.emails.forEach((emailObj) => {
+        // Only include if the email is valid and not already seen for this user
+        if (isValidEmail(emailObj.value) && !seenEmailsForUser.has(emailObj.value.toLowerCase())) {
+          seenEmailsForUser.add(emailObj.value.toLowerCase());
+          restructured.push({
+            id: recipient.id, // Use same ID for both emails
+            name: recipient.name,
+            firstName: recipient.firstName,
+            lastName: recipient.lastName,
+            email: emailObj.value,
+            avatar: recipient.avatar,
+            labels: recipient.labels,
+            emailLabel: emailObj.label,
+          });
+        }
+      });
+    } else if (recipient.email && isValidEmail(recipient.email)) {
+      // If recipient has only one email (legacy structure), keep as is only if valid
+      restructured.push({
+        ...recipient,
+      });
+    }
+  });
+  return restructured;
+};

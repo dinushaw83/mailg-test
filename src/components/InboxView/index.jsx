@@ -12,13 +12,23 @@ import { PanelFooter } from "../EmailList/Footer";
 import useMailActions from "../../hooks/useMailActions";
 
 const InboxViewContainer = styled.div`
-  padding: 24px;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
+  height: ${(props) => (props.isPreview ? "100%" : "100vh")};
+  overflow: hidden;
+`;
+
+const ScrollableContent = styled.div`
+  flex: 1;
   overflow-y: auto;
+  padding: 24px 24px 120px 24px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(95, 99, 104, 0.6) transparent;
+  will-change: scroll-position;
+  transform: translateZ(0);
+  -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -78,20 +88,23 @@ export const EmailContent = ({
 
   if (!thread) {
     return (
-      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-        <Box
-          sx={{
-            paddingTop: "3em",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontSize: "1rem",
-          }}
-        >
-          No conversations selected
-        </Box>
-        <PanelFooter />
-      </Box>
+      <InboxViewContainer isPreview={isPreview}>
+        {showActionBar && <ActionBar thread={thread} />}
+        <ScrollableContent>
+          <Box
+            sx={{
+              paddingTop: "3em",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              fontSize: "1rem",
+            }}
+          >
+            No conversations selected
+          </Box>
+          {isPreview && <PanelFooter />}
+        </ScrollableContent>
+      </InboxViewContainer>
     );
   }
 
@@ -105,30 +118,32 @@ export const EmailContent = ({
   const draft = isLastDraft ? lastMessage : null;
 
   return (
-    <InboxViewContainer>
+    <InboxViewContainer isPreview={isPreview}>
       {showActionBar && <ActionBar thread={thread} />}
-      <InnerContainer>
-        <Subject subject={messages[0].subject} />
-        {displayedMessages.map((message, index) => (
-          <React.Fragment key={message.id}>
-            <Content
-              body={message.body}
-              timestamp={message.timestamp}
-              senderName={message.from.name}
-              senderEmail={message.from.email}
-              attachments={message.attachments}
-              isScheduled={message.labels?.includes("Scheduled")}
-              scheduledDate={message.scheduledDate}
-              scheduledTime={message.scheduledTime}
-              emailId={message.id}
-            />
-            {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
-          </React.Fragment>
-        ))}
-        {/* <Actions /> */}
-        {!isLastScheduled && <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />}
-      </InnerContainer>
-      {isPreview && <PanelFooter />}
+      <ScrollableContent>
+        <InnerContainer>
+          <Subject subject={messages[0].subject} message={messages[0]} />
+          {displayedMessages.map((message, index) => (
+            <React.Fragment key={message.id}>
+              <Content
+                body={message.body}
+                timestamp={message.timestamp}
+                senderName={message.from.name}
+                senderEmail={message.from.email}
+                attachments={message.attachments}
+                isScheduled={message.labels?.includes("Scheduled")}
+                scheduledDate={message.scheduledDate}
+                scheduledTime={message.scheduledTime}
+                emailId={message.id}
+              />
+              {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
+            </React.Fragment>
+          ))}
+          {/* <Actions /> */}
+          {!isLastScheduled && <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />}
+        </InnerContainer>
+        {isPreview && <PanelFooter />}
+      </ScrollableContent>
     </InboxViewContainer>
   );
 };

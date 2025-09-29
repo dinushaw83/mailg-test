@@ -1,12 +1,6 @@
-import { Stack, Popper, Paper, ClickAwayListener } from "@mui/material";
+import { Stack, Popper, Paper, ClickAwayListener, Box } from "@mui/material";
 import { useCallback, useRef, useState, useEffect } from "react";
-import {
-  LinkBubbleMenu,
-  MenuButton,
-  RichTextEditor,
-  TableBubbleMenu,
-  insertImages,
-} from "mui-tiptap";
+import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
 import InsertLink from "@mui/icons-material/InsertLink";
 import EditorMenuControls from "./EditorMenuControls";
@@ -14,6 +8,10 @@ import useExtensions from "./useExtensions";
 import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
 import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
+import React from "react";
+import Attachments from "./Attachments";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { generateRandomId } from "../../utils/helperFunctions";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -22,7 +20,28 @@ function fileListToImageFiles(fileList) {
   });
 }
 
-export default function Editor({ content, onChange, onSend, onDelete, onSchedule, textEditorMinHeight, textEditorMaxHeight, useCompactFormatting = false }) {
+const AttachmentIcon = () => {
+  return (
+    <span
+      className="material-symbols-outlined"
+      style={{ fontSize: "20px", color: "rgb(95, 99, 104)", transform: "rotate(270deg)" }}
+    >
+      attachment
+    </span>
+  );
+};
+
+export default function Editor({
+  content,
+  onChange,
+  onSend,
+  onDelete,
+  onSchedule,
+  textEditorMinHeight,
+  textEditorMaxHeight,
+  useCompactFormatting = false,
+  messageId,
+}) {
   const extensions = useExtensions({
     placeholder: "",
   });
@@ -36,86 +55,86 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
   const [sendOptionsAnchorEl, setSendOptionsAnchorEl] = useState(null);
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [dateTimePickerOpen, setDateTimePickerOpen] = useState(false);
+  const nativeFilePickerRef = useRef(null);
 
-  const handleNewImageFiles = useCallback(
-    (files, insertPosition) => {
-      if (!rteRef.current?.editor) {
-        return;
-      }
+  const [attachments, setAttachments] = useState([]);
+  const { db } = useGlobalContext();
 
-      const attributesForImageFiles = files.map((file) => ({
-        src: URL.createObjectURL(file),
-        alt: file.name,
-      }));
+  const handleNewImageFiles = useCallback((files, insertPosition) => {
+    if (!rteRef.current?.editor) {
+      return;
+    }
 
-      insertImages({
-        images: attributesForImageFiles,
-        editor: rteRef.current.editor,
-        position: insertPosition,
-      });
-    },
-    []
-  );
+    const attributesForImageFiles = files.map((file) => ({
+      src: URL.createObjectURL(file),
+      alt: file.name,
+    }));
+
+    insertImages({
+      images: attributesForImageFiles,
+      editor: rteRef.current.editor,
+      position: insertPosition,
+    });
+  }, []);
 
   // Allow for dropping images into the editor
-  const handleDrop =
-    useCallback(
-      (view, event, _slice, _moved) => {
-        if (!(event instanceof DragEvent) || !event.dataTransfer) {
-          return false;
-        }
-
-        const imageFiles = fileListToImageFiles(event.dataTransfer.files);
-        if (imageFiles.length > 0) {
-          const insertPosition = view.posAtCoords({
-            left: event.clientX,
-            top: event.clientY,
-          })?.pos;
-
-          handleNewImageFiles(imageFiles, insertPosition);
-
-          event.preventDefault();
-          return true;
-        }
-
+  const handleDrop = useCallback(
+    (view, event, _slice, _moved) => {
+      if (!(event instanceof DragEvent) || !event.dataTransfer) {
         return false;
-      },
-      [handleNewImageFiles]
-    );
+      }
+
+      const imageFiles = fileListToImageFiles(event.dataTransfer.files);
+      if (imageFiles.length > 0) {
+        const insertPosition = view.posAtCoords({
+          left: event.clientX,
+          top: event.clientY,
+        })?.pos;
+
+        handleNewImageFiles(imageFiles, insertPosition);
+
+        event.preventDefault();
+        return true;
+      }
+
+      return false;
+    },
+    [handleNewImageFiles]
+  );
 
   // Allow for pasting images
-  const handlePaste =
-    useCallback(
-      (_view, event, _slice) => {
-        if (!event.clipboardData) {
-          return false;
-        }
-
-        const pastedImageFiles = fileListToImageFiles(
-          event.clipboardData.files
-        );
-        if (pastedImageFiles.length > 0) {
-          handleNewImageFiles(pastedImageFiles);
-          // Return true to mark the paste event as handled. This can for
-          // instance prevent redundant copies of the same image showing up,
-          // like if you right-click and copy an image from within the editor
-          // (in which case it will be added to the clipboard both as a file and
-          // as HTML, which Tiptap would otherwise separately parse.)
-          return true;
-        }
-
-        // We return false here to allow the standard paste-handler to run.
+  const handlePaste = useCallback(
+    (_view, event, _slice) => {
+      if (!event.clipboardData) {
         return false;
-      },
-      [handleNewImageFiles]
-    );
+      }
+
+      const pastedImageFiles = fileListToImageFiles(event.clipboardData.files);
+      if (pastedImageFiles.length > 0) {
+        handleNewImageFiles(pastedImageFiles);
+        // Return true to mark the paste event as handled. This can for
+        // instance prevent redundant copies of the same image showing up,
+        // like if you right-click and copy an image from within the editor
+        // (in which case it will be added to the clipboard both as a file and
+        // as HTML, which Tiptap would otherwise separately parse.)
+        return true;
+      }
+
+      // We return false here to allow the standard paste-handler to run.
+      return false;
+    },
+    [handleNewImageFiles]
+  );
 
   // Set up editor change handler
-  const handleEditorChange = useCallback(({ editor }) => {
-    const html = editor.getHTML();
-    const plainText = editor.getText();
-    onChange?.(html, plainText);
-  }, [onChange]);
+  const handleEditorChange = useCallback(
+    ({ editor }) => {
+      const html = editor.getHTML();
+      const plainText = editor.getText();
+      onChange?.(html, plainText);
+    },
+    [onChange]
+  );
 
   // Handle content prop updates after initial render
   useEffect(() => {
@@ -163,7 +182,9 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
     closeLinkPopover();
   };
 
-  const canApply = hasTextSelection ? (linkHref.trim().length > 0) : (linkText.trim().length > 0 && linkHref.trim().length > 0);
+  const canApply = hasTextSelection
+    ? linkHref.trim().length > 0
+    : linkText.trim().length > 0 && linkHref.trim().length > 0;
 
   const openSendOptionsPopover = (event) => {
     setSendOptionsAnchorEl(event.currentTarget);
@@ -221,6 +242,34 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
     setDateTimePickerOpen(false);
   };
 
+  const openNativeFilePicker = () => {
+    nativeFilePickerRef.current?.click();
+  };
+
+  const handleNativeFilePickerChange = (e) => {
+    const { files = [] } = e.target;
+
+    const newFiles = [];
+    for (const file of files) {
+      const id = generateRandomId();
+      const url = URL.createObjectURL(file);
+      const metadata = {
+        id,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url,
+      };
+      newFiles.push(metadata);
+
+      db.put("attachments", { id, file });
+    }
+
+    // A file should not be added if it already exists in the attachments array
+    const uniqueFiles = newFiles.filter((file) => !attachments.some((attachment) => attachment.name === file.name));
+    setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
+  };
+
   return (
     <>
       <RichTextEditor
@@ -247,8 +296,9 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
               }}
             >
               {showMenuBar && <div style={{ width: "100%", height: "35px" }}></div>}
+              <Attachments attachments={attachments} setAttachments={setAttachments} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', position: "relative", width: "100%" }}>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", position: "relative", width: "100%" }}>
                   <div className={styles.sendButtonContainer}>
                     <div
                       aria-label="Send ‪(⌘Enter)‬"
@@ -287,7 +337,7 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                         borderRadius: "18px 0px 0px 18px",
                         userSelect: "none",
                       }}
-                      onClick={onSend}
+                      onClick={() => onSend({ attachments })}
                     >
                       Send
                     </div>
@@ -334,14 +384,33 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                     </div>
                   </div>
 
-                  {showMenuBar && <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={useCompactFormatting} />}
+                  {/* Hidden input for native file picker */}
+                  <input
+                    type="file"
+                    ref={nativeFilePickerRef}
+                    style={{ display: "none" }}
+                    multiple
+                    onChange={handleNativeFilePickerChange}
+                  />
+
+                  {showMenuBar && (
+                    <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={useCompactFormatting} />
+                  )}
                   <MenuButton
                     value="formatting"
                     tooltipLabel={showMenuBar ? "Hide formatting" : "Show formatting"}
                     size="small"
                     onClick={() => setShowMenuBar((currentState) => !currentState)}
                     selected={showMenuBar}
-                    IconComponent={FormatColorText} />
+                    IconComponent={FormatColorText}
+                  />
+
+                  <MenuButton
+                    tooltipLabel="Attach files"
+                    size="small"
+                    onClick={openNativeFilePicker}
+                    IconComponent={AttachmentIcon}
+                  />
 
                   <MenuButton
                     tooltipLabel="Insert link"
@@ -349,14 +418,22 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                     onClick={openLinkPopover}
                     IconComponent={InsertLink}
                   />
-                  <Popper
-                    open={Boolean(linkAnchorEl)}
-                    anchorEl={linkAnchorEl}
-                    placement="top"
-                    style={{ zIndex: 1500 }}
-                  >
-                    <ClickAwayListener onClickAway={closeLinkPopover} mouseEvent="onMouseDown" touchEvent="onTouchStart">
-                      <Paper elevation={5} sx={{ p: 1, display: "flex", flexDirection: "column", gap: 0.5, padding: "16px 32px 16px 16px" }}>
+                  <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
+                    <ClickAwayListener
+                      onClickAway={closeLinkPopover}
+                      mouseEvent="onMouseDown"
+                      touchEvent="onTouchStart"
+                    >
+                      <Paper
+                        elevation={5}
+                        sx={{
+                          p: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 0.5,
+                          padding: "16px 32px 16px 16px",
+                        }}
+                      >
                         {!hasTextSelection && (
                           <div style={{ position: "relative", width: 260 }}>
                             <input
@@ -364,9 +441,15 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                               value={linkText}
                               onChange={(e) => setLinkText(e.target.value)}
                               placeholder="Text"
-                              onFocus={(e) => { e.target.placeholder = ""; }}
-                              onBlur={(e) => { if (!e.target.value) e.target.placeholder = "Text"; }}
-                              onKeyDown={(e) => { if (e.key === "Enter") applyLink(); }}
+                              onFocus={(e) => {
+                                e.target.placeholder = "";
+                              }}
+                              onBlur={(e) => {
+                                if (!e.target.value) e.target.placeholder = "Text";
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") applyLink();
+                              }}
                               style={{
                                 width: "80%",
                                 padding: "6px 10px 6px 34px",
@@ -377,7 +460,21 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                                 marginBottom: "4px",
                               }}
                             />
-                            <svg focusable="false" viewBox="0 -960 960 960" height="20" width="20" style={{ position: "absolute", left: 8, top: "46%", transform: "translateY(-50%)", userSelect: "none", pointerEvents: "none", color: "rgba(0,0,0,0.6)" }}>
+                            <svg
+                              focusable="false"
+                              viewBox="0 -960 960 960"
+                              height="20"
+                              width="20"
+                              style={{
+                                position: "absolute",
+                                left: 8,
+                                top: "46%",
+                                transform: "translateY(-50%)",
+                                userSelect: "none",
+                                pointerEvents: "none",
+                                color: "rgba(0,0,0,0.6)",
+                              }}
+                            >
                               <path d="M192-360v-72H576v72H192Zm0-168v-72H768v72H192Z" />
                             </svg>
                           </div>
@@ -389,9 +486,15 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                               value={linkHref}
                               onChange={(e) => setLinkHref(e.target.value)}
                               placeholder="URL"
-                              onFocus={(e) => { e.target.placeholder = ""; }}
-                              onBlur={(e) => { if (!e.target.value) e.target.placeholder = "URL"; }}
-                              onKeyDown={(e) => { if (e.key === "Enter") applyLink(); }}
+                              onFocus={(e) => {
+                                e.target.placeholder = "";
+                              }}
+                              onBlur={(e) => {
+                                if (!e.target.value) e.target.placeholder = "URL";
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") applyLink();
+                              }}
                               style={{
                                 width: "80%",
                                 padding: "6px 10px 6px 34px",
@@ -401,7 +504,21 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                                 outline: "none",
                               }}
                             />
-                            <svg focusable="false" viewBox="0 -960 960 960" height="20" width="20" style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", userSelect: "none", pointerEvents: "none", color: "rgba(0,0,0,0.6)" }}>
+                            <svg
+                              focusable="false"
+                              viewBox="0 -960 960 960"
+                              height="20"
+                              width="20"
+                              style={{
+                                position: "absolute",
+                                left: 8,
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                userSelect: "none",
+                                pointerEvents: "none",
+                                color: "rgba(0,0,0,0.6)",
+                              }}
+                            >
                               <path d="M432-288H288q-79.68,0-135.84-56.23T96-480.23T152.16-616T288-672H432v72H288q-50,0-85,35t-35,85t35,85t85,35H432v72ZM336-444v-72H624v72H336ZM528-288v-72H672q50,0 85-35t35-85t-35-85t-85-35H528v-72H672q79.68,0 135.84,56.23t56.16,136T807.84-344T672-288H528Z"></path>
                             </svg>
                           </div>
@@ -433,7 +550,11 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                     placement="top"
                     style={{ zIndex: 1500 }}
                   >
-                    <ClickAwayListener onClickAway={closeSendOptionsPopover} mouseEvent="onMouseDown" touchEvent="onTouchStart">
+                    <ClickAwayListener
+                      onClickAway={closeSendOptionsPopover}
+                      mouseEvent="onMouseDown"
+                      touchEvent="onTouchStart"
+                    >
                       <Paper elevation={5} sx={{ p: 0, minWidth: 160 }}>
                         <div
                           onClick={handleScheduleSend}
@@ -455,7 +576,10 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                             e.target.style.backgroundColor = "transparent";
                           }}
                         >
-                          <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "rgb(95, 99, 104)" }}>
+                          <span
+                            className="material-symbols-outlined"
+                            style={{ fontSize: "20px", color: "rgb(95, 99, 104)" }}
+                          >
                             schedule
                           </span>
                           Schedule send
@@ -465,13 +589,12 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
                   </Popper>
                 </div>
 
-                <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <div style={{ marginLeft: "auto", display: "flex", gap: "12px", alignItems: "center" }}>
                   <button className={styles.deleteButton} onClick={onDelete} title="Delete">
                     <span className="material-symbols-outlined">delete</span>
                   </button>
                 </div>
               </div>
-
             </Stack>
           ),
           get footer() {
@@ -488,7 +611,7 @@ export default function Editor({ content, onChange, onSend, onDelete, onSchedule
             "& h1, & h2, & h3, & h4, & h5, & h6": {
               scrollMarginTop: showMenuBar ? 50 : 0,
             },
-            minHeight: textEditorMinHeight === "390px" ? showMenuBar ? "339px" : "390px" : textEditorMinHeight,
+            minHeight: textEditorMinHeight === "390px" ? (showMenuBar ? "339px" : "390px") : textEditorMinHeight,
             maxHeight: textEditorMaxHeight,
             overflowY: "auto",
           },

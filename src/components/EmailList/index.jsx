@@ -13,7 +13,7 @@ import Footer from "./Footer";
 const EmailList = ({ emails = [], showCheckboxes = true, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, composeWindows, panelState, previewEmail } = useGlobalContext();
+  const { selection, composeWindows, panelState, previewEmailId } = useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
@@ -110,8 +110,8 @@ const EmailList = ({ emails = [], showCheckboxes = true, showFooter = true }) =>
   return (
     <div className="Nu tf aZ6" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ height: "100%", minWidth: "518px", overflowY: "hidden" }}>
-        <PanelGroup direction={direction}>
-          <Panel defaultSize={40} minSize={25}>
+        <PanelGroup direction={direction} id="email-list-panel-group">
+          <Panel defaultSize={40} minSize={25} id="email-list-panel">
             <Table
               {...{
                 emails,
@@ -138,14 +138,8 @@ const EmailList = ({ emails = [], showCheckboxes = true, showFooter = true }) =>
                   cursor: "col-resize",
                 }}
               />
-              <Panel defaultSize={50}>
-                <EmailContent
-                  threadId={previewEmail?.threadId.split(":")[1]}
-                  folder={folder}
-                  label={label}
-                  showActionBar={false}
-                  isPreview
-                />
+              <Panel defaultSize={60} id="email-content-panel" style={{ height: "100%", overflow: "hidden" }}>
+                <EmailContent threadId={previewEmailId} folder={folder} label={label} showActionBar={false} isPreview />
               </Panel>
             </>
           )}
