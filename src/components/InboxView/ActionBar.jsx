@@ -110,7 +110,7 @@ const MailActions = ({ thread }) => {
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { setSnackbar, emails } = useGlobalContext();
+  const { setSnackbar, emails, setEmails } = useGlobalContext();
 
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;

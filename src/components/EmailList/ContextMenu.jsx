@@ -1,6 +1,15 @@
-import React, { useMemo } from "react";
+import Box from "@mui/material/Box";
+import React, { useCallback, useMemo, useState } from "react";
 import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
+import MoveToSubMenu from "./MoveToSubMenu";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import { useParams } from "react-router-dom";
+import useMailActions from "../../hooks/useMailActions";
+import Button from "@mui/material/Button";
+import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const ContextMenu = ({
   menuId,
@@ -10,10 +19,177 @@ const ContextMenu = ({
   handleSnoozeAction,
   contextRow,
   handleMuteAction,
+  setEmails,
 }) => {
   const isRead = contextRow?.read;
   const senderName = contextRow?.from?.name;
-  console.log("contextRow", contextRow);
+  const threadId = contextRow?.threadId.split(":")[1];
+  const selectedIds = [threadId];
+
+  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam } = useMailActions();
+  const { setSnackbar } = useGlobalContext();
+
+  const [{ spamModalOpen, createOpen }, setState] = useState({
+    spamModalOpen: false,
+    createOpen: false,
+  });
+
+  const toggleCreateOpen = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      createOpen: !prev.createOpen,
+    }));
+  }, []);
+
+  const { labels, labelTree } = useLabels();
+
+  const { label: labelParam } = useParams();
+  const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
+
+  // Check if any selected emails are not in the inbox
+  const menuItems = useMemo(() => {
+    const flat = flattenTreeForSelect(labelTree); // [{ key, name, depth, system }]
+    return flat
+      .filter((item) => !labels?.[item.key]?.system)
+      .map((item) => ({
+        id: item.key,
+        name: getPathLabelFromKey(labels, item.key), // "Parent / Child / ..."
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [labelTree, labels]);
+
+  const handleMenuItemClick = useCallback(
+    async (item) => {
+      if (item.id === "__create_label__") {
+        setState((prev) => ({
+          ...prev,
+          createOpen: true,
+        }));
+        return;
+      }
+
+      if (!selectedIds.length) return;
+
+      try {
+        if (item.id === "__inbox__" || item.id === "inbox") {
+          moveToLabel(selectedIds, "Inbox");
+        } else if (item.id === "__spam__" || item.id === "spam") {
+          setState((prev) => ({
+            ...prev,
+            spamModalOpen: true,
+          }));
+          return;
+        } else if (item.id === "__trash__" || item.id === "trash") {
+          moveToTrash(selectedIds);
+          // Show global snackbar with Undo action
+          setSnackbar({
+            open: true,
+            message: "Conversation moved to Trash.",
+            autoHideDuration: 10000,
+            action: (
+              <Button
+                sx={{ textTransform: "none" }}
+                size="small"
+                onClick={() => {
+                  moveToInbox(selectedIds);
+                  // Follow-up confirmation snackbar
+                  setSnackbar({
+                    open: true,
+                    message: "Action undone.",
+                    autoHideDuration: 3000,
+                    action: null,
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            ),
+          });
+        } else {
+          // item.id is now the TARGET LABEL KEY
+          const targetKey = item.id;
+          const curMeta = currentLabel ? labels?.[currentLabel] : null;
+          const inCustomLabel = curMeta && curMeta.system === false;
+          if (inCustomLabel) {
+            moveToLabelFrom(selectedIds, currentLabel, targetKey);
+          } else {
+            moveToLabel(selectedIds, targetKey); // pass key
+          }
+        }
+      } catch (e) {
+        console.error("Move failed:", e);
+      }
+    },
+    [moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
+  );
+
+  const handleOnAfterCreate = (childName, parentKey) => {
+    try {
+      // Store original labels before the move
+      const originalLabels = {};
+      selectedIds.forEach((id) => {
+        originalLabels[id] = [...(contextRow.labels || [])];
+      });
+
+      // Perform the move after creation
+      const newKey = makeKey(childName, parentKey); // build composite key
+      const curMeta = currentLabel ? labels?.[currentLabel] : null;
+      const inCustomLabel = curMeta && curMeta.system === false;
+      if (inCustomLabel) {
+        moveToLabelFrom(selectedIds, currentLabel, newKey);
+      } else {
+        moveToLabel(selectedIds, newKey);
+      }
+
+      // --- UNDO action ---
+      setSnackbar({
+        open: true,
+        message: `Conversation moved to "${childName}".`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              try {
+                // Restore original labels for each email
+                setEmails((prevEmails) =>
+                  prevEmails.map((email) => {
+                    const emailThreadId = email.threadId.split(":")[1];
+                    if (selectedIds.includes(emailThreadId) && originalLabels[emailThreadId]) {
+                      return { ...email, labels: originalLabels[emailThreadId] };
+                    }
+                    return email;
+                  })
+                );
+
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              } catch {
+                setSnackbar({
+                  open: true,
+                  message: "Could not undo.",
+                  autoHideDuration: 4000,
+                  action: null,
+                });
+              }
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      setSnackbar({
+        open: true,
+        message: "Could not move selected conversations.",
+        autoHideDuration: 4000,
+      });
+    }
+  };
 
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
@@ -104,121 +280,139 @@ const ContextMenu = ({
     },
   ];
 
+  const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
+
   return (
-    <Menu
-      id={menuId}
-      style={{
-        padding: 0,
-        paddingTop: "4px",
-        paddingBottom: "4px",
-        fontSize: "14px",
-      }}
-    >
-      {sectionOneItems.map((item) => (
-        <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
-          <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-            {item.icon}
-          </span>
-          {item.label}
-        </Item>
-      ))}
-
-      <Separator />
-
-      {sectionTwoItems.map((item) => (
-        <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
-          <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-            {item.icon}
-          </span>
-          {item.label}
-        </Item>
-      ))}
-
-      <Separator />
-
-      <Submenu
-        label="Move to"
-        style={{ padding: 0, paddingTop: "4px", paddingBottom: "4px" }}
-        arrow={
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: "20px",
-              fontVariationSettings: "'FILL' 1", // Makes it solid
-            }}
-          >
-            arrow_right
-          </span>
-        }
+    <Box>
+      <Menu
+        id={menuId}
+        style={{
+          padding: 0,
+          paddingTop: "4px",
+          paddingBottom: "4px",
+          fontSize: "14px",
+        }}
       >
-        <div>Hello world</div>
-        <Item id="reload" onClick={handleItemClick}>
+        {sectionOneItems.map((item) => (
+          <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
+            <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
+              {item.icon}
+            </span>
+            {item.label}
+          </Item>
+        ))}
+
+        <Separator />
+
+        {sectionTwoItems.map((item) => (
+          <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
+            <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
+              {item.icon}
+            </span>
+            {item.label}
+          </Item>
+        ))}
+
+        <Separator />
+
+        <Submenu
+          label="Move to"
+          style={{ padding: 0, paddingTop: "4px", paddingBottom: "4px" }}
+          arrow={
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: "20px",
+                fontVariationSettings: "'FILL' 1", // Makes it solid
+              }}
+            >
+              arrow_right
+            </span>
+          }
+        >
+          <MoveToSubMenu labels={menuItems} onSelect={handleMenuItemClick} showInbox={isThreadNotInInbox} />
+        </Submenu>
+
+        <Submenu
+          label="Label as"
+          style={{ padding: 0, paddingTop: "4px", paddingBottom: "4px" }}
+          arrow={
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: "20px",
+                fontVariationSettings: "'FILL' 1", // Makes it solid
+              }}
+            >
+              arrow_right
+            </span>
+          }
+        >
+          <Item id="reload" onClick={handleItemClick}>
+            <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
+              refresh
+            </span>
+            Reload
+          </Item>
+          <Item id="something" onClick={handleItemClick}>
+            <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
+              settings
+            </span>
+            Do something else
+          </Item>
+        </Submenu>
+        <Item id="mute" onClick={handleItemClick}>
           <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-            refresh
+            volume_off
           </span>
-          Reload
+          Mute
         </Item>
-        <Item id="something" onClick={handleItemClick}>
+
+        <Separator />
+
+        <Item id="search" onClick={handleItemClick} disabled>
           <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-            settings
+            search
           </span>
-          Do something else
+          Find emails from {senderName}
         </Item>
-      </Submenu>
 
-      <Submenu
-        label="Label as"
-        style={{ padding: 0, paddingTop: "4px", paddingBottom: "4px" }}
-        arrow={
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: "20px",
-              fontVariationSettings: "'FILL' 1", // Makes it solid
-            }}
-          >
-            arrow_right
-          </span>
-        }
-      >
-        <Item id="reload" onClick={handleItemClick}>
+        <Separator />
+
+        <Item id="new_tab" onClick={handleItemClick} disabled>
           <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-            refresh
+            open_in_new
           </span>
-          Reload
+          Open in new window
         </Item>
-        <Item id="something" onClick={handleItemClick}>
-          <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-            settings
-          </span>
-          Do something else
-        </Item>
-      </Submenu>
-      <Item id="mute" onClick={handleItemClick}>
-        <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-          volume_off
-        </span>
-        Mute
-      </Item>
+      </Menu>
 
-      <Separator />
+      <CreateLabelDialog open={createOpen} onClose={() => toggleCreateOpen()} onAfterCreate={handleOnAfterCreate} />
 
-      <Item id="search" onClick={handleItemClick} disabled>
-        <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-          search
-        </span>
-        Find emails from {senderName}
-      </Item>
-
-      <Separator />
-
-      <Item id="new_tab" onClick={handleItemClick} disabled>
-        <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-          open_in_new
-        </span>
-        Open in new window
-      </Item>
-    </Menu>
+      <SpamOrUnsubModal
+        open={spamModalOpen}
+        onClose={() => {
+          setState((prev) => ({
+            ...prev,
+            spamModalOpen: false,
+          }));
+        }}
+        onReportSpam={() => {
+          moveToSpam(selectedIds);
+          setState((prev) => ({
+            ...prev,
+            spamModalOpen: false,
+          }));
+        }}
+        onUnsubscribe={() => {
+          moveToSpam(selectedIds);
+          setState((prev) => ({
+            ...prev,
+            spamModalOpen: false,
+          }));
+        }}
+      />
+    </Box>
   );
 };
 

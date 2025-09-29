@@ -1,8 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
-import "react-contexify/ReactContexify.css";
+import { useContextMenu } from "react-contexify";
 
 import CheckBox from "../ui/CheckBox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -190,16 +189,25 @@ const Table = ({
   formatDate,
   setShowAdvancedMenu,
 }) => {
-  const { setPreviewEmail, panelState, density, setSnackbar } = useGlobalContext();
+  const { setPreviewEmail, panelState, density, setSnackbar, setEmails } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
   const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMute } = useMailActions();
-  const [snoozeId, setSnoozeId] = useState(null);
   const snoozeAnchorElRef = useRef(null);
-  const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
-  const showSnoozePopover = Boolean(snoozeAnchorEl);
   const [contextRow, setContextRow] = useState(null);
 
-  const snoozeButtonRef = useRef(null);
+  const [{ snoozeId, snoozeAnchorEl }, setState] = useState({
+    snoozeId: null,
+    snoozeAnchorEl: null,
+  });
+
+  const showSnoozePopover = Boolean(snoozeAnchorEl);
+
+  const setSnoozeAnchorEl = useCallback((element) => {
+    setState((prev) => ({
+      ...prev,
+      snoozeAnchorEl: element,
+    }));
+  }, []);
 
   const renderOneColumn = dimensions.width < 525;
 
@@ -596,8 +604,11 @@ const Table = ({
                           marginRight="0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSnoozeId(email.id);
-                            setSnoozeAnchorEl(e.currentTarget);
+                            setState((prev) => ({
+                              ...prev,
+                              snoozeId: email.id,
+                              snoozeAnchorEl: e.currentTarget,
+                            }));
                           }}
                           _ref={snoozeAnchorElRef}
                         />
@@ -615,8 +626,11 @@ const Table = ({
               anchorEl={snoozeAnchorEl}
               open={showSnoozePopover}
               onClose={() => {
-                setSnoozeAnchorEl(null);
-                setSnoozeId(null);
+                setState((prev) => ({
+                  ...prev,
+                  snoozeAnchorEl: null,
+                  snoozeId: null,
+                }));
               }}
               selectedIds={selection.ids}
               snooze={snooze}
@@ -630,6 +644,7 @@ const Table = ({
             handleSnoozeAction={handleSnoozeAction}
             contextRow={contextRow}
             handleMuteAction={handleMuteAction}
+            setEmails={setEmails}
           />
         </tbody>
       </table>
