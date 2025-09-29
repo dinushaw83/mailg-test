@@ -40,7 +40,7 @@ export const Labels = ({
   const availableLabels = useMemo(() => {
     return (
       Object.entries(labels || {})
-        // .filter(([key, meta]) => !meta.system)
+        .filter(([key, meta]) => !meta.system)
         .map(([key, meta]) => ({
           key,
           name: meta.name || key,
