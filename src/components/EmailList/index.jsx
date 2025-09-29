@@ -74,8 +74,6 @@ const EmailList = ({ emails = [], showCheckboxes = true, showFooter = true }) =>
 
   // Navigate to the email details page
   const navigateToEmailDetails = (email, threadId) => {
-    console.log(email);
-    console.log(threadId);
     // If labels includes Drafts, then add new compose window with the draft id
     if (email.labels.includes("Drafts")) {
       // Check if already a compose window with the draft id exists
