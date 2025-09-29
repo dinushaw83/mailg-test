@@ -27,7 +27,7 @@ import {
 } from "@mui/material";
 import ManageLabels from "./ManageLabels";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
-import { restructureRecipients } from "../../../utils/helperFunctions";
+import { isValidEmail, restructureRecipients } from "../../../utils/helperFunctions";
 import styles from "./SelectContacts.module.css";
 
 export default function SelectContacts({ open, onClose, handleInsertContacts, addedRecipients = [] }) {
@@ -149,7 +149,8 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
       (recipient) =>
         recipient.id &&
         typeof recipient.id === "string" &&
-        recipient.id.startsWith("custom-") &&
+        // Check if the recipient id is a custom recipient or a valid email(logged in user)
+        (recipient.id.startsWith("custom-") || isValidEmail(recipient.id)) &&
         selectedContacts.has(`${recipient.email}-${recipient.id}`)
     );
 
