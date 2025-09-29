@@ -155,12 +155,13 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // Get all the recipients
     const allRecipients = [...to, ...cc, ...bcc];
 
-    // Create restructured recipients for proper comparison
+    // Create restructured recipients and loggedInUser for proper comparison
     const restructuredRecipients = restructureRecipients(recipients);
+    const restructuredLoggedInUser = restructureRecipients([loggedInUser]);
 
-    // If any of the recipients doesnot present in the recipients context, add them
+    // If any of the recipients doesnot present in the recipients or loggedInUser context, add them
     const newRecipients = allRecipients.filter(
-      (recipient) => !restructuredRecipients.some((r) => r.email === recipient.email)
+      (recipient) => ![...restructuredRecipients, ...restructuredLoggedInUser].some((r) => r.email === recipient.email)
     );
     if (newRecipients.length > 0) {
       const updatedRecipients = [...recipients];

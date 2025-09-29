@@ -15,7 +15,7 @@ import styles from "./ComposeEmail.module.css";
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows, rightSidebarActiveTab } =
+  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows, rightSidebarActiveTab, loggedInUser } =
     useContext(GlobalContext);
 
   // Create restructured recipients array for proper lookup
@@ -69,6 +69,24 @@ export default function ComposeEmail({ composeWindow }) {
     }
   };
 
+  // Create custom recipient for valid email
+  const createCustomRecipient = (email) => {
+    // If the email is the logged in user's email, then return the logged in user object
+    if (email === loggedInUser.email || loggedInUser.emails.some((emailObj) => emailObj.value === email)) {
+      return {
+        ...loggedInUser,
+        id: loggedInUser.email,
+      };
+    }
+    return {
+      id: `custom-${email}`,
+      name: email, // Use email as name since we don't know the actual name
+      email: email,
+      avatar: null,
+      labels: [],
+    };
+  };
+
   // Load existing draft if draftId exists in the compose window when the component mounts before painting to ui
   useLayoutEffect(() => {
     if (currentDraftId) {
@@ -83,13 +101,7 @@ export default function ComposeEmail({ composeWindow }) {
             if (recipientObj) {
               return recipientObj;
             }
-            return {
-              id: `custom-${email}`,
-              name: email,
-              email: email,
-              avatar: null,
-              labels: [],
-            };
+            return createCustomRecipient(email);
           })
         );
         setCc(
@@ -98,13 +110,7 @@ export default function ComposeEmail({ composeWindow }) {
             if (recipientObj) {
               return recipientObj;
             }
-            return {
-              id: `custom-${email}`,
-              name: email,
-              email: email,
-              avatar: null,
-              labels: [],
-            };
+            return createCustomRecipient(email);
           })
         );
         setBcc(
@@ -113,18 +119,29 @@ export default function ComposeEmail({ composeWindow }) {
             if (recipientObj) {
               return recipientObj;
             }
-            return {
-              id: `custom-${email}`,
-              name: email,
-              email: email,
-              avatar: null,
-              labels: [],
-            };
+            return createCustomRecipient(email);
           })
         );
         setSubject(existingDraft.subject === "(no subject)" ? "" : existingDraft.subject);
         setContent({ html: existingDraft.body, plainText: existingDraft.preview });
         setRawInputText({ to: "", cc: "", bcc: "" });
+      }
+    } else if (composeWindow?.fields && Object.keys(composeWindow?.fields).length > 0) {
+      // Only add these if the states are empty
+      if (to.length === 0 && composeWindow?.fields?.to) {
+        setTo(composeWindow?.fields?.to);
+      }
+      if (cc.length === 0 && composeWindow?.fields?.cc) {
+        setCc(composeWindow?.fields?.cc);
+      }
+      if (bcc.length === 0 && composeWindow?.fields?.bcc) {
+        setBcc(composeWindow?.fields?.bcc);
+      }
+      if (subject === "" && composeWindow?.fields?.subject) {
+        setSubject(composeWindow?.fields?.subject);
+      }
+      if (content.html === "" && composeWindow?.fields?.content) {
+        setContent({ html: composeWindow?.fields?.content, plainText: composeWindow?.fields?.content });
       }
     }
   }, [emails, currentDraftId]);

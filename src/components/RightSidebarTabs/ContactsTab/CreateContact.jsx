@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -23,7 +23,7 @@ import {
 import ScopedInfoModal from "../../common/ScopedInfoModal";
 import countryCode from "../../../utils/countryCode.json";
 import countries from "../../../utils/countries.json";
-import { generateNextIntegerId } from "../../../utils/helperFunctions";
+import { generateNextIntegerId, isValidEmail } from "../../../utils/helperFunctions";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
 import styles from "./CreateContact.module.css";
 
@@ -43,6 +43,12 @@ const normalizeContact = (contact) => ({
   prefix: contact?.prefix || "",
   firstName: contact?.firstName || "",
   lastName: contact?.lastName || "",
+  suffix: contact?.suffix || "",
+  phoneticFirst: contact?.phoneticFirst || "",
+  phoneticMiddle: contact?.phoneticMiddle || "",
+  phoneticLast: contact?.phoneticLast || "",
+  nickname: contact?.nickname || "",
+  fileAs: contact?.fileAs || "",
   company: contact?.company || "",
   jobTitle: contact?.jobTitle || "",
   department: contact?.department || "",
@@ -70,12 +76,37 @@ const normalizeContact = (contact) => ({
 });
 
 const CreateContact = ({ onClose, onTabClose }) => {
-  const { recipients, setRecipients, setSnackbar, rightSidebarActiveTab, setRightSidebarActiveTab } =
+  const { recipients, setRecipients, setSnackbar, rightSidebarActiveTab, setRightSidebarActiveTab, emails } =
     useGlobalContext();
-  const contactToUpdate =
-    rightSidebarActiveTab.contact.screen === "EDIT_CONTACT" && rightSidebarActiveTab.contact.contactId
-      ? recipients.find((recipient) => recipient.id === rightSidebarActiveTab.contact.contactId)
-      : null;
+
+  // Check if contact to update is present in recipients or create a custom contact if it is a valid email in case of edit contact
+  const contactToUpdate = useMemo(() => {
+    if (rightSidebarActiveTab.contact.screen === "EDIT_CONTACT" && rightSidebarActiveTab.contact.contactId) {
+      const contactId = rightSidebarActiveTab.contact.contactId;
+      let found = recipients.find((recipient) => recipient.id === contactId);
+
+      if (!found) {
+        if (isValidEmail(contactId)) {
+          // Get the email object of from emails from field
+          const emailObj = emails.find((email) => email.from.email === contactId);
+          found = {
+            id: contactId,
+            email: contactId,
+            name: emailObj?.from?.name ?? contactId,
+            firstName: emailObj?.from?.name?.split(" ")[0] ?? contactId,
+            lastName: emailObj?.from?.name?.split(" ").slice(1).join(" ") ?? "",
+            emails: [{ value: contactId, label: "" }],
+            isCustomContact: true,
+            labels: [],
+          };
+        }
+      }
+
+      return found;
+    }
+    return null;
+  }, [rightSidebarActiveTab.contact.screen, rightSidebarActiveTab.contact.contactId, recipients, emails]);
+
   const [showPrefix, setShowPrefix] = useState(false);
   const [showDepartment, setShowDepartment] = useState(false);
   const [dropdownStates, setDropdownStates] = useState({
@@ -94,6 +125,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
     websiteLabels: {},
     relatedPersonLabels: {},
   });
+  const saveTimeout = useRef(null);
 
   // Normalize contact data for consistent comparison and form population
   const normalized = normalizeContact(contactToUpdate);
@@ -123,6 +155,14 @@ const CreateContact = ({ onClose, onTabClose }) => {
 
   // Setting USA as user country
   const userCountry = countryCode.find((c) => c.code === "US");
+
+  // Clear timeout on unmount
+  useEffect(
+    () => () => {
+      saveTimeout.current && clearTimeout(saveTimeout.current);
+    },
+    []
+  );
 
   // Handle form input changes for basic fields
   const handleInputChange = (field, value) => {
@@ -721,7 +761,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
   // Handle undo save
   const handleUndoSave = () => {
     // Undo the save from the recipients array
-    if (originalContact.current.type === "EDIT") {
+    if (originalContact.current.type === "EDIT" && !originalContact.current.contact?.isCustomContact) {
       setRecipients((prev) =>
         prev.map((recipient) =>
           recipient.id === originalContact.current.contact.id ? originalContact.current.contact : recipient
@@ -744,6 +784,12 @@ const CreateContact = ({ onClose, onTabClose }) => {
     // Go back to the contacts screen in case of create contact
     if (originalContact.current.type === "CREATE") {
       setRightSidebarActiveTab((prev) => ({ ...prev, contact: { screen: "CONTACTS" } }));
+    } else if (originalContact.current.type === "EDIT" && originalContact.current.contact?.isCustomContact) {
+      // Reset the contact id to the original contact id
+      setRightSidebarActiveTab((prev) => ({
+        ...prev,
+        contact: { screen: "CONTACT_DETAILS", contactId: originalContact.current.contact.id },
+      }));
     }
   };
 
@@ -764,9 +810,11 @@ const CreateContact = ({ onClose, onTabClose }) => {
       // Disable the header
       setDisableHeader(true);
 
-      setTimeout(() => {
-        // Labels should be from the contact to update in case of edit contact else default to "My contacts"
-        let labels = contactToUpdate?.labels ? [...contactToUpdate.labels] : ["My contacts"];
+      saveTimeout.current = setTimeout(() => {
+        // Labels should be from the contact to update in case of edit contact
+        let labels = contactToUpdate?.labels ? [...contactToUpdate.labels] : [];
+        // Push "My contacts" label if it is not present
+        if (!labels.includes("My contacts")) labels.push("My contacts");
 
         // Add or remove "Favorites" label based on the isFavorite state
         if (isFavorite && !labels.includes("Favorites")) labels.push("Favorites");
@@ -775,8 +823,11 @@ const CreateContact = ({ onClose, onTabClose }) => {
         const contact = {
           ...formData,
           name: [formData.prefix, formData.firstName, formData.lastName].filter(Boolean).join(" "),
-          // Id should be from the contact to update in case of edit contact
-          id: contactToUpdate?.id || generateNextIntegerId(recipients),
+          // Id should be from the contact to update in case of edit contact and not custom contact
+          id:
+            !contactToUpdate?.isCustomContact && contactToUpdate?.id
+              ? contactToUpdate?.id
+              : generateNextIntegerId(recipients),
           avatar: contactToUpdate?.avatar || null,
           labels,
           // First email should be the primary email if it exists
@@ -790,7 +841,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
         };
 
         // Save the contact in the recipients array
-        if (contactToUpdate) {
+        if (contactToUpdate && !contactToUpdate.isCustomContact) {
           setRecipients((prev) => prev.map((recipient) => (recipient.id === contactToUpdate.id ? contact : recipient)));
         } else {
           setRecipients((prev) => [...prev, contact]);
@@ -943,6 +994,53 @@ const CreateContact = ({ onClose, onTabClose }) => {
               value={formData.lastName}
               onChange={(e) => handleInputChange("lastName", e.target.value)}
             />
+
+            {/* Additional fields when expanded */}
+            {showPrefix && (
+              <>
+                {/* Suffix */}
+                <CustomInput
+                  label="Suffix"
+                  value={formData.suffix}
+                  onChange={(e) => handleInputChange("suffix", e.target.value)}
+                />
+
+                {/* Phonetic first */}
+                <CustomInput
+                  label="Phonetic first"
+                  value={formData.phoneticFirst}
+                  onChange={(e) => handleInputChange("phoneticFirst", e.target.value)}
+                />
+
+                {/* Phonetic middle */}
+                <CustomInput
+                  label="Phonetic middle"
+                  value={formData.phoneticMiddle}
+                  onChange={(e) => handleInputChange("phoneticMiddle", e.target.value)}
+                />
+
+                {/* Phonetic last */}
+                <CustomInput
+                  label="Phonetic last"
+                  value={formData.phoneticLast}
+                  onChange={(e) => handleInputChange("phoneticLast", e.target.value)}
+                />
+
+                {/* Nickname */}
+                <CustomInput
+                  label="Nickname"
+                  value={formData.nickname}
+                  onChange={(e) => handleInputChange("nickname", e.target.value)}
+                />
+
+                {/* File as */}
+                <CustomInput
+                  label="File as"
+                  value={formData.fileAs}
+                  onChange={(e) => handleInputChange("fileAs", e.target.value)}
+                />
+              </>
+            )}
           </Box>
 
           <Tooltip

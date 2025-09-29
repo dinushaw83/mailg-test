@@ -194,3 +194,18 @@ export const restructureRecipients = (recipients) => {
   });
   return restructured;
 };
+
+// Generate address string
+export const generateAddressString = (address) => {
+  const parts = [];
+  if (address.streetAddress) parts.push(address.streetAddress);
+  if (address.poBox) parts.push(address.poBox);
+  if (address.streetAddress2) parts.push(address.streetAddress2);
+  if (address.city) parts.push(`${address.city},`);
+  const stateZip = [];
+  if (address.stateName) stateZip.push(address.stateName);
+  if (address.zipCode) stateZip.push(address.zipCode);
+  if (stateZip.length > 0) parts.push(stateZip.join(" "));
+  if (address.countryCode) parts.push(address.countryCode);
+  return parts.join(" ");
+};

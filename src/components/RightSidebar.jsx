@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { IconButton, Tooltip } from "@mui/material";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import RightSideBarTabs from "./RightSidebarTabs/RightSideBarTabs";
@@ -7,6 +7,19 @@ import styles from "./RightSidebar.module.css";
 const RightSidebar = () => {
   const { rightSidebarExpanded, setRightSidebarExpanded, rightSidebarActiveTab, setRightSidebarActiveTab } =
     useGlobalContext();
+
+  useEffect(
+    () => () => {
+      // If active right sidebar tab screen is CREATE_CONTACT or EDIT_CONTACT, set it to null on unmount
+      if (
+        rightSidebarActiveTab.contact.screen === "CREATE_CONTACT" ||
+        rightSidebarActiveTab.contact.screen === "EDIT_CONTACT"
+      ) {
+        setRightSidebarActiveTab((prev) => ({ ...prev, contact: { screen: null } }));
+      }
+    },
+    []
+  );
 
   // Handle the right sidebar tab icon click
   const handleTabIconClick = (tabName) => {
@@ -129,7 +142,7 @@ const RightSidebar = () => {
                         },
                       }}
                     >
-                      <img src="assets/images/pr_2_image_11.png" alt="Contacts" style={{ width: 21, height: 21 }} />
+                      <img src="/assets/images/pr_2_image_11.png" alt="Contacts" style={{ width: 21, height: 21 }} />
                     </IconButton>
                   </Tooltip>
                 </div>
