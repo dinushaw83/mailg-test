@@ -8,6 +8,19 @@ import {
   Paper,
   Container,
 } from "@mui/material";
+import {
+  GeneralTab,
+  LabelsTab,
+  InboxTab,
+  AccountsTab,
+  FiltersTab,
+  ForwardingTab,
+  AddonsTab,
+  ChatTab,
+  AdvancedTab,
+  OfflineTab,
+  ThemesTab,
+} from "../components/SettingsTabs";
 
 const Settings = () => {
   const { tab } = useParams();
@@ -27,6 +40,21 @@ const Settings = () => {
     { id: "offline", label: "Offline" },
     { id: "themes", label: "Themes" },
   ];
+
+  // Map tab IDs to their corresponding components
+  const tabComponents = {
+    general: GeneralTab,
+    labels: LabelsTab,
+    inbox: InboxTab,
+    accounts: AccountsTab,
+    filters: FiltersTab,
+    forwarding: ForwardingTab,
+    addons: AddonsTab,
+    chat: ChatTab,
+    advanced: AdvancedTab,
+    offline: OfflineTab,
+    themes: ThemesTab,
+  };
 
   // Find the current tab index, default to "general" if not found
   const currentTabIndex = tabs.findIndex(t => t.id === tab) || 0;
@@ -85,6 +113,7 @@ const Settings = () => {
                 flexShrink: 1,
                 flexBasis: "auto",
                 minWidth: "max-content",
+                borderBottom: "3px solid transparent",
                 "&.Mui-selected": {
                   color: "#1a73e8",
                   fontWeight: 500,
@@ -110,26 +139,20 @@ const Settings = () => {
 
         {/* Tab Content */}
         <Box sx={{ minHeight: 400 }}>
-          {tabs.map((tabItem, index) => (
-            <div
-              key={tabItem.id}
-              role="tabpanel"
-              hidden={currentTabIndex !== index}
-              id={`settings-tabpanel-${tabItem.id}`}
-              aria-labelledby={`settings-tab-${tabItem.id}`}
-            >
-              {currentTabIndex === index && (
-                <Box sx={{ p: 3 }}>
-                  <Typography variant="h6" sx={{ marginBottom: 2, color: "#202124" }}>
-                    {tabItem.label}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {tabItem.label} settings content will be displayed here.
-                  </Typography>
-                </Box>
-              )}
-            </div>
-          ))}
+          {tabs.map((tabItem, index) => {
+            const TabComponent = tabComponents[tabItem.id];
+            return (
+              <div
+                key={tabItem.id}
+                role="tabpanel"
+                hidden={currentTabIndex !== index}
+                id={`settings-tabpanel-${tabItem.id}`}
+                aria-labelledby={`settings-tab-${tabItem.id}`}
+              >
+                {currentTabIndex === index && TabComponent && <TabComponent />}
+              </div>
+            );
+          })}
         </Box>
       </Paper>
     </Container>
