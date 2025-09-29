@@ -1,10 +1,12 @@
 import styled from "@emotion/styled";
 import { Box, Divider, Typography } from "@mui/material";
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Icon } from "./ActionBar";
 import Popover from "@mui/material/Popover";
 import Link from "@mui/material/Link";
 import { getAttachmentIcon } from "../EmailList/Table";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { imageFileToThumbnailFile, videoFileToThumbnailFile } from "./thumb";
 
 const ImageContainer = styled.div`
   width: 180px;
@@ -98,6 +100,7 @@ const OverlayActions = styled.div`
 const AttachmentsContainer = styled.div`
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 `;
 
 const AttachmentsHeaderContainer = styled.div`
@@ -136,6 +139,43 @@ const PopupContainer = styled.div`
   width: 328px;
   padding: 12px;
 `;
+
+export const isSpreadsheet = (attachment) => {
+  return (
+    attachment.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    attachment.type === "application/vnd.ms-excel" ||
+    attachment.type === "application/vnd.oasis.opendocument.spreadsheet"
+  );
+};
+
+export const isPresentation = (attachment) => {
+  return (
+    attachment.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+    attachment.type === "application/vnd.ms-powerpoint" ||
+    attachment.type === "application/vnd.oasis.opendocument.presentation"
+  );
+};
+
+export const isDocument = (attachment) => {
+  return (
+    attachment.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    attachment.type === "application/vnd.ms-word" ||
+    attachment.type === "application/msword" ||
+    attachment.type === "application/vnd.oasis.opendocument.text" ||
+    attachment.type === "text/plain" ||
+    attachment.type === "text/html" ||
+    attachment.type === "text/markdown" ||
+    attachment.type === "text/csv"
+  );
+};
+
+export const isCompressed = (attachment) => {
+  return (
+    attachment.type === "application/zip" ||
+    attachment.type === "application/x-compressed-tar" ||
+    attachment.type === "application/x-rar-compressed"
+  );
+};
 
 const ScannedByGmail = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -209,8 +249,86 @@ const AttachmentsHeaderActions = () => {
 };
 
 export const Attachments = ({ attachments = [] }) => {
-  if (attachments.length === 0) return null;
+  const { db } = useGlobalContext();
+  const [attachmentsWithPreviewURLs, setAttachmentsWithPreviewURLs] = useState([]);
+
+  // console.log({ db });
+
   const count = attachments.length > 1 ? `${attachments.length} attachments` : "One attachment";
+
+  const handleDownload = async (attachment) => {
+    const a = document.createElement("a");
+    a.href = attachment.url;
+    a.download = attachment.name;
+    a.click();
+  };
+
+  const handleSaveToDrive = async (attachment) => {
+    console.log("save to drive", attachment);
+  };
+
+  const openInNewTab = async (attachment) => {
+    window.open(attachment.url, "_blank");
+  };
+
+  const getDefaultDocumentPreviewURL = useCallback(
+    (attachment) => {
+      if (attachment.type === "application/pdf") {
+        return "/assets/images/PDF_file_icon.svg";
+      }
+      if (isSpreadsheet(attachment)) {
+        return "/assets/images/Spreadsheet_file_icon.jpeg";
+      }
+      if (isPresentation(attachment)) {
+        return "/assets/images/Presentation_file_icon.png";
+      }
+      if (isDocument(attachment)) {
+        return "/assets/images/Document_file_icon.webp";
+      }
+      if (isCompressed(attachment)) {
+        return "/assets/images/Compressed_file_icon.jpg";
+      }
+      return "/assets/images/default-file-placeholder.png";
+    },
+    [db]
+  );
+
+  const getAttachmentWithPreviewURL = useCallback(
+    async (attachment) => {
+      const isRelativeURL = attachment.url.startsWith("/");
+      if (isRelativeURL) {
+        return { ...attachment, previewURL: attachment.url };
+      }
+      const { file } = await db.get("attachments", attachment.id);
+      if (file.type.startsWith("image/")) {
+        const thumb = await imageFileToThumbnailFile(file);
+        const url = URL.createObjectURL(file);
+        const previewURL = URL.createObjectURL(thumb);
+        return { ...attachment, url, previewURL };
+      } else if (file.type.startsWith("video/")) {
+        const thumb = await videoFileToThumbnailFile(file);
+        const url = URL.createObjectURL(file);
+        const previewURL = URL.createObjectURL(thumb);
+        return { ...attachment, url, previewURL };
+      } else {
+        const url = URL.createObjectURL(file);
+        const previewURL = getDefaultDocumentPreviewURL(attachment) || url;
+        return { ...attachment, url, previewURL };
+      }
+    },
+    [db]
+  );
+
+  useEffect(() => {
+    if (!db) return;
+    Promise.all(attachments.map(async (attachment) => await getAttachmentWithPreviewURL(attachment))).then(
+      (attachments) => {
+        setAttachmentsWithPreviewURLs(attachments);
+      }
+    );
+  }, [db, attachments, getAttachmentWithPreviewURL]);
+
+  if (attachments.length === 0) return null;
 
   return (
     <div>
@@ -224,54 +342,64 @@ export const Attachments = ({ attachments = [] }) => {
         <AttachmentsHeaderActions />
       </AttachmentsHeaderContainer>
       <AttachmentsContainer>
-        {attachments.map((attachment) => (
-          <ImageContainer key={attachment.id}>
-            <img loading="lazy" src={attachment.url} alt={attachment.name} width={20} />
-            <Overlay className="overlay">
-              {getAttachmentIcon(attachment)}
-              <OverlayContent>
-                <OverlayTop>
-                  <OverlayTitleRow title={attachment.name}>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
-                  </OverlayTitleRow>
-                  <OverlayFilesize>{attachment.size}</OverlayFilesize>
-                </OverlayTop>
-                <OverlayActions>
-                  <Icon
-                    label="Download"
-                    placement="top"
-                    name="download"
-                    color="white"
-                    style={{
-                      borderRadius: "6px",
-                      width: "24px",
-                      height: "24px",
-                      background: "rgb(128, 134, 139)",
-                      "&:hover": { background: "#898F94" },
-                      marginRight: "8px",
-                    }}
-                  />
+        {attachmentsWithPreviewURLs.map((attachment) => {
+          return (
+            <ImageContainer key={attachment.id} onClick={() => openInNewTab(attachment)}>
+              <img loading="lazy" src={attachment.previewURL} alt={attachment.name} width={20} />
+              <Overlay className="overlay">
+                {getAttachmentIcon(attachment)}
+                <OverlayContent>
+                  <OverlayTop>
+                    <OverlayTitleRow title={attachment.name}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
+                    </OverlayTitleRow>
+                    <OverlayFilesize>{attachment.size}</OverlayFilesize>
+                  </OverlayTop>
+                  <OverlayActions>
+                    <Icon
+                      label="Download"
+                      placement="top"
+                      name="download"
+                      color="white"
+                      style={{
+                        borderRadius: "6px",
+                        width: "24px",
+                        height: "24px",
+                        background: "rgb(128, 134, 139)",
+                        "&:hover": { background: "#898F94" },
+                        marginRight: "8px",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(attachment);
+                      }}
+                    />
 
-                  <Icon
-                    label="Save to Drive"
-                    placement="top"
-                    name="drive_file_move"
-                    color="white"
-                    style={{
-                      borderRadius: "6px",
-                      width: "24px",
-                      height: "24px",
-                      padding: "5px",
-                      background: "rgb(128, 134, 139)",
-                      "&:hover": { background: "#898F94" },
-                      marginRight: "0px",
-                    }}
-                  />
-                </OverlayActions>
-              </OverlayContent>
-            </Overlay>
-          </ImageContainer>
-        ))}
+                    <Icon
+                      label="Save to Drive"
+                      placement="top"
+                      name="drive_file_move"
+                      color="white"
+                      style={{
+                        borderRadius: "6px",
+                        width: "24px",
+                        height: "24px",
+                        padding: "5px",
+                        background: "rgb(128, 134, 139)",
+                        "&:hover": { background: "#898F94" },
+                        marginRight: "0px",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveToDrive(attachment);
+                      }}
+                    />
+                  </OverlayActions>
+                </OverlayContent>
+              </Overlay>
+            </ImageContainer>
+          );
+        })}
       </AttachmentsContainer>
     </div>
   );
