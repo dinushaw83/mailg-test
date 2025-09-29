@@ -562,7 +562,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
         />
       )}
 
-      {showAdvancedMenu && <Icon name="label" label="Labels" onClick={handleLabelAction} _ref={labelAnchorElRef} />}
+      <Icon name="label" label="Label as" onClick={handleLabelAction} _ref={labelAnchorElRef} />
 
       {moveToMenuOpen && (
         <MoveToMenu

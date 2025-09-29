@@ -204,6 +204,19 @@ export default function useMailActions() {
     (ids, name) =>
       updateByIds(ids, (labels) => {
         if (!name) return;
+        
+        // Define system labels that are mutually exclusive
+        const systemLabels = ["Inbox", "Sent", "Drafts", "Scheduled", "Spam", "Trash"];
+        
+        // If the target label is a system label, remove other system labels
+        if (systemLabels.includes(String(name))) {
+          systemLabels.forEach(systemLabel => {
+            if (systemLabel !== String(name)) {
+              labels.delete(systemLabel);
+            }
+          });
+        }
+        
         if (!labels.has(String(name))) {
           labels.add(String(name)); // add if not present
         }
