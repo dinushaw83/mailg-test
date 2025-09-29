@@ -148,3 +148,122 @@ export const stringifyReplacer = (key, value) => {
   }
   return value;
 };
+
+export const encodeForPath = (raw) => {
+  // encode everything, then convert encoded spaces (%20) to +
+  return encodeURIComponent(raw).replace(/%20/g, "+");
+};
+
+export const queryToSearchBarString = (queryString) => {
+  const params = new URLSearchParams(queryString);
+  const parts = [];
+
+  for (const [key, value] of params.entries()) {
+    if (key.toLowerCase() === "advanced") continue;
+
+    // turn booleans into "has:key"
+    if (value === "true") {
+      parts.push(`has:${key}`);
+    } else if (value === "false") {
+      // you can decide whether to include these
+      // parts.push(`-has:${key}`); // optional
+    } else {
+      parts.push(`${key}:${value}`);
+    }
+  }
+
+  return parts.join(" ");
+};
+
+// utils/searchUrl.ts
+
+// decode a path segment like "John+Doe" or "John%20Doe" -> "John Doe"
+function decodePathSegment(segment) {
+  if (!segment) return null;
+  try {
+    // Convert + to %20 then decode percent-escapes
+    return decodeURIComponent(segment.replace(/\+/g, "%20"));
+  } catch (err) {
+    // fallback: replace + with space
+    return segment.replace(/\+/g, " ");
+  }
+}
+
+// convert query param key/value into a search token
+function paramToToken(key, value) {
+  if (!key) return null;
+  const k = key.trim();
+  if (k.toLowerCase() === "advanced") return null; // always exclude 'advanced'
+
+  // booleans
+  if (value === "true") {
+    // If key starts with "has" (e.g. hasAttachment), transform to "has:attachment"
+    if (/^has[A-Z_]/.test(k) || /^has_/.test(k) || /^has[A-Za-z]/i.test(k)) {
+      const rest = k.replace(/^has/i, "");
+      // normalize camelCase / snake_case / kebab-case to single lowercase token
+      const normalized = rest
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2") // split camelCase
+        .replace(/[_-]/g, " ")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-"); // join multiword with - (or change to '' if you prefer)
+      return `has:${normalized}`;
+    }
+
+    // fallback: has:<key>
+    return `has:${k.toLowerCase()}`;
+  }
+
+  if (value === "false") {
+    // optional: represent negation. You can change behavior if you don't want negatives.
+    return `-has:${k.replace(/^has/i, "").toLowerCase()}`;
+  }
+
+  // default: key:value
+  return `${k}:${value}`;
+}
+
+/**
+ * Build the string to show in the search bar from either:
+ *  - a full URL string,
+ *  - or an object with { pathname, search } (e.g. React Router location).
+ *
+ * Behavior:
+ *  - If pathname contains /search/<term> and <term> !== "advanced", decode and include it.
+ *  - Then append tokens built from query params (excluding "advanced").
+ */
+export function buildSearchBarFromUrl(urlOrLocation) {
+  // Normalize to a URL object
+  let urlObj;
+  if (typeof urlOrLocation === "string") {
+    urlObj = new URL(urlOrLocation, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  } else {
+    // Ensure search starts with "?"
+    const search = urlOrLocation.search ?? "";
+    urlObj = new URL(
+      (urlOrLocation.pathname || "") + (search || ""),
+      typeof window !== "undefined" ? window.location.origin : "http://localhost"
+    );
+  }
+
+  const pathSegments = urlObj.pathname.split("/").filter(Boolean); // ["search", "advanced"] or ["search", "John+Doe"]
+  const parts = [];
+
+  // If path is /search/<term> and term is not 'advanced', decode it and add first
+  if (pathSegments.length >= 2 && pathSegments[0].toLowerCase() === "search") {
+    const maybeTerm = pathSegments[1];
+    if (maybeTerm && maybeTerm.toLowerCase() !== "advanced") {
+      const decoded = decodePathSegment(maybeTerm);
+      if (decoded) parts.push(decoded);
+    }
+  }
+
+  // Then process query params (skip "advanced")
+  const params = new URLSearchParams(urlObj.search);
+  for (const [k, v] of params.entries()) {
+    const token = paramToToken(k, v);
+    if (token) parts.push(token);
+  }
+
+  return parts.join(" ").trim();
+}

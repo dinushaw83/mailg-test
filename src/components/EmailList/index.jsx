@@ -10,7 +10,7 @@ import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
 
-const EmailList = ({ emails = [], showCheckboxes = true }) => {
+const EmailList = ({ emails = [], showCheckboxes = true, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selection, composeWindows, panelState, previewEmail } = useGlobalContext();
@@ -74,6 +74,8 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
 
   // Navigate to the email details page
   const navigateToEmailDetails = (email, threadId) => {
+    console.log(email);
+    console.log(threadId);
     // If labels includes Drafts, then add new compose window with the draft id
     if (email.labels.includes("Drafts")) {
       // Check if already a compose window with the draft id exists
@@ -149,7 +151,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
           )}
         </PanelGroup>
       </div>
-      {!showPanel && <Footer />}
+      {!showPanel && showFooter && <Footer />}
     </div>
   );
 };

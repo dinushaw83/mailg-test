@@ -1,18 +1,31 @@
 import React, { useContext, useMemo, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import EmailList from "../components/EmailList";
 import { GlobalContext } from "../contexts/GlobalContext";
 import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
-import { buildSearchIndex, searchEmails, isSearchIndexReady, initializeSearchIndex } from "../utils/search";
+import {
+  buildSearchIndex,
+  searchEmails,
+  isSearchIndexReady,
+  initializeSearchIndex,
+  advancedSearchWithFullData,
+  createSearchSummary,
+} from "../utils/search";
+import { buildSearchBarFromUrl } from "../utils/helperFunctions";
 import SearchResultFilters from "../components/SearchResultFilters";
 
 const SearchResultsView = () => {
   const { emails, currentPage, itemsPerPage } = useContext(GlobalContext);
+  const location = useLocation();
 
-  const { query } = useParams();
-  const searchQuery = query ? decodeURIComponent(query) : "";
+  const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
+  console.log(searchQuery, "searchQuery");
+
+  // Check if this is an advanced search
+  const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
+  const searchParams = new URLSearchParams(location.search);
 
   // Initialize search index on component mount
   useEffect(() => {
@@ -27,14 +40,34 @@ const SearchResultsView = () => {
     }
   }, [emails]);
 
-  // Get search results based on query
+  // Get search results based on query type
   const searchResults = useMemo(() => {
-    if (!isSearchIndexReady() || !searchQuery.trim()) {
-      return [];
+    if (isAdvancedSearch) {
+      // Handle advanced search with criteria from URL params
+      const searchCriteria = {
+        from: searchParams.get("from") || "",
+        to: searchParams.get("to") || "",
+        subject: searchParams.get("subject") || "",
+        hasWords: searchParams.get("hasWords") || "",
+        doesntHave: searchParams.get("doesntHave") || "",
+        dateWithin: searchParams.get("dateWithin") || "",
+        dateValue: searchParams.get("dateValue") || "",
+        searchIn: searchParams.get("searchIn") || "",
+        hasAttachment: searchParams.get("hasAttachment") === "true",
+        dontIncludeChats: searchParams.get("dontIncludeChats") === "true",
+      };
+
+      // Use advanced search with full email data
+      return advancedSearchWithFullData(searchCriteria, emails, { limit: null });
+    } else {
+      // Handle regular text search
+      if (!isSearchIndexReady() || !searchQuery.trim()) {
+        return [];
+      }
+      // Remove limit for search results page - we want all results
+      return searchEmails(searchQuery, { limit: null });
     }
-    // Remove limit for search results page - we want all results
-    return searchEmails(searchQuery, { limit: null });
-  }, [searchQuery, emails]); // Add emails dependency to re-run when index is rebuilt
+  }, [searchQuery, emails, isAdvancedSearch, searchParams]); // Add dependencies
 
   // Convert search results to thread rows format
   const filteredRows = useMemo(() => {
@@ -78,7 +111,24 @@ const SearchResultsView = () => {
                       <div />
                       <div className="X3" />
                       <div className="a0V">
-                        <h2 tabIndex={-1}>{searchQuery ? `Search results for "${searchQuery}"` : "Search Results"}</h2>
+                        <h2 tabIndex={-1}>
+                          {isAdvancedSearch
+                            ? `Advanced Search Results (${createSearchSummary({
+                                from: searchParams.get("from") || "",
+                                to: searchParams.get("to") || "",
+                                subject: searchParams.get("subject") || "",
+                                hasWords: searchParams.get("hasWords") || "",
+                                doesntHave: searchParams.get("doesntHave") || "",
+                                dateWithin: searchParams.get("dateWithin") || "",
+                                dateValue: searchParams.get("dateValue") || "",
+                                searchIn: searchParams.get("searchIn") || "",
+                                hasAttachment: searchParams.get("hasAttachment") === "true",
+                                dontIncludeChats: searchParams.get("dontIncludeChats") === "true",
+                              })})`
+                            : searchQuery
+                            ? `Search results for "${searchQuery}"`
+                            : "Search Results"}
+                        </h2>
                       </div>
                       <div
                         className="Nr UI S2 vy"
@@ -110,7 +160,7 @@ const SearchResultsView = () => {
                                       role="grid"
                                       aria-readonly="true"
                                     >
-                                      <EmailList emails={rows} />
+                                      <EmailList emails={rows} showFooter={false} />
                                     </table>
                                   </div>
                                 </div>

@@ -11,21 +11,52 @@ import {
   addToSearchHistory,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
+import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
+import {
+  encodeForPath,
+  // decodeFromPath,
+  queryToSearchBarString,
+  buildSearchBarFromUrl,
+} from "../../utils/helperFunctions";
 
 const SearchBar = () => {
   const { emails } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [previousLocation, setPreviousLocation] = useState(null);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
 
   const searchContainerRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const searchQuery = location.pathname.startsWith("/search/") ? location.pathname.split("/search/")[1] : null;
+  const isOnSearchResults = location.pathname.startsWith("/search/");
+  const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
 
-  const handleFocus = () => {
+  const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
+
+  // console.log(decodeFromPath(location.pathname.split("/search/advanced/")[1]), "decodeFromPath");
+  // const getSearchQuery = () => {
+  //   if (isAdvancedSearch) {
+  //     return queryToSearchBarString(searchQuery);
+  //   }
+  //   return searchQuery;
+  // };
+
+  console.log(searchQuery, "searchQuery");
+
+  const handleSearchBarFocus = () => {
+    setShowAdvancedSearch(false);
     setIsFocused(true);
+  };
+
+  const handleAdvancedSearchClick = () => {
+    setShowAdvancedSearch(true);
+    setIsFocused(false); // Close the default expanded overlay
+  };
+
+  const handleCloseAdvancedSearch = () => {
+    setShowAdvancedSearch(false);
   };
 
   const handleInputChange = (e) => {
@@ -38,13 +69,17 @@ const SearchBar = () => {
       buildSearchIndex(emails);
     }
   }, [emails]);
-
+  console.log(isOnSearchResults, "isOnSearchResults");
   // Set search value when search query is present in the url
   useEffect(() => {
-    if (searchQuery) {
+    if (searchQuery && isAdvancedSearch) {
+      console.log(searchQuery, "searchQuery");
+      console.log(queryToSearchBarString(searchQuery), "queryToSearchBarString");
+      setSearchValue(queryToSearchBarString(searchQuery));
+    } else if (searchQuery) {
       setSearchValue(searchQuery);
     }
-  }, [searchQuery]);
+  }, [searchQuery, isAdvancedSearch]);
 
   // Track location changes and clear search input when navigating away from search results
   useEffect(() => {
@@ -109,7 +144,7 @@ const SearchBar = () => {
         addToSearchHistory(searchValue);
       }
 
-      navigate(`/search/${searchValue}`);
+      navigate(`/search/${encodeForPath(searchValue)}`);
       setIsFocused(false);
 
       e.target.blur();
@@ -126,13 +161,19 @@ const SearchBar = () => {
       if (item && item.trim()) {
         addToSearchHistory(item);
       }
-      navigate(`/search/${item}`);
+      navigate(`/search/${encodeForPath(item)}`);
     }
     setIsFocused(false);
+    setShowAdvancedSearch(false);
+  };
+
+  const handleClickAway = () => {
+    setIsFocused(false);
+    setShowAdvancedSearch(false);
   };
 
   return (
-    <ClickAwayListener onClickAway={() => setIsFocused(false)}>
+    <ClickAwayListener onClickAway={handleClickAway}>
       <div className={styles.searchContainer} ref={searchContainerRef}>
         <div className={`${styles.searchBar} ${isFocused ? styles.focused : ""}`}>
           <div className={styles.searchInputContainer}>
@@ -152,7 +193,7 @@ const SearchBar = () => {
               placeholder="Search mail"
               value={searchValue}
               onChange={handleInputChange}
-              onFocus={handleFocus}
+              onFocus={handleSearchBarFocus}
               onKeyDown={handleKeyDown}
               autoComplete="off"
             />
@@ -182,7 +223,7 @@ const SearchBar = () => {
                 right: "16px",
                 marginRight: "0px !important",
               }}
-              onClick={() => setIsFocused(true)}
+              onClick={handleAdvancedSearchClick}
             />
           </div>
         </div>
@@ -301,7 +342,10 @@ const SearchBar = () => {
             </div>
           )}
         </div>
+        <AdvancedSearchOptions isOpen={showAdvancedSearch} onClose={handleCloseAdvancedSearch} />
       </div>
+
+      {/* Advanced Search Options Modal */}
     </ClickAwayListener>
   );
 };
