@@ -1,3 +1,5 @@
+import categorizeEmail from "./categorizeEmail";
+
 // src/contexts/normalize.js
 export function normalizeEmails(messages) {
   const messagesById = {};
@@ -8,11 +10,22 @@ export function normalizeEmails(messages) {
     const threadId = String(m.threadId);
     const ts = new Date(m.timestamp).getTime();
 
+    let enrichedLabels = (m.labels || []).slice();
+
+    // Only classify Inbox messages
+    if (enrichedLabels.includes("Inbox")) {
+      const category = categorizeEmail(m);
+      if (category && !enrichedLabels.includes(category)) {
+        enrichedLabels.push(category);
+      }
+    }
+
     const msg = {
       ...m,
       id,
       threadId,
       timestampMs: ts,
+      labels: enrichedLabels,
       // keep body as-is; optionally split into {html, text}
     };
     messagesById[id] = msg;
@@ -35,7 +48,7 @@ export function normalizeEmails(messages) {
     thread.messageIds.push(id);
     thread.updatedAt = Math.max(thread.updatedAt, ts);
     if (!m.read) thread.unreadCount += 1;
-    (m.labels || []).forEach((l) => thread.labels.add(l));
+    enrichedLabels.forEach((l) => thread.labels.add(l));
     thread.participants.add(m.from?.email);
     if (!thread.lastMessageId || ts >= messagesById[thread.lastMessageId].timestampMs) {
       thread.lastMessageId = id;

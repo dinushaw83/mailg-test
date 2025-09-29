@@ -1,4 +1,33 @@
-export default function InboxBanner() {
+import { useMemo } from "react";
+import { CATEGORIES } from "../../utils/categorizeEmail";
+
+export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows }) {
+
+    const activeTabClass = "J-KU-KO aIf-aLe";
+
+    const counts = useMemo(() => {
+        const tabs = Object.values(CATEGORIES);
+        const result = {};
+        for (const t of tabs) {
+            result[t] = rows.filter(
+                (row) => row.labels.includes("Inbox") && row.labels.includes(t) && !row.read
+            ).length;
+        }
+        return result;
+    }, [rows]);
+
+    const previews = useMemo(() => {
+        const result = {};
+        for (const t of Object.values(CATEGORIES)) {
+            const msgs = rows.filter(r => r.labels.includes("Inbox") && r.labels.includes(t));
+            const latest = msgs.sort((a, b) => b.updatedAt - a.updatedAt)[0];
+            result[t] = latest ? `${latest.from?.name || latest.from?.email || ""} — ${latest.subject}` : "";
+        }
+        return result;
+    }, [rows]);
+    
+    const isActiveTab = (tab) => activeInboxTab === tab;
+    
     return (
         <div className="aKh" jsaction="taiVP:.CLIENT">
             <table className="aKk">
@@ -17,9 +46,10 @@ export default function InboxBanner() {
                                 userSelect: "none",
                                 width: 253,
                             }}
+                            onClick={() => setActiveInboxTab("Primary")}
                         >
                             <div
-                                className="aAy J-KU-KO aIf-aLe"
+                                className={`aAy J-KU-KO ${isActiveTab("Primary") ? activeTabClass : ""}`}
                                 tabIndex={0}
                                 role="tab"
                                 jslog="162884; u014N:xr6bB; 16:WzFd"
@@ -73,9 +103,10 @@ export default function InboxBanner() {
                                 userSelect: "none",
                                 width: 253,
                             }}
+                            onClick={() => setActiveInboxTab("Promotions")}
                         >
                             <div
-                                className="aAy aJi-aLe aE2"
+                                className={`aAy aJi-aLe aE2 ${isActiveTab("Promotions") ? activeTabClass : ""}`}
                                 tabIndex={0}
                                 role="tab"
                                 jslog="162884; u014N:xr6bB; 16:WzNd"
@@ -95,9 +126,9 @@ export default function InboxBanner() {
                                 <div className="aKw" style={{ userSelect: "none" }}>
                                     <div className="aKy" style={{ userSelect: "none" }}>
                                         <div className="aKx" style={{ userSelect: "none" }}>
-                                            <div className="aDG" style={{ userSelect: "none" }} data-tooltip-align="t,l">
-                                                1 new
-                                            </div>
+                                            {counts["Promotions"] > 0 && <div className="aDG" style={{ userSelect: "none" }} data-tooltip-align="t,l">
+                                                {counts["Promotions"] > 0 ? `${counts["Promotions"]} new` : null}
+                                            </div>}
                                             <div
                                                 id=":24"
                                                 className="aKz"
@@ -112,7 +143,7 @@ export default function InboxBanner() {
                                     </div>
                                     <div className="aKn" style={{ userSelect: "none" }} />
                                     <div className="aKs" style={{ userSelect: "none" }}>
-                                        Ethiopian Airlines — Skip the Rush, Savor the Trip – 10% Off Now
+                                        {previews["Promotions"]}
                                     </div>
                                 </div>
                             </div>
@@ -125,9 +156,10 @@ export default function InboxBanner() {
                                 userSelect: "none",
                                 width: 253,
                             }}
+                            onClick={() => setActiveInboxTab("Social")}
                         >
                             <div
-                                className="aAy aKe-aLe"
+                                className={`aAy aKe-aLe ${isActiveTab("Social") ? activeTabClass : ""}`}
                                 tabIndex={0}
                                 role="tab"
                                 jslog="162884; u014N:xr6bB; 16:WzJd"
@@ -180,9 +212,10 @@ export default function InboxBanner() {
                                 userSelect: "none",
                                 width: 253,
                             }}
+                            onClick={() => setActiveInboxTab("Updates")}
                         >
                             <div
-                                className="aAy aH2-aLe aE2"
+                                className={`aAy aH2-aLe aE2 ${isActiveTab("Updates") ? activeTabClass : ""}`}
                                 tabIndex={0}
                                 role="tab"
                                 jslog="162884; u014N:xr6bB; 16:WzRd"
@@ -202,9 +235,9 @@ export default function InboxBanner() {
                                 <div className="aKw" style={{ userSelect: "none" }}>
                                     <div className="aKy" style={{ userSelect: "none" }}>
                                         <div className="aKx" style={{ userSelect: "none" }}>
-                                            <div className="aDG" style={{ userSelect: "none" }} data-tooltip-align="t,l">
-                                                2 new
-                                            </div>
+                                            {counts["Updates"] > 0 && <div className="aDG" style={{ userSelect: "none" }} data-tooltip-align="t,l">
+                                                {counts["Updates"] > 0 ? `${counts["Updates"]} new` : null}
+                                            </div>}
                                             <div
                                                 id=":26"
                                                 className="aKz"
@@ -219,22 +252,10 @@ export default function InboxBanner() {
                                     </div>
                                     <div className="aKn" style={{ userSelect: "none" }} />
                                     <div className="aKs" style={{ userSelect: "none" }}>
-                                        Superlist Team — Back to School Special: Save 25% 🎉
+                                        {previews["Updates"]}
                                     </div>
                                 </div>
                             </div>
-                        </td>
-                        <td className="aRy" style={{ userSelect: "none" }}>
-                            <div
-                                className="aKj jOWHyd sf-hidden"
-                                tabIndex={0}
-                                role="button"
-                                aria-label="Select which tabs to show or hide."
-                                style={{ userSelect: "none" }}
-                            />
-                        </td>
-                        <td className="aRx" style={{ userSelect: "none" }}>
-                            <div className="aKi" style={{ userSelect: "none" }} />
                         </td>
                     </tr>
                     <tr>

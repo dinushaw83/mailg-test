@@ -5,13 +5,13 @@ import SpamBanner from "./SpamBanner";
 import TrashBanner from "./TrashBanner";
 import LabelBanner from "./LabelBanner";
 
-export default function Banner({ rows }) {
+export default function Banner({ rows, activeInboxTab, setActiveInboxTab }) {
     const { folder, label: labelParam } = useParams();
     const label = labelParam ? decodeURIComponent(labelParam) : null;
     const activeFolder = folder || (label ? "label" : "inbox");
 
     if (activeFolder === "inbox") {
-        return <InboxBanner />;
+        return <InboxBanner activeInboxTab={activeInboxTab} setActiveInboxTab={setActiveInboxTab} rows={rows} />;
     } else if (activeFolder === "scheduled") {
         return <ScheduledBanner />;
     } else if (activeFolder === "spam") {
