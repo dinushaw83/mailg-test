@@ -10,6 +10,7 @@ import useMailActions from "../../hooks/useMailActions";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import { LabelsSubMenu } from "./LabelsSubMenu";
 
 const ContextMenu = ({
   menuId,
@@ -58,13 +59,17 @@ const ContextMenu = ({
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [labelTree, labels]);
 
+  const openCreateLabelDialog = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      createOpen: true,
+    }));
+  }, []);
+
   const handleMenuItemClick = useCallback(
     async (item) => {
       if (item.id === "__create_label__") {
-        setState((prev) => ({
-          ...prev,
-          createOpen: true,
-        }));
+        openCreateLabelDialog();
         return;
       }
 
@@ -348,19 +353,9 @@ const ContextMenu = ({
             </span>
           }
         >
-          <Item id="reload" onClick={handleItemClick}>
-            <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-              refresh
-            </span>
-            Reload
-          </Item>
-          <Item id="something" onClick={handleItemClick}>
-            <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-              settings
-            </span>
-            Do something else
-          </Item>
+          <LabelsSubMenu selectedIds={selectedIds} openCreateLabelDialog={openCreateLabelDialog} />
         </Submenu>
+
         <Item id="mute" onClick={handleItemClick}>
           <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
             volume_off
