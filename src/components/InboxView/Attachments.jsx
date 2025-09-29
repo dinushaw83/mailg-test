@@ -288,7 +288,7 @@ export const Attachments = ({ attachments = [] }) => {
       if (isCompressed(attachment)) {
         return "/assets/images/Compressed_file_icon.jpg";
       }
-      return null;
+      return "/assets/images/default-file-placeholder.png";
     },
     [db]
   );

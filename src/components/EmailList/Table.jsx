@@ -62,7 +62,11 @@ export const getAttachmentIcon = (attachment, size = 16) => {
     return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" style={style} />;
   }
 
-  return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
+  if (["jpg", "jpeg", "png", "gif", "bmp", "tiff", "ico", "webp"].includes(extension)) {
+    return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
+  }
+
+  return <img src="/assets/images/default-file-placeholder.png" alt="Document" style={style} />;
 };
 
 const OneColumnData = ({
@@ -494,7 +498,7 @@ const Table = ({
                         </Link>
                       </div>
                       {density === "default" && email.attachments.length > 0 && (
-                        <div style={{ display: "flex", gap: "5px", marginTop: "5px" }}>
+                        <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap"}}>
                           {email.attachments.map((attachment) => (
                             <Button
                               variant="outlined"
