@@ -15,6 +15,7 @@ import Icon from "../ui/Icon";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import ContextMenu from "./ContextMenu";
+import { isDocument, isSpreadsheet, isPresentation } from "../InboxView/Attachments";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -41,21 +42,34 @@ const HoverDiv = styled.div`
 export const getAttachmentIcon = (attachment, size = 16) => {
   const style = { width: size, height: size };
   const isYouTubeVideo = attachment.name.includes("youtube");
-  if (isYouTubeVideo) {
+  const isVideo = attachment.type.startsWith("video/") || isYouTubeVideo;
+  if (isVideo) {
     return <img src="/assets/images/icon_2_youtube_x16.png" alt="YouTube Video" style={style} />;
   }
+
+  if (isDocument(attachment)) {
+    return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
+  }
+
+  if (isSpreadsheet(attachment)) {
+    return <img src="/assets/images/spreadsheet_icon.png" alt="DOC" style={style} />;
+  }
+
+  if (isPresentation(attachment)) {
+    return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
+  }
+
   const extension = attachment.name.split(".").pop();
 
-  switch (extension) {
-    case "pdf":
-      return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" style={style} />;
-    case "doc":
-    case "docx":
-    case "xls":
-      return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
-    default:
-      return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
+  if (extension === "pdf") {
+    return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" style={style} />;
   }
+
+  if (["jpg", "jpeg", "png", "gif", "bmp", "tiff", "ico", "webp"].includes(extension)) {
+    return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
+  }
+
+  return <img src="/assets/images/default-file-placeholder.png" alt="Document" style={style} />;
 };
 
 const OneColumnData = ({
@@ -189,7 +203,7 @@ const Table = ({
   formatDate,
   setShowAdvancedMenu,
 }) => {
-  const { setPreviewEmail, panelState, density, setSnackbar, setEmails } = useGlobalContext();
+  const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
   const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMute } = useMailActions();
   const snoozeAnchorElRef = useRef(null);
@@ -213,7 +227,7 @@ const Table = ({
 
   const handleClickRow = (email, threadId) => {
     if (panelState.showPanel) {
-      setPreviewEmail(email);
+      setPreviewEmailId(threadId);
     } else {
       navigateToEmailDetails(email, threadId);
     }
@@ -327,6 +341,15 @@ const Table = ({
     [toggleMute]
   );
 
+  const openInNewTab = async (e, attachment, db) => {
+    e.stopPropagation();
+    if (attachment.url.startsWith("/")) {
+      window.open(attachment.url, "_blank");
+    }
+    const { file } = await db.get("attachments", attachment.id);
+    window.open(URL.createObjectURL(file), "_blank");
+  };
+
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -351,7 +374,7 @@ const Table = ({
                 role="row"
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
-                onClick={() => handleClickRow(email, threadId)}
+                onClick={(e) => handleClickRow(email, threadId)}
                 read={email.read}
                 style={{
                   ...(density === "compact"
@@ -528,7 +551,7 @@ const Table = ({
                         </Link>
                       </div>
                       {density === "default" && email.attachments.length > 0 && (
-                        <div style={{ display: "flex", gap: "5px", marginTop: "5px" }}>
+                        <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap"}}>
                           {email.attachments.map((attachment) => (
                             <Button
                               variant="outlined"
@@ -542,6 +565,7 @@ const Table = ({
                               }}
                               size="small"
                               startIcon={getAttachmentIcon(attachment)}
+                              onClick={(e) => openInNewTab(e, attachment, db)}
                             >
                               <Typography
                                 sx={{
@@ -551,7 +575,7 @@ const Table = ({
                                   fontSize: "0.875rem",
                                 }}
                               >
-                                {attachment.name}sdsd
+                                {attachment.name}
                               </Typography>
                             </Button>
                           ))}
