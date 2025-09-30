@@ -619,6 +619,9 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },
           transformOrigin: { vertical: "top", horizontal: "left" },
+          onOpenCreateLabelDialog: () => {
+            setCreateOpen(true)
+          },
         }}
       />
 
