@@ -1,15 +1,11 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import GeneralSettings from "./General";
 
 const GeneralTab = () => {
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h6" sx={{ marginBottom: 2, color: "#202124" }}>
-        General
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        General settings content will be displayed here.
-      </Typography>
+    <Box sx={{ p: 3, height: "calc(100vh - 200px)", overflowY: "auto" }}>
+      <GeneralSettings />
     </Box>
   );
 };
