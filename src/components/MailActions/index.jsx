@@ -12,7 +12,7 @@ import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { SnoozePopover } from "./Snooze";
 import { Labels } from "./Labels";
 
-import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey, normalizeLabelName } from "../../hooks/useLabels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 const MailActions = ({ threads = [], showAdvancedMenu }) => {
@@ -25,12 +25,15 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     archive,
     markRead,
     snooze,
+    addLabels,
     deleteForever,
   } = useMailActions();
-  const [{ moveToMenuOpen, spamModalOpen, createOpen }, setState] = useState({
+  const [{ moveToMenuOpen, spamModalOpen, createOpen, isMovingToLabel }, setState] = useState({
     moveToMenuOpen: false,
     spamModalOpen: false,
     createOpen: false,
+
+    isMovingToLabel: false,
   });
 
   const snoozeAnchorElRef = useRef(null);
@@ -48,6 +51,15 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       setState((prev) => ({
         ...prev,
         createOpen: val,
+      })),
+    []
+  );
+
+  const setIsMovingToLabel = useCallback(
+    (val) =>
+      setState((prev) => ({
+        ...prev,
+        isMovingToLabel: val,
       })),
     []
   );
@@ -206,6 +218,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     async (item) => {
       if (item.id === "__create_label__") {
         setCreateOpen(true);
+        setIsMovingToLabel(true);
         return;
       }
 
@@ -266,10 +279,14 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     [selectedIds, moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
   );
   
-  // TODO: look into adding labels to a newly created label 
   const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
+
+    if (!isMovingToLabel) {
+      handleOnAfterLabelCreate(childName, parentKey);
+      return;
+    }
 
     try {
       // Store original labels before the move
@@ -296,7 +313,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       // --- UNDO action ---
       setSnackbar({
         open: true,
-        message: `Conversation moved to "${childName}".`,
+        message: `Conversation moved to "${normalizeLabelName(newKey)}".`,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -314,6 +331,60 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
                     return email;
                   })
                 );
+
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              } catch {
+                setSnackbar({
+                  open: true,
+                  message: "Could not undo.",
+                  autoHideDuration: 4000,
+                  action: null,
+                });
+              }
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      setSnackbar({
+        open: true,
+        message: "Could not move selected conversations.",
+        autoHideDuration: 4000,
+      });
+    }
+  };
+
+  const handleOnAfterLabelCreate = (childName, parentKey) => {
+    const ids = [...selection.ids];
+    if (!ids.length) return;
+
+    try {
+      const newKey = makeKey(childName, parentKey);
+
+      addLabels(ids, [newKey]);
+
+      selection.clear();
+
+      // --- UNDO action ---
+      setSnackbar({
+        open: true,
+        message: `Conversation added to "${normalizeLabelName(newKey)}".`,
+        autoHideDuration: 4000,
+        action: (
+          <Button
+            sx={{ textTransform: "capitalize" }}
+            size="small"
+            onClick={() => {
+              try {
+                // Remove the label from the selected emails
+                removeLabels(ids, [newKey]);
 
                 setSnackbar({
                   open: true,
@@ -621,12 +692,13 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           anchorOrigin: { vertical: "bottom", horizontal: "left" },
           transformOrigin: { vertical: "top", horizontal: "left" },
           onOpenCreateLabelDialog: () => {
-            setCreateOpen(true)
+            setCreateOpen(true);
+            setIsMovingToLabel(false);
           },
         }}
       />
 
-      <CreateLabelDialog open={createOpen} onClose={() => setCreateOpen(false)} onAfterCreate={handleOnAfterCreate} />
+      <CreateLabelDialog open={createOpen} onClose={() => { setCreateOpen(false); setIsMovingToLabel(null) }} onAfterCreate={handleOnAfterCreate} />
     </Box>
   );
 };
