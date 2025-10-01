@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { List, Typography, Box, IconButton, Button, TextField, Tabs, Tab } from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import ContactListItem from "./ContactListItem";
 import CreateContact from "./CreateContact";
 import ContactDetails from "./ContactDetails";
@@ -318,12 +318,14 @@ const ContactsTab = () => {
               />
 
               {/* Open in new tab */}
-              <ActionIconButton
-                iconName="open_in_new"
-                title="Open in new tab"
-                color="#444746"
-                disabled={isThreadView && activeTab === 0}
-              />
+              <Link to="/contacts" target="_blank" style={{ textDecoration: "none" }}>
+                <ActionIconButton
+                  iconName="open_in_new"
+                  title="Open in new tab"
+                  color="#444746"
+                  disabled={isThreadView && activeTab === 0}
+                />
+              </Link>
 
               {/* Close */}
               <ActionIconButton

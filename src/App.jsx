@@ -7,14 +7,16 @@ import MailView from "./pages/MailView";
 import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import VerificationDashboard from "./pages/VerificationDashboard";
+import Contacts from "./pages/Contacts/Contacts";
+import Frequent from "./pages/Contacts/Frequent";
+import OtherContacts from "./pages/Contacts/OtherContacts";
+import ContactsByLabel from "./pages/Contacts/ContactsByLabel";
 
-import { initialUser } from "./contexts/fixtures/me";
 import SearchResultsView from "./pages/SearchResultsView";
 import { initializeSearchIndex } from "./utils/search";
 
 function App() {
   useEffect(() => {
-    document.title = `Inbox(2) - ${initialUser.email} - MailG`;
     // Initialize search index on app startup
     initializeSearchIndex();
   }, []);
@@ -31,6 +33,13 @@ function App() {
             <Route path="/label/:label" element={<MailView />} />
             <Route path="/search/:query" element={<SearchResultsView />} />
             <Route path="/verify" element={<VerificationDashboard />} />
+
+            {/* Contacts paths */}
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path="/contacts/frequent" element={<Frequent />} />
+            <Route path="/contacts/other" element={<OtherContacts />} />
+            <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
+
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
 

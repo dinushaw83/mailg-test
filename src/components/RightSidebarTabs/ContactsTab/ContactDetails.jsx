@@ -11,7 +11,7 @@ import {
   IconButton,
   Link,
 } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import { format, isThisYear } from "date-fns";
 import { ActionIconButton, ContactDetailRow } from "./ContactComponents";
 import ScopedInfoModal from "../../common/ScopedInfoModal";
@@ -595,12 +595,14 @@ const ContactDetails = () => {
               />
 
               {/* Open in new tab */}
-              <ActionIconButton
-                iconName="open_in_new"
-                title="Open in new tab"
-                color="#444746"
-                disabled={disableHeader}
-              />
+              <RouterLink to={`/contacts/person/${contact.id}`} target="_blank" style={{ textDecoration: "none" }}>
+                <ActionIconButton
+                  iconName="open_in_new"
+                  title="Open in new tab"
+                  color="#444746"
+                  disabled={disableHeader}
+                />
+              </RouterLink>
             </>
           )}
 
@@ -1418,7 +1420,7 @@ const ContactDetails = () => {
               },
             }}
           >
-            <span class="material-symbols-outlined" style={{ fontSize: "20px", marginRight: "6px" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "20px", marginRight: "6px" }}>
               {contact?.isLoggedInUser ? "edit" : "person_add"}
             </span>
             {contact?.isLoggedInUser ? "Edit your info" : "Save contact"}
@@ -1481,7 +1483,7 @@ const ContactDetails = () => {
               }}
             >
               <IconButton size="small" sx={{ color: "#444746" }}>
-                <span class="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
                   info
                 </span>
               </IconButton>

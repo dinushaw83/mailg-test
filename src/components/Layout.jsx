@@ -1,8 +1,11 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import LeftSidebar from "./LeftSidebar";
 import Header from "./Header";
 import RightSidebar from "./RightSidebar";
 import styled from "@emotion/styled";
+import ContactsHeader from "./ContactsHeader";
+import ContactsLeftSidebar from "./ContactsLeftSidebar";
 
 import { useGlobalContext } from "../contexts/GlobalContext";
 
@@ -13,7 +16,9 @@ const ContentContainer = styled.div`
 `;
 
 const Layout = ({ children }) => {
+  const location = useLocation();
   const { isLeftSidebarExpanded, rightSidebarExpanded, rightSidebarActiveTab } = useGlobalContext();
+  const isContactsPage = location.pathname.startsWith("/contacts");
 
   // Calculate the empty div width when left sidebar is collapsed
   const calculateEmptyDivWidth = () => {
@@ -35,12 +40,12 @@ const Layout = ({ children }) => {
       <div tabIndex={0} />
       <div className="nH">
         <div className="nH" style={{ position: "relative" }}>
-          <Header />
+          {isContactsPage ? <ContactsHeader /> : <Header />}
           <ContentContainer id="content-container">
-            <LeftSidebar />
-            {!isLeftSidebarExpanded && <div style={{ width: calculateEmptyDivWidth() }} />}
+            {isContactsPage ? <ContactsLeftSidebar /> : <LeftSidebar />}
+            {!isLeftSidebarExpanded && !isContactsPage && <div style={{ width: calculateEmptyDivWidth() }} />}
             {children}
-            <RightSidebar />
+            {!isContactsPage && <RightSidebar />}
           </ContentContainer>
         </div>
       </div>

@@ -1,0 +1,67 @@
+.contactRow {
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.contactRow:hover {
+  background-color: rgba(11, 87, 208, 0.08) !important;
+}
+
+.avatarContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  transition: opacity 0.2s ease;
+}
+
+.contactRow:hover .avatar {
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+}
+
+.checkbox {
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  padding: 0;
+  color: #444746;
+}
+
+.dragIndicator {
+  opacity: 0;
+  font-size: 24px;
+  position: absolute;
+  left: -15px;
+  color: #c4c7c5;
+}
+
+.dragIndicator:hover {
+  color: #747775;
+}
+
+.contactRow:hover .dragIndicator {
+  opacity: 1;
+}
+
+.checkbox.Mui-checked {
+  color: #0b57d0;
+}
+
+.contactRow:hover .checkbox {
+  opacity: 1;
+  position: relative;
+  pointer-events: auto;
+}
+
+.avatarCheckboxWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+}

@@ -1,0 +1,8 @@
+.menuItemOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+.menuItem:hover .menuItemOverlay {
+  background-color: rgba(11, 87, 208, 0.08);
+}
