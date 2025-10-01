@@ -265,7 +265,8 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     },
     [selectedIds, moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
   );
-
+  
+  // TODO: look into adding labels to a newly created label 
   const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
