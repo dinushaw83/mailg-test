@@ -72,7 +72,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const curMeta = currentLabel ? labels?.currentLabel : null;
       const inCustomLabel = curMeta && curMeta.system === false;
       if (inCustomLabel) {
-        moveToLabelFrom(ids, currentLabel, newKey);
+        moveToLabel(ids, currentLabel, newKey);
       } else {
         moveToLabel(ids, newKey);
       }
