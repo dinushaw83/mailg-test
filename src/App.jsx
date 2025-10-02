@@ -7,6 +7,7 @@ import MailView from "./pages/MailView";
 import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import VerificationDashboard from "./pages/VerificationDashboard";
+import Settings from "./pages/Settings";
 import Contacts from "./pages/Contacts/Contacts";
 import Frequent from "./pages/Contacts/Frequent";
 import OtherContacts from "./pages/Contacts/OtherContacts";
@@ -33,6 +34,8 @@ function App() {
             <Route path="/label/:label" element={<MailView />} />
             <Route path="/search/:query" element={<SearchResultsView />} />
             <Route path="/verify" element={<VerificationDashboard />} />
+            <Route path="/settings/:tab" element={<Settings />} />
+            <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
 
             {/* Contacts paths */}
             <Route path="/contacts" element={<Contacts />} />
