@@ -26,7 +26,7 @@ import ButtonLabelsRow from "./ButtonLabelsRow";
 import MyPictureRow from "./MyPictureRow";
 import AutoCompleteContactsRow from "./AutoCompleteContactsRow";
 import AdsImportanceSignalsRow from "./AdsImportanceSignalsRow";
-import SignatureRow from "./SignatureRow";
+import SignatureRow from "./Signature/SignatureRow";
 import PersonalLevelIndicatorsRow from "./PersonalLevelIndicatorsRow";
 import SnippetsRow from "./SnippetsRow";
 import SettingsFooterRow from "./SettingsFooterRow";
@@ -34,53 +34,53 @@ import OutOfOfficeAutoReply from "./OutOfOfficeAutoReply";
 import { Container, MainContainer, StyledTable, MainBody } from "./styles";
 
 export default function GeneralSettings() {
-  return (
-    <Container>
-        <MainContainer>
-              <MainBody>
-                <StyledTable>
-                      <tbody>
-                          <LanguageSettingsRow />
-                          <PageSizeRow />
-                          <UndoSendRow />
-                          <DefaultReplyBehaviourRow />
-                          <HoverActionsRow />
-                          <SendAndArchiveRow />
-                          <DefaultTextStyleRow />
-                          <ImagesRow />
-                          <DynamicEmailRow />
-                          <GrammarRow />
-                          <SpellingRow />
-                          <AutoCorrectRow />
-                          <SmartComposeRow />
+    return (
+        <Container>
+            <MainContainer>
+                <MainBody>
+                    <StyledTable>
+                        <tbody>
+                            <LanguageSettingsRow />
+                            <PageSizeRow />
+                            <UndoSendRow />
+                            <DefaultReplyBehaviourRow />
+                            <HoverActionsRow />
+                            <SendAndArchiveRow />
+                            <DefaultTextStyleRow />
+                            <ImagesRow />
+                            <DynamicEmailRow />
+                            <GrammarRow />
+                            <SpellingRow />
+                            <AutoCorrectRow />
+                            <SmartComposeRow />
 
-                          <SmartComposePersonalisationRow />
-                          <ConversationViewRow />
-                          <NudgesRow />
+                            <SmartComposePersonalisationRow />
+                            <ConversationViewRow />
+                            <NudgesRow />
 
-                          <SmartReplyRow />
-                          <SmartFeaturesRow />
-                          <WorkspaceSmartFeaturesRow />
+                            <SmartReplyRow />
+                            <SmartFeaturesRow />
+                            <WorkspaceSmartFeaturesRow />
 
-                          <PackageTrackingRow />
-                          <DesktopNotificationsRow />
-                          <StarsRow />
-                          <KeyboardShortcutsRow />
+                            <PackageTrackingRow />
+                            <DesktopNotificationsRow />
+                            <StarsRow />
+                            <KeyboardShortcutsRow />
 
-                          <ButtonLabelsRow />
-                          <MyPictureRow />
-                          <AutoCompleteContactsRow />
-                          <AdsImportanceSignalsRow />
-                          <SignatureRow />
-                          <PersonalLevelIndicatorsRow />
-                          <SnippetsRow />
+                            <ButtonLabelsRow />
+                            <MyPictureRow />
+                            <AutoCompleteContactsRow />
+                            <AdsImportanceSignalsRow />
+                            <SignatureRow />
+                            <PersonalLevelIndicatorsRow />
+                            <SnippetsRow />
 
-                          <OutOfOfficeAutoReply />
-                          <SettingsFooterRow />
-                      </tbody>
-                  </StyledTable>
-              </MainBody>
-        </MainContainer>
-    </Container>
-  )
+                            <OutOfOfficeAutoReply />
+                            <SettingsFooterRow />
+                        </tbody>
+                    </StyledTable>
+                </MainBody>
+            </MainContainer>
+        </Container>
+    )
 }
