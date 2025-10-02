@@ -34,7 +34,7 @@ const ContactsByLabel = () => {
       </Box>
 
       {/* Contacts list */}
-      <ContactsTable contacts={contacts?.length > 0 ? [{ heading: "", data: contacts }] : []} />
+      <ContactsTable contacts={contacts?.length > 0 ? [{ heading: "", data: contacts, title: "Contacts by Label" }] : []} />
     </Box>
   );
 };

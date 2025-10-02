@@ -17,9 +17,9 @@ const Contacts = () => {
     <Box
       sx={{
         backgroundColor: "#fff",
-        margin: "16px 16px 16px 4px",
+        margin: "16px 16px 16px 20px",
         borderRadius: "24px",
-        width: "calc(100vw - 284px)",
+        width: "100%",
         height: "calc(100vh - 146px)",
         pl: 1.5,
         py: 3,
@@ -48,12 +48,14 @@ const Contacts = () => {
                 Favorites ({favoriteContacts.length})
               </p>
             ),
+            title: "Favorites",
             data: favoriteContacts,
           },
           {
             heading: (
               <p style={{ fontSize: "0.75rem", fontWeight: 500, color: "#444746" }}>Contacts</p>
             ),
+            title: "Contacts",
             data: myContacts,
           },
         ].slice(favoriteContacts.length > 0 ? 0 : 1)}

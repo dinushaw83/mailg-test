@@ -95,7 +95,7 @@ const Frequent = () => {
       </Box>
 
       {/* Contacts list */}
-      <ContactsTable contacts={frequentContacts?.length > 0 ? [{ heading: "", data: frequentContacts }] : []} />
+      <ContactsTable contacts={frequentContacts?.length > 0 ? [{ heading: "", data: frequentContacts, title: "Frequent Contacts" }] : []} />
     </Box>
   );
 };

@@ -26,7 +26,7 @@ const OtherContacts = () => {
       </Box>
 
       {/* Contacts list */}
-      <ContactsTable contacts={otherContacts?.length > 0 ? [{ heading: "", data: otherContacts }] : []} />
+      <ContactsTable contacts={otherContacts?.length > 0 ? [{ heading: "", data: otherContacts, title: "Other Contacts" }] : []} />
     </Box>
   );
 };

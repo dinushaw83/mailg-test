@@ -148,12 +148,7 @@ const ContactDetails = () => {
     const threadId = email.threadId.split(":")[1];
 
     // If labels includes Drafts, then add new compose window with the draft id
-    if (email.labels.includes("Drafts")) {
-      const composeWindow = composeWindows.find((window) => window?.draftId?.toString() === email.id.toString());
-      if (!composeWindow) {
-        addNewComposeWindow(email.id);
-      }
-    } else {
+    if (!email.labels.includes("Drafts")) {
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
       const composeParam = urlParams.get("compose");
@@ -245,6 +240,7 @@ const ContactDetails = () => {
     const snackbarMessage = isFavorite ? "Contact removed from favorites" : "Contact added to favorites";
 
     // Update the recipients
+    // If the contact not in my contacts is adding to favorites, then add it to my contacts as well
     setRecipients((prev) =>
       prev.map((recipient) =>
         recipient.id === contact.id
@@ -252,7 +248,9 @@ const ContactDetails = () => {
               ...recipient,
               labels: isFavorite
                 ? recipient.labels.filter((label) => label !== "Favorites")
-                : [...recipient.labels, "Favorites"],
+                : recipient.labels.includes("My contacts")
+                ? [...recipient.labels, "Favorites"]
+                : [...recipient.labels, "Favorites", "My contacts"],
             }
           : recipient
       )

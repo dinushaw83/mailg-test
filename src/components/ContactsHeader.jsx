@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Box, IconButton, TextField, Tooltip, Typography, Avatar } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { generateAvatarColor } from "../utils/helperFunctions";
 import styles from "./ContactsHeader.module.css";
 
 const ContactsHeader = () => {
+  const navigate = useNavigate();
   const { setContactsLeftSidebarExpanded, loggedInUser } = useGlobalContext();
   const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -32,10 +34,25 @@ const ContactsHeader = () => {
         <img
           src="/assets/images/pr_2_image_11.png"
           alt="Contacts"
-          style={{ width: "40px", height: "40px", marginRight: "10px" }}
+          style={{ width: "40px", height: "40px", marginRight: "10px", cursor: "pointer" }}
+          onClick={() => navigate("/contacts")}
         />
 
-        <Typography variant="h6" sx={{ fontWeight: 400, fontSize: "22px", color: "#5f6368" }}>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 400,
+            fontSize: "22px",
+            color: "#5f6368",
+            "&:hover": { 
+              cursor: "pointer" 
+            },
+            "&:active": {
+              textDecoration: "underline",
+            },
+          }}
+          onClick={() => navigate("/contacts")}
+        >
           Contacts
         </Typography>
 

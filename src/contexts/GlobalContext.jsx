@@ -45,10 +45,7 @@ export const GlobalContextProvider = ({ children }) => {
     contact: { screen: "CONTACTS" },
     activeTab: null,
   });
-  const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = usePersistedState(
-    "contactsLeftSidebarExpanded",
-    true
-  );
+  const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({

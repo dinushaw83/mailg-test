@@ -7,6 +7,10 @@
   background-color: rgba(11, 87, 208, 0.08) !important;
 }
 
+.contactRow.activeRow, .contactRow.checkedRow {
+  background-color: #d3e3fd !important;
+}
+
 .avatarContainer {
   display: flex;
   align-items: center;
@@ -17,7 +21,9 @@
   transition: opacity 0.2s ease;
 }
 
-.contactRow:hover .avatar {
+.contactRow:hover .avatar,
+.contactRow.activeRow .avatar,
+.contactRow.checkedRow .avatar {
   opacity: 0;
   position: absolute;
   pointer-events: none;
@@ -52,7 +58,9 @@
   color: #0b57d0;
 }
 
-.contactRow:hover .checkbox {
+.contactRow:hover .checkbox,
+.contactRow.activeRow .checkbox,
+.contactRow.checkedRow .checkbox {
   opacity: 1;
   position: relative;
   pointer-events: auto;
@@ -64,4 +72,39 @@
   align-items: center;
   width: 36px;
   height: 36px;
+}
+
+.actionsContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.contactRow:hover .actionsContainer,
+.contactRow.activeRow .actionsContainer {
+  opacity: 1;
+}
+
+/* Ensure table cells handle text overflow properly */
+.contactRow td {
+  overflow: hidden;
+}
+
+.contactRow .labelChip {
+  height: 30px;
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: transparent;
+  color: #1f1f1f;
+  font-weight: 400;
+  font-size: 0.6875rem;
+  border-radius: 8px;
+  border: 1px solid #c4c7c5;
+  cursor: pointer;
+}
+
+.contactRow .labelChip:hover {
+  background-color: rgba(31, 31, 31, 0.08);
 }
