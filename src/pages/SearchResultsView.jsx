@@ -47,13 +47,13 @@ const SearchResultsView = () => {
         from: searchParams.get("from") || "",
         to: searchParams.get("to") || "",
         subject: searchParams.get("subject") || "",
-        hasWords: searchParams.get("hasWords") || "",
-        doesntHave: searchParams.get("doesntHave") || "",
-        dateWithin: searchParams.get("dateWithin") || "",
-        dateValue: searchParams.get("dateValue") || "",
-        searchIn: searchParams.get("searchIn") || "",
-        hasAttachment: searchParams.get("hasAttachment") === "true",
-        dontIncludeChats: searchParams.get("dontIncludeChats") === "true",
+        has: searchParams.get("has") || "",
+        hasnot: searchParams.get("hasnot") || "",
+        within: searchParams.get("within") || "",
+        date: searchParams.get("date") || "",
+        subset: searchParams.get("subset") || "",
+        attachment: searchParams.get("attachment") === "true",
+        includeChats: searchParams.get("includeChats") === "true",
       };
 
       // Use advanced search with full email data
@@ -116,13 +116,13 @@ const SearchResultsView = () => {
                                 from: searchParams.get("from") || "",
                                 to: searchParams.get("to") || "",
                                 subject: searchParams.get("subject") || "",
-                                hasWords: searchParams.get("hasWords") || "",
-                                doesntHave: searchParams.get("doesntHave") || "",
-                                dateWithin: searchParams.get("dateWithin") || "",
-                                dateValue: searchParams.get("dateValue") || "",
-                                searchIn: searchParams.get("searchIn") || "",
-                                hasAttachment: searchParams.get("hasAttachment") === "true",
-                                dontIncludeChats: searchParams.get("dontIncludeChats") === "true",
+                                has: searchParams.get("has") || "",
+                                hasnot: searchParams.get("hasnot") || "",
+                                within: searchParams.get("within") || "",
+                                date: searchParams.get("date") || "",
+                                subset: searchParams.get("subset") || "",
+                                attachment: searchParams.get("attachment") === "true",
+                                includeChats: searchParams.get("includeChats") === "true",
                               })})`
                             : searchQuery
                             ? `Search results for "${searchQuery}"`

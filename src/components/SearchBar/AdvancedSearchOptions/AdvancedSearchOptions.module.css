@@ -2,7 +2,7 @@
   background: white;
   border-radius: 4px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  width: 100%;
+  width: 110%;
   max-width: 788px;
   max-height: 80vh;
   overflow: hidden;
@@ -13,7 +13,7 @@
 
 /* Modal Content */
 .modalContent {
-  padding: 20px 24px;
+  padding: 20px 24px 0;
   flex: 1;
   overflow-y: auto;
 }
@@ -21,83 +21,20 @@
 /* Form Rows */
 .formRow {
   display: flex;
-  align-items: center;
-  margin-bottom: 16px;
+  align-items: baseline;
+  height: 20px !important;
+  margin-bottom: 20px;
   gap: 16px;
 }
 
 .label {
   min-width: 100px;
+  height: 20px !important;
   font-size: 14px;
   color: #5f6368;
   font-weight: 400;
   text-align: left;
   flex-shrink: 0;
-}
-
-/* Input Fields */
-.input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #202124;
-  background: white;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.input:focus {
-  outline: none;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
-}
-
-.input::placeholder {
-  color: #5f6368;
-}
-
-/* Select Dropdowns */
-.select {
-  padding: 8px 12px;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #202124;
-  background: white;
-  cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.select:focus {
-  outline: none;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
-}
-
-/* Size Container */
-.sizeContainer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-}
-
-.sizeInput {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #dadce0;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #202124;
-  background: white;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.sizeInput:focus {
-  outline: none;
-  border-color: #1a73e8;
-  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
 }
 
 /* Date Container */
@@ -139,6 +76,11 @@
   pointer-events: none;
 }
 
+/* Ensure DatePicker component fits properly in the date container */
+.dateContainer > div {
+  flex: 1;
+}
+
 /* Checkbox Container */
 .checkboxContainer {
   display: flex;
@@ -171,9 +113,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
-  padding: 16px 24px 20px 24px;
-  border-top: 1px solid #e0e0e0;
-  background: #f8f9fa;
+  padding: 8px 24px 20px 24px;
 }
 
 .createFilterButton {

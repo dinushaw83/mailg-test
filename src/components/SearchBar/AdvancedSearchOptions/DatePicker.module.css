@@ -1,0 +1,91 @@
+.container {
+  position: relative;
+  flex: 1;
+}
+
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  padding-right: 40px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #202124;
+  background: white;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.input::placeholder {
+  color: #5f6368;
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #5f6368;
+  pointer-events: none;
+  font-size: 20px;
+}
+
+.calendarPopup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+  padding: 8px;
+}
+
+.calendarFooter {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0 0 0;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 8px;
+}
+
+.footerButton {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1a73e8;
+  text-transform: none;
+  padding: 4px 8px;
+  min-width: auto;
+}
+
+.footerButton:hover {
+  background-color: rgba(26, 115, 232, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .calendarPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 300px;
+    z-index: 1001;
+  }
+}

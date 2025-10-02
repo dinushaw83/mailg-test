@@ -1,8 +1,48 @@
 import React, { useState } from "react";
-// import { Icon } from "../../ui/Icon";
-import styles from "./AdvancedSearchOptions.module.css";
-import { Checkbox } from "@mui/material";
+import { Box, Checkbox, ClickAwayListener, FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "./DatePicker";
+import dayjs from "dayjs";
+import styles from "./AdvancedSearchOptions.module.css";
+
+const InputStyle = {
+  "& .MuiInput-root": {
+    fontSize: "14px",
+  },
+  "& .MuiInputBase-input": {
+    height: "20px !important",
+    padding: 0,
+  },
+  // override hover underline
+  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+    borderBottom: "1px solid rgba(0,0,0,0.42)",
+  },
+  // override the focused/active line color
+  "& .MuiInput-underline:after": {
+    borderBottom: "1px solid #4285f4",
+  },
+};
+
+const dateWithinOptions = [
+  { value: "1 day", label: "1 day" },
+  { value: "3 days", label: "3 days" },
+  { value: "1 week", label: "1 week" },
+  { value: "2 weeks", label: "2 weeks" },
+  { value: "1 month", label: "1 month" },
+  { value: "2 months", label: "2 months" },
+  { value: "3 months", label: "3 months" },
+  { value: "6 months", label: "6 months" },
+  { value: "1 year", label: "1 year" },
+];
+
+const subsetOptions = [
+  { value: "All Mail", label: "All Mail" },
+  { value: "Inbox", label: "Inbox" },
+  { value: "Sent", label: "Sent" },
+  { value: "Drafts", label: "Drafts" },
+  { value: "Spam", label: "Spam" },
+  { value: "Trash", label: "Trash" },
+];
 
 const AdvancedSearchOptions = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -10,16 +50,16 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     from: "",
     to: "",
     subject: "",
-    hasWords: "",
-    doesntHave: "",
-    sizeOperator: "greater than",
-    sizeValue: "",
+    has: "",
+    hasnot: "",
+    sizeOperator: "less than",
+    size: "",
     sizeUnit: "MB",
-    dateWithin: "3 days",
-    dateValue: "2025/09/01",
-    searchIn: "All Mail",
-    hasAttachment: false,
-    dontIncludeChats: false,
+    within: "1 day",
+    date: dayjs().format("YYYY-MM-DD"),
+    subset: "All Mail",
+    attachment: false,
+    includeChats: false,
   });
 
   const handleInputChange = (field, value) => {
@@ -35,13 +75,13 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
       from: formData.from,
       to: formData.to,
       subject: formData.subject,
-      hasWords: formData.hasWords,
-      doesntHave: formData.doesntHave,
-      dateWithin: formData.dateWithin,
-      dateValue: formData.dateValue,
-      searchIn: formData.searchIn,
-      hasAttachment: formData.hasAttachment,
-      dontIncludeChats: formData.dontIncludeChats,
+      has: formData.has,
+      hasnot: formData.hasnot,
+      within: formData.within,
+      date: formData.date,
+      subset: formData.subset,
+      attachment: formData.attachment,
+      includeChats: formData.includeChats,
     };
 
     // Create a query string from the criteria
@@ -51,10 +91,10 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     Object.entries(searchCriteria).forEach(([key, value]) => {
       // Skip default values that shouldn't be included in URL
       const isDefaultValue =
-        (key === "dateWithin" && value === "3 days") ||
-        (key === "dateValue" && value === "2025/09/01") ||
-        (key === "searchIn" && value === "All Mail") ||
-        (key === "sizeOperator" && value === "greater than") ||
+        (key === "within" && value === "3 days") ||
+        (key === "date" && value === "2025/09/01") ||
+        (key === "subset" && value === "All Mail") ||
+        (key === "sizeOperator" && value === "less than") ||
         (key === "sizeUnit" && value === "MB");
 
       // Include boolean true values, non-empty strings, and other truthy values (but not default values)
@@ -83,165 +123,239 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <ClickAwayListener onClickAway={onClose}>
+      <div className={styles.modal}>
         <div className={styles.modalContent}>
           {/* From */}
           <div className={styles.formRow}>
-            <label className={styles.label}>From:</label>
-            <input
-              type="text"
-              className={styles.input}
+            <label htmlFor="from" className={styles.label}>
+              From:
+            </label>
+            <TextField
+              fullWidth
+              variant="standard"
+              id="from"
               value={formData.from}
               onChange={(e) => handleInputChange("from", e.target.value)}
-              placeholder=""
+              sx={InputStyle}
             />
           </div>
 
           {/* To */}
           <div className={styles.formRow}>
-            <label className={styles.label}>To:</label>
-            <input
-              type="text"
-              className={styles.input}
+            <label htmlFor="to" className={styles.label}>
+              To:
+            </label>
+            <TextField
+              fullWidth
+              variant="standard"
+              id="to"
               value={formData.to}
               onChange={(e) => handleInputChange("to", e.target.value)}
-              placeholder=""
+              sx={InputStyle}
             />
           </div>
 
           {/* Subject */}
           <div className={styles.formRow}>
-            <label className={styles.label}>Subject:</label>
-            <input
-              type="text"
-              className={styles.input}
+            <label htmlFor="subject" className={styles.label}>
+              Subject:
+            </label>
+            <TextField
+              fullWidth
+              variant="standard"
+              id="subject"
               value={formData.subject}
               onChange={(e) => handleInputChange("subject", e.target.value)}
-              placeholder=""
+              sx={InputStyle}
             />
           </div>
 
           {/* Has the words */}
           <div className={styles.formRow}>
-            <label className={styles.label}>Has the words:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={formData.hasWords}
-              onChange={(e) => handleInputChange("hasWords", e.target.value)}
+            <label htmlFor="has" className={styles.label}>
+              Has the words:
+            </label>
+            <TextField
+              fullWidth
+              variant="standard"
+              id="has"
+              value={formData.has}
+              onChange={(e) => handleInputChange("has", e.target.value)}
               placeholder=""
+              sx={InputStyle}
             />
           </div>
 
           {/* Doesn't have */}
           <div className={styles.formRow}>
-            <label className={styles.label}>Doesn't have:</label>
-            <input
-              type="text"
-              className={styles.input}
-              value={formData.doesntHave}
-              onChange={(e) => handleInputChange("doesntHave", e.target.value)}
-              placeholder=""
+            <label htmlFor="hasnot" className={styles.label}>
+              Doesn't have:
+            </label>
+            <TextField
+              id="hasnot"
+              fullWidth
+              variant="standard"
+              value={formData.hasnot}
+              onChange={(e) => handleInputChange("hasnot", e.target.value)}
+              sx={InputStyle}
             />
           </div>
 
           {/* Size */}
           <div className={styles.formRow}>
-            <label className={styles.label}>Size:</label>
-            <div className={styles.sizeContainer}>
-              <select
-                className={styles.select}
+            <label htmlFor="size" className={styles.label}>
+              Size:
+            </label>
+            <Box sx={{ display: "flex", alignItems: "center", gap: "20px" }} className={styles.sizeContainer}>
+              <Select
+                id="size"
+                variant="standard"
                 value={formData.sizeOperator}
                 onChange={(e) => handleInputChange("sizeOperator", e.target.value)}
+                MenuProps={{
+                  disablePortal: true,
+                }}
+                sx={{
+                  fontSize: "14px",
+                  width: "250px !important",
+                  "& .MuiSelect-select": {
+                    width: "250px",
+                    padding: "0",
+                    height: "20px",
+                  },
+                }}
               >
-                <option value="greater than">greater than</option>
-                <option value="less than">less than</option>
-                <option value="equal to">equal to</option>
-              </select>
-              <input
-                type="number"
-                className={styles.sizeInput}
-                value={formData.sizeValue}
-                onChange={(e) => handleInputChange("sizeValue", e.target.value)}
-                placeholder=""
+                <MenuItem value="less than" sx={{ fontSize: "14px" }}>
+                  less than
+                </MenuItem>
+                <MenuItem value="greater than" sx={{ fontSize: "14px" }}>
+                  greater than
+                </MenuItem>
+              </Select>
+
+              <TextField
+                fullWidth
+                variant="standard"
+                value={formData.size}
+                onChange={(e) => handleInputChange("size", e.target.value)}
+                sx={InputStyle}
               />
-              <select
-                className={styles.select}
+
+              <Select
+                id="sizeUnit"
+                variant="standard"
                 value={formData.sizeUnit}
                 onChange={(e) => handleInputChange("sizeUnit", e.target.value)}
+                MenuProps={{
+                  disablePortal: true,
+                }}
+                sx={{
+                  fontSize: "14px",
+                  width: "118px !important",
+                  "& .MuiSelect-select": {
+                    width: "118px",
+                    padding: "0",
+                    height: "20px",
+                  },
+                }}
               >
-                <option value="B">B</option>
-                <option value="KB">KB</option>
-                <option value="MB">MB</option>
-                <option value="GB">GB</option>
-              </select>
-            </div>
+                <MenuItem value="MB" sx={{ fontSize: "14px" }}>
+                  MB
+                </MenuItem>
+                <MenuItem value="KB" sx={{ fontSize: "14px" }}>
+                  KB
+                </MenuItem>
+                <MenuItem value="Bytes" sx={{ fontSize: "14px" }}>
+                  Bytes
+                </MenuItem>
+              </Select>
+            </Box>
           </div>
 
           {/* Date within */}
           <div className={styles.formRow}>
-            <label className={styles.label}>Date within:</label>
+            <label htmlFor="within" className={styles.label}>
+              Date within:
+            </label>
             <div className={styles.dateContainer}>
-              <select
-                className={styles.select}
-                value={formData.dateWithin}
-                onChange={(e) => handleInputChange("dateWithin", e.target.value)}
+              <Select
+                id="within"
+                variant="standard"
+                value={formData.within}
+                onChange={(e) => handleInputChange("within", e.target.value)}
+                MenuProps={{
+                  disablePortal: true,
+                }}
+                sx={{
+                  fontSize: "14px",
+                  flex: 1,
+                  "& .MuiSelect-select": {
+                    padding: "0",
+                    height: "20px",
+                  },
+                }}
               >
-                <option value="1 day">1 day</option>
-                <option value="3 days">3 days</option>
-                <option value="1 week">1 week</option>
-                <option value="1 month">1 month</option>
-                <option value="1 year">1 year</option>
-                <option value="custom">custom</option>
-              </select>
-              <div className={styles.dateInputContainer}>
-                <input
-                  type="date"
-                  className={styles.dateInput}
-                  value={formData.dateValue}
-                  onChange={(e) => handleInputChange("dateValue", e.target.value)}
-                />
-                {/* <Icon name="calendar_today" size="small" fontSize={20} className={styles.calendarIcon} /> */}
-              </div>
+                {dateWithinOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value} sx={{ fontSize: "14px" }}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              <DatePicker
+                value={formData.date}
+                onChange={(value) => handleInputChange("date", value)}
+                placeholder="Select date"
+              />
             </div>
           </div>
 
           {/* Search */}
           <div className={styles.formRow}>
             <label className={styles.label}>Search:</label>
-            <select
-              className={styles.select}
-              value={formData.searchIn}
-              onChange={(e) => handleInputChange("searchIn", e.target.value)}
+            <Select
+              id="subset"
+              variant="standard"
+              MenuProps={{
+                disablePortal: true,
+              }}
+              sx={{
+                fontSize: "14px",
+                flex: 1,
+                "& .MuiSelect-select": {
+                  padding: "0",
+                  height: "20px",
+                },
+              }}
+              value={formData.subset}
+              onChange={(e) => handleInputChange("subset", e.target.value)}
             >
-              <option value="All Mail">All Mail</option>
-              <option value="Inbox">Inbox</option>
-              <option value="Sent">Sent</option>
-              <option value="Drafts">Drafts</option>
-              <option value="Spam">Spam</option>
-              <option value="Trash">Trash</option>
-            </select>
+              {subsetOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value} sx={{ fontSize: "14px" }}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
           </div>
 
           {/* Checkboxes */}
           <div className={styles.checkboxContainer}>
-            <label htmlFor="hasAttachment" className={styles.checkboxLabel}>
+            <label htmlFor="attachment" className={styles.checkboxLabel}>
               <Checkbox
-                id="hasAttachment"
+                id="attachment"
                 size="small"
-                checked={formData.hasAttachment}
-                onChange={(e) => handleInputChange("hasAttachment", e.target.checked)}
+                checked={formData.attachment}
+                onChange={(e) => handleInputChange("attachment", e.target.checked)}
               />
               <span className={styles.checkboxText}>Has attachment</span>
             </label>
 
-            <label htmlFor="dontIncludeChats" className={styles.checkboxLabel}>
+            <label htmlFor="includeChats" className={styles.checkboxLabel}>
               <Checkbox
-                id="dontIncludeChats"
+                id="includeChats"
                 size="small"
-                checked={formData.dontIncludeChats}
-                onChange={(e) => handleInputChange("dontIncludeChats", e.target.checked)}
+                checked={formData.includeChats}
+                onChange={(e) => handleInputChange("includeChats", e.target.checked)}
               />
               <span className={styles.checkboxText}>Don't include chats</span>
             </label>
@@ -258,7 +372,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </ClickAwayListener>
   );
 };
 

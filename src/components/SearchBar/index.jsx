@@ -12,12 +12,7 @@ import {
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
-import {
-  encodeForPath,
-  // decodeFromPath,
-  queryToSearchBarString,
-  buildSearchBarFromUrl,
-} from "../../utils/helperFunctions";
+import { encodeForPath, queryToSearchBarString, buildSearchBarFromUrl } from "../../utils/helperFunctions";
 
 const SearchBar = () => {
   const { emails } = useGlobalContext();
@@ -61,12 +56,16 @@ const SearchBar = () => {
 
   // Set search value when search query is present in the url
   useEffect(() => {
-    if (searchQuery && isAdvancedSearch) {
-      setSearchValue(queryToSearchBarString(searchQuery));
+    if (isAdvancedSearch) {
+      // For advanced search, use the query string directly with queryToSearchBarString
+      const queryString = location.search;
+      if (queryString) {
+        setSearchValue(queryToSearchBarString(queryString));
+      }
     } else if (searchQuery) {
       setSearchValue(searchQuery);
     }
-  }, [searchQuery, isAdvancedSearch]);
+  }, [searchQuery, isAdvancedSearch, location.search]);
 
   // Track location changes and clear search input when navigating away from search results
   useEffect(() => {

@@ -270,8 +270,8 @@ export function advancedSearchEmails(searchCriteria, options = {}) {
       });
     }
 
-    // Apply "has attachment" filter
-    if (searchCriteria.hasAttachment) {
+    // Apply "attachment" filter
+    if (searchCriteria.attachment) {
       // We need to get the original email data to check for attachments
       // Since our emailDocuments don't include attachment info, we'll need to cross-reference
       filteredEmails = filteredEmails.filter((email) => {
@@ -346,16 +346,16 @@ export function advancedSearchWithFullData(searchCriteria, emails, options = {})
       });
     }
 
-    // Apply "has attachment" filter
-    if (searchCriteria.hasAttachment) {
+    // Apply "attachment" filter
+    if (searchCriteria.attachment) {
       filteredEmails = filteredEmails.filter((email) => {
         return email.attachments && email.attachments.length > 0;
       });
     }
 
-    // Apply "has words" filter
-    if (searchCriteria.hasWords && searchCriteria.hasWords.trim()) {
-      const wordsQuery = searchCriteria.hasWords.trim().toLowerCase();
+    // Apply "has" filter
+    if (searchCriteria.has && searchCriteria.has.trim()) {
+      const wordsQuery = searchCriteria.has.trim().toLowerCase();
       const words = wordsQuery.split(/\s+/);
       filteredEmails = filteredEmails.filter((email) => {
         const searchableText = `${email.subject || ""} ${email.preview || ""} ${email.body || ""}`.toLowerCase();
@@ -363,9 +363,9 @@ export function advancedSearchWithFullData(searchCriteria, emails, options = {})
       });
     }
 
-    // Apply "doesn't have" filter
-    if (searchCriteria.doesntHave && searchCriteria.doesntHave.trim()) {
-      const excludeQuery = searchCriteria.doesntHave.trim().toLowerCase();
+    // Apply "hasnot" filter
+    if (searchCriteria.hasnot && searchCriteria.hasnot.trim()) {
+      const excludeQuery = searchCriteria.hasnot.trim().toLowerCase();
       const excludeWords = excludeQuery.split(/\s+/);
       filteredEmails = filteredEmails.filter((email) => {
         const searchableText = `${email.subject || ""} ${email.preview || ""} ${email.body || ""}`.toLowerCase();
@@ -373,40 +373,61 @@ export function advancedSearchWithFullData(searchCriteria, emails, options = {})
       });
     }
 
-    // Apply date filter
-    if (searchCriteria.dateWithin && searchCriteria.dateValue) {
-      const now = new Date();
-      let daysBack = 3; // default
+    // Apply date and within filter
+    if (searchCriteria.within && searchCriteria.date) {
+      // Parse the selected date and set it to start of day in local timezone
+      const selectedDate = new Date(searchCriteria.date + "T00:00:00");
+      let daysOffset = 1; // default to 1 day
 
-      switch (searchCriteria.dateWithin) {
+      switch (searchCriteria.within) {
         case "1 day":
-          daysBack = 1;
+          daysOffset = 1;
           break;
         case "3 days":
-          daysBack = 3;
+          daysOffset = 3;
           break;
         case "1 week":
-          daysBack = 7;
+          daysOffset = 7;
           break;
         case "1 month":
-          daysBack = 30;
+          daysOffset = 30;
           break;
         case "1 year":
-          daysBack = 365;
+          daysOffset = 365;
           break;
       }
 
-      const cutoffDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
+      // Calculate after and before dates
+      // For "1 day" with Aug 31: after = Aug 30, before = Sep 2 (exclusive)
+      const afterDate = new Date(selectedDate.getTime() - daysOffset * 24 * 60 * 60 * 1000);
+      const beforeDate = new Date(selectedDate.getTime() + (daysOffset + 1) * 24 * 60 * 60 * 1000);
+
+      // console.log("Date filter debug:", {
+      //   selectedDate: searchCriteria.dateValue,
+      //   dateWithin: searchCriteria.dateWithin,
+      //   afterDate: afterDate.toISOString(),
+      //   beforeDate: beforeDate.toISOString(),
+      //   daysOffset,
+      // });
+
       filteredEmails = filteredEmails.filter((email) => {
         const emailDate = new Date(email.timestamp);
-        return emailDate >= cutoffDate;
+        const isInRange = emailDate >= afterDate && emailDate < beforeDate;
+        // if (isInRange) {
+        //   console.log("Email in range:", {
+        //     emailId: email.id,
+        //     emailDate: email.timestamp,
+        //     subject: email.subject,
+        //   });
+        // }
+        return isInRange;
       });
     }
 
-    // Apply search location filter
-    if (searchCriteria.searchIn && searchCriteria.searchIn !== "All Mail") {
+    // Apply subset filter
+    if (searchCriteria.subset && searchCriteria.subset !== "All Mail") {
       filteredEmails = filteredEmails.filter((email) => {
-        return email.labels && email.labels.includes(searchCriteria.searchIn);
+        return email.labels && email.labels.includes(searchCriteria.subset);
       });
     }
 
@@ -523,24 +544,24 @@ export function createSearchSummary(searchCriteria) {
     parts.push(`subject: ${searchCriteria.subject}`);
   }
 
-  if (searchCriteria.hasWords) {
-    parts.push(`has: ${searchCriteria.hasWords}`);
+  if (searchCriteria.has) {
+    parts.push(`has: ${searchCriteria.has}`);
   }
 
-  if (searchCriteria.doesntHave) {
-    parts.push(`doesn't have: ${searchCriteria.doesntHave}`);
+  if (searchCriteria.hasnot) {
+    parts.push(`hasnot: ${searchCriteria.hasnot}`);
   }
 
-  if (searchCriteria.hasAttachment) {
-    parts.push("has attachment");
+  if (searchCriteria.attachment) {
+    parts.push("attachment");
   }
 
-  if (searchCriteria.dateWithin && searchCriteria.dateValue) {
-    parts.push(`within ${searchCriteria.dateWithin}`);
+  if (searchCriteria.within && searchCriteria.date) {
+    parts.push(`within ${searchCriteria.within}`);
   }
 
-  if (searchCriteria.searchIn && searchCriteria.searchIn !== "All Mail") {
-    parts.push(`in ${searchCriteria.searchIn}`);
+  if (searchCriteria.subset && searchCriteria.subset !== "All Mail") {
+    parts.push(`subset ${searchCriteria.subset}`);
   }
 
   return parts.length > 0 ? parts.join(", ") : "all emails";

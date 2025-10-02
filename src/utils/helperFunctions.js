@@ -162,16 +162,67 @@ export const queryToSearchBarString = (queryString) => {
   const params = new URLSearchParams(queryString);
   const parts = [];
 
+  // Handle date range first
+  const within = params.get("within");
+  const date = params.get("date");
+
+  if (within && date) {
+    const selectedDate = new Date(date + "T00:00:00");
+    let daysOffset = 1; // default to 1 day
+
+    switch (within) {
+      case "1 day":
+        daysOffset = 1;
+        break;
+      case "3 days":
+        daysOffset = 3;
+        break;
+      case "1 week":
+        daysOffset = 7;
+        break;
+      case "1 month":
+        daysOffset = 30;
+        break;
+      case "1 year":
+        daysOffset = 365;
+        break;
+    }
+
+    // Calculate after and before dates
+    // For "1 day" with Sep 30: after = Sep 29, before = Oct 2 (exclusive)
+    const afterDate = new Date(selectedDate.getTime() - daysOffset * 24 * 60 * 60 * 1000);
+    const beforeDate = new Date(selectedDate.getTime() + (daysOffset + 1) * 24 * 60 * 60 * 1000);
+
+    // Format dates as YYYY/M/D (Gmail format)
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1; // getMonth() is 0-based
+      const day = date.getDate();
+      return `${year}/${month}/${day}`;
+    };
+
+    parts.push(`after:${formatDate(afterDate)}`);
+    parts.push(`before:${formatDate(beforeDate)}`);
+  }
+
+  // Handle other search criteria
   for (const [key, value] of params.entries()) {
     if (key.toLowerCase() === "advanced") continue;
 
-    // turn booleans into "has:key"
-    if (value === "true") {
-      parts.push(`has:${key}`);
-    } else if (value === "false") {
-      // you can decide whether to include these
-      // parts.push(`-has:${key}`); // optional
-    } else {
+    // Skip date fields as they're handled above
+    if (key === "within" || key === "date") continue;
+
+    // Handle specific field mappings
+    if (key === "has" && value && value.trim()) {
+      parts.unshift(value.trim()); // Add at the beginning for has field
+    } else if (key === "hasnot" && value && value.trim()) {
+      parts.push(`-${value.trim()}`);
+    } else if (key === "attachment" && value === "true") {
+      parts.push("has:attachment");
+    } else if (key === "subset" && value && value !== "All Mail") {
+      parts.push(`in:${value}`);
+    } else if (value && value.trim() && value !== "true" && value !== "false") {
+      // For other fields like from, to, subject
       parts.push(`${key}:${value}`);
     }
   }
