@@ -44,8 +44,8 @@ const ContactsHeader = () => {
             fontWeight: 400,
             fontSize: "22px",
             color: "#5f6368",
-            "&:hover": { 
-              cursor: "pointer" 
+            "&:hover": {
+              cursor: "pointer",
             },
             "&:active": {
               textDecoration: "underline",
@@ -113,28 +113,30 @@ const ContactsHeader = () => {
           />
 
           {/* Clear search */}
-          <Tooltip
-            title="Clear search"
-            placement="bottom"
-            slotProps={{
-              popper: {
-                sx: {
-                  "& .MuiTooltip-tooltip": {
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                    color: "white",
-                    fontSize: "13px",
-                    fontWeight: "400",
+          {searchValue && (
+            <Tooltip
+              title="Clear search"
+              placement="bottom"
+              slotProps={{
+                popper: {
+                  sx: {
+                    "& .MuiTooltip-tooltip": {
+                      backgroundColor: "rgba(0, 0, 0, 0.7)",
+                      color: "white",
+                      fontSize: "13px",
+                      fontWeight: "400",
+                    },
                   },
                 },
-              },
-            }}
-          >
-            <IconButton size="medium" sx={{ color: "#5f6368" }} onClick={() => setSearchValue("")}>
-              <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
-                close
-              </span>
-            </IconButton>
-          </Tooltip>
+              }}
+            >
+              <IconButton size="medium" sx={{ color: "#5f6368" }} onClick={() => setSearchValue("")}>
+                <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
+                  close
+                </span>
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
       </Box>
 

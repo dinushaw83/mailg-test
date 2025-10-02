@@ -172,39 +172,68 @@ const ContactsLeftSidebar = () => {
       <Box className={`${styles.contactsLeftSidebar} ${contactsLeftSidebarExpanded ? styles.expanded : ""}`}>
         {/* Create Contact Button */}
         <Box sx={{ p: 2, px: 1.5 }}>
-          <Button
-            variant="contained"
-            startIcon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "24px", color: "#062239", marginRight: "4px" }}
+          {width < 1024 ? (
+            <Box sx={{ display: "flex", alignItems: "center", mb: 0.25, px: 1 }}>
+              <img
+                src="/assets/images/pr_2_image_11.png"
+                alt="Contacts"
+                style={{ width: "40px", height: "40px", marginRight: "10px", cursor: "pointer" }}
+                onClick={() => navigate("/contacts")}
+              />
+
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 400,
+                  fontSize: "22px",
+                  color: "#5f6368",
+                  "&:hover": {
+                    cursor: "pointer",
+                  },
+                  "&:active": {
+                    textDecoration: "underline",
+                  },
+                }}
+                onClick={() => navigate("/contacts")}
               >
-                add
-              </span>
-            }
-            onClick={handleCreateContact}
-            sx={{
-              backgroundColor: "#c2e7ff",
-              color: "#062239",
-              borderRadius: "16px",
-              textTransform: "none",
-              fontWeight: 500,
-              fontSize: "0.875rem",
-              px: 2.5,
-              py: 2,
-              boxShadow: "none",
-              transition:
-                "box-shadow .28s cubic-bezier(.4,0,.2,1),opacity 15ms linear 30ms,grid-template-columns .5s cubic-bezier(.27,1.06,.18,1),transform .27s 0ms cubic-bezier(0,0,.2,1)",
-              "&:hover": {
-                boxShadow: "0 2px 5px 2px rgba(0,0,0,0.3)",
-              },
-              "& .MuiButton-startIcon": {
-                marginRight: 1,
-              },
-            }}
-          >
-            Create contact
-          </Button>
+                Contacts
+              </Typography>
+            </Box>
+          ) : (
+            <Button
+              variant="contained"
+              startIcon={
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "24px", color: "#062239", marginRight: "4px" }}
+                >
+                  add
+                </span>
+              }
+              onClick={handleCreateContact}
+              sx={{
+                backgroundColor: "#c2e7ff",
+                color: "#062239",
+                borderRadius: "16px",
+                textTransform: "none",
+                fontWeight: 500,
+                fontSize: "0.875rem",
+                px: 2.5,
+                py: 2,
+                boxShadow: "none",
+                transition:
+                  "box-shadow .28s cubic-bezier(.4,0,.2,1),opacity 15ms linear 30ms,grid-template-columns .5s cubic-bezier(.27,1.06,.18,1),transform .27s 0ms cubic-bezier(0,0,.2,1)",
+                "&:hover": {
+                  boxShadow: "0 2px 5px 2px rgba(0,0,0,0.3)",
+                },
+                "& .MuiButton-startIcon": {
+                  marginRight: 1,
+                },
+              }}
+            >
+              Create contact
+            </Button>
+          )}
         </Box>
 
         {/* Main Navigation Section */}

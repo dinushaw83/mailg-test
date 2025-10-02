@@ -80,9 +80,9 @@ const Frequent = () => {
     <Box
       sx={{
         backgroundColor: "#fff",
-        margin: "16px 16px 16px 4px",
+        margin: "16px 16px 16px 20px",
         borderRadius: "24px",
-        width: "calc(100vw - 284px)",
+        width: "100%",
         height: "calc(100vh - 146px)",
         pl: 1.5,
         py: 3,
