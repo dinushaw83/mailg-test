@@ -23,6 +23,12 @@ const InputStyle = {
   },
 };
 
+const SelectHoverStyle = {
+  "&:hover:not(.Mui-disabled, .Mui-error):before": {
+    borderBottom: "1px solid rgba(0, 0, 0, 0.42)",
+  },
+};
+
 const dateWithinOptions = [
   { value: "1 day", label: "1 day" },
   { value: "3 days", label: "3 days" },
@@ -182,7 +188,6 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
               id="has"
               value={formData.has}
               onChange={(e) => handleInputChange("has", e.target.value)}
-              placeholder=""
               sx={InputStyle}
             />
           </div>
@@ -217,6 +222,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
                   disablePortal: true,
                 }}
                 sx={{
+                  ...SelectHoverStyle,
                   fontSize: "14px",
                   width: "250px !important",
                   "& .MuiSelect-select": {
@@ -251,6 +257,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
                   disablePortal: true,
                 }}
                 sx={{
+                  ...SelectHoverStyle,
                   fontSize: "14px",
                   width: "118px !important",
                   "& .MuiSelect-select": {
@@ -288,6 +295,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
                   disablePortal: true,
                 }}
                 sx={{
+                  ...SelectHoverStyle,
                   fontSize: "14px",
                   flex: 1,
                   "& .MuiSelect-select": {
@@ -320,6 +328,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
                 disablePortal: true,
               }}
               sx={{
+                ...SelectHoverStyle,
                 fontSize: "14px",
                 flex: 1,
                 "& .MuiSelect-select": {
