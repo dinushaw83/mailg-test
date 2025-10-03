@@ -28,6 +28,7 @@ const EmailListContainer = styled.div`
 `;
 
 import Banner from "../components/Banners";
+import { CATEGORIES } from "../utils/categories";
 
 const Inbox = () => {
   const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);
@@ -36,15 +37,44 @@ const Inbox = () => {
   const label = labelParam ? decodeURIComponent(labelParam) : null;
   const activeFolder = folder || "inbox";
 
+  const [activeInboxTab, setActiveInboxTab] = useState(CATEGORIES.Primary);
+
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
     return getThreadRows(emails, { label, folder: activeFolder });
   }, [emails, label, activeFolder]);
 
+  // Filter again by activeInboxTab (Primary, Promotions, Social, Updates)
+  const tabFilteredRows = useMemo(() => {
+    const isInbox = (r) => (r.labels || []).includes("Inbox");
+    const has = (r, name) => (r.labels || []).includes(name);
+    const NON_PRIMARY = new Set([
+      CATEGORIES.Promotions,
+      CATEGORIES.Social,
+      CATEGORIES.Updates,
+      CATEGORIES.Forums,
+    ]);
+
+    if (activeInboxTab === CATEGORIES.Primary) {
+      // Primary = Inbox only, without Social/Promotions/Updates/Forums
+      return filteredRows.filter(
+        (r) => isInbox(r) && !(r.labels || []).some((l) => NON_PRIMARY.has(l))
+      );
+    }
+
+    // Other tabs
+    return filteredRows.filter((r) => isInbox(r) && has(r, activeInboxTab));
+  }, [filteredRows, activeInboxTab]);
+
   // pick rows based on folder/label, then sort and paginate
   const rows = useMemo(() => {
-    // Sort emails based on sortOrder
-    const sortedThreads = [...filteredRows].sort((a, b) => {
+    // choose source depending on folder
+    const source =
+      activeFolder.toLowerCase() === "inbox"
+        ? tabFilteredRows
+        : filteredRows;
+
+    const sortedThreads = [...source].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
       return dateB - dateA;
@@ -54,7 +84,7 @@ const Inbox = () => {
     const endIndex = startIndex + itemsPerPage;
 
     return sortedThreads.slice(startIndex, endIndex);
-  }, [filteredRows, currentPage, itemsPerPage]);
+  }, [filteredRows, tabFilteredRows, activeFolder, currentPage, itemsPerPage]);
 
   useEffect(() => {
     document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
@@ -64,7 +94,7 @@ const Inbox = () => {
     <Container id="cont-123">
       <EmailListContainer role="main">
         <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
-        <Banner rows={rows} />
+        <Banner rows={filteredRows} activeInboxTab={activeInboxTab} setActiveInboxTab={setActiveInboxTab} />
         <EmailList emails={rows} />
       </EmailListContainer>
       <QuickSettings />
