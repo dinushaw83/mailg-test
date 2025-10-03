@@ -160,9 +160,23 @@ export const encodeForPath = (raw) => {
 
 export const queryToSearchBarString = (queryString) => {
   const params = new URLSearchParams(queryString);
-  const parts = [];
 
-  // Handle date range first
+  // Helper: quote & escape only when necessary
+  const quoteIfNeeded = (v) => {
+    if (v === undefined || v === null) return v;
+    const str = String(v).trim();
+    // If contains whitespace or double-quote or parentheses, or comma (we'll quote safe)
+    const needsQuoting = /\s|["(),]/.test(str);
+    // escape backslashes and double quotes
+    const escaped = str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    return needsQuoting ? `"${escaped}"` : escaped;
+  };
+
+  const leading = []; // has, from, to (should appear first)
+  const dateParts = []; // after:, before:
+  const otherParts = []; // everything else
+
+  // Handle date range first but store in dateParts
   const within = params.get("within");
   const date = params.get("date");
 
@@ -188,49 +202,66 @@ export const queryToSearchBarString = (queryString) => {
         break;
     }
 
-    // Calculate after and before dates
-    // For "1 day" with Sep 30: after = Sep 29, before = Oct 2 (exclusive)
+    // Calculate after and before dates (same logic as before)
     const afterDate = new Date(selectedDate.getTime() - daysOffset * 24 * 60 * 60 * 1000);
     const beforeDate = new Date(selectedDate.getTime() + (daysOffset + 1) * 24 * 60 * 60 * 1000);
 
-    // Format dates as YYYY/M/D (Gmail format)
-    const formatDate = (date) => {
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1; // getMonth() is 0-based
-      const day = date.getDate();
+    const formatDate = (d) => {
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
       return `${year}/${month}/${day}`;
     };
 
-    parts.push(`after:${formatDate(afterDate)}`);
-    parts.push(`before:${formatDate(beforeDate)}`);
+    dateParts.push(`after:${formatDate(afterDate)}`);
+    dateParts.push(`before:${formatDate(beforeDate)}`);
   }
 
-  // Handle other search criteria
+  // Handle other search criteria, distributing to the right bucket
   for (const [key, value] of params.entries()) {
     if (key.toLowerCase() === "advanced") continue;
+    if (key === "within" || key === "date") continue; // already handled
 
-    // Skip date fields as they're handled above
-    if (key === "within" || key === "date") continue;
+    if (value == null || value === "") continue; // skip empty values
 
-    // Handle specific field mappings
-    if (key === "has" && value && value.trim()) {
-      parts.unshift(value.trim()); // Add at the beginning for has field
-    } else if (key === "hasnot" && value && value.trim()) {
-      parts.push(`-${value.trim()}`);
+    // has -> go to front (original code used unshift into parts)
+    if (key === "has" && value.trim()) {
+      leading.unshift(quoteIfNeeded(value.trim()));
+      continue;
+    }
+
+    // from / to should be leading (before dateParts)
+    if ((key === "from" || key === "to") && value && value.trim()) {
+      const emails = value
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean)
+        .map((e) => quoteIfNeeded(e)); // quote each email/display name if needed
+
+      if (emails.length === 1) {
+        leading.push(`${key}:${emails[0]}`);
+      } else if (emails.length > 1) {
+        leading.push(`${key}:(${emails.join(",")})`);
+      }
+      continue;
+    }
+
+    // other mappings (preserve previous behavior, but quote values when needed)
+    if (key === "hasnot" && value && value.trim()) {
+      otherParts.push(`-${quoteIfNeeded(value.trim())}`);
     } else if (key === "attachment" && value === "true") {
-      parts.push("has:attachment");
+      otherParts.push("has:attachment");
     } else if (key === "subset" && value && value !== "All Mail") {
-      parts.push(`in:${value}`);
+      otherParts.push(`in:${quoteIfNeeded(value)}`);
     } else if (value && value.trim() && value !== "true" && value !== "false") {
-      // For other fields like from, to, subject
-      parts.push(`${key}:${value}`);
+      otherParts.push(`${key}:${quoteIfNeeded(value)}`);
     }
   }
 
+  // Compose final string: leading (has/from/to...) then dateParts then otherParts
+  const parts = [...leading, ...dateParts, ...otherParts];
   return parts.join(" ");
 };
-
-// utils/searchUrl.ts
 
 // decode a path segment like "John+Doe" or "John%20Doe" -> "John Doe"
 function decodePathSegment(segment) {

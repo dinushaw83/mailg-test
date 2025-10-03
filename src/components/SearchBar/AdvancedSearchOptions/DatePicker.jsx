@@ -17,7 +17,12 @@ const DatePicker = ({ value, onChange, placeholder = "Select date" }) => {
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target) &&
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target)
+      ) {
         setIsOpen(false);
       }
     };

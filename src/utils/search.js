@@ -243,22 +243,26 @@ export function advancedSearchEmails(searchCriteria, options = {}) {
 
     // Apply "from" filter
     if (searchCriteria.from && searchCriteria.from.trim()) {
-      const fromQuery = searchCriteria.from.trim().toLowerCase();
+      const fromEmails = searchCriteria.from.split(",").map((email) => email.trim().toLowerCase());
       filteredEmails = filteredEmails.filter((email) => {
-        return (
-          (email.fromName && email.fromName.toLowerCase().includes(fromQuery)) ||
-          (email.fromEmail && email.fromEmail.toLowerCase().includes(fromQuery))
+        return fromEmails.some(
+          (fromEmail) =>
+            (email.from?.name && email.from.name.toLowerCase().includes(fromEmail)) ||
+            (email.from?.email && email.from.email.toLowerCase().includes(fromEmail))
         );
       });
     }
 
     // Apply "to" filter
     if (searchCriteria.to && searchCriteria.to.trim()) {
-      const toQuery = searchCriteria.to.trim().toLowerCase();
+      const toEmails = searchCriteria.to.split(",").map((email) => email.trim().toLowerCase());
       filteredEmails = filteredEmails.filter((email) => {
-        // Note: We don't have 'to' field in our email documents, so we'll skip this for now
-        // This would need to be added to the email document structure
-        return true;
+        if (Array.isArray(email.to)) {
+          return email.to.some((recipient) => toEmails.some((toEmail) => recipient.toLowerCase().includes(toEmail)));
+        } else if (typeof email.to === "string") {
+          return toEmails.some((toEmail) => email.to.toLowerCase().includes(toEmail));
+        }
+        return false;
       });
     }
 
@@ -316,23 +320,24 @@ export function advancedSearchWithFullData(searchCriteria, emails, options = {})
 
     // Apply "from" filter
     if (searchCriteria.from && searchCriteria.from.trim()) {
-      const fromQuery = searchCriteria.from.trim().toLowerCase();
+      const fromEmails = searchCriteria.from.split(",").map((email) => email.trim().toLowerCase());
       filteredEmails = filteredEmails.filter((email) => {
-        return (
-          (email.from?.name && email.from.name.toLowerCase().includes(fromQuery)) ||
-          (email.from?.email && email.from.email.toLowerCase().includes(fromQuery))
+        return fromEmails.some(
+          (fromEmail) =>
+            (email.from?.name && email.from.name.toLowerCase().includes(fromEmail)) ||
+            (email.from?.email && email.from.email.toLowerCase().includes(fromEmail))
         );
       });
     }
 
     // Apply "to" filter
     if (searchCriteria.to && searchCriteria.to.trim()) {
-      const toQuery = searchCriteria.to.trim().toLowerCase();
+      const toEmails = searchCriteria.to.split(",").map((email) => email.trim().toLowerCase());
       filteredEmails = filteredEmails.filter((email) => {
         if (Array.isArray(email.to)) {
-          return email.to.some((recipient) => recipient.toLowerCase().includes(toQuery));
+          return email.to.some((recipient) => toEmails.some((toEmail) => recipient.toLowerCase().includes(toEmail)));
         } else if (typeof email.to === "string") {
-          return email.to.toLowerCase().includes(toQuery);
+          return toEmails.some((toEmail) => email.to.toLowerCase().includes(toEmail));
         }
         return false;
       });

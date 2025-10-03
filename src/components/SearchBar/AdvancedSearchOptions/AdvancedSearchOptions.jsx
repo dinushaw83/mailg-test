@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Box, Checkbox, ClickAwayListener, FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
+import { Box, Checkbox, ClickAwayListener, MenuItem, Select, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "./DatePicker";
+import EmailField from "./EmailField";
 import dayjs from "dayjs";
 import styles from "./AdvancedSearchOptions.module.css";
 
@@ -75,6 +76,8 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     }));
   };
 
+  console.log(formData, "formData");
+
   const handleSearch = () => {
     // Create search criteria object
     const searchCriteria = {
@@ -134,31 +137,21 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
         <div className={styles.modalContent}>
           {/* From */}
           <div className={styles.formRow}>
-            <label htmlFor="from" className={styles.label}>
-              From:
-            </label>
-            <TextField
-              fullWidth
-              variant="standard"
-              id="from"
+            <EmailField
+              label="From:"
               value={formData.from}
-              onChange={(e) => handleInputChange("from", e.target.value)}
-              sx={InputStyle}
+              onChange={(value) => handleInputChange("from", value)}
+              placeholder="Enter email addresses"
             />
           </div>
 
           {/* To */}
           <div className={styles.formRow}>
-            <label htmlFor="to" className={styles.label}>
-              To:
-            </label>
-            <TextField
-              fullWidth
-              variant="standard"
-              id="to"
+            <EmailField
+              label="To:"
               value={formData.to}
-              onChange={(e) => handleInputChange("to", e.target.value)}
-              sx={InputStyle}
+              onChange={(value) => handleInputChange("to", value)}
+              placeholder="Enter email addresses"
             />
           </div>
 
