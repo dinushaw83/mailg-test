@@ -1,10 +1,15 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import ContactsTable from "../../components/Contacts/ContactsTable";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const Frequent = () => {
   const { recipients, emails } = useGlobalContext();
+
+  useEffect(() => {
+    // Update the document title
+    document.title = "Frequently contacted";
+  }, []);
 
   // Find frequently contacted contacts based on email frequency
   const frequentContacts = useMemo(() => {

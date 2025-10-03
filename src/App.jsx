@@ -12,6 +12,9 @@ import Contacts from "./pages/Contacts/Contacts";
 import Frequent from "./pages/Contacts/Frequent";
 import OtherContacts from "./pages/Contacts/OtherContacts";
 import ContactsByLabel from "./pages/Contacts/ContactsByLabel";
+import ContactDetails from "./pages/Contacts/ContactDetails";
+import ContactTrash from "./pages/Contacts/ContactTrash";
+import ContactsSearch from "./pages/Contacts/ContactsSearch";
 
 import SearchResultsView from "./pages/SearchResultsView";
 import { initializeSearchIndex } from "./utils/search";
@@ -42,6 +45,9 @@ function App() {
             <Route path="/contacts/frequent" element={<Frequent />} />
             <Route path="/contacts/other" element={<OtherContacts />} />
             <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
+            <Route path="/contacts/person/:contactId" element={<ContactDetails />} />
+            <Route path="/contacts/trash" element={<ContactTrash />} />
+            <Route path="/contacts/search/:query" element={<ContactsSearch />} />
 
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>

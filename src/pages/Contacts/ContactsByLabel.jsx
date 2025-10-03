@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import ContactsTable from "../../components/Contacts/ContactsTable";
@@ -9,6 +9,11 @@ const ContactsByLabel = () => {
   const { labelId } = useParams();
   const label = recipientLabels.find((label) => label.id === parseInt(labelId));
   const contacts = recipients.filter((recipient) => recipient.labels.includes(label.label));
+
+  useEffect(() => {
+    // Update the document title
+    document.title = `Label - ${label.label}`;
+  }, [labelId]);
 
   return (
     <Box

@@ -139,23 +139,19 @@ const ContactsLeftSidebar = () => {
   };
 
   const handleCreateContact = () => {
-    console.log("Create contact clicked");
     // TODO: Implement create contact functionality
   };
 
   const handleMenuItemClick = (item) => {
-    console.log(`${item} clicked`);
     // TODO: Implement navigation functionality
   };
 
   const handleAddLabel = () => {
-    console.log("Add label clicked");
     // TODO: Implement add label functionality
   };
 
   const handleInfoClick = (e) => {
     e.stopPropagation();
-    console.log("Info clicked");
     // TODO: Implement info tooltip or modal
   };
 
@@ -178,7 +174,6 @@ const ContactsLeftSidebar = () => {
                 src="/assets/images/pr_2_image_11.png"
                 alt="Contacts"
                 style={{ width: "40px", height: "40px", marginRight: "10px", cursor: "pointer" }}
-                onClick={() => navigate("/contacts")}
               />
 
               <Typography
@@ -194,7 +189,6 @@ const ContactsLeftSidebar = () => {
                     textDecoration: "underline",
                   },
                 }}
-                onClick={() => navigate("/contacts")}
               >
                 Contacts
               </Typography>

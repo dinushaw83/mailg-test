@@ -36,7 +36,7 @@ const snackbarStyle = {
   },
 };
 
-const ContactsTable = ({ contacts = [] }) => {
+const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
   const { setRecipients, setSnackbar, recipientLabels } = useGlobalContext();
   const navigate = useNavigate();
   const [tableHeaders, setTableHeaders] = useState([
@@ -354,6 +354,11 @@ const ContactsTable = ({ contacts = [] }) => {
     }
   };
 
+  // Handle contact row click navigation
+  const handleContactRowClick = (contact) => {
+    navigate(`/contacts/person/${contact.id}`);
+  };
+
   // Handle bulk actions for all contacts
   const handleBulkAction = (action) => {
     console.log(`Bulk ${action} action clicked`);
@@ -463,6 +468,8 @@ const ContactsTable = ({ contacts = [] }) => {
             ? styles.activeRow
             : ""
         } ${checkedContacts.has(contact.id) ? styles.checkedRow : ""}`}
+        onClick={() => handleContactRowClick(contact)}
+        sx={{ cursor: "pointer" }}
       >
         {tableHeaders.map((header, headerIndex) => {
           const columnData = getContactColumnData(contact, header);
@@ -514,6 +521,7 @@ const ContactsTable = ({ contacts = [] }) => {
                       size="medium"
                       checked={checkedContacts.has(contact.id)}
                       onChange={(event) => handleCheckboxChange(contact.id, event.target.checked)}
+                      onClick={(event) => event.stopPropagation()}
                       sx={{
                         "&.Mui-checked": {
                           color: "#0b57d0",
@@ -562,7 +570,10 @@ const ContactsTable = ({ contacts = [] }) => {
                         key={`label-${labelIndex}`}
                         label={label}
                         size="small"
-                        onClick={() => handleLabelClick(label)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleLabelClick(label);
+                        }}
                         className={styles.labelChip}
                       />
                     ))
@@ -595,7 +606,10 @@ const ContactsTable = ({ contacts = [] }) => {
                   >
                     <IconButton
                       size="medium"
-                      onClick={() => handleFavorite(contact)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleFavorite(contact);
+                      }}
                       sx={{
                         color: contact?.labels?.includes("Favorites") ? "#0b57d0" : "#444746",
                         "&:hover": {
@@ -631,7 +645,14 @@ const ContactsTable = ({ contacts = [] }) => {
                       },
                     }}
                   >
-                    <IconButton size="medium" onClick={() => handleEdit(contact)} sx={{ color: "#444746" }}>
+                    <IconButton
+                      size="medium"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleEdit(contact);
+                      }}
+                      sx={{ color: "#444746" }}
+                    >
                       <span className="material-symbols-outlined" style={{ fontSize: "21px" }}>
                         edit
                       </span>
@@ -657,7 +678,10 @@ const ContactsTable = ({ contacts = [] }) => {
                   >
                     <IconButton
                       size="medium"
-                      onClick={(event) => handleMoreActions(contact, title, event)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleMoreActions(contact, title, event);
+                      }}
                       sx={{ color: "#444746" }}
                     >
                       <span className="material-symbols-outlined" style={{ fontSize: "21px" }}>
@@ -707,58 +731,66 @@ const ContactsTable = ({ contacts = [] }) => {
                   >
                     {header === "Actions" ? (
                       // Action buttons header
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 0.5 }}>
                         {/* Print button */}
-                        <Tooltip
-                          title="Print"
-                          placement="bottom"
-                          slotProps={{
-                            popper: {
-                              sx: {
-                                "& .MuiTooltip-tooltip": {
-                                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                  color: "white",
-                                  fontSize: "12px",
-                                  fontWeight: 200,
+                        {!hidePrintExport && (
+                          <Tooltip
+                            title="Print"
+                            placement="bottom"
+                            slotProps={{
+                              popper: {
+                                sx: {
+                                  "& .MuiTooltip-tooltip": {
+                                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                    color: "white",
+                                    fontSize: "12px",
+                                    fontWeight: 200,
+                                  },
                                 },
                               },
-                            },
-                          }}
-                        >
-                          <IconButton size="medium" onClick={() => handleBulkAction("print")} sx={{ color: "#444746" }}>
-                            <span className="material-symbols-filled" style={{ fontSize: "20px" }}>
-                              print
-                            </span>
-                          </IconButton>
-                        </Tooltip>
+                            }}
+                          >
+                            <IconButton
+                              size="medium"
+                              onClick={() => handleBulkAction("print")}
+                              sx={{ color: "#444746" }}
+                            >
+                              <span className="material-symbols-filled" style={{ fontSize: "20px" }}>
+                                print
+                              </span>
+                            </IconButton>
+                          </Tooltip>
+                        )}
 
                         {/* Export button */}
-                        <Tooltip
-                          title="Export"
-                          placement="bottom"
-                          slotProps={{
-                            popper: {
-                              sx: {
-                                "& .MuiTooltip-tooltip": {
-                                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                                  color: "white",
-                                  fontSize: "12px",
-                                  fontWeight: 200,
+                        {!hidePrintExport && (
+                          <Tooltip
+                            title="Export"
+                            placement="bottom"
+                            slotProps={{
+                              popper: {
+                                sx: {
+                                  "& .MuiTooltip-tooltip": {
+                                    backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                    color: "white",
+                                    fontSize: "12px",
+                                    fontWeight: 200,
+                                  },
                                 },
                               },
-                            },
-                          }}
-                        >
-                          <IconButton
-                            size="medium"
-                            onClick={() => handleBulkAction("export")}
-                            sx={{ color: "#444746" }}
+                            }}
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-                              upload
-                            </span>
-                          </IconButton>
-                        </Tooltip>
+                            <IconButton
+                              size="medium"
+                              onClick={() => handleBulkAction("export")}
+                              sx={{ color: "#444746" }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                                upload
+                              </span>
+                            </IconButton>
+                          </Tooltip>
+                        )}
 
                         {/* List settings button */}
                         <Tooltip
@@ -965,20 +997,19 @@ const ContactsTable = ({ contacts = [] }) => {
                       colSpan={tableHeaders.length}
                       sx={{
                         border: 0,
-                        py: 4,
-                        textAlign: "center",
+                        py: 2,
                         backgroundColor: "transparent",
                       }}
                     >
                       <Typography
                         variant="body2"
                         sx={{
-                          color: "#9aa0a6",
+                          color: "#1f1f1f",
                           fontSize: "0.875rem",
                           fontWeight: 400,
                         }}
                       >
-                        No contacts found
+                        No results in your contacts
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -993,20 +1024,19 @@ const ContactsTable = ({ contacts = [] }) => {
                   colSpan={tableHeaders.length}
                   sx={{
                     border: 0,
-                    py: 4,
-                    textAlign: "center",
+                    py: 2,
                     backgroundColor: "transparent",
                   }}
                 >
                   <Typography
                     variant="body2"
                     sx={{
-                      color: "#9aa0a6",
+                      color: "#1f1f1f",
                       fontSize: "0.875rem",
                       fontWeight: 400,
                     }}
                   >
-                    No contacts found
+                    No results in your contacts
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -1047,41 +1077,45 @@ const ContactsTable = ({ contacts = [] }) => {
         }}
       >
         {/* Actions Section */}
-        <MenuItem onClick={handlePrint}>
-          <ListItemIcon>
-            <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
-              print
-            </span>
-          </ListItemIcon>
-          <ListItemText
-            primary="Print"
-            slotProps={{
-              primary: {
-                color: "rgb(60,64,67)",
-                fontSize: "14px",
-                fontWeight: 400,
-              },
-            }}
-          />
-        </MenuItem>
+        {!hidePrintExport && (
+          <MenuItem onClick={handlePrint}>
+            <ListItemIcon>
+              <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                print
+              </span>
+            </ListItemIcon>
+            <ListItemText
+              primary="Print"
+              slotProps={{
+                primary: {
+                  color: "rgb(60,64,67)",
+                  fontSize: "14px",
+                  fontWeight: 400,
+                },
+              }}
+            />
+          </MenuItem>
+        )}
 
-        <MenuItem onClick={handleExport}>
-          <ListItemIcon>
-            <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
-              upload
-            </span>
-          </ListItemIcon>
-          <ListItemText
-            primary="Export"
-            slotProps={{
-              primary: {
-                color: "rgb(60,64,67)",
-                fontSize: "14px",
-                fontWeight: 400,
-              },
-            }}
-          />
-        </MenuItem>
+        {!hidePrintExport && (
+          <MenuItem onClick={handleExport}>
+            <ListItemIcon>
+              <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                upload
+              </span>
+            </ListItemIcon>
+            <ListItemText
+              primary="Export"
+              slotProps={{
+                primary: {
+                  color: "rgb(60,64,67)",
+                  fontSize: "14px",
+                  fontWeight: 400,
+                },
+              }}
+            />
+          </MenuItem>
+        )}
 
         <MenuItem onClick={handleHideFromContacts}>
           <ListItemIcon>

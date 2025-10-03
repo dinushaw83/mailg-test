@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import ContactsTable from "../../components/Contacts/ContactsTable";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -6,6 +6,11 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 const OtherContacts = () => {
   const { recipients } = useGlobalContext();
   const otherContacts = recipients.filter((recipient) => !recipient.labels.includes("My contacts"));
+
+  useEffect(() => {
+    // Update the document title
+    document.title = "Other contacts";
+  }, []);
 
   return (
     <Box

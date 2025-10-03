@@ -1,21 +1,37 @@
 import React, { useEffect, useState } from "react";
-import { Box, IconButton, TextField, Tooltip, Typography, Avatar } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Box, IconButton, Tooltip, Typography, Avatar } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { generateAvatarColor } from "../utils/helperFunctions";
+import ContactSearchDropdown from "./Contacts/ContactSearchDropdown";
 import styles from "./ContactsHeader.module.css";
 
 const ContactsHeader = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setContactsLeftSidebarExpanded, loggedInUser } = useGlobalContext();
-  const [searchValue, setSearchValue] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const initials = loggedInUser.name ? loggedInUser.name.charAt(0).toUpperCase() : "";
+  const initialSearchQuery = location.pathname.startsWith("/contacts/search/")
+    ? decodeURIComponent(location.pathname.split("/").pop() ?? "")
+    : "";
 
   // Update favicon to contacts icon
   useEffect(() => {
     document.querySelector("link[rel='icon']").href = "/assets/images/pr_2_image_11.png";
   }, []);
+
+  // Handle contact selection from search dropdown
+  const handleContactSelect = (contact) => {
+    // Navigate to contact details page
+    navigate(`/contacts/person/${contact.id}`);
+  };
+
+  // Handle search submission by pressing enter
+  const handleSearchSubmit = (searchQuery) => {
+    // Navigate to search results page or handle search
+    navigate(`/contacts/search/${encodeURIComponent(searchQuery)}`);
+  };
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", pl: "10px", py: 1, pr: 2 }}>
@@ -56,87 +72,16 @@ const ContactsHeader = () => {
           Contacts
         </Typography>
 
-        {/* Searchbar */}
+        {/* Contact Search Dropdown */}
         <Box className={`${styles.searchBox} ${isSearchFocused ? styles.focused : ""}`}>
-          <Tooltip
-            title="Search"
-            placement="bottom"
-            slotProps={{
-              popper: {
-                sx: {
-                  "& .MuiTooltip-tooltip": {
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                    color: "white",
-                    fontSize: "13px",
-                    fontWeight: "400",
-                  },
-                },
-              },
-            }}
-          >
-            <IconButton size="medium" sx={{ color: "#5f6368", mr: "10px" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
-                search
-              </span>
-            </IconButton>
-          </Tooltip>
-
-          {/* Search input */}
-          <TextField
-            placeholder="Search"
-            variant="standard"
-            sx={{
-              width: "100%",
-              fontSize: "0.875rem",
-              fontWeight: 400,
-              "& fieldset": {
-                border: "none",
-              },
-              "& .MuiInputBase-input::placeholder": {
-                color: "#929394",
-                opacity: 1,
-                fontWeight: 400,
-              },
-              "& .MuiInputBase-input:hover": {
-                cursor: "text",
-              },
-            }}
-            slotProps={{
-              input: {
-                disableUnderline: true,
-              },
-            }}
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+          <ContactSearchDropdown
+            onContactSelect={handleContactSelect}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
+            handleSubmit={handleSearchSubmit}
+            placeholder="Search"
+            initialQuery={initialSearchQuery}
           />
-
-          {/* Clear search */}
-          {searchValue && (
-            <Tooltip
-              title="Clear search"
-              placement="bottom"
-              slotProps={{
-                popper: {
-                  sx: {
-                    "& .MuiTooltip-tooltip": {
-                      backgroundColor: "rgba(0, 0, 0, 0.7)",
-                      color: "white",
-                      fontSize: "13px",
-                      fontWeight: "400",
-                    },
-                  },
-                },
-              }}
-            >
-              <IconButton size="medium" sx={{ color: "#5f6368" }} onClick={() => setSearchValue("")}>
-                <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
-                  close
-                </span>
-              </IconButton>
-            </Tooltip>
-          )}
         </Box>
       </Box>
 
