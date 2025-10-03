@@ -21,7 +21,7 @@ export const initialEmails = [
     read: false,
     starred: true,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
   },
   // Thread with multiple messages (GitHub device verification)
@@ -46,7 +46,7 @@ export const initialEmails = [
     read: true,
     starred: true,
     important: true,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
     attachments: [
       {
@@ -85,7 +85,7 @@ export const initialEmails = [
     read: true,
     starred: true,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
     attachments: [
       {
@@ -158,7 +158,7 @@ export const initialEmails = [
     read: false,
     starred: false,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
   },
   {
@@ -245,7 +245,7 @@ export const initialEmails = [
     read: false,
     starred: true,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
   },
   {
@@ -267,7 +267,7 @@ export const initialEmails = [
     read: true,
     starred: true,
     important: false,
-    labels: ["Sent"],
+    labels: ["Sent", "Primary"],
     labelColor: "#e1e3e1",
   },
   {
@@ -289,7 +289,7 @@ export const initialEmails = [
     read: false,
     starred: true,
     important: true,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
   },
   {
@@ -311,7 +311,7 @@ export const initialEmails = [
     read: true,
     starred: false,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
   },
   {
@@ -334,7 +334,7 @@ export const initialEmails = [
     read: false,
     starred: true,
     important: true,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
   },
   {
@@ -359,7 +359,7 @@ export const initialEmails = [
     read: false,
     starred: false,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Primary"],
     labelColor: "#e1e3e1",
   },
   {
@@ -375,7 +375,7 @@ export const initialEmails = [
     read: false,
     starred: false,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Promotions"],
     labelColor: "#ffe1e1",
   },
   {
@@ -391,7 +391,7 @@ export const initialEmails = [
     read: true,
     starred: false,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Social"],
     labelColor: "#ffe6cc",
   },
   {
@@ -407,7 +407,7 @@ export const initialEmails = [
     read: true,
     starred: false,
     important: true,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Updates"],
     labelColor: "#e1f7e1",
   },
 ];

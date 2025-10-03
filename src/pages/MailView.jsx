@@ -28,7 +28,7 @@ const EmailListContainer = styled.div`
 `;
 
 import Banner from "../components/Banners";
-import { CATEGORIES } from "../utils/categorizeEmail";
+import { CATEGORIES } from "../utils/categories";
 
 const Inbox = () => {
   const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);

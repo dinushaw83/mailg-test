@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { CATEGORIES } from "../../utils/categorizeEmail";
+import { CATEGORIES } from "../../utils/categories";
 
 export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows }) {
 

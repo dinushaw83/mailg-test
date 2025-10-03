@@ -1,4 +1,3 @@
-import categorizeEmail from "./categorizeEmail";
 
 // src/contexts/normalize.js
 export function normalizeEmails(messages) {
@@ -12,13 +11,7 @@ export function normalizeEmails(messages) {
 
     let enrichedLabels = (m.labels || []).slice();
 
-    // Only classify Inbox messages
-    if (enrichedLabels.includes("Inbox")) {
-      const category = categorizeEmail(m);
-      if (category && !enrichedLabels.includes(category)) {
-        enrichedLabels.push(category);
-      }
-    }
+    // Categories are now set directly in the email fixtures
 
     const msg = {
       ...m,
