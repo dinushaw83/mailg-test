@@ -1,5 +1,6 @@
 import React, { useContext, useMemo, useEffect } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { Stack, Button } from "@mui/material";
 import EmailList from "../components/EmailList";
 import { GlobalContext } from "../contexts/GlobalContext";
 import ToolBar from "../components/ToolBar";
@@ -93,7 +94,7 @@ const SearchResultsView = () => {
 
     return sortedEmails.slice(startIndex, endIndex);
   }, [filteredRows, currentPage, itemsPerPage]);
-
+  console.log(rows, "rows");
   return (
     <div className="nH bkK">
       <div className="nH">
@@ -104,7 +105,8 @@ const SearchResultsView = () => {
               <div id=":3" className="Tm" style={{ height: 985 }}>
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
-                    <SearchResultFilters />
+                    {rows.length > 0 && <SearchResultFilters />}
+
                     <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
                       <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
                       <div />
@@ -136,62 +138,106 @@ const SearchResultsView = () => {
                         jsaction="rcuQ6b:npT2md;jo33Se:PhqmKf;Rb1Lod:ZpywWb;J0lErd:Oyw2Hb;nGJuB:OcHC8;ZvXgGe:Csi5td;fbYNtb:.CLIENT;UGzfzc:.CLIENT;njKHYb:.CLIENT"
                         gh="tl"
                       >
-                        <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100 }}>
-                          <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
-                            <div className="aDP">
-                              <div
-                                className="ae4 aDM"
-                                jslog="20294; u014N:xr6bB"
-                                id=":1z"
-                                role="tabpanel"
-                                aria-labelledby=":23"
-                              >
-                                <div>
-                                  <div className="Wg aAD aAz sf-hidden" />
-                                  <div className="aVj" style={{ display: "none" }} />
-                                </div>
-                                <div className="Cp">
+                        {rows.length > 0 ? (
+                          <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100 }}>
+                            <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
+                              <div className="aDP">
+                                <div
+                                  className="ae4 aDM"
+                                  jslog="20294; u014N:xr6bB"
+                                  id=":1z"
+                                  role="tabpanel"
+                                  aria-labelledby=":23"
+                                >
                                   <div>
-                                    <table
-                                      cellPadding={0}
-                                      id=":2x"
-                                      className="F cf zt"
-                                      role="grid"
-                                      aria-readonly="true"
-                                    >
-                                      <EmailList emails={rows} showFooter={false} />
-                                    </table>
+                                    <div className="Wg aAD aAz sf-hidden" />
+                                    <div className="aVj" style={{ display: "none" }} />
                                   </div>
+                                  <div className="Cp">
+                                    <div>
+                                      <table
+                                        cellPadding={0}
+                                        id=":2x"
+                                        className="F cf zt"
+                                        role="grid"
+                                        aria-readonly="true"
+                                      >
+                                        <EmailList emails={rows} showFooter={false} />
+                                      </table>
+                                    </div>
+                                  </div>
+                                  <div className="VNyZ8c" style={{ display: "none" }} />
                                 </div>
-                                <div className="VNyZ8c" style={{ display: "none" }} />
+                                <div
+                                  className="ae4 aDM"
+                                  jslog="20290; u014N:xr6bB"
+                                  id=":20"
+                                  role="tabpanel"
+                                  aria-labelledby=":24"
+                                  style={{ display: "none" }}
+                                />
+                                <div
+                                  className="ae4 aDM"
+                                  jslog="20292; u014N:xr6bB"
+                                  id=":21"
+                                  role="tabpanel"
+                                  aria-labelledby=":25"
+                                  style={{ display: "none" }}
+                                />
+                                <div
+                                  className="ae4 aDM"
+                                  jslog="20293; u014N:xr6bB"
+                                  id=":22"
+                                  role="tabpanel"
+                                  aria-labelledby=":26"
+                                  style={{ display: "none" }}
+                                />
                               </div>
-                              <div
-                                className="ae4 aDM"
-                                jslog="20290; u014N:xr6bB"
-                                id=":20"
-                                role="tabpanel"
-                                aria-labelledby=":24"
-                                style={{ display: "none" }}
-                              />
-                              <div
-                                className="ae4 aDM"
-                                jslog="20292; u014N:xr6bB"
-                                id=":21"
-                                role="tabpanel"
-                                aria-labelledby=":25"
-                                style={{ display: "none" }}
-                              />
-                              <div
-                                className="ae4 aDM"
-                                jslog="20293; u014N:xr6bB"
-                                id=":22"
-                                role="tabpanel"
-                                aria-labelledby=":26"
-                                style={{ display: "none" }}
-                              />
                             </div>
                           </div>
-                        </div>
+                        ) : (
+                          <Stack
+                            sx={{ bgcolor: "ffffffcc", width: "100%", textAlign: "center", py: 2, fontSize: "14px" }}
+                          >
+                            <p>
+                              No messages matched your search. You can{" "}
+                              <Button
+                                variant="text"
+                                sx={{
+                                  height: "16px",
+                                  textDecoration: "underline",
+                                  color: "#1a73e8",
+                                  fontSize: "14px",
+                                  textTransform: "none",
+                                  fontWeight: "400",
+                                  p: 0,
+                                  "&:hover": {
+                                    textDecoration: "underline !important",
+                                  },
+                                }}
+                              >
+                                broaden your search
+                              </Button>{" "}
+                              to look in "Mail &amp; Spam &amp; Trash".
+                            </p>
+                            <Button
+                              variant="text"
+                              href="https://support.google.com/mail/answer/6593?hl=en"
+                              aria-label="Learn more about broadening your search"
+                              target="_blank"
+                              sx={{
+                                color: "#1a73e8",
+                                fontSize: "14px",
+                                textTransform: "none",
+                                fontWeight: "400",
+                                width: "fit-content",
+                                mx: "auto",
+                              }}
+                            >
+                              Learn more
+                            </Button>
+                          </Stack>
+                        )}
                         <div className="Nt sf-hidden" jsname="dt0bVc" />
                         <div
                           className="Nu S3 aZ6 sf-hidden"
