@@ -1,6 +1,7 @@
 // hooks/useMailActions.js
 import React, { useCallback, useContext, useMemo } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
+import { useParams } from "react-router-dom";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ID utilities (thread-aware)
@@ -204,22 +205,23 @@ export default function useMailActions() {
     (ids, name) =>
       updateByIds(ids, (labels) => {
         if (!name) return;
-        
-        // Define system labels that are mutually exclusive
+
+        const target = String(name);
         const systemLabels = ["Inbox", "Sent", "Drafts", "Scheduled", "Spam", "Trash"];
-        
-        // If the target label is a system label, remove other system labels
-        if (systemLabels.includes(String(name))) {
-          systemLabels.forEach(systemLabel => {
-            if (systemLabel !== String(name)) {
-              labels.delete(systemLabel);
-            }
+
+        if (systemLabels.includes(target)) {
+          // enforce mutual exclusivity of system labels
+          systemLabels.forEach((systemLabel) => {
+            if (systemLabel !== target) labels.delete(systemLabel);
           });
+        } else {
+          // "Move to": remove system folders
+          labels.delete("Inbox");
+          labels.delete("Spam");
+          labels.delete("Trash");
         }
-        
-        if (!labels.has(String(name))) {
-          labels.add(String(name)); // add if not present
-        }
+
+        labels.add(target);
       }),
     [updateByIds]
   );
@@ -227,8 +229,22 @@ export default function useMailActions() {
   const moveToLabelFrom = useCallback(
     (ids, sourceLabel, dest) =>
       updateByIds(ids, (labels) => {
-        if (sourceLabel) labels.delete(String(sourceLabel)); // remove old
-        if (dest) labels.add(String(dest));                 // add new
+        if (sourceLabel) labels.delete(String(sourceLabel));
+
+        if (!dest) return;
+        const systemLabels = ["Inbox", "Sent", "Drafts", "Scheduled", "Spam", "Trash"];
+
+        if (systemLabels.includes(dest)) {
+          systemLabels.forEach((sl) => {
+            if (sl !== dest) labels.delete(sl);
+          });
+        } else {
+          labels.delete("Inbox");
+          labels.delete("Spam");
+          labels.delete("Trash");
+        }
+
+        labels.add(dest);
       }),
     [updateByIds]
   );
