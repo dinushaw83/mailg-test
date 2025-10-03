@@ -76,8 +76,6 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     }));
   };
 
-  console.log(formData, "formData");
-
   const handleSearch = () => {
     // Create search criteria object
     const searchCriteria = {

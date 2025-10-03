@@ -20,6 +20,7 @@ const SearchBar = () => {
   const [searchValue, setSearchValue] = useState("");
   const [previousLocation, setPreviousLocation] = useState(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [activeFilters, setActiveFilters] = useState([]);
 
   const searchContainerRef = useRef(null);
   const navigate = useNavigate();
@@ -90,6 +91,33 @@ const SearchBar = () => {
     return searchEmails(searchValue, { limit: 5 });
   }, [searchValue]);
 
+  // Get filtered emails based on active filters
+  const filteredEmails = useMemo(() => {
+    if (!emails || emails.length === 0) return [];
+
+    let filtered = [...emails];
+
+    // Apply "Has attachment" filter
+    if (activeFilters.includes("Has attachment")) {
+      filtered = filtered.filter((email) => email.attachments && email.attachments.length > 0);
+    }
+
+    // Apply "Last 7 days" filter
+    if (activeFilters.includes("Last 7 days")) {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      filtered = filtered.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
+    }
+
+    // Apply "From me" filter
+    if (activeFilters.includes("From me")) {
+      filtered = filtered.filter((email) => email.from?.email === "john.doe@example.com" || email.from?.name === "me");
+    }
+
+    // Sort by timestamp (most recent first) and limit to 5
+    return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+  }, [emails, activeFilters]);
+
   // Get recent suggestions
   const recentSuggestions = useMemo(() => {
     if (searchValue.trim() || !isSearchIndexReady()) {
@@ -101,13 +129,31 @@ const SearchBar = () => {
   const expandedContent = useMemo(() => {
     if (searchValue.trim()) {
       return searchResults;
+    } else if (activeFilters.length > 0) {
+      // Show only 1 recent suggestion when filters are active, then filtered emails
+      const limitedSuggestions = recentSuggestions.slice(0, 1);
+      const combined = [...limitedSuggestions, ...filteredEmails];
+      return combined;
     } else if (isFocused && isSearchIndexReady()) {
       return recentSuggestions;
     }
     return [];
-  }, [searchValue, searchResults, recentSuggestions, isFocused]);
+  }, [searchValue, searchResults, recentSuggestions, isFocused, activeFilters, filteredEmails]);
 
   const filterOptions = ["Has attachment", "Last 7 days", "From me"];
+
+  // Handle filter pill clicks
+  const handleFilterClick = (filter) => {
+    setActiveFilters((prev) => {
+      if (prev.includes(filter)) {
+        // Remove filter if already active
+        return prev.filter((f) => f !== filter);
+      } else {
+        // Add filter if not active
+        return [...prev, filter];
+      }
+    });
+  };
 
   // Helper function to highlight search terms
   const highlightSearchTerm = (text, searchTerm) => {
@@ -218,16 +264,29 @@ const SearchBar = () => {
         <div className={`${styles.expandedContent} ${isFocused ? styles.expanded : ""}`}>
           {/* Filter pills */}
           <div className={styles.filterPills}>
-            {filterOptions.map((filter, index) => (
-              <Chip
-                key={index}
-                label={filter}
-                size="small"
-                className={styles.filterChip}
-                variant="outlined"
-                onClick={() => console.log("filter clicked")}
-              />
-            ))}
+            {filterOptions.map((filter, index) => {
+              const isActive = activeFilters.includes(filter);
+              return (
+                <Chip
+                  key={index}
+                  label={filter}
+                  size="small"
+                  className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
+                  variant="outlined"
+                  onClick={() => handleFilterClick(filter)}
+                  icon={
+                    isActive ? (
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 18, color: "black", marginRight: "5px" }}
+                      >
+                        check
+                      </span>
+                    ) : undefined
+                  }
+                />
+              );
+            })}
           </div>
 
           {/* Search results or suggestions */}
@@ -260,17 +319,28 @@ const SearchBar = () => {
                         <div className={styles.resultText}>
                           <div className={styles.resultSubject}>{highlightSearchTerm(item.subject, searchValue)}</div>
                           <div className={styles.resultFrom}>
-                            {highlightSearchTerm(`${item.fromName}, me`, searchValue)}
+                            {highlightSearchTerm(`${item.from.name}, me`, searchValue)}
                           </div>
                         </div>
 
-                        <div className={styles.resultTimestamp}>{`${new Date(item.timestamp).toLocaleDateString(
-                          "en-US",
-                          {
+                        <div className={styles.resultTimestamp}>
+                          {item.attachments && item.attachments.length > 0 && (
+                            <span
+                              className="material-symbols-outlined"
+                              style={{
+                                fontSize: 16,
+                                color: "rgb(68, 68, 68)",
+                                marginRight: "4px",
+                              }}
+                            >
+                              attachment
+                            </span>
+                          )}
+                          {`${new Date(item.timestamp).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
-                          }
-                        )}`}</div>
+                          })}`}
+                        </div>
                       </ListItem>
                     );
                   } else {
@@ -309,7 +379,7 @@ const SearchBar = () => {
           </div>
 
           {/* All search result navigation */}
-          {searchValue && (
+          {(searchValue || activeFilters.length > 0) && (
             <div className={styles.allSearchResults}>
               <span
                 className="material-symbols-outlined"
@@ -321,7 +391,15 @@ const SearchBar = () => {
                 search
               </span>
               <div style={{ color: "rgba(0, 0, 0, 0.87)" }}>
-                All search results for <span className={styles.searchValue}>"{searchValue}"</span>
+                {searchValue ? (
+                  <>
+                    All search results for <span className={styles.searchValue}>"{searchValue}"</span>
+                  </>
+                ) : (
+                  <>
+                    All search results for {activeFilters.length} filter{activeFilters.length > 1 ? "s" : ""}
+                  </>
+                )}
               </div>
 
               <span style={{ marginLeft: "auto", fontSize: "12px" }}>Press ENTER</span>
@@ -330,8 +408,6 @@ const SearchBar = () => {
         </div>
         <AdvancedSearchOptions isOpen={showAdvancedSearch} onClose={handleCloseAdvancedSearch} />
       </div>
-
-      {/* Advanced Search Options Modal */}
     </ClickAwayListener>
   );
 };
