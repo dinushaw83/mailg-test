@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Box, Checkbox, ClickAwayListener, MenuItem, Select, TextField } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "./DatePicker";
@@ -53,6 +53,7 @@ const subsetOptions = [
 
 const AdvancedSearchOptions = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const fromFieldRef = useRef(null);
   const [formData, setFormData] = useState({
     from: "",
     to: "",
@@ -68,6 +69,33 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     attachment: false,
     includeChats: false,
   });
+
+  // Auto-focus the "from" field when modal opens
+  useEffect(() => {
+    if (isOpen && fromFieldRef.current) {
+      // Small delay to ensure the component is fully rendered
+      setTimeout(() => {
+        fromFieldRef.current?.focus();
+      }, 100);
+    }
+  }, [isOpen]);
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
+  }, [isOpen, onClose]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -136,6 +164,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
           {/* From */}
           <div className={styles.formRow}>
             <EmailField
+              ref={fromFieldRef}
               label="From:"
               value={formData.from}
               onChange={(value) => handleInputChange("from", value)}

@@ -180,6 +180,10 @@ const SearchBar = () => {
       setIsFocused(false);
 
       e.target.blur();
+    } else if (e.key === "Escape" || e.key === "Esc") {
+      setIsFocused(false);
+      e.preventDefault();
+      e.target.blur();
     }
   };
 
@@ -319,7 +323,7 @@ const SearchBar = () => {
                         <div className={styles.resultText}>
                           <div className={styles.resultSubject}>{highlightSearchTerm(item.subject, searchValue)}</div>
                           <div className={styles.resultFrom}>
-                            {highlightSearchTerm(`${item.from.name}, me`, searchValue)}
+                            {highlightSearchTerm(`${item.fromName || item.from.name}, me`, searchValue)}
                           </div>
                         </div>
 
