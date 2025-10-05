@@ -312,6 +312,8 @@ const Table = ({
   });
 
   function handleContextMenu(event, thread) {
+    const threadId = thread.threadId.split(":")[1];
+    selection.setMany([threadId]);
     setContextRow(thread);
     show({
       event,
