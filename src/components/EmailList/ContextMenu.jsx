@@ -30,7 +30,8 @@ const ContextMenu = ({
   const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
   const muted = contextRow?.labels?.includes("Muted");
 
-  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam } = useMailActions();
+  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, addLabels, removeLabels } =
+    useMailActions();
   const { setSnackbar } = useGlobalContext();
 
   const [{ spamModalOpen, createOpen }, setState] = useState({
@@ -202,6 +203,38 @@ const ContextMenu = ({
     }
   };
 
+  const handleMoveToInbox = useCallback(
+    (threadId) => {
+      const thread = contextRow;
+      const currentLabels = thread.labels || [];
+      const isInInbox = currentLabels.includes("Inbox");
+      if (isInInbox) return;
+
+      const labelsToDelete = ["Trash", "Spam", "Snoozed", "Muted"];
+      const labelsForUndo = labelsToDelete.filter((label) => currentLabels.includes(label));
+
+      moveToInbox([threadId]);
+      setSnackbar({
+        open: true,
+        message: "Conversation moved to inbox.",
+        autoHideDuration: 3000,
+        // undo action
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              removeLabels(threadId, ["Inbox"]);
+              addLabels(threadId, labelsForUndo);
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [moveToInbox]
+  );
+
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
@@ -222,7 +255,7 @@ const ContextMenu = ({
         handleMuteAction(threadId);
         break;
       case "move_to_inbox":
-        moveToInbox([threadId]);
+        handleMoveToInbox(threadId);
         break;
       //etc...
     }
@@ -256,7 +289,7 @@ const ContextMenu = ({
   ];
 
   const sectionTwoItems = [
-    muted
+    isThreadNotInInbox
       ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
       : {
           id: "archive",
