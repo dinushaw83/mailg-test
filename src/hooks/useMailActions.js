@@ -276,21 +276,60 @@ export default function useMailActions() {
     [setEmails]
   );
 
-  const toggleMute = useCallback(
-    (ids, value = true) => {
+  const toggleMuted = useCallback(
+    (threadId) => {
+      setEmails((prev) =>
+        prev.map((m) => {
+          const emailThreadId = m.threadId.split(":")[1];
+          if (emailThreadId === threadId) {
+            const currentLabels = m.labels || [];
+            const isCurrentlyMuted = currentLabels.includes("Muted");
+
+            let updatedLabels;
+            if (isCurrentlyMuted) {
+              // Currently muted, so unmute: remove "Muted" and add "Inbox"
+              updatedLabels = [...currentLabels.filter((label) => label !== "Muted"), "Inbox"];
+            } else {
+              // Currently unmuted, so mute: add "Muted" and remove "Inbox"
+              updatedLabels = [...currentLabels.filter((label) => label !== "Inbox"), "Muted"];
+            }
+
+            return { ...m, labels: updatedLabels };
+          }
+          return m;
+        })
+      );
+    },
+    [setEmails]
+  );
+
+  const setMuted = useCallback(
+    (ids, value) => {
       const match = makeMatch(ids);
       setEmails((prev) =>
         prev.map((m) => {
           if (match(m)) {
             const currentLabels = m.labels || [];
-            const updatedLabels = value
-              ? currentLabels.includes("Muted")
-                ? currentLabels
-                : [...currentLabels, "Muted"]
-              : currentLabels.filter((label) => label !== "Muted");
-            // Remove from inbox when muted
-            const labelsWithoutInbox = updatedLabels.filter((label) => label !== "Inbox");
-            return { ...m, labels: labelsWithoutInbox };
+            const isCurrentlyMuted = currentLabels.includes("Muted");
+
+            let updatedLabels;
+            if (value) {
+              // Muting: add "Muted" label and remove "Inbox"
+              if (isCurrentlyMuted) {
+                // Already muted, no change needed
+                return m;
+              }
+              updatedLabels = [...currentLabels.filter((label) => label !== "Inbox"), "Muted"];
+            } else {
+              // Unmuting: remove "Muted" label and add "Inbox" back
+              if (!isCurrentlyMuted) {
+                // Already unmuted, no change needed
+                return m;
+              }
+              updatedLabels = [...currentLabels.filter((label) => label !== "Muted"), "Inbox"];
+            }
+
+            return { ...m, labels: updatedLabels };
           }
           return m;
         })
@@ -318,7 +357,8 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
-      toggleMute,
+      toggleMuted,
+      setMuted,
     }),
     [
       addLabels,
@@ -338,7 +378,8 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
-      toggleMute,
+      toggleMuted,
+      setMuted,
     ]
   );
 }

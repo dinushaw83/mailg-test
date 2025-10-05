@@ -286,6 +286,8 @@ const ContextMenu = ({
   ];
 
   const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
+  const muted = contextRow?.labels?.includes("Muted");
+  console.log({ muted, labels: contextRow?.labels });
 
   return (
     <Box>
@@ -358,9 +360,9 @@ const ContextMenu = ({
 
         <Item id="mute" onClick={handleItemClick}>
           <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
-            volume_off
+            {muted ? "volume_up" : "volume_off"}
           </span>
-          Mute
+          {muted ? "Unmute" : "Mute"}
         </Item>
 
         <Separator />

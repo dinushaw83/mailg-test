@@ -205,7 +205,7 @@ const Table = ({
 }) => {
   const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
-  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMute } = useMailActions();
+  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted } = useMailActions();
   const snoozeAnchorElRef = useRef(null);
   const [contextRow, setContextRow] = useState(null);
 
@@ -338,9 +338,10 @@ const Table = ({
 
   const handleMuteAction = useCallback(
     (threadId) => {
-      toggleMute([threadId]);
+      console.log("Toggling mute for threadId", threadId);
+      toggleMuted(threadId);
     },
-    [toggleMute]
+    [toggleMuted]
   );
 
   const openInNewTab = async (e, attachment, db) => {
