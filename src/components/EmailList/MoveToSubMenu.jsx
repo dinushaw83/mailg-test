@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import TextField from "@mui/material/TextField";
 
 function HoverRow({ className = "J-N", label, onClick, padding = "6px 48px" }) {
   const [hover, setHover] = useState(false);
@@ -26,17 +27,30 @@ function HoverRow({ className = "J-N", label, onClick, padding = "6px 48px" }) {
   );
 }
 
-export default function MoveToSubMenu({ labels = [], onSelect, showInbox = false, showSpam = true, showTrash = true }) {
+export default function MoveToSubMenu({
+  labels = [],
+  onSelect,
+  showInbox = false,
+  showSpam = true,
+  showTrash = true,
+  shouldFocus = false,
+}) {
   const menuRef = useRef(null);
   const inputRef = useRef(null);
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
 
-  // Focus search when opened
+  // Focus the input when shouldFocus prop changes to true
   useEffect(() => {
-    const t = setTimeout(() => inputRef.current && inputRef.current.focus(), 0);
-    return () => clearTimeout(t);
-  }, []);
+    if (shouldFocus && inputRef.current) {
+      // Small delay to ensure the submenu is fully rendered
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 50);
+    }
+  }, [shouldFocus]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -84,67 +98,60 @@ export default function MoveToSubMenu({ labels = [], onSelect, showInbox = false
 
         {/* Search */}
         <div
-          className="J-M-JJ asg"
           style={{
-            overflow: "hidden",
-            position: "relative",
-            border: "none",
-            padding: 0,
-            margin: "8px 8px 16px",
+            padding: "8px 8px 16px",
             userSelect: "none",
           }}
         >
-          <div style={{ userSelect: "none", visibility: "visible" }} />
-          <input
-            ref={inputRef}
-            className="bqf"
-            type="text"
-            maxLength={225}
-            aria-label="Filter labels"
-            tabIndex={0}
+          <TextField
+            fullWidth
+            inputRef={inputRef}
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
               setActive(0);
             }}
-            style={{
-              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-              lineHeight: "20px",
-              paddingBottom: "4px",
-              paddingRight: "36px",
-              boxShadow: "rgba(0, 0, 0, 0.12) 0 -1px 0 0 inset",
-              border: 0,
-              background: "#fff",
-              margin: 0,
-              color: "#222",
-              fontSize: "100%",
-              width: "100%",
-              maxWidth: "50ex",
-              outline: 0,
+            onClick={(e) => e.stopPropagation()}
+            variant="standard"
+            placeholder="Filter labels"
+            sx={{
+              "& .MuiInput-underline:before": {
+                borderBottomColor: "#dadce0",
+              },
+              "& .MuiInput-underline:after": {
+                borderBottomColor: "#1a73e8",
+                borderBottomWidth: "2px",
+              },
+              "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+                borderBottomColor: "#dadce0",
+              },
+              "&.Mui-focused .MuiInput-underline:after": {
+                borderBottomColor: "#1a73e8",
+                borderBottomWidth: "2px",
+              },
+            }}
+            InputProps={{
+              endAdornment: (
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 20,
+                    color: "rgb(95, 99, 104)",
+                    marginLeft: "8px",
+                  }}
+                >
+                  search
+                </span>
+              ),
+              sx: {
+                fontSize: "0.875rem",
+                padding: "8px 0",
+                "& input": {
+                  padding: 0,
+                },
+              },
             }}
           />
-          <div
-            className="A0"
-            style={{
-              position: "absolute",
-              right: 8,
-              top: "50%",
-              transform: "translateY(-50%)",
-              pointerEvents: "none",
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 20,
-                lineHeight: "20px",
-                display: "inline-block",
-                color: "#777",
-              }}
-            >
-              search
-            </span>
-          </div>
         </div>
 
         {/* List (driven by `filtered`) */}

@@ -1,5 +1,5 @@
 import Box from "@mui/material/Box";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
 import MoveToSubMenu from "./MoveToSubMenu";
@@ -37,6 +37,9 @@ const ContextMenu = ({
     spamModalOpen: false,
     createOpen: false,
   });
+
+  // Track hover states for submenus
+  const [hoveredSubmenu, setHoveredSubmenu] = useState(null);
 
   const toggleCreateOpen = useCallback(() => {
     setState((prev) => ({
@@ -293,8 +296,6 @@ const ContextMenu = ({
     },
   ];
 
-  console.log({ muted, labels: contextRow?.labels });
-
   return (
     <Box>
       <Menu
@@ -342,8 +343,19 @@ const ContextMenu = ({
               arrow_right
             </span>
           }
+          onPointerEnter={() => {
+            setHoveredSubmenu("moveTo");
+          }}
+          onPointerLeave={() => {
+            setHoveredSubmenu(null);
+          }}
         >
-          <MoveToSubMenu labels={menuItems} onSelect={handleMenuItemClick} showInbox={isThreadNotInInbox} />
+          <MoveToSubMenu
+            labels={menuItems}
+            onSelect={handleMenuItemClick}
+            showInbox={isThreadNotInInbox}
+            shouldFocus={hoveredSubmenu === "moveTo"}
+          />
         </Submenu>
 
         <Submenu
@@ -360,8 +372,14 @@ const ContextMenu = ({
               arrow_right
             </span>
           }
+          onPointerEnter={() => setHoveredSubmenu("labelAs")}
+          onPointerLeave={() => setHoveredSubmenu(null)}
         >
-          <LabelsSubMenu selectedIds={selectedIds} openCreateLabelDialog={openCreateLabelDialog} />
+          <LabelsSubMenu
+            selectedIds={selectedIds}
+            openCreateLabelDialog={openCreateLabelDialog}
+            shouldFocus={hoveredSubmenu === "labelAs"}
+          />
         </Submenu>
 
         <Item id="mute" onClick={handleItemClick}>

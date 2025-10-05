@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
@@ -8,12 +8,25 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
 
-export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog }) => {
+export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { labels, setSnackbar, selection } = useGlobalContext();
   const { addLabels, removeLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
+  const inputRef = useRef(null);
+
+  // Focus the input when shouldFocus prop changes to true
+  useEffect(() => {
+    if (shouldFocus && inputRef.current) {
+      // Small delay to ensure the submenu is fully rendered
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 50);
+    }
+  }, [shouldFocus]);
 
   const hasChanges = Object.keys(overrides).length > 0;
 
@@ -62,6 +75,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog }) => {
       <Box sx={{ paddingX: "16px", paddingBottom: "8px" }}>
         <TextField
           fullWidth
+          inputRef={inputRef}
           value={searchQuery}
           onChange={(e) => {
             e.stopPropagation();
@@ -69,6 +83,22 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog }) => {
           }}
           onClick={(e) => e.stopPropagation()}
           variant="standard"
+          sx={{
+            "& .MuiInput-underline:before": {
+              borderBottomColor: "#dadce0",
+            },
+            "& .MuiInput-underline:after": {
+              borderBottomColor: "#1a73e8",
+              borderBottomWidth: "2px",
+            },
+            "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+              borderBottomColor: "#dadce0",
+            },
+            "&.Mui-focused .MuiInput-underline:after": {
+              borderBottomColor: "#1a73e8",
+              borderBottomWidth: "2px",
+            },
+          }}
           InputProps={{
             endAdornment: (
               <span
@@ -87,15 +117,6 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog }) => {
               padding: "8px 0",
               "& input": {
                 padding: 0,
-              },
-              "& .MuiInput-underline:before": {
-                borderBottomColor: "#dadce0",
-              },
-              "& .MuiInput-underline:after": {
-                borderBottomColor: "#1a73e8",
-              },
-              "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-                borderBottomColor: "#dadce0",
               },
             },
           }}
