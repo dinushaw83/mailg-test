@@ -3,6 +3,7 @@ import { Box, TextField, Link } from "@mui/material";
 import useExtensions from "./useExtensions";
 import { RichTextEditor, RichTextEditorProvider } from "mui-tiptap";
 import EditorMenuControls from "./EditorMenuControls";
+import InfoModal from "../ComposeEmail/InfoModal";
 
 const AutoReplyRichTextEditor = ({ 
   content = "", 
@@ -14,6 +15,8 @@ const AutoReplyRichTextEditor = ({
   const rteRef = useRef(null);
   const [isEditable, setIsEditable] = useState(true);
   const [editor, setEditor] = useState(null);
+  const [formattingVisible, setFormattingVisible] = useState(false);
+  const [showPlainTextModal, setShowPlainTextModal] = useState(false);
 
   // Set up editor change handler
   const handleEditorChange = useCallback(
@@ -26,6 +29,14 @@ const AutoReplyRichTextEditor = ({
     [onChange]
   );
 
+  useEffect(() => {
+    if (rteRef.current?.editor) {
+      setFormattingVisible(true)
+    } else {
+      setFormattingVisible(false)
+    }
+  }, [rteRef.current?.editor])
+
   // Handle content prop updates after initial render
   useEffect(() => {
     if (rteRef.current?.editor && content !== undefined) {
@@ -37,10 +48,68 @@ const AutoReplyRichTextEditor = ({
     }
   }, [content]);
 
+  // Check if content has styling/formatting
+  const hasStyling = (htmlContent) => {
+    if (!htmlContent) return false;
+    
+    // Remove the outer paragraph tags and check for formatting tags
+    const innerContent = htmlContent.replace(/^<p[^>]*>|<\/p>$/g, '');
+    
+    // Check for common formatting tags
+    const formattingTags = [
+      '<strong>', '</strong>', '<b>', '</b>',
+      '<em>', '</em>', '<i>', '</i>',
+      '<u>', '</u>', '<span', '</span>',
+      '<font', '</font>', 'style=',
+      '<br>', '<br/>', '<br />'
+    ];
+    
+    return formattingTags.some(tag => innerContent.includes(tag));
+  };
+
+  // Handle plain text toggle with confirmation
+  const handlePlainTextToggle = () => {
+    if (!isPlainText) {
+      // Check if content has styling
+      const currentContent = rteRef.current?.editor?.getHTML() || content;
+      
+      if (hasStyling(currentContent)) {
+        // Show confirmation modal when switching from rich text to plain text with styling
+        setShowPlainTextModal(true);
+      } else {
+        // Direct toggle when switching from rich text to plain text without styling
+        if (rteRef.current?.editor) {
+          const plainTextContent = rteRef.current.editor.getText();
+          onChange?.(plainTextContent, plainTextContent);
+        }
+        onTogglePlainText?.();
+      }
+    } else {
+      // Direct toggle when switching from plain text to rich text
+      onTogglePlainText?.();
+    }
+  };
+
+  // Handle OK button - strip formatting and toggle to plain text
+  const handleConfirmPlainText = () => {
+    if (rteRef.current?.editor) {
+      // Get plain text content and strip all formatting
+      const plainTextContent = rteRef.current.editor.getText();
+      onChange?.(plainTextContent, plainTextContent);
+    }
+    setShowPlainTextModal(false);
+    onTogglePlainText?.();
+  };
+
+  // Handle Cancel button - close modal without action
+  const handleCancelPlainText = () => {
+    setShowPlainTextModal(false);
+  };
+
   return (
     <Box sx={{ position: "relative" }}>
       {/* Editor Menu Controls - positioned above the editor */}
-      {!isPlainText && rteRef.current?.editor && (
+      {!isPlainText && formattingVisible && (
         <RichTextEditorProvider editor={rteRef.current?.editor}>
           <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={false} containerClass="autoReplyContainer" />
         </RichTextEditorProvider>
@@ -51,7 +120,7 @@ const AutoReplyRichTextEditor = ({
         href="#" 
         onClick={(e) => {
           e.preventDefault();
-          onTogglePlainText?.();
+          handlePlainTextToggle();
         }}
         sx={{ 
           color: "#1a73e8", 
@@ -97,6 +166,27 @@ const AutoReplyRichTextEditor = ({
         }}
       >
       </RichTextEditor>
+
+      {/* Plain Text Confirmation Modal */}
+      <InfoModal
+        isOpen={showPlainTextModal}
+        onClose={handleCancelPlainText}
+        title="Confirm converting to plain text"
+        message="Converting this message to plain text will lose some formatting and remove inserted items. Are you sure you want to continue?"
+        modalBoxStyle={{ width: 560 }}
+        buttons={[
+          {
+            text: "Cancel",
+            className: "tertiary",
+            onClick: handleCancelPlainText
+          },
+          {
+            text: "OK",
+            className: "primary",
+            onClick: handleConfirmPlainText
+          }
+        ]}
+      />
     </Box>
   );
 };
