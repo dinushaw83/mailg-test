@@ -7,11 +7,10 @@ import EditorMenuControls from "./EditorMenuControls";
 const AutoReplyRichTextEditor = ({ 
   content = "", 
   onChange, 
-  placeholder = "Enter your vacation message here...",
   isPlainText = false,
   onTogglePlainText 
 }) => {
-  const extensions = useExtensions({ placeholder });
+  const extensions = useExtensions({ });
   const rteRef = useRef(null);
   const [isEditable, setIsEditable] = useState(true);
   const [editor, setEditor] = useState(null);
@@ -38,94 +37,14 @@ const AutoReplyRichTextEditor = ({
     }
   }, [content]);
 
-  if (isPlainText) {
-    return (
-      <Box sx={{ position: "relative" }}>
-        <TextField
-          multiline
-          rows={8}
-          value={content}
-          onChange={(e) => onChange?.(e.target.value, e.target.value)}
-          placeholder={placeholder}
-          sx={{ 
-            width: "100%",
-            "& .MuiInputBase-root": {
-              border: "1px solid #dadce0",
-              fontSize: "13px"
-            },
-            "& .MuiInputBase-input": {
-              padding: "12px"
-            }
-          }}
-        />
-        
-        {/* Plain Text Toggle Link */}
-        <Link 
-          href="#" 
-          onClick={(e) => {
-            e.preventDefault();
-            onTogglePlainText?.();
-          }}
-          sx={{ 
-            color: "#1a73e8", 
-            textDecoration: "none",
-            fontSize: "13px",
-            position: "absolute",
-            top: "8px",
-            left: "8px",
-            zIndex: 10,
-            backgroundColor: "white",
-            padding: "2px 4px",
-            borderRadius: "2px",
-            "&:hover": { textDecoration: "underline" }
-          }}
-        >
-          {"Rich formatting >>"}
-        </Link>
-      </Box>
-    );
-  }
-
   return (
     <Box sx={{ position: "relative" }}>
       {/* Editor Menu Controls - positioned above the editor */}
-      {rteRef.current?.editor && (
+      {!isPlainText && rteRef.current?.editor && (
         <RichTextEditorProvider editor={rteRef.current?.editor}>
-          <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={false} />
+          <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={false} containerClass="autoReplyContainer" />
         </RichTextEditorProvider>
       )}
-
-      {/* Rich Text Editor */}
-      <RichTextEditor
-        ref={rteRef}
-        extensions={extensions}
-        content={content}
-        onUpdate={handleEditorChange}
-        editable={isEditable}
-        RichTextFieldProps={{
-          variant: "standard",
-          MenuBarProps: {
-            hide: true, // Hide the default toolbar since we have our custom one
-          },
-        }}
-        sx={{
-          "& .MuiInputBase-root": {
-            border: "1px solid #dadce0",
-            fontSize: "13px"
-          },
-          "& .ProseMirror": {
-            minHeight: "200px",
-            maxHeight: "300px",
-            overflowY: "auto",
-            padding: "12px",
-            "&:focus": {
-              outline: "none"
-            }
-          }
-        }}
-      >
-        {() => null}
-      </RichTextEditor>
 
       {/* Plain Text Toggle Link */}
       <Link 
@@ -137,19 +56,47 @@ const AutoReplyRichTextEditor = ({
         sx={{ 
           color: "#1a73e8", 
           textDecoration: "none",
-          fontSize: "13px",
-          // position: "absolute",
-          // top: "8px",
-          // left: "8px",
+          fontSize: "14px",
           zIndex: 10,
-          backgroundColor: "white",
           padding: "2px 4px",
           borderRadius: "2px",
           "&:hover": { textDecoration: "underline" }
         }}
       >
-        {"<< Plain Text"}
+        {isPlainText ? "Rich formatting >>" : "<< Plain Text"}
       </Link>
+      {/* Rich Text Editor */}
+      <RichTextEditor
+        ref={rteRef}
+        extensions={extensions}
+        content={content}
+        onUpdate={handleEditorChange}
+        editable={isEditable}
+        RichTextFieldProps={{
+          variant: "standard",
+          MenuBarProps: {
+            hide: true, 
+          },
+        }}
+        sx={{
+          border: "1px solid #d9d9d9 !important", // Add border to the editor container
+          "& .MuiInputBase-root": {
+            border: "none", // Remove inner border if any
+            fontSize: "13px"
+          },
+          "& .ProseMirror": {
+            minHeight: "115p  x",
+            maxHeight: "300px",
+            height: isPlainText ? "200px" : "115px",
+            overflowY: "auto",
+            padding: "12px",
+            "&:focus": {
+              outline: "none"
+            }
+          }
+        }}
+      >
+      </RichTextEditor>
     </Box>
   );
 };
