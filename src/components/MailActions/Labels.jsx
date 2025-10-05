@@ -20,6 +20,7 @@ export const Labels = ({
   handleClose,
   anchorOrigin = { vertical: "top", horizontal: "right" },
   transformOrigin = { vertical: "top", horizontal: "left" },
+  onOpenCreateLabelDialog,
 }) => {
   const { labels, setSnackbar, selection } = useGlobalContext();
   const { addLabels, removeLabels } = useMailActions();
@@ -40,7 +41,7 @@ export const Labels = ({
   const availableLabels = useMemo(() => {
     return (
       Object.entries(labels || {})
-        // .filter(([key, meta]) => !meta.system)
+        .filter(([key, meta]) => !meta.system)
         .map(([key, meta]) => ({
           key,
           name: meta.name || key,
@@ -262,8 +263,8 @@ export const Labels = ({
                     },
                   }}
                   onClick={() => {
-                    // TODO: Implement create new label
-                    console.log("Create new label");
+                    handleClose();
+                    onOpenCreateLabelDialog();
                   }}
                 >
                   <Box sx={{ width: "20px" }} />

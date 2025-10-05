@@ -130,7 +130,7 @@ export default function EmailLabelChips({ message }) {
     return (
         <LabelContainer>
             {filteredLabels.map((label) => (
-                <LabelWrapper key={label}>
+                <LabelWrapper key={label} bg={allLabels[label]?.color?.rgb} text={allLabels[label]?.color?.text}>
                     <GTooltip title={`Search for all messages with label ${normalizeLabelName(label)}`} placement="top" PopperProps={{
                         modifiers: [
                             {

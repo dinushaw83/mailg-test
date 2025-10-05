@@ -9,6 +9,7 @@ import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "./Snooze";
 import { ActionMenuItem } from "./ActionMenuItem";
 import { Labels } from "./Labels";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
   const { markRead, setStar, setImportant, snooze, toggleMute } = useMailActions();
@@ -17,13 +18,15 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const [labelAnchorEl, setLabelAnchorEl] = React.useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { selection, labels, setSnackbar } = useGlobalContext();
+  const { selection, labels, setSnackbar, emails } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
     () => threads.filter((thread) => selectedIds.includes(thread.threadId.split(":")[1])),
     [threads, selectedIds]
   );
+
+  const [createOpen, setCreateOpen] = useState(false);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -48,6 +51,83 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     setLabelAnchorEl(event.currentTarget);
     setSearchQuery("");
     setSelectedLabelKeys(new Set());
+  };
+
+  const handleOnAfterCreate = (childName, parentKey) => {
+    const ids = [...selection.ids];
+    if (!ids.length) return;
+
+    try {
+      // Store original labels before the move
+      const originalLabels = {};
+      ids.forEach((id) => {
+        const email = emails.find((email) => email.threadId.split(":")[1] === String(id));
+        if (email) {
+          originalLabels[String(id)] = [...(email.labels || [])];
+        }
+      });
+
+      // Perform the move after creation
+      const newKey = makeKey(childName, parentKey); // build composite key
+      const curMeta = currentLabel ? labels?.currentLabel : null;
+      const inCustomLabel = curMeta && curMeta.system === false;
+      if (inCustomLabel) {
+        moveToLabel(ids, currentLabel, newKey);
+      } else {
+        moveToLabel(ids, newKey);
+      }
+
+      selection.clear();
+
+      // --- UNDO action ---
+      setSnackbar({
+        open: true,
+        message: `Conversation moved to "${childName}".`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "capitalize" }}
+            size="small"
+            onClick={() => {
+              try {
+                // Restore original labels for each email
+                setEmails((prevEmails) =>
+                  prevEmails.map((email) => {
+                    const emailThreadId = email.threadId.split(":")[1];
+                    if (ids.includes(emailThreadId) && originalLabels[emailThreadId]) {
+                      return { ...email, labels: originalLabels[emailThreadId] };
+                    }
+                    return email;
+                  })
+                );
+
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              } catch {
+                setSnackbar({
+                  open: true,
+                  message: "Could not undo.",
+                  autoHideDuration: 4000,
+                  action: null,
+                });
+              }
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      setSnackbar({
+        open: true,
+        message: "Could not move selected conversations.",
+        autoHideDuration: 4000,
+      });
+    }
   };
 
   const open = Boolean(anchorEl);
@@ -157,46 +237,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                   <>
                     <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
                     <Divider sx={{ marginY: "6px" }} />
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        paddingX: "16px",
-                        height: "32px",
-                        overflow: "hidden",
-                        cursor: "pointer",
-                        "&:hover": {
-                          background: "#07070714",
-                        },
-                      }}
-                      onClick={handleLabelClick}
-                    >
-                      <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: 20,
-                          color: "rgb(68, 68, 68)",
-                          width: "20px",
-                        }}
-                      >
-                        label
-                      </span>
-
-                      <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
-                        Label as
-                      </Typography>
-
-                      <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: 20,
-                          color: "rgb(68, 68, 68)",
-                        }}
-                      >
-                        arrow_right
-                      </span>
-                    </Box>
                     <ActionMenuItem
                       icon="star"
                       label={allStarred ? "Remove star" : "Add star"}
@@ -278,8 +318,13 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
           labelAnchorEl,
           selectedIds,
           handleClose,
+          onOpenCreateLabelDialog: () => {
+            setCreateOpen(true);
+          },
         }}
       />
+
+      <CreateLabelDialog open={createOpen} onClose={() => setCreateOpen(false)} onAfterCreate={handleOnAfterCreate} />
     </Box>
   );
 };

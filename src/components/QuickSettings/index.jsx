@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import Button from "@mui/material/Button";
 import { Icon } from "../InboxView/ActionBar";
@@ -28,6 +29,7 @@ const QuickSettingsContent = styled.div`
 `;
 
 const QuickSettings = () => {
+  const navigate = useNavigate();
   const {
     showQuickSettings,
     setShowQuickSettings,
@@ -143,6 +145,7 @@ const QuickSettings = () => {
         <Button
           variant="outlined"
           fullWidth
+          onClick={() => navigate("/settings/general")}
           sx={{
             borderRadius: 10,
             color: "rgb(26, 115, 232)",

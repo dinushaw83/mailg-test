@@ -7,6 +7,7 @@ import MailView from "./pages/MailView";
 import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import VerificationDashboard from "./pages/VerificationDashboard";
+import Settings from "./pages/Settings";
 
 import { initialUser } from "./contexts/fixtures/me";
 import SearchResultsView from "./pages/SearchResultsView";
@@ -31,6 +32,8 @@ function App() {
             <Route path="/label/:label" element={<MailView />} />
             <Route path="/search/:query" element={<SearchResultsView />} />
             <Route path="/verify" element={<VerificationDashboard />} />
+            <Route path="/settings/:tab" element={<Settings />} />
+            <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
 

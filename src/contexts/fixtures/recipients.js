@@ -8,15 +8,15 @@ export const recipients = [
     emails: [
       {
         value: "jane.smith@example.com",
-        label: "Home"
+        label: "Home",
       },
       {
         value: "jane.smith.work@example.com",
-        label: "Work"
-      }
+        label: "Work",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Friends"]
+    labels: ["My contacts", "Friends"],
   },
   {
     id: 2,
@@ -27,11 +27,11 @@ export const recipients = [
     emails: [
       {
         value: "michael.johnson@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Work", "Friends"]
+    labels: ["My contacts", "Work", "Friends"],
   },
   {
     id: 3,
@@ -42,11 +42,11 @@ export const recipients = [
     emails: [
       {
         value: "sarah.wilson@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Family"]
+    labels: ["My contacts", "Family"],
   },
   {
     id: 4,
@@ -57,11 +57,11 @@ export const recipients = [
     emails: [
       {
         value: "david.brown@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Work"]
+    labels: ["My contacts", "Work"],
   },
   {
     id: 5,
@@ -72,11 +72,11 @@ export const recipients = [
     emails: [
       {
         value: "emily.davis@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Friends", "Family"]
+    labels: ["My contacts", "Friends", "Family"],
   },
   {
     id: 6,
@@ -87,11 +87,11 @@ export const recipients = [
     emails: [
       {
         value: "robert.miller@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Work"]
+    labels: ["My contacts", "Work"],
   },
   {
     id: 7,
@@ -102,11 +102,11 @@ export const recipients = [
     emails: [
       {
         value: "lisa.garcia@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Friends", "Work"]
+    labels: ["My contacts", "Friends", "Work"],
   },
   {
     id: 8,
@@ -117,11 +117,11 @@ export const recipients = [
     emails: [
       {
         value: "james.rodriguez@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Work", "Family"]
+    labels: ["My contacts", "Work", "Family"],
   },
   {
     id: 9,
@@ -132,11 +132,11 @@ export const recipients = [
     emails: [
       {
         value: "amanda.taylor@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Family"]
+    labels: ["My contacts", "Family"],
   },
   {
     id: 10,
@@ -147,10 +147,25 @@ export const recipients = [
     emails: [
       {
         value: "christopher.lee@example.com",
-        label: "Home"
-      }
+        label: "Home",
+      },
     ],
     avatar: null,
-    labels: ["My contacts", "Work"]
-  }
-]
+    labels: ["My contacts", "Work"],
+  },
+  {
+    id: 11,
+    name: "GitHub",
+    firstName: "GitHub",
+    lastName: "",
+    email: "noreply@github.com",
+    emails: [
+      {
+        value: "noreply@github.com",
+        label: "",
+      },
+    ],
+    avatar: null,
+    labels: [],
+  },
+];

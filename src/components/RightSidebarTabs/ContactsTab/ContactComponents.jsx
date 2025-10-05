@@ -1,5 +1,6 @@
-import React from "react";
-import { TextField, Button, Tooltip, IconButton, Box } from "@mui/material";
+import React, { useState } from "react";
+import { TextField, Button, Tooltip, IconButton, Box, Typography } from "@mui/material";
+import { generateAddressString } from "../../../utils/helperFunctions";
 import styles from "./CreateContact.module.css";
 
 // Text field component with custom styling
@@ -188,11 +189,14 @@ export const ActionIconButton = ({
   color = "#4f5251",
   iconType = "outlined",
   sx = {},
+  children,
+  tooltipPlacement = "bottom",
+  tooltipPopperSx = {},
   ...props
 }) => (
   <Tooltip
     title={title}
-    placement="bottom"
+    placement={tooltipPlacement}
     slotProps={{
       popper: {
         sx: {
@@ -202,6 +206,7 @@ export const ActionIconButton = ({
             fontSize: "12px",
             fontWeight: 200,
           },
+          ...tooltipPopperSx,
         },
       },
     }}
@@ -218,6 +223,259 @@ export const ActionIconButton = ({
       <span className={`material-symbols-${iconType}`} style={{ fontSize: iconSize }}>
         {iconName}
       </span>
+      {children}
     </IconButton>
   </Tooltip>
 );
+
+export const ContactDetailRow = ({ icon, items, emptyText, onItemClick, onAddClick, itemType = "email" }) => {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
+
+  // Filter out items with empty value
+  const filteredItems = items.filter((item) => {
+    if (itemType === "address") {
+      // For addresses, check if any address field has content
+      return (
+        item.streetAddress ||
+        item.poBox ||
+        item.streetAddress2 ||
+        item.city ||
+        item.stateName ||
+        item.zipCode ||
+        item.countryCode
+      );
+    }
+    return item.value;
+  });
+
+  // Handle copy to clipboard
+  const handleCopy = async (item, event) => {
+    event.stopPropagation();
+    let textToCopy;
+    if (itemType === "address") {
+      // Format address for copying
+      textToCopy = generateAddressString(item);
+    } else {
+      textToCopy = item.value || item;
+    }
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setCopyTooltipOpen(true);
+      setTimeout(() => setCopyTooltipOpen(false), 2000);
+    } catch (err) {
+      // Error copying to clipboard
+    }
+  };
+
+  // Handle item click
+  const handleItemClick = (item) => {
+    if (onItemClick) {
+      onItemClick(item);
+    }
+  };
+
+  // Handle add text click
+  const handleAddClick = () => {
+    if (onAddClick) {
+      onAddClick();
+    }
+  };
+
+  // If address and no details, don't show the row
+  if (itemType === "address" && !filteredItems?.length > 0) return null;
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 1.5,
+      }}
+    >
+      {/* Icon */}
+      <Box sx={{ display: "flex", alignItems: "center", mt: "-2px" }}>
+        <span
+          className="material-symbols-outlined"
+          style={{
+            fontSize: "20px",
+            color: "#444746",
+            marginTop: "2px",
+          }}
+        >
+          {icon}
+        </span>
+      </Box>
+
+      {/* Content */}
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        {filteredItems && filteredItems.length > 0 ? (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            {filteredItems.map((item, index) => (
+              <Box
+                key={`${index}-${item.value}`}
+                sx={{
+                  display: "flex",
+                  alignItems: itemType === "address" ? "flex-start" : "center",
+                  justifyContent: "space-between",
+                  minHeight: itemType === "address" ? "auto" : "20px",
+                  height: itemType === "address" ? "auto" : "20px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  "& .item-text": {
+                    color: "##1f1f1f",
+                    fontSize: "0.875rem",
+                  },
+                  "&:hover": {
+                    "& .item-text": {
+                      color: "#0b57d0",
+                    },
+                  },
+                }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onClick={() => handleItemClick(item)}
+              >
+                <Tooltip
+                  title={`${
+                    itemType === "email"
+                      ? item.value
+                      : itemType === "address"
+                      ? generateAddressString(item)
+                      : `${item.dialCode}${item.value}`
+                  } (from your Google Contacts)`}
+                  placement="top"
+                  slotProps={{
+                    popper: {
+                      sx: {
+                        "& .MuiTooltip-tooltip": {
+                          maxWidth: "200px",
+                          fontSize: "12px",
+                          backgroundColor: "rgba(0, 0, 0, 0.8)",
+                          fontWeight: 200,
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: itemType === "address" ? "flex-start" : "center",
+                      flex: 1,
+                      minWidth: 0,
+                      flexDirection: itemType === "address" ? "column" : "row",
+                    }}
+                  >
+                    {itemType === "address" ? (
+                      <>
+                        <Typography
+                          className="item-text"
+                          sx={{
+                            fontSize: "14px",
+                            color: "#313233",
+                            flex: 1,
+                            wordWrap: "break-word",
+                            whiteSpace: "normal",
+                          }}
+                        >
+                          {generateAddressString(item)}
+                          {item.label && (
+                            <span
+                              className="address-label"
+                              style={{ marginLeft: "4px", fontSize: "0.75rem", color: "#444746" }}
+                            >
+                              • {item.label}
+                            </span>
+                          )}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Typography
+                        className="item-text"
+                        sx={{
+                          fontSize: "14px",
+                          color: "#313233",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          flex: 1,
+                        }}
+                      >
+                        {itemType === "email" ? item.value : `${item.dialCode}${item.value}`}
+                      </Typography>
+                    )}
+                  </Box>
+                </Tooltip>
+
+                {hoveredIndex === index && (
+                  <Tooltip
+                    open={copyTooltipOpen}
+                    title={`${
+                      itemType === "email" ? "Email" : itemType === "phone" ? "Phone number" : "Address"
+                    } copied`}
+                    placement="top"
+                    slotProps={{
+                      popper: {
+                        sx: {
+                          "& .MuiTooltip-tooltip": {
+                            borderRadius: 0,
+                            fontSize: "11px",
+                            fontWeight: 200,
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <IconButton
+                      className="copy-icon"
+                      size="medium"
+                      onClick={(e) => handleCopy(item, e)}
+                      sx={{
+                        transition: "opacity 0.2s",
+                        "&:hover": {
+                          backgroundColor: "transparent",
+                        },
+                      }}
+                    >
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: "20px",
+                          color: "#0b57d0",
+                        }}
+                      >
+                        content_copy
+                      </span>
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Box>
+            ))}
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              py: 0.5,
+              cursor: "pointer",
+              height: "20px",
+            }}
+            onClick={handleAddClick}
+          >
+            <Typography
+              sx={{
+                fontSize: "0.875rem",
+                color: "#0b57d0",
+                fontWeight: 400,
+              }}
+            >
+              {emptyText}
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+};
