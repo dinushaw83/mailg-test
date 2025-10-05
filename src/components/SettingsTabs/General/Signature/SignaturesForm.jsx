@@ -317,6 +317,19 @@ function MoreFormattingMenu({ editor }) {
                 onClose={handleClose}
                 anchorOrigin={{ vertical: "top", horizontal: "left" }}
                 transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+                PaperProps={{
+                    sx: {
+                        padding: 0,
+                        minWidth: "auto",
+                        "& .MuiMenuItem-root": {
+                            padding: "2px 6px",
+                            minHeight: "24px",
+                        },
+                        "& .MuiListItemIcon-root": {
+                            minWidth: "20px",
+                        },
+                    },
+                }}
             >
                 <MenuItem onClick={() => { editor.chain().focus().toggleStrike().run(); handleClose(); }}>
                     <ListItemIcon><FormatStrikethroughIcon fontSize="small" /></ListItemIcon>
