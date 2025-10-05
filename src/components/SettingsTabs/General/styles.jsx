@@ -106,3 +106,179 @@ export const SubText = styled("span")({
     letterSpacing: "normal",
 });
 
+export const SignaturesFormContainer = styled("div")({
+    borderCollapse: "collapse",
+    borderSpacing: "2px",
+    fontSize: "14px",
+    font: '14px / 20px "Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+    lineHeight: "20px",
+});
+
+export const ToolbarSeparator = styled("div")({
+    borderLeft: "1px solid rgba(100, 121, 143, 0.12)",
+    height: "20px",
+    // margin: "0 2px",
+    display: "inline-block",
+    verticalAlign: "middle",
+});
+
+export const SignaturesListContainer = styled("div")({
+    borderRight: "1px solid rgb(218, 220, 224)",
+    flex: "1 0 240px",
+    overflow: "auto",
+    padding: "8px 0px",
+    WebkitFontSmoothing: "antialiased",
+    fontFamily:
+        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+    fontSize: "0.875rem",
+    letterSpacing: "normal",
+    color: "rgb(32, 33, 36)",
+    WebkitBoxFlex: "1",
+});
+
+export const SignatureName = styled("span")({
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    flex: "1 1 auto",
+    margin: "8px 0px 8px 16px",
+    textOverflow: "ellipsis",
+    WebkitBoxFlex: "1",
+    width: "168px",
+});
+
+export const SignatureItem = styled("div")({
+    WebkitBoxAlign: "center",
+    alignItems: "center",
+    cursor: "pointer",
+    display: "flex",
+    height: "40px",
+    backgroundColor: "rgba(66, 133, 244, 0.12)",
+    paddingRight: "8px",
+    paddingLeft: "8px",
+
+    "&:hover": {
+        backgroundColor: "rgba(66, 133, 244, 0.2)",
+    },
+});
+
+export const SignatureContainer = styled("div")({
+    flex: "2 2 480px",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+
+    // Safari/WebKit flexbox compatibility
+    WebkitBoxFlex: "2",
+    WebkitBoxOrient: "vertical",
+    WebkitBoxDirection: "normal",
+    WebkitBoxPack: "justify",
+});
+
+export const StyledSignatureTable = styled("table")({
+    width: "100%",
+    tableLayout: "fixed",
+    borderCollapse: "collapse", // Gmail-style default
+    borderSpacing: 0,
+});
+
+export const SignatureEditableBox = styled("div")({
+    border: 0,
+    overflow: "visible",
+    width: "100%",
+    background: "#fff",
+    font: "small / 1.5 Arial, Helvetica, sans-serif",
+    letterSpacing: "normal",
+    height: "100px",
+    overflowY: "auto",
+    direction: "ltr",
+
+    // Accessibility consistency
+    outline: "none", // usually Gmail removes outline on focus
+});
+
+export const SignatureToolbarContainer = styled("div")({
+    backgroundColor: "transparent",
+    fontSize: "medium",
+    maxWidth: "612px",
+    // position: "absolute",
+    overflow: "hidden",
+    alignItems: "center",
+    display: "flex",
+    height: "48px",
+
+    padding: 0,
+    width: "100%",
+    boxShadow: "inset 0 1px rgb(218, 220, 224)",
+    bottom: 0,
+
+    // Safari/WebKit flexbox fallback
+    WebkitBoxAlign: "center",
+});
+
+export const MailGToolbarButton = styled("div")({
+    borderRadius: "2px",
+    background: "transparent",
+    border: "none",
+    padding: 0,
+    listStyle: "none",
+    textDecoration: "none",
+    height: "20px",
+    color: "rgb(68, 68, 68)",
+    lineHeight: "20px",
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    verticalAlign: "middle",
+    cursor: "pointer",
+    outline: "none",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    zIndex: 0,
+    margin: "0px 3px",
+    userSelect: "none",
+});
+
+export const ToolbarButton = styled("div")({
+    borderRadius: "2px",
+    background: "transparent",
+    border: "none",
+    padding: 0,
+    height: "20px",
+    color: "rgb(68, 68, 68)",
+    lineHeight: "20px",
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    verticalAlign: "middle",
+    cursor: "pointer",
+    outline: "none",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    zIndex: 0,
+    margin: "0px 6px",
+    userSelect: "none",
+
+    "&:active": {
+        backgroundColor: "rgba(60,64,67,0.15)",
+    },
+});
+
+export const FontSelectContainer = styled("div")({
+    borderRadius: "2px",
+    height: "20px",
+    color: "rgb(68, 68, 68)",
+    lineHeight: "20px",
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    verticalAlign: "middle",
+    cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 2px",
+    userSelect: "none",
+    position: "relative",
+    zIndex: 0,
+});
