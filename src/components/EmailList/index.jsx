@@ -99,7 +99,9 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu }) 
     const path = location.pathname.replace("/", "");
 
     // If Inbox label is present in path other than inbox, return it
-    return email.labels.filter((label) => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
+    return email.labels.filter(
+      (label) => label.toLowerCase() !== path && ["inbox", "muted"].includes(label.toLowerCase())
+    );
   };
 
   const { direction: internalDirection, showPanel } = panelState;
