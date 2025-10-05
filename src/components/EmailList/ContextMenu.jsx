@@ -27,6 +27,9 @@ const ContextMenu = ({
   const threadId = contextRow?.threadId.split(":")[1];
   const selectedIds = [threadId];
 
+  const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
+  const muted = contextRow?.labels?.includes("Muted");
+
   const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam } = useMailActions();
   const { setSnackbar } = useGlobalContext();
 
@@ -215,6 +218,9 @@ const ContextMenu = ({
       case "mute":
         handleMuteAction(threadId);
         break;
+      case "move_to_inbox":
+        moveToInbox([threadId]);
+        break;
       //etc...
     }
   };
@@ -247,11 +253,13 @@ const ContextMenu = ({
   ];
 
   const sectionTwoItems = [
-    {
-      id: "archive",
-      label: "Archive",
-      icon: "archive",
-    },
+    muted
+      ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
+      : {
+          id: "archive",
+          label: "Archive",
+          icon: "archive",
+        },
     {
       id: "delete",
       label: "Delete",
@@ -285,8 +293,6 @@ const ContextMenu = ({
     },
   ];
 
-  const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
-  const muted = contextRow?.labels?.includes("Muted");
   console.log({ muted, labels: contextRow?.labels });
 
   return (

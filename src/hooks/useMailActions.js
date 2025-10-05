@@ -108,9 +108,8 @@ export default function useMailActions() {
   const moveToInbox = useCallback(
     (ids) =>
       updateByIds(ids, (labels) => {
-        labels.delete("Trash");
-        labels.delete("Spam");
-        labels.delete("Snoozed");
+        const labelsToDelete = ["Trash", "Spam", "Snoozed", "Muted"];
+        labelsToDelete.forEach((label) => labels.delete(label));
         labels.add("Inbox");
       }),
     [updateByIds]
