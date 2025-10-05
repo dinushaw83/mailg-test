@@ -365,6 +365,8 @@ const Table = ({
           {emails.map((email, index) => {
             const threadId = email.threadId.split(":")[1];
             const isActive = showSnoozePopover && snoozeId === email.id;
+            const selected = selection.isSelected(threadId);
+
             return (
               <tr
                 key={threadId}
@@ -382,6 +384,7 @@ const Table = ({
                         padding: 2,
                       }
                     : {}),
+                  ...(selected ? { backgroundColor: "#c2dbff" } : {}),
                 }}
                 onContextMenu={(e) => handleContextMenu(e, email)}
               >
@@ -551,7 +554,7 @@ const Table = ({
                         </Link>
                       </div>
                       {density === "default" && email.attachments.length > 0 && (
-                        <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap"}}>
+                        <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap" }}>
                           {email.attachments.map((attachment) => (
                             <Button
                               variant="outlined"
