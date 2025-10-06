@@ -86,8 +86,11 @@ const Inbox = () => {
   }, [filteredRows, tabFilteredRows, activeFolder, currentPage, itemsPerPage]);
 
   useEffect(() => {
-    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
-  }, []);
+    // Calculate total unread emails count
+    const unreadCount = emails.filter(email => !email.read).length;
+    const unreadText = unreadCount > 0 ? `(${unreadCount})` : '';
+    document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
+  }, [emails, loggedInUser.email]);
 
   return (
     <Container id="cont-123">
