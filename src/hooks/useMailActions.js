@@ -275,6 +275,27 @@ export default function useMailActions() {
     [setEmails]
   );
 
+  const unsnooze = useCallback(
+    (ids) => {
+      const match = makeMatch(ids);
+      setEmails((prev) =>
+        prev.map((m) => {
+          if (match(m)) {
+            const currentLabels = m.labels || [];
+            // Remove "Snoozed" label and add "Inbox" label
+            const updatedLabels = currentLabels.filter((label) => label !== "Snoozed");
+            if (!updatedLabels.includes("Inbox")) {
+              updatedLabels.push("Inbox");
+            }
+            return { ...m, labels: updatedLabels, snoozeUntil: undefined };
+          }
+          return m;
+        })
+      );
+    },
+    [setEmails]
+  );
+
   const toggleMuted = useCallback(
     (threadId) => {
       setEmails((prev) =>
@@ -356,6 +377,7 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
+      unsnooze,
       toggleMuted,
       setMuted,
     }),
@@ -377,6 +399,7 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
+      unsnooze,
       toggleMuted,
       setMuted,
     ]

@@ -205,7 +205,7 @@ const Table = ({
 }) => {
   const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
-  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted } = useMailActions();
+  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted, unsnooze } = useMailActions();
   const snoozeAnchorElRef = useRef(null);
   const [contextRow, setContextRow] = useState(null);
 
@@ -298,11 +298,25 @@ const Table = ({
 
   const handleReadAction = useCallback(
     (email) => {
-      if (!email.read) {
-        markRead([email.id], true);
-      } else {
-        markRead([email.id], false);
-      }
+      const { read } = email;
+
+      markRead([email.id], !read);
+
+      setSnackbar({
+        open: true,
+        message: "Conversation marked as read.",
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              markRead([email.id], read);
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
     },
     [markRead]
   );
@@ -325,7 +339,6 @@ const Table = ({
 
   const handleSnoozeAction = useCallback((threadId) => {
     setShowAdvancedMenu(true);
-    selection.setMany([threadId]);
 
     setTimeout(() => {
       const element = document.getElementById("snooze-toolbar-icon");
@@ -357,6 +370,29 @@ const Table = ({
       });
     },
     [toggleMuted]
+  );
+
+  const handleSnooze = useCallback(
+    (ids, snoozeUntil) => {
+      snooze(ids, snoozeUntil);
+      setSnackbar({
+        open: true,
+        message: "Conversation snoozed.",
+        autoHideDuration: 3000,
+        // undo action
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              unsnooze(ids);
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [snooze]
   );
 
   const openInNewTab = async (e, attachment, db) => {
@@ -678,7 +714,7 @@ const Table = ({
                 }));
               }}
               selectedIds={selection.ids}
-              snooze={snooze}
+              snooze={handleSnooze}
             />
           )}
           <ContextMenu
