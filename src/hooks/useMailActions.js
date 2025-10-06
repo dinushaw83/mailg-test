@@ -231,7 +231,22 @@ export default function useMailActions() {
   );
 
   const moveToLabel = useCallback(
-    (ids, name) =>
+    (ids, name) => {
+      // Store original state for undo
+      const match = makeMatch(ids);
+      const originalStates = new Map();
+
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            originalStates.set(m.id, {
+              labels: [...(m.labels || [])],
+            });
+          }
+        });
+        return prev;
+      });
+
       updateByIds(ids, (labels) => {
         if (!name) return;
 
@@ -251,8 +266,23 @@ export default function useMailActions() {
         }
 
         labels.add(target);
-      }),
-    [updateByIds]
+      });
+
+      const undo = () => {
+        setEmails((prev) =>
+          prev.map((m) => {
+            if (match(m) && originalStates.has(m.id)) {
+              const originalState = originalStates.get(m.id);
+              return { ...m, labels: originalState.labels };
+            }
+            return m;
+          })
+        );
+      };
+
+      return undo;
+    },
+    [updateByIds, setEmails]
   );
 
   const moveToLabelFrom = useCallback(

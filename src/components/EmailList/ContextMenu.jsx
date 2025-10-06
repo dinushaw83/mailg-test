@@ -84,7 +84,17 @@ const ContextMenu = ({
 
       try {
         if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel(selectedIds, "Inbox");
+          const undo = moveToLabel(selectedIds, "Inbox");
+          setSnackbar({
+            open: true,
+            message: "Conversation moved to inbox.",
+            autoHideDuration: 3000,
+            action: (
+              <Button size="small" onClick={undo}>
+                Undo
+              </Button>
+            ),
+          });
         } else if (item.id === "__spam__" || item.id === "spam") {
           setState((prev) => ({
             ...prev,
@@ -125,7 +135,17 @@ const ContextMenu = ({
           if (inCustomLabel) {
             moveToLabelFrom(selectedIds, currentLabel, targetKey);
           } else {
-            moveToLabel(selectedIds, targetKey); // pass key
+            const undo = moveToLabel(selectedIds, targetKey); // pass key
+            setSnackbar({
+              open: true,
+              message: `Conversation moved to ${item.name}.`,
+              autoHideDuration: 3000,
+              action: (
+                <Button size="small" onClick={undo}>
+                  Undo
+                </Button>
+              ),
+            });
           }
         }
       } catch (e) {
@@ -150,7 +170,17 @@ const ContextMenu = ({
       if (inCustomLabel) {
         moveToLabelFrom(selectedIds, currentLabel, newKey);
       } else {
-        moveToLabel(selectedIds, newKey);
+        const undo = moveToLabel(selectedIds, newKey);
+        setSnackbar({
+          open: true,
+          message: `Conversation moved to "${childName}".`,
+          autoHideDuration: 10000,
+          action: (
+            <Button size="small" onClick={undo}>
+              Undo
+            </Button>
+          ),
+        });
       }
 
       // --- UNDO action ---
