@@ -78,7 +78,7 @@ const ContactDetails = () => {
 
     return found;
   }, [recipients, rightSidebarActiveTab.contact.contactId, loggedInUser]);
-  const isFavorite = contact?.labels?.includes("Favorites");
+  const isFavorite = contact?.isFavorite;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const deletedContact = useRef(null);
   const [disableHeader, setDisableHeader] = useState(false);
@@ -240,17 +240,14 @@ const ContactDetails = () => {
     const snackbarMessage = isFavorite ? "Contact removed from favorites" : "Contact added to favorites";
 
     // Update the recipients
-    // If the contact not in my contacts is adding to favorites, then add it to my contacts as well
+    // If the contact is not saved when adding to favorites, then save it
     setRecipients((prev) =>
       prev.map((recipient) =>
         recipient.id === contact.id
           ? {
               ...recipient,
-              labels: isFavorite
-                ? recipient.labels.filter((label) => label !== "Favorites")
-                : recipient.labels.includes("My contacts")
-                ? [...recipient.labels, "Favorites"]
-                : [...recipient.labels, "Favorites", "My contacts"],
+              isFavorite: !isFavorite,
+              isSaved: !isFavorite ? true : recipient?.isSaved,
             }
           : recipient
       )
@@ -304,11 +301,11 @@ const ContactDetails = () => {
     // Remove the contact from the deleted recipients
     setDeletedRecipients((prev) => prev.filter((recipient) => recipient.id !== deletedContact.current.id));
 
-    // Add the my contacts label to the contact in the recipients array
+    // Save the contact back
     setRecipients((prev) =>
       prev.map((recipient) =>
         recipient.id === deletedContact.current.id
-          ? { ...recipient, labels: [...recipient.labels, "My contacts"] }
+          ? { ...recipient, isSaved: true }
           : recipient
       )
     );
@@ -345,11 +342,11 @@ const ContactDetails = () => {
       // Add the contact to the deleted recipients
       setDeletedRecipients((prev) => [...prev, contact]);
 
-      // Remove the My contacts label from the contact in the recipients array
+      // Set isSaved to false
       setRecipients((prev) =>
         prev.map((recipient) =>
           recipient.id === contact.id
-            ? { ...recipient, labels: recipient.labels.filter((label) => label !== "My contacts") }
+            ? { ...recipient, isSaved: false }
             : recipient
         )
       );
@@ -446,11 +443,11 @@ const ContactDetails = () => {
         contact: { ...prev.contact, contactId: contactReference.current.id },
       }));
     } else {
-      // Else remove the My contacts label from the contact in the recipients array
+      // Else set isSaved to false
       setRecipients((prev) =>
         prev.map((recipient) =>
           recipient.id === contactReference.current.id
-            ? { ...recipient, labels: recipient.labels.filter((label) => label !== "My contacts") }
+            ? { ...recipient, isSaved: false }
             : recipient
         )
       );
@@ -493,7 +490,9 @@ const ContactDetails = () => {
           email: contact.email,
           emails: contact.emails,
           name: contact.name,
-          labels: ["My contacts"],
+          isSaved: true,
+          labels: [],
+          isFavorite: false,
           firstName: contact.name.split(" ")[0],
           lastName: contact.name.split(" ")[1] ?? "",
           avatar: null,
@@ -505,10 +504,10 @@ const ContactDetails = () => {
         // Add the contact id to the right sidebar active tab
         setRightSidebarActiveTab((prev) => ({ ...prev, contact: { ...prev.contact, contactId: newContact.id } }));
       } else {
-        // Add My contacts label to the contact in the recipients array
+        // Set isSaved to true in the recipients array for the contact
         setRecipients((prev) =>
           prev.map((recipient) =>
-            recipient.id === contact.id ? { ...recipient, labels: [...recipient.labels, "My contacts"] } : recipient
+            recipient.id === contact.id ? { ...recipient, isSaved: true } : recipient
           )
         );
       }
@@ -624,7 +623,7 @@ const ContactDetails = () => {
           px: 1,
           mt: 7,
           height:
-            contact?.isCustomContact || !contact?.labels?.includes("My contacts") || contact?.isLoggedInUser
+            contact?.isCustomContact || !contact?.isSaved || contact?.isLoggedInUser
               ? "calc(100vh - 258px)"
               : "calc(100vh - 188px)",
         }}
@@ -747,7 +746,7 @@ const ContactDetails = () => {
               },
             }}
             data-available={false}
-            disabled={contact?.isLoggedInUser || !contact?.labels?.includes("My contacts")}
+            disabled={contact?.isLoggedInUser || !contact?.isSaved}
           />
 
           {/* Start video call */}
@@ -846,7 +845,7 @@ const ContactDetails = () => {
             {contact.websites.map((website, index) => (
               <Tooltip
                 key={`website-${index}`}
-                title="From your Google Contacts"
+                title="From your MailG Contacts"
                 placement="top"
                 slotProps={{
                   popper: {
@@ -976,7 +975,7 @@ const ContactDetails = () => {
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       {item.hasContent ? (
                         <Tooltip
-                          title="From your Google Contacts"
+                          title="From your MailG Contacts"
                           placement="top"
                           slotProps={{
                             popper: {
@@ -1066,7 +1065,7 @@ const ContactDetails = () => {
                         >
                           <Tooltip
                             key={`person-${personIndex}`}
-                            title="From your Google Contacts"
+                            title="From your MailG Contacts"
                             placement="top"
                             slotProps={{
                               popper: {
@@ -1126,7 +1125,7 @@ const ContactDetails = () => {
                         >
                           <Tooltip
                             key={`field-${fieldIndex}`}
-                            title="From your Google Contacts"
+                            title="From your MailG Contacts"
                             placement="top"
                             slotProps={{
                               popper: {
@@ -1177,7 +1176,7 @@ const ContactDetails = () => {
                     {/* Notes content */}
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Tooltip
-                        title="From your Google Contacts"
+                        title="From your MailG Contacts"
                         placement="top"
                         slotProps={{
                           popper: {
@@ -1382,7 +1381,7 @@ const ContactDetails = () => {
         </p>
       </Box>
 
-      {(contact?.isCustomContact || !contact?.labels?.includes("My contacts") || contact?.isLoggedInUser) && (
+      {(contact?.isCustomContact || !contact?.isSaved || contact?.isLoggedInUser) && (
         <Box
           sx={{
             display: "flex",

@@ -16,25 +16,25 @@ const ContactsTab = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [activeTab, setActiveTab] = useState(1); // 0 for "In this thread", 1 for "Contacts"
   const [searchResults, setSearchResults] = useState(
-    recipients.filter((recipient) => recipient.labels.includes("My contacts"))
+    recipients.filter((recipient) => recipient?.isSaved)
   );
   const myContacts = useMemo(
-    () => searchResults.filter((recipient) => recipient.labels.includes("My contacts")),
+    () => searchResults.filter((recipient) => recipient?.isSaved),
     [searchResults]
   );
   const favoriteContacts = useMemo(
-    () => recipients.filter((recipient) => recipient.labels.includes("Favorites")),
+    () => recipients.filter((recipient) => recipient?.isFavorite),
     [recipients]
   );
   // Contacts in search results that are not in my contacts
   const otherContacts = useMemo(
-    () => searchResults.filter((recipient) => !recipient.labels.includes("My contacts")),
+    () => searchResults.filter((recipient) => !recipient?.isSaved),
     [searchResults]
   );
 
   // Update search results when recipients change
   useEffect(() => {
-    setSearchResults(recipients.filter((recipient) => recipient.labels.includes("My contacts")));
+    setSearchResults(recipients.filter((recipient) => recipient?.isSaved));
   }, [recipients]);
 
   // Handle search
@@ -60,7 +60,7 @@ const ContactsTab = () => {
     setDisplaySearch(false);
     setSearchQuery("");
     setHasSearched(false);
-    setSearchResults(recipients.filter((recipient) => recipient.labels.includes("My contacts")));
+    setSearchResults(recipients.filter((recipient) => recipient?.isSaved));
   };
 
   // Check if URL matches thread format and validate threadId
@@ -505,7 +505,7 @@ const ContactsTab = () => {
             myContacts.length === 0 && (
               <EmptyContacts
                 title="No contacts yet"
-                description="Google Contacts makes your contacts organized and clutter-free so you never lose touch"
+                description="MailG Contacts makes your contacts organized and clutter-free so you never lose touch"
                 onClickCreateContact={() =>
                   setRightSidebarActiveTab((prev) => ({ ...prev, contact: { screen: "CREATE_CONTACT" } }))
                 }

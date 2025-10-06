@@ -136,13 +136,16 @@ const RightSidebar = () => {
                       size="medium"
                       onClick={() => handleTabIconClick("contact")}
                       sx={{
+                        color: "#1f58cc",
                         backgroundColor: rightSidebarActiveTab.activeTab === "contact" ? "#e8f0fe" : "transparent",
                         "&:hover": {
                           backgroundColor: rightSidebarActiveTab.activeTab === "contact" ? "#d2e3fc" : "action.hover",
                         },
                       }}
                     >
-                      <img src="/assets/images/pr_2_image_11.png" alt="Contacts" style={{ width: 21, height: 21 }} />
+                      <span class="material-symbols-filled" style={{ fontSize: "21px" }}>
+                        contact_page
+                      </span>
                     </IconButton>
                   </Tooltip>
                 </div>

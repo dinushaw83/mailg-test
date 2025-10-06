@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 
-const ContactTrash = () => {
+const MergeAndFix = () => {
   useEffect(() => {
     // Update the document title
-    document.title = "Trash";
+    document.title = "Merge & fix";
   }, []);
 
   return (
@@ -21,7 +21,7 @@ const ContactTrash = () => {
     >
       <Box sx={{ display: "flex", alignItems: "center", px: 1.5 }}>
         <Typography variant="h6" sx={{ fontWeight: 400, fontSize: "1.5rem", color: "#444746" }}>
-          Trash
+          Merge & Fix
         </Typography>
       </Box>
       <h2 style={{ textAlign: "center" }}>Coming soon</h2>
@@ -29,4 +29,4 @@ const ContactTrash = () => {
   );
 };
 
-export default ContactTrash;
+export default MergeAndFix;

@@ -5,7 +5,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const OtherContacts = () => {
   const { recipients } = useGlobalContext();
-  const otherContacts = recipients.filter((recipient) => !recipient.labels.includes("My contacts"));
+  const otherContacts = recipients.filter((recipient) => !recipient?.isSaved);
 
   useEffect(() => {
     // Update the document title

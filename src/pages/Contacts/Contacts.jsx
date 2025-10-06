@@ -5,8 +5,8 @@ import ContactsTable from "../../components/Contacts/ContactsTable";
 
 const Contacts = () => {
   const { recipients } = useGlobalContext();
-  const myContacts = recipients.filter((recipient) => recipient?.labels?.includes("My contacts"));
-  const favoriteContacts = recipients.filter((recipient) => recipient?.labels?.includes("Favorites"));
+  const myContacts = recipients.filter((recipient) => recipient?.isSaved);
+  const favoriteContacts = recipients.filter((recipient) => recipient?.isFavorite);
 
   useEffect(() => {
     // Set document title to MailG Contacts

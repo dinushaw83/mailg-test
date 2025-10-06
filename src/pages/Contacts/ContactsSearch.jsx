@@ -105,16 +105,16 @@ const ContactsSearch = () => {
             {
               heading: <p style={{ fontSize: "0.75rem", fontWeight: 500, color: "#444746" }}>Contacts</p>,
               title: "Contacts",
-              data: searchResults?.filter((recipient) => recipient.labels.includes("My contacts")),
+              data: searchResults?.filter((recipient) => recipient?.isSaved),
             },
             {
               heading: <p style={{ fontSize: "0.75rem", fontWeight: 500, color: "#444746" }}>Other contacts</p>,
               title: "Other contacts",
-              data: searchResults?.filter((recipient) => !recipient.labels.includes("My contacts")),
+              data: searchResults?.filter((recipient) => !recipient?.isSaved),
             },
           ].slice(
             0,
-            searchResults?.filter((recipient) => !recipient.labels.includes("My contacts")).length === 0 ? 1 : 2
+            searchResults?.filter((recipient) => !recipient?.isSaved).length === 0 ? 1 : 2
           )}
           hidePrintExport={true}
         />

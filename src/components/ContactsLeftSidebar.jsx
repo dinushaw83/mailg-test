@@ -122,7 +122,7 @@ const ContactsLeftSidebar = () => {
     useGlobalContext();
   const { width } = useDimensions();
   const activeItem = location.pathname.split("/").pop();
-  const myContacts = recipients.filter((recipient) => recipient?.labels?.includes("My contacts"));
+  const myContacts = recipients.filter((recipient) => recipient?.isSaved);
 
   useEffect(() => {
     // When width goes below 1024px, set the contacts left sidebar to collapsed else expanded
@@ -171,9 +171,9 @@ const ContactsLeftSidebar = () => {
           {width < 1024 ? (
             <Box sx={{ display: "flex", alignItems: "center", mb: 0.25, px: 1 }}>
               <img
-                src="/assets/images/pr_2_image_11.png"
+                src="/assets/images/contacts_favicon.png"
                 alt="Contacts"
-                style={{ width: "40px", height: "40px", marginRight: "10px", cursor: "pointer" }}
+                style={{ width: "40px", height: "40px", marginRight: "10px", marginLeft: "10px", cursor: "pointer" }}
               />
 
               <Typography
@@ -298,7 +298,6 @@ const ContactsLeftSidebar = () => {
           </Box>
           <List disablePadding>
             {recipientLabels
-              .filter((label) => label.label !== "My contacts")
               .map((label) => (
                 <MenuItem
                   key={`label-${label.id}`}

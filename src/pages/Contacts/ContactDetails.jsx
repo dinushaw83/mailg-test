@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from '../../contexts/GlobalContext';
 
@@ -28,7 +28,12 @@ const ContactDetails = () => {
         py: 3,
       }}
     >
-      <p>Contact Details</p>
+      <Box sx={{ display: "flex", alignItems: "center", px: 1.5 }}>
+        <Typography variant="h6" sx={{ fontWeight: 400, fontSize: "1.5rem", color: "#444746" }}>
+          Contact Details
+        </Typography>
+      </Box>
+      <h2 style={{ textAlign: "center" }}>Coming soon</h2>
     </Box>
   );
 };

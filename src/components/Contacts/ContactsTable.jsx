@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import {
   Table,
   TableBody,
@@ -74,8 +74,8 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
     { name: "Actions", priority: 1, minWidth: 120 }, // Always visible
   ];
 
-  // Update table headers based on width
-  useEffect(() => {
+  // Update table headers based on width before the ui is rendered
+  useLayoutEffect(() => {
     const updateHeaders = () => {
       if (!tableRef.current) return;
 
@@ -143,20 +143,17 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
     });
 
     timeoutsRef.current.favorite = setTimeout(() => {
-      const isFavorite = contact?.labels?.includes("Favorites");
+      const isFavorite = contact?.isFavorite;
 
       // Update the recipients array
-      // If the contact not in my contacts is adding to favorites, then add it to my contacts as well
+      // If the contact is not saved when adding to favorites, then save it
       setRecipients((prev) =>
         prev.map((recipient) =>
           recipient.id === contact.id
             ? {
                 ...recipient,
-                labels: isFavorite
-                  ? recipient.labels.filter((label) => label !== "Favorites")
-                  : recipient.labels.includes("My contacts")
-                  ? [...recipient.labels, "Favorites"]
-                  : [...recipient.labels, "Favorites", "My contacts"],
+                isFavorite: !isFavorite,
+                isSaved: !isFavorite ? true : recipient?.isSaved,
               }
             : recipient
         )
@@ -437,8 +434,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
       case "Labels":
         return {
           type: "labels",
-          // Exclude Favorites and My contacts labels
-          data: contact.labels?.filter((label) => label !== "Favorites" && label !== "My contacts") || [],
+          data: contact.labels || [],
         };
       case "Actions":
         return {
@@ -589,7 +585,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                 <Box className={styles.actionsContainer}>
                   {/* Favorite button */}
                   <Tooltip
-                    title={contact?.labels?.includes("Favorites") ? "Remove from favorites" : "Add to favorites"}
+                    title={contact?.isFavorite ? "Remove from favorites" : "Add to favorites"}
                     placement="top"
                     slotProps={{
                       popper: {
@@ -611,16 +607,16 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                         handleFavorite(contact);
                       }}
                       sx={{
-                        color: contact?.labels?.includes("Favorites") ? "#0b57d0" : "#444746",
+                        color: contact?.isFavorite ? "#0b57d0" : "#444746",
                         "&:hover": {
-                          backgroundColor: contact?.labels?.includes("Favorites")
+                          backgroundColor: contact?.isFavorite
                             ? "rgba(11, 87, 208, 0.08)"
                             : "action.hover",
                         },
                       }}
                     >
                       <span
-                        className={`material-symbols-${contact?.labels?.includes("Favorites") ? "filled" : "outlined"}`}
+                        className={`material-symbols-${contact?.isFavorite ? "filled" : "outlined"}`}
                         style={{ fontSize: "21px" }}
                       >
                         star
@@ -1154,7 +1150,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
         </MenuItem>
 
         {/* Change Labels Section */}
-        {recipientLabels.filter((label) => label.label !== "My contacts").length > 0 && (
+        {recipientLabels.length > 0 && (
           <Box>
             <Divider sx={{ my: 1 }} />
             <Box sx={{ px: 3, pb: 1 }}>
@@ -1163,7 +1159,6 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
               </Typography>
             </Box>
             {recipientLabels
-              .filter((label) => label.label !== "My contacts")
               .map((label) => {
                 const hasLabel = selectedContactRef.current?.contact?.labels?.includes(label.label);
                 return (

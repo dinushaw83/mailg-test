@@ -18,7 +18,7 @@ const ContactsHeader = () => {
 
   // Update favicon to contacts icon
   useEffect(() => {
-    document.querySelector("link[rel='icon']").href = "/assets/images/pr_2_image_11.png";
+    document.querySelector("link[rel='icon']").href = "/assets/images/contacts_favicon.png";
   }, []);
 
   // Handle contact selection from search dropdown
@@ -48,9 +48,9 @@ const ContactsHeader = () => {
         </IconButton>
 
         <img
-          src="/assets/images/pr_2_image_11.png"
+          src="/assets/images/contacts_favicon.png"
           alt="Contacts"
-          style={{ width: "40px", height: "40px", marginRight: "10px", cursor: "pointer" }}
+          style={{ width: "40px", height: "40px", marginRight: "10px", marginLeft: "10px", cursor: "pointer" }}
           onClick={() => navigate("/contacts")}
         />
 
@@ -194,7 +194,7 @@ const ContactsHeader = () => {
                 color: loggedInUser.avatar ? "inherit" : "white",
                 width: 36,
                 height: 36,
-                fontSize: "14px",
+                fontSize: "15px",
                 transition: "opacity 0.2s ease",
                 "&:hover": {
                   cursor: "pointer",
