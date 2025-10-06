@@ -20,7 +20,8 @@ const ContextMenu = ({
   handleSnoozeAction,
   contextRow,
   handleMuteAction,
-  setEmails,
+  folder,
+  label,
 }) => {
   const isRead = contextRow?.read;
   const senderName = contextRow?.from?.name;
@@ -51,8 +52,7 @@ const ContextMenu = ({
 
   const { labels, labelTree } = useLabels();
 
-  const { label: labelParam } = useParams();
-  const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
+  const currentLabel = label ? decodeURIComponent(label) : null;
 
   // Check if any selected emails are not in the inbox
   const menuItems = useMemo(() => {
@@ -253,32 +253,35 @@ const ContextMenu = ({
     }
   };
 
-  const sectionOneItems = [
-    {
-      id: "reply",
-      label: "Reply",
-      icon: "reply",
-      disabled: true,
-    },
-    {
-      id: "reply_all",
-      label: "Reply all",
-      icon: "reply_all",
-      disabled: true,
-    },
-    {
-      id: "forward",
-      label: "Forward",
-      icon: "forward",
-      disabled: true,
-    },
-    {
-      id: "forward_as_attachment",
-      label: "Forward as attachment",
-      icon: "attachment",
-      disabled: true,
-    },
-  ];
+  const sectionOneItems =
+    folder === "drafts"
+      ? []
+      : [
+          {
+            id: "reply",
+            label: "Reply",
+            icon: "reply",
+            disabled: true,
+          },
+          {
+            id: "reply_all",
+            label: "Reply all",
+            icon: "reply_all",
+            disabled: true,
+          },
+          {
+            id: "forward",
+            label: "Forward",
+            icon: "forward",
+            disabled: true,
+          },
+          {
+            id: "forward_as_attachment",
+            label: "Forward as attachment",
+            icon: "attachment",
+            disabled: true,
+          },
+        ];
 
   const sectionTwoItems = [
     isThreadNotInInbox
@@ -341,7 +344,7 @@ const ContextMenu = ({
           </Item>
         ))}
 
-        <Separator />
+        {sectionOneItems.length > 0 && <Separator />}
 
         {sectionTwoItems.map((item) => (
           <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>

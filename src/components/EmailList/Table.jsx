@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import { useContextMenu } from "react-contexify";
 
@@ -404,6 +404,8 @@ const Table = ({
     window.open(URL.createObjectURL(file), "_blank");
   };
 
+  const { folder, label } = useParams();
+
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -725,7 +727,8 @@ const Table = ({
             handleSnoozeAction={handleSnoozeAction}
             contextRow={contextRow}
             handleMuteAction={handleMuteAction}
-            setEmails={setEmails}
+            folder={folder}
+            label={label}
           />
         </tbody>
       </table>
