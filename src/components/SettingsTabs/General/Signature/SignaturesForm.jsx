@@ -11,9 +11,9 @@ import {
 } from "@mui/material";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import { useEditor, EditorContent } from "@tiptap/react";
-import { styled, useTheme } from "@mui/material/styles";
-import { MenuList, IconButton } from "@mui/material";
+import { useEditor } from "@tiptap/react";
+import { useTheme } from "@mui/material/styles";
+import { MenuList } from "@mui/material";
 import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
@@ -38,6 +38,7 @@ import {
     SignatureToolbarContainer,
     MailGToolbarButton,
     ToolbarButton,
+    StyledEditorContent,
 } from "../styles";
 
 import useExtensions from "../../../RichTextEditor/useExtensions";
@@ -117,23 +118,6 @@ const swatches = [
     "rgb(32, 18, 77)",
     "rgb(76, 17, 48)",
 ];
-
-export const StyledEditorContent = styled(EditorContent)({
-    "& .tiptap": {
-        border: 0,
-        overflow: "visible",
-        width: "100%",
-        background: "#fff",
-        font: "small / 1.5 Arial, Helvetica, sans-serif",
-        letterSpacing: "normal",
-        direction: "ltr",
-        outline: "none",
-        minHeight: "100px",
-        maxHeight: "200px",
-        overflowY: "auto",
-        padding: "8px",
-    },
-});
 
 export default function SignaturesForm() {
     return (
@@ -635,8 +619,24 @@ function Form() {
                                         verticalAlign: "top",
                                     }}
                                 >
-                                    <div className="IN">
-                                        <StyledEditorContent editor={editor} className="Am aiL IP Al editable Xp0HJf-LW-avf" />
+                                    <div
+                                        className="IN"
+                                        style={{
+                                            position: "relative",
+                                            overflowY: "auto",
+                                            overflowX: "hidden",
+                                            minHeight: "100px",
+                                            background: "#fff",
+                                            padding: "8px",
+                                            boxSizing: "border-box",
+                                            border: "none",
+                                            maxHeight: "0px",
+                                        }}
+                                    >
+                                        <StyledEditorContent
+                                            editor={editor}
+                                            className="Am aiL IP Al editable Xp0HJf-LW-avf"
+                                        />
                                     </div>
                                 </td>
                             </tr>

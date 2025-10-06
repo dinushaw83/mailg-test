@@ -1,4 +1,5 @@
 import { styled } from "@mui/material/styles";
+import { EditorContent } from "@tiptap/react";
 
 export const Container = styled("div")(({ theme }) => ({
     padding: 0,
@@ -177,7 +178,7 @@ export const SignatureContainer = styled("div")({
 export const StyledSignatureTable = styled("table")({
     width: "100%",
     tableLayout: "fixed",
-    borderCollapse: "collapse", // Gmail-style default
+    borderCollapse: "collapse",
     borderSpacing: 0,
 });
 
@@ -281,4 +282,20 @@ export const FontSelectContainer = styled("div")({
     userSelect: "none",
     position: "relative",
     zIndex: 0,
+});
+
+export const StyledEditorContent = styled(EditorContent)({
+    "& .tiptap": {
+        border: 0,
+        overflow: "visible",
+        width: "100%",
+        background: "#fff",
+        font: "small / 1.5 Arial, Helvetica, sans-serif",
+        letterSpacing: "normal",
+        direction: "ltr",
+        outline: "none",
+        minHeight: "100px",
+        maxHeight: "200px",
+        overflowY: "auto",
+    },
 });
