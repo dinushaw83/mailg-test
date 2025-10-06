@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
 import { Attachments } from "./Attachments";
-import { GlobalContext } from "../../contexts/GlobalContext";
+import ContactPopup from '../Contacts/ContactPopup';
+import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -146,10 +147,30 @@ const Time = ({ timestamp }) => {
 };
 
 const TopBar = ({ timestamp, senderName, senderEmail, onReply }) => {
+  const { recipients, loggedInUser } = useGlobalContext();
+
+  const senderContact = useMemo(() => {
+    // Check if sender email is of logged in user
+    if (senderEmail === loggedInUser.email) {
+      return loggedInUser;
+    }
+
+    // Check if sender email is present in recipients emails array
+    const found = recipients.find((recipient) => recipient.emails.some((email) => email.value === senderEmail));
+    if (found) {
+      return found;
+    }
+
+    // If not found, then return a custom contact object
+    return { name: senderName, email: senderEmail, id: `custom-${senderEmail}` };
+  }, [recipients, senderName, senderEmail]);
+
   return (
     <TopBarContainer>
       <div>
-        <Sender name={senderName} email={senderEmail} />
+        <ContactPopup contact={{ ...senderContact, email: senderEmail }}>
+          <Sender name={senderName} email={senderEmail} />
+        </ContactPopup>
         <Recipient />
       </div>
       <ActionsContainer>
