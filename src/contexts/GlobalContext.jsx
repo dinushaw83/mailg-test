@@ -45,6 +45,7 @@ export const GlobalContextProvider = ({ children }) => {
     contact: { screen: "CONTACTS" },
     activeTab: null,
   });
+  const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -195,6 +196,8 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    contactsLeftSidebarExpanded,
+    setContactsLeftSidebarExpanded,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

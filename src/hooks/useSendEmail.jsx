@@ -175,6 +175,8 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
             },
           ],
           id: generateNextIntegerId(recipients) + index,
+          isSaved: false,
+          isFavorite: false,
           labels: [],
         });
       });

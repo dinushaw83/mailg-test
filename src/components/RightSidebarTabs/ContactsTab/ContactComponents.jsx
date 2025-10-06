@@ -343,7 +343,7 @@ export const ContactDetailRow = ({ icon, items, emptyText, onItemClick, onAddCli
                       : itemType === "address"
                       ? generateAddressString(item)
                       : `${item.dialCode}${item.value}`
-                  } (from your Google Contacts)`}
+                  } (from your MailG Contacts)`}
                   placement="top"
                   slotProps={{
                     popper: {
