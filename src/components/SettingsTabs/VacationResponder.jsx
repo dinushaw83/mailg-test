@@ -198,7 +198,12 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                     checked={lastDayEnabled}
                     onChange={(e) => {
                       setLastDayEnabled(e.target.checked);
-                      if (!e.target.checked) {
+                      if (e.target.checked) {
+                        // Set last day to 7 days in the future
+                        const futureDate = new Date();
+                        futureDate.setDate(futureDate.getDate() + 7);
+                        handleVacationChange("lastDay", dateToString(futureDate));
+                      } else {
                         handleVacationChange("lastDay", "");
                       }
                     }}
