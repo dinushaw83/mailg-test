@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ColorPicker, MenuSelectFontSize, RichTextEditorProvider } from "mui-tiptap";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import {
@@ -126,6 +126,8 @@ export default function SignaturesForm({
     setOpenDialog,
     setEditingSignature,
     editingSignature,
+    editingSignatureData,
+    setSignaturesState,
 }) {
     return (
         <SignaturesFormContainer className="Tb">
@@ -137,6 +139,8 @@ export default function SignaturesForm({
                     setOpenDialog={setOpenDialog}
                     setEditingSignature={setEditingSignature}
                     editingSignature={editingSignature}
+                    editingSignatureData={editingSignatureData}
+                    setSignaturesState={setSignaturesState}
                 />
                 <div className="P4">
                     <button
@@ -172,7 +176,10 @@ export default function SignaturesForm({
                             marginTop: "8px",
                             width: "240px",
                         }}
-                        onClick={() => setOpenDialog(true)}
+                        onClick={() => {
+                            setOpenDialog(true);
+                            setEditingSignature(null);
+                        }}
                     >
                         Create new
                     </button>
@@ -498,7 +505,7 @@ function Form({
     setActiveSignature,
     setOpenDialog,
     setEditingSignature,
-    editingSignature,
+    setSignaturesState,
 }) {
     const theme = useTheme()
     const [content, setContent] = useState("");
@@ -526,11 +533,11 @@ function Form({
     };
 
     const editor = useEditor({
-        extensions: useExtensions({
-            placeholder: "Create your signature…",
-        }),
-        content: "<p></p>",
-        onUpdate: ({ editor }) => setContent(editor.getHTML()),
+        extensions: useExtensions({ placeholder: "Create your signature…" }),
+        content: activeSignature !== null ? signatures[activeSignature]?.content || "<p></p>" : "<p></p>",
+        onUpdate: ({ editor }) => {
+            setContent(editor.getHTML());
+        },
     });
 
     const [linkAnchorEl, setLinkAnchorEl] = useState(null);
@@ -545,6 +552,25 @@ function Form({
         }
         setLinkAnchorEl(event.currentTarget);
     };
+
+    useEffect(() => {
+        if (!editor || activeSignature === null) return;
+
+        const handleUpdate = () => {
+            setSignaturesState(prev => {
+                const updatedList = [...prev.list];
+                updatedList[activeSignature] = {
+                    ...updatedList[activeSignature],
+                    content: editor.getHTML(),
+                };
+                return { ...prev, list: updatedList };
+            });
+        };
+
+        // Debounce updates — no re-render storm
+        const debounceTimer = setTimeout(handleUpdate, 500);
+        return () => clearTimeout(debounceTimer);
+    }, [editor, activeSignature, editor?.state?.doc?.content?.size]);
 
     const closeLinkPopover = () => {
         setLinkAnchorEl(null);
@@ -579,6 +605,34 @@ function Form({
         editor.chain().focus()[`toggle${mark.charAt(0).toUpperCase() + mark.slice(1)}`]().run();
     };
 
+    const prevSignatureRef = useRef(null);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        // Only set content when switching signatures
+        if (activeSignature !== prevSignatureRef.current) {
+            const html = signatures[activeSignature]?.content || "<p></p>";
+            editor.commands.setContent(html);
+            prevSignatureRef.current = activeSignature;
+        }
+    }, [activeSignature, editor, signatures]);
+
+    const handleSelectSignature = (index) => {
+        if (activeSignature !== null && editor) {
+            const html = editor.getHTML();
+            setSignaturesState(prev => {
+                const updatedList = [...prev.list];
+                updatedList[activeSignature] = {
+                    ...updatedList[activeSignature],
+                    content: html,
+                };
+                return { ...prev, list: updatedList };
+            });
+        }
+        setActiveSignature(index);
+    };
+
     return (
         <RichTextEditorProvider editor={editor}>
             <div
@@ -597,7 +651,7 @@ function Form({
                     {signatures.map((signature, index) => (
                         <SignatureItem
                             key={signature.name}
-                            onClick={() => setActiveSignature(index)}
+                            onClick={() => handleSelectSignature(index)}
                             className={activeSignature === index ? "active" : ""}
                         >
                             <SignatureName>{signature.name}</SignatureName>

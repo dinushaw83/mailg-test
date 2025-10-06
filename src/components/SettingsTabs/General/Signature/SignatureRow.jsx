@@ -70,6 +70,8 @@ export default function SignatureRow() {
                     setOpenDialog={setOpenDialog}
                     setEditingSignature={setEditingSignature}
                     editingSignature={editingSignature}
+                    editingSignatureData={editingSignatureData}
+                    setSignaturesState={setSignaturesState}
                 />}
             </SettingsCell>
             <NewSignatureDialog
