@@ -12,7 +12,6 @@ import QuickSettings from "../components/QuickSettings";
 const Container = styled.div`
   overflow: hidden;
   flex: 1;
-  min-height: 795px;
   display: flex;
   max-width: 100%;
   border-radius: 16px;
@@ -22,7 +21,7 @@ const Container = styled.div`
 const EmailListContainer = styled.div`
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
+  height: ${props => `calc(100vh - ${props.vacationResponderEnabled ? '98px' : '64px'})`};
   flex: 1;
   min-width: 0; /* Allows flex item to shrink below content size */
 `;
@@ -31,7 +30,7 @@ import Banner from "../components/Banners";
 import { CATEGORIES } from "../utils/categories";
 
 const Inbox = () => {
-  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser } = useContext(GlobalContext);
+  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser, vacationResponder } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -92,7 +91,7 @@ const Inbox = () => {
 
   return (
     <Container id="cont-123">
-      <EmailListContainer role="main">
+      <EmailListContainer role="main" vacationResponderEnabled={vacationResponder.enabled}>
         <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
         <Banner rows={filteredRows} activeInboxTab={activeInboxTab} setActiveInboxTab={setActiveInboxTab} />
         <EmailList emails={rows} />

@@ -26,7 +26,7 @@
     z-index: 50;
     left: 0;
     top: -66px;
-    height: 100vh;
+    height: 100vh !important;
     background-color: #f8fafd;
     box-shadow: 0 0 16px rgba(0,0,0,.28);
   }

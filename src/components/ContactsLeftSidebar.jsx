@@ -118,7 +118,7 @@ const SectionHeader = ({ children }) => (
 
 const ContactsLeftSidebar = () => {
   const location = useLocation();
-  const { contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded, recipients, recipientLabels } =
+  const { contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded, recipients, recipientLabels, vacationResponder } =
     useGlobalContext();
   const { width } = useDimensions();
   const activeItem = location.pathname.split("/").pop();
@@ -165,7 +165,12 @@ const ContactsLeftSidebar = () => {
       />
 
       {/* Contacts left sidebar */}
-      <Box className={`${styles.contactsLeftSidebar} ${contactsLeftSidebarExpanded ? styles.expanded : ""}`}>
+      <Box 
+        className={`${styles.contactsLeftSidebar} ${contactsLeftSidebarExpanded ? styles.expanded : ""}`}
+        style={{
+          height: `calc(100vh - ${vacationResponder.enabled ? '32px' : '66px'})`,
+        }}
+      >
         {/* Create Contact Button */}
         <Box sx={{ p: 2, px: 1.5 }}>
           {width < 1024 ? (
