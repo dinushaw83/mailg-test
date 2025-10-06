@@ -17,15 +17,19 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import AutoReplyRichTextEditor from "../RichTextEditor/AutoReplyRichTextEditor";
 
-const VacationResponder = () => {
+const VacationResponder = ({ localSettings, setLocalSettings }) => {
   const { vacationResponder, setVacationResponder } = useGlobalContext();
+  
+  // Use localSettings if provided, otherwise fall back to global context
+  const currentSettings = localSettings || vacationResponder;
+  const updateSettings = setLocalSettings || setVacationResponder;
   const [isPlainText, setIsPlainText] = useState(false);
   const [firstDayOpen, setFirstDayOpen] = useState(false);
   const [lastDayOpen, setLastDayOpen] = useState(false);
-  const [lastDayEnabled, setLastDayEnabled] = useState(!!vacationResponder.lastDay);
+  const [lastDayEnabled, setLastDayEnabled] = useState(!!currentSettings.lastDay);
 
   const handleVacationChange = (field, value) => {
-    setVacationResponder(prev => ({
+    updateSettings(prev => ({
       ...prev,
       [field]: value,
       // Auto-switch to "on" when any field is edited (except the enabled field itself)
@@ -86,9 +90,9 @@ const VacationResponder = () => {
           {/* Right Column - Radio Buttons and Fields */}
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", flex: 1, width: "75%" }}>
             <FormControl component="fieldset">
-              <RadioGroup
-                value={vacationResponder.enabled ? "on" : "off"}
-                onChange={(e) => handleVacationChange("enabled", e.target.value === "on")}
+            <RadioGroup
+              value={currentSettings.enabled ? "on" : "off"}
+              onChange={(e) => handleVacationChange("enabled", e.target.value === "on")}
               >
                 <FormControlLabel 
                   value="off" 
@@ -129,7 +133,7 @@ const VacationResponder = () => {
                     open={firstDayOpen}
                     onOpen={() => setFirstDayOpen(true)}
                     onClose={() => setFirstDayOpen(false)}
-                    value={stringToDate(vacationResponder.firstDay)}
+                     value={stringToDate(currentSettings.firstDay)}
                     onChange={(newValue) => {
                       handleVacationChange("firstDay", dateToString(newValue));
                       setFirstDayOpen(false);
@@ -213,7 +217,7 @@ const VacationResponder = () => {
                     open={lastDayOpen}
                     onOpen={() => setLastDayOpen(true)}
                     onClose={() => setLastDayOpen(false)}
-                    value={stringToDate(vacationResponder.lastDay ?? "")}
+                     value={stringToDate(currentSettings.lastDay ?? "")}
                     onChange={(newValue) => {
                       handleVacationChange("lastDay", dateToString(newValue));
                       setLastDayOpen(false);
@@ -289,7 +293,7 @@ const VacationResponder = () => {
                 </Typography>
                 <TextField
                   size="small"
-                  value={vacationResponder.subject}
+                   value={currentSettings.subject}
                   onChange={(e) => handleVacationChange("subject", e.target.value)}
                   placeholder="Enter subject"
                   sx={{ 
@@ -320,7 +324,7 @@ const VacationResponder = () => {
                 
                 <div style={{ flex: 1 }}>
                   <AutoReplyRichTextEditor
-                    content={vacationResponder.message}
+                     content={currentSettings.message}
                     onChange={(html, plainText) => {
                       handleVacationChange("message", isPlainText ? plainText : html);
                     }}
@@ -336,7 +340,7 @@ const VacationResponder = () => {
                 sx={{ marginLeft: 7 }}
                 control={
                   <Checkbox
-                    checked={vacationResponder.onlyContacts}
+                     checked={currentSettings.onlyContacts}
                     onChange={(e) => handleVacationChange("onlyContacts", e.target.checked)}
                     size="small"
                   />
