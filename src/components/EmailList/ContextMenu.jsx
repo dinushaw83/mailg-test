@@ -133,7 +133,17 @@ const ContextMenu = ({
           const curMeta = currentLabel ? labels?.[currentLabel] : null;
           const inCustomLabel = curMeta && curMeta.system === false;
           if (inCustomLabel) {
-            moveToLabelFrom(selectedIds, currentLabel, targetKey);
+            const undo = moveToLabelFrom(selectedIds, currentLabel, targetKey);
+            setSnackbar({
+              open: true,
+              message: `Conversation moved to ${item.name}.`,
+              autoHideDuration: 3000,
+              action: (
+                <Button size="small" onClick={undo}>
+                  Undo
+                </Button>
+              ),
+            });
           } else {
             const undo = moveToLabel(selectedIds, targetKey); // pass key
             setSnackbar({
@@ -168,7 +178,17 @@ const ContextMenu = ({
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
       const inCustomLabel = curMeta && curMeta.system === false;
       if (inCustomLabel) {
-        moveToLabelFrom(selectedIds, currentLabel, newKey);
+        const undo = moveToLabelFrom(selectedIds, currentLabel, newKey);
+        setSnackbar({
+          open: true,
+          message: `Conversation moved to "${childName}".`,
+          autoHideDuration: 10000,
+          action: (
+            <Button size="small" onClick={undo}>
+              Undo
+            </Button>
+          ),
+        });
       } else {
         const undo = moveToLabel(selectedIds, newKey);
         setSnackbar({

@@ -63,7 +63,7 @@ const Inbox = () => {
   // pick rows based on folder/label, then sort and paginate
   const rows = useMemo(() => {
     // choose source depending on folder
-    const source = activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;
+    const source = !label && activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;
 
     const sortedThreads = [...source].sort((a, b) => {
       const dateA = new Date(a.timestamp);
@@ -75,7 +75,7 @@ const Inbox = () => {
     const endIndex = startIndex + itemsPerPage;
 
     return sortedThreads.slice(startIndex, endIndex);
-  }, [filteredRows, tabFilteredRows, activeFolder, currentPage, itemsPerPage]);
+  }, [filteredRows, tabFilteredRows, activeFolder, currentPage, itemsPerPage, label]);
 
   useEffect(() => {
     document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;

@@ -286,7 +286,7 @@ export default function useMailActions() {
   );
 
   const moveToLabelFrom = useCallback(
-    (ids, sourceLabel, dest) =>
+    (ids, sourceLabel, dest) => {
       updateByIds(ids, (labels) => {
         if (sourceLabel) labels.delete(String(sourceLabel));
 
@@ -304,7 +304,8 @@ export default function useMailActions() {
         }
 
         labels.add(dest);
-      }),
+      });
+    },
     [updateByIds]
   );
 
