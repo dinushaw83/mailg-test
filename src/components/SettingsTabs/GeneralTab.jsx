@@ -14,19 +14,10 @@ const GeneralTab = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
 
-  // Load settings from localStorage on component mount
+  // Initialize local settings from global context (which is already persisted)
   useEffect(() => {
-    const savedSettings = localStorage.getItem('vacationResponderSettings');
-    if (savedSettings) {
-      try {
-        const parsedSettings = JSON.parse(savedSettings);
-        setLocalSettings(parsedSettings);
-        setVacationResponder(parsedSettings);
-      } catch (error) {
-        console.error('Error parsing vacation responder settings from localStorage:', error);
-      }
-    }
-  }, [setVacationResponder]);
+    setLocalSettings(vacationResponder);
+  }, [vacationResponder]);
 
   // Check for changes whenever localSettings or vacationResponder changes
   useEffect(() => {
@@ -35,9 +26,7 @@ const GeneralTab = () => {
   }, [localSettings, vacationResponder]);
 
   const handleSaveChanges = () => {
-    // Save to localStorage
-    localStorage.setItem('vacationResponderSettings', JSON.stringify(localSettings));
-    // Update global context
+    // Update global context (which automatically persists to localStorage via usePersistedState)
     setVacationResponder(localSettings);
     setHasChanges(false);
     // Navigate back to inbox
