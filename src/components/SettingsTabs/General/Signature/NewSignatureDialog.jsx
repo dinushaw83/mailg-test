@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Dialog,
     DialogTitle,
@@ -18,28 +18,35 @@ const dialogHeadlineStyle = {
 };
 
 
-export default function NewSignatureDialog({ open, onClose, onAfterCreate }) {
+export default function NewSignatureDialog({
+    open,
+    onClose,
+    onAfterCreate,
+    editingSignatureIndex,
+    editingSignatureData,
+}) {
     const { setSnackbar } = useGlobalContext();
-    const [name, setName] = useState("");
+    const [name, setName] = useState(editingSignatureData?.name ?? "");
 
-    const reset = () => setName("");
+    const reset = () => setName(editingSignatureData?.name ?? "");
 
     const handleClose = () => {
         reset();
         onClose?.();
     };
 
-    const handleCreate = () => {
+    const handleSubmit = () => {
         if (!name.trim()) {
-            setSnackbar({
-                open: true,
-                message: "Signature name cannot be empty",
-            });
+            setSnackbar({ open: true, message: "Signature name cannot be empty" });
             return;
         }
-        onAfterCreate?.(name.trim());
+        onAfterCreate?.(name.trim(), editingSignatureIndex);
         handleClose();
     };
+
+    useEffect(() => {
+        setName(editingSignatureData?.name ?? "");
+    }, [editingSignatureData]);
 
     return (
         <Dialog
@@ -64,7 +71,7 @@ export default function NewSignatureDialog({ open, onClose, onAfterCreate }) {
                 <TextField
                     autoFocus
                     fullWidth
-                    value={name}
+                    value={name ?? editingSignatureData?.name}
                     onChange={(e) => setName(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {
@@ -106,20 +113,17 @@ export default function NewSignatureDialog({ open, onClose, onAfterCreate }) {
                 </Button>
                 <Button
                     variant="contained"
-                    onClick={handleCreate}
+                    onClick={handleSubmit}
                     sx={{
                         borderRadius: "20px",
                         textTransform: "none",
                         px: 3,
                         backgroundColor: "#0b57d0",
                         color: "#fff",
-                        "&:hover": {
-                            backgroundColor: "#0b57d0",
-                            opacity: 0.9,
-                        },
+                        "&:hover": { backgroundColor: "#0b57d0", opacity: 0.9 },
                     }}
                 >
-                    Create
+                    {editingSignatureIndex !== undefined && editingSignatureIndex !== null ? "Done" : "Create"}
                 </Button>
             </DialogActions>
         </Dialog>

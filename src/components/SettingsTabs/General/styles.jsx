@@ -153,12 +153,20 @@ export const SignatureItem = styled("div")({
     cursor: "pointer",
     display: "flex",
     height: "40px",
-    backgroundColor: "rgba(66, 133, 244, 0.12)",
+    // backgroundColor: "rgba(66, 133, 244, 0.12)",
     paddingRight: "8px",
     paddingLeft: "8px",
 
     "&:hover": {
+        backgroundColor: "rgba(60,64,67,.12)",
+    },
+
+    "&.active": {
         backgroundColor: "rgba(66, 133, 244, 0.2)",
+    },
+
+    "&:focus": {
+        backgroundColor: "rgba(60,64,67,.12)",
     },
 });
 

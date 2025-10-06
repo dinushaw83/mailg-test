@@ -46,6 +46,25 @@ export const GlobalContextProvider = ({ children }) => {
     activeTab: null,
   });
 
+  // Signatures related settings
+  /**
+   *  {
+   *     list: {
+   *       name: string;
+   *       content: string;
+   *     }[];
+   *     useForNewEmails: string;
+   *     useForRepliesAndForwards: string;
+   *   }
+   *  }
+   */
+  const [signaturesState, setSignaturesState] = usePersistedState("signatures", {
+    list: [],
+    useForNewEmails: "",
+    useForRepliesAndForwards: "",
+  });
+
+
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -195,6 +214,8 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    signaturesState,
+    setSignaturesState
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

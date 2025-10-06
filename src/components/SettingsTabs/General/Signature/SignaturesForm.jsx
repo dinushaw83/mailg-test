@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ColorPicker, MenuSelectFontSize, RichTextEditorProvider } from "mui-tiptap";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import {
     MenuItem,
@@ -8,19 +9,20 @@ import {
     Paper,
     Stack,
     Typography,
+    IconButton,
+    Menu,
+    ListItemIcon,
+    MenuList
 } from "@mui/material";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import { useEditor } from "@tiptap/react";
 import { useTheme } from "@mui/material/styles";
-import { MenuList } from "@mui/material";
 import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
 import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
 import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
 import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
 import CheckIcon from "@mui/icons-material/Check";
-
-import { Menu, ListItemIcon } from "@mui/material";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import FormatStrikethroughIcon from "@mui/icons-material/FormatStrikethrough";
@@ -40,9 +42,7 @@ import {
     ToolbarButton,
     StyledEditorContent,
 } from "../styles";
-
 import useExtensions from "../../../RichTextEditor/useExtensions";
-import { ColorPicker, MenuSelectFontSize, RichTextEditorProvider } from "mui-tiptap";
 
 const swatches = [
     // Grayscale
@@ -119,11 +119,25 @@ const swatches = [
     "rgb(76, 17, 48)",
 ];
 
-export default function SignaturesForm() {
+export default function SignaturesForm({
+    signatures,
+    activeSignature,
+    setActiveSignature,
+    setOpenDialog,
+    setEditingSignature,
+    editingSignature,
+}) {
     return (
         <SignaturesFormContainer className="Tb">
             <div className="Tb">
-                <Form />
+                <Form
+                    signatures={signatures}
+                    activeSignature={activeSignature}
+                    setActiveSignature={setActiveSignature}
+                    setOpenDialog={setOpenDialog}
+                    setEditingSignature={setEditingSignature}
+                    editingSignature={editingSignature}
+                />
                 <div className="P4">
                     <button
                         className="P5"
@@ -158,6 +172,7 @@ export default function SignaturesForm() {
                             marginTop: "8px",
                             width: "240px",
                         }}
+                        onClick={() => setOpenDialog(true)}
                     >
                         Create new
                     </button>
@@ -477,7 +492,14 @@ export function FontFamilySelect({ value, onChange }) {
     );
 }
 
-function Form() {
+function Form({
+    signatures,
+    activeSignature,
+    setActiveSignature,
+    setOpenDialog,
+    setEditingSignature,
+    editingSignature,
+}) {
     const theme = useTheme()
     const [content, setContent] = useState("");
 
@@ -572,39 +594,60 @@ function Form() {
                 }}
             >
                 <SignaturesListContainer>
-                    <SignatureItem>
-                        <SignatureName>sas</SignatureName>
-                        <span
-                            className="material-symbols-outlined"
-                            style={{
-                                fontSize: 20,
-                                opacity: 0.71,
-                                cursor: "pointer",
-                                verticalAlign: "middle",
-                                marginRight: "20px",
-                            }}
-                            role="button"
-                            tabIndex={0}
-                            aria-label="Edit signature name"
+                    {signatures.map((signature, index) => (
+                        <SignatureItem
+                            key={signature.name}
+                            onClick={() => setActiveSignature(index)}
+                            className={activeSignature === index ? "active" : ""}
                         >
-                            edit
-                        </span>
-                        <span
-                            className="material-symbols-outlined"
-                            style={{
-                                fontSize: 20,
-                                opacity: 0.71,
-                                cursor: "pointer",
-                                verticalAlign: "middle",
-                                marginRight: "16px",
-                            }}
-                            role="button"
-                            tabIndex={0}
-                            aria-label="Delete signature"
-                        >
-                            delete
-                        </span>
-                    </SignatureItem>
+                            <SignatureName>{signature.name}</SignatureName>
+                            {activeSignature === index && (
+                                <>
+                                    <IconButton
+                                        size="small"
+                                        sx={{
+                                            borderRadius: "50%",
+                                            width: 32,
+                                            height: 32,
+                                            marginRight: "8px",
+                                            color: "rgba(0,0,0,0.7)",
+                                            "&:hover": { backgroundColor: "rgba(32,33,36,0.1)" },
+                                        }}
+                                        aria-label="Edit signature name"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenDialog(true);
+                                            setEditingSignature(index);
+                                        }}
+                                    >
+                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                            edit
+                                        </span>
+                                    </IconButton>
+
+                                    <IconButton
+                                        size="small"
+                                        sx={{
+                                            borderRadius: "50%",
+                                            width: 32,
+                                            height: 32,
+                                            color: "rgba(0,0,0,0.7)",
+                                            "&:hover": { backgroundColor: "rgba(32,33,36,0.1)" },
+                                        }}
+                                        aria-label="Delete signature"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            // open delete confirmation or logic here
+                                        }}
+                                    >
+                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                            delete
+                                        </span>
+                                    </IconButton>
+                                </>
+                            )}
+                        </SignatureItem>
+                    ))}
                 </SignaturesListContainer>
                 <SignatureContainer className="IO">
                     <StyledSignatureTable className="An">
@@ -747,7 +790,8 @@ function Form() {
                                                 >
                                                     <FormatColorTextIcon
                                                         sx={{
-                                                            fontSize: 20,                                                         marginLeft: "4px",
+                                                            fontSize: 20,
+                                                            marginLeft: "4px",
                                                             position: "relative",
                                                             top: "1px",
                                                         }}
