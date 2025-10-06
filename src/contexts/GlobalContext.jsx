@@ -39,6 +39,17 @@ export const GlobalContextProvider = ({ children }) => {
   const [threading, setThreading] = useState(true);
   const [inboxType, setInboxType] = useState("default");
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
+  
+  // Vacation responder state
+  const [vacationResponder, setVacationResponder] = usePersistedState("vacationResponder", {
+    enabled: false,
+    firstDay: new Date().toISOString().split('T')[0],
+    lastDay: "",
+    subject: "",
+    message: "",
+    onlyContacts: false,
+  });
+  
   // Right sidebar states
   const [rightSidebarExpanded, setRightSidebarExpanded] = usePersistedState("rightSidebarExpanded", true);
   const [rightSidebarActiveTab, setRightSidebarActiveTab] = usePersistedState("rightSidebarActiveTab", {
@@ -198,6 +209,8 @@ export const GlobalContextProvider = ({ children }) => {
     setDeletedRecipients,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
+    vacationResponder,
+    setVacationResponder,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

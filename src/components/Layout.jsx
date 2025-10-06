@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import LeftSidebar from "./LeftSidebar";
 import Header from "./Header";
 import RightSidebar from "./RightSidebar";
+import VacationResponderBar from "./VacationResponderBar";
 import styled from "@emotion/styled";
 import ContactsHeader from "./ContactsHeader";
 import ContactsLeftSidebar from "./ContactsLeftSidebar";
@@ -40,6 +41,7 @@ const Layout = ({ children }) => {
       <div tabIndex={0} />
       <div className="nH">
         <div className="nH" style={{ position: "relative" }}>
+          {!isContactsPage && <VacationResponderBar />}
           {isContactsPage ? <ContactsHeader /> : <Header />}
           <ContentContainer id="content-container">
             {isContactsPage ? <ContactsLeftSidebar /> : <LeftSidebar />}

@@ -33,7 +33,7 @@ import {
 
 import "./styles.css";
 
-export default function EditorMenuControls({ editor, useCompactFormatting = false }) {
+export default function EditorMenuControls({ editor, useCompactFormatting = false, containerClass = "container" }) {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const [moreAnchorEl, setMoreAnchorEl] = useState(null);
@@ -135,7 +135,7 @@ export default function EditorMenuControls({ editor, useCompactFormatting = fals
     return null;
   }
   return (
-    <MenuControlsContainer editor={editor} className="container">
+    <MenuControlsContainer editor={editor} className={containerClass}>
       <MenuButtonUndo />
       <MenuButtonRedo />
 
