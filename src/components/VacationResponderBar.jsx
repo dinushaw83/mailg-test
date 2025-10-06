@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 const VacationResponderBar = () => {
-  const { vacationResponder, setVacationResponder } = useGlobalContext();
+  const { vacationResponder, setVacationResponder, setSnackbar } = useGlobalContext();
   const navigate = useNavigate();
 
   // Don't show the bar if vacation responder is not enabled
@@ -16,6 +16,15 @@ const VacationResponderBar = () => {
       ...prev,
       enabled: false
     }));
+    
+    // Show snackbar notification
+    setSnackbar({
+      open: true,
+      message: "Your preferences have been saved.",
+      action: null,
+      autoHideDuration: null,
+      hideClose: false,
+    });
   };
 
   const handleVacationSettings = () => {

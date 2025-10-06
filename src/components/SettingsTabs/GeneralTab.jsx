@@ -9,7 +9,11 @@ import VacationResponder from "./VacationResponder";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const GeneralTab = () => {
-  const { vacationResponder, setVacationResponder } = useGlobalContext();
+  const { 
+    vacationResponder, 
+    setVacationResponder, 
+    setShowQuickSettings 
+  } = useGlobalContext();
   const [localSettings, setLocalSettings] = useState(vacationResponder);
   const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
@@ -29,11 +33,15 @@ const GeneralTab = () => {
     // Update global context (which automatically persists to localStorage via usePersistedState)
     setVacationResponder(localSettings);
     setHasChanges(false);
+    // Close the settings sidebar
+    setShowQuickSettings(false);
     // Navigate back to inbox
     navigate('/inbox');
   };
 
   const handleCancelChanges = () => {
+    // Close the settings sidebar
+    setShowQuickSettings(false);
     // Navigate back to inbox
     navigate('/inbox');
   };
