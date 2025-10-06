@@ -5,7 +5,7 @@ import RightSideBarTabs from "./RightSidebarTabs/RightSideBarTabs";
 import styles from "./RightSidebar.module.css";
 
 const RightSidebar = () => {
-  const { rightSidebarExpanded, setRightSidebarExpanded, rightSidebarActiveTab, setRightSidebarActiveTab } =
+  const { rightSidebarExpanded, setRightSidebarExpanded, rightSidebarActiveTab, setRightSidebarActiveTab, vacationResponder } =
     useGlobalContext();
 
   useEffect(
@@ -35,6 +35,7 @@ const RightSidebar = () => {
       className={`nH ${styles.rightSidebar}`}
       style={{
         width: rightSidebarExpanded ? (rightSidebarActiveTab.activeTab ? "376px" : "56px") : "16px",
+        height: `calc(100vh - ${vacationResponder.enabled ? '64px' : '98px'})`,
       }}
     >
       {/* Tab Content Area - Left side */}
@@ -61,7 +62,13 @@ const RightSidebar = () => {
             <div className="brC-brG-a9i-Jz-Jw" />
           </div>
         </div>
-        <div className={`bAw bcf it ${styles.rightSidebarContent}`} jsaction="cZRHAe:.CLIENT">
+        <div 
+          className={`bAw bcf it ${styles.rightSidebarContent}`} 
+          style={{
+            height: `calc(100vh - ${vacationResponder.enabled ? '45px' : '79px'})`,
+          }}
+          jsaction="cZRHAe:.CLIENT"
+        >
           <div className="brC-aT5-aOt-Jw" role="complementary" aria-label="Side panel">
             <div className="brC-aT5-aOt-bsf-Jw">
               <div className={`brC-bsf-aT5-aOt ${styles.rightSidebarContentTabs}`} role="tablist" tabIndex={0}>
