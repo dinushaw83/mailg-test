@@ -27,7 +27,9 @@ const VacationResponder = () => {
   const handleVacationChange = (field, value) => {
     setVacationResponder(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
+      // Auto-switch to "on" when any field is edited (except the enabled field itself)
+      ...(field !== 'enabled' && { enabled: true })
     }));
   };
 
@@ -111,243 +113,241 @@ const VacationResponder = () => {
               </RadioGroup>
             </FormControl>
 
-            {vacationResponder.enabled && (
-              <Box sx={{ width: "100%" }}>
-                {/* Date Range */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Typography variant="body2" sx={{ 
-                      fontSize: "14px", 
-                      fontWeight: "bold",
-                      color: "#202124",
-                      marginRight: "6px"
-                    }}>
-                      First day:
-                    </Typography>
-                    <DatePicker
-                      open={firstDayOpen}
-                      onOpen={() => setFirstDayOpen(true)}
-                      onClose={() => setFirstDayOpen(false)}
-                      value={stringToDate(vacationResponder.firstDay)}
-                      onChange={(newValue) => {
-                        handleVacationChange("firstDay", dateToString(newValue));
-                        setFirstDayOpen(false);
-                      }}
-                      slotProps={{
-                        textField: {
-                          size: "small",
-                          onClick: () => setFirstDayOpen(true),
-                          sx: { 
-                            maxWidth: 200,
-                            padding: "8px",
-                            cursor: "pointer",
-                            "& .MuiPickersInputBase-root": {
-                              fontSize: "13px",
-                              height: "23px", 
-                              paddingInline: "8px",
-                            },
-                            "& .MuiInputAdornment-root": {
-                              display: "none"
-                            }
-                          }
-                        },
-                        actionBar: {
-                          actions: ['today'],
-                          sx: {
-                            justifyContent: 'flex-start',
-                            '& .MuiButton-root': {
-                              color: '#424242',
-                              fontWeight: 500,
-                              paddingLeft: "20px"
-                            }
-                          }
-                        },
-                        layout: {
-                          sx: {
-                            '& .MuiDateCalendar-root': {
-                              minHeight: 'fit-content',
-                              height: 'fit-content',
-                            },
-                            '& .MuiPickersSlideTransition-root': {
-                              minHeight: '230px',
-                            },
-                            "& .MuiPickersCalendarHeader-switchViewButton": {
-                              display: 'none',
-                            },
-                            "& .MuiPickersCalendarHeader-labelContainer": {
-                              pointerEvents: 'none',
-                              cursor: 'default',
-                            },
-                            "& .MuiPickersCalendarHeader-label": {
-                              pointerEvents: 'none',
-                              cursor: 'default',
-                            },
-                          }
-                        }
-                      }}
-                    />
-                  </Box>
-                  
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Checkbox
-                      checked={lastDayEnabled}
-                      onChange={(e) => {
-                        setLastDayEnabled(e.target.checked);
-                        if (!e.target.checked) {
-                          handleVacationChange("lastDay", "");
-                        }
-                      }}
-                      size="small"
-                      sx={{ marginRight: 0 }}
-                    />
-                    <Typography variant="body2" sx={{ 
-                      fontSize: "14px", 
-                      fontWeight: "bold",
-                      color: "#202124",
-                      marginRight: "4px"
-                    }}>
-                      Last day:
-                    </Typography>
-                    <DatePicker
-                      open={lastDayOpen}
-                      onOpen={() => setLastDayOpen(true)}
-                      onClose={() => setLastDayOpen(false)}
-                      value={stringToDate(vacationResponder.lastDay ?? "")}
-                      onChange={(newValue) => {
-                        handleVacationChange("lastDay", dateToString(newValue));
-                        setLastDayOpen(false);
-                      }}
-                      disabled={!lastDayEnabled}
-                      slotProps={{
-                        textField: {
-                          size: "small",
-                          placeholder: !lastDayEnabled ? "(optional)" : "MM/DD/YYYY",
-                          onClick: () => !lastDayEnabled || setLastDayOpen(true),
-                          sx: { 
-                            maxWidth: 200,
-                            height: "23px",
-                            paddingInline: "8px",
-                            cursor: lastDayEnabled ? "pointer" : "default",
-                            "& .MuiPickersInputBase-root": {
-                              fontSize: "13px",
-                              paddingInline: "8px",
-                              height: "23px"
-                            },
-                            "& .MuiInputAdornment-root": {
-                              display: "none"
-                            }
-                          }
-                        },
-                        actionBar: {
-                          actions: ['today'],
-                          sx: {
-                            justifyContent: 'flex-start',
-                            '& .MuiButton-root': {
-                              color: '#424242',
-                              fontWeight: 500,
-                              paddingLeft: "20px"
-                            }
-                          }
-                        },
-                        layout: {
-                          sx: {
-                            '& .MuiDateCalendar-root': {
-                              minHeight: 'fit-content',
-                              height: 'fit-content',
-                            },
-                            '& .MuiPickersSlideTransition-root': {
-                              minHeight: '200px',
-                            },
-                            "& .MuiPickersCalendarHeader-switchViewButton": {
-                              display: 'none',
-                            },
-                            "& .MuiPickersCalendarHeader-labelContainer": {
-                              pointerEvents: 'none',
-                              cursor: 'default',
-                            },
-                            "& .MuiPickersCalendarHeader-label": {
-                              pointerEvents: 'none',
-                              cursor: 'default',
-                            },
-                          }
-                        }
-                      }}
-                    />
-                  </Box>
-                </Box>
-
-                {/* Subject */}
-                <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
+            <Box sx={{ width: "100%" }}>
+              {/* Date Range */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
                   <Typography variant="body2" sx={{ 
                     fontSize: "14px", 
                     fontWeight: "bold",
                     color: "#202124",
-                    marginRight: "20px"
+                    marginRight: "6px"
                   }}>
-                    Subject:
+                    First day:
                   </Typography>
-                  <TextField
-                    size="small"
-                    value={vacationResponder.subject}
-                    onChange={(e) => handleVacationChange("subject", e.target.value)}
-                    placeholder="Enter subject"
-                    sx={{ 
-                      flexGrow: 1, 
-                      maxWidth: 400,  
-                      height: "23px",
-                      "& .MuiInputBase-root": {
-                        fontSize: "13px",
-                        height: "23px",
+                  <DatePicker
+                    open={firstDayOpen}
+                    onOpen={() => setFirstDayOpen(true)}
+                    onClose={() => setFirstDayOpen(false)}
+                    value={stringToDate(vacationResponder.firstDay)}
+                    onChange={(newValue) => {
+                      handleVacationChange("firstDay", dateToString(newValue));
+                      setFirstDayOpen(false);
+                    }}
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                        onClick: () => setFirstDayOpen(true),
+                        sx: { 
+                          maxWidth: 200,
+                          padding: "8px",
+                          cursor: "pointer",
+                          "& .MuiPickersInputBase-root": {
+                            fontSize: "13px",
+                            height: "23px", 
+                            paddingInline: "8px",
+                          },
+                          "& .MuiInputAdornment-root": {
+                            display: "none"
+                          }
+                        }
                       },
-                      "& .MuiInputBase-input": {
-                        padding: "0px 8px"
+                      actionBar: {
+                        actions: ['today'],
+                        sx: {
+                          justifyContent: 'flex-start',
+                          '& .MuiButton-root': {
+                            color: '#424242',
+                            fontWeight: 500,
+                            paddingLeft: "20px"
+                          }
+                        }
+                      },
+                      layout: {
+                        sx: {
+                          '& .MuiDateCalendar-root': {
+                            minHeight: 'fit-content',
+                            height: 'fit-content',
+                          },
+                          '& .MuiPickersSlideTransition-root': {
+                            minHeight: '230px',
+                          },
+                          "& .MuiPickersCalendarHeader-switchViewButton": {
+                            display: 'none',
+                          },
+                          "& .MuiPickersCalendarHeader-labelContainer": {
+                            pointerEvents: 'none',
+                            cursor: 'default',
+                          },
+                          "& .MuiPickersCalendarHeader-label": {
+                            pointerEvents: 'none',
+                            cursor: 'default',
+                          },
+                        }
                       }
                     }}
                   />
                 </Box>
-
-                {/* Message */}
-                <Box sx={{ marginBottom: 2, display: "flex", flexDirection: "row", gap: "11px" }}>
+                
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Checkbox
+                    checked={lastDayEnabled}
+                    onChange={(e) => {
+                      setLastDayEnabled(e.target.checked);
+                      if (!e.target.checked) {
+                        handleVacationChange("lastDay", "");
+                      }
+                    }}
+                    size="small"
+                    sx={{ marginRight: 0 }}
+                  />
                   <Typography variant="body2" sx={{ 
-                    marginBottom: 1, 
                     fontSize: "14px", 
                     fontWeight: "bold",
-                    color: "#202124"
+                    color: "#202124",
+                    marginRight: "4px"
                   }}>
-                    Message:
+                    Last day:
                   </Typography>
-                  
-                  <div style={{ flex: 1 }}>
-                    <AutoReplyRichTextEditor
-                      content={vacationResponder.message}
-                      onChange={(html, plainText) => {
-                        handleVacationChange("message", isPlainText ? plainText : html);
-                      }}
-                      placeholder="Enter your vacation message here..."
-                      isPlainText={isPlainText}
-                      onTogglePlainText={() => setIsPlainText(!isPlainText)}
-                    />
-                  </div>
+                  <DatePicker
+                    open={lastDayOpen}
+                    onOpen={() => setLastDayOpen(true)}
+                    onClose={() => setLastDayOpen(false)}
+                    value={stringToDate(vacationResponder.lastDay ?? "")}
+                    onChange={(newValue) => {
+                      handleVacationChange("lastDay", dateToString(newValue));
+                      setLastDayOpen(false);
+                    }}
+                    disabled={!lastDayEnabled}
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                        placeholder: !lastDayEnabled ? "(optional)" : "MM/DD/YYYY",
+                        onClick: () => !lastDayEnabled || setLastDayOpen(true),
+                        sx: { 
+                          maxWidth: 200,
+                          height: "23px",
+                          paddingInline: "8px",
+                          cursor: lastDayEnabled ? "pointer" : "default",
+                          "& .MuiPickersInputBase-root": {
+                            fontSize: "13px",
+                            paddingInline: "8px",
+                            height: "23px"
+                          },
+                          "& .MuiInputAdornment-root": {
+                            display: "none"
+                          }
+                        }
+                      },
+                      actionBar: {
+                        actions: ['today'],
+                        sx: {
+                          justifyContent: 'flex-start',
+                          '& .MuiButton-root': {
+                            color: '#424242',
+                            fontWeight: 500,
+                            paddingLeft: "20px"
+                          }
+                        }
+                      },
+                      layout: {
+                        sx: {
+                          '& .MuiDateCalendar-root': {
+                            minHeight: 'fit-content',
+                            height: 'fit-content',
+                          },
+                          '& .MuiPickersSlideTransition-root': {
+                            minHeight: '200px',
+                          },
+                          "& .MuiPickersCalendarHeader-switchViewButton": {
+                            display: 'none',
+                          },
+                          "& .MuiPickersCalendarHeader-labelContainer": {
+                            pointerEvents: 'none',
+                            cursor: 'default',
+                          },
+                          "& .MuiPickersCalendarHeader-label": {
+                            pointerEvents: 'none',
+                            cursor: 'default',
+                          },
+                        }
+                      }
+                    }}
+                  />
                 </Box>
+              </Box>
 
-                {/* Only Contacts Checkbox */}
-                <FormControlLabel
-                  sx={{ marginLeft: 7 }}
-                  control={
-                    <Checkbox
-                      checked={vacationResponder.onlyContacts}
-                      onChange={(e) => handleVacationChange("onlyContacts", e.target.checked)}
-                      size="small"
-                    />
-                  }
-                  label={
-                    <Typography variant="body2" sx={{ fontSize: "14px", fontWeight: "bold", color: "#202124" }}>
-                      Only send a response to people in my Contacts
-                    </Typography>
-                  }
+              {/* Subject */}
+              <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
+                <Typography variant="body2" sx={{ 
+                  fontSize: "14px", 
+                  fontWeight: "bold",
+                  color: "#202124",
+                  marginRight: "20px"
+                }}>
+                  Subject:
+                </Typography>
+                <TextField
+                  size="small"
+                  value={vacationResponder.subject}
+                  onChange={(e) => handleVacationChange("subject", e.target.value)}
+                  placeholder="Enter subject"
+                  sx={{ 
+                    flexGrow: 1, 
+                    maxWidth: 400,  
+                    height: "23px",
+                    "& .MuiInputBase-root": {
+                      fontSize: "13px",
+                      height: "23px",
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "0px 8px"
+                    }
+                  }}
                 />
               </Box>
-            )}
+
+              {/* Message */}
+              <Box sx={{ marginBottom: 2, display: "flex", flexDirection: "row", gap: "11px" }}>
+                <Typography variant="body2" sx={{ 
+                  marginBottom: 1, 
+                  fontSize: "14px", 
+                  fontWeight: "bold",
+                  color: "#202124"
+                }}>
+                  Message:
+                </Typography>
+                
+                <div style={{ flex: 1 }}>
+                  <AutoReplyRichTextEditor
+                    content={vacationResponder.message}
+                    onChange={(html, plainText) => {
+                      handleVacationChange("message", isPlainText ? plainText : html);
+                    }}
+                    placeholder="Enter your vacation message here..."
+                    isPlainText={isPlainText}
+                    onTogglePlainText={() => setIsPlainText(!isPlainText)}
+                  />
+                </div>
+              </Box>
+
+              {/* Only Contacts Checkbox */}
+              <FormControlLabel
+                sx={{ marginLeft: 7 }}
+                control={
+                  <Checkbox
+                    checked={vacationResponder.onlyContacts}
+                    onChange={(e) => handleVacationChange("onlyContacts", e.target.checked)}
+                    size="small"
+                  />
+                }
+                label={
+                  <Typography variant="body2" sx={{ fontSize: "14px", fontWeight: "bold", color: "#202124" }}>
+                    Only send a response to people in my Contacts
+                  </Typography>
+                }
+              />
+            </Box>
           </Box>
         </Box>
       </Box>
