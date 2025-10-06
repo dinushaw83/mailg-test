@@ -210,29 +210,19 @@ const ContextMenu = ({
       const isInInbox = currentLabels.includes("Inbox");
       if (isInInbox) return;
 
-      const labelsToDelete = ["Trash", "Spam", "Snoozed", "Muted"];
-      const labelsForUndo = labelsToDelete.filter((label) => currentLabels.includes(label));
-
-      moveToInbox([threadId]);
+      const undo = moveToInbox([threadId]);
       setSnackbar({
         open: true,
         message: "Conversation moved to inbox.",
         autoHideDuration: 3000,
-        // undo action
         action: (
-          <Button
-            size="small"
-            onClick={() => {
-              removeLabels(threadId, ["Inbox"]);
-              addLabels(threadId, labelsForUndo);
-            }}
-          >
+          <Button size="small" onClick={undo}>
             Undo
           </Button>
         ),
       });
     },
-    [moveToInbox]
+    [moveToInbox, setSnackbar, contextRow]
   );
 
   const handleItemClick = ({ id, event, props }) => {

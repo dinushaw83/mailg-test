@@ -106,13 +106,43 @@ export default function useMailActions() {
   );
 
   const moveToInbox = useCallback(
-    (ids) =>
+    (ids) => {
+      // Store original state for undo
+      const match = makeMatch(ids);
+      const originalStates = new Map();
+
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            originalStates.set(m.id, {
+              labels: [...(m.labels || [])],
+            });
+          }
+        });
+        return prev;
+      });
+
       updateByIds(ids, (labels) => {
         const labelsToDelete = ["Trash", "Spam", "Snoozed", "Muted"];
         labelsToDelete.forEach((label) => labels.delete(label));
         labels.add("Inbox");
-      }),
-    [updateByIds]
+      });
+
+      const undo = () => {
+        setEmails((prev) =>
+          prev.map((m) => {
+            if (match(m) && originalStates.has(m.id)) {
+              const originalState = originalStates.get(m.id);
+              return { ...m, labels: originalState.labels };
+            }
+            return m;
+          })
+        );
+      };
+
+      return undo;
+    },
+    [updateByIds, setEmails]
   );
 
   const archive = useCallback(
