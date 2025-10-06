@@ -128,6 +128,7 @@ export default function SignaturesForm({
     editingSignature,
     editingSignatureData,
     setSignaturesState,
+    setOpenDeleteDialog,
 }) {
     return (
         <SignaturesFormContainer className="Tb">
@@ -141,6 +142,7 @@ export default function SignaturesForm({
                     editingSignature={editingSignature}
                     editingSignatureData={editingSignatureData}
                     setSignaturesState={setSignaturesState}
+                    setOpenDeleteDialog={setOpenDeleteDialog}
                 />
                 <div className="P4">
                     <button
@@ -506,6 +508,7 @@ function Form({
     setOpenDialog,
     setEditingSignature,
     setSignaturesState,
+    setOpenDeleteDialog,
 }) {
     const theme = useTheme()
     const [content, setContent] = useState("");
@@ -691,7 +694,8 @@ function Form({
                                         aria-label="Delete signature"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            // open delete confirmation or logic here
+                                            setOpenDeleteDialog(true);
+                                            setEditingSignature(index);
                                         }}
                                     >
                                         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>

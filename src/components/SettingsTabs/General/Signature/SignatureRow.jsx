@@ -11,9 +11,11 @@ import {
 import NewSignatureDialog from "./NewSignatureDialog";
 import SignaturesForm from "./SignaturesForm";
 import { useGlobalContext } from "../../../../contexts/GlobalContext";
+import DeleteSignatureDialog from "./DeleteSignatureDialog";
 
 export default function SignatureRow() {
     const [openDialog, setOpenDialog] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [activeSignature, setActiveSignature] = useState(null);
     const [editingSignature, setEditingSignature] = useState(null);
     const { signaturesState, setSignaturesState } = useGlobalContext()
@@ -72,6 +74,7 @@ export default function SignatureRow() {
                     editingSignature={editingSignature}
                     editingSignatureData={editingSignatureData}
                     setSignaturesState={setSignaturesState}
+                    setOpenDeleteDialog={setOpenDeleteDialog}
                 />}
             </SettingsCell>
             <NewSignatureDialog
@@ -97,6 +100,23 @@ export default function SignatureRow() {
                         updatedSignatures.push({ name, content: "" });
                     }
 
+                    setSignaturesState({
+                        ...signaturesState,
+                        list: updatedSignatures,
+                    });
+                }}
+                editingSignatureIndex={editingSignature}
+                editingSignatureData={editingSignatureData}
+            />
+            <DeleteSignatureDialog
+                open={openDeleteDialog}
+                onClose={() => setOpenDeleteDialog(false)}
+                onAfterDelete={(name, editingSignatureIndex) => {
+                    console.log("Signature action:", name, editingSignatureIndex);
+
+                    setOpenDeleteDialog(false);
+                    const updatedSignatures = [...signatures];
+                    updatedSignatures.splice(editingSignatureIndex, 1);
                     setSignaturesState({
                         ...signaturesState,
                         list: updatedSignatures,
