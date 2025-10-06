@@ -7,6 +7,7 @@ import Checkbox from "@mui/material/Checkbox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
+import Button from "@mui/material/Button";
 
 export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,17 +50,43 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
   }, [labels, searchQuery, currentLabels]);
 
   const handleApplyLabels = useCallback(() => {
-    for (const [labelKey, finalState] of Object.entries(overrides)) {
-      if (finalState === "checked" && !currentLabels.has(labelKey)) {
-        addLabels(selectedIds, [labelKey]);
-      }
-      if (finalState === "unchecked" && currentLabels.has(labelKey)) {
-        removeLabels(selectedIds, [labelKey]);
-      }
-      // "indeterminate" means leave it as-is
+    const labelsToAdd = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "checked");
+    const labelsToRemove = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "unchecked");
+
+    const addedMessage = labelsToAdd.length > 0 ? `added to ${labelsToAdd.join(", ")}` : "";
+    const removedMessage = labelsToRemove.length > 0 ? `removed from ${labelsToRemove.join(", ")}` : "";
+
+    let message = "";
+
+    if (labelsToAdd.length > 0 && labelsToRemove.length > 0) {
+      message = `Conversation ${removedMessage} and ${addedMessage}`;
+    } else if (labelsToAdd.length > 0 && labelsToRemove.length === 0) {
+      message = `Conversation ${addedMessage}`;
+    } else if (labelsToAdd.length === 0 && labelsToRemove.length > 0) {
+      message = `Conversation ${removedMessage}`;
     }
 
-    setSnackbar({ message: "Labels updated", severity: "success" });
+    if (message) {
+      addLabels(selectedIds, labelsToAdd);
+      removeLabels(selectedIds, labelsToRemove);
+
+      const undo = () => {
+        addLabels(selectedIds, labelsToRemove);
+        removeLabels(selectedIds, labelsToAdd);
+      };
+
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button size="small" onClick={undo}>
+            Undo
+          </Button>
+        ),
+      });
+    }
+
     selection.clear();
     setOverrides({}); // reset
   }, [overrides, currentLabels, addLabels, removeLabels, setSnackbar, selection, selectedIds]);

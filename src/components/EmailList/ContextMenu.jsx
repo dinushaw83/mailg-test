@@ -167,12 +167,6 @@ const ContextMenu = ({
 
   const handleOnAfterCreate = (childName, parentKey) => {
     try {
-      // Store original labels before the move
-      const originalLabels = {};
-      selectedIds.forEach((id) => {
-        originalLabels[id] = [...(contextRow.labels || [])];
-      });
-
       // Perform the move after creation
       const newKey = makeKey(childName, parentKey); // build composite key
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
@@ -202,48 +196,6 @@ const ContextMenu = ({
           ),
         });
       }
-
-      // --- UNDO action ---
-      setSnackbar({
-        open: true,
-        message: `Conversation moved to "${childName}".`,
-        autoHideDuration: 10000,
-        action: (
-          <Button
-            size="small"
-            onClick={() => {
-              try {
-                // Restore original labels for each email
-                setEmails((prevEmails) =>
-                  prevEmails.map((email) => {
-                    const emailThreadId = email.threadId.split(":")[1];
-                    if (selectedIds.includes(emailThreadId) && originalLabels[emailThreadId]) {
-                      return { ...email, labels: originalLabels[emailThreadId] };
-                    }
-                    return email;
-                  })
-                );
-
-                setSnackbar({
-                  open: true,
-                  message: "Action undone.",
-                  autoHideDuration: 3000,
-                  action: null,
-                });
-              } catch {
-                setSnackbar({
-                  open: true,
-                  message: "Could not undo.",
-                  autoHideDuration: 4000,
-                  action: null,
-                });
-              }
-            }}
-          >
-            Undo
-          </Button>
-        ),
-      });
     } catch (e) {
       setSnackbar({
         open: true,
