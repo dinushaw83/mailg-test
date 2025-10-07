@@ -44,7 +44,7 @@ const DEFAULT_FOLDERS = [
 
 const LeftSidebar = () => {
   const [showLess, setShowLess] = useState(true);
-  const { emails, setSnackbar, isLeftSidebarExpanded } = useGlobalContext();
+  const { emails, setSnackbar, isLeftSidebarExpanded, vacationResponder } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labels, labelTree, labelIndex } = useLabels();
   const { addNewComposeWindow } = useComposeModal();
@@ -145,7 +145,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{
         width: 187,
-        height: "calc(100vh - 64px)",
+        height: `calc(100vh - ${vacationResponder.enabled ? '98px' : '64px'})`,
         ...(sidebarExpanded
           ? {}
           : {

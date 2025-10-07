@@ -41,10 +41,10 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState("My contacts");
+  const [selectedLabel, setSelectedLabel] = useState({ option: "My contacts", fromLabels: false });
   const [selectedContacts, setSelectedContacts] = useState(new Set());
   const [deleteLabelDialogOpen, setDeleteLabelDialogOpen] = useState(false);
-  const [labelToDelete, setLabelToDelete] = useState(null);
+  const [labelToDelete, setLabelToDelete] = useState({ option: null, fromLabels: false });
   const [deleteOption, setDeleteOption] = useState("keep");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -63,16 +63,18 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
   const filteredContacts = useMemo(() => {
     if (!recipients) return [];
 
-    if (isSearching && selectedLabel === "Search Results") {
+    if (isSearching && selectedLabel.option === "Search Results" && !selectedLabel.fromLabels) {
       return searchResults;
     }
 
     let filtered;
-    if (selectedLabel === "All contacts") {
+    if (selectedLabel.option === "All contacts" && !selectedLabel.fromLabels) {
       filtered = recipients;
+    } else if (selectedLabel.option === "My contacts" && !selectedLabel.fromLabels) {
+      filtered = recipients.filter((recipient) => recipient?.isSaved);
     } else {
       filtered = recipients.filter(
-        (recipient) => recipient && recipient.labels && recipient.labels.includes(selectedLabel)
+        (recipient) => recipient && recipient.labels && recipient.labels.includes(selectedLabel.option)
       );
     }
 
@@ -96,7 +98,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
 
     setSearchResults(results);
     setIsSearching(true);
-    setSelectedLabel("Search Results");
+    setSelectedLabel({ option: "Search Results", fromLabels: false });
     setSelectedContacts(new Set()); // Clear selection when searching
   };
 
@@ -107,10 +109,17 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
     }
   };
 
+  // Split the string on the last hiphen found
+  const splitOnLastHyphen = (str) => {
+    const index = str.lastIndexOf("-");
+    if (index === -1) return [str]; // no hyphen found
+    return [str.slice(0, index), str.slice(index + 1)];
+  };
+
   // Handle label change
   const handleLabelChange = (event) => {
-    const newLabel = event.target.value;
-    setSelectedLabel(newLabel);
+    const [newLabel, fromLabels] = splitOnLastHyphen(event.target.value);
+    setSelectedLabel({ option: newLabel, fromLabels: fromLabels === "true" ? true : false });
 
     // Remove search results when switching to other menu items
     if (newLabel !== "Search Results") {
@@ -187,78 +196,80 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
   const isAllSelected = filteredContacts.length > 0 && selectedContacts.size === filteredContacts.length;
 
   // Count contacts for a specific label
-  const getContactCountForLabel = (labelName) => {
-    if (!labelName || !recipients) return 0;
+  const getContactCountForLabel = (label) => {
+    if (!label.option || !recipients) return 0;
 
     // Handle search results
-    if (labelName === "Search Results") {
+    if (label.option === "Search Results" && !label.fromLabels) {
       return searchResults.length;
+    } else if (label.option === "My contacts" && !label.fromLabels) {
+      return recipients.filter((recipient) => recipient?.isSaved).length;
     }
 
-    return recipients.filter((recipient) => recipient.labels && recipient.labels.includes(labelName)).length;
+    return recipients.filter((recipient) => recipient.labels && recipient.labels.includes(label.option)).length;
   };
 
   // Handle delete label
-  const handleDeleteLabel = (labelName) => {
+  const handleDeleteLabel = (label) => {
     // Handle search results deletion
-    if (labelName === "Search Results") {
+    if (label.option === "Search Results" && !label.fromLabels) {
       if (searchResults.length === 0) {
         // No search results, just clear search and show notification
         setIsSearching(false);
         setSearchResults([]);
         setSearchQuery("");
-        setSelectedLabel("My contacts");
+        setSelectedLabel({ option: "My contacts", fromLabels: false });
         setSnackbarMessage("Label Search Results deleted");
         setSnackbarOpen(true);
       } else {
         // Has search results, show dialog
-        setLabelToDelete(labelName);
+        setLabelToDelete(label);
         setDeleteLabelDialogOpen(true);
       }
       return;
     }
 
-    const contactCount = getContactCountForLabel(labelName);
+    const contactCount = getContactCountForLabel(label);
 
     if (contactCount === 0) {
       // No contacts have this label, delete directly
-      deleteLabel(labelName);
+      deleteLabel(label);
     } else {
       // Contacts have this label, show dialog
-      setLabelToDelete(labelName);
+      setLabelToDelete(label);
       setDeleteLabelDialogOpen(true);
     }
   };
 
   // Delete label function
-  const deleteLabel = (labelName) => {
-    if (!labelName) return;
+  const deleteLabel = (label) => {
+    if (!label.option) return;
 
     // Remove label from recipientLabels
-    setRecipientLabels((prev) => prev.filter((label) => label.label !== labelName));
+    setRecipientLabels((prev) => prev.filter((recipientLabel) => recipientLabel.label !== label.option));
 
     // Remove label from all contacts
     setRecipients((prev) =>
       prev.map((recipient) => ({
         ...recipient,
-        labels: recipient.labels ? recipient.labels.filter((label) => label !== labelName) : [],
+        labels: recipient.labels ? recipient.labels.filter((recipientLabel) => recipientLabel !== label.option) : [],
       }))
     );
 
     // Switch to "My contacts" if the deleted label was currently selected
-    if (selectedLabel === labelName) {
-      setSelectedLabel("My contacts");
+    if (selectedLabel.option === label.option) {
+      setSelectedLabel({ option: "My contacts", fromLabels: false });
     }
 
     // Show success message
-    setSnackbarMessage(`Label ${labelName} deleted`);
+    setSnackbarMessage(`Label ${label.option} deleted`);
     setSnackbarOpen(true);
   };
 
   // Handle delete label dialog close
   const handleDeleteLabelDialogClose = () => {
     setDeleteLabelDialogOpen(false);
-    setLabelToDelete(null);
+    setLabelToDelete({ option: null, fromLabels: false });
     setDeleteOption("keep");
   };
 
@@ -272,13 +283,13 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
     if (!labelToDelete) return;
 
     // Handle search results deletion
-    if (labelToDelete === "Search Results") {
+    if (labelToDelete.option === "Search Results" && !labelToDelete.fromLabels) {
       if (deleteOption === "keep") {
         // Keep all contacts and clear search results
         setIsSearching(false);
         setSearchResults([]);
         setSearchQuery("");
-        setSelectedLabel("My contacts");
+        setSelectedLabel({ option: "My contacts", fromLabels: false });
         setSnackbarMessage("Label Search Results deleted");
       } else {
         // Delete all contacts and clear search results
@@ -287,7 +298,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
         setIsSearching(false);
         setSearchResults([]);
         setSearchQuery("");
-        setSelectedLabel("My contacts");
+        setSelectedLabel({ option: "My contacts", fromLabels: false });
         setSnackbarMessage("Label Search Results deleted");
       }
       setSnackbarOpen(true);
@@ -301,20 +312,20 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
     } else {
       // Delete all contacts and delete this label
       // Remove label from recipientLabels
-      setRecipientLabels((prev) => prev.filter((label) => label.label !== labelToDelete));
+      setRecipientLabels((prev) => prev.filter((label) => label.label !== labelToDelete.option));
 
       // Remove contacts that have this label
       setRecipients((prev) =>
-        prev.filter((recipient) => !recipient.labels || !recipient.labels.includes(labelToDelete))
+        prev.filter((recipient) => !recipient.labels || !recipient.labels.includes(labelToDelete.option))
       );
 
       // Switch to "My contacts" if the deleted label was currently selected
-      if (selectedLabel === labelToDelete) {
-        setSelectedLabel("My contacts");
+      if (selectedLabel.option === labelToDelete.option) {
+        setSelectedLabel({ option: "My contacts", fromLabels: false });
       }
 
       // Show success message
-      setSnackbarMessage(`Label ${labelToDelete} deleted`);
+      setSnackbarMessage(`Label ${labelToDelete.option} deleted`);
       setSnackbarOpen(true);
     }
 
@@ -459,7 +470,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
 
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <Select
-                  value={selectedLabel}
+                  value={`${selectedLabel.option}-${selectedLabel.fromLabels}`}
                   onChange={handleLabelChange}
                   displayEmpty
                   sx={{
@@ -501,9 +512,14 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
                     },
                   }}
                 >
-                  <MenuItem value="All contacts">All contacts</MenuItem>
+                  <MenuItem value="My contacts-false" key="My contacts">
+                    My contacts
+                  </MenuItem>
+                  <MenuItem value="All contacts-false" key="All contacts">
+                    All contacts
+                  </MenuItem>
                   {recipientLabels.map((label) => (
-                    <MenuItem key={label.id} value={label.label}>
+                    <MenuItem key={label.id} value={label.label + "-true"}>
                       {label.label}
                     </MenuItem>
                   ))}
@@ -646,12 +662,13 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
 
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, pb: 1 }}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: "12px", marginBottom: 0 }}>
-                {addedRecipients.length > 0 ? selectedLabel : selectedLabel.toUpperCase()}{" "}
+                {addedRecipients.length > 0 ? selectedLabel.option : selectedLabel.option.toUpperCase()}{" "}
                 {addedRecipients.length > 0 ? "" : `(${filteredContacts.length})`}
               </Typography>
 
               {/* Delete */}
-              {selectedLabel !== "All contacts" && selectedLabel !== "My contacts" && addedRecipients.length === 0 && (
+              {((selectedLabel.fromLabels && addedRecipients.length === 0) ||
+                selectedLabel.option === "Search Results") && (
                 <Tooltip
                   title="Delete label"
                   placement="bottom"
@@ -911,8 +928,9 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
         <DialogTitle sx={{ fontSize: "20px", fontWeight: 500 }}>Delete this label</DialogTitle>
         <DialogContent sx={{ pt: 0, pb: "20px" }}>
           <Typography variant="body2" sx={{ mb: 2, fontSize: "14px", fontWeight: "400", color: "#434343" }}>
-            This label has {labelToDelete ? getContactCountForLabel(labelToDelete) : 0} contact
-            {labelToDelete && getContactCountForLabel(labelToDelete) !== 1 ? "s" : ""}. Choose what to do with them.
+            This label has {labelToDelete.option ? getContactCountForLabel(labelToDelete) : 0} contact
+            {labelToDelete.option && getContactCountForLabel(labelToDelete) !== 1 ? "s" : ""}. Choose what to do with
+            them.
           </Typography>
           <FormControl component="fieldset">
             <RadioGroup value={deleteOption} onChange={handleDeleteOptionChange}>

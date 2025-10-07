@@ -59,6 +59,24 @@ export default function Editor({
 
   const [attachments, setAttachments] = useState([]);
   const { db } = useGlobalContext();
+  const attachmentsContainerRef = useRef(null);
+  const [attachmentsHeight, setAttachmentsHeight] = useState(0);
+
+  // Derive editor height so total space stays fixed when toolbars/attachments appear
+  const parsePx = (value) => {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+      const match = value.match(/^(\d+)(px)?$/);
+      if (match) return parseInt(match[1], 10);
+    }
+    return 390; // sensible default
+  };
+  const baseEditorHeightPx = parsePx(textEditorMinHeight);
+  const toolbarSpacerHeightPx = showMenuBar ? 51 : 0; // matches spacer div height
+  const computedEditorHeightPx = Math.max(
+    210,
+    baseEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0)
+  );
 
   const handleNewImageFiles = useCallback((files, insertPosition) => {
     if (!rteRef.current?.editor) {
@@ -125,6 +143,21 @@ export default function Editor({
     },
     [handleNewImageFiles]
   );
+
+  // Track attachments area height so we can reduce editor height accordingly
+  useEffect(() => {
+    if (!attachmentsContainerRef.current) return;
+    const el = attachmentsContainerRef.current;
+    const update = () => setAttachmentsHeight(el.clientHeight  || 0);
+    update();
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(update);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [attachments]);
 
   // Set up editor change handler
   const handleEditorChange = useCallback(
@@ -296,7 +329,10 @@ export default function Editor({
               }}
             >
               {showMenuBar && <div style={{ width: "100%", height: "35px" }}></div>}
-              <Attachments attachments={attachments} setAttachments={setAttachments} />
+              {/* Measure attachments height to shrink editor accordingly */}
+              <div ref={attachmentsContainerRef} style={{ position: "relative" }}>
+                <Attachments attachments={attachments} setAttachments={setAttachments} />
+              </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", position: "relative", width: "100%" }}>
                   <div className={styles.sendButtonContainer}>
@@ -611,8 +647,8 @@ export default function Editor({
             "& h1, & h2, & h3, & h4, & h5, & h6": {
               scrollMarginTop: showMenuBar ? 50 : 0,
             },
-            minHeight: textEditorMinHeight === "390px" ? (showMenuBar ? "339px" : "390px") : textEditorMinHeight,
-            maxHeight: textEditorMaxHeight,
+            minHeight: `${computedEditorHeightPx}px`,
+            maxHeight: `${computedEditorHeightPx}px`,
             overflowY: "auto",
           },
         }}

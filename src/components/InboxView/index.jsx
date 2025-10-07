@@ -173,7 +173,10 @@ const InboxView = () => {
   }, [emails, threadId]);
 
   useEffect(() => {
-    document.title = `Inbox(2) - ${loggedInUser.email} - MailG`;
+    // Calculate total unread emails count
+    const unreadCount = emails.filter(email => !email.read).length;
+    const unreadText = unreadCount > 0 ? `(${unreadCount})` : '';
+    document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
 
     if (!thread) return;
 
@@ -182,7 +185,7 @@ const InboxView = () => {
     // Mark unread emails in the email thread as read
     const messages = messageIds.map((id) => messagesById[id]);
     markUnreadEmailsAsRead(messages);
-  }, [thread, messagesById, markUnreadEmailsAsRead]);
+  }, [thread, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email]);
 
   if (!thread) {
     // Determine the back link based on current context
