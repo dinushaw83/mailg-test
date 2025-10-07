@@ -1,9 +1,10 @@
 import React from "react";
 import SearchBar from "./SearchBar";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { generateAvatarColor } from "../utils/helperFunctions";
 
 const Header = () => {
-  const { showQuickSettings, setShowQuickSettings, setIsLeftSidebarExpanded } = useGlobalContext();
+  const { showQuickSettings, setShowQuickSettings, setIsLeftSidebarExpanded, loggedInUser } = useGlobalContext();
   return (
     <div className="nH" style={{ backgroundColor: "#f8fafd" }}>
       <div className="w-asV bbg aiw">
@@ -182,13 +183,16 @@ const Header = () => {
                           tabIndex={0}
                           role="button"
                           style={{
-                            backgroundColor: "#6EA034",
+                            backgroundColor: generateAvatarColor(loggedInUser.name),
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "50%",
                           }}
                         >
-                          <span className="gb_ae" style={{ fontWeight: "500", fontSize: "20px", color: "white" }}>
+                          <span className="gb_ae" style={{ fontSize: "15px", color: "white" }}>
                             J
                           </span>
                           {/* <div className="gb_Q gb_R sf-hidden" aria-hidden="true">

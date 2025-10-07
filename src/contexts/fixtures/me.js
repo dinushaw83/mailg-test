@@ -11,4 +11,5 @@ export const initialUser = {
     },
   ],
   avatar: null,
+  isLoggedInUser: true,
 };

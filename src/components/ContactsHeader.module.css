@@ -1,0 +1,17 @@
+.searchBox {
+  display: flex;
+  align-items: center;
+  border-radius: 8px 8px 0 0;
+  background-color: #f1f3f4;
+  width: 40vw;
+  max-width: 720px;
+  height: 48px;
+  border: 1px solid transparent;
+  margin-left: 88px;
+  transition: background-color 0.2s ease;
+}
+
+.searchBox.focused {
+  background-color: white;
+  box-shadow: 0 1px 1px 0 rgba(65, 69, 73, 0.3), 0 1px 3px 1px rgba(65, 69, 73, 0.15);
+}

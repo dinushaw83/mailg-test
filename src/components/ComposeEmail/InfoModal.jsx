@@ -50,7 +50,13 @@ export default function InfoModal({ isOpen, onClose, title, message, buttons, mo
           {buttons.map((button, index) => (
             <Button
               key={index}
-              variant={button.className === "primary" ? "contained" : "outlined"}
+              variant={
+                button.className === "primary" 
+                  ? "contained" 
+                  : button.className === "tertiary" 
+                    ? "text" 
+                    : "outlined"
+              }
               onClick={button.onClick}
               sx={{
                 minWidth: 70,
@@ -60,6 +66,13 @@ export default function InfoModal({ isOpen, onClose, title, message, buttons, mo
                   backgroundColor: "#2059cf",
                   "&:hover": {
                     backgroundColor: "#1571d9",
+                  },
+                }),
+                ...(button.className === "tertiary" && {
+                  border: "none",
+                  boxShadow: "none",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.04)",
                   },
                 }),
               }}

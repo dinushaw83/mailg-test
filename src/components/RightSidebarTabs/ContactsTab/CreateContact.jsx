@@ -73,6 +73,7 @@ const normalizeContact = (contact) => ({
     Array.isArray(contact?.relatedPersons) && contact?.relatedPersons.length > 0 ? [...contact.relatedPersons] : [],
   customFields:
     Array.isArray(contact?.customFields) && contact?.customFields.length > 0 ? [...contact.customFields] : [],
+  isFavorite: contact?.isFavorite || false,
 });
 
 const CreateContact = ({ onClose, onTabClose }) => {
@@ -147,7 +148,6 @@ const CreateContact = ({ onClose, onTabClose }) => {
       contactToUpdate?.relatedPersons?.length > 0 ||
       contactToUpdate?.customFields?.length > 0
   );
-  const [isFavorite, setIsFavorite] = useState(contactToUpdate?.labels?.includes("Favorites") || false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   // Reference for the saved contact
   const originalContact = useRef(null);
@@ -421,13 +421,12 @@ const CreateContact = ({ onClose, onTabClose }) => {
   const hasFieldChange = () => {
     // If editing, compare with original contact using JSON comparison
     if (contactToUpdate) {
-      const currentContact = normalizeContact({ ...formData, labels: isFavorite ? ["Favorites"] : [] });
+      const currentContact = normalizeContact({ ...formData });
       const originalContact = normalizeContact(contactToUpdate);
 
-      // Compare JSON strings and check if favorite status has changed
+      // Compare JSON strings
       return (
-        JSON.stringify(currentContact) !== JSON.stringify(originalContact) ||
-        isFavorite !== contactToUpdate.labels?.includes("Favorites")
+        JSON.stringify(currentContact) !== JSON.stringify(originalContact)
       );
     }
 
@@ -674,7 +673,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
     "Main",
     "Home Fax",
     "Work Fax",
-    "Google Voice",
+    "MailG Voice",
     "Pager",
   ];
   const significantDateLabelOptions = ["Anniversary", "Other"];
@@ -813,12 +812,6 @@ const CreateContact = ({ onClose, onTabClose }) => {
       saveTimeout.current = setTimeout(() => {
         // Labels should be from the contact to update in case of edit contact
         let labels = contactToUpdate?.labels ? [...contactToUpdate.labels] : [];
-        // Push "My contacts" label if it is not present
-        if (!labels.includes("My contacts")) labels.push("My contacts");
-
-        // Add or remove "Favorites" label based on the isFavorite state
-        if (isFavorite && !labels.includes("Favorites")) labels.push("Favorites");
-        else if (!isFavorite && labels.includes("Favorites")) labels = labels.filter((label) => label !== "Favorites");
 
         const contact = {
           ...formData,
@@ -830,6 +823,8 @@ const CreateContact = ({ onClose, onTabClose }) => {
               : generateNextIntegerId(recipients),
           avatar: contactToUpdate?.avatar || null,
           labels,
+          // Set isSaved to true
+          isSaved: true,
           // First email should be the primary email if it exists
           email: Array.isArray(formData.emails) && formData.emails.length > 0 ? formData.emails[0].value : null,
         };
@@ -901,13 +896,13 @@ const CreateContact = ({ onClose, onTabClose }) => {
           {/* Favorite */}
           <ActionIconButton
             iconName="star"
-            title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-            onClick={() => setIsFavorite((prev) => !prev)}
-            color={isFavorite ? "#0b57d0" : "#4f5251"}
-            iconType={isFavorite ? "filled" : "outlined"}
+            title={formData.isFavorite ? "Remove from favorites" : "Add to favorites"}
+            onClick={() => setFormData((prev) => ({ ...prev, isFavorite: !prev.isFavorite }))}
+            color={formData.isFavorite ? "#0b57d0" : "#4f5251"}
+            iconType={formData.isFavorite ? "filled" : "outlined"}
             sx={{
               "&:hover": {
-                backgroundColor: isFavorite ? "rgba(11, 87, 208, 0.08)" : "action.hover",
+                backgroundColor: formData.isFavorite ? "rgba(11, 87, 208, 0.08)" : "action.hover",
               },
             }}
             disabled={disableHeader}

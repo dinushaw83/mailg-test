@@ -21,16 +21,30 @@ export const generateAvatarColor = (name) => {
     "#607d8b",
   ];
 
-  // Handle undefined or null names
+  // Handle undefined, null, or non-string names
   if (!name || typeof name !== "string") {
     return colors[0];
   }
 
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  // Normalize the string (trim whitespace and convert to lowercase for consistency)
+  const normalizedName = name.trim().toLowerCase();
+
+  // If empty string after normalization, return default color
+  if (normalizedName.length === 0) {
+    return colors[0];
   }
-  return colors[Math.abs(hash) % colors.length];
+
+  // Generate a hash using a more robust algorithm
+  let hash = 0;
+  for (let i = 0; i < normalizedName.length; i++) {
+    const char = normalizedName.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  // Ensure positive number and get color index
+  const colorIndex = Math.abs(hash) % colors.length;
+  return colors[colorIndex];
 };
 
 export const generateRandomId = () => {
@@ -182,6 +196,8 @@ export const restructureRecipients = (recipients) => {
             avatar: recipient.avatar,
             labels: recipient.labels,
             emailLabel: emailObj.label,
+            isSaved: recipient.isSaved,
+            isFavorite: recipient.isFavorite,
           });
         }
       });
@@ -208,4 +224,14 @@ export const generateAddressString = (address) => {
   if (stateZip.length > 0) parts.push(stateZip.join(" "));
   if (address.countryCode) parts.push(address.countryCode);
   return parts.join(" ");
+};
+
+// Get formatted website URL
+export const getFormattedWebsiteURL = (website) => {
+  // Ensure the website has a protocol prefix
+  let url = website;
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    url = `https://${url}`;
+  }
+  return url;
 };

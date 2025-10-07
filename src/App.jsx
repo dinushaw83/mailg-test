@@ -8,14 +8,20 @@ import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import VerificationDashboard from "./pages/VerificationDashboard";
 import Settings from "./pages/Settings";
+import Contacts from "./pages/Contacts/Contacts";
+import Frequent from "./pages/Contacts/Frequent";
+import OtherContacts from "./pages/Contacts/OtherContacts";
+import ContactsByLabel from "./pages/Contacts/ContactsByLabel";
+import ContactDetails from "./pages/Contacts/ContactDetails";
+import ContactTrash from "./pages/Contacts/ContactTrash";
+import ContactsSearch from "./pages/Contacts/ContactsSearch";
+import MergeAndFix from "./pages/Contacts/MergeAndFix";
 
-import { initialUser } from "./contexts/fixtures/me";
 import SearchResultsView from "./pages/SearchResultsView";
 import { initializeSearchIndex } from "./utils/search";
 
 function App() {
   useEffect(() => {
-    document.title = `Inbox(2) - ${initialUser.email} - MailG`;
     // Initialize search index on app startup
     initializeSearchIndex();
   }, []);
@@ -34,6 +40,17 @@ function App() {
             <Route path="/verify" element={<VerificationDashboard />} />
             <Route path="/settings/:tab" element={<Settings />} />
             <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
+
+            {/* Contacts paths */}
+            <Route path="/contacts" element={<Contacts />} />
+            <Route path="/contacts/frequent" element={<Frequent />} />
+            <Route path="/contacts/other" element={<OtherContacts />} />
+            <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
+            <Route path="/contacts/person/:contactId" element={<ContactDetails />} />
+            <Route path="/contacts/trash" element={<ContactTrash />} />
+            <Route path="/contacts/search/:query" element={<ContactsSearch />} />
+            <Route path="/contacts/suggestions" element={<MergeAndFix />} />
+
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>
 

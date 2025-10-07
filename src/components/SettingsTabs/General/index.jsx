@@ -33,7 +33,7 @@ import SettingsFooterRow from "./SettingsFooterRow";
 import OutOfOfficeAutoReply from "./OutOfOfficeAutoReply";
 import { Container, MainContainer, StyledTable, MainBody } from "./styles";
 
-export default function GeneralSettings() {
+export default function GeneralSettings({ localSettings, setLocalSettings }) {
     return (
         <Container>
             <MainContainer>
@@ -75,8 +75,11 @@ export default function GeneralSettings() {
                             <PersonalLevelIndicatorsRow />
                             <SnippetsRow />
 
-                            <OutOfOfficeAutoReply />
-                            <SettingsFooterRow />
+                            <OutOfOfficeAutoReply
+                                localSettings={localSettings}
+                                setLocalSettings={setLocalSettings}
+                            />
+                            {/* <SettingsFooterRow /> */}
                         </tbody>
                     </StyledTable>
                 </MainBody>
