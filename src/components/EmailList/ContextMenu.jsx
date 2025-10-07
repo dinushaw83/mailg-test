@@ -162,7 +162,7 @@ const ContextMenu = ({
         console.error("Move failed:", e);
       }
     },
-    [moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
+    [moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels, selectedIds]
   );
 
   const handleOnAfterCreate = (childName, parentKey) => {
