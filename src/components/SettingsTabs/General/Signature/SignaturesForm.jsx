@@ -129,6 +129,7 @@ export default function SignaturesForm({
     editingSignatureData,
     setSignaturesState,
     setOpenDeleteDialog,
+    signaturesState,
 }) {
     return (
         <SignaturesFormContainer className="Tb">
@@ -143,6 +144,7 @@ export default function SignaturesForm({
                     editingSignatureData={editingSignatureData}
                     setSignaturesState={setSignaturesState}
                     setOpenDeleteDialog={setOpenDeleteDialog}
+                    signaturesState={signaturesState}
                 />
                 <div className="P4">
                     <button
@@ -224,9 +226,13 @@ export default function SignaturesForm({
                                 display: "block",
                                 width: "176px",
                             }}
+                            value={signaturesState.useForNewEmails}
+                            onChange={(e) => setSignaturesState({ ...signaturesState, useForNewEmails: e.target.value })}
                         >
                             <option value="-1">No signature</option>
-                            <option value="4582351273062553595">sas</option>
+                            {signatures.map((signature, index) => (
+                                <option key={index} value={index}>{signature.name}</option>
+                            ))}
                         </select>
                     </label>
                     <label>
@@ -253,9 +259,13 @@ export default function SignaturesForm({
                                 display: "block",
                                 width: "176px",
                             }}
+                            value={signaturesState.useForRepliesAndForwards}
+                            onChange={(e) => setSignaturesState({ ...signaturesState, useForRepliesAndForwards: e.target.value })}
                         >
                             <option value="-1">No signature</option>
-                            <option value="4582351273062553595">sas</option>
+                            {signatures.map((signature, index) => (
+                                <option key={index} value={index}>{signature.name}</option>
+                            ))}
                         </select>
                     </label>
                 </div>
@@ -509,6 +519,7 @@ function Form({
     setEditingSignature,
     setSignaturesState,
     setOpenDeleteDialog,
+    signaturesState,
 }) {
     const theme = useTheme()
     const [content, setContent] = useState("");

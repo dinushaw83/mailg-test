@@ -75,6 +75,7 @@ export default function SignatureRow() {
                     editingSignatureData={editingSignatureData}
                     setSignaturesState={setSignaturesState}
                     setOpenDeleteDialog={setOpenDeleteDialog}
+                    signaturesState={signaturesState}
                 />}
             </SettingsCell>
             <NewSignatureDialog
