@@ -76,7 +76,7 @@ export default function NewSignatureDialog({
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {
                             e.preventDefault();
-                            handleCreate();
+                            handleSubmit();
                         }
                     }}
                     helperText={`${name.length}/320`}
