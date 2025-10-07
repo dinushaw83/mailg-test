@@ -31,6 +31,37 @@ export default function SignatureRow() {
         setSignaturesState(globalSignaturesState);
     }, [globalSignaturesState]);
 
+    const handleAfterCreate = (name, editingSignatureIndex) => {
+        // Copy current list
+        const updatedSignatures = [...signatures];
+
+        if (editingSignatureIndex !== undefined && editingSignatureIndex !== null) {
+            // EDIT MODE: update name only
+            updatedSignatures[editingSignatureIndex] = {
+                ...updatedSignatures[editingSignatureIndex],
+                name,
+            };
+        } else {
+            // CREATE MODE: add new signature
+            updatedSignatures.push({ name, content: "" });
+        }
+
+        setSignaturesState({
+            ...signaturesState,
+            list: updatedSignatures,
+        });
+    }
+    
+    const handleAfterDelete = (name, editingSignatureIndex) => {
+        setOpenDeleteDialog(false);
+        const updatedSignatures = [...signatures];
+        updatedSignatures.splice(editingSignatureIndex, 1);
+        setSignaturesState({
+            ...signaturesState,
+            list: updatedSignatures,
+        });
+    }
+
     return (
         <SettingsRow>
             <SettingsCell side="left" width="20%">
@@ -92,45 +123,14 @@ export default function SignatureRow() {
                     setOpenDialog(false);
                     setEditingSignature(null); // reset edit mode on close
                 }}
-                onAfterCreate={(name, editingSignatureIndex) => {
-                    console.log("Signature action:", name, editingSignatureIndex);
-
-                    // Copy current list
-                    const updatedSignatures = [...signatures];
-
-                    if (editingSignatureIndex !== undefined && editingSignatureIndex !== null) {
-                        // EDIT MODE: update name only
-                        updatedSignatures[editingSignatureIndex] = {
-                            ...updatedSignatures[editingSignatureIndex],
-                            name,
-                        };
-                    } else {
-                        // CREATE MODE: add new signature
-                        updatedSignatures.push({ name, content: "" });
-                    }
-
-                    setSignaturesState({
-                        ...signaturesState,
-                        list: updatedSignatures,
-                    });
-                }}
+                onAfterCreate={handleAfterCreate}
                 editingSignatureIndex={editingSignature}
                 editingSignatureData={editingSignatureData}
             />
             <DeleteSignatureDialog
                 open={openDeleteDialog}
                 onClose={() => setOpenDeleteDialog(false)}
-                onAfterDelete={(name, editingSignatureIndex) => {
-                    console.log("Signature action:", name, editingSignatureIndex);
-
-                    setOpenDeleteDialog(false);
-                    const updatedSignatures = [...signatures];
-                    updatedSignatures.splice(editingSignatureIndex, 1);
-                    setSignaturesState({
-                        ...signaturesState,
-                        list: updatedSignatures,
-                    });
-                }}
+                onAfterDelete={handleAfterDelete}
                 editingSignatureIndex={editingSignature}
                 editingSignatureData={editingSignatureData}
             />

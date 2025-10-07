@@ -307,3 +307,45 @@ export const StyledEditorContent = styled(EditorContent)({
         overflowY: "auto",
     },
 });
+
+export const CreateNewButton = styled("button")(() => ({
+    border: "none",
+    background: "none",
+    borderRadius: "4px",
+    outline: "none",
+    padding: "0px 16px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    zIndex: 0,
+    WebkitFontSmoothing: "antialiased",
+    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+    fontSize: "0.875rem",
+    letterSpacing: "normal",
+    boxSizing: "border-box",
+    cursor: "pointer",
+    fontWeight: 500,
+    height: "36px",
+    minWidth: "80px",
+    boxShadow: "rgb(218, 220, 224) 0px 0px 0px 1px inset",
+    color: "rgb(26, 115, 232)",
+    marginBottom: "32px",
+    marginTop: "8px",
+    width: "240px",
+    transition: "background-color 0.2s ease, box-shadow 0.2s ease",
+
+    "&:hover": {
+        backgroundColor: "rgba(26, 115, 232, 0.05)",
+    },
+
+    "&:focus-visible": {
+        outline: "2px solid rgba(26, 115, 232, 0.5)",
+        outlineOffset: "2px",
+    },
+
+    "& .material-symbols-outlined": {
+        fontSize: 20,
+        marginRight: 6,
+    },
+}));

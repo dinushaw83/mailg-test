@@ -1,33 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useEditor } from "@tiptap/react";
+import { useTheme } from "@mui/material/styles";
 import { ColorPicker, MenuSelectFontSize, RichTextEditorProvider } from "mui-tiptap";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import {
-    MenuItem,
-    Select,
     Popper,
     ClickAwayListener,
     Paper,
     Stack,
     Typography,
     IconButton,
-    Menu,
-    ListItemIcon,
-    MenuList
 } from "@mui/material";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import { useEditor } from "@tiptap/react";
-import { useTheme } from "@mui/material/styles";
-import FormatAlignLeftIcon from "@mui/icons-material/FormatAlignLeft";
-import FormatAlignCenterIcon from "@mui/icons-material/FormatAlignCenter";
-import FormatAlignRightIcon from "@mui/icons-material/FormatAlignRight";
-import FormatAlignJustifyIcon from "@mui/icons-material/FormatAlignJustify";
-import CheckIcon from "@mui/icons-material/Check";
-import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
-import FormatStrikethroughIcon from "@mui/icons-material/FormatStrikethrough";
-import FormatIndentIncreaseIcon from "@mui/icons-material/FormatIndentIncrease";
-import FormatIndentDecreaseIcon from "@mui/icons-material/FormatIndentDecrease";
+import FontFamilySelect from "./tools/FontFamilySelect";
+import AlignMenu from "./tools/AlignMenu";
+import MoreFormattingMenu from "./tools/MoreFormattingMenu";
 
 import {
     SignaturesFormContainer,
@@ -41,6 +29,7 @@ import {
     MailGToolbarButton,
     ToolbarButton,
     StyledEditorContent,
+    CreateNewButton,
 } from "../styles";
 import useExtensions from "../../../RichTextEditor/useExtensions";
 
@@ -147,46 +136,18 @@ export default function SignaturesForm({
                     signaturesState={signaturesState}
                 />
                 <div className="P4">
-                    <button
-                        className="P5"
+                    <CreateNewButton
                         aria-label="Create a new signature"
                         role="button"
-                        tabIndex="0"
-                        style={{
-                            border: "none",
-                            background: "none",
-                            borderRadius: "4px",
-                            outline: "none",
-                            padding: "0px 16px",
-                            WebkitBoxAlign: "center",
-                            alignItems: "center",
-                            display: "inline-flex",
-                            WebkitBoxPack: "center",
-                            justifyContent: "center",
-                            position: "relative",
-                            zIndex: 0,
-                            WebkitFontSmoothing: "antialiased",
-                            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                            fontSize: "0.875rem",
-                            letterSpacing: "normal",
-                            boxSizing: "border-box",
-                            cursor: "pointer",
-                            fontWeight: 500,
-                            height: "36px",
-                            minWidth: "80px",
-                            boxShadow: "rgb(218, 220, 224) 0px 0px 0px 1px inset",
-                            color: "rgb(26, 115, 232)",
-                            marginBottom: "32px",
-                            marginTop: "8px",
-                            width: "240px",
-                        }}
+                        tabIndex={0}
                         onClick={() => {
                             setOpenDialog(true);
                             setEditingSignature(null);
                         }}
                     >
+                        <span className="material-symbols-outlined">add</span>
                         Create new
-                    </button>
+                    </CreateNewButton>
                 </div>
                 <div
                     className="Pr"
@@ -287,229 +248,6 @@ export default function SignaturesForm({
                 </label>
             </div>
         </SignaturesFormContainer>
-    );
-}
-
-export function MenuSelectAlign({ editor }) {
-    if (!editor) return null;
-
-    return (
-        <Select
-            value={editor.getAttributes("paragraph").textAlign || "left"}
-            onChange={(e) => {
-                editor.chain().focus().setTextAlign(e.target.value).run();
-            }}
-            variant="standard"
-            disableUnderline
-            sx={{ minWidth: 80 }}
-        >
-            <MenuItem value="left">Left</MenuItem>
-            <MenuItem value="center">Center</MenuItem>
-            <MenuItem value="right">Right</MenuItem>
-            <MenuItem value="justify">Justify</MenuItem>
-        </Select>
-    );
-}
-
-function MoreFormattingMenu({ editor }) {
-    const [anchorEl, setAnchorEl] = useState(null);
-
-    const open = Boolean(anchorEl);
-    const handleOpen = (event) => setAnchorEl(event.currentTarget);
-    const handleClose = () => setAnchorEl(null);
-
-    return (
-        <>
-            <ToolbarButton
-                role="button"
-                aria-label="More formatting options"
-                aria-haspopup="true"
-                aria-expanded={open ? "true" : "false"}
-                onClick={handleOpen}
-                className="J-Z-M-I J-J5-Ji"
-            >
-                <ArrowDropDownIcon sx={{ fontSize: 20 }} />
-            </ToolbarButton>
-
-            <Menu
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                anchorOrigin={{ vertical: "top", horizontal: "left" }}
-                transformOrigin={{ vertical: "bottom", horizontal: "left" }}
-                PaperProps={{
-                    sx: {
-                        padding: 0,
-                        minWidth: "auto",
-                        "& .MuiMenuItem-root": {
-                            padding: "2px 6px",
-                            minHeight: "24px",
-                        },
-                        "& .MuiListItemIcon-root": {
-                            minWidth: "20px",
-                        },
-                    },
-                }}
-            >
-                <MenuItem onClick={() => { editor.chain().focus().toggleStrike().run(); handleClose(); }}>
-                    <ListItemIcon><FormatStrikethroughIcon fontSize="small" /></ListItemIcon>
-                </MenuItem>
-
-                <MenuItem onClick={() => { editor.chain().focus().toggleBlockquote().run(); handleClose(); }}>
-                    <ListItemIcon><FormatQuoteIcon fontSize="small" /></ListItemIcon>
-                </MenuItem>
-
-                <MenuItem onClick={() => { editor.chain().focus().sinkListItem("listItem").run(); handleClose(); }}>
-                    <ListItemIcon><FormatIndentIncreaseIcon fontSize="small" /></ListItemIcon>
-                </MenuItem>
-
-                <MenuItem onClick={() => { editor.chain().focus().liftListItem("listItem").run(); handleClose(); }}>
-                    <ListItemIcon><FormatIndentDecreaseIcon fontSize="small" /></ListItemIcon>
-                </MenuItem>
-
-                <MenuItem onClick={() => { editor.chain().focus().toggleBulletList().run(); handleClose(); }}>
-                    <ListItemIcon><FormatListBulletedIcon fontSize="small" /></ListItemIcon>
-                </MenuItem>
-
-                <MenuItem onClick={() => { editor.chain().focus().toggleOrderedList().run(); handleClose(); }}>
-                    <ListItemIcon><FormatListNumberedIcon fontSize="small" /></ListItemIcon>
-                </MenuItem>
-            </Menu>
-        </>
-    );
-}
-
-const alignments = [
-    { value: "left", icon: <FormatAlignLeftIcon /> },
-    { value: "center", icon: <FormatAlignCenterIcon /> },
-    { value: "right", icon: <FormatAlignRightIcon /> },
-    { value: "justify", icon: <FormatAlignJustifyIcon /> },
-];
-
-export function AlignMenu({ editor }) {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const open = Boolean(anchorEl);
-
-    if (!editor) return null;
-
-    const current = editor.getAttributes("paragraph").textAlign || "left";
-
-    const handleClick = (event) => {
-        setAnchorEl(anchorEl ? null : event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const applyAlign = (align) => {
-        editor.chain().focus().setTextAlign(align).run();
-        handleClose();
-    };
-
-    return (
-        <>
-            <ToolbarButton role="button" aria-label="Link (⌘K)" className="J-Z-M-I J-J5-Ji" onClick={handleClick}>
-                {alignments.find((a) => a.value === current)?.icon &&
-                    React.cloneElement(alignments.find((a) => a.value === current)?.icon, {
-                        sx: { fontSize: 20 },
-                })}
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-                    arrow_drop_down
-                </span>
-            </ToolbarButton>
-
-            <Popper open={open} anchorEl={anchorEl} placement="top">
-                <ClickAwayListener onClickAway={handleClose}>
-                    <Paper elevation={3}>
-                        <MenuList>
-                            {alignments.map((a) => (
-                                <MenuItem key={a.value} onClick={() => applyAlign(a.value)}>
-                                    {a.icon}
-                                </MenuItem>
-                            ))}
-                        </MenuList>
-                    </Paper>
-                </ClickAwayListener>
-            </Popper>
-        </>
-    );
-}
-
-export function FontFamilySelect({ value, onChange }) {
-    const fontOptions = [
-        { label: "Sans Serif", value: "sans-serif", style: { fontFamily: "Arial, sans-serif" } },
-        { label: "Serif", value: "serif", style: { fontFamily: "Georgia, serif" } },
-        { label: "Fixed Width", value: "monospace", style: { fontFamily: "'Courier New', monospace" } },
-        { label: "Wide", value: "Arial Black", style: { fontFamily: "'Arial Black', Gadget, sans-serif", fontWeight: 700 } },
-        { label: "Narrow", value: "Arial Narrow", style: { fontFamily: "'Arial Narrow', sans-serif" } },
-        { label: "Comic Sans MS", value: "Comic Sans MS", style: { fontFamily: "'Comic Sans MS', cursive" } },
-        { label: "Garamond", value: "Garamond", style: { fontFamily: "Garamond, serif" } },
-        { label: "Georgia", value: "Georgia", style: { fontFamily: "Georgia, serif" } },
-        { label: "Tahoma", value: "Tahoma", style: { fontFamily: "Tahoma, sans-serif" } },
-        { label: "Trebuchet MS", value: "Trebuchet MS", style: { fontFamily: "'Trebuchet MS', sans-serif" } },
-        { label: "Verdana", value: "Verdana", style: { fontFamily: "Verdana, sans-serif" } },
-    ];
-
-    return (
-        <Select
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            variant="standard"
-            disableUnderline
-            IconComponent={ArrowDropDownIcon}
-            renderValue={(selected) => {
-                const selectedFont = fontOptions.find((f) => f.value === selected);
-                return (
-                    <Typography
-                        sx={{
-                            ...selectedFont?.style,
-                            fontSize: "0.875rem",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                        }}
-                    >
-                        {selectedFont?.label}
-                    </Typography>
-                );
-            }}
-            sx={{
-                width: "90px",
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                "& .MuiSelect-select": {
-                    padding: "0 24px 0 4px",
-                    minHeight: "20px",
-                    lineHeight: "20px",
-                },
-            }}
-            MenuProps={{
-                PaperProps: {
-                    sx: {
-                        borderRadius: "8px",
-                        mt: 1,
-                        minWidth: "160px",
-                        "& .MuiMenuItem-root": {
-                            padding: "6px 16px",
-                        },
-                    },
-                },
-            }}
-        >
-            {fontOptions.map((font) => (
-                <MenuItem key={font.value} value={font.value}>
-                    {value === font.value && (
-                        <ListItemIcon sx={{ minWidth: 22, mr: 0 }}>
-                            <CheckIcon fontSize="small" />
-                        </ListItemIcon>
-                    )}
-                    <Typography sx={{ ...font.style, fontSize: "1rem" }}>
-                        {font.label}
-                    </Typography>
-                </MenuItem>
-            ))}
-        </Select>
     );
 }
 
