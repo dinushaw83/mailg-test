@@ -10,26 +10,19 @@ import {
 } from "../styles";
 import NewSignatureDialog from "./NewSignatureDialog";
 import SignaturesForm from "./SignaturesForm";
-import { useGlobalContext } from "../../../../contexts/GlobalContext";
 import DeleteSignatureDialog from "./DeleteSignatureDialog";
 
-export default function SignatureRow() {
+export default function SignatureRow({
+    localSignatures,
+    setLocalSignatures
+}) {
     const [openDialog, setOpenDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [activeSignature, setActiveSignature] = useState(null);
     const [editingSignature, setEditingSignature] = useState(null);
-    const {
-        signaturesState: globalSignaturesState,
-        setSignaturesState: setGlobalSignaturesState
-    } = useGlobalContext()
-    const [ signaturesState, setSignaturesState ] = useState(globalSignaturesState)
 
-    const signatures = signaturesState?.list ?? []
-    const editingSignatureData = signatures[editingSignature]
-
-    useEffect(() => {
-        setSignaturesState(globalSignaturesState);
-    }, [globalSignaturesState]);
+    const signatures = localSignatures?.list ?? [];
+    const editingSignatureData = signatures[editingSignature];
 
     const handleAfterCreate = (name, editingSignatureIndex) => {
         // Copy current list
@@ -46,8 +39,8 @@ export default function SignatureRow() {
             updatedSignatures.push({ name, content: "" });
         }
 
-        setSignaturesState({
-            ...signaturesState,
+        setLocalSignatures({
+            ...localSignatures,
             list: updatedSignatures,
         });
     }
@@ -56,8 +49,8 @@ export default function SignatureRow() {
         setOpenDeleteDialog(false);
         const updatedSignatures = [...signatures];
         updatedSignatures.splice(editingSignatureIndex, 1);
-        setSignaturesState({
-            ...signaturesState,
+        setLocalSignatures({
+            ...localSignatures,
             list: updatedSignatures,
         });
     }
@@ -112,9 +105,9 @@ export default function SignatureRow() {
                     setEditingSignature={setEditingSignature}
                     editingSignature={editingSignature}
                     editingSignatureData={editingSignatureData}
-                    setSignaturesState={setSignaturesState}
+                    setSignaturesState={setLocalSignatures}
                     setOpenDeleteDialog={setOpenDeleteDialog}
-                    signaturesState={signaturesState}
+                    signaturesState={localSignatures}
                 />}
             </SettingsCell>
             <NewSignatureDialog

@@ -33,7 +33,12 @@ import SettingsFooterRow from "./SettingsFooterRow";
 import OutOfOfficeAutoReply from "./OutOfOfficeAutoReply";
 import { Container, MainContainer, StyledTable, MainBody } from "./styles";
 
-export default function GeneralSettings({ localSettings, setLocalSettings }) {
+export default function GeneralSettings({ 
+    localVacationResponder,
+    setLocalVacationResponder,
+    localSignatures,
+    setLocalSignatures
+ }) {
     return (
         <Container>
             <MainContainer>
@@ -71,13 +76,16 @@ export default function GeneralSettings({ localSettings, setLocalSettings }) {
                             <MyPictureRow />
                             <AutoCompleteContactsRow />
                             <AdsImportanceSignalsRow />
-                            <SignatureRow />
+                            <SignatureRow
+                                localSignatures={localSignatures}
+                                setLocalSignatures={setLocalSignatures}
+                            />
                             <PersonalLevelIndicatorsRow />
                             <SnippetsRow />
 
                             <OutOfOfficeAutoReply
-                                localSettings={localSettings}
-                                setLocalSettings={setLocalSettings}
+                                localSettings={localVacationResponder}
+                                setLocalSettings={setLocalVacationResponder}
                             />
                             {/* <SettingsFooterRow /> */}
                         </tbody>

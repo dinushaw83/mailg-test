@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Divider
@@ -9,36 +9,42 @@ import GeneralSettings from "./General";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const GeneralTab = () => {
-  const { 
-    vacationResponder, 
-    setVacationResponder, 
-    setShowQuickSettings 
+  const {
+    vacationResponder,
+    setVacationResponder,
+    signaturesState: globalSignatures,
+    setSignaturesState: setGlobalSignatures,
+    setShowQuickSettings,
   } = useGlobalContext();
 
-  const [localVocationResponderSettings, setLocalVocationResponderSettings] = useState(vacationResponder);
+  const [localVacationResponder, setLocalVacationResponder] = useState(vacationResponder);
+  const [localSignatures, setLocalSignatures] = useState(globalSignatures);
+
   const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
 
   // Initialize local settings from global context (which is already persisted)
   useEffect(() => {
-    setLocalVocationResponderSettings(vacationResponder);
-  }, [vacationResponder]);
+    setLocalVacationResponder(vacationResponder);
+    setLocalSignatures(globalSignatures);
+  }, [vacationResponder, globalSignatures]);
 
-  // Check for changes whenever localVocationResponderSettings or vacationResponder changes
   useEffect(() => {
-    const hasLocalChanges = JSON.stringify(localVocationResponderSettings) !== JSON.stringify(vacationResponder);
-    setHasChanges(hasLocalChanges);
-  }, [localVocationResponderSettings, vacationResponder]);
+    const hasLocalChanges =
+      JSON.stringify(localVacationResponder) !== JSON.stringify(vacationResponder) ||
+      JSON.stringify(localSignatures) !== JSON.stringify(globalSignatures);
 
-  const handleSaveChanges = () => {
-    // Update global context (which automatically persists to localStorage via usePersistedState)
-    setVacationResponder(localVocationResponderSettings);
+    setHasChanges(hasLocalChanges);
+  }, [localVacationResponder, vacationResponder, localSignatures, globalSignatures]);
+
+  const handleSave = useCallback(() => {
+    setVacationResponder(localVacationResponder);
+    setGlobalSignatures(localSignatures);
+
     setHasChanges(false);
-    // Close the settings sidebar
     setShowQuickSettings(false);
-    // Navigate back to inbox
-    navigate('/inbox');
-  };
+    navigate("/inbox");
+  }, [localVacationResponder, localSignatures, setVacationResponder, setGlobalSignatures]);
 
   const handleCancelChanges = () => {
     // Close the settings sidebar
@@ -50,8 +56,10 @@ const GeneralTab = () => {
   return (
     <Box sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }}>
       <GeneralSettings
-        localSettings={localVocationResponderSettings}
-        setLocalSettings={setLocalVocationResponderSettings}
+        localVacationResponder={localVacationResponder}
+        setLocalVacationResponder={setLocalVacationResponder}
+        localSignatures={localSignatures}
+        setLocalSignatures={setLocalSignatures}
       />
             
       {/* Horizontal Rule */}
@@ -60,7 +68,7 @@ const GeneralTab = () => {
       {/* Action Buttons */}
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
         <button
-          onClick={handleSaveChanges}
+          onClick={handleSave}
           disabled={!hasChanges}
           style={{ fontSize: "14px" }}
         >
