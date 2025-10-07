@@ -94,7 +94,7 @@ const SearchResultsView = () => {
 
     return sortedEmails.slice(startIndex, endIndex);
   }, [filteredRows, currentPage, itemsPerPage]);
-  console.log(rows, "rows");
+
   return (
     <div className="nH bkK">
       <div className="nH">

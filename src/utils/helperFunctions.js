@@ -194,8 +194,20 @@ export const queryToSearchBarString = (queryString) => {
       case "1 week":
         daysOffset = 7;
         break;
+      case "2 weeks":
+        daysOffset = 14;
+        break;
       case "1 month":
         daysOffset = 30;
+        break;
+      case "2 months":
+        daysOffset = 60;
+        break;
+      case "3 months":
+        daysOffset = 90;
+        break;
+      case "6 months":
+        daysOffset = 180;
         break;
       case "1 year":
         daysOffset = 365;
