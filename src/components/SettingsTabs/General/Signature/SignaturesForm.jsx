@@ -280,6 +280,8 @@ export default function SignaturesForm({
                             marginTop: "16px",
                             fontWeight: "normal",
                         }}
+                        checked={signaturesState.insertSignatureBeforeQuotedText}
+                        onChange={(e) => setSignaturesState({ ...signaturesState, insertSignatureBeforeQuotedText: e.target.checked })}
                     />{" "}
                     Insert signature before the quoted text in replies, and remove the '--' line that precedes it.
                 </label>

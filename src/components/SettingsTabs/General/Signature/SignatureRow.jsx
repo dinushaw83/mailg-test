@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@mui/material/Button";
 
 import {
@@ -18,10 +18,18 @@ export default function SignatureRow() {
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [activeSignature, setActiveSignature] = useState(null);
     const [editingSignature, setEditingSignature] = useState(null);
-    const { signaturesState, setSignaturesState } = useGlobalContext()
+    const {
+        signaturesState: globalSignaturesState,
+        setSignaturesState: setGlobalSignaturesState
+    } = useGlobalContext()
+    const [ signaturesState, setSignaturesState ] = useState(globalSignaturesState)
 
     const signatures = signaturesState?.list ?? []
     const editingSignatureData = signatures[editingSignature]
+
+    useEffect(() => {
+        setSignaturesState(globalSignaturesState);
+    }, [globalSignaturesState]);
 
     return (
         <SettingsRow>

@@ -55,6 +55,7 @@ export const GlobalContextProvider = ({ children }) => {
    *     }[];
    *     useForNewEmails: string;
    *     useForRepliesAndForwards: string;
+   *     insertSignatureBeforeQuotedText: boolean;
    *   }
    *  }
    */
@@ -62,6 +63,7 @@ export const GlobalContextProvider = ({ children }) => {
     list: [],
     useForNewEmails: "",
     useForRepliesAndForwards: "",
+    insertSignatureBeforeQuotedText: false,
   });
 
 
@@ -215,7 +217,7 @@ export const GlobalContextProvider = ({ children }) => {
     deletedRecipients,
     setDeletedRecipients,
     signaturesState,
-    setSignaturesState
+    setSignaturesState,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
