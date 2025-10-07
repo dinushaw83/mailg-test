@@ -65,7 +65,7 @@ export default function NewSignatureDialog({
         >
             <DialogTitle sx={{
                 px: 3, pt: 3, pb: 1.5,
-            }} style={dialogHeadlineStyle}>Name new signature</DialogTitle>
+            }} style={dialogHeadlineStyle}>{editingSignatureIndex !== undefined && editingSignatureIndex !== null ? "Edit signature name" : "Name new signature"}</DialogTitle>
 
             <DialogContent sx={{ px: 3, pt: 0, pb: 1 }}>
                 <TextField

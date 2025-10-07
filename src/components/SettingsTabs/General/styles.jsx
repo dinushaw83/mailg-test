@@ -228,7 +228,7 @@ export const MailGToolbarButton = styled("div")({
     borderRadius: "2px",
     background: "transparent",
     border: "none",
-    padding: 0,
+
     listStyle: "none",
     textDecoration: "none",
     height: "20px",

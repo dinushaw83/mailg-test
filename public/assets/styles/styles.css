@@ -12659,11 +12659,12 @@ body.aAU {
 .J-Z-M-I.active,
 .J-JN-M-I.active,
 .T-I-Kq.active {
-  background-color: rgba(32, 33, 36, 0.12) !important;
+  background-color: #d3e3fd !important;
   border: none !important;
   box-shadow: none !important;
   opacity: 1 !important;
   transform: scale(1);
+  /* padding: 2px !important; */
 }
 
 .J-Z-I:hover::before,
