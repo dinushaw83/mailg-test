@@ -4,7 +4,7 @@ import GeneralSettings from "./General";
 
 const GeneralTab = () => {
   return (
-    <Box sx={{ p: 3, height: "calc(100vh - 200px)", overflowY: "auto" }}>
+    <Box sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }}>
       <GeneralSettings />
     </Box>
   );
