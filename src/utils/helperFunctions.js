@@ -250,7 +250,7 @@ export const queryToSearchBarString = (queryString) => {
 
     if (value == null || value === "") continue; // skip empty values
 
-    // has -> go to front (original code used unshift into parts)
+    // has -> go to front
     if (key === "has" && value.trim()) {
       leading.unshift(quoteIfNeeded(value.trim()));
       continue;
@@ -261,13 +261,19 @@ export const queryToSearchBarString = (queryString) => {
       const emails = value
         .split(",")
         .map((e) => e.trim())
-        .filter(Boolean)
-        .map((e) => quoteIfNeeded(e)); // quote each email/display name if needed
+        .filter(Boolean);
 
-      if (emails.length === 1) {
-        leading.push(`${key}:${emails[0]}`);
-      } else if (emails.length > 1) {
-        leading.push(`${key}:(${emails.join(",")})`);
+      // Check if all values are valid emails
+      const allAreEmails = emails.every((e) => isValidEmail(e));
+      const quotedEmails = emails.map((e) => quoteIfNeeded(e));
+
+      if (emails.length >= 1) {
+        if (allAreEmails) {
+          leading.push(`${key}:(${quotedEmails.join(",")})`);
+        } else {
+          // Just a keyword, no parentheses
+          leading.push(`${key}:${quotedEmails[0]}`);
+        }
       }
       continue;
     }
@@ -329,6 +335,20 @@ function paramToToken(key, value) {
   if (value === "false") {
     // optional: represent negation. You can change behavior if you don't want negatives.
     return `-has:${k.replace(/^has/i, "").toLowerCase()}`;
+  }
+
+  // Handle from/to with parentheses only if it's an email
+  if (k === "from" || k === "to") {
+    // Check if it contains email(s)
+    const values = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    const allAreEmails = values.every((v) => isValidEmail(v));
+
+    if (allAreEmails) {
+      return `${k}:(${value})`;
+    }
   }
 
   // default: key:value

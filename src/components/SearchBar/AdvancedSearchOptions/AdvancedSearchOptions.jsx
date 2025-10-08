@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box, Checkbox, ClickAwayListener, MenuItem, Select, TextField } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "./DatePicker";
 import EmailField from "./EmailField";
 import dayjs from "dayjs";
@@ -53,8 +53,10 @@ const subsetOptions = [
 
 const AdvancedSearchOptions = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const fromFieldRef = useRef(null);
-  const [formData, setFormData] = useState({
+
+  const getDefaultFormData = () => ({
     from: "",
     to: "",
     subject: "",
@@ -69,6 +71,38 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     attachment: false,
     includeChats: false,
   });
+
+  const [formData, setFormData] = useState(getDefaultFormData());
+
+  // Sync formData with URL parameters when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const searchParams = new URLSearchParams(location.search);
+      const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
+
+      if (isAdvancedSearch && searchParams.toString()) {
+        // Populate form data from URL parameters
+        setFormData({
+          from: searchParams.get("from") || "",
+          to: searchParams.get("to") || "",
+          subject: searchParams.get("subject") || "",
+          has: searchParams.get("has") || "",
+          hasnot: searchParams.get("hasnot") || "",
+          sizeOperator: searchParams.get("sizeOperator") || "less than",
+          size: searchParams.get("size") || "",
+          sizeUnit: searchParams.get("sizeUnit") || "MB",
+          within: searchParams.get("within") || "1 day",
+          date: searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
+          subset: searchParams.get("subset") || "All Mail",
+          attachment: searchParams.get("attachment") === "true",
+          includeChats: searchParams.get("includeChats") === "true",
+        });
+      } else {
+        // Reset to default values when opening from non-advanced search
+        setFormData(getDefaultFormData());
+      }
+    }
+  }, [isOpen, location.search, location.pathname]);
 
   // Auto-focus the "from" field when modal opens
   useEffect(() => {

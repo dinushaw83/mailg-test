@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 import { Autocomplete, Stack, TextField, Box, Avatar, Typography } from "@mui/material";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { generateAvatarColor } from "../../../utils/helperFunctions";
@@ -21,15 +21,43 @@ const InputStyle = {
   },
 };
 
-const EmailField = React.forwardRef(({ label, onChange }, ref) => {
+const EmailField = React.forwardRef(({ label, value = "", onChange, placeholder }, ref) => {
   const { recipients: globalRecipients } = useContext(GlobalContext);
   const [inputValue, setInputValue] = useState("");
   const [confirmedEmails, setConfirmedEmails] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = ref || useRef(null);
+  const lastEmittedValue = useRef("");
 
-  // For backwards compatibility - only used for initial value
-  const emailArray = confirmedEmails;
+  // Sync internal state with external value prop (only when changed externally, not during typing)
+  useEffect(() => {
+    if (value !== undefined && value !== null) {
+      const currentValue = confirmedEmails.join(", ");
+      const normalizedValue = value.trim();
+      const normalizedCurrent = currentValue.trim();
+
+      // Only sync if:
+      // 1. The value is different from our current state
+      // 2. AND it's not the value we just emitted (to avoid feedback loops during typing)
+      const isDifferent = normalizedCurrent !== normalizedValue;
+      const isNotOurEmission = lastEmittedValue.current !== normalizedValue;
+
+      // Skip sync if this is our own emission OR if it's partial input (no commas and not empty)
+      const isPartialInput = !normalizedValue.includes(",") && normalizedValue !== "" && !isNotOurEmission;
+
+      if (isDifferent && !isPartialInput && isNotOurEmission) {
+        const emails = normalizedValue
+          .split(",")
+          .map((email) => email.trim())
+          .filter((email) => email);
+
+        setConfirmedEmails(emails);
+        setInputValue("");
+        lastEmittedValue.current = normalizedValue;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   const isValidEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -75,7 +103,9 @@ const EmailField = React.forwardRef(({ label, onChange }, ref) => {
       const email = typeof newValue === "string" ? newValue : newValue.email;
       const newEmailArray = [...confirmedEmails, email];
       setConfirmedEmails(newEmailArray);
-      onChange(newEmailArray.join(", "));
+      const emittedValue = newEmailArray.join(", ");
+      lastEmittedValue.current = emittedValue;
+      onChange(emittedValue);
       setInputValue("");
     }
   };
@@ -89,11 +119,14 @@ const EmailField = React.forwardRef(({ label, onChange }, ref) => {
         setInputValue(newInput);
 
         // Update parent with combined value (confirmed emails + current input)
+        let emittedValue;
         if (newInput.trim()) {
-          onChange(confirmedEmails.join(", ") + ", " + newInput);
+          emittedValue = confirmedEmails.join(", ") + ", " + newInput;
         } else {
-          onChange(confirmedEmails.join(", "));
+          emittedValue = confirmedEmails.join(", ");
         }
+        lastEmittedValue.current = emittedValue;
+        onChange(emittedValue);
 
         // Handle comma-separated input (like Gmail)
         if (newInput.includes(",")) {
@@ -106,7 +139,9 @@ const EmailField = React.forwardRef(({ label, onChange }, ref) => {
           if (validEmails.length > 0) {
             const newEmailArray = [...confirmedEmails, ...validEmails];
             setConfirmedEmails(newEmailArray);
-            onChange(newEmailArray.join(", "));
+            const confirmedValue = newEmailArray.join(", ");
+            lastEmittedValue.current = confirmedValue;
+            onChange(confirmedValue);
             setInputValue("");
           }
         }
@@ -118,13 +153,16 @@ const EmailField = React.forwardRef(({ label, onChange }, ref) => {
           .filter((email) => email);
         const validEmails = emails.filter((email) => isValidEmail(email));
         setConfirmedEmails(validEmails);
-        onChange(validEmails.join(", "));
+        const emittedValue = validEmails.join(", ");
+        lastEmittedValue.current = emittedValue;
+        onChange(emittedValue);
         setInputValue("");
       }
     } else {
       setInputValue(newInputValue);
 
       // Update parent with current input
+      lastEmittedValue.current = newInputValue;
       onChange(newInputValue);
 
       // Handle comma-separated input (like Gmail)
@@ -137,7 +175,9 @@ const EmailField = React.forwardRef(({ label, onChange }, ref) => {
 
         if (validEmails.length > 0) {
           setConfirmedEmails(validEmails);
-          onChange(validEmails.join(", "));
+          const emittedValue = validEmails.join(", ");
+          lastEmittedValue.current = emittedValue;
+          onChange(emittedValue);
           setInputValue("");
         }
       }
@@ -151,7 +191,9 @@ const EmailField = React.forwardRef(({ label, onChange }, ref) => {
       if (isValidEmail(inputValue.trim())) {
         const newEmailArray = [...confirmedEmails, inputValue.trim()];
         setConfirmedEmails(newEmailArray);
-        onChange(newEmailArray.join(", "));
+        const emittedValue = newEmailArray.join(", ");
+        lastEmittedValue.current = emittedValue;
+        onChange(emittedValue);
         setInputValue("");
       }
     }
@@ -160,7 +202,9 @@ const EmailField = React.forwardRef(({ label, onChange }, ref) => {
     if (event.key === "Backspace" && !inputValue && confirmedEmails.length > 0) {
       const newEmailArray = confirmedEmails.slice(0, -1);
       setConfirmedEmails(newEmailArray);
-      onChange(newEmailArray.join(", "));
+      const emittedValue = newEmailArray.join(", ");
+      lastEmittedValue.current = emittedValue;
+      onChange(emittedValue);
     }
   };
 
