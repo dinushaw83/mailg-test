@@ -10,7 +10,7 @@ import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
 
-const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu }) => {
+const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selection, composeWindows, panelState, previewEmailId } = useGlobalContext();
@@ -86,6 +86,14 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu }) 
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
       const composeParam = urlParams.get("compose");
+      const pathname = location.pathname;
+
+      if (pathname.startsWith("/search")) {
+        const composeQuery = composeParam ? `?compose=${composeParam}` : "";
+        navigate(`/inbox/${threadId}${composeQuery}`);
+        return;
+      }
+
       if (composeParam) {
         navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
       } else {
@@ -146,7 +154,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu }) 
           )}
         </PanelGroup>
       </div>
-      {!showPanel && <Footer />}
+      {!showPanel && showFooter && <Footer />}
     </div>
   );
 };

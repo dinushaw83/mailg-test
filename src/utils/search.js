@@ -186,7 +186,7 @@ export function buildSearchIndex(emails) {
 }
 
 /**
- * Simple search function
+ * Advanced search function with multiple criteria
  */
 export function searchEmails(query, options = {}) {
   if (!searchIndex || !query || !query.trim()) {
@@ -215,6 +215,242 @@ export function searchEmails(query, options = {}) {
 
     return emailResults;
   } catch (error) {
+    return [];
+  }
+}
+
+/**
+ * Advanced search function with multiple criteria
+ */
+export function advancedSearchEmails(searchCriteria, options = {}) {
+  if (!emailDocuments || emailDocuments.length === 0) {
+    return [];
+  }
+
+  try {
+    let filteredEmails = [...emailDocuments];
+
+    // Apply text search if provided
+    if (searchCriteria.query && searchCriteria.query.trim()) {
+      const query = searchCriteria.query.trim().toLowerCase();
+      filteredEmails = filteredEmails.filter((email) => {
+        const searchableText = `${email.subject || ""} ${email.preview || ""} ${email.body || ""} ${
+          email.fromName || ""
+        } ${email.fromEmail || ""}`.toLowerCase();
+        return searchableText.includes(query);
+      });
+    }
+
+    // Apply "from" filter
+    if (searchCriteria.from && searchCriteria.from.trim()) {
+      const fromEmails = searchCriteria.from.split(",").map((email) => email.trim().toLowerCase());
+      filteredEmails = filteredEmails.filter((email) => {
+        return fromEmails.some(
+          (fromEmail) =>
+            (email.from?.name && email.from.name.toLowerCase().includes(fromEmail)) ||
+            (email.from?.email && email.from.email.toLowerCase().includes(fromEmail))
+        );
+      });
+    }
+
+    // Apply "to" filter
+    if (searchCriteria.to && searchCriteria.to.trim()) {
+      const toEmails = searchCriteria.to.split(",").map((email) => email.trim().toLowerCase());
+      filteredEmails = filteredEmails.filter((email) => {
+        if (Array.isArray(email.to)) {
+          return email.to.some((recipient) => toEmails.some((toEmail) => recipient.toLowerCase().includes(toEmail)));
+        } else if (typeof email.to === "string") {
+          return toEmails.some((toEmail) => email.to.toLowerCase().includes(toEmail));
+        }
+        return false;
+      });
+    }
+
+    // Apply "subject" filter
+    if (searchCriteria.subject && searchCriteria.subject.trim()) {
+      const subjectQuery = searchCriteria.subject.trim().toLowerCase();
+      filteredEmails = filteredEmails.filter((email) => {
+        return email.subject && email.subject.toLowerCase().includes(subjectQuery);
+      });
+    }
+
+    // Apply "attachment" filter
+    if (searchCriteria.attachment) {
+      // We need to get the original email data to check for attachments
+      // Since our emailDocuments don't include attachment info, we'll need to cross-reference
+      filteredEmails = filteredEmails.filter((email) => {
+        // This will be handled by cross-referencing with original emails
+        return true; // Placeholder - will be filtered later
+      });
+    }
+
+    // Apply limit only if specified
+    if (options.limit !== null && options.limit !== undefined) {
+      filteredEmails = filteredEmails.slice(0, options.limit || 5);
+    }
+
+    return filteredEmails;
+  } catch (error) {
+    console.error("Advanced search error:", error);
+    return [];
+  }
+}
+
+/**
+ * Advanced search with full email data (including attachments)
+ */
+export function advancedSearchWithFullData(searchCriteria, emails, options = {}) {
+  if (!emails || emails.length === 0) {
+    return [];
+  }
+
+  try {
+    let filteredEmails = [...emails];
+
+    // Apply text search if provided
+    if (searchCriteria.query && searchCriteria.query.trim()) {
+      const query = searchCriteria.query.trim().toLowerCase();
+      filteredEmails = filteredEmails.filter((email) => {
+        const searchableText = `${email.subject || ""} ${email.preview || ""} ${email.body || ""} ${
+          email.from?.name || ""
+        } ${email.from?.email || ""}`.toLowerCase();
+        return searchableText.includes(query);
+      });
+    }
+
+    // Apply "from" filter
+    if (searchCriteria.from && searchCriteria.from.trim()) {
+      const fromEmails = searchCriteria.from.split(",").map((email) => email.trim().toLowerCase());
+      filteredEmails = filteredEmails.filter((email) => {
+        return fromEmails.some(
+          (fromEmail) =>
+            (email.from?.name && email.from.name.toLowerCase().includes(fromEmail)) ||
+            (email.from?.email && email.from.email.toLowerCase().includes(fromEmail))
+        );
+      });
+    }
+
+    // Apply "to" filter
+    if (searchCriteria.to && searchCriteria.to.trim()) {
+      const toEmails = searchCriteria.to.split(",").map((email) => email.trim().toLowerCase());
+      filteredEmails = filteredEmails.filter((email) => {
+        if (Array.isArray(email.to)) {
+          return email.to.some((recipient) => toEmails.some((toEmail) => recipient.toLowerCase().includes(toEmail)));
+        } else if (typeof email.to === "string") {
+          return toEmails.some((toEmail) => email.to.toLowerCase().includes(toEmail));
+        }
+        return false;
+      });
+    }
+
+    // Apply "subject" filter
+    if (searchCriteria.subject && searchCriteria.subject.trim()) {
+      const subjectQuery = searchCriteria.subject.trim().toLowerCase();
+      filteredEmails = filteredEmails.filter((email) => {
+        return email.subject && email.subject.toLowerCase().includes(subjectQuery);
+      });
+    }
+
+    // Apply "attachment" filter
+    if (searchCriteria.attachment) {
+      filteredEmails = filteredEmails.filter((email) => {
+        return email.attachments && email.attachments.length > 0;
+      });
+    }
+
+    // Apply "has" filter
+    if (searchCriteria.has && searchCriteria.has.trim()) {
+      const wordsQuery = searchCriteria.has.trim().toLowerCase();
+      const words = wordsQuery.split(/\s+/);
+      filteredEmails = filteredEmails.filter((email) => {
+        const searchableText = `${email.subject || ""} ${email.preview || ""} ${email.body || ""}`.toLowerCase();
+        return words.every((word) => searchableText.includes(word));
+      });
+    }
+
+    // Apply "hasnot" filter
+    if (searchCriteria.hasnot && searchCriteria.hasnot.trim()) {
+      const excludeQuery = searchCriteria.hasnot.trim().toLowerCase();
+      const excludeWords = excludeQuery.split(/\s+/);
+      filteredEmails = filteredEmails.filter((email) => {
+        const searchableText = `${email.subject || ""} ${email.preview || ""} ${email.body || ""}`.toLowerCase();
+        return !excludeWords.some((word) => searchableText.includes(word));
+      });
+    }
+
+    // Apply date and within filter
+    if (searchCriteria.within && searchCriteria.date) {
+      // Parse the selected date and set it to start of day in local timezone
+      const selectedDate = new Date(searchCriteria.date + "T00:00:00");
+      let daysOffset = 1; // default to 1 day
+
+      switch (searchCriteria.within) {
+        case "1 day":
+          daysOffset = 1;
+          break;
+        case "3 days":
+          daysOffset = 3;
+          break;
+        case "1 week":
+          daysOffset = 7;
+          break;
+        case "2 weeks":
+          daysOffset = 14;
+          break;
+        case "1 month":
+          daysOffset = 30;
+          break;
+        case "2 months":
+          daysOffset = 60;
+          break;
+        case "3 months":
+          daysOffset = 90;
+          break;
+        case "6 months":
+          daysOffset = 180;
+          break;
+        case "1 year":
+          daysOffset = 365;
+          break;
+      }
+
+      // Calculate after and before dates
+      // For "1 day" with Aug 31: after = Aug 30, before = Sep 2 (exclusive)
+      const afterDate = new Date(selectedDate.getTime() - daysOffset * 24 * 60 * 60 * 1000);
+      const beforeDate = new Date(selectedDate.getTime() + (daysOffset + 1) * 24 * 60 * 60 * 1000);
+
+      // console.log("Date filter debug:", {
+      //   selectedDate: searchCriteria.dateValue,
+      //   dateWithin: searchCriteria.dateWithin,
+      //   afterDate: afterDate.toISOString(),
+      //   beforeDate: beforeDate.toISOString(),
+      //   daysOffset,
+      // });
+
+      filteredEmails = filteredEmails.filter((email) => {
+        const emailDate = new Date(email.timestamp);
+        const isInRange = emailDate >= afterDate && emailDate < beforeDate;
+        // if (isInRange) {
+        //   console.log("Email in range:", {
+        //     emailId: email.id,
+        //     emailDate: email.timestamp,
+        //     subject: email.subject,
+        //   });
+        // }
+        return isInRange;
+      });
+    }
+
+    // Apply subset filter
+    if (searchCriteria.subset && searchCriteria.subset !== "All Mail") {
+      filteredEmails = filteredEmails.filter((email) => {
+        return email.labels && email.labels.includes(searchCriteria.subset);
+      });
+    }
+
+    return filteredEmails;
+  } catch (error) {
+    console.error("Advanced search with full data error:", error);
     return [];
   }
 }
@@ -305,4 +541,45 @@ export function clearSearchIndex() {
   emailDocuments = [];
   lastEmailHash = null;
   localStorage.removeItem("searchIndex");
+}
+
+/**
+ * Create a human-readable search summary from search criteria
+ */
+export function createSearchSummary(searchCriteria) {
+  const parts = [];
+
+  if (searchCriteria.from) {
+    parts.push(`from: ${searchCriteria.from}`);
+  }
+
+  if (searchCriteria.to) {
+    parts.push(`to: ${searchCriteria.to}`);
+  }
+
+  if (searchCriteria.subject) {
+    parts.push(`subject: ${searchCriteria.subject}`);
+  }
+
+  if (searchCriteria.has) {
+    parts.push(`has: ${searchCriteria.has}`);
+  }
+
+  if (searchCriteria.hasnot) {
+    parts.push(`hasnot: ${searchCriteria.hasnot}`);
+  }
+
+  if (searchCriteria.attachment) {
+    parts.push("attachment");
+  }
+
+  if (searchCriteria.within && searchCriteria.date) {
+    parts.push(`within ${searchCriteria.within}`);
+  }
+
+  if (searchCriteria.subset && searchCriteria.subset !== "All Mail") {
+    parts.push(`subset ${searchCriteria.subset}`);
+  }
+
+  return parts.length > 0 ? parts.join(", ") : "all emails";
 }
