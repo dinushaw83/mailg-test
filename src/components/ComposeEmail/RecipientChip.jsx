@@ -3,7 +3,7 @@ import { Avatar, Chip } from "@mui/material";
 import ContactPopup from "../Contacts/ContactPopup";
 import { generateAvatarColor } from "../../utils/helperFunctions";
 
-export default function RecipientChip({ recipient, onDelete }) {
+export default function RecipientChip({ recipient, onDelete, isDuplicate = false }) {
   const isCustomRecipient = recipient.id && typeof recipient.id === "string" && recipient.id.startsWith("custom-");
   const name = recipient.name || recipient.email || "";
   const avatarColor = generateAvatarColor(name);
@@ -15,8 +15,8 @@ export default function RecipientChip({ recipient, onDelete }) {
         avatar={
           <Avatar
             sx={{
-              bgcolor: isCustomRecipient ? "#a0c3ff" : avatarColor,
-              color: isCustomRecipient ? "#1976d2" : "white",
+              bgcolor: isDuplicate ? "#fdecea" : isCustomRecipient ? "#a0c3ff" : avatarColor,
+              color: isDuplicate ? "#b3261f" : isCustomRecipient ? "#1976d2" : "white",
               fontSize: "12px",
               width: 24,
               height: 24,
@@ -43,29 +43,31 @@ export default function RecipientChip({ recipient, onDelete }) {
         size="small"
         sx={{
           height: 28,
-          backgroundColor: "white",
-          boxShadow: "0 0 0 1px var(--pkw-outline,rgb(218,220,224)) inset",
+          backgroundColor: isDuplicate ? "#fdecea" : "white",
+          boxShadow: isDuplicate
+            ? "0 0 0 1px #f1b8b3 inset"
+            : "0 0 0 1px var(--pkw-outline,rgb(218,220,224)) inset",
           "& .MuiChip-label": {
             fontSize: "14px",
             fontWeight: 500,
-            color: "rgb(95,99,104)",
+            color: isDuplicate ? "#b3261f" : "rgb(95,99,104)",
           },
           "& .MuiChip-deleteIcon": {
             fontSize: "20px",
-            color: "rgba(0, 0, 0, 0.6)",
+            color: isDuplicate ? "#b3261f" : "rgba(0, 0, 0, 0.6)",
           },
           "&:hover": {
-            backgroundColor: "rgba(0, 0, 0, 0.06)",
+            backgroundColor: isDuplicate ? "#fbe4e1" : "rgba(0, 0, 0, 0.06)",
             cursor: "pointer",
           },
           "&:hover .MuiChip-label": {
-            color: "rgba(0, 0, 0, 0.8)",
+            color: isDuplicate ? "#8b1f16" : "rgba(0, 0, 0, 0.8)",
           },
           "&:hover .MuiChip-deleteIcon": {
-            color: "rgba(0, 0, 0, 0.8)",
+            color: isDuplicate ? "#8b1f16" : "rgba(0, 0, 0, 0.8)",
           },
           ".MuiChip-avatar": {
-            color: isCustomRecipient ? "#1976d2" : "white",
+            color: isDuplicate ? "#b3261f" : isCustomRecipient ? "#1976d2" : "white",
           },
           ".MuiChip-avatarSmall": {
             marginLeft: "2px",
@@ -73,6 +75,7 @@ export default function RecipientChip({ recipient, onDelete }) {
             height: "24px",
           },
         }}
+        title={isDuplicate ? "Duplicate recipient" : undefined}
       />
     </ContactPopup>
   );

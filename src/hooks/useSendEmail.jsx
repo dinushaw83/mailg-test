@@ -77,6 +77,22 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       }
     }
 
+    // Duplicate detection across To/Cc/Bcc
+    const seen = new Set();
+    const dups = new Set();
+    allRecipients.forEach((r) => {
+      const email = String(r.email || r.name || r || "").toLowerCase();
+      if (!email) return;
+      if (seen.has(email)) dups.add(email);
+      seen.add(email);
+    });
+    if (dups.size > 0) {
+      setShowErrorModal(true);
+      const one = [...dups][0];
+      setErrorMessage(`Duplicate recipient detected: "${one}". Please remove duplicates and try again.`);
+      return;
+    }
+
     if (invalidRecipient) {
       // Get the actual invalid text (could be email, name, or the recipient itself)
       const invalidText = invalidRecipient.email || invalidRecipient.name || invalidRecipient;

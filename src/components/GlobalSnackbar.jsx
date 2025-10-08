@@ -38,14 +38,19 @@ export default function GlobalSnackbar() {
       }
       sx={{
         "& .MuiSnackbarContent-root": {
-          backgroundColor: "#fff",
-          color: "rgb(95,99,104)",
+          backgroundColor: snackbar?.severity === "error" ? "#fdecea" : "#fff",
+          color: snackbar?.severity === "error" ? "#b3261f" : "rgb(95,99,104)",
           boxShadow: "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)",
           minWidth: "150px",
           padding: "8px 16px",
           fontSize: "14px",
           borderRadius: "5px",
         },
+        ...(snackbar?.severity === "error"
+          ? {
+              border: "1px solid #f1b8b3",
+            }
+          : {}),
         ...(snackbar?.style ? { ...snackbar.style } : {}),
       }}
     />

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext, useMemo } from "react";
+import React, { useState, useRef, useEffect, useContext, useMemo, useCallback } from "react";
 import { Tooltip, Autocomplete, TextField, Avatar, Box, Typography } from "@mui/material";
 import RecipientChip from "./RecipientChip";
 import SelectContacts from "./SelectContacts/SelectContacts";
@@ -46,14 +46,56 @@ export default function RecipientsInput({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const containerRef = useRef(null);
   const [selectedContactsModal, setSelectedContactsModal] = useState({ field: null, open: false });
+  const [invalids, setInvalids] = useState({ to: new Set(), cc: new Set(), bcc: new Set() });
+  const [duplicates, setDuplicates] = useState({ to: new Set(), cc: new Set(), bcc: new Set() });
+
+  const emailRegex = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/i, []);
+
+  const validateRecipients = useCallback(
+    (nextSelected, nextInputs) => {
+      const nextInvalids = { to: new Set(), cc: new Set(), bcc: new Set() };
+      const nextDuplicates = { to: new Set(), cc: new Set(), bcc: new Set() };
+
+      // Build global counts across to/cc/bcc to detect duplicates overall
+      const counts = new Map();
+      ["to", "cc", "bcc"].forEach((field) => {
+        (nextSelected[field] || []).forEach((r) => {
+          const e = String(r.email || r.name || "").toLowerCase();
+          if (!e) return;
+          counts.set(e, (counts.get(e) || 0) + 1);
+        });
+      });
+
+      const checkField = (field) => {
+        const emails = (nextSelected[field] || []).map((r) => (r.email || r.name || "").toLowerCase());
+        const input = (nextInputs?.[field] || "").trim().toLowerCase();
+
+        // duplicates across all fields
+        emails.forEach((e) => {
+          if ((counts.get(e) || 0) > 1) nextDuplicates[field].add(e);
+          if (!emailRegex.test(e)) nextInvalids[field].add(e);
+        });
+
+        if (input && !emailRegex.test(input)) {
+          nextInvalids[field].add(input);
+        }
+      };
+
+      ["to", "cc", "bcc"].forEach(checkField);
+      setInvalids(nextInvalids);
+      setDuplicates(nextDuplicates);
+    },
+    [emailRegex]
+  );
 
   // Sync internal state with props when they change
   useEffect(() => {
-    setSelectedRecipients({
+    const nextSelected = {
       to: Array.isArray(to) ? to : [],
       cc: Array.isArray(cc) ? cc : [],
       bcc: Array.isArray(bcc) ? bcc : [],
-    });
+    };
+    setSelectedRecipients(nextSelected);
 
     // Only reset input values if all props are empty (form reset)
     const allPropsEmpty = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
@@ -64,7 +106,8 @@ export default function RecipientsInput({
         bcc: "",
       });
     }
-  }, [to, cc, bcc]);
+    validateRecipients(nextSelected, inputValues);
+  }, [to, cc, bcc, validateRecipients]);
 
   // Highlight matching text in bold
   const highlightMatchingText = (text, searchTerm) => {
@@ -132,6 +175,8 @@ export default function RecipientsInput({
         onToChange(toWithInput, inputValues.to.trim());
         onCcChange(ccWithInput, inputValues.cc.trim());
         onBccChange(bccWithInput, inputValues.bcc.trim());
+
+        validateRecipients({ to: toWithInput, cc: ccWithInput, bcc: bccWithInput }, inputValues);
 
         // Always collapse on outside click
         setIsExpanded(false);
@@ -544,6 +589,7 @@ export default function RecipientsInput({
                   key={`${recipient.email}-${recipient.id}`}
                   recipient={recipient}
                   onDelete={() => handleChipDelete(recipient, "to")}
+                  isDuplicate={duplicates.to.has((recipient.email || recipient.name || "").toLowerCase())}
                 />
               ))}
               <Autocomplete
@@ -554,6 +600,7 @@ export default function RecipientsInput({
                 onChange={(event, newValue) => handleAutocompleteChange(event, newValue, "to")}
                 onInputChange={(event, newInputValue) => {
                   setInputValues((prev) => ({ ...prev, to: newInputValue }));
+                  validateRecipients(selectedRecipients, { ...inputValues, to: newInputValue });
                 }}
                 onOpen={() => setHighlightedIndex(0)}
                 onClose={() => setHighlightedIndex(0)}
@@ -642,13 +689,14 @@ export default function RecipientsInput({
                   minHeight: selectedRecipients.cc.length > 0 ? "40px" : "20px",
                 }}
               >
-                {selectedRecipients.cc.map((recipient) => (
-                  <RecipientChip
-                    key={`${recipient.email}-${recipient.id}`}
-                    recipient={recipient}
-                    onDelete={() => handleChipDelete(recipient, "cc")}
-                  />
-                ))}
+              {selectedRecipients.cc.map((recipient) => (
+                <RecipientChip
+                  key={`${recipient.email}-${recipient.id}`}
+                  recipient={recipient}
+                  onDelete={() => handleChipDelete(recipient, "cc")}
+                  isDuplicate={duplicates.cc.has((recipient.email || recipient.name || "").toLowerCase())}
+                />
+              ))}
                 <Autocomplete
                   options={recipients || []}
                   getOptionLabel={(option) => option.email}
@@ -657,6 +705,7 @@ export default function RecipientsInput({
                   onChange={(event, newValue) => handleAutocompleteChange(event, newValue, "cc")}
                   onInputChange={(event, newInputValue) => {
                     setInputValues((prev) => ({ ...prev, cc: newInputValue }));
+                    validateRecipients(selectedRecipients, { ...inputValues, cc: newInputValue });
                   }}
                   onOpen={() => setHighlightedIndex(0)}
                   onClose={() => setHighlightedIndex(0)}
@@ -745,13 +794,14 @@ export default function RecipientsInput({
                   minHeight: selectedRecipients.bcc.length > 0 ? "40px" : "20px",
                 }}
               >
-                {selectedRecipients.bcc.map((recipient) => (
-                  <RecipientChip
-                    key={`${recipient.email}-${recipient.id}`}
-                    recipient={recipient}
-                    onDelete={() => handleChipDelete(recipient, "bcc")}
-                  />
-                ))}
+              {selectedRecipients.bcc.map((recipient) => (
+                <RecipientChip
+                  key={`${recipient.email}-${recipient.id}`}
+                  recipient={recipient}
+                  onDelete={() => handleChipDelete(recipient, "bcc")}
+                  isDuplicate={duplicates.bcc.has((recipient.email || recipient.name || "").toLowerCase())}
+                />
+              ))}
                 <Autocomplete
                   options={recipients || []}
                   getOptionLabel={(option) => option.email}
@@ -760,6 +810,7 @@ export default function RecipientsInput({
                   onChange={(event, newValue) => handleAutocompleteChange(event, newValue, "bcc")}
                   onInputChange={(event, newInputValue) => {
                     setInputValues((prev) => ({ ...prev, bcc: newInputValue }));
+                    validateRecipients(selectedRecipients, { ...inputValues, bcc: newInputValue });
                   }}
                   onOpen={() => setHighlightedIndex(0)}
                   onClose={() => setHighlightedIndex(0)}

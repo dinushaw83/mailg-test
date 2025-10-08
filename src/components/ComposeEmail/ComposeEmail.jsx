@@ -219,6 +219,15 @@ export default function ComposeEmail({ composeWindow }) {
   } = useScheduleEmail(null);
 
   const handleSend = () => {
+    // Optional: warn if subject and body are empty (non-blocking)
+    if (!subject.trim() && !content.plainText.trim()) {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "No subject or message body.",
+        autoHideDuration: 3000,
+      });
+    }
     handleSendEmail({
       to,
       cc,

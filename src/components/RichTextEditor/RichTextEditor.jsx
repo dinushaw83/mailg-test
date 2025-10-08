@@ -58,7 +58,7 @@ export default function Editor({
   const nativeFilePickerRef = useRef(null);
 
   const [attachments, setAttachments] = useState([]);
-  const { db } = useGlobalContext();
+  const { db, setSnackbar } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
 
@@ -279,11 +279,41 @@ export default function Editor({
     nativeFilePickerRef.current?.click();
   };
 
+  const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024; // 25MB
+  const ALLOWED_TYPES = new Set([
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "application/pdf",
+    "text/plain",
+  ]);
+
   const handleNativeFilePickerChange = (e) => {
     const { files = [] } = e.target;
 
     const newFiles = [];
     for (const file of files) {
+      // Size validation
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "Attachment too large. This file is larger than 25 MB. Please attach a smaller file.",
+          autoHideDuration: 6000,
+        });
+        continue;
+      }
+      // Type validation (allow unknowns by blocking; we can adjust list as needed)
+      const type = (file.type || "").toLowerCase();
+      if (type && !ALLOWED_TYPES.has(type)) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "File type not allowed.",
+          autoHideDuration: 4000,
+        });
+        continue;
+      }
       const id = generateRandomId();
       const url = URL.createObjectURL(file);
       const metadata = {
