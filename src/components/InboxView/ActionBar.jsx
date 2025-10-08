@@ -17,6 +17,7 @@ import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 
 export const Icon = ({
+  id,
   name,
   label,
   onClick,
@@ -33,6 +34,7 @@ export const Icon = ({
   return (
     <Tooltip title={label} placement={placement}>
       <IconButton
+        id={id}
         size={size}
         sx={{
           width,

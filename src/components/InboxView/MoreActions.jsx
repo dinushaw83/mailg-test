@@ -9,7 +9,7 @@ import { ActionMenuItem } from "../MailActions/ActionMenuItem";
 import { useNavigate } from "react-router-dom";
 
 const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
-  const { markRead, setStar, setImportant, snooze, toggleMute } = useMailActions();
+  const { markRead, setStar, setImportant, snooze, setMuted } = useMailActions();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentPopover, setCurrentPopover] = React.useState("main");
@@ -29,7 +29,6 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
   const handleSnoozeClick = () => {
     setCurrentPopover("snooze");
   };
-
 
   const open = Boolean(anchorEl);
   const id = open ? "more-actions-popover" : undefined;
@@ -60,9 +59,9 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
   );
 
   const handleMute = useCallback(() => {
-    toggleMute([threadId], !muted);
+    setMuted([threadId], !muted);
     handleClose();
-  }, [threadId, toggleMute, muted]);
+  }, [threadId, setMuted, muted]);
 
   const handleMarkUnread = useCallback(() => {
     markRead([threadId], false);
@@ -132,7 +131,6 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
           snooze={snooze}
         />
       )}
-
     </Box>
   );
 };

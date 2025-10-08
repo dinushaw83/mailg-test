@@ -1,5 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+
+import { useContextMenu } from "react-contexify";
 
 import CheckBox from "../ui/CheckBox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -12,6 +14,7 @@ import styled from "@emotion/styled";
 import Icon from "../ui/Icon";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
+import ContextMenu from "./ContextMenu";
 import { isDocument, isSpreadsheet, isPresentation } from "../InboxView/Attachments";
 
 // Show by default, hide when .zA is hovered
@@ -183,6 +186,8 @@ const OneColumnData = ({
   );
 };
 
+const MENU_ID = "row-item-menu";
+
 const Table = ({
   emails,
   getRowClassName,
@@ -196,14 +201,27 @@ const Table = ({
   getSenderClassName,
   getLabelBadges,
   formatDate,
+  setShowAdvancedMenu,
 }) => {
-  const { setPreviewEmailId, panelState, density, setSnackbar, db } = useGlobalContext();
+  const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
-  const { archive, moveToInbox, moveToTrash, markRead, snooze } = useMailActions();
-  const [snoozeId, setSnoozeId] = useState(null);
+  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted, unsnooze } = useMailActions();
   const snoozeAnchorElRef = useRef(null);
-  const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
+  const [contextRow, setContextRow] = useState(null);
+
+  const [{ snoozeId, snoozeAnchorEl }, setState] = useState({
+    snoozeId: null,
+    snoozeAnchorEl: null,
+  });
+
   const showSnoozePopover = Boolean(snoozeAnchorEl);
+
+  const setSnoozeAnchorEl = useCallback((element) => {
+    setState((prev) => ({
+      ...prev,
+      snoozeAnchorEl: element,
+    }));
+  }, []);
 
   const renderOneColumn = dimensions.width < 525;
 
@@ -280,13 +298,101 @@ const Table = ({
 
   const handleReadAction = useCallback(
     (email) => {
-      if (!email.read) {
-        markRead([email.id], true);
-      } else {
-        markRead([email.id], false);
-      }
+      const { read } = email;
+
+      markRead([email.id], !read);
+
+      setSnackbar({
+        open: true,
+        message: "Conversation marked as read.",
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              markRead([email.id], read);
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
     },
     [markRead]
+  );
+
+  const { show } = useContextMenu({
+    id: MENU_ID,
+  });
+
+  function handleContextMenu(event, thread) {
+    const threadId = thread.threadId.split(":")[1];
+    selection.setMany([threadId]);
+    setContextRow(thread);
+    show({
+      event,
+      props: {
+        thread,
+      },
+    });
+  }
+
+  const handleSnoozeAction = useCallback((threadId) => {
+    setShowAdvancedMenu(true);
+
+    setTimeout(() => {
+      const element = document.getElementById("snooze-toolbar-icon");
+
+      if (element) {
+        setSnoozeAnchorEl(element);
+      }
+    }, 200);
+  }, []);
+
+  const handleMuteAction = useCallback(
+    (threadId) => {
+      toggleMuted(threadId);
+
+      setSnackbar({
+        open: true,
+        message: "Conversation muted.",
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              toggleMuted(threadId);
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [toggleMuted]
+  );
+
+  const handleSnooze = useCallback(
+    (ids, snoozeUntil) => {
+      snooze(ids, snoozeUntil);
+      setSnackbar({
+        open: true,
+        message: "Conversation snoozed.",
+        autoHideDuration: 3000,
+        // undo action
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              unsnooze(ids);
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [snooze]
   );
 
   const openInNewTab = async (e, attachment, db) => {
@@ -297,6 +403,8 @@ const Table = ({
     const { file } = await db.get("attachments", attachment.id);
     window.open(URL.createObjectURL(file), "_blank");
   };
+
+  const { folder, label } = useParams();
 
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
@@ -313,6 +421,8 @@ const Table = ({
           {emails.map((email, index) => {
             const threadId = email.threadId.split(":")[1];
             const isActive = showSnoozePopover && snoozeId === email.id;
+            const selected = selection.isSelected(threadId);
+
             return (
               <tr
                 key={threadId}
@@ -330,7 +440,9 @@ const Table = ({
                         padding: 2,
                       }
                     : {}),
+                  ...(selected ? { backgroundColor: "#c2dbff" } : {}),
                 }}
+                onContextMenu={(e) => handleContextMenu(e, email)}
               >
                 <td className="PF xY" />
                 <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
@@ -498,7 +610,7 @@ const Table = ({
                         </Link>
                       </div>
                       {density === "default" && email.attachments.length > 0 && (
-                        <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap"}}>
+                        <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap" }}>
                           {email.attachments.map((attachment) => (
                             <Button
                               variant="outlined"
@@ -575,8 +687,11 @@ const Table = ({
                           marginRight="0"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSnoozeId(email.id);
-                            setSnoozeAnchorEl(e.currentTarget);
+                            setState((prev) => ({
+                              ...prev,
+                              snoozeId: email.id,
+                              snoozeAnchorEl: e.currentTarget,
+                            }));
                           }}
                           _ref={snoozeAnchorElRef}
                         />
@@ -594,13 +709,27 @@ const Table = ({
               anchorEl={snoozeAnchorEl}
               open={showSnoozePopover}
               onClose={() => {
-                setSnoozeAnchorEl(null);
-                setSnoozeId(null);
+                setState((prev) => ({
+                  ...prev,
+                  snoozeAnchorEl: null,
+                  snoozeId: null,
+                }));
               }}
-              selectedIds={[snoozeId]}
-              snooze={snooze}
+              selectedIds={selection.ids}
+              snooze={handleSnooze}
             />
           )}
+          <ContextMenu
+            menuId={MENU_ID}
+            handleArchive={handleArchive}
+            handleDelete={handleDelete}
+            handleReadAction={handleReadAction}
+            handleSnoozeAction={handleSnoozeAction}
+            contextRow={contextRow}
+            handleMuteAction={handleMuteAction}
+            folder={folder}
+            label={label}
+          />
         </tbody>
       </table>
     </div>
