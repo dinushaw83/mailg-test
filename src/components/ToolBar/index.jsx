@@ -217,10 +217,9 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems, threads }) => {
+const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
   const { folder = "inbox" } = useParams();
   const { selection, refreshEmails } = useGlobalContext();
-  const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
 
   const threadIds = threads.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;

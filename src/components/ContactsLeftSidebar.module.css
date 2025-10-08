@@ -1,0 +1,37 @@
+.contactsLeftSidebar {
+  display: flex;
+  flex-direction: column;
+  width: 0;
+  height: calc(100vh - 66px);
+  overflow: hidden;
+  transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.contactsLeftSidebar.expanded {
+  width: 330px;
+}
+
+.menuItemOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+.menuItem:hover .menuItemOverlay {
+  background-color: rgba(11, 87, 208, 0.08);
+}
+
+@media screen and (max-width: 1024px) {
+  .contactsLeftSidebar {
+    position: absolute;
+    z-index: 50;
+    left: 0;
+    top: -66px;
+    height: 100vh !important;
+    background-color: #f8fafd;
+    box-shadow: 0 0 16px rgba(0,0,0,.28);
+  }
+
+  .contactsLeftSidebar.expanded {
+    width: 284px;
+  }
+}

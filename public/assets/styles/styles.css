@@ -56,6 +56,23 @@
   font-variation-settings: 'FILL' 1;
 }
 
+/* Roboto ExtraLight */
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 200;
+  src: url(/assets/fonts/Roboto-ExtraLight.ttf) format('truetype');
+  font-display: swap;
+}
+
+/* Roboto Light */
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 300;
+  src: url(/assets/fonts/Roboto-Light.ttf) format('truetype');
+  font-display: swap;
+}
 
 @font-face {
   font-family: "Roboto";

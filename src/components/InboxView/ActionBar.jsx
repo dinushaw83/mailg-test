@@ -17,6 +17,7 @@ import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 
 export const Icon = ({
+  id,
   name,
   label,
   onClick,
@@ -33,6 +34,7 @@ export const Icon = ({
   return (
     <Tooltip title={label} placement={placement}>
       <IconButton
+        id={id}
         size={size}
         sx={{
           width,
@@ -108,7 +110,7 @@ const MailActions = ({ thread }) => {
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { setSnackbar, emails } = useGlobalContext();
+  const { setSnackbar, emails, setEmails } = useGlobalContext();
 
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
@@ -119,6 +121,12 @@ const MailActions = ({ thread }) => {
   const isThreadNotInInbox = useMemo(() => {
     const email = emails.find((email) => email.threadId.split(":")[1] === threadId);
     return email && (!email.labels || !email.labels.includes("Inbox"));
+  }, [emails, threadId]);
+
+  // Check if the current thread is already deleted (in trash)
+  const isThreadDeleted = useMemo(() => {
+    const email = emails.find((email) => email.threadId.split(":")[1] === threadId);
+    return email && email.labels && email.labels.includes("Trash");
   }, [emails, threadId]);
 
   // Check if any selected emails are not in the inbox
@@ -398,7 +406,7 @@ const MailActions = ({ thread }) => {
         <>
           <Icon name="archive" label="Archive" onClick={handleArchive} />
           <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
-          <Icon name="delete" label="Delete" onClick={handleDelete} />
+          {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
         </>
 
         <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
@@ -413,7 +421,7 @@ const MailActions = ({ thread }) => {
           )}
           {/* The next icon does not exactly match */}
           <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
-          {showAdvancedMenu && <Icon name="label" label="Labels" onClick={handleLabelAction} _ref={labelAnchorElRef} />}
+          <Icon name="label" label="Label as" onClick={handleLabelAction} _ref={labelAnchorElRef} />
 
           <MoreActions
             thread={thread}
@@ -467,6 +475,9 @@ const MailActions = ({ thread }) => {
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },
           transformOrigin: { vertical: "top", horizontal: "left" },
+          onOpenCreateLabelDialog: () => {
+            toggleCreateOpen();
+          },
         }}
       />
       <CreateLabelDialog open={createOpen} onClose={() => toggleCreateOpen()} onAfterCreate={handleOnAfterCreate} />

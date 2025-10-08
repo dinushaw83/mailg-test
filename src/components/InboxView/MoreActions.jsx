@@ -1,23 +1,18 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import Icon from "../ui/Icon";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
-import { Labels } from "../MailActions/Labels";
 import { useNavigate } from "react-router-dom";
 
 const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
-  const { markRead, setStar, setImportant, snooze, toggleMute } = useMailActions();
+  const { markRead, setStar, setImportant, snooze, setMuted } = useMailActions();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentPopover, setCurrentPopover] = React.useState("main");
-  const [labelAnchorEl, setLabelAnchorEl] = React.useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
 
   const threadId = thread.threadId.split(":")[1];
 
@@ -33,13 +28,6 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
 
   const handleSnoozeClick = () => {
     setCurrentPopover("snooze");
-  };
-
-  const handleLabelClick = (event) => {
-    event.stopPropagation();
-    setLabelAnchorEl(event.currentTarget);
-    setSearchQuery("");
-    setSelectedLabelKeys(new Set());
   };
 
   const open = Boolean(anchorEl);
@@ -71,9 +59,9 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
   );
 
   const handleMute = useCallback(() => {
-    toggleMute([threadId], !muted);
+    setMuted([threadId], !muted);
     handleClose();
-  }, [threadId, toggleMute, muted]);
+  }, [threadId, setMuted, muted]);
 
   const handleMarkUnread = useCallback(() => {
     markRead([threadId], false);
@@ -98,47 +86,6 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
                 <>
                   <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
                   <Divider sx={{ marginY: "6px" }} />
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      paddingX: "16px",
-                      height: "32px",
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      "&:hover": {
-                        background: "#07070714",
-                      },
-                    }}
-                    onClick={handleLabelClick}
-                  >
-                    <span
-                      className="material-symbols-outlined"
-                      style={{
-                        fontSize: 20,
-                        color: "rgb(68, 68, 68)",
-                        width: "20px",
-                      }}
-                    >
-                      label
-                    </span>
-
-                    <Typography sx={{ flex: 1, paddingY: "16px", fontSize: "0.875rem", lineHeight: "20px" }}>
-                      Label as
-                    </Typography>
-
-                    <span
-                      className="material-symbols-outlined"
-                      style={{
-                        fontSize: 20,
-                        color: "rgb(68, 68, 68)",
-                      }}
-                    >
-                      arrow_right
-                    </span>
-                  </Box>
                 </>
               )}
               {showAdvancedMenu && (
@@ -184,19 +131,6 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
           snooze={snooze}
         />
       )}
-
-      <Labels
-        {...{
-          searchQuery,
-          setSearchQuery,
-          setLabelAnchorEl,
-          setSelectedLabelKeys,
-          selectedLabelKeys,
-          labelAnchorEl,
-          selectedIds: [thread.threadId.split(":")[1]],
-          handleClose,
-        }}
-      />
     </Box>
   );
 };

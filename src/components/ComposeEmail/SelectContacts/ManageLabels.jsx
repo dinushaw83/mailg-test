@@ -54,11 +54,6 @@ export default function ManageLabels({ selectedContacts, recipients, recipientLa
     return selectedContactObjects.every((contact) => contact.labels.includes(labelName));
   };
 
-  // Filter out "My contacts" from recipientLabels
-  const filteredRecipientLabels = useMemo(() => {
-    return recipientLabels.filter((label) => label.label !== "My contacts");
-  }, [recipientLabels]);
-
   // Handle button click
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -298,7 +293,7 @@ export default function ManageLabels({ selectedContacts, recipients, recipientLa
               </MenuItem>
 
               {/* Label List */}
-              {filteredRecipientLabels.map((label) => (
+              {recipientLabels.map((label) => (
                 <MenuItem
                   key={label.id}
                   onClick={() => handleLabelToggle(label.label)}

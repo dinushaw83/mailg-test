@@ -1,6 +1,7 @@
 // hooks/useMailActions.js
 import React, { useCallback, useContext, useMemo } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
+import { useParams } from "react-router-dom";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ID utilities (thread-aware)
@@ -105,14 +106,43 @@ export default function useMailActions() {
   );
 
   const moveToInbox = useCallback(
-    (ids) =>
+    (ids) => {
+      // Store original state for undo
+      const match = makeMatch(ids);
+      const originalStates = new Map();
+
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            originalStates.set(m.id, {
+              labels: [...(m.labels || [])],
+            });
+          }
+        });
+        return prev;
+      });
+
       updateByIds(ids, (labels) => {
-        labels.delete("Trash");
-        labels.delete("Spam");
-        labels.delete("Snoozed");
+        const labelsToDelete = ["Trash", "Spam", "Snoozed", "Muted"];
+        labelsToDelete.forEach((label) => labels.delete(label));
         labels.add("Inbox");
-      }),
-    [updateByIds]
+      });
+
+      const undo = () => {
+        setEmails((prev) =>
+          prev.map((m) => {
+            if (match(m) && originalStates.has(m.id)) {
+              const originalState = originalStates.get(m.id);
+              return { ...m, labels: originalState.labels };
+            }
+            return m;
+          })
+        );
+      };
+
+      return undo;
+    },
+    [updateByIds, setEmails]
   );
 
   const archive = useCallback(
@@ -201,23 +231,112 @@ export default function useMailActions() {
   );
 
   const moveToLabel = useCallback(
-    (ids, name) =>
+    (ids, name) => {
+      // Store original state for undo
+      const match = makeMatch(ids);
+      const originalStates = new Map();
+
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            originalStates.set(m.id, {
+              labels: [...(m.labels || [])],
+            });
+          }
+        });
+        return prev;
+      });
+
       updateByIds(ids, (labels) => {
         if (!name) return;
-        if (!labels.has(String(name))) {
-          labels.add(String(name)); // add if not present
+
+        const target = String(name);
+        const systemLabels = ["Inbox", "Sent", "Drafts", "Scheduled", "Spam", "Trash"];
+
+        if (systemLabels.includes(target)) {
+          // enforce mutual exclusivity of system labels
+          systemLabels.forEach((systemLabel) => {
+            if (systemLabel !== target) labels.delete(systemLabel);
+          });
+        } else {
+          // "Move to": remove system folders
+          labels.delete("Inbox");
+          labels.delete("Spam");
+          labels.delete("Trash");
         }
-      }),
-    [updateByIds]
+
+        labels.add(target);
+      });
+
+      const undo = () => {
+        setEmails((prev) =>
+          prev.map((m) => {
+            if (match(m) && originalStates.has(m.id)) {
+              const originalState = originalStates.get(m.id);
+              return { ...m, labels: originalState.labels };
+            }
+            return m;
+          })
+        );
+      };
+
+      return undo;
+    },
+    [updateByIds, setEmails]
   );
 
   const moveToLabelFrom = useCallback(
-    (ids, sourceLabel, dest) =>
+    (ids, sourceLabel, dest) => {
+      // Store original state for undo before any transformations
+      const match = makeMatch(ids);
+      const originalStates = new Map();
+
+      // Get current emails to capture original state
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            originalStates.set(m.id, {
+              labels: [...(m.labels || [])],
+            });
+          }
+        });
+        return prev; // Don't modify the state, just capture original values
+      });
+
       updateByIds(ids, (labels) => {
-        if (sourceLabel) labels.delete(String(sourceLabel)); // remove old
-        if (dest) labels.add(String(dest));                 // add new
-      }),
-    [updateByIds]
+        if (sourceLabel) labels.delete(String(sourceLabel));
+
+        if (!dest) return;
+        const systemLabels = ["Inbox", "Sent", "Drafts", "Scheduled", "Spam", "Trash"];
+
+        if (systemLabels.includes(dest)) {
+          systemLabels.forEach((sl) => {
+            if (sl !== dest) labels.delete(sl);
+          });
+        } else {
+          labels.delete("Inbox");
+          labels.delete("Spam");
+          labels.delete("Trash");
+        }
+
+        labels.add(dest);
+      });
+
+      const undo = () => {
+        setEmails((prev) =>
+          prev.map((m) => {
+            if (match(m) && originalStates.has(m.id)) {
+              const originalState = originalStates.get(m.id);
+              return { ...m, labels: originalState.labels };
+            }
+            return m;
+          })
+        );
+      };
+
+      return undo;
+    },
+    [updateByIds, setEmails]
   );
 
   const deleteForever = useCallback(
@@ -247,21 +366,81 @@ export default function useMailActions() {
     [setEmails]
   );
 
-  const toggleMute = useCallback(
-    (ids, value = true) => {
+  const unsnooze = useCallback(
+    (ids) => {
       const match = makeMatch(ids);
       setEmails((prev) =>
         prev.map((m) => {
           if (match(m)) {
             const currentLabels = m.labels || [];
-            const updatedLabels = value
-              ? currentLabels.includes("Muted")
-                ? currentLabels
-                : [...currentLabels, "Muted"]
-              : currentLabels.filter((label) => label !== "Muted");
-            // Remove from inbox when muted
-            const labelsWithoutInbox = updatedLabels.filter((label) => label !== "Inbox");
-            return { ...m, labels: labelsWithoutInbox };
+            // Remove "Snoozed" label and add "Inbox" label
+            const updatedLabels = currentLabels.filter((label) => label !== "Snoozed");
+            if (!updatedLabels.includes("Inbox")) {
+              updatedLabels.push("Inbox");
+            }
+            return { ...m, labels: updatedLabels, snoozeUntil: undefined };
+          }
+          return m;
+        })
+      );
+    },
+    [setEmails]
+  );
+
+  const toggleMuted = useCallback(
+    (threadId) => {
+      setEmails((prev) =>
+        prev.map((m) => {
+          const emailThreadId = m.threadId.split(":")[1];
+          if (emailThreadId === threadId) {
+            const currentLabels = m.labels || [];
+            const isCurrentlyMuted = currentLabels.includes("Muted");
+
+            let updatedLabels;
+            if (isCurrentlyMuted) {
+              // Currently muted, so unmute: remove "Muted" and add "Inbox"
+              updatedLabels = [...currentLabels.filter((label) => label !== "Muted"), "Inbox"];
+            } else {
+              // Currently unmuted, so mute: add "Muted" and remove "Inbox"
+              updatedLabels = [...currentLabels.filter((label) => label !== "Inbox"), "Muted"];
+            }
+
+            return { ...m, labels: updatedLabels };
+          }
+          return m;
+        })
+      );
+    },
+    [setEmails]
+  );
+
+  const setMuted = useCallback(
+    (ids, value) => {
+      const match = makeMatch(ids);
+      setEmails((prev) =>
+        prev.map((m) => {
+          if (match(m)) {
+            const currentLabels = m.labels || [];
+            const isCurrentlyMuted = currentLabels.includes("Muted");
+
+            let updatedLabels;
+            if (value) {
+              // Muting: add "Muted" label and remove "Inbox"
+              if (isCurrentlyMuted) {
+                // Already muted, no change needed
+                return m;
+              }
+              updatedLabels = [...currentLabels.filter((label) => label !== "Inbox"), "Muted"];
+            } else {
+              // Unmuting: remove "Muted" label and add "Inbox" back
+              if (!isCurrentlyMuted) {
+                // Already unmuted, no change needed
+                return m;
+              }
+              updatedLabels = [...currentLabels.filter((label) => label !== "Muted"), "Inbox"];
+            }
+
+            return { ...m, labels: updatedLabels };
           }
           return m;
         })
@@ -289,7 +468,9 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
-      toggleMute,
+      unsnooze,
+      toggleMuted,
+      setMuted,
     }),
     [
       addLabels,
@@ -309,7 +490,9 @@ export default function useMailActions() {
       deleteForever,
       setStar,
       snooze,
-      toggleMute,
+      unsnooze,
+      toggleMuted,
+      setMuted,
     ]
   );
 }

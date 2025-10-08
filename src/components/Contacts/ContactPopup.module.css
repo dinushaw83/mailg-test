@@ -1,0 +1,20 @@
+.linkText {
+  color: #0b57d0;
+  font-size: 14px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.linkText:hover {
+  text-decoration: underline;
+}
+
+.detailRowText {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.greyCircle {
+  font-size: 14px;
+  margin: 2px 4px 0 4px;
+}
