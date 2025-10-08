@@ -20,7 +20,7 @@ export default function MyPictureRow() {
                 <div style={{ display: "flex", alignItems: "center" }}>
                     <img
                         alt="Profile"
-                        src="#"
+                        src="/assets/images/profile-blank.png"
                         style={{
                             border: "2px solid white",
                             borderRadius: "50%",
