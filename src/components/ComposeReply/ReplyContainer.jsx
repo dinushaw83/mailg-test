@@ -14,7 +14,7 @@ import dropdownArrow from "../../icons/dropdownarrow.png";
 import { Button } from "@mui/material";
 
 const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelete }) => {
-  const { loggedInUser, setSnackbar, emails } = useGlobalContext();
+  const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
   const [subject, setSubject] = useState(`${replyType === "forward" ? "Fwd: " : "Re: "}${email.subject}`);
@@ -129,6 +129,22 @@ ${email.body}
     setRecipients(calculateRecipients(selectedReplyOption));
   }, [selectedReplyOption, currentDraftId]);
 
+  // Determine reply signature
+  const replySignatureId = signaturesState?.useForRepliesAndForwards;
+  const replySignatureHTML = useMemo(() => {
+    if (!signaturesState?.list?.length) return "";
+    const sig = signaturesState.list[Number(replySignatureId)];
+    return sig?.content || "";
+  }, [replySignatureId, signaturesState]);
+
+  const quotedHTML = useMemo(() => {
+    if (!email?.body) return "";
+    return `<blockquote style="margin:0;padding-left:1em;border-left:2px solid #ccc;color:#555;">
+    ${email.body}
+  </blockquote>`;
+  }, [email]);
+
+
   useEffect(() => {
     if (currentDraftId && isInitialLoad) return; // do not override restored draft content
     // Only set initial content when the reply type changes
@@ -149,6 +165,36 @@ ${email.body}
       setContent({ html: "", plainText: "" });
     }
   }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText, currentDraftId]);
+
+  useEffect(() => {
+    if (currentDraftId) return; // don't touch restored drafts
+
+    const { list, useForRepliesAndForwards, insertSignatureBeforeQuotedText } = signaturesState || {};
+    const signature = list?.[useForRepliesAndForwards];
+    if (!signature?.content) return; // no signature available
+
+    // Only insert if not already there
+    if (content.html.includes(signature.content)) return;
+
+    // Figure out how to insert it
+    let updatedHTML;
+    if (insertSignatureBeforeQuotedText) {
+      // Signature before quoted reply text
+      updatedHTML = `${signature.content}<br><br>${content.html}`;
+    } else {
+      // Signature below quoted reply text
+      updatedHTML = `${content.html}<br><br>${signature.content}`;
+    }
+
+    setContent({
+      html: updatedHTML,
+      plainText: updatedHTML.replace(/<[^>]*>/g, ""),
+    });
+  }, [
+    currentDraftId,
+    selectedReplyOption,
+    signaturesState,
+  ]);
 
   const options = [
     { value: "reply", label: "Reply", icon: replyIcon },
