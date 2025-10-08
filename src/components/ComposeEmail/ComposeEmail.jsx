@@ -15,7 +15,12 @@ import styles from "./ComposeEmail.module.css";
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { emails, setSnackbar, recipients, composeWindows, setComposeWindows, rightSidebarActiveTab, loggedInUser } =
+  const { emails, setSnackbar,
+    recipients, composeWindows,
+    setComposeWindows, rightSidebarActiveTab,
+    loggedInUser,
+    signaturesState
+  } =
     useContext(GlobalContext);
 
   // Create restructured recipients array for proper lookup
@@ -53,6 +58,51 @@ export default function ComposeEmail({ composeWindow }) {
     content,
     currentDraftId,
   });
+
+  // Determine which signature to use
+  const defaultSignatureId = useMemo(() => {
+    const isReply = composeWindow?.fields?.replyingTo;
+    return isReply
+      ? signaturesState?.useForRepliesAndForwards
+      : signaturesState?.useForNewEmails;
+  }, [composeWindow, signaturesState]);
+
+  // Get the HTML content of that signature
+  const defaultSignatureHTML = useMemo(() => {
+    if (!signaturesState?.list?.length) return "";
+    if (defaultSignatureId === "" || defaultSignatureId === null || defaultSignatureId === undefined)
+      return "";
+
+    const signature = signaturesState.list[Number(defaultSignatureId)];
+    return signature?.content || "";
+  }, [defaultSignatureId, signaturesState]);
+
+  // Insert signature when composing a NEW email (not draft or reply)
+  useLayoutEffect(() => {
+    const isNewCompose =
+      !currentDraftId &&
+      !composeWindow?.fields?.replyingTo &&
+      !content.html?.trim();
+
+    if (isNewCompose && defaultSignatureHTML) {
+      setContent({
+        html: `<p><br></p>${defaultSignatureHTML}`,
+        plainText: defaultSignatureHTML.replace(/<[^>]*>/g, ""),
+      });
+    }
+
+    // If this is a reply and the setting says "insert before quoted text"
+    if (
+      composeWindow?.fields?.replyingTo &&
+      defaultSignatureHTML &&
+      signaturesState?.insertSignatureBeforeQuotedText
+    ) {
+      setContent({
+        html: `${defaultSignatureHTML}<br><br>${composeWindow.fields.content || ""}`,
+        plainText: defaultSignatureHTML.replace(/<[^>]*>/g, ""),
+      });
+    }
+  }, [defaultSignatureHTML, currentDraftId, signaturesState]);
 
   // Handle window focus to update URL
   const handleWindowFocus = () => {

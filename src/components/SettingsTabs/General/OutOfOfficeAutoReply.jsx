@@ -16,7 +16,6 @@ export default function OutOfOfficeAutoReply({
     }, [vacationResponder]);
 
     useEffect(() => {
-        console.log(localVacationResponder, ">>>>>> localVacationResponder")
         setLocalSettings(localVacationResponder);
     }, [localVacationResponder])
 

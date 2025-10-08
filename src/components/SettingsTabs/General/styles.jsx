@@ -22,6 +22,7 @@ export const StyledTable = styled("table")({
     borderCollapse: "collapse",
     margin: 0,
     lineHeight: "20px",
+    tableLayout: "fixed",
 });
 
 
