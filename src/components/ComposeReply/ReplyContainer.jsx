@@ -129,22 +129,6 @@ ${email.body}
     setRecipients(calculateRecipients(selectedReplyOption));
   }, [selectedReplyOption, currentDraftId]);
 
-  // Determine reply signature
-  const replySignatureId = signaturesState?.useForRepliesAndForwards;
-  const replySignatureHTML = useMemo(() => {
-    if (!signaturesState?.list?.length) return "";
-    const sig = signaturesState.list[Number(replySignatureId)];
-    return sig?.content || "";
-  }, [replySignatureId, signaturesState]);
-
-  const quotedHTML = useMemo(() => {
-    if (!email?.body) return "";
-    return `<blockquote style="margin:0;padding-left:1em;border-left:2px solid #ccc;color:#555;">
-    ${email.body}
-  </blockquote>`;
-  }, [email]);
-
-
   useEffect(() => {
     if (currentDraftId && isInitialLoad) return; // do not override restored draft content
     // Only set initial content when the reply type changes
