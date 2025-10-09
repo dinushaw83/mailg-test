@@ -10,6 +10,7 @@ import {
     Stack,
     Typography,
     IconButton,
+    Tooltip,
 } from "@mui/material";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
@@ -562,15 +563,20 @@ function Form({
                                                     userSelect: "none",
                                                 }}
                                             >
-                                                <MailGToolbarButton aria-label="Font family" className={`J-Z-M-I J-J5-Ji`}>
-                                                    <FontFamilySelect
-                                                        value={fontFamily}
-                                                        onChange={(font) => {
-                                                            setFontFamily(font);
-                                                            editor?.chain().focus().setFontFamily(font).run();
-                                                        }}
-                                                    />
-                                                </MailGToolbarButton>
+                                                <Tooltip
+                                                    title="Font"
+                                                    placement="bottom"
+                                                >
+                                                    <MailGToolbarButton aria-label="Font family" className={`J-Z-M-I J-J5-Ji`}>
+                                                        <FontFamilySelect
+                                                            value={fontFamily}
+                                                            onChange={(font) => {
+                                                                setFontFamily(font);
+                                                                editor?.chain().focus().setFontFamily(font).run();
+                                                            }}
+                                                        />
+                                                    </MailGToolbarButton>
+                                                </Tooltip>
                                                 <ToolbarSeparator />
                                                 <MailGToolbarButton aria-label="Font family" className={`J-Z-M-I J-J5-Ji`}>
                                                     <MenuSelectFontSize
