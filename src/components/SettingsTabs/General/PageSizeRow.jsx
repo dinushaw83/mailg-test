@@ -1,10 +1,12 @@
+import { useState } from "react";
 import {
     SettingsRow, SettingsCell,
     BoldLabel, InlineSelect
 } from "./styles";
 
-
 export default function PageSizeRow() {
+    const [pageSize, setPageSize] = useState("50");
+
     return (
         <SettingsRow>
             <SettingsCell width="20%" side="left">
@@ -13,7 +15,11 @@ export default function PageSizeRow() {
             <SettingsCell side="right">
                 <div style={{ fontWeight: "bold", overflowWrap: "break-word" }}>
                     Show{" "}
-                    <InlineSelect defaultValue="50">
+                    <InlineSelect defaultValue="50"
+                        value={pageSize}
+                        onChange={(e) => {
+                            // TODO: update state or save setting
+                        }}>
                         <option value="10">10</option>
                         <option value="15">15</option>
                         <option value="20">20</option>

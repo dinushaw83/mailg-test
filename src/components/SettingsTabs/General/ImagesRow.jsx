@@ -16,9 +16,10 @@ export function ImagesRow() {
                             type="radio"
                             name="imagesSetting"
                             value="always"
-                            defaultChecked
+                            checked={true}
+                            onClick={(e) => e.preventDefault()}
                         />{" "}
-                        <BoldLabel>Always display external images</BoldLabel> –{" "}
+                        <BoldLabel style={{ marginLeft: "6px" }}>Always display external images</BoldLabel> –{" "}
                         <StyledLink
                             href="#"
                             target="_blank"
@@ -30,7 +31,7 @@ export function ImagesRow() {
 
                 <div style={{ marginTop: "6px" }}>
                     <label>
-                        <SettingsRadio type="radio" name="imagesSetting" value="ask" />{" "}
+                        <SettingsRadio type="radio" name="imagesSetting" value="ask" checked={false} onClick={(e) => e.preventDefault()} />{" "}
                         <BoldLabel>Ask before displaying external images</BoldLabel> – This
                         option also disables dynamic email.
                     </label>

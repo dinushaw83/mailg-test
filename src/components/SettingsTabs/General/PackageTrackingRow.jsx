@@ -18,8 +18,8 @@ export default function PackageTrackingRow() {
             </SettingsCell>
             <SettingsCell side="right">
                 <label>
-                    <SettingsCheckbox type="checkbox" />{" "}
-                    <strong>Turn on package tracking - </strong>
+                    <SettingsCheckbox type="checkbox" checked={true} onClick={(e) => e.preventDefault()} />{" "}
+                    <strong style={{ marginLeft: "6px" }}>Turn on package tracking - </strong>
                     Google will share parcel tracking numbers with delivery companies. You’ll get
                     status updates in Gmail.
                 </label>

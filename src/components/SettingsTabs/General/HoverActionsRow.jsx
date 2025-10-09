@@ -18,14 +18,14 @@ export function HoverActionsRow() {
                             value="enable"
                             defaultChecked
                         />{" "}
-                        <BoldLabel>Enable hover actions</BoldLabel> – Quickly gain access to
+                        <BoldLabel style={{ marginLeft: "6px" }}>Enable hover actions</BoldLabel> – Quickly gain access to
                         archive, delete, mark as read and snooze controls on hover.
                     </label>
                 </div>
                 <div style={{ marginTop: "6px" }}>
                     <label>
-                        <SettingsRadio type="radio" name="hoverActions" value="disable" />{" "}
-                        <BoldLabel>Disable hover actions</BoldLabel>
+                        <SettingsRadio type="radio" name="hoverActions" value="disable" checked={false} onClick={(e) => e.preventDefault()} />
+                        <BoldLabel style={{ marginLeft: "6px" }}>Disable hover actions</BoldLabel>
                     </label>
                 </div>
             </SettingsCell>

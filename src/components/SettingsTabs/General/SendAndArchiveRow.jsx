@@ -19,8 +19,8 @@ export function SendAndArchiveRow() {
             <SettingsCell side="right">
                 <div>
                     <label>
-                        <SettingsRadio type="radio" name="sendArchive" value="show" />{" "}
-                        <BoldLabel>Show "Send & Archive" button in reply</BoldLabel>
+                        <SettingsRadio type="radio" name="sendArchive" value="show" checked={true} onClick={(e) => e.preventDefault()} />{" "}
+                        <BoldLabel style={{ marginLeft: "6px" }}>Show "Send & Archive" button in reply</BoldLabel>
                     </label>
                 </div>
                 <div style={{ marginTop: "6px" }}>
@@ -29,9 +29,10 @@ export function SendAndArchiveRow() {
                             type="radio"
                             name="sendArchive"
                             value="hide"
-                            defaultChecked
+                            checked={false}
+                            onClick={(e) => e.preventDefault()}
                         />{" "}
-                        <BoldLabel>Hide "Send & Archive" button in reply</BoldLabel>
+                        <BoldLabel style={{ marginLeft: "6px" }}>Hide "Send & Archive" button in reply</BoldLabel>
                     </label>
                 </div>
             </SettingsCell>

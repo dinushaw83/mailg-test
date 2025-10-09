@@ -7,7 +7,7 @@ export default function AutoCompleteContactsRow() {
     return (
         <SettingsRow>
             <SettingsCell side="left">
-                <BoldLabel>Create contacts for auto-complete:</BoldLabel>
+                <BoldLabel style={{ marginLeft: "6px" }}>Create contacts for auto-complete:</BoldLabel>
             </SettingsCell>
             <SettingsCell side="right">
                 <table
@@ -33,11 +33,13 @@ export default function AutoCompleteContactsRow() {
                                         height: "15px",
                                         verticalAlign: "middle",
                                     }}
+                                    checked={true}
+                                    onClick={(e) => e.preventDefault()}
                                 />
                             </td>
                             <td style={{ margin: 0, padding: "0 0 0 8px" }}>
                                 <label htmlFor="auto-complete-yes">
-                                    <BoldLabel>
+                                    <BoldLabel style={{ marginLeft: "6px" }}>
                                         When I send a message to a new person, add them to Other
                                         Contacts so that I can auto-complete to them next time.
                                     </BoldLabel>
@@ -69,11 +71,13 @@ export default function AutoCompleteContactsRow() {
                                         height: "15px",
                                         verticalAlign: "middle",
                                     }}
+                                    checked={false}
+                                    onClick={(e) => e.preventDefault()}
                                 />
                             </td>
                             <td style={{ margin: 0, padding: "0 0 0 8px" }}>
                                 <label htmlFor="auto-complete-no">
-                                    <BoldLabel>I'll add contacts myself</BoldLabel>
+                                    <BoldLabel style={{ marginLeft: "6px" }}>I'll add contacts myself</BoldLabel>
                                 </label>
                             </td>
                         </tr>

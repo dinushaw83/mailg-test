@@ -62,9 +62,6 @@ const GeneralTab = () => {
         setLocalSignatures={setLocalSignatures}
       />
             
-      {/* Horizontal Rule */}
-      <Divider sx={{ marginTop: 3, marginBottom: 1 }} />
-      
       {/* Action Buttons */}
       <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
         <button

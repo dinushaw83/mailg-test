@@ -7,7 +7,7 @@ export default function AdsImportanceSignalsRow() {
     return (
         <SettingsRow>
             <SettingsCell side="left">
-                <BoldLabel>Importance signals for ads:</BoldLabel>
+                <BoldLabel style={{ marginLeft: "6px" }}>Importance signals for ads:</BoldLabel>
             </SettingsCell>
             <SettingsCell side="right">
                 You can view and change your preferences{" "}

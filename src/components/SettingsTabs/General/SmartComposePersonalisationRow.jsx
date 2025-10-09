@@ -21,9 +21,10 @@ export default function SmartComposePersonalisationRow() {
                             type="radio"
                             name="smartComposePersonalSetting"
                             value="on"
-                            defaultChecked
+                            checked={true}
+                            onClick={(e) => e.preventDefault()}
                         />
-                        <BoldLabel>Personalisation on</BoldLabel>
+                        <BoldLabel style={{ marginLeft: "6px" }}>Personalisation on</BoldLabel>
                     </label>
                 </div>
 
@@ -33,8 +34,10 @@ export default function SmartComposePersonalisationRow() {
                             type="radio"
                             name="smartComposePersonalSetting"
                             value="off"
+                            checked={false}
+                            onClick={(e) => e.preventDefault()}
                         />
-                        <BoldLabel>Personalisation off</BoldLabel>
+                        <BoldLabel style={{ marginLeft: "6px" }}>Personalisation off</BoldLabel>
                     </label>
                 </div>
             </SettingsCell>

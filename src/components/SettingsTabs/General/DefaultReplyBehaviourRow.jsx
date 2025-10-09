@@ -4,6 +4,7 @@ import {
 } from "./styles";
 
 export default function DefaultReplyBehaviourRow() {
+
     return (
         <SettingsRow>
             <SettingsCell width="20%" side="left">
@@ -20,14 +21,20 @@ export default function DefaultReplyBehaviourRow() {
             <SettingsCell side="right">
                 <div>
                     <label>
-                        <SettingsRadio type="radio" name="replyBehaviour" value="reply" />{" "}
-                        <BoldLabel>Reply</BoldLabel>
+                        <SettingsRadio type="radio" name="replyBehaviour" value="reply" checked={true} onClick={(e) => e.preventDefault()} />
+                        <BoldLabel style={{ marginLeft: "6px" }}>Reply</BoldLabel>
                     </label>
                 </div>
                 <div style={{ marginTop: "4px" }}>
                     <label>
-                        <SettingsRadio type="radio" name="replyBehaviour" value="replyAll" />{" "}
-                        <BoldLabel>Reply all</BoldLabel>
+                        <SettingsRadio
+                            type="radio"
+                            name="replyBehaviour"
+                            value="replyAll"
+                            checked={false}
+                            onClick={(e) => e.preventDefault()}
+                        />
+                        <BoldLabel style={{ marginLeft: "6px" }}>Reply all</BoldLabel>
                     </label>
                 </div>
             </SettingsCell>

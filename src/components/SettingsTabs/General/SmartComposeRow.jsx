@@ -21,16 +21,17 @@ export function SmartComposeRow() {
                             type="radio"
                             name="smartComposeSetting"
                             value="on"
-                            defaultChecked
+                            checked={true}
+                            onClick={(e) => e.preventDefault()}
                         />
-                        <BoldLabel>Writing suggestions on</BoldLabel>
+                        <BoldLabel style={{ marginLeft: "6px" }}>Writing suggestions on</BoldLabel>
                     </label>
                 </div>
 
                 <div style={{ marginTop: "6px" }}>
                     <label>
-                        <SettingsRadio type="radio" name="smartComposeSetting" value="off" />
-                        <BoldLabel>Writing suggestions off</BoldLabel>
+                        <SettingsRadio type="radio" name="smartComposeSetting" value="off" checked={false} onClick={(e) => e.preventDefault()} />
+                        <BoldLabel style={{ marginLeft: "6px" }}>Writing suggestions off</BoldLabel>
                     </label>
                 </div>
 

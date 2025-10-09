@@ -13,13 +13,13 @@ export default function SmartReplyRow() {
             </SettingsCell>
             <SettingsCell side="right">
                 <label>
-                    <SettingsRadio type="radio" name="smartReplySetting" value="1" defaultChecked />
-                    <BoldLabel> Smart Reply on</BoldLabel>
+                    <SettingsRadio type="radio" name="smartReplySetting" value="1" defaultChecked checked={true} onClick={(e) => e.preventDefault()} />
+                    <BoldLabel style={{ marginLeft: "6px" }}> Smart Reply on</BoldLabel>
                 </label>
                 <br />
                 <label>
-                    <SettingsRadio type="radio" name="smartReplySetting" value="0" />
-                    <BoldLabel> Smart Reply off</BoldLabel>
+                    <SettingsRadio type="radio" name="smartReplySetting" value="0" checked={false} onClick={(e) => e.preventDefault()}      />
+                    <BoldLabel style={{ marginLeft: "6px" }}> Smart Reply off</BoldLabel>
                 </label>
             </SettingsCell>
         </SettingsRow>

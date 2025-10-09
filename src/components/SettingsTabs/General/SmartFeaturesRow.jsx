@@ -18,8 +18,8 @@ export default function SmartFeaturesRow() {
             </SettingsCell>
             <SettingsCell side="right">
                 <label>
-                    <SettingsCheckbox type="checkbox" defaultChecked />{" "}
-                    <strong>Turn on smart features in Gmail, Chat and Meet - </strong>
+                    <SettingsCheckbox type="checkbox" defaultChecked checked={true} onClick={(e) => e.preventDefault()} />{" "}
+                    <strong style={{ marginLeft: "6px" }}>Turn on smart features in Gmail, Chat and Meet - </strong>
                     When you turn this setting on, you agree to let Gmail, Chat and Meet use your
                     content and activity to provide smart features and personalise your experience.
                 </label>

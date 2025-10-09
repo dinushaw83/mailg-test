@@ -21,16 +21,17 @@ export default function ConversationViewRow() {
                             type="radio"
                             name="conversationView"
                             value="on"
-                            defaultChecked
+                            checked={true}
+                            onClick={(e) => e.preventDefault()}
                         />
-                        <BoldLabel>Conversation view on</BoldLabel>
+                        <BoldLabel style={{ marginLeft: "6px" }}>Conversation view on</BoldLabel>
                     </label>
                 </div>
 
                 <div style={{ marginTop: "6px" }}>
                     <label>
-                        <SettingsRadio type="radio" name="conversationView" value="off" />
-                        <BoldLabel>Conversation view off</BoldLabel>
+                        <SettingsRadio type="radio" name="conversationView" value="off" checked={false} onClick={(e) => e.preventDefault()} />
+                        <BoldLabel style={{ marginLeft: "6px" }}>Conversation view off</BoldLabel>
                     </label>
                 </div>
             </SettingsCell>

@@ -22,8 +22,8 @@ export function DynamicEmailRow() {
 
             <SettingsCell side="right">
                 <label>
-                    <input type="checkbox" defaultChecked style={{ marginRight: "8px" }} />
-                    <BoldLabel>Enable dynamic email</BoldLabel> – Display dynamic email content
+                    <input type="checkbox" defaultChecked style={{ marginRight: "8px" }} checked={true} onClick={(e) => e.preventDefault()} />
+                    <BoldLabel style={{ marginLeft: "6px" }}>Enable dynamic email</BoldLabel> – Display dynamic email content
                     when available.
                     <div style={{ marginTop: "4px" }}>
                         <StyledLink href="#">

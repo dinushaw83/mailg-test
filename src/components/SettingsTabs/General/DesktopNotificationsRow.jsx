@@ -7,7 +7,7 @@ export default function DesktopNotificationsRow() {
     return (
         <SettingsRow>
             <SettingsCell side="left">
-                <BoldLabel>Desktop notifications:</BoldLabel>
+                <BoldLabel style={{ marginLeft: "6px" }}>Desktop notifications:</BoldLabel>
                 <br />
                 <SubText>
                     (Allows Gmail to display pop-up notifications on your desktop when new emails
@@ -25,19 +25,19 @@ export default function DesktopNotificationsRow() {
                 <LearnMoreLink as="span">Click here to enable desktop notifications</LearnMoreLink>
                 <br />
                 <label>
-                    <SettingsRadio type="radio" name="notifications" value="all" />{" "}
-                    <BoldLabel>New mail notifications on</BoldLabel> – notify on any new mail
+                    <SettingsRadio type="radio" name="notifications" value="all" checked={false} onClick={(e) => e.preventDefault()} />
+                    <BoldLabel style={{ marginLeft: "6px" }}>New mail notifications on</BoldLabel> – notify on any new mail
                 </label>
                 <br />
                 <label>
-                    <SettingsRadio type="radio" name="notifications" value="important" />{" "}
-                    <BoldLabel>Important mail notifications on</BoldLabel> – only notify on
+                    <SettingsRadio type="radio" name="notifications" value="important" checked={false} onClick={(e) => e.preventDefault()} />
+                    <BoldLabel style={{ marginLeft: "6px" }}>Important mail notifications on</BoldLabel> – only notify on
                     important mail
                 </label>
                 <br />
                 <label>
-                    <SettingsRadio type="radio" name="notifications" value="off" defaultChecked />{" "}
-                    <BoldLabel>Mail notifications off</BoldLabel>
+                    <SettingsRadio type="radio" name="notifications" value="off" defaultChecked checked={true} onClick={(e) => e.preventDefault()} />
+                    <BoldLabel style={{ marginLeft: "6px" }}>Mail notifications off</BoldLabel>
                 </label>
             </SettingsCell>
         </SettingsRow>

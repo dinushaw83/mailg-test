@@ -17,16 +17,17 @@ export function AutoCorrectRow() {
                             type="radio"
                             name="autocorrectSetting"
                             value="on"
-                            defaultChecked
+                            checked={true}
+                            onClick={(e) => e.preventDefault()}
                         />
-                        <BoldLabel>Auto-correct on</BoldLabel>
+                        <BoldLabel style={{ marginLeft: "6px" }}>Auto-correct on</BoldLabel>
                     </label>
                 </div>
 
                 <div style={{ marginTop: "6px" }}>
                     <label>
-                        <SettingsRadio type="radio" name="autocorrectSetting" value="off" />
-                        <BoldLabel>Auto-correct off</BoldLabel>
+                        <SettingsRadio type="radio" name="autocorrectSetting" value="off" checked={false} onClick={(e) => e.preventDefault()} />
+                        <BoldLabel style={{ marginLeft: "6px" }}>Auto-correct off</BoldLabel>
                     </label>
                 </div>
             </SettingsCell>

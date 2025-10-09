@@ -7,7 +7,7 @@ export default function WorkspaceSmartFeaturesRow() {
     return (
         <SettingsRow>
             <SettingsCell side="left">
-                <BoldLabel>Google Workspace smart features:</BoldLabel>
+                <BoldLabel style={{ marginLeft: "6px" }}>Google Workspace smart features:</BoldLabel>
             </SettingsCell>
             <SettingsCell side="right">
                 <span>

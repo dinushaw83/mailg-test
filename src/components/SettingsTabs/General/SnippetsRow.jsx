@@ -9,7 +9,7 @@ export default function SnippetsRow() {
     return (
         <SettingsRow>
             <SettingsCell side="left" width="20%">
-                <BoldLabel>Snippets:</BoldLabel>
+                <BoldLabel style={{ marginLeft: "6px" }}>Snippets:</BoldLabel>
             </SettingsCell>
 
             <SettingsCell side="right">
@@ -30,11 +30,13 @@ export default function SnippetsRow() {
                                     type="radio"
                                     defaultChecked
                                     value="0"
+                                    checked={true}
+                                    onClick={(e) => e.preventDefault()}
                                 />
                             </td>
                             <td style={{ margin: 0, padding: "0 0 0 8px" }}>
                                 <label htmlFor="snippets-show">
-                                    <BoldLabel>Show snippets</BoldLabel>
+                                    <BoldLabel style={{ marginLeft: "6px" }}>Show snippets</BoldLabel>
                                 </label>{" "}
                                 - Show snippets of the message (like Google Web Search!).
                             </td>
@@ -58,11 +60,13 @@ export default function SnippetsRow() {
                                     name="snippetsSetting"
                                     type="radio"
                                     value="1"
+                                    checked={false}
+                                    onClick={(e) => e.preventDefault()}
                                 />
                             </td>
                             <td style={{ margin: 0, padding: "0 0 0 8px" }}>
                                 <label htmlFor="snippets-none">
-                                    <BoldLabel>No snippets</BoldLabel>
+                                    <BoldLabel style={{ marginLeft: "6px" }}>No snippets</BoldLabel>
                                 </label>{" "}
                                 - Show subject only.
                             </td>

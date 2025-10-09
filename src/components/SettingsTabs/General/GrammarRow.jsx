@@ -17,16 +17,17 @@ export default function GrammarRow() {
                             type="radio"
                             name="grammarSetting"
                             value="on"
-                            defaultChecked
+                            checked={true}
+                            onClick={(e) => e.preventDefault()}
                         />{" "}
-                        <BoldLabel>Grammar suggestions on</BoldLabel>
+                        <BoldLabel style={{ marginLeft: "6px" }}>Grammar suggestions on</BoldLabel>
                     </label>
                 </div>
 
                 <div style={{ marginTop: "6px" }}>
                     <label>
-                        <SettingsRadio type="radio" name="grammarSetting" value="off" />{" "}
-                        <BoldLabel>Grammar suggestions off</BoldLabel>
+                        <SettingsRadio type="radio" name="grammarSetting" value="off" checked={false} onClick={(e) => e.preventDefault()} />{" "}
+                        <BoldLabel style={{ marginLeft: "6px" }}>Grammar suggestions off</BoldLabel>
                     </label>
                 </div>
             </SettingsCell>

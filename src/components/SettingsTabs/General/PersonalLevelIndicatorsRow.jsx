@@ -9,7 +9,7 @@ export default function PersonalLevelIndicatorsRow() {
     return (
         <SettingsRow>
             <SettingsCell side="left" width="20%">
-                <BoldLabel>Personal level indicators:</BoldLabel>
+                <BoldLabel style={{ marginLeft: "6px" }}>Personal level indicators:</BoldLabel>
             </SettingsCell>
 
             <SettingsCell side="right">
@@ -29,11 +29,13 @@ export default function PersonalLevelIndicatorsRow() {
                                     type="radio"
                                     defaultChecked
                                     value="0"
+                                    checked={true}
+                                    onClick={(e) => e.preventDefault()}
                                 />
                             </td>
                             <td style={{ margin: 0, padding: "0 0 0 8px" }}>
                                 <label htmlFor="pli-none">
-                                    <BoldLabel>No indicators</BoldLabel>
+                                    <BoldLabel style={{ marginLeft: "6px" }}>No indicators</BoldLabel>
                                 </label>
                             </td>
                         </tr>
@@ -55,11 +57,13 @@ export default function PersonalLevelIndicatorsRow() {
                                     name="personalIndicators"
                                     type="radio"
                                     value="1"
+                                    checked={false}
+                                    onClick={(e) => e.preventDefault()}
                                 />
                             </td>
                             <td style={{ margin: 0, padding: "0 0 0 8px" }}>
                                 <label htmlFor="pli-show">
-                                    <BoldLabel>Show indicators</BoldLabel>
+                                    <BoldLabel style={{ marginLeft: "6px" }}>Show indicators</BoldLabel>
                                 </label>{" "}
                                 - Display an arrow (<b>›</b>) by messages sent to my
                                 address (not a mailing list), and a double arrow (
