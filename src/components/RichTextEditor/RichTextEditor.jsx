@@ -12,6 +12,7 @@ import React from "react";
 import Attachments from "./Attachments";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateRandomId } from "../../utils/helperFunctions";
+import LargeFileModal from "../ComposeEmail/LargeFileModal";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -61,6 +62,7 @@ export default function Editor({
   const { db, setSnackbar } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
+  const [largeFileModal, setLargeFileModal] = useState({ open: false, file: null });
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -292,17 +294,29 @@ export default function Editor({
     const { files = [] } = e.target;
 
     const newFiles = [];
+    
     for (const file of files) {
-      // Size validation
+      // Size validation - show modal for large files instead of blocking
       if (file.size > MAX_ATTACHMENT_BYTES) {
+        setLargeFileModal({ open: true, file });
+        // Clear the file input after setting the modal
+        if (e.target) {
+          e.target.value = '';
+        }
+        return; // Exit early for large files
+      }
+      
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === file.name);
+      if (fileExists) {
         setSnackbar({
           open: true,
-          severity: "error",
-          message: "Attachment too large. This file is larger than 25 MB. Please attach a smaller file.",
-          autoHideDuration: 6000,
+          message: "File already attached.",
+          autoHideDuration: 3000,
         });
         continue;
       }
+      
       // Type validation (allow unknowns by blocking; we can adjust list as needed)
       const type = (file.type || "").toLowerCase();
       if (type && !ALLOWED_TYPES.has(type)) {
@@ -314,6 +328,7 @@ export default function Editor({
         });
         continue;
       }
+      
       const id = generateRandomId();
       const url = URL.createObjectURL(file);
       const metadata = {
@@ -328,9 +343,90 @@ export default function Editor({
       db.put("attachments", { id, file });
     }
 
-    // A file should not be added if it already exists in the attachments array
-    const uniqueFiles = newFiles.filter((file) => !attachments.some((attachment) => attachment.name === file.name));
-    setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
+    // Only add regular files if there are any
+    if (newFiles.length > 0) {
+      setAttachments((prevAttachments) => [...prevAttachments, ...newFiles]);
+    }
+    
+    // Clear the file input at the end
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleLargeFileAccept = () => {
+    if (largeFileModal.file) {
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === largeFileModal.file.name);
+      
+      if (!fileExists) {
+        // Create Drive link instead of regular attachment
+        const driveLink = `drive.mailg.com/file/d/${encodeURIComponent(largeFileModal.file.name)}`;
+        
+        // Add as attachment with Drive link metadata
+        const id = generateRandomId();
+        const url = URL.createObjectURL(largeFileModal.file);
+        const metadata = {
+          id,
+          name: largeFileModal.file.name,
+          size: largeFileModal.file.size,
+          type: largeFileModal.file.type,
+          url,
+          isDriveFile: true, // Special flag to indicate it's a "Drive" file
+          driveLink: `https://${driveLink}`, // Store the Drive link
+        };
+        
+        // Add to attachments array
+        setAttachments((prevAttachments) => [...prevAttachments, metadata]);
+        
+        // Also store in IndexedDB
+        db.put("attachments", { id, file: largeFileModal.file });
+        
+        setSnackbar({
+          open: true,
+          message: "File uploaded to MailG Drive. Download link will be included in your email.",
+          autoHideDuration: 4000,
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "File already attached.",
+          autoHideDuration: 3000,
+        });
+      }
+    }
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const formatFileSize = (size) => {
+    if (size < 1024) {
+      return `${size}B`;
+    } else if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)}K`;
+    } else if (size < 1024 * 1024 * 1024) {
+      return `${(size / 1024 / 1024).toFixed(1)}M`;
+    } else {
+      return `${(size / 1024 / 1024 / 1024).toFixed(1)}G`;
+    }
+  };
+
+  const handleLargeFileCancel = () => {
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const handleEditorClick = (event) => {
+    // Check if clicked element is a Drive link
+    const target = event.target;
+    if (target.tagName === 'A' && target.getAttribute('data-drive-link') === 'true') {
+      event.preventDefault();
+      event.stopPropagation();
+      // Show a message that this is a Drive link
+      setSnackbar({
+        open: true,
+        message: "This is a MailG Drive link. It will be accessible to recipients.",
+        autoHideDuration: 3000,
+      });
+    }
   };
 
   return (
@@ -345,6 +441,7 @@ export default function Editor({
           handleDrop: handleDrop,
           handlePaste: handlePaste,
         }}
+        onClick={handleEditorClick}
         RichTextFieldProps={{
           variant: "standard",
           MenuBarProps: {
@@ -704,6 +801,15 @@ export default function Editor({
         open={dateTimePickerOpen}
         onClose={handleCloseDateTimePicker}
         onSchedule={handleDateTimeSchedule}
+      />
+
+      {/* Large File Modal */}
+      <LargeFileModal
+        open={largeFileModal.open}
+        onClose={handleLargeFileCancel}
+        onAccept={handleLargeFileAccept}
+        fileName={largeFileModal.file?.name}
+        fileSize={largeFileModal.file?.size}
       />
     </>
   );

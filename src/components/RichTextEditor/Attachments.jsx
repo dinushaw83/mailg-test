@@ -36,13 +36,14 @@ const Attachments = ({ attachments, setAttachments }) => {
             maxWidth: "462px",
             minWidth: "320px",
             height: "33.5px",
-            backgroundColor: "#F5F5F5",
+            backgroundColor: attachment.isDriveFile ? "#e8f0fe" : "#F5F5F5",
             marginBottom: "8px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             padding: "0 12px",
             color: "#222",
+            border: attachment.isDriveFile ? "1px solid #1a73e8" : "none",
             ...(activeAttachment?.name === attachment.name
               ? {
                   backgroundColor: "rgb(32, 33, 36, .12)",
@@ -57,11 +58,35 @@ const Attachments = ({ attachments, setAttachments }) => {
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <a
-              href={attachment.url}
+              href={attachment.isDriveFile ? attachment.driveLink : attachment.url}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ textDecoration: "none", ...(attachment.url ? { color: "#1155cc" } : {}) }}
+              style={{ 
+                textDecoration: "none", 
+                ...(attachment.url ? { color: "#1155cc" } : {}),
+                ...(attachment.isDriveFile ? { 
+                  color: "#1a73e8",
+                  cursor: "pointer"
+                } : {})
+              }}
+              onClick={(e) => {
+                if (attachment.isDriveFile) {
+                  e.preventDefault();
+                  // Show Drive link info instead of navigating
+                  console.log("Drive link clicked:", attachment.driveLink);
+                }
+              }}
             >
+              <span
+                className="material-symbols-outlined"
+                style={{ 
+                  fontSize: "16px", 
+                  color: attachment.isDriveFile ? "#1a73e8" : "#5f6368",
+                  marginRight: "8px"
+                }}
+              >
+                {attachment.isDriveFile ? "cloud_upload" : "attach_file"}
+              </span>
               <Typography
                 sx={{
                   maxWidth: "315px",
@@ -70,9 +95,11 @@ const Attachments = ({ attachments, setAttachments }) => {
                   whiteSpace: "nowrap",
                   fontWeight: "bold",
                   fontSize: "0.875rem",
+                  color: attachment.isDriveFile ? "#1a73e8" : "inherit",
                 }}
               >
                 {attachment.name}
+                {attachment.isDriveFile && " (Drive)"}
               </Typography>
             </a>
             <Typography
