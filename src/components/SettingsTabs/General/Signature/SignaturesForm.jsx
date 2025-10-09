@@ -387,6 +387,13 @@ function Form({
         setActiveSignature(index);
     };
 
+    // auto
+    useEffect(() => {
+        if (activeSignature === null && signatures.length > 0) {
+            setActiveSignature(0);
+        }
+    }, [activeSignature, signatures, setActiveSignature]);
+
     return (
         <RichTextEditorProvider editor={editor}>
             <div

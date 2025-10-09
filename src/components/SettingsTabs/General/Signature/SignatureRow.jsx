@@ -43,6 +43,8 @@ export default function SignatureRow({
             ...localSignatures,
             list: updatedSignatures,
         });
+
+        setActiveSignature(signatures.length)
     }
     
     const handleAfterDelete = (name, editingSignatureIndex) => {
