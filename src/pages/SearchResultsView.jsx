@@ -58,7 +58,7 @@ const SearchResultsView = () => {
         date: searchParams.get("date") || "",
         subset: searchParams.get("subset") || "",
         attachment: searchParams.get("attachment") === "true",
-        includeChats: searchParams.get("includeChats") === "true",
+        excludeChats: searchParams.get("excludeChats") === "true",
       };
 
       // Use advanced search with full email data
@@ -133,7 +133,7 @@ const SearchResultsView = () => {
                                 date: searchParams.get("date") || "",
                                 subset: searchParams.get("subset") || "",
                                 attachment: searchParams.get("attachment") === "true",
-                                includeChats: searchParams.get("includeChats") === "true",
+                                excludeChats: searchParams.get("excludeChats") === "true",
                               })})`
                             : searchQuery
                             ? `Search results for "${searchQuery}"`

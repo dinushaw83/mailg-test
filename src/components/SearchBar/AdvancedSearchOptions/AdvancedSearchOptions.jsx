@@ -69,7 +69,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     date: dayjs().format("YYYY-MM-DD"),
     subset: "All Mail",
     attachment: false,
-    includeChats: false,
+    excludeChats: false,
   });
 
   const [formData, setFormData] = useState(getDefaultFormData());
@@ -96,7 +96,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
           date: searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
           subset: searchParams.get("subset") || "All Mail",
           attachment: searchParams.get("attachment") === "true",
-          includeChats: searchParams.get("includeChats") === "true",
+          excludeChats: searchParams.get("excludeChats") === "true",
         });
       } else {
         // Reset to default values when opening from non-advanced search
@@ -154,7 +154,7 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
       date: formData.date,
       subset: formData.subset,
       attachment: formData.attachment,
-      includeChats: formData.includeChats,
+      excludeChats: formData.excludeChats,
     };
 
     // Create a query string from the criteria
@@ -423,12 +423,12 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
               <span className={styles.checkboxText}>Has attachment</span>
             </label>
 
-            <label htmlFor="includeChats" className={styles.checkboxLabel}>
+            <label htmlFor="excludeChats" className={styles.checkboxLabel}>
               <Checkbox
-                id="includeChats"
+                id="excludeChats"
                 size="small"
-                checked={formData.includeChats}
-                onChange={(e) => handleInputChange("includeChats", e.target.checked)}
+                checked={formData.excludeChats}
+                onChange={(e) => handleInputChange("excludeChats", e.target.checked)}
               />
               <span className={styles.checkboxText}>Don't include chats</span>
             </label>

@@ -175,20 +175,17 @@ export const encodeForPath = (raw) => {
 export const queryToSearchBarString = (queryString) => {
   const params = new URLSearchParams(queryString);
 
-  // Helper: quote & escape only when necessary
-  const quoteIfNeeded = (v) => {
-    if (v === undefined || v === null) return v;
-    const str = String(v).trim();
-    // If contains whitespace or double-quote or parentheses, or comma (we'll quote safe)
-    const needsQuoting = /\s|["(),]/.test(str);
-    // escape backslashes and double quotes
-    const escaped = str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-    return needsQuoting ? `"${escaped}"` : escaped;
-  };
-
-  const leading = []; // has, from, to (should appear first)
-  const dateParts = []; // after:, before:
-  const otherParts = []; // everything else
+  // Order: from > to > subject > has words > doesn't have > size > dates
+  const subsetParts = [];
+  const fromParts = [];
+  const toParts = [];
+  const subjectParts = [];
+  const hasParts = [];
+  const hasnotParts = [];
+  const attachmentParts = [];
+  const excludeChatsParts = [];
+  const sizeParts = [];
+  const dateParts = [];
 
   // Handle date range first but store in dateParts
   const within = params.get("within");
@@ -250,14 +247,14 @@ export const queryToSearchBarString = (queryString) => {
 
     if (value == null || value === "") continue; // skip empty values
 
-    // has -> go to front
+    // has -> has words
     if (key === "has" && value.trim()) {
-      leading.unshift(quoteIfNeeded(value.trim()));
+      hasParts.push(value.trim());
       continue;
     }
 
-    // from / to should be leading (before dateParts)
-    if ((key === "from" || key === "to") && value && value.trim()) {
+    // from
+    if (key === "from" && value && value.trim()) {
       const emails = value
         .split(",")
         .map((e) => e.trim())
@@ -265,15 +262,54 @@ export const queryToSearchBarString = (queryString) => {
 
       // Check if all values are valid emails
       const allAreEmails = emails.every((e) => isValidEmail(e));
-      const quotedEmails = emails.map((e) => quoteIfNeeded(e));
 
       if (emails.length >= 1) {
         if (allAreEmails) {
-          leading.push(`${key}:(${quotedEmails.join(",")})`);
+          fromParts.push(`from:(${emails.join(",")})`);
         } else {
           // Just a keyword, no parentheses
-          leading.push(`${key}:${quotedEmails[0]}`);
+          fromParts.push(`from:${emails[0]}`);
         }
+      }
+      continue;
+    }
+
+    // to
+    if (key === "to" && value && value.trim()) {
+      const emails = value
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean);
+
+      // Check if all values are valid emails
+      const allAreEmails = emails.every((e) => isValidEmail(e));
+
+      if (emails.length >= 1) {
+        if (allAreEmails) {
+          toParts.push(`to:(${emails.join(",")})`);
+        } else {
+          // Just a keyword, no parentheses
+          toParts.push(`to:${emails[0]}`);
+        }
+      }
+      continue;
+    }
+
+    // subset
+    if (key === "subset" && value && value.trim()) {
+      subsetParts.push(`in:${value}`);
+      continue;
+    }
+
+    // subject
+    if (key === "subject" && value && value.trim()) {
+      const trimmedValue = value.trim();
+      // If multiple words, wrap in parentheses
+      const hasMultipleWords = trimmedValue.includes(" ");
+      if (hasMultipleWords) {
+        subjectParts.push(`subject:(${trimmedValue})`);
+      } else {
+        subjectParts.push(`subject:${trimmedValue}`);
       }
       continue;
     }
@@ -294,7 +330,7 @@ export const queryToSearchBarString = (queryString) => {
       }
       // Bytes has no suffix
 
-      otherParts.push(`${operatorText}:${value}${unitSuffix}`);
+      sizeParts.push(`${operatorText}:${value}${unitSuffix}`);
       continue;
     }
 
@@ -303,20 +339,36 @@ export const queryToSearchBarString = (queryString) => {
       continue;
     }
 
-    // other mappings (preserve previous behavior, but quote values when needed)
+    // doesn't have (hasnot)
     if (key === "hasnot" && value && value.trim()) {
-      otherParts.push(`-${quoteIfNeeded(value.trim())}`);
+      const trimmedValue = value.trim();
+      // If multiple words, wrap in curly braces
+      const hasMultipleWords = trimmedValue.includes(" ");
+      if (hasMultipleWords) {
+        hasnotParts.push(`-{${trimmedValue}}`);
+      } else {
+        hasnotParts.push(`-${trimmedValue}`);
+      }
     } else if (key === "attachment" && value === "true") {
-      otherParts.push("has:attachment");
-    } else if (key === "subset" && value && value !== "All Mail") {
-      otherParts.push(`in:${quoteIfNeeded(value)}`);
-    } else if (value && value.trim() && value !== "true" && value !== "false") {
-      otherParts.push(`${key}:${quoteIfNeeded(value)}`);
+      attachmentParts.push("has:attachment");
+    } else if (key === "excludeChats" && value === "true") {
+      excludeChatsParts.push("-in:chats");
     }
   }
 
-  // Compose final string: leading (has/from/to...) then dateParts then otherParts
-  const parts = [...leading, ...dateParts, ...otherParts];
+  // Compose final string
+  const parts = [
+    ...subsetParts,
+    ...fromParts,
+    ...toParts,
+    ...subjectParts,
+    ...hasParts,
+    ...hasnotParts,
+    ...attachmentParts,
+    ...excludeChatsParts,
+    ...sizeParts,
+    ...dateParts,
+  ];
   return parts.join(" ");
 };
 
