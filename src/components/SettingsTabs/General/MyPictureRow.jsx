@@ -2,8 +2,12 @@ import {
     SettingsRow, SettingsCell,
     BoldLabel, LearnMoreLink, 
 } from "./styles";
+import { generateAvatarColor } from "../../../utils/helperFunctions";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
 
 export default function MyPictureRow() {
+    const { loggedInUser } = useGlobalContext();
+
     return (
         <SettingsRow>
             <SettingsCell side="left">
@@ -18,17 +22,31 @@ export default function MyPictureRow() {
             </SettingsCell>
             <SettingsCell side="right">
                 <div style={{ display: "flex", alignItems: "center" }}>
-                    <img
-                        alt="Profile"
-                        src="/assets/images/profile-blank.png"
-                        style={{
-                            border: "2px solid white",
-                            borderRadius: "50%",
-                            backgroundColor: "rgba(255,255,255,0.95)",
-                            height: "52px",
-                            width: "52px",
-                        }}
-                    />
+                    <div className="gb_z gb_td gb_Pf gb_0">
+                        <div className="gb_D gb_qb gb_Pf gb_0">
+                            <a
+                                className="gb_B gb_Za gb_0"
+                                aria-expanded="false"
+                                aria-label="Google Account: "
+                                href="#"
+                                tabIndex={0}
+                                role="button"
+                                style={{
+                                    backgroundColor: generateAvatarColor(loggedInUser.name),
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    width: "36px",
+                                    height: "36px",
+                                    borderRadius: "50%",
+                                }}
+                            >
+                                <span className="gb_ae" style={{ fontSize: "15px", color: "white" }}>
+                                    J
+                                </span>
+                            </a>
+                        </div>
+                    </div>
                     <div style={{ display: "flex", paddingLeft: "20px" }}>
                         <div>
                             <div>
