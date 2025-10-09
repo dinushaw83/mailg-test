@@ -278,6 +278,31 @@ export const queryToSearchBarString = (queryString) => {
       continue;
     }
 
+    // Handle size filters
+    if (key === "size" && value && value.trim()) {
+      const sizeOperatorRaw = params.get("sizeOperator") || "less_than";
+      const sizeOperator = sizeOperatorRaw.replace(/_/g, " "); // Convert underscores to spaces
+      const sizeUnit = params.get("sizeUnit") || "MB";
+      const operatorText = sizeOperator === "greater than" ? "larger" : "smaller";
+
+      // Format unit: MB -> M, KB -> K, Bytes -> (no suffix)
+      let unitSuffix = "";
+      if (sizeUnit === "MB") {
+        unitSuffix = "M";
+      } else if (sizeUnit === "KB") {
+        unitSuffix = "K";
+      }
+      // Bytes has no suffix
+
+      otherParts.push(`${operatorText}:${value}${unitSuffix}`);
+      continue;
+    }
+
+    // Skip sizeOperator and sizeUnit as they're handled with size
+    if (key === "sizeOperator" || key === "sizeUnit") {
+      continue;
+    }
+
     // other mappings (preserve previous behavior, but quote values when needed)
     if (key === "hasnot" && value && value.trim()) {
       otherParts.push(`-${quoteIfNeeded(value.trim())}`);

@@ -82,13 +82,14 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
 
       if (isAdvancedSearch && searchParams.toString()) {
         // Populate form data from URL parameters
+        const sizeOperator = searchParams.get("sizeOperator") || "less than";
         setFormData({
           from: searchParams.get("from") || "",
           to: searchParams.get("to") || "",
           subject: searchParams.get("subject") || "",
           has: searchParams.get("has") || "",
           hasnot: searchParams.get("hasnot") || "",
-          sizeOperator: searchParams.get("sizeOperator") || "less than",
+          sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
           size: searchParams.get("size") || "",
           sizeUnit: searchParams.get("sizeUnit") || "MB",
           within: searchParams.get("within") || "1 day",
@@ -146,6 +147,9 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
       subject: formData.subject,
       has: formData.has,
       hasnot: formData.hasnot,
+      size: formData.size,
+      sizeOperator: formData.sizeOperator,
+      sizeUnit: formData.sizeUnit,
       within: formData.within,
       date: formData.date,
       subset: formData.subset,
@@ -157,18 +161,24 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     const queryParams = new URLSearchParams();
 
     // Add non-empty criteria to query params (excluding default values)
+    const hasSize = searchCriteria.size && searchCriteria.size.trim();
+
     Object.entries(searchCriteria).forEach(([key, value]) => {
       // Skip default values that shouldn't be included in URL
+      // BUT include sizeOperator and sizeUnit if size is provided
       const isDefaultValue =
-        (key === "within" && value === "3 days") ||
-        (key === "date" && value === "2025/09/01") ||
         (key === "subset" && value === "All Mail") ||
-        (key === "sizeOperator" && value === "less than") ||
-        (key === "sizeUnit" && value === "MB");
+        (key === "sizeOperator" && value === "less than" && !hasSize) ||
+        (key === "sizeUnit" && value === "MB" && !hasSize);
 
       // Include boolean true values, non-empty strings, and other truthy values (but not default values)
       if (!isDefaultValue && (value === true || (value && value !== ""))) {
-        queryParams.append(key, value);
+        // Convert sizeOperator spaces to underscores for URL
+        if (key === "sizeOperator") {
+          queryParams.append(key, value.replace(/ /g, "_"));
+        } else {
+          queryParams.append(key, value);
+        }
       }
     });
 

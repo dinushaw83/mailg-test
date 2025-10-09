@@ -44,12 +44,16 @@ const SearchResultsView = () => {
   const searchResults = useMemo(() => {
     if (isAdvancedSearch) {
       // Handle advanced search with criteria from URL params
+      const sizeOperator = searchParams.get("sizeOperator") || "less than";
       const searchCriteria = {
         from: searchParams.get("from") || "",
         to: searchParams.get("to") || "",
         subject: searchParams.get("subject") || "",
         has: searchParams.get("has") || "",
         hasnot: searchParams.get("hasnot") || "",
+        size: searchParams.get("size") || "",
+        sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
+        sizeUnit: searchParams.get("sizeUnit") || "MB",
         within: searchParams.get("within") || "",
         date: searchParams.get("date") || "",
         subset: searchParams.get("subset") || "",
@@ -74,13 +78,18 @@ const SearchResultsView = () => {
     if (!searchResults.length) {
       return [];
     }
-    // Convert search results back to email format and create thread rows
-    const searchResultEmails = searchResults
-      .map((result) => emails.find((email) => email.id === result.id))
-      .filter(Boolean);
 
-    return getThreadRows(searchResultEmails, {});
-  }, [searchResults, emails]);
+    // For advanced search, searchResults are already full email objects
+    // For regular search, they might be search index results that need to be mapped
+    const searchResultEmails = isAdvancedSearch
+      ? searchResults // Already full email objects
+      : searchResults.map((result) => emails.find((email) => email.id === result.id)).filter(Boolean);
+
+    // Pass folder: null to prevent getThreadRows from filtering by folder
+    const threadRows = getThreadRows(searchResultEmails, { folder: null });
+
+    return threadRows;
+  }, [searchResults, emails, isAdvancedSearch]);
 
   const rows = useMemo(() => {
     const sortedEmails = [...filteredRows].sort((a, b) => {
