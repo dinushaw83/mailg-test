@@ -28,7 +28,7 @@ export default function GlobalSnackbar() {
             <IconButton size="medium" aria-label="close" color="inherit" onClick={handleClose}>
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: "22px", color: snackbar?.closeIconColor || "rgb(95,99,104)" }}
+                style={{ fontSize: "22px", color: snackbar?.severity === "error" ? "#ffffff" : (snackbar?.closeIconColor || "rgb(95,99,104)") }}
               >
                 close
               </span>
@@ -38,19 +38,15 @@ export default function GlobalSnackbar() {
       }
       sx={{
         "& .MuiSnackbarContent-root": {
-          backgroundColor: snackbar?.severity === "error" ? "#fdecea" : "#fff",
-          color: snackbar?.severity === "error" ? "#b3261f" : "rgb(95,99,104)",
+          backgroundColor: snackbar?.severity === "error" ? "#323232" : "#fff",
+          color: snackbar?.severity === "error" ? "#ffffff" : "rgb(95,99,104)",
           boxShadow: "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)",
           minWidth: "150px",
-          padding: "8px 16px",
+          padding: "12px 16px",
           fontSize: "14px",
-          borderRadius: "5px",
+          borderRadius: "4px",
+          border: "none",
         },
-        ...(snackbar?.severity === "error"
-          ? {
-              border: "1px solid #f1b8b3",
-            }
-          : {}),
         ...(snackbar?.style ? { ...snackbar.style } : {}),
       }}
     />

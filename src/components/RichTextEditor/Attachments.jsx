@@ -35,15 +35,16 @@ const Attachments = ({ attachments, setAttachments }) => {
           sx={{
             maxWidth: "462px",
             minWidth: "320px",
-            height: "33.5px",
+            minHeight: "33.5px",
             backgroundColor: attachment.isDriveFile ? "#e8f0fe" : "#F5F5F5",
             marginBottom: "8px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 12px",
+            flexDirection: "column",
+            justifyContent: "center",
+            padding: "6px 10px",
             color: "#222",
             border: attachment.isDriveFile ? "1px solid #1a73e8" : "none",
+            position: "relative",
             ...(activeAttachment?.name === attachment.name
               ? {
                   backgroundColor: "rgb(32, 33, 36, .12)",
@@ -77,16 +78,6 @@ const Attachments = ({ attachments, setAttachments }) => {
                 }
               }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ 
-                  fontSize: "16px", 
-                  color: attachment.isDriveFile ? "#1a73e8" : "#5f6368",
-                  marginRight: "8px"
-                }}
-              >
-                {attachment.isDriveFile ? "cloud_upload" : "attach_file"}
-              </span>
               <Typography
                 sx={{
                   maxWidth: "315px",
@@ -112,9 +103,56 @@ const Attachments = ({ attachments, setAttachments }) => {
               ({formatSize(attachment.size)})
             </Typography>
           </Box>
+          {/* Error row for blocked files - right aligned within the same container */}
+          {attachment.isBlocked && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                gap: "4px",
+                marginTop: "2px",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: "0.875rem",
+                  color: "#d93025",
+                  fontWeight: "bold",
+                }}
+              >
+                Blocked for security reasons!
+              </Typography>
+              <Typography
+                component="span"
+                sx={{
+                  fontSize: "0.875rem",
+                  color: "#1a73e8",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // In a real app, this would link to help documentation
+                  console.log("Help clicked for blocked file");
+                }}
+              >
+                Help
+              </Typography>
+            </Box>
+          )}
+
           <span
             className="material-symbols-outlined"
-            style={{ fontSize: "14px", color: "rgb(95, 99, 104)", cursor: "pointer" }}
+            style={{ 
+              fontSize: "14px", 
+              color: "rgb(95, 99, 104)", 
+              cursor: "pointer",
+              position: "absolute",
+              top: "6px",
+              right: "10px",
+            }}
             onClick={(e) => handleRemoveAttachment(e, attachment)}
           >
             close

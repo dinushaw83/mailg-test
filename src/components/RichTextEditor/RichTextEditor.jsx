@@ -282,13 +282,33 @@ export default function Editor({
   };
 
   const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024; // 25MB
-  const ALLOWED_TYPES = new Set([
-    "image/png",
-    "image/jpeg",
-    "image/gif",
-    "application/pdf",
-    "text/plain",
+
+  // Block only these dangerous file extensions, everything else is allowed
+  const BLOCKED_EXTENSIONS = new Set([
+    'ade', 'adp',
+    'apk',
+    'appx', 'appxbundle',
+    'bat',
+    'cab', 'chm',
+    'cmd', 'com', 'cpl',
+    'diagcab', 'diagcfg', 'diagpkg',
+    'dll', 'dmg', 'exe',
+    'hta', 'img', 'ins', 'iso', 'isp',
+    'jar', 'jnlp',
+    'js', 'jse', 'lib', 'lnk',
+    'mde', 'mjs', 'msc', 'msi', 'msix', 'msixbundle', 'msp', 'mst',
+    'nsh',
+    'pif', 'ps1',
+    'scr', 'sct', 'shb',
+    'sys',
+    'vb', 'vbe',
   ]);
+
+  const getFileExtension = (filename) => {
+    const lastDot = filename.lastIndexOf('.');
+    if (lastDot === -1) return '';
+    return filename.substring(lastDot + 1).toLowerCase();
+  };
 
   const handleNativeFilePickerChange = (e) => {
     const { files = [] } = e.target;
@@ -317,30 +337,34 @@ export default function Editor({
         continue;
       }
       
-      // Type validation (allow unknowns by blocking; we can adjust list as needed)
-      const type = (file.type || "").toLowerCase();
-      if (type && !ALLOWED_TYPES.has(type)) {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: "File type not allowed.",
-          autoHideDuration: 4000,
-        });
-        continue;
-      }
-      
       const id = generateRandomId();
       const url = URL.createObjectURL(file);
+
+      // Block only specific dangerous file extensions
+      const extension = getFileExtension(file.name);
+      const isBlocked = extension && BLOCKED_EXTENSIONS.has(extension);
+
       const metadata = {
         id,
         name: file.name,
         size: file.size,
         type: file.type,
         url,
+        isBlocked,
       };
       newFiles.push(metadata);
 
       db.put("attachments", { id, file });
+
+      // Show Gmail-style dark snackbar when any file is blocked
+      if (isBlocked) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "There were errors attaching your file(s).",
+          autoHideDuration: 6000,
+        });
+      }
     }
 
     // Only add regular files if there are any
