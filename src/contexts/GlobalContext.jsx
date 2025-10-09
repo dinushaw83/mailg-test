@@ -56,7 +56,14 @@ export const GlobalContextProvider = ({ children }) => {
     contact: { screen: "CONTACTS" },
     activeTab: null,
   });
+
+  // Contact management states
   const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
+  const [createLabelModal, setCreateLabelModal] = useState({
+    show: false,
+    type: "create",
+    label: null,
+  });
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -211,6 +218,8 @@ export const GlobalContextProvider = ({ children }) => {
     setContactsLeftSidebarExpanded,
     vacationResponder,
     setVacationResponder,
+    createLabelModal,
+    setCreateLabelModal,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

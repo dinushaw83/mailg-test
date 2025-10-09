@@ -231,16 +231,13 @@ const ContactsLeftSidebar = () => {
     setRecipientLabels,
     vacationResponder,
     setSnackbar,
+    createLabelModal,
+    setCreateLabelModal,
   } = useGlobalContext();
   const { width } = useDimensions();
   const navigate = useNavigate();
   const activeItem = location.pathname.split("/").pop();
   const myContacts = recipients.filter((recipient) => recipient?.isSaved);
-  const [createLabelModal, setCreateLabelModal] = useState({
-    show: false,
-    type: "create",
-    label: null,
-  });
   const [deleteLabelModal, setDeleteLabelModal] = useState({
     show: false,
     label: null,
