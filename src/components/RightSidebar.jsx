@@ -150,7 +150,7 @@ const RightSidebar = () => {
                         },
                       }}
                     >
-                      <span class="material-symbols-filled" style={{ fontSize: "21px" }}>
+                      <span className="material-symbols-filled" style={{ fontSize: "21px" }}>
                         contact_page
                       </span>
                     </IconButton>

@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
-import Snackbar from "@mui/material/Snackbar";
-import IconButton from "@mui/material/IconButton";
+import { Snackbar, Tooltip, IconButton } from "@mui/material";
 import { GlobalContext } from "../contexts/GlobalContext";
 
 export default function GlobalSnackbar() {
@@ -12,7 +11,14 @@ export default function GlobalSnackbar() {
     }
 
     // Reset the snackbar
-    setSnackbar({ open: false, action: null, autoHideDuration: null, message: "", hideClose: false });
+    setSnackbar((prev) => ({
+      ...prev,
+      open: false,
+      action: null,
+      autoHideDuration: null,
+      message: "",
+      hideClose: false,
+    }));
   };
 
   return (
@@ -25,14 +31,31 @@ export default function GlobalSnackbar() {
         <React.Fragment>
           {snackbar.action}
           {snackbar?.hideClose ? null : (
-            <IconButton size="medium" aria-label="close" color="inherit" onClick={handleClose}>
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "22px", color: snackbar?.closeIconColor || "rgb(95,99,104)" }}
-              >
-                close
-              </span>
-            </IconButton>
+            <Tooltip
+              title="Close"
+              placement="top"
+              slotProps={{
+                popper: {
+                  sx: {
+                    "& .MuiTooltip-tooltip": {
+                      backgroundColor: "rgba(0, 0, 0, 0.9)",
+                      color: "white",
+                      fontSize: "12px",
+                      fontWeight: 300,
+                    },
+                  },
+                },
+              }}
+            >
+              <IconButton size="medium" aria-label="close" color="inherit" onClick={handleClose}>
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "22px", color: snackbar?.closeIconColor || "rgb(95,99,104)" }}
+                >
+                  close
+                </span>
+              </IconButton>
+            </Tooltip>
           )}
         </React.Fragment>
       }

@@ -20,6 +20,27 @@
   background-color: rgba(11, 87, 208, 0.08);
 }
 
+.hasEditDelete .editDeleteButtons {
+  display: none;
+}
+
+/* Hide the chip if the menu item has edit/delete buttons and it is selected or hovered */
+.hasEditDelete.selected .menuChip,
+.hasEditDelete:hover .menuChip {
+  display: none;
+}
+
+/* Display the edit/delete buttons on hovering or selecting the menu item with edit/delete buttons */
+.hasEditDelete:hover .editDeleteButtons,
+.hasEditDelete.selected .editDeleteButtons {
+  display: flex;
+}
+
+/* Remove hover background when hovering over edit/delete buttons, but only for non-selected items */
+.hasEditDelete:has(.editDeleteButtons:hover):not(.selected):hover {
+  background-color: transparent !important;
+}
+
 @media screen and (max-width: 1024px) {
   .contactsLeftSidebar {
     position: absolute;
@@ -28,7 +49,7 @@
     top: -66px;
     height: 100vh !important;
     background-color: #f8fafd;
-    box-shadow: 0 0 16px rgba(0,0,0,.28);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.28);
   }
 
   .contactsLeftSidebar.expanded {

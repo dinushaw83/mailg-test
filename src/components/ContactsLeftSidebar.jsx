@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -11,14 +11,41 @@ import {
   IconButton,
   Chip,
   Backdrop,
+  Tooltip,
 } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import CreateLabelModal from "./Contacts/CreateLabelModal";
+import DeleteLabelModal from "./Contacts/DeleteLabelModal";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import useDimensions from "../hooks/useDimensions";
 import styles from "./ContactsLeftSidebar.module.css";
 
+// Snackbar style for this screen
+const snackbarStyle = {
+  left: "50% !important",
+  transform: "translateX(-50%) !important",
+  "& .MuiSnackbarContent-root": {
+    backgroundColor: "#303030",
+    color: "#fff",
+    minHeight: "40px",
+  },
+};
+
 // Reusable MenuItem component
-const MenuItem = ({ to, selected, icon, text, chip, infoIcon, onInfoClick, onClick, iconType }) => {
+const MenuItem = ({
+  to,
+  selected,
+  icon,
+  text,
+  chip,
+  infoIcon,
+  onInfoClick,
+  onClick,
+  iconType,
+  showEditDelete,
+  onEdit,
+  onDelete,
+}) => {
   return (
     <ListItem disablePadding>
       <ListItemButton
@@ -26,7 +53,9 @@ const MenuItem = ({ to, selected, icon, text, chip, infoIcon, onInfoClick, onCli
         to={to}
         selected={selected}
         onClick={onClick}
-        className={styles.menuItem}
+        className={`${styles.menuItem} ${showEditDelete ? styles.hasEditDelete : ""} ${
+          selected ? styles.selected : ""
+        }`}
         sx={{
           borderRadius: "22px",
           mx: 1,
@@ -34,7 +63,8 @@ const MenuItem = ({ to, selected, icon, text, chip, infoIcon, onInfoClick, onCli
           color: "#444746",
           fontSize: "0.875rem",
           fontWeight: 500,
-          py: 1,
+          py: 0,
+          px: 0.5,
           overflow: "hidden",
           "&.Mui-selected": {
             backgroundColor: "#c2e7ff",
@@ -50,44 +80,119 @@ const MenuItem = ({ to, selected, icon, text, chip, infoIcon, onInfoClick, onCli
         }}
       >
         {selected && <div className={styles.menuItemOverlay} />}
-        <ListItemIcon sx={{ minWidth: 40, color: selected ? "#001d35" : "#444746" }}>
-          <span
-            className={`material-symbols-${iconType ? iconType : selected ? "filled" : "outlined"}`}
-            style={{ fontSize: "24px" }}
-          >
-            {icon}
-          </span>
-        </ListItemIcon>
-        <ListItemText
-          primary={text}
-          sx={{
-            "& .MuiListItemText-primary": {
-              fontSize: "0.875rem",
-              fontWeight: selected ? 700 : 500,
-            },
-          }}
-        />
-        {chip && (
-          <Chip
-            label={chip}
-            size="small"
+        <Box sx={{ display: "flex", alignItems: "center", py: 1, px: 1.75, width: "100%" }}>
+          <ListItemIcon sx={{ minWidth: 40, color: selected ? "#001d35" : "#444746" }}>
+            <span
+              className={`material-symbols-${iconType ? iconType : selected ? "filled" : "outlined"}`}
+              style={{ fontSize: "24px" }}
+            >
+              {icon}
+            </span>
+          </ListItemIcon>
+          <ListItemText
+            primary={text}
             sx={{
-              fontSize: "12px",
-              backgroundColor: "transparent",
-              color: "inherit",
-              fontWeight: 400,
+              "& .MuiListItemText-primary": {
+                fontSize: "0.875rem",
+                fontWeight: selected ? 700 : 500,
+              },
             }}
           />
+          {/* Chip - hidden on hover/selected when edit/delete buttons are shown */}
+          {chip && (
+            <Chip
+              label={chip}
+              size="small"
+              className={styles.menuChip}
+              sx={{
+                fontSize: "12px",
+                backgroundColor: "transparent",
+                color: "inherit",
+                fontWeight: 400,
+              }}
+            />
+          )}
+        </Box>
+
+        {/* Edit and Delete buttons - shown on hover/selected */}
+        {showEditDelete && (
+          <Box className={styles.editDeleteButtons}>
+            <Tooltip
+              title="Rename label"
+              placement="top"
+              slotProps={{
+                popper: {
+                  sx: {
+                    "& .MuiTooltip-tooltip": {
+                      backgroundColor: "rgba(0, 0, 0, 0.9)",
+                      color: "white",
+                      fontSize: "12px",
+                      fontWeight: 200,
+                    },
+                  },
+                },
+              }}
+            >
+              <IconButton
+                size="medium"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onEdit && onEdit();
+                }}
+                sx={{
+                  color: "#444746",
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
+                  edit
+                </span>
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              title="Delete label"
+              placement="top"
+              slotProps={{
+                popper: {
+                  sx: {
+                    "& .MuiTooltip-tooltip": {
+                      backgroundColor: "rgba(0, 0, 0, 0.9)",
+                      color: "white",
+                      fontSize: "12px",
+                      fontWeight: 200,
+                    },
+                  },
+                },
+              }}
+            >
+              <IconButton
+                size="medium"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete && onDelete();
+                }}
+                sx={{
+                  color: "#444746",
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
+                  delete
+                </span>
+              </IconButton>
+            </Tooltip>
+          </Box>
         )}
+
         {infoIcon && (
           <IconButton
-            size="small"
+            size="medium"
             onClick={onInfoClick}
             sx={{
               color: "#444746",
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: "23px" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "24px" }}>
               info
             </span>
           </IconButton>
@@ -118,11 +223,28 @@ const SectionHeader = ({ children }) => (
 
 const ContactsLeftSidebar = () => {
   const location = useLocation();
-  const { contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded, recipients, recipientLabels, vacationResponder } =
-    useGlobalContext();
+  const {
+    contactsLeftSidebarExpanded,
+    setContactsLeftSidebarExpanded,
+    recipients,
+    recipientLabels,
+    setRecipientLabels,
+    vacationResponder,
+    setSnackbar,
+  } = useGlobalContext();
   const { width } = useDimensions();
+  const navigate = useNavigate();
   const activeItem = location.pathname.split("/").pop();
   const myContacts = recipients.filter((recipient) => recipient?.isSaved);
+  const [createLabelModal, setCreateLabelModal] = useState({
+    show: false,
+    type: "create",
+    label: null,
+  });
+  const [deleteLabelModal, setDeleteLabelModal] = useState({
+    show: false,
+    label: null,
+  });
 
   useEffect(() => {
     // When width goes below 1024px, set the contacts left sidebar to collapsed else expanded
@@ -146,13 +268,93 @@ const ContactsLeftSidebar = () => {
     // TODO: Implement navigation functionality
   };
 
-  const handleAddLabel = () => {
-    // TODO: Implement add label functionality
-  };
-
   const handleInfoClick = (e) => {
     e.stopPropagation();
     // TODO: Implement info tooltip or modal
+  };
+
+  // Handle create label functionality
+  const handleCreateLabel = () => {
+    setCreateLabelModal({
+      show: true,
+      type: "create",
+      labelId: null,
+    });
+  };
+
+  // Handle edit label functionality
+  const handleEditLabel = (label) => {
+    setCreateLabelModal({
+      show: true,
+      type: "edit",
+      label: label,
+    });
+  };
+
+  // Handle create/rename label modal close
+  const handleCreateLabelModalClose = () => {
+    setCreateLabelModal({
+      show: false,
+      type: "create",
+      labelId: null,
+    });
+  };
+
+  // Handle undo delete label
+  const handleUndoDeleteLabel = (label) => {
+    // Add the label back to the recipientLabels array
+    setRecipientLabels((prev) => [...prev, label]);
+
+    // Display success snackbar
+    setSnackbar({
+      open: true,
+      message: "Undone",
+      autoHideDuration: 3000,
+      hideClose: true,
+      style: snackbarStyle,
+      action: null,
+    });
+  };
+
+  // Handle delete label functionality
+  const handleDeleteLabel = (label) => {
+    // Check if any recipients have this label
+    const recipientsWithLabel = recipients.filter((recipient) => recipient.labels?.includes(label.label));
+    if (recipientsWithLabel.length > 0) {
+      // Show delete modal with options
+      setDeleteLabelModal({
+        show: true,
+        label: label,
+      });
+    } else {
+      // Navigate to the contacts screen if pathname is `/contacts/label/${label.id}`
+      if (location.pathname === `/contacts/label/${label.id}`) {
+        navigate("/contacts");
+      }
+
+      // Remove the label from the recipientLabels array
+      setRecipientLabels((prev) => prev.filter((recipientLabel) => recipientLabel.id !== label.id));
+
+      // Display success snackbar
+      setSnackbar({
+        open: true,
+        message: `Label ${label.label} deleted`,
+        autoHideDuration: 5000,
+        hideClose: false,
+        style: snackbarStyle,
+        closeIconColor: "#fff",
+        action: (
+          <Button
+            variant="text"
+            size="medium"
+            onClick={() => handleUndoDeleteLabel(label)}
+            sx={{ textTransform: "capitalize" }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    }
   };
 
   return (
@@ -165,10 +367,10 @@ const ContactsLeftSidebar = () => {
       />
 
       {/* Contacts left sidebar */}
-      <Box 
+      <Box
         className={`${styles.contactsLeftSidebar} ${contactsLeftSidebarExpanded ? styles.expanded : ""}`}
         style={{
-          height: `calc(100vh - ${vacationResponder.enabled ? '32px' : '66px'})`,
+          height: `calc(100vh - ${vacationResponder.enabled ? "32px" : "66px"})`,
         }}
       >
         {/* Create Contact Button */}
@@ -291,7 +493,7 @@ const ContactsLeftSidebar = () => {
             <SectionHeader>Labels</SectionHeader>
             <IconButton
               size="medium"
-              onClick={handleAddLabel}
+              onClick={handleCreateLabel}
               sx={{
                 color: "#444746",
               }}
@@ -302,7 +504,9 @@ const ContactsLeftSidebar = () => {
             </IconButton>
           </Box>
           <List disablePadding>
+            {/* Sort labels on alphabetical order and display them */}
             {recipientLabels
+              .sort((a, b) => a.label.localeCompare(b.label))
               .map((label) => (
                 <MenuItem
                   key={`label-${label.id}`}
@@ -312,11 +516,38 @@ const ContactsLeftSidebar = () => {
                   text={label.label}
                   iconType="filled"
                   chip={getContactsCountByLabel(label.label) === 0 ? "" : getContactsCountByLabel(label.label)}
+                  showEditDelete={true}
+                  onEdit={() => handleEditLabel(label)}
+                  onDelete={() => handleDeleteLabel(label)}
                 />
               ))}
           </List>
         </Box>
       </Box>
+
+      {/* Create/Rename Label Modal */}
+      {createLabelModal.show && (
+        <CreateLabelModal
+          open={createLabelModal.show}
+          onClose={handleCreateLabelModalClose}
+          backdropStyle={{ top: "-66px" }}
+          isEdit={createLabelModal.type === "edit"}
+          editLabel={createLabelModal.type === "edit" ? createLabelModal.label : null}
+        />
+      )}
+
+      {/* Delete Label Modal */}
+      {deleteLabelModal.show && (
+        <DeleteLabelModal
+          open={deleteLabelModal.show}
+          onClose={() => setDeleteLabelModal({
+            show: false,
+            label: null,
+          })}
+          backdropStyle={{ top: "-66px" }}
+          label={deleteLabelModal.label}
+        />
+      )}
     </>
   );
 };
