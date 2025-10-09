@@ -321,10 +321,23 @@ function Form({
             });
         };
 
-        // Debounce updates — no re-render storm
-        const debounceTimer = setTimeout(handleUpdate, 500);
-        return () => clearTimeout(debounceTimer);
-    }, [editor, activeSignature, editor?.state?.doc?.content?.size]);
+        // Listen directly to tiptap's update event — captures formatting and mark changes too
+        editor.on('update', handleUpdate);
+
+        return () => {
+            editor.off('update', handleUpdate);
+        };
+    }, [editor, activeSignature, setSignaturesState]);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        if (activeSignature !== prevSignatureRef.current) {
+            const html = signatures[activeSignature]?.content || "<p></p>";
+            editor.commands.setContent(html, false); // <-- ✨ pass `false` to restore marks correctly
+            prevSignatureRef.current = activeSignature;
+        }
+    }, [activeSignature, editor, signatures]);
 
     const closeLinkPopover = () => {
         setLinkAnchorEl(null);
