@@ -25,7 +25,7 @@ export default function NewSignatureDialog({
     editingSignatureIndex,
     editingSignatureData,
 }) {
-    const { setSnackbar } = useGlobalContext();
+    const { setSnackbar, signaturesState } = useGlobalContext();
     const [name, setName] = useState(editingSignatureData?.name ?? "");
 
     const reset = () => setName(editingSignatureData?.name ?? "");
@@ -36,11 +36,24 @@ export default function NewSignatureDialog({
     };
 
     const handleSubmit = () => {
-        if (!name.trim()) {
+        const trimmedName = name.trim();
+        if (!trimmedName) {
             setSnackbar({ open: true, message: "Signature name cannot be empty" });
             return;
         }
-        onAfterCreate?.(name.trim(), editingSignatureIndex);
+
+        // Check for duplicate name (case-insensitive, excluding current editing index)
+        const nameExists = signaturesState?.list?.some((sig, index) =>
+            index !== editingSignatureIndex &&
+            sig?.name?.toLowerCase() === trimmedName.toLowerCase()
+        );
+
+        if (nameExists) {
+            setSnackbar({ open: true, message: "A signature with this name already exists" });
+            return;
+        }
+
+        onAfterCreate?.(trimmedName, editingSignatureIndex);
         handleClose();
     };
 
