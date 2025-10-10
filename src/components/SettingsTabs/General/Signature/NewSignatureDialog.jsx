@@ -25,8 +25,8 @@ export default function NewSignatureDialog({
     onAfterCreate,
     editingSignatureIndex,
     editingSignatureData,
+    localSignatures,
 }) {
-    const { signaturesState } = useGlobalContext();
     const [name, setName] = useState(editingSignatureData?.name ?? "");
     const [error, setError] = useState("");
 
@@ -49,7 +49,7 @@ export default function NewSignatureDialog({
         }
 
         // Check for duplicate name (case-insensitive, excluding current editing index)
-        const nameExists = signaturesState?.list?.some(
+        const nameExists = localSignatures?.list?.some(
             (sig, index) =>
                 index !== editingSignatureIndex &&
                 sig?.name?.toLowerCase() === trimmedName.toLowerCase()

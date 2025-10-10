@@ -121,6 +121,7 @@ export default function SignatureRow({
                 onAfterCreate={handleAfterCreate}
                 editingSignatureIndex={editingSignature}
                 editingSignatureData={editingSignatureData}
+                localSignatures={localSignatures}
             />
             <DeleteSignatureDialog
                 open={openDeleteDialog}
