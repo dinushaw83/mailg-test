@@ -68,9 +68,12 @@ function normalizeText(text) {
 function generateEmailHash(emails) {
   if (!emails || emails.length === 0) return "";
   return emails
-    .map((email) => `${email.id}-${email.timestamp}-${email.subject || ""}`)
+    .map((email) => {
+      const labels = email.labels ? email.labels.sort().join(",") : "";
+      return `${email.id}-${email.timestamp}-${labels}`;
+    })
     .join("|")
-    .slice(0, 100); // Use first 100 chars for performance
+    .slice(0, 150);
 }
 
 /**
@@ -297,6 +300,35 @@ export function advancedSearchEmails(searchCriteria, options = {}) {
 }
 
 /**
+ * Parse size string like "1.2 MB" or "980 KB" to bytes
+ */
+function parseSizeToBytes(sizeString) {
+  if (!sizeString || typeof sizeString !== "string") {
+    return 0;
+  }
+
+  const match = sizeString.match(/^([\d.]+)\s*(MB|KB|Bytes?)$/i);
+  if (!match) {
+    return 0;
+  }
+
+  const value = parseFloat(match[1]);
+  const unit = match[2].toUpperCase();
+
+  switch (unit) {
+    case "MB":
+      return value * 1024 * 1024;
+    case "KB":
+      return value * 1024;
+    case "BYTES":
+    case "BYTE":
+      return value;
+    default:
+      return 0;
+  }
+}
+
+/**
  * Advanced search with full email data (including attachments)
  */
 export function advancedSearchWithFullData(searchCriteria, emails, options = {}) {
@@ -430,22 +462,63 @@ export function advancedSearchWithFullData(searchCriteria, emails, options = {})
       filteredEmails = filteredEmails.filter((email) => {
         const emailDate = new Date(email.timestamp);
         const isInRange = emailDate >= afterDate && emailDate < beforeDate;
-        // if (isInRange) {
-        //   console.log("Email in range:", {
-        //     emailId: email.id,
-        //     emailDate: email.timestamp,
-        //     subject: email.subject,
-        //   });
-        // }
         return isInRange;
       });
     }
 
-    // Apply subset filter
-    if (searchCriteria.subset && searchCriteria.subset !== "All Mail") {
+    // Apply subset filter (search in specific folder/label)
+    if (searchCriteria.subset && searchCriteria.subset.trim() !== "" && searchCriteria.subset !== "All Mail") {
+      const targetLabel = searchCriteria.subset.trim();
+
       filteredEmails = filteredEmails.filter((email) => {
-        return email.labels && email.labels.includes(searchCriteria.subset);
+        // Check if email has labels and includes the target subset
+        if (!email.labels || !Array.isArray(email.labels)) {
+          return false;
+        }
+        // Case-sensitive match for system labels (Inbox, Sent, Drafts, Spam, Trash)
+        const matches = email.labels.includes(targetLabel);
+        return matches;
       });
+    }
+
+    // Apply size filter
+    if (searchCriteria.size && searchCriteria.size.trim()) {
+      const sizeValue = parseFloat(searchCriteria.size);
+      const sizeUnit = searchCriteria.sizeUnit || "MB";
+      const sizeOperator = searchCriteria.sizeOperator || "less than";
+
+      if (!isNaN(sizeValue)) {
+        filteredEmails = filteredEmails.filter((email) => {
+          if (!email.attachments || email.attachments.length === 0) {
+            return false; // No attachments means size is 0
+          }
+
+          // Calculate total size of all attachments in bytes
+          let totalSizeInBytes = 0;
+          email.attachments.forEach((attachment) => {
+            if (attachment.size) {
+              totalSizeInBytes += parseSizeToBytes(attachment.size);
+            }
+          });
+
+          // Convert the search size to bytes
+          let searchSizeInBytes = sizeValue;
+          if (sizeUnit === "MB") {
+            searchSizeInBytes = sizeValue * 1024 * 1024;
+          } else if (sizeUnit === "KB") {
+            searchSizeInBytes = sizeValue * 1024;
+          }
+          // else Bytes - no conversion needed
+
+          // Apply operator comparison
+          if (sizeOperator === "greater than") {
+            return totalSizeInBytes > searchSizeInBytes;
+          } else {
+            // "less than"
+            return totalSizeInBytes < searchSizeInBytes;
+          }
+        });
+      }
     }
 
     return filteredEmails;

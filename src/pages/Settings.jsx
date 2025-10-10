@@ -65,7 +65,7 @@ const Settings = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container maxWidth={false} sx={{ py: 3 }}>
       <Paper elevation={0} sx={{ backgroundColor: "transparent" }}>
         {/* Settings Title */}
         <Typography

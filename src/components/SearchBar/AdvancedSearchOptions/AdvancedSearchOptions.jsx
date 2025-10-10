@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Box, Checkbox, ClickAwayListener, MenuItem, Select, TextField } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "./DatePicker";
 import EmailField from "./EmailField";
 import dayjs from "dayjs";
@@ -51,10 +51,12 @@ const subsetOptions = [
   { value: "Trash", label: "Trash" },
 ];
 
-const AdvancedSearchOptions = ({ isOpen, onClose }) => {
+const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const fromFieldRef = useRef(null);
-  const [formData, setFormData] = useState({
+
+  const getDefaultFormData = () => ({
     from: "",
     to: "",
     subject: "",
@@ -67,8 +69,48 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
     date: dayjs().format("YYYY-MM-DD"),
     subset: "All Mail",
     attachment: false,
-    includeChats: false,
+    excludeChats: false,
   });
+
+  const [formData, setFormData] = useState(getDefaultFormData());
+
+  // Expose resetForm method to parent component
+  useImperativeHandle(ref, () => ({
+    resetForm: () => {
+      setFormData(getDefaultFormData());
+    },
+  }));
+
+  // Sync formData with URL parameters when modal opens
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     const searchParams = new URLSearchParams(location.search);
+  //     const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
+
+  //     if (isAdvancedSearch && searchParams.toString()) {
+  //       // Populate form data from URL parameters
+  //       const sizeOperator = searchParams.get("sizeOperator") || "less than";
+  //       setFormData({
+  //         from: searchParams.get("from") || "",
+  //         to: searchParams.get("to") || "",
+  //         subject: searchParams.get("subject") || "",
+  //         has: searchParams.get("has") || "",
+  //         hasnot: searchParams.get("hasnot") || "",
+  //         sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
+  //         size: searchParams.get("size") || "",
+  //         sizeUnit: searchParams.get("sizeUnit") || "MB",
+  //         within: searchParams.get("within") || "1 day",
+  //         date: searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
+  //         subset: searchParams.get("subset") || "All Mail",
+  //         attachment: searchParams.get("attachment") === "true",
+  //         excludeChats: searchParams.get("excludeChats") === "true",
+  //       });
+  //     } else {
+  //       // Reset to default values when opening from non-advanced search
+  //       setFormData(getDefaultFormData());
+  //     }
+  //   }
+  // }, [isOpen, location.search, location.pathname]);
 
   // Auto-focus the "from" field when modal opens
   useEffect(() => {
@@ -112,29 +154,38 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
       subject: formData.subject,
       has: formData.has,
       hasnot: formData.hasnot,
+      size: formData.size,
+      sizeOperator: formData.sizeOperator,
+      sizeUnit: formData.sizeUnit,
       within: formData.within,
       date: formData.date,
       subset: formData.subset,
       attachment: formData.attachment,
-      includeChats: formData.includeChats,
+      excludeChats: formData.excludeChats,
     };
 
     // Create a query string from the criteria
     const queryParams = new URLSearchParams();
 
     // Add non-empty criteria to query params (excluding default values)
+    const hasSize = searchCriteria.size && searchCriteria.size.trim();
+
     Object.entries(searchCriteria).forEach(([key, value]) => {
       // Skip default values that shouldn't be included in URL
+      // BUT include sizeOperator and sizeUnit if size is provided
       const isDefaultValue =
-        (key === "within" && value === "3 days") ||
-        (key === "date" && value === "2025/09/01") ||
         (key === "subset" && value === "All Mail") ||
-        (key === "sizeOperator" && value === "less than") ||
-        (key === "sizeUnit" && value === "MB");
+        (key === "sizeOperator" && value === "less than" && !hasSize) ||
+        (key === "sizeUnit" && value === "MB" && !hasSize);
 
       // Include boolean true values, non-empty strings, and other truthy values (but not default values)
       if (!isDefaultValue && (value === true || (value && value !== ""))) {
-        queryParams.append(key, value);
+        // Convert sizeOperator spaces to underscores for URL
+        if (key === "sizeOperator") {
+          queryParams.append(key, value.replace(/ /g, "_"));
+        } else {
+          queryParams.append(key, value);
+        }
       }
     });
 
@@ -379,12 +430,12 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
               <span className={styles.checkboxText}>Has attachment</span>
             </label>
 
-            <label htmlFor="includeChats" className={styles.checkboxLabel}>
+            <label htmlFor="excludeChats" className={styles.checkboxLabel}>
               <Checkbox
-                id="includeChats"
+                id="excludeChats"
                 size="small"
-                checked={formData.includeChats}
-                onChange={(e) => handleInputChange("includeChats", e.target.checked)}
+                checked={formData.excludeChats}
+                onChange={(e) => handleInputChange("excludeChats", e.target.checked)}
               />
               <span className={styles.checkboxText}>Don't include chats</span>
             </label>
@@ -403,6 +454,8 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
       </div>
     </ClickAwayListener>
   );
-};
+});
+
+AdvancedSearchOptions.displayName = "AdvancedSearchOptions";
 
 export default AdvancedSearchOptions;
