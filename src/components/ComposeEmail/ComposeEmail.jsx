@@ -85,24 +85,22 @@ export default function ComposeEmail({ composeWindow }) {
       !content.html?.trim();
 
     if (isNewCompose && defaultSignatureHTML) {
-      setContent({
-        html: `<p><br></p>${defaultSignatureHTML}`,
-        plainText: defaultSignatureHTML.replace(/<[^>]*>/g, ""),
-      });
+      if (signaturesState?.insertSignatureBeforeQuotedText) {
+        // insert signature alone (no --)
+        setContent({
+          html: `<p><br></p>${defaultSignatureHTML}`,
+          plainText: `\n${defaultSignatureHTML.replace(/<[^>]*>/g, "")}`,
+        });
+      } else {
+        // include `--` separator
+        setContent({
+          html: `<p><br></p>--${defaultSignatureHTML}`,
+          plainText: `\n--\n${defaultSignatureHTML.replace(/<[^>]*>/g, "")}`,
+        });
+      }
     }
+  }, [defaultSignatureHTML, currentDraftId, signaturesState?.insertSignatureBeforeQuotedText]);
 
-    // If this is a reply and the setting says "insert before quoted text"
-    if (
-      composeWindow?.fields?.replyingTo &&
-      defaultSignatureHTML &&
-      signaturesState?.insertSignatureBeforeQuotedText
-    ) {
-      setContent({
-        html: `${defaultSignatureHTML}<br><br>${composeWindow.fields.content || ""}`,
-        plainText: defaultSignatureHTML.replace(/<[^>]*>/g, ""),
-      });
-    }
-  }, [defaultSignatureHTML, currentDraftId, signaturesState]);
 
   // Handle window focus to update URL
   const handleWindowFocus = () => {
