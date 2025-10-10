@@ -1,5 +1,6 @@
 import { styled } from "@mui/material/styles";
 import { EditorContent } from "@tiptap/react";
+import { Tooltip, tooltipClasses } from "@mui/material";
 
 export const Container = styled("div")(({ theme }) => ({
     padding: 0,
@@ -348,5 +349,29 @@ export const CreateNewButton = styled("button")(() => ({
     "& .material-symbols-outlined": {
         fontSize: 20,
         marginRight: 6,
+    },
+}));
+
+export const StyledTooltip = styled(({ className, ...props }) => (
+    <Tooltip
+        placement="right"
+        slotProps={{
+            popper: {
+                modifiers: [
+                    {
+                        name: "offset",
+                        options: { offset: [0, -3] },
+                    },
+                ],
+            },
+        }}
+        {...props}
+        classes={{ popper: className }}
+    />
+))(() => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+        fontSize: "0.75rem",
+        padding: "4px 8px",
+        borderRadius: "4px",
     },
 }));

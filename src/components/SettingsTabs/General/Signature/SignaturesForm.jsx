@@ -10,7 +10,6 @@ import {
     Stack,
     Typography,
     IconButton,
-    Tooltip,
 } from "@mui/material";
 import FormatColorTextIcon from "@mui/icons-material/FormatColorText";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
@@ -31,6 +30,7 @@ import {
     ToolbarButton,
     StyledEditorContent,
     CreateNewButton,
+    StyledTooltip,
 } from "../styles";
 import useExtensions from "../../../RichTextEditor/useExtensions";
 
@@ -108,6 +108,10 @@ const swatches = [
     "rgb(32, 18, 77)",
     "rgb(76, 17, 48)",
 ];
+
+function isMacOS() {
+    return navigator.userAgent.includes("Mac");
+}
 
 export default function SignaturesForm({
     signatures,
@@ -563,8 +567,8 @@ function Form({
                                                     userSelect: "none",
                                                 }}
                                             >
-                                                <Tooltip
-                                                    title="Font"
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Font (⌘ ⇧ 5, ⌘ ⇧ 6)" : "Font (Ctrl+Shift+5, Ctrl+Shift+6)"}
                                                     placement="bottom"
                                                 >
                                                     <MailGToolbarButton aria-label="Font family" className={`J-Z-M-I J-J5-Ji`}>
@@ -576,69 +580,93 @@ function Form({
                                                             }}
                                                         />
                                                     </MailGToolbarButton>
-                                                </Tooltip>
+                                                </StyledTooltip>
                                                 <ToolbarSeparator />
-                                                <MailGToolbarButton aria-label="Font family" className={`J-Z-M-I J-J5-Ji`}>
-                                                    <MenuSelectFontSize
-                                                        hideUnsetOption
-                                                        options={[
-                                                            { value: "10px", label: <span style={{ fontSize: "10px" }}>Small</span> },
-                                                            { value: "13px", label: <span style={{ fontSize: "13px" }}>Normal</span> },
-                                                            { value: "18px", label: <span style={{ fontSize: "18px" }}>Large</span> },
-                                                            { value: "32px", label: <span style={{ fontSize: "32px" }}>Huge</span> },
-                                                        ]}
-                                                        aria-label="Size ‪(⌘⇧-, ⌘⇧+)‬"
-                                                    />
-                                                </MailGToolbarButton>
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Font size (⌘ ⇧ -, ⌘ ⇧ +)" : "Font size (Ctrl+Shift+5, Ctrl+Shift+6)"}
+                                                    placement="bottom"
+                                                >
+                                                    <MailGToolbarButton aria-label="Font family" className={`J-Z-M-I J-J5-Ji`}>
+                                                        <MenuSelectFontSize
+                                                            hideUnsetOption
+                                                            tooltipTitle=""
+                                                            options={[
+                                                                { value: "10px", label: <span style={{ fontSize: "10px" }}>Small</span> },
+                                                                { value: "13px", label: <span style={{ fontSize: "13px" }}>Normal</span> },
+                                                                { value: "18px", label: <span style={{ fontSize: "18px" }}>Large</span> },
+                                                                { value: "32px", label: <span style={{ fontSize: "32px" }}>Huge</span> },
+                                                            ]}
+                                                        />
+                                                    </MailGToolbarButton>
+                                                </StyledTooltip>
                                                 <ToolbarSeparator />
-                                                <MailGToolbarButton aria-label="Bold (⌘B)" role="button" onClick={() => handleMarkToggle("bold")}
-                                                    className={`J-Z-M-I J-J5-Ji ${editor?.isActive("bold") ? "active" : ""}`}
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Bold (⌘ B)" : "Bold (Ctrl+B)"}
+                                                    placement="bottom"
+                                                >
+                                                    <MailGToolbarButton aria-label="Bold (⌘B)" role="button" onClick={() => handleMarkToggle("bold")}
+                                                        className={`J-Z-M-I J-J5-Ji ${editor?.isActive("bold") ? "active" : ""}`}
 
+                                                    >
+                                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                                            format_bold
+                                                        </span>
+                                                    </MailGToolbarButton>
+                                                </StyledTooltip>
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Italic (⌘ I)" : "Italic (Ctrl+I)"}
+                                                    placement="bottom"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                                                        format_bold 
-                                                    </span>
-                                                </MailGToolbarButton>
-                                                <MailGToolbarButton aria-label="Italic (⌘I)" role="button"
-                                                    onClick={() => handleMarkToggle("italic")}
-                                                    className={`J-Z-M-I J-J5-Ji ${editor?.isActive("italic") ? "active" : ""}`}
+                                                    <MailGToolbarButton aria-label="Italic (⌘I)" role="button"
+                                                        onClick={() => handleMarkToggle("italic")}
+                                                        className={`J-Z-M-I J-J5-Ji ${editor?.isActive("italic") ? "active" : ""}`}
+                                                    >
+                                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                                            format_italic
+                                                        </span>
+                                                    </MailGToolbarButton>
+                                                </StyledTooltip>
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Underline (⌘ U)" : "Underline (Ctrl+U)"}
+                                                    placement="bottom"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                                                        format_italic
-                                                    </span>
-                                                </MailGToolbarButton>
-                                                <MailGToolbarButton aria-label="Underline (⌘U)" role="button"
-                                                    onClick={() => handleMarkToggle("underline")}
-                                                    className={`J-Z-M-I J-J5-Ji ${editor?.isActive("underline") ? "active" : ""}`}
+                                                    <MailGToolbarButton aria-label="Underline (⌘U)" role="button"
+                                                        onClick={() => handleMarkToggle("underline")}
+                                                        className={`J-Z-M-I J-J5-Ji ${editor?.isActive("underline") ? "active" : ""}`}
+                                                    >
+                                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                                            format_underlined
+                                                        </span>
+                                                    </MailGToolbarButton>
+                                                </StyledTooltip>
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Text color" : "Text color"}
+                                                    placement="bottom"
                                                 >
-                                                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                                                        format_underlined
-                                                    </span>
-                                                </MailGToolbarButton>
-                                                <ToolbarButton
-                                                    role="button"
-                                                    aria-label="Text colour"
-                                                    aria-haspopup="true"
-                                                    aria-expanded="false"
-                                                    className="J-Z-M-I J-J5-Ji"
-                                                    onClick={handleClick}
-                                                >
-                                                    <FormatColorTextIcon
-                                                        sx={{
-                                                            fontSize: 20,
-                                                            marginLeft: "4px",
-                                                            position: "relative",
-                                                            top: "1px",
-                                                        }}
-                                                    />
-                                                    <ArrowDropDownIcon
-                                                        sx={{
-                                                            fontSize: 20,
-                                                        }}
-                                                    />
+                                                    <ToolbarButton
+                                                        role="button"
+                                                        aria-label="Text colour"
+                                                        aria-haspopup="true"
+                                                        aria-expanded="false"
+                                                        className="J-Z-M-I J-J5-Ji"
+                                                        onClick={handleClick}
+                                                    >
+                                                        <FormatColorTextIcon
+                                                            sx={{
+                                                                fontSize: 20,
+                                                                marginLeft: "4px",
+                                                                position: "relative",
+                                                                top: "1px",
+                                                            }}
+                                                        />
+                                                        <ArrowDropDownIcon
+                                                            sx={{
+                                                                fontSize: 20,
+                                                            }}
+                                                        />
 
-                                                </ToolbarButton>
-
+                                                    </ToolbarButton>
+                                                </StyledTooltip>
                                                 <Popper
                                                     id="dual-color-picker"
                                                     open={open}
@@ -682,11 +710,16 @@ function Form({
                                                 </Popper>
 
                                                 <ToolbarSeparator />
-                                                <ToolbarButton role="button" aria-label="Link (⌘K)" className="J-Z-M-I J-J5-Ji" onClick={openLinkPopover}>
-                                                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                                                        insert_link
-                                                    </span>
-                                                </ToolbarButton>
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Link (⌘ K)" : "Link (Ctrl+K)"}
+                                                    placement="bottom"
+                                                >
+                                                    <ToolbarButton role="button" aria-label="Link (⌘K)" className="J-Z-M-I J-J5-Ji" onClick={openLinkPopover}>
+                                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                                            insert_link
+                                                        </span>
+                                                    </ToolbarButton>
+                                                </StyledTooltip>
                                                 <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                                                     <ClickAwayListener
                                                         onClickAway={closeLinkPopover}
@@ -811,25 +844,48 @@ function Form({
                                                         </Paper>
                                                     </ClickAwayListener>
                                                 </Popper>
-
-                                                <ToolbarButton role="button" aria-label="Insert image" className="J-Z-M-I J-J5-Ji">
-                                                    <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                                                        insert_photo
-                                                    </span>
-                                                </ToolbarButton>
-                                                <ToolbarSeparator />
-                                                <AlignMenu editor={editor} />
-                                                <ToolbarButton
-                                                    role="button"
-                                                    aria-label="Numbered list ‪(⌘⇧7)‬"
-                                                    aria-pressed={editor?.isActive("orderedList")}
-                                                    className={`J-Z-M-I J-J5-Ji ${editor?.isActive("orderedList") ? "active" : ""}`}
-                                                    onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Insert image (⌘ G)" : "Insert image (Ctrl+G)"}
+                                                    placement="bottom"
                                                 >
-                                                    <FormatListNumberedIcon sx={{ fontSize: 20 }} />
-                                                </ToolbarButton>
+                                                    <ToolbarButton role="button" aria-label="Insert image" className="J-Z-M-I J-J5-Ji">
+                                                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                                                            insert_photo
+                                                        </span>
+                                                    </ToolbarButton>
+                                                </StyledTooltip>
+
                                                 <ToolbarSeparator />
-                                                <MoreFormattingMenu editor={editor} />
+
+                                                <StyledTooltip
+                                                    title={"Align"}
+                                                    placement="bottom"
+                                                >
+                                                    <AlignMenu editor={editor} />
+                                                </StyledTooltip>
+
+                                                <StyledTooltip
+                                                    title={isMacOS() ? "Numbered list (⌘ ⇧ 7)" : "Numbered list (Ctrl+Shift+7)"}
+                                                    placement="bottom"
+                                                >
+                                                    <ToolbarButton
+                                                        role="button"
+                                                        aria-pressed={editor?.isActive("orderedList")}
+                                                        className={`J-Z-M-I J-J5-Ji ${editor?.isActive("orderedList") ? "active" : ""}`}
+                                                        onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                                                    >
+                                                        <FormatListNumberedIcon sx={{ fontSize: 20 }} />
+                                                    </ToolbarButton>
+                                                </StyledTooltip>
+
+                                                <ToolbarSeparator />
+
+                                                <StyledTooltip
+                                                    title="More formatting options"
+                                                    placement="bottom"
+                                                >
+                                                    <MoreFormattingMenu editor={editor} />
+                                                </StyledTooltip>
                                             </div>
                                         </div>
                                     </div>
