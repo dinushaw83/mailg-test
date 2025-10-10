@@ -106,10 +106,26 @@
   height: 32px !important;
   border-radius: 8px !important;
   transition: all 0.1s ease;
+  padding: 0 10px !important;
+}
+
+.filterChip span {
+  padding: 0 !important;
 }
 
 .filterChip:hover {
   background: #9f9e9e2b;
+}
+
+.filterChipActive {
+  background: #d3e3fd !important;
+  border: none !important;
+  font-weight: 400 !important;
+  color: black !important;
+}
+
+.filterChipActive:hover {
+  background: #d3e3fd !important;
 }
 
 .searchSuggestion {

@@ -12,7 +12,7 @@ import { Labels } from "./Labels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
-  const { markRead, setStar, setImportant, snooze, toggleMute } = useMailActions();
+  const { markRead, setStar, setImportant, snooze, setMuted } = useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentPopover, setCurrentPopover] = React.useState("main"); // 'main' or 'snooze'
   const [labelAnchorEl, setLabelAnchorEl] = React.useState(null);
@@ -179,9 +179,9 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   }, [selectedIds, setImportant]);
 
   const handleMute = useCallback(() => {
-    toggleMute(selectedIds, !allMuted);
+    setMuted(selectedIds, !allMuted);
     handleClose();
-  }, [selectedIds, toggleMute, allMuted]);
+  }, [selectedIds, setMuted, allMuted]);
 
   const hasUnreadEmails = useMemo(() => {
     // to reconsider this

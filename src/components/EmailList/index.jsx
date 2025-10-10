@@ -10,7 +10,7 @@ import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
 
-const EmailList = ({ emails = [], showCheckboxes = true }) => {
+const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { selection, composeWindows, panelState, previewEmailId } = useGlobalContext();
@@ -86,6 +86,14 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
       const composeParam = urlParams.get("compose");
+      const pathname = location.pathname;
+
+      if (pathname.startsWith("/search")) {
+        const composeQuery = composeParam ? `?compose=${composeParam}` : "";
+        navigate(`/inbox/${threadId}${composeQuery}`);
+        return;
+      }
+
       if (composeParam) {
         navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
       } else {
@@ -99,7 +107,9 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
     const path = location.pathname.replace("/", "");
 
     // If Inbox label is present in path other than inbox, return it
-    return email.labels.filter((label) => label.toLowerCase() !== path && label.toLowerCase() === "inbox");
+    return email.labels.filter(
+      (label) => label.toLowerCase() !== path && ["inbox", "muted"].includes(label.toLowerCase())
+    );
   };
 
   const { direction: internalDirection, showPanel } = panelState;
@@ -124,6 +134,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
                 getSenderClassName,
                 getLabelBadges,
                 formatDate,
+                setShowAdvancedMenu,
               }}
             />
           </Panel>
@@ -143,7 +154,7 @@ const EmailList = ({ emails = [], showCheckboxes = true }) => {
           )}
         </PanelGroup>
       </div>
-      {!showPanel && <Footer />}
+      {!showPanel && showFooter && <Footer />}
     </div>
   );
 };

@@ -1,5 +1,55 @@
-@import '/assets/styles/styles.css';
+@import "/assets/styles/styles.css";
 
 body {
   background-color: #f8fafd;
+}
+
+/* Custom context menu hover styles - Using correct class names */
+.contexify_item:hover > .contexify_itemContent {
+  background-color: #07070714 !important; /* Light blue hover */
+  color: #070707 !important;
+  border-radius: 0 !important; /* Flat corners */
+  padding-left: 16px !important; /* Increased horizontal padding */
+  padding-right: 16px !important;
+}
+
+/* More specific targeting */
+.contexify_item:not(.contexify_item-disabled):hover > .contexify_itemContent {
+  background-color: #07070714 !important;
+  color: #070707 !important;
+  border-radius: 0 !important; /* Flat corners */
+  padding-left: 16px !important; /* Increased horizontal padding */
+  padding-right: 16px !important;
+}
+
+/* Set padding for all menu items, not just on hover */
+.contexify_itemContent {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Maintain arrow color on hover for submenus */
+.contexify_item:not(.contexify_item-disabled):hover > .contexify_itemContent .contexify_rightSlot {
+  color: var(--contexify-rightSlot-color) !important; /* Keep original arrow color */
+}
+
+/* Specifically target submenu arrows on hover */
+.contexify_item:not(.contexify_item-disabled)[aria-haspopup]:hover > .contexify_itemContent .contexify_rightSlot {
+  color: var(--contexify-arrow-color) !important; /* Keep original arrow color */
+}
+
+/* Target the menu container with CSS variables */
+.contexify {
+  --contexify-activeItem-bgColor: #07070714 !important;
+  --contexify-activeItem-color: #070707 !important;
+  --contexify-activeItem-radius: 0 !important; /* Flat corners */
+  --contexify-itemContent-padding: 6px 16px !important; /* Increased horizontal padding */
+}
+
+/* Alternative approach - override the CSS variable globally */
+:root {
+  --contexify-activeItem-bgColor: #07070714 !important;
+  --contexify-activeItem-color: #070707 !important;
+  --contexify-activeItem-radius: 0 !important; /* Flat corners */
+  --contexify-itemContent-padding: 6px 16px !important; /* Increased horizontal padding */
 }

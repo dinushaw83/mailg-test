@@ -167,6 +167,218 @@ export const stringifyReplacer = (key, value) => {
   return value;
 };
 
+export const encodeForPath = (raw) => {
+  // encode everything, then convert encoded spaces (%20) to +
+  return encodeURIComponent(raw).replace(/%20/g, "+");
+};
+
+export const queryToSearchBarString = (queryString) => {
+  const params = new URLSearchParams(queryString);
+
+  // Helper: quote & escape only when necessary
+  const quoteIfNeeded = (v) => {
+    if (v === undefined || v === null) return v;
+    const str = String(v).trim();
+    // If contains whitespace or double-quote or parentheses, or comma (we'll quote safe)
+    const needsQuoting = /\s|["(),]/.test(str);
+    // escape backslashes and double quotes
+    const escaped = str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    return needsQuoting ? `"${escaped}"` : escaped;
+  };
+
+  const leading = []; // has, from, to (should appear first)
+  const dateParts = []; // after:, before:
+  const otherParts = []; // everything else
+
+  // Handle date range first but store in dateParts
+  const within = params.get("within");
+  const date = params.get("date");
+
+  if (within && date) {
+    const selectedDate = new Date(date + "T00:00:00");
+    let daysOffset = 1; // default to 1 day
+
+    switch (within) {
+      case "1 day":
+        daysOffset = 1;
+        break;
+      case "3 days":
+        daysOffset = 3;
+        break;
+      case "1 week":
+        daysOffset = 7;
+        break;
+      case "2 weeks":
+        daysOffset = 14;
+        break;
+      case "1 month":
+        daysOffset = 30;
+        break;
+      case "2 months":
+        daysOffset = 60;
+        break;
+      case "3 months":
+        daysOffset = 90;
+        break;
+      case "6 months":
+        daysOffset = 180;
+        break;
+      case "1 year":
+        daysOffset = 365;
+        break;
+    }
+
+    // Calculate after and before dates (same logic as before)
+    const afterDate = new Date(selectedDate.getTime() - daysOffset * 24 * 60 * 60 * 1000);
+    const beforeDate = new Date(selectedDate.getTime() + (daysOffset + 1) * 24 * 60 * 60 * 1000);
+
+    const formatDate = (d) => {
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      return `${year}/${month}/${day}`;
+    };
+
+    dateParts.push(`after:${formatDate(afterDate)}`);
+    dateParts.push(`before:${formatDate(beforeDate)}`);
+  }
+
+  // Handle other search criteria, distributing to the right bucket
+  for (const [key, value] of params.entries()) {
+    if (key.toLowerCase() === "advanced") continue;
+    if (key === "within" || key === "date") continue; // already handled
+
+    if (value == null || value === "") continue; // skip empty values
+
+    // has -> go to front (original code used unshift into parts)
+    if (key === "has" && value.trim()) {
+      leading.unshift(quoteIfNeeded(value.trim()));
+      continue;
+    }
+
+    // from / to should be leading (before dateParts)
+    if ((key === "from" || key === "to") && value && value.trim()) {
+      const emails = value
+        .split(",")
+        .map((e) => e.trim())
+        .filter(Boolean)
+        .map((e) => quoteIfNeeded(e)); // quote each email/display name if needed
+
+      if (emails.length === 1) {
+        leading.push(`${key}:${emails[0]}`);
+      } else if (emails.length > 1) {
+        leading.push(`${key}:(${emails.join(",")})`);
+      }
+      continue;
+    }
+
+    // other mappings (preserve previous behavior, but quote values when needed)
+    if (key === "hasnot" && value && value.trim()) {
+      otherParts.push(`-${quoteIfNeeded(value.trim())}`);
+    } else if (key === "attachment" && value === "true") {
+      otherParts.push("has:attachment");
+    } else if (key === "subset" && value && value !== "All Mail") {
+      otherParts.push(`in:${quoteIfNeeded(value)}`);
+    } else if (value && value.trim() && value !== "true" && value !== "false") {
+      otherParts.push(`${key}:${quoteIfNeeded(value)}`);
+    }
+  }
+
+  // Compose final string: leading (has/from/to...) then dateParts then otherParts
+  const parts = [...leading, ...dateParts, ...otherParts];
+  return parts.join(" ");
+};
+
+// decode a path segment like "John+Doe" or "John%20Doe" -> "John Doe"
+function decodePathSegment(segment) {
+  if (!segment) return null;
+  try {
+    // Convert + to %20 then decode percent-escapes
+    return decodeURIComponent(segment.replace(/\+/g, "%20"));
+  } catch (err) {
+    // fallback: replace + with space
+    return segment.replace(/\+/g, " ");
+  }
+}
+
+// convert query param key/value into a search token
+function paramToToken(key, value) {
+  if (!key) return null;
+  const k = key.trim();
+  if (k.toLowerCase() === "advanced") return null; // always exclude 'advanced'
+
+  // booleans
+  if (value === "true") {
+    // If key starts with "has" (e.g. hasAttachment), transform to "has:attachment"
+    if (/^has[A-Z_]/.test(k) || /^has_/.test(k) || /^has[A-Za-z]/i.test(k)) {
+      const rest = k.replace(/^has/i, "");
+      // normalize camelCase / snake_case / kebab-case to single lowercase token
+      const normalized = rest
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2") // split camelCase
+        .replace(/[_-]/g, " ")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-"); // join multiword with - (or change to '' if you prefer)
+      return `has:${normalized}`;
+    }
+
+    // fallback: has:<key>
+    return `has:${k.toLowerCase()}`;
+  }
+
+  if (value === "false") {
+    // optional: represent negation. You can change behavior if you don't want negatives.
+    return `-has:${k.replace(/^has/i, "").toLowerCase()}`;
+  }
+
+  // default: key:value
+  return `${k}:${value}`;
+}
+
+/**
+ * Build the string to show in the search bar from either:
+ *  - a full URL string,
+ *  - or an object with { pathname, search } (e.g. React Router location).
+ *
+ * Behavior:
+ *  - If pathname contains /search/<term> and <term> !== "advanced", decode and include it.
+ *  - Then append tokens built from query params (excluding "advanced").
+ */
+export function buildSearchBarFromUrl(urlOrLocation) {
+  // Normalize to a URL object
+  let urlObj;
+  if (typeof urlOrLocation === "string") {
+    urlObj = new URL(urlOrLocation, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  } else {
+    // Ensure search starts with "?"
+    const search = urlOrLocation.search ?? "";
+    urlObj = new URL(
+      (urlOrLocation.pathname || "") + (search || ""),
+      typeof window !== "undefined" ? window.location.origin : "http://localhost"
+    );
+  }
+
+  const pathSegments = urlObj.pathname.split("/").filter(Boolean); // ["search", "advanced"] or ["search", "John+Doe"]
+  const parts = [];
+
+  // If path is /search/<term> and term is not 'advanced', decode it and add first
+  if (pathSegments.length >= 2 && pathSegments[0].toLowerCase() === "search") {
+    const maybeTerm = pathSegments[1];
+    if (maybeTerm && maybeTerm.toLowerCase() !== "advanced") {
+      const decoded = decodePathSegment(maybeTerm);
+      if (decoded) parts.push(decoded);
+    }
+  }
+
+  // Then process query params (skip "advanced")
+  const params = new URLSearchParams(urlObj.search);
+  for (const [k, v] of params.entries()) {
+    const token = paramToToken(k, v);
+    if (token) parts.push(token);
+  }
+
+  return parts.join(" ").trim();
+}
 // Validate email format
 export const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

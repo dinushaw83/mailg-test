@@ -11,21 +11,37 @@ import {
   addToSearchHistory,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
+import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
+import { encodeForPath, queryToSearchBarString, buildSearchBarFromUrl } from "../../utils/helperFunctions";
 
 const SearchBar = () => {
   const { emails } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [previousLocation, setPreviousLocation] = useState(null);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [activeFilters, setActiveFilters] = useState([]);
 
   const searchContainerRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const searchQuery = location.pathname.startsWith("/search/") ? location.pathname.split("/search/")[1] : null;
+  const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
 
-  const handleFocus = () => {
+  const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
+
+  const handleSearchBarFocus = () => {
+    setShowAdvancedSearch(false);
     setIsFocused(true);
+  };
+
+  const handleAdvancedSearchClick = () => {
+    setShowAdvancedSearch(true);
+    setIsFocused(false); // Close the default expanded overlay
+  };
+
+  const handleCloseAdvancedSearch = () => {
+    setShowAdvancedSearch(false);
   };
 
   const handleInputChange = (e) => {
@@ -41,10 +57,16 @@ const SearchBar = () => {
 
   // Set search value when search query is present in the url
   useEffect(() => {
-    if (searchQuery) {
+    if (isAdvancedSearch) {
+      // For advanced search, use the query string directly with queryToSearchBarString
+      const queryString = location.search;
+      if (queryString) {
+        setSearchValue(queryToSearchBarString(queryString));
+      }
+    } else if (searchQuery) {
       setSearchValue(searchQuery);
     }
-  }, [searchQuery]);
+  }, [searchQuery, isAdvancedSearch, location.search]);
 
   // Track location changes and clear search input when navigating away from search results
   useEffect(() => {
@@ -69,6 +91,33 @@ const SearchBar = () => {
     return searchEmails(searchValue, { limit: 5 });
   }, [searchValue]);
 
+  // Get filtered emails based on active filters
+  const filteredEmails = useMemo(() => {
+    if (!emails || emails.length === 0) return [];
+
+    let filtered = [...emails];
+
+    // Apply "Has attachment" filter
+    if (activeFilters.includes("Has attachment")) {
+      filtered = filtered.filter((email) => email.attachments && email.attachments.length > 0);
+    }
+
+    // Apply "Last 7 days" filter
+    if (activeFilters.includes("Last 7 days")) {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      filtered = filtered.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
+    }
+
+    // Apply "From me" filter
+    if (activeFilters.includes("From me")) {
+      filtered = filtered.filter((email) => email.from?.email === "john.doe@example.com" || email.from?.name === "me");
+    }
+
+    // Sort by timestamp (most recent first) and limit to 5
+    return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+  }, [emails, activeFilters]);
+
   // Get recent suggestions
   const recentSuggestions = useMemo(() => {
     if (searchValue.trim() || !isSearchIndexReady()) {
@@ -80,13 +129,31 @@ const SearchBar = () => {
   const expandedContent = useMemo(() => {
     if (searchValue.trim()) {
       return searchResults;
+    } else if (activeFilters.length > 0) {
+      // Show only 1 recent suggestion when filters are active, then filtered emails
+      const limitedSuggestions = recentSuggestions.slice(0, 1);
+      const combined = [...limitedSuggestions, ...filteredEmails];
+      return combined;
     } else if (isFocused && isSearchIndexReady()) {
       return recentSuggestions;
     }
     return [];
-  }, [searchValue, searchResults, recentSuggestions, isFocused]);
+  }, [searchValue, searchResults, recentSuggestions, isFocused, activeFilters, filteredEmails]);
 
   const filterOptions = ["Has attachment", "Last 7 days", "From me"];
+
+  // Handle filter pill clicks
+  const handleFilterClick = (filter) => {
+    setActiveFilters((prev) => {
+      if (prev.includes(filter)) {
+        // Remove filter if already active
+        return prev.filter((f) => f !== filter);
+      } else {
+        // Add filter if not active
+        return [...prev, filter];
+      }
+    });
+  };
 
   // Helper function to highlight search terms
   const highlightSearchTerm = (text, searchTerm) => {
@@ -109,9 +176,13 @@ const SearchBar = () => {
         addToSearchHistory(searchValue);
       }
 
-      navigate(`/search/${searchValue}`);
+      navigate(`/search/${encodeForPath(searchValue)}`);
       setIsFocused(false);
 
+      e.target.blur();
+    } else if (e.key === "Escape" || e.key === "Esc") {
+      setIsFocused(false);
+      e.preventDefault();
       e.target.blur();
     }
   };
@@ -126,13 +197,19 @@ const SearchBar = () => {
       if (item && item.trim()) {
         addToSearchHistory(item);
       }
-      navigate(`/search/${item}`);
+      navigate(`/search/${encodeForPath(item)}`);
     }
     setIsFocused(false);
+    setShowAdvancedSearch(false);
+  };
+
+  const handleClickAway = () => {
+    setIsFocused(false);
+    setShowAdvancedSearch(false);
   };
 
   return (
-    <ClickAwayListener onClickAway={() => setIsFocused(false)}>
+    <ClickAwayListener onClickAway={handleClickAway}>
       <div className={styles.searchContainer} ref={searchContainerRef}>
         <div className={`${styles.searchBar} ${isFocused ? styles.focused : ""}`}>
           <div className={styles.searchInputContainer}>
@@ -152,7 +229,7 @@ const SearchBar = () => {
               placeholder="Search mail"
               value={searchValue}
               onChange={handleInputChange}
-              onFocus={handleFocus}
+              onFocus={handleSearchBarFocus}
               onKeyDown={handleKeyDown}
               autoComplete="off"
             />
@@ -182,7 +259,7 @@ const SearchBar = () => {
                 right: "16px",
                 marginRight: "0px !important",
               }}
-              onClick={() => setIsFocused(true)}
+              onClick={handleAdvancedSearchClick}
             />
           </div>
         </div>
@@ -191,16 +268,29 @@ const SearchBar = () => {
         <div className={`${styles.expandedContent} ${isFocused ? styles.expanded : ""}`}>
           {/* Filter pills */}
           <div className={styles.filterPills}>
-            {filterOptions.map((filter, index) => (
-              <Chip
-                key={index}
-                label={filter}
-                size="small"
-                className={styles.filterChip}
-                variant="outlined"
-                onClick={() => console.log("filter clicked")}
-              />
-            ))}
+            {filterOptions.map((filter, index) => {
+              const isActive = activeFilters.includes(filter);
+              return (
+                <Chip
+                  key={index}
+                  label={filter}
+                  size="small"
+                  className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
+                  variant="outlined"
+                  onClick={() => handleFilterClick(filter)}
+                  icon={
+                    isActive ? (
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 18, color: "black", marginRight: "5px" }}
+                      >
+                        check
+                      </span>
+                    ) : undefined
+                  }
+                />
+              );
+            })}
           </div>
 
           {/* Search results or suggestions */}
@@ -233,17 +323,28 @@ const SearchBar = () => {
                         <div className={styles.resultText}>
                           <div className={styles.resultSubject}>{highlightSearchTerm(item.subject, searchValue)}</div>
                           <div className={styles.resultFrom}>
-                            {highlightSearchTerm(`${item.fromName}, me`, searchValue)}
+                            {highlightSearchTerm(`${item.fromName || item.from.name}, me`, searchValue)}
                           </div>
                         </div>
 
-                        <div className={styles.resultTimestamp}>{`${new Date(item.timestamp).toLocaleDateString(
-                          "en-US",
-                          {
+                        <div className={styles.resultTimestamp}>
+                          {item.attachments && item.attachments.length > 0 && (
+                            <span
+                              className="material-symbols-outlined"
+                              style={{
+                                fontSize: 16,
+                                color: "rgb(68, 68, 68)",
+                                marginRight: "4px",
+                              }}
+                            >
+                              attachment
+                            </span>
+                          )}
+                          {`${new Date(item.timestamp).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
-                          }
-                        )}`}</div>
+                          })}`}
+                        </div>
                       </ListItem>
                     );
                   } else {
@@ -282,7 +383,7 @@ const SearchBar = () => {
           </div>
 
           {/* All search result navigation */}
-          {searchValue && (
+          {(searchValue || activeFilters.length > 0) && (
             <div className={styles.allSearchResults}>
               <span
                 className="material-symbols-outlined"
@@ -294,13 +395,22 @@ const SearchBar = () => {
                 search
               </span>
               <div style={{ color: "rgba(0, 0, 0, 0.87)" }}>
-                All search results for <span className={styles.searchValue}>"{searchValue}"</span>
+                {searchValue ? (
+                  <>
+                    All search results for <span className={styles.searchValue}>"{searchValue}"</span>
+                  </>
+                ) : (
+                  <>
+                    All search results for {activeFilters.length} filter{activeFilters.length > 1 ? "s" : ""}
+                  </>
+                )}
               </div>
 
               <span style={{ marginLeft: "auto", fontSize: "12px" }}>Press ENTER</span>
             </div>
           )}
         </div>
+        <AdvancedSearchOptions isOpen={showAdvancedSearch} onClose={handleCloseAdvancedSearch} />
       </div>
     </ClickAwayListener>
   );
