@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
@@ -26,6 +26,7 @@ export const Labels = ({
   const { addLabels, removeLabels } = useMailActions();
   const { getSelectionLabels } = useLabels()
   const [overrides, setOverrides] = useState({});
+  const inputRef = useRef(null);
 
   const handleLabelClose = () => {
     setLabelAnchorEl(null);
@@ -89,6 +90,9 @@ export const Labels = ({
       onClose={handleLabelClose}
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
+      TransitionProps={{
+        onEntered: () => inputRef.current?.focus(),
+      }}
       sx={{
         "& .MuiPopover-paper": {
           marginLeft: "0px",
@@ -105,6 +109,7 @@ export const Labels = ({
         <Box sx={{ paddingX: "16px", paddingBottom: "8px" }}>
           <TextField
             fullWidth
+            inputRef={inputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             variant="standard"
