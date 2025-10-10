@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import VacationResponder from "./VacationResponder";
+import DesktopNotifications from "./DesktopNotifications";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const GeneralTab = () => {
@@ -51,6 +52,9 @@ const GeneralTab = () => {
       <Typography variant="h6" sx={{ marginBottom: 2, color: "#202124" }}>
         General
       </Typography>
+      
+      {/* Desktop Notifications Section */}
+      <DesktopNotifications />
       
       {/* Vacation Responder Section */}
       <VacationResponder 
