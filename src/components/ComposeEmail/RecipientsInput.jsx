@@ -47,32 +47,19 @@ export default function RecipientsInput({
   const containerRef = useRef(null);
   const [selectedContactsModal, setSelectedContactsModal] = useState({ field: null, open: false });
   const [invalids, setInvalids] = useState({ to: new Set(), cc: new Set(), bcc: new Set() });
-  const [duplicates, setDuplicates] = useState({ to: new Set(), cc: new Set(), bcc: new Set() });
 
   const emailRegex = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/i, []);
 
   const validateRecipients = useCallback(
     (nextSelected, nextInputs) => {
       const nextInvalids = { to: new Set(), cc: new Set(), bcc: new Set() };
-      const nextDuplicates = { to: new Set(), cc: new Set(), bcc: new Set() };
-
-      // Build global counts across to/cc/bcc to detect duplicates overall
-      const counts = new Map();
-      ["to", "cc", "bcc"].forEach((field) => {
-        (nextSelected[field] || []).forEach((r) => {
-          const e = String(r.email || r.name || "").toLowerCase();
-          if (!e) return;
-          counts.set(e, (counts.get(e) || 0) + 1);
-        });
-      });
 
       const checkField = (field) => {
         const emails = (nextSelected[field] || []).map((r) => (r.email || r.name || "").toLowerCase());
         const input = (nextInputs?.[field] || "").trim().toLowerCase();
 
-        // duplicates across all fields
+        // Check for invalid email format only
         emails.forEach((e) => {
-          if ((counts.get(e) || 0) > 1) nextDuplicates[field].add(e);
           if (!emailRegex.test(e)) nextInvalids[field].add(e);
         });
 
@@ -83,7 +70,6 @@ export default function RecipientsInput({
 
       ["to", "cc", "bcc"].forEach(checkField);
       setInvalids(nextInvalids);
-      setDuplicates(nextDuplicates);
     },
     [emailRegex]
   );
@@ -589,7 +575,6 @@ export default function RecipientsInput({
                   key={`${recipient.email}-${recipient.id}`}
                   recipient={recipient}
                   onDelete={() => handleChipDelete(recipient, "to")}
-                  isDuplicate={duplicates.to.has((recipient.email || recipient.name || "").toLowerCase())}
                 />
               ))}
               <Autocomplete
@@ -694,7 +679,6 @@ export default function RecipientsInput({
                   key={`${recipient.email}-${recipient.id}`}
                   recipient={recipient}
                   onDelete={() => handleChipDelete(recipient, "cc")}
-                  isDuplicate={duplicates.cc.has((recipient.email || recipient.name || "").toLowerCase())}
                 />
               ))}
                 <Autocomplete
@@ -799,7 +783,6 @@ export default function RecipientsInput({
                   key={`${recipient.email}-${recipient.id}`}
                   recipient={recipient}
                   onDelete={() => handleChipDelete(recipient, "bcc")}
-                  isDuplicate={duplicates.bcc.has((recipient.email || recipient.name || "").toLowerCase())}
                 />
               ))}
                 <Autocomplete

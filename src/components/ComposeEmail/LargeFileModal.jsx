@@ -110,8 +110,9 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: "12px",
+          borderRadius: "28px",
           backgroundColor: "#ffffff",
+          minHeight: showProgress ? "220px" : "auto",
         },
       }}
     >
@@ -120,29 +121,19 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "16px 24px",
-          borderBottom: "1px solid #e0e0e0",
+          padding: "24px 24px 16px 24px",
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 500, color: "#202124" }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 400, 
+            color: "#202124",
+            fontSize: showProgress ? "22px" : "20px",
+          }}
+        >
           {showProgress ? "Attaching file" : "Large files must be shared with MailG Drive"}
         </Typography>
-        {!isUploading && (
-          <IconButton
-            onClick={handleCancel}
-            size="small"
-            sx={{
-              color: "#5f6368",
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
-              },
-            }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
-              close
-            </span>
-          </IconButton>
-        )}
       </DialogTitle>
 
       <DialogContent sx={{ padding: "24px" }}>
@@ -150,14 +141,29 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
           // Initial popup content
           <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="body1" sx={{ color: "#202124", marginBottom: 1 }}>
-                Attachments larger than 25MB will be automatically uploaded to MailG Drive. A download link will be included in your email.
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: "rgb(68, 71, 70)", 
+                  fontSize: "14px",
+                  lineHeight: "20px",
+                  fontFamily: '"Google Sans Flex", "Google Sans Text", "Google Sans", Roboto, Arial, sans-serif',
+                }}
+              >
+                Attachments larger than 25MB will be automatically uploaded to MailG Drive. A download link will be included in your emails.
+                <br />
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  style={{ 
+                    color: "rgb(17, 85, 204)",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                  }}
+                >
+                  Learn more
+                </a>
               </Typography>
-              {fileName && (
-                <Typography variant="body2" sx={{ color: "#5f6368", marginTop: 1 }}>
-                  File: {truncateFileName(fileName)} ({formatSize(fileSize)})
-                </Typography>
-              )}
             </Box>
             <Box
               sx={{
@@ -182,23 +188,47 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
         ) : (
           // Progress content
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography variant="body1" sx={{ color: "#202124" }}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: "#5f6368",
+                fontSize: "14px",
+                lineHeight: "20px",
+              }}
+            >
               Your file is larger than 25MB. It will be sent as a{" "}
               <Typography
                 component="span"
                 sx={{
                   color: "#1a73e8",
-                  textDecoration: "underline",
                   cursor: "pointer",
                 }}
               >
-                MailG Drive link
+                MailG Drive
+              </Typography>
+              {" "}
+              <Typography
+                component="span"
+                sx={{
+                  color: "#202124",
+                  cursor: "default",
+                }}
+              >
+                link
               </Typography>
               .
             </Typography>
 
             {fileName && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box 
+                sx={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: 2,
+                  paddingLeft: "24px",
+                  paddingTop: "8px",
+                }}
+              >
                 <Box
                   sx={{
                     width: 24,
@@ -273,40 +303,59 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
         )}
       </DialogContent>
 
-      {!showProgress && (
-        <DialogActions sx={{ padding: "16px 24px", gap: 1 }}>
+      <DialogActions sx={{ padding: "16px 24px", gap: 1, justifyContent: showProgress ? "flex-end" : "flex-end" }}>
+        {!showProgress ? (
+          <>
+            <Button
+              onClick={handleCancel}
+              variant="text"
+              sx={{
+                textTransform: "none",
+                color: "#1a73e8",
+                borderRadius: "4px",
+                "&:hover": {
+                  backgroundColor: "rgba(26, 115, 232, 0.04)",
+                },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAccept}
+              variant="contained"
+              sx={{
+                textTransform: "none",
+                backgroundColor: "#1a73e8",
+                borderRadius: "20px",
+                "&:hover": {
+                  backgroundColor: "#1557b0",
+                },
+              }}
+            >
+              OK, got it
+            </Button>
+          </>
+        ) : (
           <Button
             onClick={handleCancel}
-            variant="outlined"
+            variant="text"
+            disabled={!isUploading}
             sx={{
               textTransform: "none",
-              color: "#5f6368",
-              borderColor: "#dadce0",
+              color: "#1a73e8",
               borderRadius: "4px",
               "&:hover": {
-                borderColor: "#5f6368",
-                backgroundColor: "rgba(0, 0, 0, 0.04)",
+                backgroundColor: "rgba(26, 115, 232, 0.04)",
+              },
+              "&.Mui-disabled": {
+                color: "rgba(26, 115, 232, 0.4)",
               },
             }}
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleAccept}
-            variant="contained"
-            sx={{
-              textTransform: "none",
-              backgroundColor: "#1a73e8",
-              borderRadius: "20px",
-              "&:hover": {
-                backgroundColor: "#1557b0",
-              },
-            }}
-          >
-            OK, got it
-          </Button>
-        </DialogActions>
-      )}
+        )}
+      </DialogActions>
     </Dialog>
   );
 };

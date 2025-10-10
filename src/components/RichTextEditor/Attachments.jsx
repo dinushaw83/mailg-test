@@ -135,115 +135,98 @@ const Attachments = ({ attachments, setAttachments }) => {
         }
 
         if (attachment.isDriveFile) {
-          // Special design for Drive files (>25MB) - larger and more prominent
+          // Simple design for Drive files (>25MB) - light gray background, single line
           return (
-            <Box key={attachment.name} sx={{ marginBottom: "12px" }}>
-              <Box
-                sx={{
-                  maxWidth: "500px",
-                  minWidth: "350px",
-                  backgroundColor: "#e8f0fe",
-                  border: "2px solid #1a73e8",
-                  borderRadius: "8px",
-                  marginBottom: "8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  padding: "12px 16px",
-                  color: "#222",
-                  position: "relative",
-                  boxShadow: "0 2px 4px rgba(26, 115, 232, 0.1)",
-                  ...(activeAttachment?.name === attachment.name
-                    ? {
-                        backgroundColor: "rgb(32, 33, 36, .12)",
-                        boxShadow: "0 0 0 1px rgb(189, 193, 198)",
-                      }
-                    : {}),
-                }}
-                onClick={(e) => {
-                  setActiveAttachment(attachment);
-                }}
-              >
-                {/* Drive icon and file info row */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "6px" }}>
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ 
-                      fontSize: "24px", 
-                      color: "#1a73e8",
-                    }}
-                  >
-                    cloud_upload
-                  </span>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
-                    <a
-                      href={attachment.driveLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ 
-                        textDecoration: "none", 
-                        color: "#1a73e8",
-                        cursor: "pointer"
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        console.log("Drive link clicked:", attachment.driveLink);
-                      }}
-                    >
-                      <Typography
-                        sx={{
-                          maxWidth: "350px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          fontWeight: "bold",
-                          fontSize: "1rem",
-                          color: "#1a73e8",
-                        }}
-                      >
-                        {attachment.name}
-                      </Typography>
-                    </a>
-                    <Typography
-                      sx={{
-                        fontWeight: "bold",
-                        fontSize: "1rem",
-                        color: "#444746",
-                      }}
-                    >
-                      ({formatSize(attachment.size)})
-                    </Typography>
-                  </Box>
-                </Box>
-                
-                {/* Drive info row */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "36px" }}>
-                  <Typography
-                    sx={{
-                      fontSize: "0.875rem",
-                      color: "#1a73e8",
-                      fontWeight: 500,
-                    }}
-                  >
-                    Sent as MailG Drive link
-                  </Typography>
-                </Box>
-                
-                {/* Close button positioned at top right */}
+            <Box
+              key={attachment.name}
+              sx={{
+                maxWidth: "370px",
+                minWidth: "320px",
+                height: "auto",
+                backgroundColor: "#F5F5F5",
+                border: "1px solid #dadce0",
+                borderRadius: "0px",
+                marginBottom: "8px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 12px",
+                color: "#222",
+                "&:hover": {
+                  border: "1px solid #b0b0b0",
+                  "& a": {
+                    textDecoration: "underline",
+                  },
+                },
+                ...(activeAttachment?.name === attachment.name
+                  ? {
+                      backgroundColor: "rgb(32, 33, 36, .12)",
+                      boxShadow: "0 0 0 1px rgb(189, 193, 198)",
+                    }
+                  : {}),
+              }}
+              onClick={(e) => {
+                setActiveAttachment(attachment);
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
                 <span
                   className="material-symbols-outlined"
                   style={{ 
-                    fontSize: "16px", 
-                    color: "rgb(95, 99, 104)", 
-                    cursor: "pointer",
-                    position: "absolute",
-                    top: "12px",
-                    right: "16px",
+                    fontSize: "20px", 
+                    color: "#1a73e8",
+                    flexShrink: 0,
                   }}
-                  onClick={(e) => handleRemoveAttachment(e, attachment)}
                 >
-                  close
+                  insert_drive_file
                 </span>
+                <Box
+                  component="a"
+                  href={attachment.driveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ 
+                    color: "#202124",
+                    cursor: "pointer",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    flex: 1,
+                    minWidth: 0,
+                    textDecoration: "none",
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log("Drive link clicked:", attachment.driveLink);
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                      color: "#202124",
+                    }}
+                  >
+                    {attachment.name}
+                  </Typography>
+                </Box>
               </Box>
+              <span
+                className="material-symbols-outlined"
+                style={{ 
+                  fontSize: "18px", 
+                  color: "rgb(95, 99, 104)", 
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  marginLeft: "8px",
+                }}
+                onClick={(e) => handleRemoveAttachment(e, attachment)}
+              >
+                close
+              </span>
             </Box>
           );
         }
