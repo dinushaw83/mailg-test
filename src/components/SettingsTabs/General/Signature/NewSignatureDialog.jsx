@@ -6,6 +6,7 @@ import {
     DialogActions,
     TextField,
     Button,
+    Typography,
 } from "@mui/material";
 import { useGlobalContext } from "../../../../contexts/GlobalContext";
 
@@ -25,10 +26,14 @@ export default function NewSignatureDialog({
     editingSignatureIndex,
     editingSignatureData,
 }) {
-    const { setSnackbar, signaturesState } = useGlobalContext();
+    const { signaturesState } = useGlobalContext();
     const [name, setName] = useState(editingSignatureData?.name ?? "");
+    const [error, setError] = useState("");
 
-    const reset = () => setName(editingSignatureData?.name ?? "");
+    const reset = () => {
+        setName(editingSignatureData?.name ?? "");
+        setError("");
+    };
 
     const handleClose = () => {
         reset();
@@ -37,19 +42,21 @@ export default function NewSignatureDialog({
 
     const handleSubmit = () => {
         const trimmedName = name.trim();
+
         if (!trimmedName) {
-            setSnackbar({ open: true, message: "Signature name cannot be empty" });
+            setError("Please specify a name for the signature");
             return;
         }
 
         // Check for duplicate name (case-insensitive, excluding current editing index)
-        const nameExists = signaturesState?.list?.some((sig, index) =>
-            index !== editingSignatureIndex &&
-            sig?.name?.toLowerCase() === trimmedName.toLowerCase()
+        const nameExists = signaturesState?.list?.some(
+            (sig, index) =>
+                index !== editingSignatureIndex &&
+                sig?.name?.toLowerCase() === trimmedName.toLowerCase()
         );
 
         if (nameExists) {
-            setSnackbar({ open: true, message: "A signature with this name already exists" });
+            setError("The signature name that you have chosen already exists");
             return;
         }
 
@@ -59,6 +66,7 @@ export default function NewSignatureDialog({
 
     useEffect(() => {
         setName(editingSignatureData?.name ?? "");
+        setError(""); // clear error when switching signatures
     }, [editingSignatureData]);
 
     return (
@@ -81,6 +89,17 @@ export default function NewSignatureDialog({
             }} style={dialogHeadlineStyle}>{editingSignatureIndex !== undefined && editingSignatureIndex !== null ? "Edit signature name" : "Name new signature"}</DialogTitle>
 
             <DialogContent sx={{ px: 3, pt: 0, pb: 1 }}>
+                {error && (
+                    <Typography
+                        sx={{
+                            fontSize: "0.8125rem",
+                            mb: 1,
+                            fontWeight: 400,
+                        }}
+                    >
+                        {error}
+                    </Typography>
+                )}
                 <TextField
                     autoFocus
                     fullWidth
