@@ -23,6 +23,7 @@ const SearchBar = () => {
   const [activeFilters, setActiveFilters] = useState([]);
 
   const searchContainerRef = useRef(null);
+  const advancedSearchRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -208,6 +209,13 @@ const SearchBar = () => {
     setShowAdvancedSearch(false);
   };
 
+  const handleClearSearch = () => {
+    setSearchValue("");
+    setActiveFilters([]);
+    // Reset the advanced search form fields
+    advancedSearchRef.current?.resetForm();
+  };
+
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <div className={styles.searchContainer} ref={searchContainerRef}>
@@ -245,7 +253,7 @@ const SearchBar = () => {
                   right: "58px",
                   marginRight: "0px !important",
                 }}
-                onClick={() => setSearchValue("")}
+                onClick={handleClearSearch}
               />
             )}
 
@@ -410,7 +418,11 @@ const SearchBar = () => {
             </div>
           )}
         </div>
-        <AdvancedSearchOptions isOpen={showAdvancedSearch} onClose={handleCloseAdvancedSearch} />
+        <AdvancedSearchOptions
+          ref={advancedSearchRef}
+          isOpen={showAdvancedSearch}
+          onClose={handleCloseAdvancedSearch}
+        />
       </div>
     </ClickAwayListener>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { Box, Checkbox, ClickAwayListener, MenuItem, Select, TextField } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "./DatePicker";
@@ -51,7 +51,7 @@ const subsetOptions = [
   { value: "Trash", label: "Trash" },
 ];
 
-const AdvancedSearchOptions = ({ isOpen, onClose }) => {
+const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
   const navigate = useNavigate();
   const location = useLocation();
   const fromFieldRef = useRef(null);
@@ -74,36 +74,43 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
 
   const [formData, setFormData] = useState(getDefaultFormData());
 
-  // Sync formData with URL parameters when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      const searchParams = new URLSearchParams(location.search);
-      const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
+  // Expose resetForm method to parent component
+  useImperativeHandle(ref, () => ({
+    resetForm: () => {
+      setFormData(getDefaultFormData());
+    },
+  }));
 
-      if (isAdvancedSearch && searchParams.toString()) {
-        // Populate form data from URL parameters
-        const sizeOperator = searchParams.get("sizeOperator") || "less than";
-        setFormData({
-          from: searchParams.get("from") || "",
-          to: searchParams.get("to") || "",
-          subject: searchParams.get("subject") || "",
-          has: searchParams.get("has") || "",
-          hasnot: searchParams.get("hasnot") || "",
-          sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
-          size: searchParams.get("size") || "",
-          sizeUnit: searchParams.get("sizeUnit") || "MB",
-          within: searchParams.get("within") || "1 day",
-          date: searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
-          subset: searchParams.get("subset") || "All Mail",
-          attachment: searchParams.get("attachment") === "true",
-          excludeChats: searchParams.get("excludeChats") === "true",
-        });
-      } else {
-        // Reset to default values when opening from non-advanced search
-        setFormData(getDefaultFormData());
-      }
-    }
-  }, [isOpen, location.search, location.pathname]);
+  // Sync formData with URL parameters when modal opens
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     const searchParams = new URLSearchParams(location.search);
+  //     const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
+
+  //     if (isAdvancedSearch && searchParams.toString()) {
+  //       // Populate form data from URL parameters
+  //       const sizeOperator = searchParams.get("sizeOperator") || "less than";
+  //       setFormData({
+  //         from: searchParams.get("from") || "",
+  //         to: searchParams.get("to") || "",
+  //         subject: searchParams.get("subject") || "",
+  //         has: searchParams.get("has") || "",
+  //         hasnot: searchParams.get("hasnot") || "",
+  //         sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
+  //         size: searchParams.get("size") || "",
+  //         sizeUnit: searchParams.get("sizeUnit") || "MB",
+  //         within: searchParams.get("within") || "1 day",
+  //         date: searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
+  //         subset: searchParams.get("subset") || "All Mail",
+  //         attachment: searchParams.get("attachment") === "true",
+  //         excludeChats: searchParams.get("excludeChats") === "true",
+  //       });
+  //     } else {
+  //       // Reset to default values when opening from non-advanced search
+  //       setFormData(getDefaultFormData());
+  //     }
+  //   }
+  // }, [isOpen, location.search, location.pathname]);
 
   // Auto-focus the "from" field when modal opens
   useEffect(() => {
@@ -447,6 +454,8 @@ const AdvancedSearchOptions = ({ isOpen, onClose }) => {
       </div>
     </ClickAwayListener>
   );
-};
+});
+
+AdvancedSearchOptions.displayName = "AdvancedSearchOptions";
 
 export default AdvancedSearchOptions;
