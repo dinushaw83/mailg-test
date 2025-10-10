@@ -65,6 +65,27 @@ export const GlobalContextProvider = ({ children }) => {
     label: null,
   });
 
+  // Signatures related settings
+  /**
+   *  {
+   *     list: {
+   *       name: string;
+   *       content: string;
+   *     }[];
+   *     useForNewEmails: string;
+   *     useForRepliesAndForwards: string;
+   *     insertSignatureBeforeQuotedText: boolean;
+   *   }
+   *  }
+   */
+  const [signaturesState, setSignaturesState] = usePersistedState("signatures", {
+    list: [],
+    useForNewEmails: "",
+    useForRepliesAndForwards: "",
+    insertSignatureBeforeQuotedText: false,
+  });
+
+
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -214,6 +235,8 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    signaturesState,
+    setSignaturesState,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,
