@@ -101,7 +101,6 @@ export default function ComposeEmail({ composeWindow }) {
     }
   }, [defaultSignatureHTML, currentDraftId, signaturesState?.insertSignatureBeforeQuotedText]);
 
-
   // Handle window focus to update URL
   const handleWindowFocus = () => {
     const urlParams = new URLSearchParams(location.search);

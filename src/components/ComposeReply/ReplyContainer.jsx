@@ -155,24 +155,25 @@ ${email.body}
 
     const { list, useForRepliesAndForwards, insertSignatureBeforeQuotedText } = signaturesState || {};
     const signature = list?.[useForRepliesAndForwards];
-    if (!signature?.content) return; // no signature available
+    if (!signature?.content) return;
 
-    // Only insert if not already there
+    // Prevent duplicate insertion
     if (content.html.includes(signature.content)) return;
 
-    // Figure out how to insert it
-    let updatedHTML;
+    const signatureText = signature.content.replace(/<[^>]*>/g, "");
+    let updatedHTML, updatedPlainText;
+
     if (insertSignatureBeforeQuotedText) {
-      // Signature before quoted reply text
       updatedHTML = `${signature.content}<br><br>${content.html}`;
+      updatedPlainText = `${signatureText}\n\n${content.plainText}`;
     } else {
-      // Signature below quoted reply text
-      updatedHTML = `${content.html}<br><br>${signature.content}`;
+      updatedHTML = `${content.html}<br><br>--${signature.content}`;
+      updatedPlainText = `${content.plainText}\n\n--\n${signatureText}`;
     }
 
     setContent({
       html: updatedHTML,
-      plainText: updatedHTML.replace(/<[^>]*>/g, ""),
+      plainText: updatedPlainText,
     });
   }, [
     currentDraftId,
