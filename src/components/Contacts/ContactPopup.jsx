@@ -822,7 +822,7 @@ const ContactPopup = ({ children, contact }) => {
             size="medium"
             variant="contained"
             endIcon={
-              <span class="material-symbols-outlined" style={{ fontSize: "20px" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
                 open_in_new
               </span>
             }
