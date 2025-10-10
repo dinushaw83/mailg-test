@@ -56,7 +56,35 @@ export const GlobalContextProvider = ({ children }) => {
     contact: { screen: "CONTACTS" },
     activeTab: null,
   });
+
+  // Contact management states
   const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
+  const [createLabelModal, setCreateLabelModal] = useState({
+    show: false,
+    type: "create",
+    label: null,
+  });
+
+  // Signatures related settings
+  /**
+   *  {
+   *     list: {
+   *       name: string;
+   *       content: string;
+   *     }[];
+   *     useForNewEmails: string;
+   *     useForRepliesAndForwards: string;
+   *     insertSignatureBeforeQuotedText: boolean;
+   *   }
+   *  }
+   */
+  const [signaturesState, setSignaturesState] = usePersistedState("signatures", {
+    list: [],
+    useForNewEmails: "",
+    useForRepliesAndForwards: "",
+    insertSignatureBeforeQuotedText: false,
+  });
+
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -207,10 +235,14 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    signaturesState,
+    setSignaturesState,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,
     setVacationResponder,
+    createLabelModal,
+    setCreateLabelModal,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
