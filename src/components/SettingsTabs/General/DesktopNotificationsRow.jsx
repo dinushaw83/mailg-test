@@ -13,7 +13,23 @@ export default function DesktopNotificationsRow() {
         permissionStatus,
         updatePermissionStatus,
         showDemoNotification
-    } = useNotificationContext();
+    } = useNotificationContext() || {};
+
+    // Safety check
+    if (!notificationSettings || !updateNotificationSettings) {
+        return (
+            <SettingsRow>
+                <SettingsCell side="left" width="20%">
+                    <BoldLabel style={{ marginLeft: "6px" }}>Desktop notifications:</BoldLabel>
+                    <br />
+                    <SubText>Loading...</SubText>
+                </SettingsCell>
+                <SettingsCell side="right">
+                    <span>Notification context not available</span>
+                </SettingsCell>
+            </SettingsRow>
+        );
+    }
 
     // Update permission status when component mounts and when notification type changes
     useEffect(() => {
@@ -82,16 +98,6 @@ export default function DesktopNotificationsRow() {
                     <SettingsRadio 
                         type="radio" 
                         name="notifications" 
-                        value="off" 
-                        checked={notificationSettings.type === "off"} 
-                        onChange={() => handleNotificationTypeChange("off")} 
-                    />
-                    <BoldLabel style={{ marginLeft: "6px" }}>Mail notifications off</BoldLabel>
-                </label>
-                <label style={{ display: "block", marginBottom: "8px" }}>
-                    <SettingsRadio 
-                        type="radio" 
-                        name="notifications" 
                         value="new" 
                         checked={notificationSettings.type === "new"} 
                         onChange={() => handleNotificationTypeChange("new")} 
@@ -108,6 +114,16 @@ export default function DesktopNotificationsRow() {
                     />
                     <BoldLabel style={{ marginLeft: "6px" }}>Important mail notifications on</BoldLabel> – Notify me only when an important message arrives in my inbox
                 </label>
+                <label style={{ display: "block", marginBottom: "8px" }}>
+                    <SettingsRadio 
+                        type="radio" 
+                        name="notifications" 
+                        value="off" 
+                        checked={notificationSettings.type === "off"} 
+                        onChange={() => handleNotificationTypeChange("off")} 
+                    />
+                    <BoldLabel style={{ marginLeft: "6px" }}>Mail notifications off</BoldLabel>
+                </label>
                 
                 {/* CONDITIONAL: Mail notification sounds select dropdown */}
                 {showSoundsDropdown && (
@@ -119,7 +135,7 @@ export default function DesktopNotificationsRow() {
                             style={{
                                 fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "14px",
-                                fontWeight: "bold",
+                                fontWeight: "normal",
                                 padding: "2px 4px",
                             }}
                         >
