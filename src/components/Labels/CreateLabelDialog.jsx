@@ -2,10 +2,20 @@ import React, { useMemo, useState, useEffect } from "react";
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, Button, Checkbox, FormControlLabel,
-    FormControl, InputLabel, Select, MenuItem
+    FormControl, InputLabel, Select, MenuItem, OutlinedInput
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useLabels, { flattenTreeForSelect, ROOT, splitKey } from "../../hooks/useLabels";
+
+const NoLegendOutlinedInput = styled(OutlinedInput)({
+    "& legend": {
+        display: "none",
+    },
+    "& fieldset": {
+        top: 0,
+    },
+});
 
 export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName }) {
     const { setSnackbar } = useGlobalContext();
@@ -14,6 +24,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
     const [nest, setNest] = useState(false);
     const [parentKey, setParentKey] = useState(defaultParentKey ?? null);
     const [attempted, setAttempted] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const parentChoices = useMemo(
         () => flattenTreeForSelect(labelTree).filter(opt => !labels?.[opt.key]?.system),
@@ -155,22 +166,35 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                 />
 
                 <FormControl fullWidth>
-                    <InputLabel id="nest-under-label">Choose label</InputLabel>
+                    <InputLabel
+                        shrink={false}
+                        sx={{
+                            '&.MuiInputLabel-shrink': {
+                                backgroundColor: '#f0f4fa',
+                                paddingRight: '4px',
+                            },
+                        }}
+                    >
+                        {nest && !parentKey && !isDropdownOpen ? "Please select a parent..." : ""}
+                    </InputLabel>
                     <Select
+                        input={<NoLegendOutlinedInput />}
                         value={parentKey ?? ""}
                         onChange={(e) => setParentKey(e.target.value || null)}
-                        labelId="nest-under-label"
-                        label="Choose label"
-                        MenuProps={{ PaperProps: { style: { maxHeight: 280, backgroundColor: "#f0f4fa" } } }}
+                        MenuProps={{
+                            PaperProps: {
+                                style: { maxHeight: 280, backgroundColor: "#f0f4fa" }
+                            }
+                        }}
+                        onOpen={() => setIsDropdownOpen(true)}
+                        onClose={() => setIsDropdownOpen(false)}
                     >
                         <MenuItem disabled sx={{ my: 2 }}>
-                            <span style={{ display: "inline-block" }}>
-                                Please select a parent...
-                            </span>
+                            <span>Please select a parent...</span>
                         </MenuItem>
-                        {parentChoices.map(opt => (
+                        {parentChoices.map((opt) => (
                             <MenuItem key={opt.key} value={opt.key} sx={{ py: 1.5 }}>
-                                <span style={{ paddingLeft: 12 + opt.depth * 14, display: "inline-block" }}>
+                                <span style={{ paddingLeft: 12 + opt.depth * 14 }}>
                                     {opt.name}
                                 </span>
                             </MenuItem>
