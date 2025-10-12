@@ -16,6 +16,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import AutoReplyRichTextEditor from "../RichTextEditor/AutoReplyRichTextEditor";
+import { SettingsCell, SettingsRow } from "./General/styles";
 
 const VacationResponder = ({ localSettings, setLocalSettings }) => {
   const { vacationResponder, setVacationResponder } = useGlobalContext();
@@ -57,27 +58,26 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ marginBottom: 4 }}>
-        <Box sx={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 3 }}>
-          {/* Left Column - Text Content */}
-          <Box sx={{ display: "flex", flexDirection: "column", width: "25%" }}>
+      <SettingsRow>
+        <SettingsCell side="left" width="20%">
+          <Box>
             <Typography variant="body1" sx={{ color: "#202124", fontSize: "14px", fontWeight: "bold", marginBottom: 1 }}>
               Vacation responder:
             </Typography>
-            
-            <Typography variant="body2" sx={{ 
-              marginBottom: 1, 
-              fontSize: "13px", 
+
+            <Typography variant="body2" sx={{
+              marginBottom: 1,
+              fontSize: "13px",
               color: "#5f6368",
               lineHeight: 1.4
             }}>
               (sends an automated reply to incoming messages. If a contact sends you several messages, this automated reply will be sent at most once every 4 days)
             </Typography>
-            
-            <Link 
-              href="#" 
-              sx={{ 
-                color: "#1a73e8", 
+
+            <Link
+              href="#"
+              sx={{
+                color: "#1a73e8",
                 textDecoration: "none",
                 fontSize: "13px",
                 "&:hover": { textDecoration: "underline" }
@@ -86,27 +86,28 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
               Learn more
             </Link>
           </Box>
+        </SettingsCell>
 
-          {/* Right Column - Radio Buttons and Fields */}
+        <SettingsCell side="right">
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-start", flex: 1, width: "75%" }}>
             <FormControl component="fieldset">
-            <RadioGroup
-              value={currentSettings.enabled ? "on" : "off"}
-              onChange={(e) => handleVacationChange("enabled", e.target.value === "on")}
+              <RadioGroup
+                value={currentSettings.enabled ? "on" : "off"}
+                onChange={(e) => handleVacationChange("enabled", e.target.value === "on")}
               >
-                <FormControlLabel 
-                  value="off" 
-                  control={<Radio size="small" sx={{ padding: "5px", paddingLeft: 0 }} />} 
+                <FormControlLabel
+                  value="off"
+                  control={<Radio size="small" sx={{ padding: "5px", paddingLeft: 0 }} />}
                   label={
                     <Typography variant="body2" sx={{ fontSize: "14px", fontWeight: "bold", color: "#202124" }}>
                       Vacation responder off
                     </Typography>
                   }
-                  sx={{ margin: 0,  }}
+                  sx={{ margin: 0, }}
                 />
-                <FormControlLabel 
-                  value="on" 
-                  control={<Radio size="small" sx={{ padding: "5px",  paddingLeft: 0 }} />} 
+                <FormControlLabel
+                  value="on"
+                  control={<Radio size="small" sx={{ padding: "5px", paddingLeft: 0 }} />}
                   label={
                     <Typography variant="body2" sx={{ fontSize: "14px", fontWeight: "bold", color: "#202124" }}>
                       Vacation responder on
@@ -121,8 +122,8 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
               {/* Date Range */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Typography variant="body2" sx={{ 
-                    fontSize: "14px", 
+                  <Typography variant="body2" sx={{
+                    fontSize: "14px",
                     fontWeight: "bold",
                     color: "#202124",
                     marginRight: "6px"
@@ -133,7 +134,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                     open={firstDayOpen}
                     onOpen={() => setFirstDayOpen(true)}
                     onClose={() => setFirstDayOpen(false)}
-                     value={stringToDate(currentSettings.firstDay)}
+                    value={stringToDate(currentSettings.firstDay)}
                     onChange={(newValue) => {
                       handleVacationChange("firstDay", dateToString(newValue));
                       setFirstDayOpen(false);
@@ -142,13 +143,13 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                       textField: {
                         size: "small",
                         onClick: () => setFirstDayOpen(true),
-                        sx: { 
+                        sx: {
                           maxWidth: 200,
                           padding: "8px",
                           cursor: "pointer",
                           "& .MuiPickersInputBase-root": {
                             fontSize: "13px",
-                            height: "23px", 
+                            height: "23px",
                             paddingInline: "8px",
                           },
                           "& .MuiInputAdornment-root": {
@@ -192,7 +193,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                     }}
                   />
                 </Box>
-                
+
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                   <Checkbox
                     checked={lastDayEnabled}
@@ -210,8 +211,8 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                     size="small"
                     sx={{ marginRight: 0 }}
                   />
-                  <Typography variant="body2" sx={{ 
-                    fontSize: "14px", 
+                  <Typography variant="body2" sx={{
+                    fontSize: "14px",
                     fontWeight: "bold",
                     color: "#202124",
                     marginRight: "4px"
@@ -222,7 +223,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                     open={lastDayOpen}
                     onOpen={() => setLastDayOpen(true)}
                     onClose={() => setLastDayOpen(false)}
-                     value={stringToDate(currentSettings.lastDay ?? "")}
+                    value={stringToDate(currentSettings.lastDay ?? "")}
                     onChange={(newValue) => {
                       handleVacationChange("lastDay", dateToString(newValue));
                       setLastDayOpen(false);
@@ -233,7 +234,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                         size: "small",
                         placeholder: !lastDayEnabled ? "(optional)" : "MM/DD/YYYY",
                         onClick: () => !lastDayEnabled || setLastDayOpen(true),
-                        sx: { 
+                        sx: {
                           maxWidth: 200,
                           height: "23px",
                           paddingInline: "8px",
@@ -288,8 +289,8 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
 
               {/* Subject */}
               <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
-                <Typography variant="body2" sx={{ 
-                  fontSize: "14px", 
+                <Typography variant="body2" sx={{
+                  fontSize: "14px",
                   fontWeight: "bold",
                   color: "#202124",
                   marginRight: "20px"
@@ -298,12 +299,12 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                 </Typography>
                 <TextField
                   size="small"
-                   value={currentSettings.subject}
+                  value={currentSettings.subject}
                   onChange={(e) => handleVacationChange("subject", e.target.value)}
                   placeholder="Enter subject"
-                  sx={{ 
-                    flexGrow: 1, 
-                    maxWidth: 400,  
+                  sx={{
+                    flexGrow: 1,
+                    maxWidth: 400,
                     height: "23px",
                     "& .MuiInputBase-root": {
                       fontSize: "13px",
@@ -318,18 +319,18 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
 
               {/* Message */}
               <Box sx={{ marginBottom: 2, display: "flex", flexDirection: "row", gap: "11px" }}>
-                <Typography variant="body2" sx={{ 
-                  marginBottom: 1, 
-                  fontSize: "14px", 
+                <Typography variant="body2" sx={{
+                  marginBottom: 1,
+                  fontSize: "14px",
                   fontWeight: "bold",
                   color: "#202124"
                 }}>
                   Message:
                 </Typography>
-                
+
                 <div style={{ flex: 1 }}>
                   <AutoReplyRichTextEditor
-                     content={currentSettings.message}
+                    content={currentSettings.message}
                     onChange={(html, plainText) => {
                       handleVacationChange("message", isPlainText ? plainText : html);
                     }}
@@ -345,7 +346,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                 sx={{ marginLeft: 7 }}
                 control={
                   <Checkbox
-                     checked={currentSettings.onlyContacts}
+                    checked={currentSettings.onlyContacts}
                     onChange={(e) => handleVacationChange("onlyContacts", e.target.checked)}
                     size="small"
                   />
@@ -358,8 +359,8 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
               />
             </Box>
           </Box>
-        </Box>
-      </Box>
+        </SettingsCell>
+      </SettingsRow>
     </LocalizationProvider>
   );
 };
