@@ -24,7 +24,18 @@ const buttonContainerStyle = {
   mt: 3,
 };
 
-export default function InfoModal({ isOpen, onClose, title, message, buttons, modalBoxStyle = {} }) {
+export default function InfoModal({
+  isOpen,
+  onClose,
+  title,
+  message,
+  buttons,
+  modalBoxStyle = {},
+  titleStyle = {},
+  messageStyle = {},
+  buttonContainerStyle: customButtonContainerStyle = {},
+  buttonStyle = {},
+}) {
   return (
     <Modal
       open={isOpen}
@@ -38,24 +49,36 @@ export default function InfoModal({ isOpen, onClose, title, message, buttons, mo
             id="modal-modal-title"
             variant="h6"
             component="h2"
-            sx={{ mb: 2, fontWeight: 400, fontSize: "1.5rem" }}
+            sx={{
+              fontSize: "1.5rem",
+              fontWeight: 400,
+              lineHeight: "2rem",
+              color: "#1f1f1f",
+              ...titleStyle,
+            }}
           >
             {title}
           </Typography>
         )}
-        <Typography id="modal-modal-description" sx={{ mb: 3, color: "#444746", fontSize: "0.875rem" }}>
+        <Typography
+          id="modal-modal-description"
+          sx={{
+            fontSize: "0.875rem",
+            fontWeight: 400,
+            lineHeight: "1.25rem",
+            color: "#4d504e",
+            mt: 2,
+            ...messageStyle,
+          }}
+        >
           {message}
         </Typography>
-        <Box sx={buttonContainerStyle}>
+        <Box sx={{ ...buttonContainerStyle, ...customButtonContainerStyle }}>
           {buttons.map((button, index) => (
             <Button
               key={index}
               variant={
-                button.className === "primary" 
-                  ? "contained" 
-                  : button.className === "tertiary" 
-                    ? "text" 
-                    : "outlined"
+                button.className === "primary" ? "contained" : button.className === "tertiary" ? "text" : "outlined"
               }
               onClick={button.onClick}
               sx={{
@@ -75,6 +98,7 @@ export default function InfoModal({ isOpen, onClose, title, message, buttons, mo
                     backgroundColor: "rgba(0, 0, 0, 0.04)",
                   },
                 }),
+                ...buttonStyle,
               }}
             >
               {button.text}

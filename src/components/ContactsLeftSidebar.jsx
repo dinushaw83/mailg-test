@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -11,8 +11,10 @@ import {
   IconButton,
   Chip,
   Backdrop,
+  Menu,
+  MenuItem as MuiMenuItem,
 } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import useDimensions from "../hooks/useDimensions";
 import styles from "./ContactsLeftSidebar.module.css";
@@ -118,11 +120,13 @@ const SectionHeader = ({ children }) => (
 
 const ContactsLeftSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded, recipients, recipientLabels, vacationResponder } =
     useGlobalContext();
   const { width } = useDimensions();
   const activeItem = location.pathname.split("/").pop();
   const myContacts = recipients.filter((recipient) => recipient?.isSaved);
+  const [createContactAnchor, setCreateContactAnchor] = useState(null);
 
   useEffect(() => {
     // When width goes below 1024px, set the contacts left sidebar to collapsed else expanded
@@ -138,8 +142,13 @@ const ContactsLeftSidebar = () => {
     return recipients.filter((recipient) => recipient?.labels?.includes(label)).length;
   };
 
-  const handleCreateContact = () => {
-    // TODO: Implement create contact functionality
+  // Handle create contact dropdown menu item selection
+  const handleCreateContactAction = (menuType) => {
+    if (menuType === "single") {
+      // Navigate to the create contact screen
+      navigate("/contacts/new");
+    }
+    setCreateContactAnchor(null);
   };
 
   const handleMenuItemClick = (item) => {
@@ -209,7 +218,7 @@ const ContactsLeftSidebar = () => {
                   add
                 </span>
               }
-              onClick={handleCreateContact}
+              onClick={(e) => setCreateContactAnchor(e.currentTarget)}
               sx={{
                 backgroundColor: "#c2e7ff",
                 color: "#062239",
@@ -234,6 +243,70 @@ const ContactsLeftSidebar = () => {
             </Button>
           )}
         </Box>
+
+        {/* Create Contact Dropdown Menu */}
+        <Menu
+          anchorEl={createContactAnchor}
+          open={Boolean(createContactAnchor)}
+          onClose={() => setCreateContactAnchor(null)}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "left",
+          }}
+          sx={{
+            "& .MuiPaper-root": {
+              backgroundColor: "#f0f4f9",
+              boxShadow:
+                "0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12),0px 5px 5px -3px rgba(0,0,0,.2)",
+              borderRadius: "4px",
+            },
+            "& .MuiMenuItem-root": {
+              p: 1.5,
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.08)",
+              },
+            },
+          }}
+        >
+          <MuiMenuItem onClick={() => handleCreateContactAction("single")}>
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "24px", color: "#1f1f1f" }}>
+                person
+              </span>
+            </ListItemIcon>
+            <ListItemText
+              primary="Create a contact"
+              slotProps={{
+                primary: {
+                  color: "#1f1f1f",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                },
+              }}
+            />
+          </MuiMenuItem>
+          <MuiMenuItem onClick={() => handleCreateContactAction("multiple")}>
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "24px", color: "#1f1f1f" }}>
+                group
+              </span>
+            </ListItemIcon>
+            <ListItemText
+              primary="Create multiple contacts"
+              slotProps={{
+                primary: {
+                  color: "#1f1f1f",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                },
+              }}
+            />
+          </MuiMenuItem>
+        </Menu>
 
         {/* Main Navigation Section */}
         <Box sx={{ px: 0.5 }}>
