@@ -16,6 +16,7 @@ import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import ContextMenu from "./ContextMenu";
 import { isDocument, isSpreadsheet, isPresentation } from "../InboxView/Attachments";
+import { getEmbeddedImage } from "../../utils/embeddedImages";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -409,6 +410,16 @@ const Table = ({
     window.open(URL.createObjectURL(file), "_blank");
   };
 
+  const openEmbeddedImageInNewTab = async (e, embeddedImage, db) => {
+    e.stopPropagation();
+    try {
+      const { url } = await getEmbeddedImage(db, embeddedImage.id);
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Failed to open embedded image:", error);
+    }
+  };
+
   const { folder, label } = useParams();
 
   return (
@@ -661,12 +672,7 @@ const Table = ({
                                   }}
                                   size="small"
                                   startIcon={getEmbeddedImageIcon(embeddedImage)}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (embeddedImage.url) {
-                                      window.open(embeddedImage.url, "_blank");
-                                    }
-                                  }}
+                                  onClick={(e) => openEmbeddedImageInNewTab(e, embeddedImage, db)}
                                 >
                                   <Typography
                                     sx={{
