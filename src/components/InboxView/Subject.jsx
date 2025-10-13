@@ -13,24 +13,39 @@ const StyledSubject = styled.h2`
 const SubjectContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 1.25rem;
+`;
+
+ const LeftSection = styled.div`
+   display: flex;
+   flex-wrap: wrap;
+   flex: 1;
+   min-width: 0;
+   gap: 0.8rem;
+   align-items: baseline;
+ `;
+
+const RightSection = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
 `;
 
 export const Subject = ({ subject, message }) => {
   return (
     <SubjectContainer>
       {/* Left side: subject + labels */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1.2rem" }}>
+      <LeftSection>
         <StyledSubject>{subject}</StyledSubject>
         <EmailLabelChips onRemove={() => { }} message={message} />
-      </div>
+      </LeftSection>
 
       {/* Right side: action icons */}
-      <div>
+      <RightSection>
         <Icon name="print" label="Print all" placement="top" />
         <Icon name="open_in_new" label="In new window" placement="top" />
-      </div>
+      </RightSection>
     </SubjectContainer>
   );
 };
