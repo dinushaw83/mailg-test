@@ -3,6 +3,7 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
 import InsertLink from "@mui/icons-material/InsertLink";
+import InsertPhoto from "@mui/icons-material/InsertPhoto";
 import EditorMenuControls from "./EditorMenuControls";
 import useExtensions from "./useExtensions";
 import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
@@ -70,6 +71,8 @@ export default function Editor({
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
+
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -451,6 +454,14 @@ export default function Editor({
     setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
   };
 
+  const openPhotoDialog = () => {
+    setPhotoDialogOpen(true);
+  };
+
+  const closePhotoDialog = () => {
+    setPhotoDialogOpen(false);
+  };
+
   return (
     <>
       <RichTextEditor
@@ -614,6 +625,14 @@ export default function Editor({
                     onClick={openLinkPopover}
                     IconComponent={InsertLink}
                   />
+
+                  <MenuButton
+                    tooltipLabel="Insert photo"
+                    size="small"
+                    onClick={openPhotoDialog}
+                    IconComponent={InsertPhoto}
+                  />
+
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                     <ClickAwayListener
                       onClickAway={closeLinkPopover}
