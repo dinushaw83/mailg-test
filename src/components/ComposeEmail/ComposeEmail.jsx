@@ -262,22 +262,17 @@ export default function ComposeEmail({ composeWindow }) {
     handleErrorModalClose: handleScheduleErrorModalClose,
   } = useScheduleEmail(null);
 
-  const handleSend = ({ attachments = [], embeddedImages = [], processedHtml } = {}) => {
-    // Use processed HTML if available, otherwise use the current content
-    const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
-
+  const handleSend = () => {
     handleSendEmail({
       to,
       cc,
       bcc,
       subject,
-      content: finalContent,
+      content,
       rawInputText,
       onClose: handleClose,
       currentDraftId: draftId,
       isDraft: isDraft,
-      attachments,
-      embeddedImages,
     });
   };
 
@@ -298,8 +293,6 @@ export default function ComposeEmail({ composeWindow }) {
       isDraft: isDraft,
       scheduledDate: scheduleData.scheduledDate,
       scheduledTime: scheduleData.scheduledTime,
-      attachments: scheduleData.attachments || [],
-      embeddedImages: scheduleData.embeddedImages || [],
     });
   };
 

@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import React, { useContext, useMemo, useState, useEffect } from "react";
+import React, { useContext, useMemo } from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
 import { Attachments } from "./Attachments";
-import ContactPopup from "../Contacts/ContactPopup";
+import ContactPopup from '../Contacts/ContactPopup';
 import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
 
 const ProfileImageContainer = styled.div`
@@ -327,49 +327,8 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
   );
 };
 
-const EmailHtmlBody = React.memo(({ body, embeddedImages = [] }) => {
-  const { db } = useContext(GlobalContext);
-  const [processedBody, setProcessedBody] = useState(body);
-
-  useEffect(() => {
-    if (!db || !embeddedImages.length) {
-      setProcessedBody(body);
-      return;
-    }
-
-    const processBody = async () => {
-      try {
-        // Get embedded images from IndexedDB
-        const imageData = await Promise.all(
-          embeddedImages.map(async (imageRef) => {
-            try {
-              const { url } = await db.get("embeddedImages", imageRef.id);
-              return { ...imageRef, url: URL.createObjectURL(imageRef.file) };
-            } catch (error) {
-              console.warn(`Failed to load embedded image ${imageRef.id}:`, error);
-              return imageRef;
-            }
-          })
-        );
-
-        // Replace placeholder URLs with actual object URLs
-        let processed = body;
-        imageData.forEach((imageData) => {
-          const placeholderPattern = new RegExp(`data-embedded-image-id="${imageData.id}"`, "g");
-          processed = processed.replace(placeholderPattern, `src="${imageData.url}"`);
-        });
-
-        setProcessedBody(processed);
-      } catch (error) {
-        console.error("Failed to process embedded images:", error);
-        setProcessedBody(body);
-      }
-    };
-
-    processBody();
-  }, [body, embeddedImages, db]);
-
-  return <div dangerouslySetInnerHTML={{ __html: processedBody }} />;
+const EmailHtmlBody = React.memo(({ body }) => {
+  return <div dangerouslySetInnerHTML={{ __html: body }} />;
 });
 
 export const Content = React.memo(
@@ -379,7 +338,6 @@ export const Content = React.memo(
     senderName,
     senderEmail,
     attachments = [],
-    embeddedImages = [],
     isScheduled,
     scheduledDate,
     scheduledTime,
@@ -395,7 +353,7 @@ export const Content = React.memo(
           {isScheduled && (
             <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />
           )}
-          <EmailHtmlBody body={body} embeddedImages={embeddedImages} />
+          <EmailHtmlBody body={body} />
           <Attachments attachments={attachments} />
         </BodyContainer>
       </ContentContainer>

@@ -131,7 +131,6 @@ export const EmailContent = ({
                 senderName={message.from.name}
                 senderEmail={message.from.email}
                 attachments={message.attachments}
-                embeddedImages={message.embeddedImages}
                 isScheduled={message.labels?.includes("Scheduled")}
                 scheduledDate={message.scheduledDate}
                 scheduledTime={message.scheduledTime}
@@ -175,8 +174,8 @@ const InboxView = () => {
 
   useEffect(() => {
     // Calculate total unread emails count
-    const unreadCount = emails.filter((email) => !email.read).length;
-    const unreadText = unreadCount > 0 ? `(${unreadCount})` : "";
+    const unreadCount = emails.filter(email => !email.read).length;
+    const unreadText = unreadCount > 0 ? `(${unreadCount})` : '';
     document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
 
     if (!thread) return;
