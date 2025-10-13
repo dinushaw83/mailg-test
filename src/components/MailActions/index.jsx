@@ -158,6 +158,38 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     return !hasAnyInInbox;
   }, [threads, selectedIds]);
 
+  const showUndoSnackbarForLabelMove = useCallback(
+    (selectedIds, fromKey, toKey, inCustomLabel) => {
+      setSnackbar({
+        open: true,
+        message: `Conversation moved to “${getPathLabelFromKey(labels, toKey)}”.`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              if (inCustomLabel) {
+                moveToLabelFrom(selectedIds, toKey, fromKey);
+              } else {
+                moveToLabel(selectedIds, fromKey || "Inbox");
+              }
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [moveToLabel, moveToLabelFrom, setSnackbar, labels]
+  );
+
   const handleArchiveEmails = useCallback(() => {
     if (!selectedIds.length) return;
     try {
@@ -263,8 +295,10 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           const inCustomLabel = curMeta && curMeta.system === false;
           if (inCustomLabel) {
             moveToLabelFrom(selectedIds, currentLabel, targetKey);
+            showUndoSnackbarForLabelMove(selectedIds, currentLabel, targetKey, inCustomLabel);
           } else {
             moveToLabel(selectedIds, targetKey); // pass key
+            showUndoSnackbarForLabelMove(selectedIds, currentLabel, targetKey, inCustomLabel);
           }
         }
         setState((prev) => ({

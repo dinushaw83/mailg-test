@@ -167,6 +167,38 @@ const MailActions = ({ thread }) => {
     });
   }, [threadId, archive]);
 
+  const showUndoSnackbar = useCallback(
+    (selectedIds, fromKey, toKey, inCustomLabel) => {
+      setSnackbar({
+        open: true,
+        message: `Conversation moved to “${getPathLabelFromKey(labels, toKey)}”.`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              if (inCustomLabel) {
+                moveToLabelFrom(selectedIds, toKey, fromKey);
+              } else {
+                moveToLabel(selectedIds, fromKey || "Inbox");
+              }
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [moveToLabel, moveToLabelFrom, setSnackbar, labels]
+  );
+
   const handleDelete = useCallback(() => {
     moveToTrash([threadId]);
     // Show global snackbar with Undo action
@@ -256,6 +288,8 @@ const MailActions = ({ thread }) => {
           } else {
             moveToLabel(selectedIds, targetKey); // pass key
           }
+
+          showUndoSnackbar(selectedIds, currentLabel, targetKey, inCustomLabel);
         }
       } catch (e) {
         console.error("Move failed:", e);
