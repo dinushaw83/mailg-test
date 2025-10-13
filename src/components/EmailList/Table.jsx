@@ -72,6 +72,11 @@ export const getAttachmentIcon = (attachment, size = 16) => {
   return <img src="/assets/images/default-file-placeholder.png" alt="Document" style={style} />;
 };
 
+export const getEmbeddedImageIcon = (embeddedImage, size = 16) => {
+  const style = { width: size, height: size };
+  return <img src="/assets/images/icon_1_image_x32.png" alt="Image" style={style} />;
+};
+
 const OneColumnData = ({
   email,
   getAccessibilityText,
@@ -113,7 +118,7 @@ const OneColumnData = ({
             </div>
           </Box>
           <Box>
-            {email.attachments.length > 0 && (
+            {(email.attachments.length > 0 || (email.embeddedImages && email.embeddedImages.length > 0)) && (
               <span
                 className="material-symbols-outlined"
                 style={{ fontSize: "18px", color: "rgb(95,99,104)", marginRight: "8px" }}
@@ -419,6 +424,7 @@ const Table = ({
       >
         <tbody>
           {emails.map((email, index) => {
+            console.log({ email });
             const threadId = email.threadId.split(":")[1];
             const isActive = showSnoozePopover && snoozeId === email.id;
             const selected = selection.isSelected(threadId);
@@ -609,37 +615,73 @@ const Table = ({
                           </div>
                         </Link>
                       </div>
-                      {density === "default" && email.attachments.length > 0 && (
-                        <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap" }}>
-                          {email.attachments.map((attachment) => (
-                            <Button
-                              variant="outlined"
-                              sx={{
-                                borderRadius: 10,
-                                color: "rgb(95, 99, 104)",
-                                textTransform: "none",
-                                maxWidth: "160px",
-                                border: "none",
-                                boxShadow: "inset 0 0 0 1px rgba(100,121,143,0.12)",
-                              }}
-                              size="small"
-                              startIcon={getAttachmentIcon(attachment)}
-                              onClick={(e) => openInNewTab(e, attachment, db)}
-                            >
-                              <Typography
+                      {density === "default" &&
+                        (email.attachments.length > 0 || (email.embeddedImages && email.embeddedImages.length > 0)) && (
+                          <div style={{ display: "flex", gap: "5px", marginTop: "5px", flexWrap: "wrap" }}>
+                            {email.attachments.map((attachment) => (
+                              <Button
+                                key={`attachment-${attachment.id}`}
+                                variant="outlined"
                                 sx={{
-                                  textOverflow: "ellipsis",
-                                  overflow: "hidden",
-                                  whiteSpace: "nowrap",
-                                  fontSize: "0.875rem",
+                                  borderRadius: 10,
+                                  color: "rgb(95, 99, 104)",
+                                  textTransform: "none",
+                                  maxWidth: "160px",
+                                  border: "none",
+                                  boxShadow: "inset 0 0 0 1px rgba(100,121,143,0.12)",
                                 }}
+                                size="small"
+                                startIcon={getAttachmentIcon(attachment)}
+                                onClick={(e) => openInNewTab(e, attachment, db)}
                               >
-                                {attachment.name}
-                              </Typography>
-                            </Button>
-                          ))}
-                        </div>
-                      )}
+                                <Typography
+                                  sx={{
+                                    textOverflow: "ellipsis",
+                                    overflow: "hidden",
+                                    whiteSpace: "nowrap",
+                                    fontSize: "0.875rem",
+                                  }}
+                                >
+                                  {attachment.name}
+                                </Typography>
+                              </Button>
+                            ))}
+                            {email.embeddedImages &&
+                              email.embeddedImages.map((embeddedImage) => (
+                                <Button
+                                  key={`embedded-${embeddedImage.id}`}
+                                  variant="outlined"
+                                  sx={{
+                                    borderRadius: 10,
+                                    color: "rgb(95, 99, 104)",
+                                    textTransform: "none",
+                                    maxWidth: "160px",
+                                    border: "none",
+                                    boxShadow: "inset 0 0 0 1px rgba(100,121,143,0.12)",
+                                  }}
+                                  size="small"
+                                  startIcon={getEmbeddedImageIcon(embeddedImage)}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (embeddedImage.url) {
+                                      window.open(embeddedImage.url, "_blank");
+                                    }
+                                  }}
+                                >
+                                  <Typography
+                                    sx={{
+                                      textOverflow: "ellipsis",
+                                      overflow: "hidden",
+                                      whiteSpace: "nowrap",
+                                      fontSize: "0.875rem",
+                                    }}
+                                  >
+                                    {embeddedImage.name}
+                                  </Typography>
+                                </Button>
+                              ))}
+                          </div>
+                        )}
                     </td>
                     <td className="byZ xY sf-hidden" role="gridcell" tabIndex={-1} />
                     <td className="yf xY">&nbsp;</td>

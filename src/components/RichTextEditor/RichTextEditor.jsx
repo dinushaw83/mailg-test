@@ -470,7 +470,7 @@ export default function Editor({
 
     // Get current cursor position
     const { from } = rteRef.current.editor.state.selection;
-    
+
     // Use the existing handleNewImageFiles function
     handleNewImageFiles(imageFiles, from);
   };
@@ -878,11 +878,7 @@ export default function Editor({
       />
 
       {/* Insert Photo Modal */}
-      <InsertPhotoModal
-        open={photoModalOpen}
-        onClose={closePhotoModal}
-        onInsertImages={handleInsertImages}
-      />
+      <InsertPhotoModal open={photoModalOpen} onClose={closePhotoModal} onInsertImages={handleInsertImages} />
     </>
   );
 }
