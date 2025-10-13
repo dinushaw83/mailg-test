@@ -82,8 +82,6 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
   // Create draft email object
   const createDraftEmail = useCallback(
     (id = null) => {
-      console.log("📝 createDraftEmail - Creating draft with content:", content);
-
       const validTo = getValidRecipients(to);
       const validCc = getValidRecipients(cc);
       const validBcc = getValidRecipients(bcc);
@@ -133,7 +131,6 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
         labelColor: "#e1e3e1",
       };
 
-      console.log("📝 createDraftEmail - Created draft email:", draftEmail);
       return draftEmail;
     },
     [to, cc, bcc, subject, content, emails, loggedInUser]
@@ -142,25 +139,18 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
   // Save draft to emails state
   const saveDraft = useCallback(
     (isAutoSave = false) => {
-      console.log("💾 saveDraft - Called with isAutoSave:", isAutoSave);
-      console.log("💾 saveDraft - Current content:", content);
-
       if (!hasDraftContent()) {
-        console.log("💾 saveDraft - No draft content, skipping save");
         return false;
       }
 
       // Only save if content has changed or it's the first time
       if (!hasContentChanged()) {
-        console.log("💾 saveDraft - Content unchanged, skipping save");
         return false;
       }
 
-      console.log("💾 saveDraft - Creating draft email...");
       const draftEmail = createDraftEmail(draftId);
       const newDraftId = draftEmail.id;
 
-      console.log("💾 saveDraft - Saving draft with ID:", newDraftId);
       setEmails((prevEmails) => {
         // Remove existing draft if updating
         const filteredEmails = draftId
@@ -169,7 +159,6 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
 
         // Add new/updated draft at the beginning
         const updatedEmails = [draftEmail, ...filteredEmails];
-        console.log("💾 saveDraft - Updated emails list:", updatedEmails);
         return updatedEmails;
       });
 
@@ -200,7 +189,6 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
         }, 1000);
       }
 
-      console.log("💾 saveDraft - Draft saved successfully");
       return true;
     },
     [hasDraftContent, hasContentChanged, createDraftEmail, draftId, setEmails, to, cc, bcc, subject, content]

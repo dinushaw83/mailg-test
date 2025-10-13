@@ -185,7 +185,6 @@ export const GlobalContextProvider = ({ children }) => {
 
     // reset the database, delete all attachments and embedded images
     if (db) {
-      console.log(`deleting all attachments and embedded images`);
       const attachmentStore = db.transaction("attachments", "readwrite").objectStore("attachments");
       await attachmentStore.clear();
 
