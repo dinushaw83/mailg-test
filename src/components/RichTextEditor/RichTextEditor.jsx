@@ -333,8 +333,6 @@ export default function Editor({
             isRestoringImages.current = false;
           }, 100);
         });
-      } else {
-        console.log("debug: Content unchanged, skipping restoration");
       }
     }
   }, [content, restoreEmbeddedImages]);

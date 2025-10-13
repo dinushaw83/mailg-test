@@ -435,7 +435,6 @@ const Table = ({
       >
         <tbody>
           {emails.map((email, index) => {
-            console.log({ email });
             const threadId = email.threadId.split(":")[1];
             const isActive = showSnoozePopover && snoozeId === email.id;
             const selected = selection.isSelected(threadId);
