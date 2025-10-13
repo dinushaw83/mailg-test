@@ -12,6 +12,7 @@ const LabelContainer = styled("div")({
     display: "flex",
     gap: "6px",
     flexWrap: "wrap",
+    marginTop: "-20px"
 });
 
 const LabelWrapper = styled("div")(({ bg = "#e1e3e1", text = "#444746" }) => ({

@@ -5,7 +5,6 @@ import EmailLabelChips from "../Labels/EmailLabelChips";
 
 const StyledSubject = styled.h2`
   font-weight: 400;
-  margin-left: 5rem; // profile image width
   margin-bottom: 0.5rem;
   font-size: 1.375rem;
 `;
@@ -24,6 +23,7 @@ const SubjectContainer = styled.div`
    min-width: 0;
    gap: 0.8rem;
    align-items: baseline;
+   margin-left: 5rem;  // profile image width
  `;
 
 const RightSection = styled.div`
