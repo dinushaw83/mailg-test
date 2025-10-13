@@ -248,9 +248,6 @@ export default function Editor({
       const html = editor.getHTML();
       const plainText = editor.getText();
 
-      console.log("🔍 RichTextEditor onChange - Original HTML:", html);
-      console.log("🔍 RichTextEditor onChange - Embedded images:", embeddedImages);
-
       // Process HTML to replace blob URLs with IndexedDB references for draft saving
       const imageMap = {};
       embeddedImages.forEach((img) => {
@@ -259,11 +256,7 @@ export default function Editor({
         }
       });
 
-      console.log("🔍 RichTextEditor onChange - Image map:", imageMap);
-
       const processedHtml = processHtmlForStorage(html, imageMap);
-
-      console.log("🔍 RichTextEditor onChange - Processed HTML:", processedHtml);
 
       onChange?.(processedHtml, plainText);
     },
@@ -273,29 +266,21 @@ export default function Editor({
   // Function to restore embedded images from IndexedDB
   const restoreEmbeddedImages = useCallback(
     async (htmlContent) => {
-      console.log("🔄 restoreEmbeddedImages called with HTML:", htmlContent);
-
       if (!db || !htmlContent) {
-        console.log("🔄 restoreEmbeddedImages - No DB or content, returning original");
         return htmlContent;
       }
 
       const imageIds = extractEmbeddedImageIds(htmlContent);
-      console.log("🔄 restoreEmbeddedImages - Extracted image IDs:", imageIds);
 
       if (imageIds.length === 0) {
-        console.log("🔄 restoreEmbeddedImages - No image IDs found, returning original");
         return htmlContent;
       }
 
       try {
-        console.log("🔄 restoreEmbeddedImages - Fetching images from IndexedDB...");
         const embeddedImagesData = await Promise.all(
           imageIds.map(async (imageId) => {
             try {
-              console.log(`🔄 restoreEmbeddedImages - Fetching image ${imageId}...`);
               const result = await getEmbeddedImage(db, imageId);
-              console.log(`🔄 restoreEmbeddedImages - Successfully fetched image ${imageId}:`, result);
               return result;
             } catch (error) {
               console.warn(`Failed to load embedded image ${imageId}:`, error);
@@ -305,13 +290,11 @@ export default function Editor({
         );
 
         const validImages = embeddedImagesData.filter(Boolean);
-        console.log("🔄 restoreEmbeddedImages - Valid images:", validImages);
 
         // Update the embedded images state with the restored images
         setEmbeddedImages(validImages);
 
         const processedHtml = processHtmlForDisplay(htmlContent, validImages);
-        console.log("🔄 restoreEmbeddedImages - Processed HTML for display:", processedHtml);
 
         return processedHtml;
       } catch (error) {
@@ -324,35 +307,24 @@ export default function Editor({
 
   // Handle content prop updates after initial render
   useEffect(() => {
-    console.log("🔄 Content useEffect triggered with content:", content);
-
     if (rteRef.current?.editor && content !== undefined) {
       const currentContent = rteRef.current.editor.getHTML();
-      console.log("🔄 Content useEffect - Current editor content:", currentContent);
-      console.log("🔄 Content useEffect - New content prop:", content);
 
       // Only update if the content has actually changed to avoid unnecessary updates
       if (currentContent !== content) {
-        console.log("🔄 Content useEffect - Content changed, restoring embedded images...");
         // Set flag to prevent infinite loops
         isRestoringImages.current = true;
 
         // Restore embedded images before setting content
         restoreEmbeddedImages(content).then((restoredContent) => {
-          console.log("🔄 Content useEffect - Setting restored content in editor:", restoredContent);
           rteRef.current.editor.commands.setContent(restoredContent, false);
 
           // Reset flag after a short delay to allow the editor to update
           setTimeout(() => {
             isRestoringImages.current = false;
-            console.log("🔄 Content useEffect - Reset restoring images flag");
           }, 100);
         });
-      } else {
-        console.log("🔄 Content useEffect - Content unchanged, skipping update");
       }
-    } else {
-      console.log("🔄 Content useEffect - No editor or content undefined");
     }
   }, [content, restoreEmbeddedImages]);
 
