@@ -175,11 +175,7 @@ ${email.body}
       html: updatedHTML,
       plainText: updatedPlainText,
     });
-  }, [
-    currentDraftId,
-    selectedReplyOption,
-    signaturesState,
-  ]);
+  }, [currentDraftId, selectedReplyOption, signaturesState]);
 
   const options = [
     { value: "reply", label: "Reply", icon: replyIcon },
@@ -386,12 +382,10 @@ ${email.body}
               key={selectedReplyOption}
               content={content.html}
               onChange={(html, plainText) => setContent({ html, plainText })}
-              className="reply-text-editor"
               onSend={handleSend}
               onDelete={handleDelete}
               onSchedule={handleSchedule}
               textEditorMinHeight="90px"
-              textEditorMaxHeight="250px"
               messageId={email.id}
             />
           </div>

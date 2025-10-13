@@ -72,26 +72,73 @@ export default function Editor({
     return 390; // sensible default
   };
   const baseEditorHeightPx = parsePx(textEditorMinHeight);
+  const maxEditorHeightPx = textEditorMaxHeight ? parsePx(textEditorMaxHeight) : null;
   const toolbarSpacerHeightPx = showMenuBar ? 51 : 0; // matches spacer div height
-  const computedEditorHeightPx = Math.max(
-    210,
-    baseEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0)
-  );
+  const computedEditorHeightPx = Math.max(210, baseEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0));
+  const computedMaxEditorHeightPx = maxEditorHeightPx
+    ? Math.max(210, maxEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0))
+    : null;
 
   const handleNewImageFiles = useCallback((files, insertPosition) => {
     if (!rteRef.current?.editor) {
       return;
     }
 
-    const attributesForImageFiles = files.map((file) => ({
-      src: URL.createObjectURL(file),
-      alt: file.name,
-    }));
+    const attributesForImageFiles = files.map((file) => {
+      // Create a temporary image to get dimensions
+      const img = new Image();
+      const objectURL = URL.createObjectURL(file);
 
-    insertImages({
-      images: attributesForImageFiles,
-      editor: rteRef.current.editor,
-      position: insertPosition,
+      return new Promise((resolve) => {
+        img.onload = () => {
+          // Scale down large images to max 562px (Gmail's behavior)
+          const maxSize = 562;
+          let { width, height } = img;
+
+          if (width > maxSize || height > maxSize) {
+            const aspectRatio = width / height;
+            if (width > height) {
+              width = maxSize;
+              height = maxSize / aspectRatio;
+            } else {
+              height = maxSize;
+              width = maxSize * aspectRatio;
+            }
+          }
+
+          resolve({
+            src: objectURL,
+            alt: file.name,
+            width: Math.round(width),
+            height: Math.round(height),
+          });
+        };
+        img.src = objectURL;
+      });
+    });
+
+    // Wait for all images to load and get their dimensions
+    Promise.all(attributesForImageFiles).then((processedImages) => {
+      insertImages({
+        images: processedImages,
+        editor: rteRef.current.editor,
+        position: insertPosition,
+      });
+
+      // Move cursor to the next line after inserting images
+      const editor = rteRef.current?.editor;
+      if (editor) {
+        // Use setTimeout to ensure the image insertion is complete
+        setTimeout(() => {
+          // Move cursor to the end of the document
+          const endPos = editor.state.doc.content.size;
+          editor.commands.setTextSelection(endPos);
+          // Insert a line break to move to next line
+          editor.commands.insertContent("<br>");
+          // Focus the editor
+          editor.commands.focus();
+        }, 10);
+      }
     });
   }, []);
 
@@ -148,7 +195,7 @@ export default function Editor({
   useEffect(() => {
     if (!attachmentsContainerRef.current) return;
     const el = attachmentsContainerRef.current;
-    const update = () => setAttachmentsHeight(el.clientHeight  || 0);
+    const update = () => setAttachmentsHeight(el.clientHeight || 0);
     update();
     if (typeof ResizeObserver !== "undefined") {
       const ro = new ResizeObserver(update);
@@ -647,9 +694,18 @@ export default function Editor({
             "& h1, & h2, & h3, & h4, & h5, & h6": {
               scrollMarginTop: showMenuBar ? 50 : 0,
             },
+            "& img": {
+              maxWidth: "100%",
+              height: "auto",
+              display: "block",
+              margin: "8px 0",
+              borderRadius: "4px",
+            },
             minHeight: `${computedEditorHeightPx}px`,
-            maxHeight: `${computedEditorHeightPx}px`,
-            overflowY: "auto",
+            ...(computedMaxEditorHeightPx && {
+              maxHeight: `${computedMaxEditorHeightPx}px`,
+              overflowY: "auto",
+            }),
           },
         }}
       >
