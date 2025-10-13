@@ -258,6 +258,7 @@ const SearchBar = () => {
               value={searchValue}
               onChange={setSearchValue}
               onFocus={handleSearchBarFocus}
+              onKeyDown={handleKeyDown}
               suggestion={autoCompleteSuggestion}
               onAccept={(value) => {
                 setSearchValue(value);

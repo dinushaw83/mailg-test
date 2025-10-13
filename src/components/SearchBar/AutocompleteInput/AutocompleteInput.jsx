@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import styles from "./AutocompleteInput.module.css";
 
-export default function AutocompleteInput({ value, onChange, suggestion, onAccept, onFocus }) {
+export default function AutocompleteInput({ value, onChange, suggestion, onAccept, onFocus, onKeyDown }) {
   const inputRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -24,11 +24,11 @@ export default function AutocompleteInput({ value, onChange, suggestion, onAccep
 
   const remainder = getRemainder();
 
-  // keyboard handling: Tab, Arrow Right to accept suggestion
+  // keyboard handling: Tab, Arrow Right, Enter, Esc
   const handleKeyDown = (e) => {
-    if (!remainder) return;
+    let handled = false;
 
-    if (e.key === "Tab") {
+    if (e.key === "Tab" && remainder) {
       // Accept suggestion with Tab key
       e.preventDefault();
       onAccept(suggestion.value);
@@ -36,13 +36,19 @@ export default function AutocompleteInput({ value, onChange, suggestion, onAccep
       requestAnimationFrame(() => {
         inputRef.current?.focus();
       });
-    } else if (e.key === "ArrowRight") {
+      handled = true;
+    } else if (e.key === "ArrowRight" && remainder) {
       // Accept suggestion with arrow right if cursor is at the end
       const cursorPos = inputRef.current?.selectionStart ?? 0;
       if (cursorPos === value.length) {
         e.preventDefault();
         onAccept(suggestion.value);
+        handled = true;
       }
+    }
+    // Call parent's keyDown handler for Enter, Esc, or unhandled keys
+    if (!handled && onKeyDown) {
+      onKeyDown(e);
     }
   };
 
