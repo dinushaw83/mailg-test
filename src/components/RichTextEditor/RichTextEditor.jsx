@@ -22,6 +22,7 @@ import {
   processHtmlForDisplay,
 } from "../../utils/embeddedImages";
 
+
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
     const mimeType = (file.type || "").toLowerCase();
@@ -68,6 +69,7 @@ export default function Editor({
 
   const [attachments, setAttachments] = useState([]);
   const [embeddedImages, setEmbeddedImages] = useState([]);
+  const embeddedImagesRef = useRef([]);
   const { db } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
@@ -94,22 +96,34 @@ export default function Editor({
 
   const handleNewImageFiles = useCallback(
     async (files, insertPosition) => {
+      console.log("files: handleNewImageFiles called with files:", files);
+      console.log("debug: insertPosition:", insertPosition);
+      console.log("debug: db available:", !!db);
+      console.log("debug: editor available:", !!rteRef.current?.editor);
+
       if (!rteRef.current?.editor || !db) {
+        console.log("debug: Missing editor or db, returning early");
         return;
       }
 
       const attributesForImageFiles = await Promise.all(
         files.map(async (file) => {
+          console.log("debug: Processing file:", file.name, "type:", file.type);
+
           // Store the image in IndexedDB with a temporary ID for now
           // We'll update the emailId when the email is actually sent
           const { id } = await storeEmbeddedImage(db, file, "temp");
+          console.log("debug: Stored image in IndexedDB with ID:", id);
 
           // Create a temporary image to get dimensions
           const img = new Image();
           const objectURL = URL.createObjectURL(file);
+          console.log("debug: Created object URL:", objectURL);
 
           return new Promise((resolve) => {
             img.onload = () => {
+              console.log("debug: Image loaded, dimensions:", img.width, "x", img.height);
+
               // Scale down large images to max 562px (Gmail's behavior)
               const maxSize = 562;
               let { width, height } = img;
@@ -123,6 +137,7 @@ export default function Editor({
                   height = maxSize;
                   width = maxSize * aspectRatio;
                 }
+                console.log("debug: Scaled image to:", width, "x", height);
               }
 
               // Store the image metadata for later use
@@ -137,7 +152,13 @@ export default function Editor({
                 height: Math.round(height),
               };
 
-              setEmbeddedImages((prev) => [...prev, imageMetadata]);
+              console.log("debug: Adding image metadata to state:", imageMetadata);
+              setEmbeddedImages((prev) => {
+                const newState = [...prev, imageMetadata];
+                console.log("debug: Updated embeddedImages state:", newState);
+                embeddedImagesRef.current = newState;
+                return newState;
+              });
 
               resolve({
                 src: objectURL,
@@ -245,7 +266,7 @@ export default function Editor({
     ({ editor }) => {
       // Skip processing if we're currently restoring images to prevent infinite loops
       if (isRestoringImages.current) {
-        console.log("🔍 RichTextEditor onChange - Skipping processing (restoring images)");
+        console.log("debug: RichTextEditor onChange - Skipping processing (restoring images)");
         return;
       }
 
@@ -254,13 +275,18 @@ export default function Editor({
 
       // Process HTML to replace blob URLs with IndexedDB references for draft saving
       const imageMap = {};
-      embeddedImages.forEach((img) => {
+      embeddedImagesRef.current.forEach((img) => {
         if (img && img.url && img.id) {
           imageMap[img.url] = img.id;
         }
       });
 
+      console.log("debug: RichTextEditor onChange - embeddedImages state:", embeddedImages);
+      console.log("debug: RichTextEditor onChange - imageMap:", imageMap);
+      console.log("debug: RichTextEditor onChange - HTML before processing:", html);
+
       const processedHtml = processHtmlForStorage(html, imageMap);
+      console.log("debug: RichTextEditor onChange - processed HTML:", processedHtml);
 
       onChange?.(processedHtml, plainText);
     },
@@ -270,13 +296,18 @@ export default function Editor({
   // Function to restore embedded images from IndexedDB
   const restoreEmbeddedImages = useCallback(
     async (htmlContent) => {
+      console.log("debug: restoreEmbeddedImages called with htmlContent:", htmlContent);
+
       if (!db || !htmlContent) {
+        console.log("debug: No db or htmlContent, returning original");
         return htmlContent;
       }
 
       const imageIds = extractEmbeddedImageIds(htmlContent);
+      console.log("debug: Extracted image IDs:", imageIds);
 
       if (imageIds.length === 0) {
+        console.log("debug: No image IDs found, returning original content");
         return htmlContent;
       }
 
@@ -284,25 +315,31 @@ export default function Editor({
         const embeddedImagesData = await Promise.all(
           imageIds.map(async (imageId) => {
             try {
+              console.log("debug: Loading image from IndexedDB:", imageId);
               const result = await getEmbeddedImage(db, imageId);
+              console.log("debug: Successfully loaded image:", result);
               return result;
             } catch (error) {
-              console.warn(`Failed to load embedded image ${imageId}:`, error);
+              console.warn(`debug: Failed to load embedded image ${imageId}:`, error);
               return null;
             }
           })
         );
 
         const validImages = embeddedImagesData.filter(Boolean);
+        console.log("debug: Valid images after filtering:", validImages);
 
         // Update the embedded images state with the restored images
         setEmbeddedImages(validImages);
+        embeddedImagesRef.current = validImages;
+        console.log("debug: Updated embeddedImages state with restored images");
 
         const processedHtml = processHtmlForDisplay(htmlContent, validImages);
+        console.log("debug: Processed HTML for display:", processedHtml);
 
         return processedHtml;
       } catch (error) {
-        console.error("Failed to restore embedded images:", error);
+        console.error("debug: Failed to restore embedded images:", error);
         return htmlContent;
       }
     },
@@ -311,23 +348,31 @@ export default function Editor({
 
   // Handle content prop updates after initial render
   useEffect(() => {
+    console.log("debug: Content effect triggered, content:", content);
+
     if (rteRef.current?.editor && content !== undefined) {
       const currentContent = rteRef.current.editor.getHTML();
+      console.log("debug: Current editor content:", currentContent);
 
       // Only update if the content has actually changed to avoid unnecessary updates
       if (currentContent !== content) {
+        console.log("debug: Content changed, restoring images");
         // Set flag to prevent infinite loops
         isRestoringImages.current = true;
 
         // Restore embedded images before setting content
         restoreEmbeddedImages(content).then((restoredContent) => {
+          console.log("debug: Setting restored content to editor");
           rteRef.current.editor.commands.setContent(restoredContent, false);
 
           // Reset flag after a short delay to allow the editor to update
           setTimeout(() => {
             isRestoringImages.current = false;
+            console.log("debug: Reset isRestoringImages flag");
           }, 100);
         });
+      } else {
+        console.log("debug: Content unchanged, skipping restoration");
       }
     }
   }, [content, restoreEmbeddedImages]);

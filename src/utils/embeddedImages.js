@@ -65,18 +65,24 @@ export const getEmbeddedImage = async (db, imageId) => {
  * @returns {string} - Processed HTML content with IndexedDB references
  */
 export const processHtmlForStorage = (htmlContent, imageMap) => {
+  console.log("debug: processHtmlForStorage called with htmlContent:", htmlContent);
+  console.log("debug: processHtmlForStorage imageMap:", imageMap);
+
   let processedHtml = htmlContent;
 
   // Replace each object URL with its corresponding image ID
   Object.entries(imageMap).forEach(([objectUrl, imageId]) => {
+    console.log("debug: Processing object URL:", objectUrl, "-> image ID:", imageId);
     const objectUrlPattern = new RegExp(`src="(${objectUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})"`, "g");
     const beforeReplace = processedHtml;
     processedHtml = processedHtml.replace(
       objectUrlPattern,
       `src="data:image/placeholder;base64," data-embedded-image-id="${imageId}"`
     );
+    console.log("debug: Replacement result:", beforeReplace !== processedHtml ? "replaced" : "no match");
   });
 
+  console.log("debug: processHtmlForStorage result:", processedHtml);
   return processedHtml;
 };
 
@@ -87,9 +93,13 @@ export const processHtmlForStorage = (htmlContent, imageMap) => {
  * @returns {string} - Processed HTML content with restored object URLs
  */
 export const processHtmlForDisplay = (htmlContent, embeddedImages) => {
+  console.log("debug: processHtmlForDisplay called with htmlContent:", htmlContent);
+  console.log("debug: processHtmlForDisplay embeddedImages:", embeddedImages);
+
   let processedHtml = htmlContent;
 
   embeddedImages.forEach((imageData) => {
+    console.log("debug: Processing image for display:", imageData.id, "-> URL:", imageData.url);
     // Find img tags with the specific data-embedded-image-id and replace the entire src attribute
     const imgPattern = new RegExp(
       `(<img[^>]*?)src="[^"]*"[^>]*?data-embedded-image-id="${imageData.id}"([^>]*?>)`,
@@ -97,8 +107,10 @@ export const processHtmlForDisplay = (htmlContent, embeddedImages) => {
     );
     const beforeReplace = processedHtml;
     processedHtml = processedHtml.replace(imgPattern, `$1src="${imageData.url}"$2`);
+    console.log("debug: Display replacement result:", beforeReplace !== processedHtml ? "replaced" : "no match");
   });
 
+  console.log("debug: processHtmlForDisplay result:", processedHtml);
   return processedHtml;
 };
 
@@ -108,6 +120,8 @@ export const processHtmlForDisplay = (htmlContent, embeddedImages) => {
  * @returns {Array} - Array of image IDs found in the content
  */
 export const extractEmbeddedImageIds = (htmlContent) => {
+  console.log("debug: extractEmbeddedImageIds called with htmlContent:", htmlContent);
+
   const imageIdPattern = /data-embedded-image-id="([^"]+)"/g;
   const imageIds = [];
   let match;
@@ -116,6 +130,7 @@ export const extractEmbeddedImageIds = (htmlContent) => {
     imageIds.push(match[1]);
   }
 
+  console.log("debug: extractEmbeddedImageIds found image IDs:", imageIds);
   return imageIds;
 };
 
