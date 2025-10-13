@@ -8,6 +8,7 @@ import EditorMenuControls from "./EditorMenuControls";
 import useExtensions from "./useExtensions";
 import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
 import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
+import InsertPhotoModal from "./InsertPhotoModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 import React from "react";
 import Attachments from "./Attachments";
@@ -462,6 +463,18 @@ export default function Editor({
     setPhotoModalOpen(false);
   };
 
+  const handleInsertImages = (imageFiles) => {
+    if (!rteRef.current?.editor) {
+      return;
+    }
+
+    // Get current cursor position
+    const { from } = rteRef.current.editor.state.selection;
+    
+    // Use the existing handleNewImageFiles function
+    handleNewImageFiles(imageFiles, from);
+  };
+
   return (
     <>
       <RichTextEditor
@@ -862,6 +875,13 @@ export default function Editor({
         open={dateTimePickerOpen}
         onClose={handleCloseDateTimePicker}
         onSchedule={handleDateTimeSchedule}
+      />
+
+      {/* Insert Photo Modal */}
+      <InsertPhotoModal
+        open={photoModalOpen}
+        onClose={closePhotoModal}
+        onInsertImages={handleInsertImages}
       />
     </>
   );
