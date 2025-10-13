@@ -17,7 +17,7 @@ const NoLegendOutlinedInput = styled(OutlinedInput)({
     },
 });
 
-export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName }) {
+export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName, isMoving = true }) {
     const { setSnackbar } = useGlobalContext();
     const { labels, createLabel, labelTree, renameLabel } = useLabels();
     const [name, setName] = useState(labelDefaultName ?? "");
@@ -25,6 +25,8 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
     const [parentKey, setParentKey] = useState(defaultParentKey ?? null);
     const [attempted, setAttempted] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const inputRef = React.useRef(null);
 
     const parentChoices = useMemo(
         () => flattenTreeForSelect(labelTree).filter(opt => !labels?.[opt.key]?.system),
@@ -99,7 +101,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
         try {
             const pk = nest ? parentKey : ROOT;
             createLabel(trimmed, { parentKey: pk });
-            onAfterCreate?.(trimmed, pk);
+            onAfterCreate?.(trimmed, pk, isMoving);
 
             handleClose();
         } catch (e) {
@@ -113,7 +115,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
 
     const handleSave = () => {
         renameLabel(currentLabelKey, trimmed);
-        onAfterCreate?.(trimmed, parentKey);
+        onAfterCreate?.(trimmed, parentKey, isMoving);
         setSnackbar?.({
             open: true,
             message: `The label "${trimmed}" was saved.`,
@@ -136,12 +138,19 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                         p: 1.5,
                     },
                 },
+                transition: {
+                    onEntered: () => {
+                        if (inputRef.current) {
+                            inputRef.current.focus();
+                        }
+                    },
+                },
             }}
         >
             <DialogTitle sx={{ px: 3, pt: 3, pb: 1.5 }}>New label</DialogTitle>
 
             <DialogContent sx={{ px: 3, pt: 0, pb: 1.5 }}>
-                <div style={{ marginBottom: 12, fontSize: 14}}>
+                <div style={{ marginBottom: 12, fontSize: 14 }}>
                     {showError ? errorText : "Please enter a new label name:"}
                 </div>
 
@@ -153,6 +162,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
                     error={showError && (missingName || isDup)}
                     helperText=" "
+                    inputRef={inputRef}
                 />
 
                 <FormControlLabel

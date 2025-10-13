@@ -90,8 +90,10 @@ export const Labels = ({
       onClose={handleLabelClose}
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
-      TransitionProps={{
-        onEntered: () => inputRef.current?.focus(),
+      slotProps={{
+        transition: {
+          onEntered: () => inputRef.current?.focus(),
+        },
       }}
       sx={{
         "& .MuiPopover-paper": {
@@ -163,67 +165,67 @@ export const Labels = ({
               </Typography>
             </Box>
           ) : (
-              availableLabels.map((label) => {
-                const count = labelCounts.get(label.key) || 0;
-                const baselineChecked = nSel > 0 && count === nSel;
-                const baselineSome = nSel > 1 && count > 0 && count < nSel;
+            availableLabels.map((label) => {
+              const count = labelCounts.get(label.key) || 0;
+              const baselineChecked = nSel > 0 && count === nSel;
+              const baselineSome = nSel > 1 && count > 0 && count < nSel;
 
-                let baselineState = "unchecked";
-                if (baselineChecked) baselineState = "checked";
-                else if (baselineSome) baselineState = "indeterminate";
+              let baselineState = "unchecked";
+              if (baselineChecked) baselineState = "checked";
+              else if (baselineSome) baselineState = "indeterminate";
 
-                const effectiveState = overrides[label.key] || baselineState;
+              const effectiveState = overrides[label.key] || baselineState;
 
-                const cycleState = (prev, baseline) => {
-                  if (baseline === "indeterminate") {
-                    // Gmail 3-state cycle
-                    if (prev === "indeterminate") return "checked";
-                    if (prev === "checked") return "unchecked";
-                    return baseline;
-                  } else {
-                    // Normal 2-state toggle
-                    return prev === "checked" ? "unchecked" : "checked";
-                  }
-                };
+              const cycleState = (prev, baseline) => {
+                if (baseline === "indeterminate") {
+                  // Gmail 3-state cycle
+                  if (prev === "indeterminate") return "checked";
+                  if (prev === "checked") return "unchecked";
+                  return baseline;
+                } else {
+                  // Normal 2-state toggle
+                  return prev === "checked" ? "unchecked" : "checked";
+                }
+              };
 
-                const handleClick = () => {
-                  setOverrides((prev) => ({
-                    ...prev,
-                    [label.key]: cycleState(effectiveState, baselineState),
-                  }));
-                };
+              const handleClick = () => {
+                setOverrides((prev) => ({
+                  ...prev,
+                  [label.key]: cycleState(effectiveState, baselineState),
+                }));
+              };
 
-                const checked = effectiveState === "checked";
-                const indeterminate = effectiveState === "indeterminate";
+              const checked = effectiveState === "checked";
+              const indeterminate = effectiveState === "indeterminate";
 
-                return (
-                  <Box
-                    key={label.key}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      paddingX: "16px",
-                      paddingY: "4px",
-                      cursor: "pointer",
-                      "&:hover": { background: "#07070714" },
-                    }}
-                    onClick={handleClick}
-                  >
-                    <Checkbox
-                      checked={checked}
-                      indeterminate={indeterminate}
-                      icon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box_outline_blank</span>}
-                      checkedIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box</span>}
-                      indeterminateIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>indeterminate_check_box</span>}
-                      sx={{ padding: "4px", pointerEvents: "none" }}
-                    />
-                    <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>
-                      {normalizeLabelName(label.key)}
-                    </Typography>
-                  </Box>
-                );
-              })
+              return (
+                <Box
+                  key={label.key}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    paddingX: "16px",
+                    paddingY: "4px",
+                    cursor: "pointer",
+                    "&:hover": { background: "#07070714" },
+                  }}
+                  onClick={handleClick}
+                >
+                  <Checkbox
+                    checked={checked}
+                    indeterminate={indeterminate}
+                    icon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box_outline_blank</span>}
+                    checkedIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box</span>}
+                    indeterminateIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>indeterminate_check_box</span>}
+                    sx={{ padding: "4px", pointerEvents: "none" }}
+                  />
+                  <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>
+                    {normalizeLabelName(label.key)}
+                  </Typography>
+                </Box>
+              );
+            })
           )}
         </Box>
 

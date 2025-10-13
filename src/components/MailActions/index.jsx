@@ -5,7 +5,7 @@ import Divider from "@mui/material/Divider";
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
@@ -39,6 +39,9 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
   const snoozeAnchorElRef = useRef(null);
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const anchorRef = useRef(null);
 
@@ -69,6 +72,13 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     () => threads.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
     [threads, selectedIds]
   );
+
+  // Get the base path by removing the threadId from the current path
+  const getBasePath = () => {
+    const pathParts = location.pathname.split("/");
+    // Remove the last part (threadId) to get the base path
+    return pathParts.slice(0, -1).join("/") || "/inbox";
+  };
 
   // Check if any selected emails are not in inbox
   const hasEmailsNotInInbox = useMemo(() => {
@@ -162,7 +172,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     (selectedIds, fromKey, toKey, inCustomLabel) => {
       setSnackbar({
         open: true,
-        message: `Conversation moved to “${getPathLabelFromKey(labels, toKey)}”.`,
+        message: `Conversation ${isMovingToLabel ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -341,6 +351,11 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       } else {
         moveToLabel(ids, newKey);
       }
+
+      // if (isMovingToLabel) {
+      //   // Navigate back to list view
+      //   navigate(getBasePath());
+      // }
 
       selection.clear();
 
@@ -738,7 +753,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
         }}
       />
 
-      <CreateLabelDialog open={createOpen} onClose={() => { setCreateOpen(false); setIsMovingToLabel(null) }} onAfterCreate={handleOnAfterCreate} />
+      <CreateLabelDialog open={createOpen} onClose={() => { setCreateOpen(false); setIsMovingToLabel(null) }} onAfterCreate={handleOnAfterCreate} isMoving={isMovingToLabel} />
     </Box>
   );
 };
