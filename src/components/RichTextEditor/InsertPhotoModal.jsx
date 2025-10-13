@@ -165,7 +165,7 @@ const InsertPhotoModal = ({ open, onClose, onInsertImages }) => {
           fontWeight: 500,
         }}
       >
-        Google Photos integration coming soon
+        No Items available in Mailg Photos.
       </Typography>
     </Box>
   );
@@ -226,16 +226,16 @@ const InsertPhotoModal = ({ open, onClose, onInsertImages }) => {
 
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs value={activeTab} onChange={handleTabChange} aria-label="photo insertion tabs">
-          <Tab label="Google Photos" sx={{ textTransform: "none" }} />
+          <Tab label="Mailg Photos" sx={{ textTransform: "none" }} />
           <Tab label="Upload" sx={{ textTransform: "none" }} />
-          <Tab label="Web Address (URL)" sx={{ textTransform: "none" }} />
+          {/* <Tab label="Web Address (URL)" sx={{ textTransform: "none" }} /> */}
         </Tabs>
       </Box>
 
       <DialogContent sx={{ p: 0 }}>
         {activeTab === 0 && renderGooglePhotosTab()}
         {activeTab === 1 && renderUploadTab()}
-        {activeTab === 2 && renderWebAddressTab()}
+        {/* {activeTab === 2 && renderWebAddressTab()} */}
       </DialogContent>
     </Dialog>
   );
