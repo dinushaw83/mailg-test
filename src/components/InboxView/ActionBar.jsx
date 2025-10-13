@@ -290,6 +290,8 @@ const MailActions = ({ thread }) => {
           }
 
           showUndoSnackbar(selectedIds, currentLabel, targetKey, inCustomLabel);
+
+          navigate(getBasePath());
         }
       } catch (e) {
         console.error("Move failed:", e);
