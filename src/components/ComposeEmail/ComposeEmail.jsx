@@ -262,17 +262,24 @@ export default function ComposeEmail({ composeWindow }) {
     handleErrorModalClose: handleScheduleErrorModalClose,
   } = useScheduleEmail(null);
 
-  const handleSend = () => {
+  const handleSend = ({ attachments = [], embeddedImages = [], processedHtml } = {}) => {
+    // Use processed HTML if available, otherwise use the current content
+    const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
+
+    console.log({ html: processedHtml, plainText: content.plainText });
+
     handleSendEmail({
       to,
       cc,
       bcc,
       subject,
-      content,
+      content: finalContent,
       rawInputText,
       onClose: handleClose,
       currentDraftId: draftId,
       isDraft: isDraft,
+      attachments,
+      embeddedImages,
     });
   };
 

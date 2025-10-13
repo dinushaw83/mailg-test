@@ -203,13 +203,16 @@ ${email.body}
     handleErrorModalClose: handleScheduleErrorModalClose,
   } = useScheduleEmail(selectedReplyOption, email);
 
-  const handleSend = ({ attachments = [] }) => {
+  const handleSend = ({ attachments = [], embeddedImages = [], processedHtml }) => {
+    // Use processed HTML if available, otherwise use the current content
+    const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
+
     handleSendEmail({
       to: recipientsForDraft.to,
       cc: recipientsForDraft.cc,
       bcc: recipientsForDraft.bcc,
       subject,
-      content,
+      content: finalContent,
       currentDraftId: draftId,
       isDraft,
       onClose: () => {
@@ -222,6 +225,7 @@ ${email.body}
         }
       },
       attachments,
+      embeddedImages,
     });
   };
 
