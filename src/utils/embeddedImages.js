@@ -65,17 +65,28 @@ export const getEmbeddedImage = async (db, imageId) => {
  * @returns {string} - Processed HTML content with IndexedDB references
  */
 export const processHtmlForStorage = (htmlContent, imageMap) => {
+  console.log("💾 processHtmlForStorage - Input HTML:", htmlContent);
+  console.log("💾 processHtmlForStorage - Image map:", imageMap);
+
   let processedHtml = htmlContent;
 
   // Replace each object URL with its corresponding image ID
   Object.entries(imageMap).forEach(([objectUrl, imageId]) => {
+    console.log(`💾 processHtmlForStorage - Replacing ${objectUrl} with image ID ${imageId}`);
     const objectUrlPattern = new RegExp(`src="(${objectUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})"`, "g");
+    const beforeReplace = processedHtml;
     processedHtml = processedHtml.replace(
       objectUrlPattern,
       `src="data:image/placeholder;base64," data-embedded-image-id="${imageId}"`
     );
+    console.log(`💾 processHtmlForStorage - Replacement result:`, {
+      before: beforeReplace,
+      after: processedHtml,
+      changed: beforeReplace !== processedHtml,
+    });
   });
 
+  console.log("💾 processHtmlForStorage - Final processed HTML:", processedHtml);
   return processedHtml;
 };
 
@@ -86,17 +97,28 @@ export const processHtmlForStorage = (htmlContent, imageMap) => {
  * @returns {string} - Processed HTML content with restored object URLs
  */
 export const processHtmlForDisplay = (htmlContent, embeddedImages) => {
+  console.log("🖼️ processHtmlForDisplay - Input HTML:", htmlContent);
+  console.log("🖼️ processHtmlForDisplay - Embedded images:", embeddedImages);
+
   let processedHtml = htmlContent;
 
   embeddedImages.forEach((imageData) => {
+    console.log(`🖼️ processHtmlForDisplay - Processing image ${imageData.id} with URL ${imageData.url}`);
     // Find img tags with the specific data-embedded-image-id and replace the entire src attribute
     const imgPattern = new RegExp(
       `(<img[^>]*?)src="[^"]*"[^>]*?data-embedded-image-id="${imageData.id}"([^>]*?>)`,
       "g"
     );
+    const beforeReplace = processedHtml;
     processedHtml = processedHtml.replace(imgPattern, `$1src="${imageData.url}"$2`);
+    console.log(`🖼️ processHtmlForDisplay - Replacement result for ${imageData.id}:`, {
+      before: beforeReplace,
+      after: processedHtml,
+      changed: beforeReplace !== processedHtml,
+    });
   });
 
+  console.log("🖼️ processHtmlForDisplay - Final processed HTML:", processedHtml);
   return processedHtml;
 };
 
@@ -106,14 +128,18 @@ export const processHtmlForDisplay = (htmlContent, embeddedImages) => {
  * @returns {Array} - Array of image IDs found in the content
  */
 export const extractEmbeddedImageIds = (htmlContent) => {
+  console.log("🔍 extractEmbeddedImageIds - Input HTML:", htmlContent);
+
   const imageIdPattern = /data-embedded-image-id="([^"]+)"/g;
   const imageIds = [];
   let match;
 
   while ((match = imageIdPattern.exec(htmlContent)) !== null) {
+    console.log(`🔍 extractEmbeddedImageIds - Found image ID: ${match[1]}`);
     imageIds.push(match[1]);
   }
 
+  console.log("🔍 extractEmbeddedImageIds - Extracted image IDs:", imageIds);
   return imageIds;
 };
 

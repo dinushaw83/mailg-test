@@ -134,11 +134,15 @@ export default function ComposeEmail({ composeWindow }) {
   // Load existing draft if draftId exists in the compose window when the component mounts before painting to ui
   useLayoutEffect(() => {
     if (currentDraftId) {
+      console.log("📂 ComposeEmail - Loading draft with ID:", currentDraftId);
       // Load existing draft
       const existingDraft = emails.find(
         (email) => email.id.toString() === currentDraftId?.toString() && email.labels.includes("Drafts")
       );
       if (existingDraft) {
+        console.log("📂 ComposeEmail - Found existing draft:", existingDraft);
+        console.log("📂 ComposeEmail - Draft body content:", existingDraft.body);
+
         setTo(
           existingDraft.to.map((email) => {
             const recipientObj = restructuredRecipients.find((r) => r.email === email);
@@ -169,6 +173,13 @@ export default function ComposeEmail({ composeWindow }) {
         setSubject(existingDraft.subject === "(no subject)" ? "" : existingDraft.subject);
         setContent({ html: existingDraft.body, plainText: existingDraft.preview });
         setRawInputText({ to: "", cc: "", bcc: "" });
+
+        console.log("📂 ComposeEmail - Set content to:", {
+          html: existingDraft.body,
+          plainText: existingDraft.preview,
+        });
+      } else {
+        console.log("📂 ComposeEmail - No existing draft found for ID:", currentDraftId);
       }
     } else if (composeWindow?.fields && Object.keys(composeWindow?.fields).length > 0) {
       // Only add these if the states are empty
