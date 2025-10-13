@@ -72,7 +72,7 @@ export default function Editor({
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
 
-  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -454,12 +454,12 @@ export default function Editor({
     setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
   };
 
-  const openPhotoDialog = () => {
-    setPhotoDialogOpen(true);
+  const openPhotoModal = () => {
+    setPhotoModalOpen(true);
   };
 
-  const closePhotoDialog = () => {
-    setPhotoDialogOpen(false);
+  const closePhotoModal = () => {
+    setPhotoModalOpen(false);
   };
 
   return (
@@ -629,7 +629,7 @@ export default function Editor({
                   <MenuButton
                     tooltipLabel="Insert photo"
                     size="small"
-                    onClick={openPhotoDialog}
+                    onClick={openPhotoModal}
                     IconComponent={InsertPhoto}
                   />
 
