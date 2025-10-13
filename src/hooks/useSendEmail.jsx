@@ -36,6 +36,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     currentDraftId,
     isDraft,
     attachments,
+    embeddedImages,
   }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
@@ -97,10 +98,21 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     }
 
     // If all validations pass, send the email
-    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments });
+    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments, embeddedImages });
   };
 
-  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments }) => {
+  const sendEmail = ({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    onClose,
+    currentDraftId,
+    isDraft,
+    attachments,
+    embeddedImages,
+  }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
@@ -139,6 +151,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       labels: ["Sent"],
       labelColor: "#e1e3e1",
       attachments,
+      embeddedImages: embeddedImages || [],
     };
 
     // Add reply/forward reference if applicable

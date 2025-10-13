@@ -12,6 +12,13 @@ import React from "react";
 import Attachments from "./Attachments";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateRandomId } from "../../utils/helperFunctions";
+import {
+  storeEmbeddedImage,
+  processHtmlForStorage,
+  extractEmbeddedImageIds,
+  getEmbeddedImage,
+  processHtmlForDisplay,
+} from "../../utils/embeddedImages";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -58,6 +65,8 @@ export default function Editor({
   const nativeFilePickerRef = useRef(null);
 
   const [attachments, setAttachments] = useState([]);
+  const [embeddedImages, setEmbeddedImages] = useState([]);
+  const [isInsertingImages, setIsInsertingImages] = useState(false);
   const { db } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
@@ -79,48 +88,69 @@ export default function Editor({
     ? Math.max(210, maxEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0))
     : null;
 
-  const handleNewImageFiles = useCallback((files, insertPosition) => {
-    if (!rteRef.current?.editor) {
-      return;
-    }
+  const handleNewImageFiles = useCallback(
+    async (files, insertPosition) => {
+      if (!rteRef.current?.editor || !db) {
+        return;
+      }
 
-    const attributesForImageFiles = files.map((file) => {
-      // Create a temporary image to get dimensions
-      const img = new Image();
-      const objectURL = URL.createObjectURL(file);
+      setIsInsertingImages(true);
 
-      return new Promise((resolve) => {
-        img.onload = () => {
-          // Scale down large images to max 562px (Gmail's behavior)
-          const maxSize = 562;
-          let { width, height } = img;
+      const attributesForImageFiles = await Promise.all(
+        files.map(async (file) => {
+          // Store the image in IndexedDB
+          const { id, url: storedUrl } = await storeEmbeddedImage(db, file, messageId || "draft");
 
-          if (width > maxSize || height > maxSize) {
-            const aspectRatio = width / height;
-            if (width > height) {
-              width = maxSize;
-              height = maxSize / aspectRatio;
-            } else {
-              height = maxSize;
-              width = maxSize * aspectRatio;
-            }
-          }
+          // Create a temporary image to get dimensions
+          const img = new Image();
+          const objectURL = URL.createObjectURL(file);
 
-          resolve({
-            src: objectURL,
-            alt: file.name,
-            width: Math.round(width),
-            height: Math.round(height),
+          return new Promise((resolve) => {
+            img.onload = () => {
+              // Scale down large images to max 562px (Gmail's behavior)
+              const maxSize = 562;
+              let { width, height } = img;
+
+              if (width > maxSize || height > maxSize) {
+                const aspectRatio = width / height;
+                if (width > height) {
+                  width = maxSize;
+                  height = maxSize / aspectRatio;
+                } else {
+                  height = maxSize;
+                  width = maxSize * aspectRatio;
+                }
+              }
+
+              // Store the image metadata for later use
+              const imageMetadata = {
+                id,
+                file,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                url: objectURL,
+                width: Math.round(width),
+                height: Math.round(height),
+              };
+
+              setEmbeddedImages((prev) => [...prev, imageMetadata]);
+
+              resolve({
+                src: objectURL,
+                alt: file.name,
+                width: Math.round(width),
+                height: Math.round(height),
+              });
+            };
+            img.src = objectURL;
           });
-        };
-        img.src = objectURL;
-      });
-    });
+        })
+      );
 
-    // Wait for all images to load and get their dimensions
-    Promise.all(attributesForImageFiles).then((processedImages) => {
+      // Wait for all images to load and get their dimensions
       insertImages({
-        images: processedImages,
+        images: attributesForImageFiles,
         editor: rteRef.current.editor,
         position: insertPosition,
       });
@@ -137,10 +167,16 @@ export default function Editor({
           editor.commands.insertContent("<br>");
           // Focus the editor
           editor.commands.focus();
+
+          // Reset the flag after a short delay
+          setTimeout(() => {
+            setIsInsertingImages(false);
+          }, 200);
         }, 10);
       }
-    });
-  }, []);
+    },
+    [db, messageId]
+  );
 
   // Allow for dropping images into the editor
   const handleDrop = useCallback(
@@ -211,9 +247,50 @@ export default function Editor({
     ({ editor }) => {
       const html = editor.getHTML();
       const plainText = editor.getText();
+
+      // Skip processing if we're currently inserting images to prevent blinking
+      if (isInsertingImages) {
+        onChange?.(html, plainText);
+        return;
+      }
+
+      // Just pass through the raw HTML without processing - images will stay visible
+      // Processing will only happen when sending or unmounting
       onChange?.(html, plainText);
     },
-    [onChange]
+    [onChange, isInsertingImages]
+  );
+
+  // Function to restore embedded images from IndexedDB
+  const restoreEmbeddedImages = useCallback(
+    async (htmlContent) => {
+      if (!db || !htmlContent) return htmlContent;
+
+      const imageIds = extractEmbeddedImageIds(htmlContent);
+      if (imageIds.length === 0) return htmlContent;
+
+      try {
+        const embeddedImagesData = await Promise.all(
+          imageIds.map(async (imageId) => {
+            try {
+              return await getEmbeddedImage(db, imageId);
+            } catch (error) {
+              console.warn(`Failed to load embedded image ${imageId}:`, error);
+              return null;
+            }
+          })
+        );
+
+        const validImages = embeddedImagesData.filter(Boolean);
+        setEmbeddedImages(validImages);
+
+        return processHtmlForDisplay(htmlContent, validImages);
+      } catch (error) {
+        console.error("Failed to restore embedded images:", error);
+        return htmlContent;
+      }
+    },
+    [db]
   );
 
   // Handle content prop updates after initial render
@@ -222,10 +299,26 @@ export default function Editor({
       const currentContent = rteRef.current.editor.getHTML();
       // Only update if the content has actually changed to avoid unnecessary updates
       if (currentContent !== content) {
-        rteRef.current.editor.commands.setContent(content, false);
+        // Restore embedded images before setting content
+        restoreEmbeddedImages(content).then((restoredContent) => {
+          rteRef.current.editor.commands.setContent(restoredContent, false);
+        });
       }
     }
-  }, [content]);
+  }, [content, restoreEmbeddedImages]);
+
+  // Cleanup and save on unmount
+  useEffect(() => {
+    return () => {
+      // Process and save content when component unmounts (for drafts)
+      if (rteRef.current?.editor && embeddedImages.length > 0) {
+        const html = rteRef.current.editor.getHTML();
+        const plainText = rteRef.current.editor.getText();
+        const processedHtml = processHtmlForStorage(html, embeddedImages);
+        onChange?.(processedHtml, plainText);
+      }
+    };
+  }, [onChange, embeddedImages]);
 
   const openLinkPopover = (event) => {
     const editor = rteRef.current?.editor;
@@ -420,7 +513,12 @@ export default function Editor({
                         borderRadius: "18px 0px 0px 18px",
                         userSelect: "none",
                       }}
-                      onClick={() => onSend({ attachments })}
+                      onClick={() => {
+                        // Process HTML for storage when sending
+                        const html = rteRef.current?.editor?.getHTML() || "";
+                        const processedHtml = processHtmlForStorage(html, embeddedImages);
+                        onSend({ attachments, embeddedImages, processedHtml });
+                      }}
                     >
                       Send
                     </div>

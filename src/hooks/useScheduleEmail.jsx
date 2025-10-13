@@ -29,6 +29,8 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     isDraft,
     scheduledDate,
     scheduledTime,
+    attachments,
+    embeddedImages,
   }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
@@ -144,6 +146,8 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
       labelColor: "#e1e3e1",
       scheduledDate: scheduledDate, // Store the scheduled date as string
       scheduledTime: scheduledTime, // Store the scheduled time as string
+      attachments: attachments || [],
+      embeddedImages: embeddedImages || [],
     };
 
     // Add reply/forward reference if applicable
