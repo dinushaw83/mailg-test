@@ -1,9 +1,9 @@
+import React, { useCallback, useRef, useState, useEffect, useMemo } from "react";
 import {
   Stack, Popper, Paper, ClickAwayListener,
   MenuItem, ListItemIcon, ListItemText, Menu, Typography,
   IconButton
 } from "@mui/material";
-import { useCallback, useRef, useState, useEffect } from "react";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
 import InsertLink from "@mui/icons-material/InsertLink";
@@ -14,7 +14,6 @@ import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
 import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
 import InsertPhotoModal from "./InsertPhotoModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
-import React from "react";
 import Attachments from "./Attachments";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateRandomId } from "../../utils/helperFunctions";
@@ -73,7 +72,7 @@ export default function Editor({
   const [attachments, setAttachments] = useState([]);
   const [embeddedImages, setEmbeddedImages] = useState([]);
   const embeddedImagesRef = useRef([]);
-  const { db } = useGlobalContext();
+  const { db, signaturesState } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
@@ -84,8 +83,10 @@ export default function Editor({
   const [signatureAnchorEl, setSignatureAnchorEl] = useState(null);
   const [selectedSignature, setSelectedSignature] = useState(null);
 
-  const [signatures, setSignatures] = useState(["No signature", "Work2", "Work3"]);
-
+  const signatures = useMemo(() => {
+    const signatures = signaturesState.list.map((signature) => signature.name);
+    return ["No signature", ...signatures];
+  }, []);
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -348,6 +349,19 @@ export default function Editor({
     }
   }, [content, restoreEmbeddedImages]);
 
+  useEffect(() => {
+    if (!signaturesState?.list?.length) return "No signature";
+
+    const activeId = signaturesState?.useForNewEmails ?? null;
+    if (activeId === null || activeId === "" || activeId === undefined) {
+      return "No signature";
+    }
+
+    const sig = signaturesState.list[Number(activeId)];
+
+    setSelectedSignature(sig?.name || "No signature");
+  }, [signaturesState]);
+
   const openLinkPopover = (event) => {
     const editor = rteRef.current?.editor;
     if (!editor) return;
@@ -492,7 +506,6 @@ export default function Editor({
   };
 
   const openSignaturePopover = (event) => {
-    console.log("ddsd")
     setSignatureAnchorEl(event.currentTarget);
     setSignaturePopoverOpen(true);
   };
@@ -500,6 +513,65 @@ export default function Editor({
   const closeSignaturePopover = () => {
     setSignatureAnchorEl(null);
     setSignaturePopoverOpen(false);
+  };
+
+  const replaceSignature = (editor, html) => {
+    if (!editor) return;
+
+    const src = (html || "").trim();
+    const { doc } = editor.state;
+
+    // Collect ALL deletable nodes (separators + signature) first
+    const toDelete = [];
+    doc.descendants((node, pos) => {
+      if (node.attrs && node.attrs["data-signature"] === "true") {
+        toDelete.push({ pos, size: node.nodeSize });
+      }
+      if (node.type?.name === "paragraph" && node.textContent.trim() === "--") {
+        toDelete.push({ pos, size: node.nodeSize });
+      }
+    });
+
+    // Sort by pos descending to avoid shifting
+    toDelete.sort((a, b) => b.pos - a.pos);
+
+    // Delete them all safely
+    toDelete.forEach(({ pos, size }) => {
+      editor.chain().focus().deleteRange({ from: pos, to: pos + size }).run();
+    });
+
+    // If no new signature, stop here
+    if (!src) return;
+
+    // Build new signature block
+    let toInsert;
+    if (/^\s*<p(\s|>)/i.test(src)) {
+      toInsert = src.replace(/<p([^>]*)>/i, '<p data-signature="true"$1>');
+    } else {
+      toInsert = `<p><br></p><p data-signature="true">${src}</p>`;
+    }
+
+    // Add separator if needed
+    if (!signaturesState?.insertSignatureBeforeQuotedText) {
+      toInsert = `<p>--</p>${toInsert}`;
+    }
+
+    // Determine insert position (end or before blockquote)
+    let insertAt = editor.state.doc.content.size;
+    if (signaturesState?.insertSignatureBeforeQuotedText) {
+      let quotePos = null;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type?.name === "blockquote") {
+          quotePos = pos;
+          return false;
+        }
+        return true;
+      });
+      if (quotePos !== null) insertAt = quotePos;
+    }
+
+    // Insert new signature
+    editor.chain().focus().insertContentAt(insertAt, toInsert).run();
   };
 
   return (
@@ -881,6 +953,16 @@ export default function Editor({
                       <MenuItem
                         key={name}
                         onClick={() => {
+                          if (name === "No signature") {
+                            // optional: remove existing signature
+                            replaceSignature(rteRef.current?.editor, "");
+                            setSelectedSignature(name);
+                            closeSignaturePopover();
+                            return;
+                          }
+
+                          const sig = signaturesState.list.find(sig => sig.name === name);
+                          replaceSignature(rteRef.current?.editor, sig.content);
                           setSelectedSignature(name);
                           closeSignaturePopover();
                         }}
