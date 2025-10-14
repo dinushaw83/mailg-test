@@ -1,24 +1,28 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } from "@mui/material";
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useSearchIndex, useSearchUrlSync, useSearchNavigation, useAutocompleteState } from "./hooks";
 import {
-  buildSearchIndex,
   searchEmails,
   getRecentSearchSuggestions,
   isSearchIndexReady,
   addToSearchHistory,
+  searchContacts,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
-import { encodeForPath, queryToSearchBarString, buildSearchBarFromUrl } from "../../utils/helperFunctions";
+import { encodeForPath, buildSearchBarFromUrl } from "../../utils/helperFunctions";
+import AutocompleteInput from "./AutocompleteInput/AutocompleteInput";
+
+// Filter options for the search bar
+const filterOptions = ["Has attachment", "Last 7 days", "From me"];
 
 const SearchBar = () => {
   const { emails } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [previousLocation, setPreviousLocation] = useState(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
 
@@ -28,61 +32,14 @@ const SearchBar = () => {
   const location = useLocation();
 
   const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
-
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
 
-  const handleSearchBarFocus = () => {
-    setShowAdvancedSearch(false);
-    setIsFocused(true);
-  };
-
-  const handleAdvancedSearchClick = () => {
-    setShowAdvancedSearch(true);
-    setIsFocused(false); // Close the default expanded overlay
-  };
-
-  const handleCloseAdvancedSearch = () => {
-    setShowAdvancedSearch(false);
-  };
-
-  const handleInputChange = (e) => {
-    setSearchValue(e.target.value);
-  };
-
-  // Build search index when emails are available
-  useEffect(() => {
-    if (emails && emails.length > 0) {
-      buildSearchIndex(emails);
-    }
-  }, [emails]);
-
-  // Set search value when search query is present in the url
-  useEffect(() => {
-    if (isAdvancedSearch) {
-      // For advanced search, use the query string directly with queryToSearchBarString
-      const queryString = location.search;
-      if (queryString) {
-        setSearchValue(queryToSearchBarString(queryString));
-      }
-    } else if (searchQuery) {
-      setSearchValue(searchQuery);
-    }
-  }, [searchQuery, isAdvancedSearch, location.search]);
-
-  // Track location changes and clear search input when navigating away from search results
-  useEffect(() => {
-    const currentPath = location.pathname;
-    const isCurrentlyOnSearchResults = currentPath.startsWith("/search/");
-    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search/");
-
-    // If we were on search results page and now we're not, clear the search input
-    if (wasOnSearchResults && !isCurrentlyOnSearchResults && searchValue.trim()) {
-      setSearchValue("");
-    }
-
-    // Update previous location for next comparison
-    setPreviousLocation(currentPath);
-  }, [location.pathname, previousLocation, searchValue]);
+  // Custom hooks for managing search bar state and effects
+  useSearchIndex(emails);
+  useSearchUrlSync(location, searchQuery, isAdvancedSearch, setSearchValue);
+  useSearchNavigation(location, searchValue, setSearchValue);
+  const { autoCompleteSuggestion, setAutoCompleteSuggestion, highlightedIndex, setHighlightedIndex } =
+    useAutocompleteState(searchValue, emails, isFocused);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -127,6 +84,14 @@ const SearchBar = () => {
     return getRecentSearchSuggestions(6);
   }, [searchValue, isFocused]);
 
+  // Get matching contacts
+  const matchingContacts = useMemo(() => {
+    if (!searchValue.trim() || !emails || emails.length === 0) {
+      return [];
+    }
+    return searchContacts(searchValue, emails, 1); // Get top 1 contact
+  }, [searchValue, emails]);
+
   const expandedContent = useMemo(() => {
     if (searchValue.trim()) {
       return searchResults;
@@ -141,7 +106,15 @@ const SearchBar = () => {
     return [];
   }, [searchValue, searchResults, recentSuggestions, isFocused, activeFilters, filteredEmails]);
 
-  const filterOptions = ["Has attachment", "Last 7 days", "From me"];
+  // Combined list of all navigable items (contacts + expanded content)
+  const allNavigableItems = useMemo(() => {
+    const items = [];
+    if (matchingContacts.length > 0 && searchValue.trim()) {
+      items.push(...matchingContacts.map((contact) => ({ type: "contact", data: contact.email })));
+    }
+    items.push(...expandedContent.map((item) => ({ type: "content", data: item })));
+    return items;
+  }, [matchingContacts, expandedContent, searchValue]);
 
   // Handle filter pill clicks
   const handleFilterClick = (filter) => {
@@ -171,18 +144,44 @@ const SearchBar = () => {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      // Add search query to history when submitted
-      if (searchValue.trim()) {
-        addToSearchHistory(searchValue);
+    if (e.key === "Tab" && autoCompleteSuggestion) {
+      // Auto-complete with Tab key
+      e.preventDefault();
+      setSearchValue(autoCompleteSuggestion.value);
+      setAutoCompleteSuggestion(null);
+    } else if (e.key === "ArrowDown") {
+      // Navigate down through suggestions
+      e.preventDefault();
+      if (isFocused && allNavigableItems.length > 0) {
+        setHighlightedIndex((prev) => (prev < allNavigableItems.length - 1 ? prev + 1 : prev));
       }
+    } else if (e.key === "ArrowUp") {
+      // Navigate up through suggestions
+      e.preventDefault();
+      if (isFocused && allNavigableItems.length > 0) {
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+      }
+    } else if (e.key === "Enter") {
+      // If an item is highlighted, select it
+      if (highlightedIndex >= 0 && highlightedIndex < allNavigableItems.length) {
+        e.preventDefault();
+        const selectedItem = allNavigableItems[highlightedIndex];
+        handleResultClick(selectedItem.data);
+        setHighlightedIndex(-1);
+      } else {
+        // Add search query to history when submitted
+        if (searchValue.trim()) {
+          addToSearchHistory(searchValue);
+        }
 
-      navigate(`/search/${encodeForPath(searchValue)}`);
-      setIsFocused(false);
+        navigate(`/search/${encodeForPath(searchValue)}`);
+        setIsFocused(false);
 
-      e.target.blur();
+        e.target.blur();
+      }
     } else if (e.key === "Escape" || e.key === "Esc") {
       setIsFocused(false);
+      setHighlightedIndex(-1);
       e.preventDefault();
       e.target.blur();
     }
@@ -212,8 +211,20 @@ const SearchBar = () => {
   const handleClearSearch = () => {
     setSearchValue("");
     setActiveFilters([]);
+    setAutoCompleteSuggestion(null);
     // Reset the advanced search form fields
     advancedSearchRef.current?.resetForm();
+  };
+
+  const handleSearchBarFocus = () => {
+    setShowAdvancedSearch(false);
+    setIsFocused(true);
+    setHighlightedIndex(-1);
+  };
+
+  const handleAdvancedSearchClick = () => {
+    setShowAdvancedSearch(true);
+    setIsFocused(false);
   };
 
   return (
@@ -232,14 +243,17 @@ const SearchBar = () => {
                 left: "16px",
               }}
             />
-            <input
-              className={styles.searchInput}
-              placeholder="Search mail"
+
+            <AutocompleteInput
               value={searchValue}
-              onChange={handleInputChange}
+              onChange={setSearchValue}
               onFocus={handleSearchBarFocus}
               onKeyDown={handleKeyDown}
-              autoComplete="off"
+              suggestion={autoCompleteSuggestion}
+              onAccept={(value) => {
+                setSearchValue(value);
+                setAutoCompleteSuggestion(null);
+              }}
             />
 
             {searchValue && (
@@ -303,10 +317,71 @@ const SearchBar = () => {
 
           {/* Search results or suggestions */}
           <div className={styles.recentSearches}>
-            <List dense>
+            <List
+              dense
+              sx={{
+                paddingTop: `${matchingContacts.length > 0 && searchValue.trim() ? "0" : "8px"}`,
+              }}
+            >
+              {/* Show matching contacts first */}
+              {matchingContacts.length > 0 && searchValue.trim() && (
+                <>
+                  {matchingContacts.map((contact, index) => {
+                    const isHighlighted = highlightedIndex === index;
+                    return (
+                      <ListItem
+                        key={contact.email}
+                        className={styles.searchSuggestion}
+                        onClick={() => handleResultClick(contact.email)}
+                        onMouseEnter={() => setHighlightedIndex(-1)}
+                        sx={{
+                          borderBottom: "1px solid #e8eaed",
+                          paddingTop: "10px",
+                          paddingBottom: "10px",
+                          backgroundColor: isHighlighted ? "rgba(0, 0, 0, 0.04)" : "transparent",
+                        }}
+                      >
+                        <ListItemIcon className={styles.clockIcon}>
+                          <div
+                            style={{
+                              width: "30px",
+                              height: "30px",
+                              backgroundColor: "#1a73e8",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "white",
+                              fontSize: "16px",
+                              fontWeight: 500,
+                            }}
+                          >
+                            {contact.name
+                              ? contact.name.charAt(0).toUpperCase()
+                              : contact.email.charAt(0).toUpperCase()}
+                          </div>
+                        </ListItemIcon>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                          <div style={{ fontSize: "14px", color: "#202124", lineHeight: "16px" }}>
+                            {highlightSearchTerm(contact.name || contact.email, searchValue)}
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#5f6368", lineHeight: "14px" }}>
+                            {highlightSearchTerm(contact.email, searchValue)}
+                          </div>
+                        </div>
+                      </ListItem>
+                    );
+                  })}
+                </>
+              )}
+
               {expandedContent.length > 0 ? (
                 // Show search results or suggestions
-                expandedContent.map((item, index) => {
+                expandedContent.map((item, contentIndex) => {
+                  // Calculate the actual index considering contacts come first
+                  const actualIndex = matchingContacts.length + contentIndex;
+                  const isHighlighted = highlightedIndex === actualIndex;
+
                   // Check if it's a search result (has id) or a suggestion (string)
                   if (typeof item === "object" && item.id) {
                     // Search result
@@ -315,6 +390,10 @@ const SearchBar = () => {
                         key={item.id}
                         className={styles.searchSuggestion}
                         onClick={() => handleResultClick(item)}
+                        onMouseEnter={() => setHighlightedIndex(-1)}
+                        sx={{
+                          backgroundColor: isHighlighted ? "rgba(0, 0, 0, 0.04)" : "transparent",
+                        }}
                       >
                         <ListItemIcon className={styles.clockIcon}>
                           <span
@@ -358,7 +437,15 @@ const SearchBar = () => {
                   } else {
                     // Suggestions
                     return (
-                      <ListItem key={index} className={styles.searchSuggestion} onClick={() => handleResultClick(item)}>
+                      <ListItem
+                        key={contentIndex}
+                        className={styles.searchSuggestion}
+                        onClick={() => handleResultClick(item)}
+                        onMouseEnter={() => setHighlightedIndex(-1)}
+                        sx={{
+                          backgroundColor: isHighlighted ? "rgba(0, 0, 0, 0.04)" : "transparent",
+                        }}
+                      >
                         <ListItemIcon className={styles.clockIcon}>
                           <span
                             className="material-symbols-outlined"
@@ -421,7 +508,7 @@ const SearchBar = () => {
         <AdvancedSearchOptions
           ref={advancedSearchRef}
           isOpen={showAdvancedSearch}
-          onClose={handleCloseAdvancedSearch}
+          onClose={() => setShowAdvancedSearch(false)}
         />
       </div>
     </ClickAwayListener>
