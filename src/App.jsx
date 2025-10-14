@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
 import Layout from "./components/Layout";
 import EmailDetails from "./pages/EmailDetails";
@@ -16,9 +16,19 @@ import ContactDetails from "./pages/Contacts/ContactDetails";
 import ContactTrash from "./pages/Contacts/ContactTrash";
 import ContactsSearch from "./pages/Contacts/ContactsSearch";
 import MergeAndFix from "./pages/Contacts/MergeAndFix";
+import CreateContactPage from "./pages/Contacts/CreateContactPage";
 
 import SearchResultsView from "./pages/SearchResultsView";
 import { initializeSearchIndex } from "./utils/search";
+
+// Component to handle contact details with edit parameter
+const ContactDetailsWithEdit = () => {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isEdit = searchParams.get("edit") === "1";
+
+  return isEdit ? <CreateContactPage /> : <ContactDetails />;
+};
 
 function App() {
   useEffect(() => {
@@ -46,10 +56,11 @@ function App() {
             <Route path="/contacts/frequent" element={<Frequent />} />
             <Route path="/contacts/other" element={<OtherContacts />} />
             <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
-            <Route path="/contacts/person/:contactId" element={<ContactDetails />} />
+            <Route path="/contacts/person/:contactId" element={<ContactDetailsWithEdit />} />
             <Route path="/contacts/trash" element={<ContactTrash />} />
             <Route path="/contacts/search/:query" element={<ContactsSearch />} />
             <Route path="/contacts/suggestions" element={<MergeAndFix />} />
+            <Route path="/contacts/new" element={<CreateContactPage />} />
 
             <Route path="*" element={<Navigate to="/inbox" replace />} />
           </Routes>

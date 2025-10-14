@@ -39,24 +39,51 @@ export const GlobalContextProvider = ({ children }) => {
   const [threading, setThreading] = useState(true);
   const [inboxType, setInboxType] = useState("default");
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
-  
+
   // Vacation responder state
   const [vacationResponder, setVacationResponder] = usePersistedState("vacationResponder", {
     enabled: false,
-    firstDay: new Date().toISOString().split('T')[0],
+    firstDay: new Date().toISOString().split("T")[0],
     lastDay: "",
     subject: "",
     message: "",
     onlyContacts: false,
   });
-  
+
   // Right sidebar states
   const [rightSidebarExpanded, setRightSidebarExpanded] = usePersistedState("rightSidebarExpanded", true);
   const [rightSidebarActiveTab, setRightSidebarActiveTab] = usePersistedState("rightSidebarActiveTab", {
     contact: { screen: "CONTACTS" },
     activeTab: null,
   });
+
+  // Contact management states
   const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
+  const [createLabelModal, setCreateLabelModal] = useState({
+    show: false,
+    type: "create",
+    label: null,
+  });
+
+  // Signatures related settings
+  /**
+   *  {
+   *     list: {
+   *       name: string;
+   *       content: string;
+   *     }[];
+   *     useForNewEmails: string;
+   *     useForRepliesAndForwards: string;
+   *     insertSignatureBeforeQuotedText: boolean;
+   *   }
+   *  }
+   */
+  const [signaturesState, setSignaturesState] = usePersistedState("signatures", {
+    list: [],
+    useForNewEmails: "",
+    useForRepliesAndForwards: "",
+    insertSignatureBeforeQuotedText: false,
+  });
 
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
@@ -130,12 +157,16 @@ export const GlobalContextProvider = ({ children }) => {
   useEffect(() => {
     const initDB = async () => {
       try {
-        const database = await openDB("my-database", 1, {
+        const database = await openDB("my-database", 2, {
           upgrade(db, oldVer, newVer, tx) {
             // runs only when version > oldVer
             if (!db.objectStoreNames.contains("attachments")) {
               const store = db.createObjectStore("attachments", { keyPath: "id" }); // primary key
               store.createIndex("name", "name", { unique: false }); // secondary index
+            }
+            if (!db.objectStoreNames.contains("embeddedImages")) {
+              const store = db.createObjectStore("embeddedImages", { keyPath: "id" }); // primary key
+              store.createIndex("emailId", "emailId", { unique: false }); // secondary index
             }
           },
         });
@@ -152,11 +183,13 @@ export const GlobalContextProvider = ({ children }) => {
   const refreshEmails = useCallback(async () => {
     setEmails(initialEmails);
 
-    // reset the database, delete all attachments
+    // reset the database, delete all attachments and embedded images
     if (db) {
-      console.log(`deleting all attachments`);
       const attachmentStore = db.transaction("attachments", "readwrite").objectStore("attachments");
       await attachmentStore.clear();
+
+      const embeddedImagesStore = db.transaction("embeddedImages", "readwrite").objectStore("embeddedImages");
+      await embeddedImagesStore.clear();
     }
   }, [db]);
 
@@ -207,10 +240,14 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    signaturesState,
+    setSignaturesState,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,
     setVacationResponder,
+    createLabelModal,
+    setCreateLabelModal,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

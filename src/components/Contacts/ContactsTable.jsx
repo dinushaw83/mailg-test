@@ -23,6 +23,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { generateAvatarColor } from "../../utils/helperFunctions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import ManageLabelsDropdown from "./ManageLabelsDropdown";
 import styles from "./ContactsTable.module.css";
 
 // Snackbar style for this screen
@@ -55,6 +56,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
   const selectedContactRef = useRef(null);
   const [checkedContacts, setCheckedContacts] = useState(new Set());
+  const [manageLabelsAnchor, setManageLabelsAnchor] = useState(null);
 
   // Create set of all contact IDs from all sections (no duplicates)
   const allContactsSet = new Set(contacts.flatMap((section) => section.data || []).map((contact) => contact.id));
@@ -173,10 +175,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
     }, 500);
   };
 
-  // Handle edit contact (empty function for now)
+  // Handle edit contact
   const handleEdit = (contact) => {
-    console.log("Edit contact:", contact);
-    // TODO: Implement edit functionality
+    navigate(`/contacts/person/${contact.id}?edit=1`);
   };
 
   // Handle more actions dropdown
@@ -378,6 +379,21 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
   const handleListSettings = () => {
     console.log("List settings clicked");
     // TODO: Implement list settings functionality
+  };
+
+  // Handle manage labels dropdown
+  const handleManageLabels = (event) => {
+    setManageLabelsAnchor(event.currentTarget);
+  };
+
+  // Close manage labels dropdown
+  const handleCloseManageLabels = () => {
+    setManageLabelsAnchor(null);
+  };
+
+  // Handle merge contacts
+  const handleMergeContacts = () => {
+    // TODO: Implement merge contacts functionality
   };
 
   // Handle checkbox change
@@ -609,9 +625,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                       sx={{
                         color: contact?.isFavorite ? "#0b57d0" : "#444746",
                         "&:hover": {
-                          backgroundColor: contact?.isFavorite
-                            ? "rgba(11, 87, 208, 0.08)"
-                            : "action.hover",
+                          backgroundColor: contact?.isFavorite ? "rgba(11, 87, 208, 0.08)" : "action.hover",
                         },
                       }}
                     >
@@ -871,6 +885,29 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
 
                     {/* Right side - Action buttons */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      {/* Display merge icon if more than one contact is selected */}
+                      {checkedContacts.size > 1 && (
+                        <Tooltip
+                          title="Merge"
+                          placement="top"
+                          slotProps={{
+                            popper: {
+                              sx: {
+                                "& .MuiTooltip-tooltip": {
+                                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                  color: "white",
+                                  fontSize: "12px",
+                                  fontWeight: 200,
+                                },
+                              },
+                            },
+                          }}
+                        >
+                          <IconButton size="medium" onClick={handleMergeContacts} sx={{ color: "#0b57d0" }}>
+                            <span class="material-symbols-outlined" style={{ fontSize: "20px" }}>merge</span>
+                          </IconButton>
+                        </Tooltip>
+                      )}
                       {/* Move to action */}
                       <Tooltip
                         title="Manage labels"
@@ -888,11 +925,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                           },
                         }}
                       >
-                        <IconButton
-                          size="medium"
-                          onClick={() => console.log("Clicked on manage labels")}
-                          sx={{ color: "#0b57d0" }}
-                        >
+                        <IconButton size="medium" onClick={handleManageLabels} sx={{ color: "#0b57d0" }}>
                           <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
                             label
                           </span>
@@ -1158,37 +1191,45 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                 Change labels
               </Typography>
             </Box>
-            {recipientLabels
-              .map((label) => {
-                const hasLabel = selectedContactRef.current?.contact?.labels?.includes(label.label);
-                return (
-                  <MenuItem key={label.id} onClick={() => handleLabelToggle(label.label)} sx={{ py: 0.5, pb: 1 }}>
-                    <ListItemIcon>
-                      <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
-                        label
-                      </span>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={label.label}
-                      slotProps={{
-                        primary: {
-                          color: "rgb(60,64,67)",
-                          fontSize: "14px",
-                          fontWeight: 400,
-                        },
-                      }}
-                    />
-                    {hasLabel && (
-                      <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#0b57d0" }}>
-                        check
-                      </span>
-                    )}
-                  </MenuItem>
-                );
-              })}
+            {recipientLabels.map((label) => {
+              const hasLabel = selectedContactRef.current?.contact?.labels?.includes(label.label);
+              return (
+                <MenuItem key={label.id} onClick={() => handleLabelToggle(label.label)} sx={{ py: 0.5, pb: 1 }}>
+                  <ListItemIcon>
+                    <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                      label
+                    </span>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={label.label}
+                    slotProps={{
+                      primary: {
+                        color: "rgb(60,64,67)",
+                        fontSize: "14px",
+                        fontWeight: 400,
+                      },
+                    }}
+                  />
+                  {hasLabel && (
+                    <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#0b57d0" }}>
+                      check
+                    </span>
+                  )}
+                </MenuItem>
+              );
+            })}
           </Box>
         )}
       </Menu>
+
+      {/* Manage Labels Dropdown */}
+      <ManageLabelsDropdown
+        anchorEl={manageLabelsAnchor}
+        open={Boolean(manageLabelsAnchor)}
+        onClose={handleCloseManageLabels}
+        selectedContacts={checkedContacts}
+        contacts={contacts}
+      />
     </Box>
   );
 };

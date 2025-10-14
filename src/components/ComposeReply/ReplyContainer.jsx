@@ -14,7 +14,7 @@ import dropdownArrow from "../../icons/dropdownarrow.png";
 import { Button } from "@mui/material";
 
 const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelete }) => {
-  const { loggedInUser, setSnackbar, emails } = useGlobalContext();
+  const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
   const [subject, setSubject] = useState(`${replyType === "forward" ? "Fwd: " : "Re: "}${email.subject}`);
@@ -150,6 +150,33 @@ ${email.body}
     }
   }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText, currentDraftId]);
 
+  useEffect(() => {
+    if (currentDraftId) return; // don't touch restored drafts
+
+    const { list, useForRepliesAndForwards, insertSignatureBeforeQuotedText } = signaturesState || {};
+    const signature = list?.[useForRepliesAndForwards];
+    if (!signature?.content) return;
+
+    // Prevent duplicate insertion
+    if (content.html.includes(signature.content)) return;
+
+    const signatureText = signature.content.replace(/<[^>]*>/g, "");
+    let updatedHTML, updatedPlainText;
+
+    if (insertSignatureBeforeQuotedText) {
+      updatedHTML = `${signature.content}<br><br>${content.html}`;
+      updatedPlainText = `${signatureText}\n\n${content.plainText}`;
+    } else {
+      updatedHTML = `${content.html}<br><br>--${signature.content}`;
+      updatedPlainText = `${content.plainText}\n\n--\n${signatureText}`;
+    }
+
+    setContent({
+      html: updatedHTML,
+      plainText: updatedPlainText,
+    });
+  }, [currentDraftId, selectedReplyOption, signaturesState]);
+
   const options = [
     { value: "reply", label: "Reply", icon: replyIcon },
     { value: "replyAll", label: "Reply All", icon: replyAllIcon },
@@ -176,13 +203,16 @@ ${email.body}
     handleErrorModalClose: handleScheduleErrorModalClose,
   } = useScheduleEmail(selectedReplyOption, email);
 
-  const handleSend = ({ attachments = [] }) => {
+  const handleSend = ({ attachments = [], embeddedImages = [], processedHtml }) => {
+    // Use processed HTML if available, otherwise use the current content
+    const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
+
     handleSendEmail({
       to: recipientsForDraft.to,
       cc: recipientsForDraft.cc,
       bcc: recipientsForDraft.bcc,
       subject,
-      content,
+      content: finalContent,
       currentDraftId: draftId,
       isDraft,
       onClose: () => {
@@ -195,6 +225,7 @@ ${email.body}
         }
       },
       attachments,
+      embeddedImages,
     });
   };
 
@@ -355,12 +386,10 @@ ${email.body}
               key={selectedReplyOption}
               content={content.html}
               onChange={(html, plainText) => setContent({ html, plainText })}
-              className="reply-text-editor"
               onSend={handleSend}
               onDelete={handleDelete}
               onSchedule={handleSchedule}
               textEditorMinHeight="90px"
-              textEditorMaxHeight="250px"
               messageId={email.id}
             />
           </div>
