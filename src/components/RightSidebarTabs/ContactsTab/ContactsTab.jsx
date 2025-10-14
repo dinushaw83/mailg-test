@@ -234,7 +234,7 @@ const ContactsTab = () => {
   }
 
   return (
-    <Box sx={{ height: "calc(100vh - 100px)", overflow: "hidden", position: "relative" }}>
+    <Box sx={{ height: "calc(100vh - 130px)", overflow: "hidden", position: "relative" }}>
       {/* Header */}
       <Box
         sx={{
@@ -404,7 +404,7 @@ const ContactsTab = () => {
             overflowY: "auto",
             py: 2,
             px: 1,
-            height: isThreadView ? "calc(100vh - 230px)" : "calc(100vh - 180px)",
+            height: isThreadView ? "calc(100vh - 260px)" : "calc(100vh - 210px)",
             mt: isThreadView && !displaySearch ? 0 : 7,
           }}
         >

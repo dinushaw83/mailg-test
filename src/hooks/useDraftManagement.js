@@ -105,7 +105,7 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
         existingDraft?.legacyThreadId || parentEmail?.legacyThreadId || generateLegacyThreadId();
       const resolvedLegacyLastMessageId = existingDraft?.legacyLastMessageId || resolvedLegacyThreadId;
 
-      return {
+      const draftEmail = {
         id: effectiveId || generateNextIntegerId(emails),
         threadId: resolvedThreadId,
         legacyThreadId: resolvedLegacyThreadId,
@@ -130,6 +130,8 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
         labels: ["Drafts"],
         labelColor: "#e1e3e1",
       };
+
+      return draftEmail;
     },
     [to, cc, bcc, subject, content, emails, loggedInUser]
   );
@@ -156,7 +158,8 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
           : prevEmails;
 
         // Add new/updated draft at the beginning
-        return [draftEmail, ...filteredEmails];
+        const updatedEmails = [draftEmail, ...filteredEmails];
+        return updatedEmails;
       });
 
       setDraftId(newDraftId);

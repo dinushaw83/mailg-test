@@ -1,0 +1,59 @@
+.realSearchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: black;
+  font-size: 16px;
+  max-width: 506px;
+  font-weight: 400;
+  padding: 0;
+  padding-left: 40px;
+}
+
+.realSearchInput::placeholder {
+  color: #666;
+}
+
+.ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none; /* so clicks go to input */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 12px 48px 12px 56px; /* must match input padding - 40px for icon + 16px base */
+  font-size: 16px;
+  white-space: pre; /* preserve spaces */
+  box-sizing: border-box;
+  color: transparent;
+}
+
+/* typed text must be invisible but occupy width */
+.typed {
+  color: transparent; /* occupies width */
+}
+
+.remainder {
+  color: #5f6368;
+  opacity: 0.6;
+}
+
+.tabBadge {
+  margin-left: 8px;
+  height: 18px;
+  font-size: 11px;
+  background: #f4f6f6;
+  color: #5f6368;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid #adafb2;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: baseline;
+}

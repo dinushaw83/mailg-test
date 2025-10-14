@@ -11,7 +11,9 @@ import {
   Tooltip,
   Divider,
   FormHelperText,
+  Chip,
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import {
   CustomInput,
   CustomButton,
@@ -19,6 +21,7 @@ import {
   CloseButton,
   LabelDropdown,
   ActionIconButton,
+  LabelsDropdown,
 } from "./ContactComponents";
 import ScopedInfoModal from "../../common/ScopedInfoModal";
 import countryCode from "../../../utils/countryCode.json";
@@ -74,11 +77,19 @@ const normalizeContact = (contact) => ({
   customFields:
     Array.isArray(contact?.customFields) && contact?.customFields.length > 0 ? [...contact.customFields] : [],
   isFavorite: contact?.isFavorite || false,
+  labels: contact?.labels || [],
 });
 
 const CreateContact = ({ onClose, onTabClose }) => {
-  const { recipients, setRecipients, setSnackbar, rightSidebarActiveTab, setRightSidebarActiveTab, emails } =
-    useGlobalContext();
+  const {
+    recipients,
+    setRecipients,
+    setSnackbar,
+    rightSidebarActiveTab,
+    setRightSidebarActiveTab,
+    emails,
+    recipientLabels,
+  } = useGlobalContext();
 
   // Check if contact to update is present in recipients or create a custom contact if it is a valid email in case of edit contact
   const contactToUpdate = useMemo(() => {
@@ -152,6 +163,10 @@ const CreateContact = ({ onClose, onTabClose }) => {
   // Reference for the saved contact
   const originalContact = useRef(null);
   const [disableHeader, setDisableHeader] = useState(false);
+
+  // Labels state management
+  const [labelsMenuAnchor, setLabelsMenuAnchor] = useState(null);
+  const [tempLabels, setTempLabels] = useState(contactToUpdate?.labels || []);
 
   // Setting USA as user country
   const userCountry = countryCode.find((c) => c.code === "US");
@@ -425,9 +440,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
       const originalContact = normalizeContact(contactToUpdate);
 
       // Compare JSON strings
-      return (
-        JSON.stringify(currentContact) !== JSON.stringify(originalContact)
-      );
+      return JSON.stringify(currentContact) !== JSON.stringify(originalContact);
     }
 
     // For create contact, check if any field has content
@@ -665,17 +678,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
   // Label options
   const labelOptions = ["Home", "Work", "Other"];
   const emailLabelOptions = ["Home", "Work", "Other"];
-  const phoneLabelOptions = [
-    "Home",
-    "Work",
-    "Other",
-    "Mobile",
-    "Main",
-    "Home Fax",
-    "Work Fax",
-    "MailG Voice",
-    "Pager",
-  ];
+  const phoneLabelOptions = ["Home", "Work", "Other", "Mobile", "Main", "Home Fax", "Work Fax", "MailG Voice", "Pager"];
   const significantDateLabelOptions = ["Anniversary", "Other"];
   const websiteLabelOptions = ["Profile", "Blog", "Home Page", "Work"];
   const relatedPersonLabelOptions = [
@@ -792,6 +795,39 @@ const CreateContact = ({ onClose, onTabClose }) => {
     }
   };
 
+  // Handle labels menu open
+  const handleLabelsMenuOpen = (event) => {
+    setLabelsMenuAnchor(event.currentTarget);
+    setTempLabels(formData.labels);
+  };
+
+  // Handle labels menu close
+  const handleLabelsMenuClose = () => {
+    setLabelsMenuAnchor(null);
+    setTempLabels(formData.labels);
+  };
+
+  // Handle label toggle in dropdown
+  const handleLabelToggle = (labelName) => {
+    setTempLabels((prev) =>
+      prev.includes(labelName) ? prev.filter((label) => label !== labelName) : [...prev, labelName]
+    );
+  };
+
+  // Handle apply labels
+  const handleApplyLabels = () => {
+    setFormData((prev) => ({ ...prev, labels: tempLabels }));
+    setLabelsMenuAnchor(null);
+  };
+
+  // Check if labels have changed
+  const hasLabelsChanged = () => {
+    return JSON.stringify(formData.labels.sort()) !== JSON.stringify(tempLabels.sort());
+  };
+
+  // Get the label id
+  const getLabelId = (label) => recipientLabels.find((l) => l.label === label)?.id;
+
   // Handle save
   const handleSave = () => {
     if (hasFieldChange()) {
@@ -810,8 +846,8 @@ const CreateContact = ({ onClose, onTabClose }) => {
       setDisableHeader(true);
 
       saveTimeout.current = setTimeout(() => {
-        // Labels should be from the contact to update in case of edit contact
-        let labels = contactToUpdate?.labels ? [...contactToUpdate.labels] : [];
+        // Use current contact labels from formData
+        let labels = [...formData.labels];
 
         const contact = {
           ...formData,
@@ -875,7 +911,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
   };
 
   return (
-    <Box sx={{ overflow: "hidden", height: "calc(100vh - 100px)", position: "relative" }}>
+    <Box sx={{ overflow: "hidden", height: "calc(100vh - 130px)", position: "relative" }}>
       {/* Header */}
       <Box
         sx={{
@@ -945,9 +981,9 @@ const CreateContact = ({ onClose, onTabClose }) => {
       </Box>
 
       {/* Scrollable Content */}
-      <Box sx={{ overflowY: "auto", py: 2, px: 1, mt: 7, height: "calc(100vh - 188px)" }}>
+      <Box sx={{ overflowY: "auto", py: 2, px: 1, mt: 7, height: "calc(100vh - 218px)" }}>
         {/* Profile Picture */}
-        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", mb: recipientLabels?.length > 0 ? 2 : 3 }}>
           <Avatar
             sx={{
               width: "88px",
@@ -962,6 +998,164 @@ const CreateContact = ({ onClose, onTabClose }) => {
             </span>
           </Avatar>
         </Box>
+
+        {/* Labels Section - only show if recipientLabels is not empty */}
+        {recipientLabels && recipientLabels.length > 0 && (
+          <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2.5 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, width: "100%" }}>
+              {formData.labels.length > 0 ? (
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center", justifyContent: "center" }}>
+                  {formData.labels.map((label, index) => (
+                    <Tooltip
+                      key={`label-${index}`}
+                      title={label}
+                      placement="top"
+                      slotProps={{
+                        popper: {
+                          sx: {
+                            "& .MuiTooltip-tooltip": {
+                              backgroundColor: "rgba(0, 0, 0, 0.9)",
+                              color: "white",
+                              fontSize: "12px",
+                              fontWeight: 200,
+                            },
+                          },
+                        },
+                      }}
+                    >
+                      <Link sx={{ textDecoration: "none" }} to={`/contacts/label/${getLabelId(label)}`} target="_blank">
+                        <Chip
+                          label={label}
+                          size="small"
+                          icon={
+                            <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                              label
+                            </span>
+                          }
+                          sx={{
+                            backgroundColor: "transparent",
+                            color: "rgba(0, 0, 0, .87)",
+                            border: "1px solid #c4c7c5",
+                            height: "28px",
+                            px: "4px",
+                            "& .MuiChip-label": {
+                              maxWidth: "92px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              fontSize: "0.6875rem",
+                              fontWeight: 500,
+                            },
+                            borderRadius: "8px",
+                            "& .MuiChip-icon": {
+                              color: "#1f1f1f",
+                              fontSize: "18px",
+                            },
+                            "&:hover": {
+                              cursor: "pointer",
+                              backgroundColor: "rgba(31, 31, 31, 0.08)",
+                            },
+                          }}
+                        />
+                      </Link>
+                    </Tooltip>
+                  ))}
+
+                  {/* Edit button */}
+                  <Tooltip
+                    title="Manage labels"
+                    placement="top"
+                    slotProps={{
+                      popper: {
+                        sx: {
+                          "& .MuiTooltip-tooltip": {
+                            backgroundColor: "rgba(0, 0, 0, 0.9)",
+                            color: "white",
+                            fontSize: "12px",
+                            fontWeight: 200,
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={handleLabelsMenuOpen}
+                      sx={{
+                        backgroundColor: "transparent",
+                        color: "#0b57d0",
+                        border: "1px solid #c4c6c5",
+                        "&:hover": {
+                          backgroundColor: "rgba(31, 31, 31, 0.08)",
+                          cursor: "pointer",
+                        },
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                        edit
+                      </span>
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              ) : (
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <Tooltip
+                    title="Manage labels"
+                    placement="bottom"
+                    slotProps={{
+                      popper: {
+                        sx: {
+                          "& .MuiTooltip-tooltip": {
+                            backgroundColor: "#888888",
+                            color: "white",
+                            fontSize: "10px",
+                            fontWeight: 400,
+                            borderRadius: 0,
+                          },
+                        },
+                      },
+                    }}
+                  >
+                    <Chip
+                      label="Label"
+                      size="small"
+                      onClick={handleLabelsMenuOpen}
+                      icon={
+                        <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#0b57d0" }}>
+                          add
+                        </span>
+                      }
+                      sx={{
+                        backgroundColor: "transparent",
+                        color: "rgba(0, 0, 0, .87)",
+                        border: "1px solid #c4c7c5",
+                        height: "28px",
+                        px: "4px",
+                        "& .MuiChip-label": {
+                          maxWidth: "92px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          fontSize: "0.6875rem",
+                          fontWeight: 500,
+                        },
+                        borderRadius: "8px",
+                        "& .MuiChip-icon": {
+                          color: "#1f1f1f",
+                          fontSize: "18px",
+                        },
+                        "&:hover": {
+                          cursor: "pointer",
+                          backgroundColor: "rgba(31, 31, 31, 0.08)",
+                        },
+                      }}
+                    />
+                  </Tooltip>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        )}
 
         {/* Personal Details Section */}
         <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2.5 }}>
@@ -2082,6 +2276,18 @@ const CreateContact = ({ onClose, onTabClose }) => {
           {showMoreFields ? "Show less" : "Show more"}
         </Button>
       </Box>
+
+      {/* Labels Dropdown Menu */}
+      <LabelsDropdown
+        anchorEl={labelsMenuAnchor}
+        open={Boolean(labelsMenuAnchor)}
+        onClose={handleLabelsMenuClose}
+        recipientLabels={recipientLabels}
+        tempLabels={tempLabels}
+        onLabelToggle={handleLabelToggle}
+        onApply={handleApplyLabels}
+        hasChanged={hasLabelsChanged()}
+      />
 
       {/* Unsaved Changes Modal */}
       <ScopedInfoModal
