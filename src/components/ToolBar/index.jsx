@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import IconButton from "@mui/material/IconButton";
 import React, { useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
@@ -220,6 +221,14 @@ const LeftItemsContainer = ({ children }) => {
 const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
   const { folder = "inbox" } = useParams();
   const { selection, refreshEmails } = useGlobalContext();
+  const [isManualSyncing, setIsManualSyncing] = useState(false);
+
+  // Show a Gmail-like top-center yellow loading banner for ~2.5s
+  const manualEmailSync = useCallback(() => {
+    setIsManualSyncing(true);
+    // Keep visible for 2.5 seconds to simulate manual sync loading
+    setTimeout(() => setIsManualSyncing(false), 2500);
+  }, []);
 
   const threadIds = threads.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
@@ -238,6 +247,30 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
 
   return (
     <div className="G-atb">
+      {isManualSyncing &&
+        createPortal(
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "#FEF7E0", // soft yellow similar to Gmail
+              color: "#202124", // near-black text
+              border: "1px solid #F1DE9A",
+              borderRadius: 1,
+              padding: "4px",
+              fontSize: 14,
+              fontWeight: 500,
+              zIndex: 5000,
+              pointerEvents: "none",
+              boxShadow: "0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)",
+            }}
+          >
+            Loading...
+          </div>,
+          document.body
+        )}
       <LeftItemsContainer>
         <CheckBox allSelected={allSelected} partialSelected={partialSelected} toggle={toggleAllSelected} />
 
@@ -251,7 +284,14 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
           </>
         ) : (
           <>
-            <Icon name="refresh" onClick={refreshEmails} label="Refresh" />
+            <Icon
+              name="refresh"
+              onClick={() => {
+                manualEmailSync();
+                // refreshEmails();
+              }}
+              label="Refresh"
+            />
           </>
         )}
 
