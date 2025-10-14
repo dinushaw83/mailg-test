@@ -21,6 +21,7 @@ import {
   OfflineTab,
   ThemesTab,
 } from "../components/SettingsTabs";
+import Footer from "../components/EmailList/Footer";
 
 const Settings = () => {
   const { tab } = useParams();
@@ -66,7 +67,7 @@ const Settings = () => {
 
   return (
     <Container maxWidth={false} sx={{ py: 3 }}>
-      <Paper elevation={0} sx={{ backgroundColor: "transparent" }}>
+      <Paper elevation={0} sx={{ backgroundColor: "#ffffff" }}>
         {/* Settings Title */}
         <Typography
           variant="h4"
@@ -154,6 +155,7 @@ const Settings = () => {
             );
           })}
         </Box>
+        <Footer />
       </Paper>
     </Container>
   );
