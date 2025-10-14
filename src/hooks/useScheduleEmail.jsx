@@ -9,15 +9,16 @@ import {
   restructureRecipients,
   isValidEmail,
 } from "../utils/helperFunctions";
+import { updateEmbeddedImagesEmailId } from "../utils/embeddedImages";
 
 export const useScheduleEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
-  const { emails, setEmails, setSnackbar, loggedInUser, recipients, setRecipients } = useContext(GlobalContext);
+  const { emails, setEmails, setSnackbar, loggedInUser, recipients, setRecipients, db } = useContext(GlobalContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastScheduledEmailRef = useRef(null);
 
-  const handleSchedule = ({
+  const handleSchedule = async ({
     to,
     cc,
     bcc,
@@ -29,6 +30,8 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     isDraft,
     scheduledDate,
     scheduledTime,
+    attachments,
+    embeddedImages,
   }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
@@ -90,10 +93,23 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     }
 
     // If all validations pass, schedule the email
-    scheduleEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, scheduledDate, scheduledTime });
+    await scheduleEmail({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      onClose,
+      currentDraftId,
+      isDraft,
+      scheduledDate,
+      scheduledTime,
+      attachments,
+      embeddedImages,
+    });
   };
 
-  const scheduleEmail = ({
+  const scheduleEmail = async ({
     to,
     cc,
     bcc,
@@ -104,6 +120,8 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     isDraft,
     scheduledDate,
     scheduledTime,
+    attachments,
+    embeddedImages,
   }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
@@ -139,6 +157,8 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
       timeDisplay: timeDisplay,
       read: false,
       starred: false,
+      attachments: attachments || [],
+      embeddedImages: embeddedImages || [],
       important: false,
       labels: ["Scheduled"], // Changed from "Sent" to "Scheduled"
       labelColor: "#e1e3e1",
@@ -156,6 +176,16 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
 
     // Store the email data for potential cancellation
     lastScheduledEmailRef.current = newEmail;
+
+    // Update emailId for embedded images if we have any
+    if (embeddedImages && embeddedImages.length > 0 && db) {
+      try {
+        const imageIds = embeddedImages.map((img) => img.id);
+        await updateEmbeddedImagesEmailId(db, imageIds, newId.toString());
+      } catch (error) {
+        console.error("Failed to update embedded images emailId:", error);
+      }
+    }
 
     // Get all the recipients
     const allRecipients = [...to, ...cc, ...bcc];

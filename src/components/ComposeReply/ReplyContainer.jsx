@@ -175,11 +175,7 @@ ${email.body}
       html: updatedHTML,
       plainText: updatedPlainText,
     });
-  }, [
-    currentDraftId,
-    selectedReplyOption,
-    signaturesState,
-  ]);
+  }, [currentDraftId, selectedReplyOption, signaturesState]);
 
   const options = [
     { value: "reply", label: "Reply", icon: replyIcon },
@@ -207,13 +203,16 @@ ${email.body}
     handleErrorModalClose: handleScheduleErrorModalClose,
   } = useScheduleEmail(selectedReplyOption, email);
 
-  const handleSend = ({ attachments = [] }) => {
+  const handleSend = ({ attachments = [], embeddedImages = [], processedHtml }) => {
+    // Use processed HTML if available, otherwise use the current content
+    const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
+
     handleSendEmail({
       to: recipientsForDraft.to,
       cc: recipientsForDraft.cc,
       bcc: recipientsForDraft.bcc,
       subject,
-      content,
+      content: finalContent,
       currentDraftId: draftId,
       isDraft,
       onClose: () => {
@@ -226,6 +225,7 @@ ${email.body}
         }
       },
       attachments,
+      embeddedImages,
     });
   };
 
@@ -386,12 +386,10 @@ ${email.body}
               key={selectedReplyOption}
               content={content.html}
               onChange={(html, plainText) => setContent({ html, plainText })}
-              className="reply-text-editor"
               onSend={handleSend}
               onDelete={handleDelete}
               onSchedule={handleSchedule}
               textEditorMinHeight="90px"
-              textEditorMaxHeight="250px"
               messageId={email.id}
             />
           </div>

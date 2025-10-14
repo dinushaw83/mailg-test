@@ -15,13 +15,16 @@ import styles from "./ComposeEmail.module.css";
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { emails, setSnackbar,
-    recipients, composeWindows,
-    setComposeWindows, rightSidebarActiveTab,
+  const {
+    emails,
+    setSnackbar,
+    recipients,
+    composeWindows,
+    setComposeWindows,
+    rightSidebarActiveTab,
     loggedInUser,
-    signaturesState
-  } =
-    useContext(GlobalContext);
+    signaturesState,
+  } = useContext(GlobalContext);
 
   // Create restructured recipients array for proper lookup
   const restructuredRecipients = useMemo(() => {
@@ -62,16 +65,13 @@ export default function ComposeEmail({ composeWindow }) {
   // Determine which signature to use
   const defaultSignatureId = useMemo(() => {
     const isReply = composeWindow?.fields?.replyingTo;
-    return isReply
-      ? signaturesState?.useForRepliesAndForwards
-      : signaturesState?.useForNewEmails;
+    return isReply ? signaturesState?.useForRepliesAndForwards : signaturesState?.useForNewEmails;
   }, [composeWindow, signaturesState]);
 
   // Get the HTML content of that signature
   const defaultSignatureHTML = useMemo(() => {
     if (!signaturesState?.list?.length) return "";
-    if (defaultSignatureId === "" || defaultSignatureId === null || defaultSignatureId === undefined)
-      return "";
+    if (defaultSignatureId === "" || defaultSignatureId === null || defaultSignatureId === undefined) return "";
 
     const signature = signaturesState.list[Number(defaultSignatureId)];
     return signature?.content || "";
@@ -79,10 +79,7 @@ export default function ComposeEmail({ composeWindow }) {
 
   // Insert signature when composing a NEW email (not draft or reply)
   useLayoutEffect(() => {
-    const isNewCompose =
-      !currentDraftId &&
-      !composeWindow?.fields?.replyingTo &&
-      !content.html?.trim();
+    const isNewCompose = !currentDraftId && !composeWindow?.fields?.replyingTo && !content.html?.trim();
 
     if (isNewCompose && defaultSignatureHTML) {
       if (signaturesState?.insertSignatureBeforeQuotedText) {
@@ -265,17 +262,22 @@ export default function ComposeEmail({ composeWindow }) {
     handleErrorModalClose: handleScheduleErrorModalClose,
   } = useScheduleEmail(null);
 
-  const handleSend = () => {
+  const handleSend = ({ attachments = [], embeddedImages = [], processedHtml } = {}) => {
+    // Use processed HTML if available, otherwise use the current content
+    const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
+
     handleSendEmail({
       to,
       cc,
       bcc,
       subject,
-      content,
+      content: finalContent,
       rawInputText,
       onClose: handleClose,
       currentDraftId: draftId,
       isDraft: isDraft,
+      attachments,
+      embeddedImages,
     });
   };
 

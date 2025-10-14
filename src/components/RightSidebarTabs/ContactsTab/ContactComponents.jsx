@@ -1,12 +1,24 @@
 import React, { useState } from "react";
-import { TextField, Button, Tooltip, IconButton, Box, Typography } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Tooltip,
+  IconButton,
+  Box,
+  Typography,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+} from "@mui/material";
 import { generateAddressString } from "../../../utils/helperFunctions";
 import styles from "./CreateContact.module.css";
 
 // Text field component with custom styling
-export const CustomInput = ({ label, value, onChange, placeholder, type = "text", error, sx, ...props }) => (
+export const CustomInput = ({ label, value, onChange, placeholder, type = "text", error, sx, fullWidth = true, ...props }) => (
   <TextField
-    fullWidth
+    fullWidth={fullWidth}
     variant="outlined"
     label={label}
     placeholder={placeholder}
@@ -479,3 +491,127 @@ export const ContactDetailRow = ({ icon, items, emptyText, onItemClick, onAddCli
     </Box>
   );
 };
+
+// Labels dropdown component for managing contact labels
+export const LabelsDropdown = ({
+  anchorEl,
+  open,
+  onClose,
+  recipientLabels = [],
+  tempLabels = [],
+  onLabelToggle,
+  onApply,
+  hasChanged = false,
+}) => (
+  <Menu
+    anchorEl={anchorEl}
+    open={open}
+    onClose={onClose}
+    anchorOrigin={{
+      vertical: "bottom",
+      horizontal: "left",
+    }}
+    transformOrigin={{
+      vertical: "top",
+      horizontal: "left",
+    }}
+    sx={{
+      zIndex: 30,
+      "& .MuiPaper-root": {
+        width: "250px",
+        borderRadius: "4px",
+        backgroundColor: "#f0f4f9",
+        boxShadow: "0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12),0px 5px 5px -3px rgba(0,0,0,.2)",
+      },
+      "& .MuiMenuItem-root": {
+        px: 2,
+        py: 1,
+        "&:hover": {
+          backgroundColor: "#d3dbe5",
+        },
+      },
+    }}
+  >
+    {/* Title */}
+    {recipientLabels?.length > 0 && (
+      <Box>
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            color: "#444746",
+            mx: 2,
+            mb: 1,
+          }}
+        >
+          Manage labels
+        </Typography>
+
+        {/* Labels List */}
+        {recipientLabels
+          .sort((a, b) => a.label.localeCompare(b.label))
+          .map((label) => {
+            const isSelected = tempLabels.includes(label.label);
+
+            return (
+              <MenuItem
+                key={`label-${label.id}`}
+                onClick={() => onLabelToggle(label.label)}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  height: "40px",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", flex: 1 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: "20px", color: "#1f1f1f", fontWeight: 500 }}
+                    >
+                      label
+                    </span>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={label.label}
+                    slotProps={{
+                      primary: {
+                        color: "#1f1f1f",
+                        fontSize: "14px",
+                        fontWeight: 400,
+                      },
+                    }}
+                  />
+                </Box>
+                {isSelected && (
+                  <span className="material-symbols-outlined" style={{ fontSize: "28px", color: "#898b8e" }}>
+                    check
+                  </span>
+                )}
+              </MenuItem>
+            );
+          })}
+
+        {/* Divider */}
+        {recipientLabels.length > 0 && <Divider sx={{ my: 1 }} />}
+      </Box>
+    )}
+
+    {/* Apply Changes Button */}
+    <MenuItem onClick={onApply} sx={{ pointerEvents: hasChanged ? "auto" : "none" }}>
+      <ListItemText
+        primary="Apply"
+        sx={{ py: 0.5, pl: 4.5 }}
+        slotProps={{
+          primary: {
+            color: "#1f1f1f",
+            fontSize: "14px",
+            fontWeight: 400,
+          },
+        }}
+      />
+    </MenuItem>
+  </Menu>
+);
