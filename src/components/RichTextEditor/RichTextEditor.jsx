@@ -1,4 +1,8 @@
-import { Stack, Popper, Paper, ClickAwayListener, Box } from "@mui/material";
+import {
+  Stack, Popper, Paper, ClickAwayListener,
+  MenuItem, ListItemIcon, ListItemText, Menu, Typography,
+  IconButton
+} from "@mui/material";
 import { useCallback, useRef, useState, useEffect } from "react";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
@@ -75,6 +79,13 @@ export default function Editor({
   const isRestoringImages = useRef(false);
 
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
+
+  const [signaturePopoverOpen, setSignaturePopoverOpen] = useState(false);
+  const [signatureAnchorEl, setSignatureAnchorEl] = useState(null);
+  const [selectedSignature, setSelectedSignature] = useState(null);
+
+  const [signatures, setSignatures] = useState(["No signature", "Work2", "Work3"]);
+
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -480,6 +491,17 @@ export default function Editor({
     handleNewImageFiles(imageFiles, from);
   };
 
+  const openSignaturePopover = (event) => {
+    console.log("ddsd")
+    setSignatureAnchorEl(event.currentTarget);
+    setSignaturePopoverOpen(true);
+  };
+
+  const closeSignaturePopover = () => {
+    setSignatureAnchorEl(null);
+    setSignaturePopoverOpen(false);
+  };
+
   return (
     <>
       <RichTextEditor
@@ -651,6 +673,14 @@ export default function Editor({
                     IconComponent={InsertPhoto}
                   />
 
+                  <IconButton onClick={openSignaturePopover}>
+                    <img
+                      src="/assets/images/ink_pen.png"
+                      alt="Insert Signature"
+                      style={{ width: 20, height: 20 }}
+                    />
+                  </IconButton>
+
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                     <ClickAwayListener
                       onClickAway={closeLinkPopover}
@@ -820,6 +850,73 @@ export default function Editor({
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
+
+                  <Menu
+                    anchorEl={signatureAnchorEl}
+                    open={signaturePopoverOpen}
+                    onClose={closeSignaturePopover}
+                    anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                    transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+                    keepMounted
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          minWidth: 200,
+                          py: 0.5,
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        closeSignaturePopover();
+                        // Optional: open manage signatures modal
+                      }}
+                      sx={{ py: 0.8 }}
+                    >
+                      <Typography fontSize={14} style={{marginLeft: "20%"}}>Manage signatures</Typography>
+                    </MenuItem>
+
+                    {signatures.map((name) => (
+                      <MenuItem
+                        key={name}
+                        onClick={() => {
+                          setSelectedSignature(name);
+                          closeSignaturePopover();
+                        }}
+                        selected={selectedSignature === name}
+                        sx={{
+                          py: 0.8,
+                        }}
+                      >
+                        <span style={{width: "20%"}}>
+                          {selectedSignature === name && (
+                            <ListItemIcon sx={{ minWidth: 24 }}>
+                              <span
+                                className="material-symbols-outlined"
+                                style={{ fontSize: 18 }}
+                              >
+                                check
+                              </span>
+                            </ListItemIcon>
+                          )}
+                        </span>
+                        <ListItemText
+                          primary={
+                            <Typography
+                              fontSize={14}
+                              sx={{
+                                color:
+                                  selectedSignature === name ? "text.primary" : "text.secondary",
+                              }}
+                            >
+                              {name}
+                            </Typography>
+                          }
+                        />
+                      </MenuItem>
+                    ))}
+                  </Menu>
                 </div>
 
                 <div style={{ marginLeft: "auto", display: "flex", gap: "12px", alignItems: "center" }}>
