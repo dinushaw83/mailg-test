@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
     SettingsRow, SettingsCell,
     BoldLabel, SubText, LearnMoreLink, SettingsRadio, 
@@ -6,17 +6,16 @@ import {
 import { notificationManager, getNotificationPermission } from "../../../utils/notifications";
 import { useNotificationContext } from "../../../contexts/NotificationContext";
 
-export default function DesktopNotificationsRow() {
+export default function DesktopNotificationsRow({ 
+    localNotificationSettings, 
+    setLocalNotificationSettings 
+}) {
     const {
-        notificationSettings,
-        updateNotificationSettings,
-        permissionStatus,
-        updatePermissionStatus,
         showDemoNotification
     } = useNotificationContext() || {};
 
-    // Safety check
-    if (!notificationSettings || !updateNotificationSettings) {
+    // Safety check for required props
+    if (!localNotificationSettings || !setLocalNotificationSettings) {
         return (
             <SettingsRow>
                 <SettingsCell side="left" width="20%">
@@ -25,16 +24,18 @@ export default function DesktopNotificationsRow() {
                     <SubText>Loading...</SubText>
                 </SettingsCell>
                 <SettingsCell side="right">
-                    <span>Notification context not available</span>
+                    <span>Notification settings not available</span>
                 </SettingsCell>
             </SettingsRow>
         );
     }
 
+    const [permissionStatus, setPermissionStatus] = useState(getNotificationPermission());
+
     // Update permission status when component mounts and when notification type changes
     useEffect(() => {
         const updatePermissions = () => {
-            updatePermissionStatus(getNotificationPermission());
+            setPermissionStatus(getNotificationPermission());
         };
         
         updatePermissions();
@@ -44,23 +45,27 @@ export default function DesktopNotificationsRow() {
             const checkPermissions = setInterval(updatePermissions, 1000);
             return () => clearInterval(checkPermissions);
         }
-    }, [notificationSettings.type, updatePermissionStatus]);
+    }, [localNotificationSettings.type]);
 
     const handleNotificationTypeChange = async (type) => {
-        updateNotificationSettings({ 
+        setLocalNotificationSettings(prevSettings => ({
+            ...prevSettings,
             type, 
             enabled: type !== "off" 
-        });
+        }));
         
         // Request permission when enabling notifications
         if (type !== "off") {
             await notificationManager.requestPermission();
-            updatePermissionStatus(getNotificationPermission());
+            setPermissionStatus(getNotificationPermission());
         }
     };
 
     const handleSoundChange = (soundId) => {
-        updateNotificationSettings({ sound: soundId });
+        setLocalNotificationSettings(prevSettings => ({
+            ...prevSettings,
+            sound: soundId
+        }));
         
         // Play a preview of the selected sound
         if (soundId !== "0") {
@@ -72,10 +77,15 @@ export default function DesktopNotificationsRow() {
         e.preventDefault();
         
         // Show demo notification with current sound setting
-        await showDemoNotification();
+        if (showDemoNotification) {
+            await showDemoNotification();
+        } else {
+            // Fallback: show demo notification directly using current local settings
+            await notificationManager.showDemoNotification(localNotificationSettings.sound);
+        }
     };
 
-    const showSoundsDropdown = notificationSettings.type === "new" || notificationSettings.type === "important";
+    const showSoundsDropdown = localNotificationSettings.type === "new" || localNotificationSettings.type === "important";
 
     return (
         <SettingsRow>
@@ -99,7 +109,7 @@ export default function DesktopNotificationsRow() {
                         type="radio" 
                         name="notifications" 
                         value="new" 
-                        checked={notificationSettings.type === "new"} 
+                        checked={localNotificationSettings.type === "new"} 
                         onChange={() => handleNotificationTypeChange("new")} 
                     />
                     <BoldLabel style={{ marginLeft: "6px" }}>New mail notifications on</BoldLabel> – Notify me when any new message arrives in my inbox or primary tab
@@ -109,7 +119,7 @@ export default function DesktopNotificationsRow() {
                         type="radio" 
                         name="notifications" 
                         value="important" 
-                        checked={notificationSettings.type === "important"} 
+                        checked={localNotificationSettings.type === "important"} 
                         onChange={() => handleNotificationTypeChange("important")} 
                     />
                     <BoldLabel style={{ marginLeft: "6px" }}>Important mail notifications on</BoldLabel> – Notify me only when an important message arrives in my inbox
@@ -119,7 +129,7 @@ export default function DesktopNotificationsRow() {
                         type="radio" 
                         name="notifications" 
                         value="off" 
-                        checked={notificationSettings.type === "off"} 
+                        checked={localNotificationSettings.type === "off"} 
                         onChange={() => handleNotificationTypeChange("off")} 
                     />
                     <BoldLabel style={{ marginLeft: "6px" }}>Mail notifications off</BoldLabel>
@@ -130,7 +140,7 @@ export default function DesktopNotificationsRow() {
                     <div style={{ marginTop: "12px" }}>
                         <BoldLabel style={{ marginRight: "8px" }}>Mail notification sounds:</BoldLabel>
                         <select
-                            value={notificationSettings.sound}
+                            value={localNotificationSettings.sound}
                             onChange={(e) => handleSoundChange(e.target.value)}
                             style={{
                                 fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
