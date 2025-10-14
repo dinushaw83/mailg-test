@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState, useEffect, useMemo } from "react"
 import {
   Stack, Popper, Paper, ClickAwayListener,
   MenuItem, ListItemIcon, ListItemText, Menu, Typography,
-  IconButton
+  IconButton, Divider
 } from "@mui/material";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
@@ -24,6 +24,7 @@ import {
   getEmbeddedImage,
   processHtmlForDisplay,
 } from "../../utils/embeddedImages";
+import { useNavigate } from "react-router-dom";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -87,6 +88,8 @@ export default function Editor({
     const signatures = signaturesState.list.map((signature) => signature.name);
     return ["No signature", ...signatures];
   }, []);
+
+  const navigate = useNavigate()
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -942,12 +945,13 @@ export default function Editor({
                     <MenuItem
                       onClick={() => {
                         closeSignaturePopover();
-                        // Optional: open manage signatures modal
+                        navigate("/settings/general");
                       }}
                       sx={{ py: 0.8 }}
                     >
                       <Typography fontSize={14} style={{marginLeft: "20%"}}>Manage signatures</Typography>
                     </MenuItem>
+                    <Divider />
 
                     {signatures.map((name) => (
                       <MenuItem
