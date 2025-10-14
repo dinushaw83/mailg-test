@@ -5,6 +5,7 @@ import DatePicker from "./DatePicker";
 import EmailField from "./EmailField";
 import dayjs from "dayjs";
 import styles from "./AdvancedSearchOptions.module.css";
+import { addAdvancedSearchQuery } from "../../../utils/search";
 
 const InputStyle = {
   "& .MuiInput-root": {
@@ -53,7 +54,6 @@ const subsetOptions = [
 
 const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const fromFieldRef = useRef(null);
 
   const getDefaultFormData = () => ({
@@ -147,6 +147,9 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
   };
 
   const handleSearch = () => {
+    // Track advanced search query in localStorage
+    addAdvancedSearchQuery(formData);
+
     // Create search criteria object
     const searchCriteria = {
       from: formData.from,

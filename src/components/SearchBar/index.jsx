@@ -10,6 +10,7 @@ import {
   isSearchIndexReady,
   addToSearchHistory,
   searchContacts,
+  addBasicSearchQuery,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
@@ -172,6 +173,8 @@ const SearchBar = () => {
         // Add search query to history when submitted
         if (searchValue.trim()) {
           addToSearchHistory(searchValue);
+          // Track in allSearchQueries
+          addBasicSearchQuery(searchValue);
         }
 
         navigate(`/search/${encodeForPath(searchValue)}`);

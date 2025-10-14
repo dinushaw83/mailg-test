@@ -8,6 +8,7 @@ let lastEmailHash = null; // Track when emails change to rebuild index
 // Search history management
 const SEARCH_HISTORY_KEY = "mailg_search_history";
 const MAX_SEARCH_HISTORY = 10;
+const ALL_SEARCH_QUERIES_KEY = "allSearchQueries";
 
 function getSearchHistory() {
   try {
@@ -48,6 +49,125 @@ export function addToSearchHistory(query) {
  */
 export function getSearchHistoryItems() {
   return getSearchHistory();
+}
+
+/**
+ * Get all search queries from localStorage
+ */
+function getAllSearchQueries() {
+  try {
+    const queries = localStorage.getItem(ALL_SEARCH_QUERIES_KEY);
+    if (queries) {
+      return JSON.parse(queries);
+    }
+    return {
+      basic: [],
+      advanced: {
+        from: [],
+        to: [],
+        subject: [],
+        has: [],
+        hasnot: [],
+        sizeOperator: [],
+        size: [],
+        sizeUnit: [],
+        within: [],
+        date: [],
+        subset: [],
+        attachment: [],
+        excludeChats: [],
+      },
+    };
+  } catch (error) {
+    console.warn("Failed to get all search queries:", error);
+    return {
+      basic: [],
+      advanced: {
+        from: [],
+        to: [],
+        subject: [],
+        has: [],
+        hasnot: [],
+        sizeOperator: [],
+        size: [],
+        sizeUnit: [],
+        within: [],
+        date: [],
+        subset: [],
+        attachment: [],
+        excludeChats: [],
+      },
+    };
+  }
+}
+
+/**
+ * Save all search queries to localStorage
+ */
+function saveAllSearchQueries(queries) {
+  try {
+    localStorage.setItem(ALL_SEARCH_QUERIES_KEY, JSON.stringify(queries));
+  } catch (error) {
+    console.warn("Failed to save all search queries:", error);
+  }
+}
+
+/**
+ * Add a basic search query to the tracking system
+ */
+export function addBasicSearchQuery(query) {
+  if (!query || !query.trim()) return;
+
+  const trimmedQuery = query.trim();
+  const allQueries = getAllSearchQueries();
+
+  // Add to basic array if not already present
+  if (!allQueries.basic.includes(trimmedQuery)) {
+    allQueries.basic.unshift(trimmedQuery);
+  }
+
+  saveAllSearchQueries(allQueries);
+}
+
+/**
+ * Add an advanced search query to the tracking system
+ * @param {Object} formData - The advanced search form data
+ */
+export function addAdvancedSearchQuery(formData) {
+  if (!formData) return;
+
+  const allQueries = getAllSearchQueries();
+
+  // Add each field value to its respective array if not empty and not already present
+  Object.keys(formData).forEach((field) => {
+    const value = formData[field];
+
+    // Skip empty values
+    if (value === "" || value === null || value === undefined) return;
+
+    // Ensure the field array exists
+    if (!allQueries.advanced[field]) {
+      allQueries.advanced[field] = [];
+    }
+
+    // Add value if not already present
+    if (!allQueries.advanced[field].includes(value)) {
+      allQueries.advanced[field].unshift(value);
+    }
+  });
+
+  saveAllSearchQueries(allQueries);
+}
+
+/**
+ * Clear all tracked search queries (useful for testing/debugging)
+ */
+export function clearTrackedSearchQueries() {
+  try {
+    localStorage.removeItem(ALL_SEARCH_QUERIES_KEY);
+  } catch (error) {
+    console.warn("Failed to clear tracked search queries:", error);
+  }
 }
 
 /**
