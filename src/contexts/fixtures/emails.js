@@ -410,4 +410,226 @@ export const initialEmails = [
     labels: ["Inbox", "Updates"],
     labelColor: "#e1f7e1",
   },
+  // Spam emails
+  {
+    id: 14,
+    threadId: "#thread-f:1849139573456812324401",
+    legacyThreadId: "1990982e903fc668",
+    legacyLastMessageId: "1990982e903fc668",
+    legacyLastNonDraftMessageId: "1990982e903fc668",
+    from: {
+      name: "Lucky Winner",
+      email: "winner@mega-lottery-winners.com",
+    },
+    to: ["john.doe@example.com"],
+    subject: "🎉 CONGRATULATIONS! You've Won $1,000,000!",
+    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #ff6b6b, #ffd93d);">
+      <div style="text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <h1 style="color: #ff6b6b; font-size: 32px; margin: 0 0 20px 0;">🎉 CONGRATULATIONS! 🎉</h1>
+        <h2 style="color: #333; font-size: 24px; margin: 0 0 20px 0;">You've Won $1,000,000!</h2>
+        <p style="font-size: 18px; color: #666; margin: 0 0 30px 0;">Dear Winner,</p>
+        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
+          Congratulations! You have been selected as the winner of our Mega Lottery Prize of <strong style="color: #ff6b6b;">$1,000,000 USD</strong>!
+        </p>
+        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 30px 0;">
+          To claim your prize, please click the button below and provide your personal information including your bank account details for immediate transfer.
+        </p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="#" style="background: #ff6b6b; color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-size: 18px; font-weight: bold; display: inline-block;">CLAIM YOUR PRIZE NOW</a>
+        </div>
+        <p style="font-size: 12px; color: #999; margin: 30px 0 0 0;">
+          This offer expires in 24 hours. Act now to secure your winnings!
+        </p>
+      </div>
+    </div>`,
+    preview: "🎉 CONGRATULATIONS! You've Won $1,000,000! - Claim your prize now!",
+    timestamp: "2025-09-02T16:45:00.000Z",
+    timeDisplay: "4:45 PM",
+    read: false,
+    starred: false,
+    important: false,
+    labels: ["Spam"],
+    labelColor: "#ffebee",
+  },
+  {
+    id: 15,
+    threadId: "#thread-f:1849139573456812324402",
+    legacyThreadId: "1990982e903fc669",
+    legacyLastMessageId: "1990982e903fc669",
+    legacyLastNonDraftMessageId: "1990982e903fc669",
+    from: {
+      name: "Dr. Sarah Williams",
+      email: "sarah.williams@miracle-pills-now.com",
+    },
+    to: ["john.doe@example.com"],
+    subject: "URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution",
+    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
+      <div style="background: white; padding: 25px; border-radius: 10px; border-left: 5px solid #28a745;">
+        <h1 style="color: #28a745; font-size: 24px; margin: 0 0 20px 0;">⚠️ URGENT HEALTH ALERT ⚠️</h1>
+        <p style="font-size: 16px; color: #333; margin: 0 0 20px 0;">Dear John,</p>
+        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
+          As a medical professional, I'm concerned about your health. Recent studies show that excess weight can lead to serious health complications including diabetes, heart disease, and even cancer.
+        </p>
+        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
+          I've discovered a revolutionary weight loss solution that has helped over 10,000 patients lose 30+ pounds in just 30 days! This breakthrough formula contains natural ingredients that boost metabolism and burn fat while you sleep.
+        </p>
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #28a745; margin: 0 0 10px 0;">✨ SPECIAL OFFER - LIMITED TIME ✨</h3>
+          <p style="margin: 0; color: #333;">Get 50% OFF + FREE shipping when you order today!</p>
+          <p style="margin: 10px 0 0 0; font-size: 18px; color: #ff6b6b; font-weight: bold;">Regular Price: $199.99 | Today Only: $99.99</p>
+        </div>
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="#" style="background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">ORDER NOW - SAVE 50%</a>
+        </div>
+        <p style="font-size: 12px; color: #666; margin: 20px 0 0 0;">
+          *Results may vary. This email was sent to john.doe@example.com. If you no longer wish to receive these emails, click here to unsubscribe.
+        </p>
+      </div>
+    </div>`,
+    preview: "URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution - 50% OFF today only!",
+    timestamp: "2025-09-02T14:20:00.000Z",
+    timeDisplay: "2:20 PM",
+    read: false,
+    starred: false,
+    important: false,
+    labels: ["Spam"],
+    labelColor: "#ffebee",
+  },
+  {
+    id: 18,
+    threadId: "#thread-f:1849139573456812324405",
+    legacyThreadId: "1990982e903fc672",
+    legacyLastMessageId: "1990982e903fc672",
+    legacyLastNonDraftMessageId: "1990982e903fc672",
+    from: {
+      name: "Bank Security Alert",
+      email: "security@your-bank-urgent.com",
+    },
+    to: ["john.doe@example.com"],
+    subject: "🚨 URGENT: Suspicious Activity Detected - Verify Your Account",
+    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
+      <div style="background: white; padding: 25px; border-radius: 10px; border: 2px solid #dc3545;">
+        <div style="text-align: center; margin-bottom: 25px;">
+          <h1 style="color: #dc3545; font-size: 24px; margin: 0 0 10px 0;">🚨 SECURITY ALERT 🚨</h1>
+          <p style="color: #666; font-size: 16px; margin: 0;">Your Bank Security Team</p>
+        </div>
+        
+        <div style="background: #fff5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
+          <h2 style="color: #dc3545; margin: 0 0 15px 0; font-size: 18px;">Suspicious Activity Detected</h2>
+          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 15px 0;">
+            We have detected unusual activity on your account. Someone attempted to access your account from an unrecognized device in a foreign country.
+          </p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 15px 0;">
+            <strong>Transaction Details:</strong><br>
+            • Amount: $2,847.50<br>
+            • Location: Moscow, Russia<br>
+            • Time: Today, 3:47 AM<br>
+            • Status: PENDING VERIFICATION
+          </p>
+        </div>
+        
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #28a745; margin: 0 0 10px 0;">✅ Immediate Action Required</h3>
+          <p style="margin: 0 0 15px 0; color: #333;">
+            To secure your account and prevent unauthorized access, please verify your identity by clicking the button below:
+          </p>
+          <div style="text-align: center;">
+            <a href="#" style="background: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">VERIFY ACCOUNT NOW</a>
+          </div>
+        </div>
+        
+        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffeaa7;">
+          <p style="margin: 0; color: #856404; font-size: 14px;">
+            <strong>⚠️ Important:</strong> If you do not verify your account within 24 hours, your account will be temporarily suspended for security reasons.
+          </p>
+        </div>
+        
+        <p style="font-size: 12px; color: #666; margin: 20px 0 0 0;">
+          This email was sent to john.doe@example.com. If you did not request this verification, please contact our security team immediately.
+        </p>
+      </div>
+    </div>`,
+    preview: "🚨 URGENT: Suspicious Activity Detected - Verify Your Account - Transaction from Moscow, Russia",
+    timestamp: "2025-09-01T22:30:00.000Z",
+    timeDisplay: "Sep 1",
+    read: false,
+    starred: false,
+    important: false,
+    labels: ["Spam"],
+    labelColor: "#ffebee",
+  },
+  {
+    id: 19,
+    threadId: "#thread-f:1849139573456812324406",
+    legacyThreadId: "1990982e903fc673",
+    legacyLastMessageId: "1990982e903fc673",
+    legacyLastNonDraftMessageId: "1990982e903fc673",
+    from: {
+      name: "Cryptocurrency Expert",
+      email: "crypto@bitcoin-millionaire-secrets.com",
+    },
+    to: ["john.doe@example.com"],
+    subject: "💰 Turn $100 into $100,000 with this ONE crypto secret!",
+    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #f093fb, #f5576c);">
+      <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #f5576c; font-size: 28px; margin: 0 0 10px 0;">💰 CRYPTO MILLIONAIRE SECRET 💰</h1>
+          <p style="color: #666; font-size: 16px; margin: 0;">From: Crypto Expert Mike</p>
+        </div>
+        
+        <div style="background: #fff5f5; padding: 25px; border-radius: 10px; margin: 20px 0;">
+          <h2 style="color: #f5576c; margin: 0 0 20px 0; font-size: 22px;">🚀 The Secret That Made Me $2.3 Million</h2>
+          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
+            I discovered a little-known cryptocurrency that's about to explode! While everyone else is focused on Bitcoin and Ethereum, I found a hidden gem that's already made me $2.3 million in just 6 months.
+          </p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
+            This crypto is backed by major tech companies and has partnerships with Google, Amazon, and Microsoft. The price is about to skyrocket by 1,000% in the next 30 days!
+          </p>
+        </div>
+        
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="color: #28a745; margin: 0 0 15px 0;">📈 PROVEN RESULTS 📈</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: bold; color: #28a745;">$100 → $1,200</div>
+              <div style="font-size: 14px; color: #666;">Month 1</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 24px; font-weight: bold; color: #28a745;">$1,200 → $15,000</div>
+              <div style="font-size: 14px; color: #666;">Month 3</div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #ffc107;">
+          <h3 style="color: #856404; margin: 0 0 10px 0;">⚡ LIMITED TIME OFFER ⚡</h3>
+          <p style="margin: 0 0 15px 0; color: #333;">
+            Get my exclusive crypto trading course for just $97 (Regular price $497). This includes:
+          </p>
+          <ul style="margin: 0; padding-left: 20px; color: #333;">
+            <li>Exact crypto name and where to buy it</li>
+            <li>Step-by-step trading strategy</li>
+            <li>24/7 support from my team</li>
+            <li>Money-back guarantee</li>
+          </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="#" style="background: #f5576c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-size: 18px; font-weight: bold;">GET THE SECRET NOW</a>
+        </div>
+        
+        <p style="font-size: 12px; color: #999; margin: 20px 0 0 0; text-align: center;">
+          This email was sent to john.doe@example.com. Unsubscribe here.
+        </p>
+      </div>
+    </div>`,
+    preview: "💰 Turn $100 into $100,000 with this ONE crypto secret! - Get my exclusive trading course for $97",
+    timestamp: "2025-09-01T19:45:00.000Z",
+    timeDisplay: "Sep 1",
+    read: false,
+    starred: false,
+    important: false,
+    labels: ["Spam"],
+    labelColor: "#ffebee",
+  },
 ];
