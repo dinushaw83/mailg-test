@@ -2,18 +2,31 @@ import React, { useMemo, useState, useEffect } from "react";
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     TextField, Button, Checkbox, FormControlLabel,
-    FormControl, InputLabel, Select, MenuItem
+    FormControl, InputLabel, Select, MenuItem, OutlinedInput
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useLabels, { flattenTreeForSelect, ROOT, splitKey } from "../../hooks/useLabels";
 
-export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName }) {
+const NoLegendOutlinedInput = styled(OutlinedInput)({
+    "& legend": {
+        display: "none",
+    },
+    "& fieldset": {
+        top: 0,
+    },
+});
+
+export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaultParentKey, labelDefaultName, isMoving = true }) {
     const { setSnackbar } = useGlobalContext();
     const { labels, createLabel, labelTree, renameLabel } = useLabels();
     const [name, setName] = useState(labelDefaultName ?? "");
     const [nest, setNest] = useState(false);
     const [parentKey, setParentKey] = useState(defaultParentKey ?? null);
     const [attempted, setAttempted] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const inputRef = React.useRef(null);
 
     const parentChoices = useMemo(
         () => flattenTreeForSelect(labelTree).filter(opt => !labels?.[opt.key]?.system),
@@ -88,7 +101,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
         try {
             const pk = nest ? parentKey : ROOT;
             createLabel(trimmed, { parentKey: pk });
-            onAfterCreate?.(trimmed, pk);
+            onAfterCreate?.(trimmed, pk, isMoving);
 
             handleClose();
         } catch (e) {
@@ -102,7 +115,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
 
     const handleSave = () => {
         renameLabel(currentLabelKey, trimmed);
-        onAfterCreate?.(trimmed, parentKey);
+        onAfterCreate?.(trimmed, parentKey, isMoving);
         setSnackbar?.({
             open: true,
             message: `The label "${trimmed}" was saved.`,
@@ -125,12 +138,19 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                         p: 1.5,
                     },
                 },
+                transition: {
+                    onEntered: () => {
+                        if (inputRef.current) {
+                            inputRef.current.focus();
+                        }
+                    },
+                },
             }}
         >
             <DialogTitle sx={{ px: 3, pt: 3, pb: 1.5 }}>New label</DialogTitle>
 
             <DialogContent sx={{ px: 3, pt: 0, pb: 1.5 }}>
-                <div style={{ marginBottom: 12, fontSize: 14}}>
+                <div style={{ marginBottom: 12, fontSize: 14 }}>
                     {showError ? errorText : "Please enter a new label name:"}
                 </div>
 
@@ -142,6 +162,7 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreate(); } }}
                     error={showError && (missingName || isDup)}
                     helperText=" "
+                    inputRef={inputRef}
                 />
 
                 <FormControlLabel
@@ -155,22 +176,35 @@ export default function CreateLabelDialog({ open, onClose, onAfterCreate, defaul
                 />
 
                 <FormControl fullWidth>
-                    <InputLabel id="nest-under-label">Choose label</InputLabel>
+                    <InputLabel
+                        shrink={false}
+                        sx={{
+                            '&.MuiInputLabel-shrink': {
+                                backgroundColor: '#f0f4fa',
+                                paddingRight: '4px',
+                            },
+                        }}
+                    >
+                        {nest && !parentKey && !isDropdownOpen ? "Please select a parent..." : ""}
+                    </InputLabel>
                     <Select
+                        input={<NoLegendOutlinedInput />}
                         value={parentKey ?? ""}
                         onChange={(e) => setParentKey(e.target.value || null)}
-                        labelId="nest-under-label"
-                        label="Choose label"
-                        MenuProps={{ PaperProps: { style: { maxHeight: 280, backgroundColor: "#f0f4fa" } } }}
+                        MenuProps={{
+                            PaperProps: {
+                                style: { maxHeight: 280, backgroundColor: "#f0f4fa" }
+                            }
+                        }}
+                        onOpen={() => setIsDropdownOpen(true)}
+                        onClose={() => setIsDropdownOpen(false)}
                     >
                         <MenuItem disabled sx={{ my: 2 }}>
-                            <span style={{ display: "inline-block" }}>
-                                Please select a parent...
-                            </span>
+                            <span>Please select a parent...</span>
                         </MenuItem>
-                        {parentChoices.map(opt => (
+                        {parentChoices.map((opt) => (
                             <MenuItem key={opt.key} value={opt.key} sx={{ py: 1.5 }}>
-                                <span style={{ paddingLeft: 12 + opt.depth * 14, display: "inline-block" }}>
+                                <span style={{ paddingLeft: 12 + opt.depth * 14 }}>
                                     {opt.name}
                                 </span>
                             </MenuItem>
