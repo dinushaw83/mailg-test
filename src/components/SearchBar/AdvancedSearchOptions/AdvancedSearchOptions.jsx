@@ -55,6 +55,8 @@ const subsetOptions = [
 const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
   const navigate = useNavigate();
   const fromFieldRef = useRef(null);
+  const location = useLocation();
+  const [previousLocation, setPreviousLocation] = useState(null);
 
   const getDefaultFormData = () => ({
     from: "",
@@ -80,6 +82,20 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
       setFormData(getDefaultFormData());
     },
   }));
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const isCurrentlyOnSearchResults = currentPath.startsWith("/search/");
+    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search/");
+
+    // If we were on search results page and now we're not, clear the search input
+    if (wasOnSearchResults && !isCurrentlyOnSearchResults) {
+      setFormData(getDefaultFormData());
+    }
+
+    // Update previous location for next comparison
+    setPreviousLocation(currentPath);
+  }, [location.pathname, previousLocation, formData, setFormData]);
 
   // Sync formData with URL parameters when modal opens
   // useEffect(() => {
