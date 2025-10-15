@@ -45,6 +45,17 @@ export function addToSearchHistory(query) {
 }
 
 /**
+ * Remove a specific item from search history
+ */
+export function removeFromSearchHistory(query) {
+  if (!query) return;
+
+  let history = getSearchHistory();
+  history = history.filter((item) => item !== query);
+  saveSearchHistory(history);
+}
+
+/**
  * Get search history
  */
 export function getSearchHistoryItems() {

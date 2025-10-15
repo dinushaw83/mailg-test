@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } from "@mui/material";
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
@@ -11,6 +11,7 @@ import {
   addToSearchHistory,
   searchContacts,
   addBasicSearchQuery,
+  removeFromSearchHistory,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
@@ -26,6 +27,8 @@ const SearchBar = () => {
   const [searchValue, setSearchValue] = useState("");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
+  const [hoveredItemIndex, setHoveredItemIndex] = useState(-1);
+  const [removedSuggestionsInSession, setRemovedSuggestionsInSession] = useState([]);
 
   const searchContainerRef = useRef(null);
   const advancedSearchRef = useRef(null);
@@ -41,6 +44,13 @@ const SearchBar = () => {
   useSearchNavigation(location, searchValue, setSearchValue);
   const { autoCompleteSuggestion, setAutoCompleteSuggestion, highlightedIndex, setHighlightedIndex } =
     useAutocompleteState(searchValue, emails, isFocused);
+
+  // Reset removed suggestions when the dropdown closes
+  useEffect(() => {
+    if (!isFocused) {
+      setRemovedSuggestionsInSession([]);
+    }
+  }, [isFocused]);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -82,8 +92,14 @@ const SearchBar = () => {
     if (searchValue.trim() || !isSearchIndexReady()) {
       return [];
     }
-    return getRecentSearchSuggestions(6);
-  }, [searchValue, isFocused]);
+    const allSuggestions = getRecentSearchSuggestions(5);
+    // Filter out suggestions that were removed in this session
+    const filteredSuggestions = allSuggestions.filter(
+      (suggestion) => !removedSuggestionsInSession.includes(suggestion)
+    );
+    // Return only up to 6 suggestions
+    return filteredSuggestions.slice(0, 6);
+  }, [searchValue, isFocused, removedSuggestionsInSession]);
 
   // Get matching contacts
   const matchingContacts = useMemo(() => {
@@ -256,6 +272,16 @@ const SearchBar = () => {
   const handleAdvancedSearchClick = () => {
     setShowAdvancedSearch(true);
     setIsFocused(false);
+  };
+
+  const handleRemoveSuggestion = (item, e) => {
+    e.stopPropagation(); // Prevent triggering the item click
+
+    // Remove from search history permanently
+    removeFromSearchHistory(item);
+
+    // Add to session list to hide it until the dropdown closes
+    setRemovedSuggestionsInSession((prev) => [...prev, item]);
   };
 
   return (
@@ -467,12 +493,17 @@ const SearchBar = () => {
                     );
                   } else {
                     // Suggestions
+                    const isHovered = hoveredItemIndex === actualIndex;
                     return (
                       <ListItem
                         key={contentIndex}
                         className={styles.searchSuggestion}
                         onClick={() => handleResultClick(item)}
-                        onMouseEnter={() => setHighlightedIndex(-1)}
+                        onMouseEnter={() => {
+                          setHighlightedIndex(-1);
+                          setHoveredItemIndex(actualIndex);
+                        }}
+                        onMouseLeave={() => setHoveredItemIndex(-1)}
                         sx={{
                           backgroundColor: isHighlighted ? "rgba(0, 0, 0, 0.04)" : "transparent",
                         }}
@@ -502,6 +533,27 @@ const SearchBar = () => {
                             },
                           }}
                         />
+                        {isHovered && (
+                          <ListItemIcon
+                            style={{
+                              display: "flex",
+                              justifyContent: "end",
+                              minWidth: "auto",
+                              cursor: "pointer",
+                            }}
+                            onClick={(e) => handleRemoveSuggestion(item, e)}
+                          >
+                            <span
+                              className="material-symbols-outlined"
+                              style={{
+                                fontSize: 20,
+                                color: "rgb(68, 68, 68)",
+                              }}
+                            >
+                              close_small
+                            </span>
+                          </ListItemIcon>
+                        )}
                       </ListItem>
                     );
                   }
