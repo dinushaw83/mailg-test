@@ -41,7 +41,7 @@ const SearchBar = () => {
   // Custom hooks for managing search bar state and effects
   useSearchIndex(emails);
   useSearchUrlSync(location, searchQuery, isAdvancedSearch, setSearchValue);
-  useSearchNavigation(location, searchValue, setSearchValue);
+  useSearchNavigation(location, searchValue, setSearchValue, activeFilters, setActiveFilters);
   const { autoCompleteSuggestion, setAutoCompleteSuggestion, highlightedIndex, setHighlightedIndex } =
     useAutocompleteState(searchValue, emails, isFocused);
 
