@@ -94,7 +94,35 @@ const SearchBar = () => {
   }, [searchValue, emails]);
 
   const expandedContent = useMemo(() => {
-    if (searchValue.trim()) {
+    if (searchValue.trim() && activeFilters.length > 0) {
+      // When both search and filters are active, apply filters to search results
+      let filtered = searchResults.filter((result) => {
+        // Apply "Has attachment" filter
+        if (activeFilters.includes("Has attachment")) {
+          if (!result.attachments || result.attachments.length === 0) return false;
+        }
+
+        // Apply "Last 7 days" filter
+        if (activeFilters.includes("Last 7 days")) {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          if (new Date(result.timestamp) < sevenDaysAgo) return false;
+        }
+
+        // Apply "From me" filter
+        if (activeFilters.includes("From me")) {
+          if (result.from?.email !== "john.doe@example.com" && result.from?.name !== "me") return false;
+        }
+
+        return true;
+      });
+
+      // Show only 1 recent suggestion when filters are active, then filtered results
+      const limitedSuggestions = recentSuggestions.slice(0, 1);
+      const combined = [...limitedSuggestions, ...filtered];
+
+      return combined;
+    } else if (searchValue.trim()) {
       return searchResults;
     } else if (activeFilters.length > 0) {
       // Show only 1 recent suggestion when filters are active, then filtered emails
@@ -463,6 +491,16 @@ const SearchBar = () => {
                         <ListItemText
                           primary={highlightSearchTerm(item, searchValue)}
                           className={styles.suggestionText}
+                          slotProps={{
+                            primary: {
+                              style: {
+                                maxWidth: "500px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              },
+                            },
+                          }}
                         />
                       </ListItem>
                     );
@@ -495,7 +533,12 @@ const SearchBar = () => {
               <div style={{ color: "rgba(0, 0, 0, 0.87)" }}>
                 {searchValue ? (
                   <>
-                    All search results for <span className={styles.searchValue}>"{searchValue}"</span>
+                    All search results for &nbsp;<span className={styles.searchValue}>"{searchValue}</span>"
+                    {activeFilters.length > 0 && (
+                      <>
+                        &nbsp; + {activeFilters.length} filter{activeFilters.length > 1 ? "s" : ""}
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
@@ -511,6 +554,7 @@ const SearchBar = () => {
         <AdvancedSearchOptions
           ref={advancedSearchRef}
           isOpen={showAdvancedSearch}
+          searchValue={searchValue}
           onClose={() => setShowAdvancedSearch(false)}
         />
       </div>

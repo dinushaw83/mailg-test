@@ -52,7 +52,7 @@ const subsetOptions = [
   { value: "Trash", label: "Trash" },
 ];
 
-const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
+const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref) => {
   const navigate = useNavigate();
   const fromFieldRef = useRef(null);
   const location = useLocation();
@@ -127,6 +127,16 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
   //     }
   //   }
   // }, [isOpen, location.search, location.pathname]);
+
+  // Sync the "has" field with searchValue when it changes
+  useEffect(() => {
+    if (searchValue !== undefined && searchValue !== null) {
+      setFormData((prev) => ({
+        ...prev,
+        has: searchValue,
+      }));
+    }
+  }, [searchValue]);
 
   // Auto-focus the "from" field when modal opens
   useEffect(() => {

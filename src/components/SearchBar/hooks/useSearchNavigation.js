@@ -22,6 +22,4 @@ export function useSearchNavigation(location, searchValue, setSearchValue) {
     // Update previous location for next comparison
     setPreviousLocation(currentPath);
   }, [location.pathname, previousLocation, searchValue, setSearchValue]);
-
-  return previousLocation;
 }

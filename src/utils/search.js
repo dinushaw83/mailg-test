@@ -62,41 +62,13 @@ function getAllSearchQueries() {
     }
     return {
       basic: [],
-      advanced: {
-        from: [],
-        to: [],
-        subject: [],
-        has: [],
-        hasnot: [],
-        sizeOperator: [],
-        size: [],
-        sizeUnit: [],
-        within: [],
-        date: [],
-        subset: [],
-        attachment: [],
-        excludeChats: [],
-      },
+      advanced: [],
     };
   } catch (error) {
     console.warn("Failed to get all search queries:", error);
     return {
       basic: [],
-      advanced: {
-        from: [],
-        to: [],
-        subject: [],
-        has: [],
-        hasnot: [],
-        sizeOperator: [],
-        size: [],
-        sizeUnit: [],
-        within: [],
-        date: [],
-        subset: [],
-        attachment: [],
-        excludeChats: [],
-      },
+      advanced: [],
     };
   }
 }
@@ -138,23 +110,8 @@ export function addAdvancedSearchQuery(formData) {
 
   const allQueries = getAllSearchQueries();
 
-  // Add each field value to its respective array if not empty and not already present
-  Object.keys(formData).forEach((field) => {
-    const value = formData[field];
-
-    // Skip empty values
-    if (value === "" || value === null || value === undefined) return;
-
-    // Ensure the field array exists
-    if (!allQueries.advanced[field]) {
-      allQueries.advanced[field] = [];
-    }
-
-    // Add value if not already present
-    if (!allQueries.advanced[field].includes(value)) {
-      allQueries.advanced[field].unshift(value);
-    }
-  });
+  // Add the complete formData object to the advanced array
+  allQueries.advanced.unshift(formData);
 
   saveAllSearchQueries(allQueries);
 }
@@ -273,6 +230,7 @@ export function buildSearchIndex(emails) {
       fromName: email.from?.name || "",
       fromEmail: email.from?.email || "",
       timestamp: email.timestamp,
+      attachments: email.attachments || [],
       // Create searchable text
       searchableText: normalizeText(
         `${email.subject || ""} ${email.preview || ""} ${email.body || ""} ${email.from?.name || ""} ${
@@ -342,7 +300,8 @@ export function searchEmails(query, options = {}) {
           doc.preview?.toLowerCase().includes(trimmedQuery) ||
           doc.fromName?.toLowerCase().includes(trimmedQuery) ||
           doc.fromEmail?.toLowerCase().includes(trimmedQuery) ||
-          doc.searchableText?.includes(trimmedQuery)
+          doc.searchableText?.includes(trimmedQuery) ||
+          doc.attachments?.some((attachment) => attachment.name?.toLowerCase().includes(trimmedQuery))
         );
       });
 
