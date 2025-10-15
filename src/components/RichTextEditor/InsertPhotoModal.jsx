@@ -102,7 +102,7 @@ const InsertPhotoModal = ({ open, onClose, onInsertImages }) => {
         }}
       >
         <img
-          src="/assets/images/upload_background.png"
+          src="/assets/images/upload_background.jpg"
           alt="Upload area"
           style={{
             maxHeight: "180px",

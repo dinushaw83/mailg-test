@@ -28,11 +28,14 @@ const GeneralTab = () => {
     setVacationResponder,
     signaturesState: globalSignatures,
     setSignaturesState: setGlobalSignatures,
+    notificationSettings: globalNotificationSettings,
+    setNotificationSettings: setGlobalNotificationSettings,
     setShowQuickSettings,
   } = useGlobalContext();
 
   const [localVacationResponder, setLocalVacationResponder] = useState(vacationResponder);
   const [localSignatures, setLocalSignatures] = useState(globalSignatures);
+  const [localNotificationSettings, setLocalNotificationSettings] = useState(globalNotificationSettings);
 
   const [hasChanges, setHasChanges] = useState(false);
   const navigate = useNavigate();
@@ -41,15 +44,17 @@ const GeneralTab = () => {
   useEffect(() => {
     setLocalVacationResponder(vacationResponder);
     setLocalSignatures(globalSignatures);
-  }, [vacationResponder, globalSignatures]);
+    setLocalNotificationSettings(globalNotificationSettings);
+  }, [vacationResponder, globalSignatures, globalNotificationSettings]);
 
   useEffect(() => {
     const hasLocalChanges =
       JSON.stringify(localVacationResponder) !== JSON.stringify(vacationResponder) ||
-      JSON.stringify(localSignatures) !== JSON.stringify(globalSignatures);
+      JSON.stringify(localSignatures) !== JSON.stringify(globalSignatures) ||
+      JSON.stringify(localNotificationSettings) !== JSON.stringify(globalNotificationSettings);
 
     setHasChanges(hasLocalChanges);
-  }, [localVacationResponder, vacationResponder, localSignatures, globalSignatures]);
+  }, [localVacationResponder, vacationResponder, localSignatures, globalSignatures, localNotificationSettings, globalNotificationSettings]);
 
   const handleSave = useCallback(() => {
     setVacationResponder(localVacationResponder);
@@ -61,11 +66,12 @@ const GeneralTab = () => {
       ),
     };
     setGlobalSignatures(filteredSignatures);
+    setGlobalNotificationSettings(localNotificationSettings);
 
     setHasChanges(false);
     setShowQuickSettings(false);
     navigate("/inbox");
-  }, [localVacationResponder, localSignatures, setVacationResponder, setGlobalSignatures]);
+  }, [localVacationResponder, localSignatures, localNotificationSettings, setVacationResponder, setGlobalSignatures, setGlobalNotificationSettings]);
 
   const handleCancelChanges = () => {
     // Close the settings sidebar
@@ -81,6 +87,8 @@ const GeneralTab = () => {
         setLocalVacationResponder={setLocalVacationResponder}
         localSignatures={localSignatures}
         setLocalSignatures={setLocalSignatures}
+        localNotificationSettings={localNotificationSettings}
+        setLocalNotificationSettings={setLocalNotificationSettings}
       />
             
       {/* Action Buttons */}
