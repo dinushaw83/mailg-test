@@ -14,6 +14,7 @@ import React from "react";
 import Attachments from "./Attachments";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateRandomId } from "../../utils/helperFunctions";
+import LargeFileModal from "../ComposeEmail/LargeFileModal";
 import {
   storeEmbeddedImage,
   processHtmlForStorage,
@@ -69,12 +70,13 @@ export default function Editor({
   const [attachments, setAttachments] = useState([]);
   const [embeddedImages, setEmbeddedImages] = useState([]);
   const embeddedImagesRef = useRef([]);
-  const { db } = useGlobalContext();
+  const { db, setSnackbar } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
 
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [largeFileModal, setLargeFileModal] = useState({ open: false, file: null });
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -436,28 +438,176 @@ export default function Editor({
     nativeFilePickerRef.current?.click();
   };
 
+  const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024; // 25MB
+
+  // Block only these dangerous file extensions, everything else is allowed
+  const BLOCKED_EXTENSIONS = new Set([
+    'ade', 'adp',
+    'apk',
+    'appx', 'appxbundle',
+    'bat',
+    'cab', 'chm',
+    'cmd', 'com', 'cpl',
+    'diagcab', 'diagcfg', 'diagpkg',
+    'dll', 'dmg', 'exe',
+    'hta', 'img', 'ins', 'iso', 'isp',
+    'jar', 'jnlp',
+    'js', 'jse', 'lib', 'lnk',
+    'mde', 'mjs', 'msc', 'msi', 'msix', 'msixbundle', 'msp', 'mst',
+    'nsh',
+    'pif', 'ps1',
+    'scr', 'sct', 'shb',
+    'sys',
+    'vb', 'vbe',
+  ]);
+
+  const getFileExtension = (filename) => {
+    const lastDot = filename.lastIndexOf('.');
+    if (lastDot === -1) return '';
+    return filename.substring(lastDot + 1).toLowerCase();
+  };
+
   const handleNativeFilePickerChange = (e) => {
     const { files = [] } = e.target;
 
     const newFiles = [];
+    
     for (const file of files) {
+      // Size validation - show modal for large files instead of blocking
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        setLargeFileModal({ open: true, file });
+        // Clear the file input after setting the modal
+        if (e.target) {
+          e.target.value = '';
+        }
+        return; // Exit early for large files
+      }
+      
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === file.name);
+      if (fileExists) {
+        setSnackbar({
+          open: true,
+          message: "File already attached.",
+          autoHideDuration: 3000,
+        });
+        continue;
+      }
+      
       const id = generateRandomId();
       const url = URL.createObjectURL(file);
+
+      // Block only specific dangerous file extensions
+      const extension = getFileExtension(file.name);
+      const isBlocked = extension && BLOCKED_EXTENSIONS.has(extension);
+
       const metadata = {
         id,
         name: file.name,
         size: file.size,
         type: file.type,
         url,
+        isBlocked,
       };
       newFiles.push(metadata);
 
       db.put("attachments", { id, file });
+
+      // Show Gmail-style dark snackbar when any file is blocked
+      if (isBlocked) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "There were errors attaching your file(s).",
+          autoHideDuration: 6000,
+        });
+      }
     }
 
-    // A file should not be added if it already exists in the attachments array
-    const uniqueFiles = newFiles.filter((file) => !attachments.some((attachment) => attachment.name === file.name));
-    setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
+    // Only add regular files if there are any
+    if (newFiles.length > 0) {
+      setAttachments((prevAttachments) => [...prevAttachments, ...newFiles]);
+    }
+    
+    // Clear the file input at the end
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleLargeFileAccept = () => {
+    if (largeFileModal.file) {
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === largeFileModal.file.name);
+      
+      if (!fileExists) {
+        // Create Drive link instead of regular attachment
+        const driveLink = `drive.mailg.com/file/d/${encodeURIComponent(largeFileModal.file.name)}`;
+        
+        // Add as attachment with Drive link metadata
+        const id = generateRandomId();
+        const url = URL.createObjectURL(largeFileModal.file);
+        const metadata = {
+          id,
+          name: largeFileModal.file.name,
+          size: largeFileModal.file.size,
+          type: largeFileModal.file.type,
+          url,
+          isDriveFile: true, // Special flag to indicate it's a "Drive" file
+          driveLink: `https://${driveLink}`, // Store the Drive link
+        };
+        
+        // Add to attachments array
+        setAttachments((prevAttachments) => [...prevAttachments, metadata]);
+        
+        // Also store in IndexedDB
+        db.put("attachments", { id, file: largeFileModal.file });
+        
+        setSnackbar({
+          open: true,
+          message: "File uploaded to MailG Drive. Download link will be included in your email.",
+          autoHideDuration: 4000,
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "File already attached.",
+          autoHideDuration: 3000,
+        });
+      }
+    }
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const formatFileSize = (size) => {
+    if (size < 1024) {
+      return `${size}B`;
+    } else if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)}K`;
+    } else if (size < 1024 * 1024 * 1024) {
+      return `${(size / 1024 / 1024).toFixed(1)}M`;
+    } else {
+      return `${(size / 1024 / 1024 / 1024).toFixed(1)}G`;
+    }
+  };
+
+  const handleLargeFileCancel = () => {
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const handleEditorClick = (event) => {
+    // Check if clicked element is a Drive link
+    const target = event.target;
+    if (target.tagName === 'A' && target.getAttribute('data-drive-link') === 'true') {
+      event.preventDefault();
+      event.stopPropagation();
+      // Show a message that this is a Drive link
+      setSnackbar({
+        open: true,
+        message: "This is a MailG Drive link. It will be accessible to recipients.",
+        autoHideDuration: 3000,
+      });
+    }
   };
 
   const openPhotoModal = () => {
@@ -492,6 +642,7 @@ export default function Editor({
           handleDrop: handleDrop,
           handlePaste: handlePaste,
         }}
+        onClick={handleEditorClick}
         RichTextFieldProps={{
           variant: "standard",
           MenuBarProps: {
@@ -884,6 +1035,15 @@ export default function Editor({
 
       {/* Insert Photo Modal */}
       <InsertPhotoModal open={photoModalOpen} onClose={closePhotoModal} onInsertImages={handleInsertImages} />
+
+      {/* Large File Modal */}
+      <LargeFileModal
+        open={largeFileModal.open}
+        onClose={handleLargeFileCancel}
+        onAccept={handleLargeFileAccept}
+        fileName={largeFileModal.file?.name}
+        fileSize={largeFileModal.file?.size}
+      />
     </>
   );
 }
