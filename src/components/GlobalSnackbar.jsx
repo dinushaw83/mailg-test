@@ -61,13 +61,14 @@ export default function GlobalSnackbar() {
       }
       sx={{
         "& .MuiSnackbarContent-root": {
-          backgroundColor: "#fff",
-          color: "rgb(95,99,104)",
+          backgroundColor: snackbar?.severity === "error" ? "#323232" : "#fff",
+          color: snackbar?.severity === "error" ? "#ffffff" : "rgb(95,99,104)",
           boxShadow: "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)",
           minWidth: "150px",
-          padding: "8px 16px",
+          padding: "12px 16px",
           fontSize: "14px",
-          borderRadius: "5px",
+          borderRadius: "4px",
+          border: "none",
         },
         ...(snackbar?.style ? { ...snackbar.style } : {}),
       }}

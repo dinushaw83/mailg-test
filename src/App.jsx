@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { GlobalContextProvider } from "./contexts/GlobalContext";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import Layout from "./components/Layout";
 import EmailDetails from "./pages/EmailDetails";
 import MailView from "./pages/MailView";
@@ -39,7 +40,8 @@ function App() {
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <GlobalContextProvider>
-        <Layout>
+        <NotificationProvider>
+          <Layout>
           <Routes>
             <Route path="/" element={<Navigate to="/inbox" replace />} />
             <Route path="/:folder/:threadId" element={<EmailDetails />} />
@@ -71,6 +73,7 @@ function App() {
 
         {/* Global Snackbar */}
         <GlobalSnackbar />
+        </NotificationProvider>
       </GlobalContextProvider>
     </Router>
   );
