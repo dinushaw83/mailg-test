@@ -587,25 +587,25 @@ const Table = ({
                               <div className="as sf-hidden">&nbsp;</div>
                             </div>
                             <div className="y6">
-                              <span id={`:pr${index}`} className="bog">
-                                {getLabelBadges(email).map((label) => (
-                                  <div
-                                    key={`Badge-${label}`}
-                                    style={{
-                                      backgroundColor: email?.labelColor ?? "#e1e3e1",
-                                      color: "#444746",
-                                      fontSize: "0.75rem",
-                                      padding: "0 4px",
-                                      textDecoration: "none",
-                                      width: "fit-content",
-                                      borderRadius: "4px",
-                                      marginRight: "6px",
-                                      display: "inline-block",
-                                    }}
-                                  >
-                                    {label}
-                                  </div>
-                                ))}
+                                <span id={`:pr${index}`} className="bog">
+                                  {getLabelBadges(email).map((badge) => (
+                                    <div
+                                      key={`Badge-${badge.key}`}
+                                      style={{
+                                        backgroundColor: badge?.color?.rgb ?? "#e1e3e1",
+                                        color: badge?.color?.text ?? "#444746",
+                                        fontSize: "0.75rem",
+                                        padding: "0 4px",
+                                        textDecoration: "none",
+                                        width: "fit-content",
+                                        borderRadius: "4px",
+                                        marginRight: "6px",
+                                        display: "inline-block",
+                                      }}
+                                    >
+                                      {badge.displayName}
+                                    </div>
+                                  ))}
                                 <span
                                   className={email.read ? "" : "bqe"}
                                   data-thread-id={email.threadId}

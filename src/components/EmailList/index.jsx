@@ -9,6 +9,8 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
+import { CATEGORIES } from "../../utils/categories";
+import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
 
 const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
   const navigate = useNavigate();
@@ -103,13 +105,36 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   // Get the label badges
-  const getLabelBadges = (email) => {
-    const path = location.pathname.replace("/", "");
+  // const getLabelBadges = (email) => {
+  //   const path = location.pathname.replace("/", "");
 
-    // If Inbox label is present in path other than inbox, return it
-    return email.labels.filter(
-      (label) => label.toLowerCase() !== path && ["inbox", "muted"].includes(label.toLowerCase())
-    );
+  //   // If Inbox label is present in path other than inbox, return it
+  //   return email.labels.filter(
+  //     (label) => label.toLowerCase() !== path && ["inbox", "muted"].includes(label.toLowerCase())
+  //   );
+  // };
+
+  const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
+  const { labels } = useLabels();
+
+  const getLabelBadges = (email) => {
+    const currentPath = location.pathname.replace("/", "").toLowerCase();
+
+    return email.labels
+      .filter((labelKey) => {
+        const lower = labelKey.toLowerCase();
+
+        if (lower === currentPath) return false;
+        if (categoryLabels.includes(lower)) return false;
+        if (labels[labelKey]?.system) return false;   // 👈 new
+
+        return true;
+      })
+      .map((labelKey) => ({
+        key: labelKey,
+        displayName: getPathLabelFromKey(labels, labelKey),
+        color: labels[labelKey]?.color,
+      }));
   };
 
   const { direction: internalDirection, showPanel } = panelState;
