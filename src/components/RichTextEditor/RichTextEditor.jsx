@@ -356,8 +356,8 @@ export default function Editor({
     if (!signaturesState?.list?.length) return "No signature";
 
     const activeId = signaturesState?.useForNewEmails ?? null;
-    if (activeId === null || activeId === "" || activeId === undefined) {
-      return "No signature";
+      if (activeId === null || activeId === "" || activeId === undefined) {
+      setSelectedSignature("No signature");
     }
 
     const sig = signaturesState.list[Number(activeId)];
