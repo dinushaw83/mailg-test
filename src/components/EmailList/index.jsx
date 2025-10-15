@@ -104,16 +104,6 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
     }
   };
 
-  // Get the label badges
-  // const getLabelBadges = (email) => {
-  //   const path = location.pathname.replace("/", "");
-
-  //   // If Inbox label is present in path other than inbox, return it
-  //   return email.labels.filter(
-  //     (label) => label.toLowerCase() !== path && ["inbox", "muted"].includes(label.toLowerCase())
-  //   );
-  // };
-
   const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
   const { labels } = useLabels();
 
