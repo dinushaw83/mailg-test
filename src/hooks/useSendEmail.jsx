@@ -9,10 +9,11 @@ import {
   isValidEmail,
   restructureRecipients,
 } from "../utils/helperFunctions";
+import { updateEmbeddedImagesEmailId, extractEmbeddedImageIds } from "../utils/embeddedImages";
 
 export const useSendEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
-  const { emails, setEmails, setSnackbar, loggedInUser, recipients, setRecipients } = useContext(GlobalContext);
+  const { emails, setEmails, setSnackbar, loggedInUser, recipients, setRecipients, db } = useContext(GlobalContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastSentEmailRef = useRef(null);
@@ -25,7 +26,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     return emailRegex.test(email);
   };
 
-  const handleSend = ({
+  const handleSend = async ({
     to,
     cc,
     bcc,
@@ -36,6 +37,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     currentDraftId,
     isDraft,
     attachments,
+    embeddedImages,
   }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
@@ -77,6 +79,8 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       }
     }
 
+    // Duplicate detection removed: Gmail allows duplicates across To/Cc/Bcc
+
     if (invalidRecipient) {
       // Get the actual invalid text (could be email, name, or the recipient itself)
       const invalidText = invalidRecipient.email || invalidRecipient.name || invalidRecipient;
@@ -96,11 +100,44 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       return;
     }
 
+    // 4. If there are blocked attachments (e.g., risky extensions <25MB), ask to send without them
+    const hasBlocked = Array.isArray(attachments) && attachments.some((a) => a && a.isBlocked === true);
+    let sanitizedAttachments = attachments;
+    if (hasBlocked) {
+      const confirmed = confirm(
+        "Note: there were errors attaching your file(s). Send this message without these attachments?"
+      );
+      if (!confirmed) return; // user chose Cancel
+      sanitizedAttachments = attachments.filter((a) => !a?.isBlocked);
+    }
+
     // If all validations pass, send the email
-    sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments });
+    await sendEmail({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      onClose,
+      currentDraftId,
+      isDraft,
+      attachments: sanitizedAttachments,
+      embeddedImages,
+    });
   };
 
-  const sendEmail = ({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments }) => {
+  const sendEmail = async ({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    onClose,
+    currentDraftId,
+    isDraft,
+    attachments,
+    embeddedImages,
+  }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
@@ -139,6 +176,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       labels: ["Sent"],
       labelColor: "#e1e3e1",
       attachments,
+      embeddedImages: embeddedImages || [],
     };
 
     // Add reply/forward reference if applicable
@@ -151,6 +189,16 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
 
     // Store the email data for potential cancellation
     lastSentEmailRef.current = newEmail;
+
+    // Update emailId for embedded images if we have any
+    if (embeddedImages && embeddedImages.length > 0 && db) {
+      try {
+        const imageIds = embeddedImages.map((img) => img.id);
+        await updateEmbeddedImagesEmailId(db, imageIds, newId.toString());
+      } catch (error) {
+        console.error("Failed to update embedded images emailId:", error);
+      }
+    }
 
     // Get all the recipients
     const allRecipients = [...to, ...cc, ...bcc];

@@ -175,10 +175,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
     }, 500);
   };
 
-  // Handle edit contact (empty function for now)
+  // Handle edit contact
   const handleEdit = (contact) => {
-    console.log("Edit contact:", contact);
-    // TODO: Implement edit functionality
+    navigate(`/contacts/person/${contact.id}?edit=1`);
   };
 
   // Handle more actions dropdown

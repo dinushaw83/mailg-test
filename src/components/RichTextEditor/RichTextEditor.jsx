@@ -3,15 +3,25 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
 import InsertLink from "@mui/icons-material/InsertLink";
+import InsertPhoto from "@mui/icons-material/InsertPhoto";
 import EditorMenuControls from "./EditorMenuControls";
 import useExtensions from "./useExtensions";
 import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
 import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
+import InsertPhotoModal from "./InsertPhotoModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
 import React from "react";
 import Attachments from "./Attachments";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateRandomId } from "../../utils/helperFunctions";
+import LargeFileModal from "../ComposeEmail/LargeFileModal";
+import {
+  storeEmbeddedImage,
+  processHtmlForStorage,
+  extractEmbeddedImageIds,
+  getEmbeddedImage,
+  processHtmlForDisplay,
+} from "../../utils/embeddedImages";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -58,9 +68,15 @@ export default function Editor({
   const nativeFilePickerRef = useRef(null);
 
   const [attachments, setAttachments] = useState([]);
-  const { db } = useGlobalContext();
+  const [embeddedImages, setEmbeddedImages] = useState([]);
+  const embeddedImagesRef = useRef([]);
+  const { db, setSnackbar } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
+  const isRestoringImages = useRef(false);
+
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [largeFileModal, setLargeFileModal] = useState({ open: false, file: null });
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -72,28 +88,100 @@ export default function Editor({
     return 390; // sensible default
   };
   const baseEditorHeightPx = parsePx(textEditorMinHeight);
+  const maxEditorHeightPx = textEditorMaxHeight ? parsePx(textEditorMaxHeight) : null;
   const toolbarSpacerHeightPx = showMenuBar ? 51 : 0; // matches spacer div height
-  const computedEditorHeightPx = Math.max(
-    210,
-    baseEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0)
+  const computedEditorHeightPx = Math.max(210, baseEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0));
+  const computedMaxEditorHeightPx = maxEditorHeightPx
+    ? Math.max(210, maxEditorHeightPx - toolbarSpacerHeightPx - (attachmentsHeight || 0))
+    : null;
+
+  const handleNewImageFiles = useCallback(
+    async (files, insertPosition) => {
+      if (!rteRef.current?.editor || !db) {
+        return;
+      }
+
+      const attributesForImageFiles = await Promise.all(
+        files.map(async (file) => {
+          // Store the image in IndexedDB with a temporary ID for now
+          // We'll update the emailId when the email is actually sent
+          const { id } = await storeEmbeddedImage(db, file, "temp");
+
+          // Create a temporary image to get dimensions
+          const img = new Image();
+          const objectURL = URL.createObjectURL(file);
+
+          return new Promise((resolve) => {
+            img.onload = () => {
+              // Scale down large images to max 562px (Gmail's behavior)
+              const maxSize = 562;
+              let { width, height } = img;
+
+              if (width > maxSize || height > maxSize) {
+                const aspectRatio = width / height;
+                if (width > height) {
+                  width = maxSize;
+                  height = maxSize / aspectRatio;
+                } else {
+                  height = maxSize;
+                  width = maxSize * aspectRatio;
+                }
+              }
+
+              // Store the image metadata for later use
+              const imageMetadata = {
+                id,
+                file,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                url: objectURL,
+                width: Math.round(width),
+                height: Math.round(height),
+              };
+
+              setEmbeddedImages((prev) => {
+                const newState = [...prev, imageMetadata];
+                embeddedImagesRef.current = newState;
+                return newState;
+              });
+
+              resolve({
+                src: objectURL,
+                alt: file.name,
+                width: Math.round(width),
+                height: Math.round(height),
+              });
+            };
+            img.src = objectURL;
+          });
+        })
+      );
+
+      // Wait for all images to load and get their dimensions
+      insertImages({
+        images: attributesForImageFiles,
+        editor: rteRef.current.editor,
+        position: insertPosition,
+      });
+
+      // Move cursor to the next line after inserting images
+      const editor = rteRef.current?.editor;
+      if (editor) {
+        // Use setTimeout to ensure the image insertion is complete
+        setTimeout(() => {
+          // Move cursor to the end of the document
+          const endPos = editor.state.doc.content.size;
+          editor.commands.setTextSelection(endPos);
+          // Insert a line break to move to next line
+          editor.commands.insertContent("<br>");
+          // Focus the editor
+          editor.commands.focus();
+        }, 10);
+      }
+    },
+    [db, messageId]
   );
-
-  const handleNewImageFiles = useCallback((files, insertPosition) => {
-    if (!rteRef.current?.editor) {
-      return;
-    }
-
-    const attributesForImageFiles = files.map((file) => ({
-      src: URL.createObjectURL(file),
-      alt: file.name,
-    }));
-
-    insertImages({
-      images: attributesForImageFiles,
-      editor: rteRef.current.editor,
-      position: insertPosition,
-    });
-  }, []);
 
   // Allow for dropping images into the editor
   const handleDrop = useCallback(
@@ -148,7 +236,7 @@ export default function Editor({
   useEffect(() => {
     if (!attachmentsContainerRef.current) return;
     const el = attachmentsContainerRef.current;
-    const update = () => setAttachmentsHeight(el.clientHeight  || 0);
+    const update = () => setAttachmentsHeight(el.clientHeight || 0);
     update();
     if (typeof ResizeObserver !== "undefined") {
       const ro = new ResizeObserver(update);
@@ -162,23 +250,94 @@ export default function Editor({
   // Set up editor change handler
   const handleEditorChange = useCallback(
     ({ editor }) => {
+      // Skip processing if we're currently restoring images to prevent infinite loops
+      if (isRestoringImages.current) {
+        return;
+      }
+
       const html = editor.getHTML();
       const plainText = editor.getText();
-      onChange?.(html, plainText);
+
+      // Process HTML to replace blob URLs with IndexedDB references for draft saving
+      const imageMap = {};
+      embeddedImagesRef.current.forEach((img) => {
+        if (img && img.url && img.id) {
+          imageMap[img.url] = img.id;
+        }
+      });
+
+      const processedHtml = processHtmlForStorage(html, imageMap);
+
+      onChange?.(processedHtml, plainText);
     },
-    [onChange]
+    [onChange, embeddedImages]
+  );
+
+  // Function to restore embedded images from IndexedDB
+  const restoreEmbeddedImages = useCallback(
+    async (htmlContent) => {
+      if (!db || !htmlContent) {
+        return htmlContent;
+      }
+
+      const imageIds = extractEmbeddedImageIds(htmlContent);
+
+      if (imageIds.length === 0) {
+        return htmlContent;
+      }
+
+      try {
+        const embeddedImagesData = await Promise.all(
+          imageIds.map(async (imageId) => {
+            try {
+              const result = await getEmbeddedImage(db, imageId);
+              return result;
+            } catch (error) {
+              console.warn(`Failed to load embedded image ${imageId}:`, error);
+              return null;
+            }
+          })
+        );
+
+        const validImages = embeddedImagesData.filter(Boolean);
+
+        // Update the embedded images state with the restored images
+        setEmbeddedImages(validImages);
+        embeddedImagesRef.current = validImages;
+
+        const processedHtml = processHtmlForDisplay(htmlContent, validImages);
+
+        return processedHtml;
+      } catch (error) {
+        console.error("Failed to restore embedded images:", error);
+        return htmlContent;
+      }
+    },
+    [db]
   );
 
   // Handle content prop updates after initial render
   useEffect(() => {
     if (rteRef.current?.editor && content !== undefined) {
       const currentContent = rteRef.current.editor.getHTML();
+
       // Only update if the content has actually changed to avoid unnecessary updates
       if (currentContent !== content) {
-        rteRef.current.editor.commands.setContent(content, false);
+        // Set flag to prevent infinite loops
+        isRestoringImages.current = true;
+
+        // Restore embedded images before setting content
+        restoreEmbeddedImages(content).then((restoredContent) => {
+          rteRef.current.editor.commands.setContent(restoredContent, false);
+
+          // Reset flag after a short delay to allow the editor to update
+          setTimeout(() => {
+            isRestoringImages.current = false;
+          }, 100);
+        });
       }
     }
-  }, [content]);
+  }, [content, restoreEmbeddedImages]);
 
   const openLinkPopover = (event) => {
     const editor = rteRef.current?.editor;
@@ -279,28 +438,196 @@ export default function Editor({
     nativeFilePickerRef.current?.click();
   };
 
+  const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024; // 25MB
+
+  // Block only these dangerous file extensions, everything else is allowed
+  const BLOCKED_EXTENSIONS = new Set([
+    'ade', 'adp',
+    'apk',
+    'appx', 'appxbundle',
+    'bat',
+    'cab', 'chm',
+    'cmd', 'com', 'cpl',
+    'diagcab', 'diagcfg', 'diagpkg',
+    'dll', 'dmg', 'exe',
+    'hta', 'img', 'ins', 'iso', 'isp',
+    'jar', 'jnlp',
+    'js', 'jse', 'lib', 'lnk',
+    'mde', 'mjs', 'msc', 'msi', 'msix', 'msixbundle', 'msp', 'mst',
+    'nsh',
+    'pif', 'ps1',
+    'scr', 'sct', 'shb',
+    'sys',
+    'vb', 'vbe',
+  ]);
+
+  const getFileExtension = (filename) => {
+    const lastDot = filename.lastIndexOf('.');
+    if (lastDot === -1) return '';
+    return filename.substring(lastDot + 1).toLowerCase();
+  };
+
   const handleNativeFilePickerChange = (e) => {
     const { files = [] } = e.target;
 
     const newFiles = [];
+    
     for (const file of files) {
+      // Size validation - show modal for large files instead of blocking
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        setLargeFileModal({ open: true, file });
+        // Clear the file input after setting the modal
+        if (e.target) {
+          e.target.value = '';
+        }
+        return; // Exit early for large files
+      }
+      
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === file.name);
+      if (fileExists) {
+        setSnackbar({
+          open: true,
+          message: "File already attached.",
+          autoHideDuration: 3000,
+        });
+        continue;
+      }
+      
       const id = generateRandomId();
       const url = URL.createObjectURL(file);
+
+      // Block only specific dangerous file extensions
+      const extension = getFileExtension(file.name);
+      const isBlocked = extension && BLOCKED_EXTENSIONS.has(extension);
+
       const metadata = {
         id,
         name: file.name,
         size: file.size,
         type: file.type,
         url,
+        isBlocked,
       };
       newFiles.push(metadata);
 
       db.put("attachments", { id, file });
+
+      // Show Gmail-style dark snackbar when any file is blocked
+      if (isBlocked) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "There were errors attaching your file(s).",
+          autoHideDuration: 6000,
+        });
+      }
     }
 
-    // A file should not be added if it already exists in the attachments array
-    const uniqueFiles = newFiles.filter((file) => !attachments.some((attachment) => attachment.name === file.name));
-    setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
+    // Only add regular files if there are any
+    if (newFiles.length > 0) {
+      setAttachments((prevAttachments) => [...prevAttachments, ...newFiles]);
+    }
+    
+    // Clear the file input at the end
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleLargeFileAccept = () => {
+    if (largeFileModal.file) {
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === largeFileModal.file.name);
+      
+      if (!fileExists) {
+        // Create Drive link instead of regular attachment
+        const driveLink = `drive.mailg.com/file/d/${encodeURIComponent(largeFileModal.file.name)}`;
+        
+        // Add as attachment with Drive link metadata
+        const id = generateRandomId();
+        const url = URL.createObjectURL(largeFileModal.file);
+        const metadata = {
+          id,
+          name: largeFileModal.file.name,
+          size: largeFileModal.file.size,
+          type: largeFileModal.file.type,
+          url,
+          isDriveFile: true, // Special flag to indicate it's a "Drive" file
+          driveLink: `https://${driveLink}`, // Store the Drive link
+        };
+        
+        // Add to attachments array
+        setAttachments((prevAttachments) => [...prevAttachments, metadata]);
+        
+        // Also store in IndexedDB
+        db.put("attachments", { id, file: largeFileModal.file });
+        
+        setSnackbar({
+          open: true,
+          message: "File uploaded to MailG Drive. Download link will be included in your email.",
+          autoHideDuration: 4000,
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "File already attached.",
+          autoHideDuration: 3000,
+        });
+      }
+    }
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const formatFileSize = (size) => {
+    if (size < 1024) {
+      return `${size}B`;
+    } else if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)}K`;
+    } else if (size < 1024 * 1024 * 1024) {
+      return `${(size / 1024 / 1024).toFixed(1)}M`;
+    } else {
+      return `${(size / 1024 / 1024 / 1024).toFixed(1)}G`;
+    }
+  };
+
+  const handleLargeFileCancel = () => {
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const handleEditorClick = (event) => {
+    // Check if clicked element is a Drive link
+    const target = event.target;
+    if (target.tagName === 'A' && target.getAttribute('data-drive-link') === 'true') {
+      event.preventDefault();
+      event.stopPropagation();
+      // Show a message that this is a Drive link
+      setSnackbar({
+        open: true,
+        message: "This is a MailG Drive link. It will be accessible to recipients.",
+        autoHideDuration: 3000,
+      });
+    }
+  };
+
+  const openPhotoModal = () => {
+    setPhotoModalOpen(true);
+  };
+
+  const closePhotoModal = () => {
+    setPhotoModalOpen(false);
+  };
+
+  const handleInsertImages = (imageFiles) => {
+    if (!rteRef.current?.editor) {
+      return;
+    }
+
+    // Get current cursor position
+    const { from } = rteRef.current.editor.state.selection;
+
+    // Use the existing handleNewImageFiles function
+    handleNewImageFiles(imageFiles, from);
   };
 
   return (
@@ -315,6 +642,7 @@ export default function Editor({
           handleDrop: handleDrop,
           handlePaste: handlePaste,
         }}
+        onClick={handleEditorClick}
         RichTextFieldProps={{
           variant: "standard",
           MenuBarProps: {
@@ -373,7 +701,19 @@ export default function Editor({
                         borderRadius: "18px 0px 0px 18px",
                         userSelect: "none",
                       }}
-                      onClick={() => onSend({ attachments })}
+                      onClick={async () => {
+                        // Process HTML to replace object URLs with IndexedDB references
+                        const html = rteRef.current?.editor?.getHTML() || "";
+                        const imageMap = {};
+
+                        // Create a map of object URLs to image IDs
+                        embeddedImages.forEach((image) => {
+                          imageMap[image.url] = image.id;
+                        });
+
+                        const processedHtml = processHtmlForStorage(html, imageMap);
+                        onSend({ attachments, embeddedImages, processedHtml });
+                      }}
                     >
                       Send
                     </div>
@@ -454,6 +794,14 @@ export default function Editor({
                     onClick={openLinkPopover}
                     IconComponent={InsertLink}
                   />
+
+                  <MenuButton
+                    tooltipLabel="Insert photo"
+                    size="small"
+                    onClick={openPhotoModal}
+                    IconComponent={InsertPhoto}
+                  />
+
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                     <ClickAwayListener
                       onClickAway={closeLinkPopover}
@@ -647,9 +995,18 @@ export default function Editor({
             "& h1, & h2, & h3, & h4, & h5, & h6": {
               scrollMarginTop: showMenuBar ? 50 : 0,
             },
+            "& img": {
+              maxWidth: "100%",
+              height: "auto",
+              display: "block",
+              margin: "8px 0",
+              borderRadius: "4px",
+            },
             minHeight: `${computedEditorHeightPx}px`,
-            maxHeight: `${computedEditorHeightPx}px`,
-            overflowY: "auto",
+            ...(computedMaxEditorHeightPx && {
+              maxHeight: `${computedMaxEditorHeightPx}px`,
+              overflowY: "auto",
+            }),
           },
         }}
       >
@@ -674,6 +1031,18 @@ export default function Editor({
         open={dateTimePickerOpen}
         onClose={handleCloseDateTimePicker}
         onSchedule={handleDateTimeSchedule}
+      />
+
+      {/* Insert Photo Modal */}
+      <InsertPhotoModal open={photoModalOpen} onClose={closePhotoModal} onInsertImages={handleInsertImages} />
+
+      {/* Large File Modal */}
+      <LargeFileModal
+        open={largeFileModal.open}
+        onClose={handleLargeFileCancel}
+        onAccept={handleLargeFileAccept}
+        fileName={largeFileModal.file?.name}
+        fileSize={largeFileModal.file?.size}
       />
     </>
   );

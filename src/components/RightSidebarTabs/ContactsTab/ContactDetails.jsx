@@ -10,6 +10,7 @@ import {
   Tooltip,
   IconButton,
   Link,
+  Chip,
 } from "@mui/material";
 import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import { format, isThisYear } from "date-fns";
@@ -45,6 +46,7 @@ const ContactDetails = () => {
     setSnackbar,
     emails,
     loggedInUser,
+    recipientLabels,
   } = useGlobalContext();
   // If contact id is an email, then check if it is a logged in user or create a custom contact if it is a valid email
   const contact = useMemo(() => {
@@ -106,6 +108,9 @@ const ContactDetails = () => {
     },
     []
   );
+
+  // Get the label id
+  const getLabelId = (label) => recipientLabels.find((l) => l.label === label)?.id;
 
   // Filter emails where contact appears in to, cc, or bcc
   const getRecentEmails = () => {
@@ -304,9 +309,7 @@ const ContactDetails = () => {
     // Save the contact back
     setRecipients((prev) =>
       prev.map((recipient) =>
-        recipient.id === deletedContact.current.id
-          ? { ...recipient, isSaved: true }
-          : recipient
+        recipient.id === deletedContact.current.id ? { ...recipient, isSaved: true } : recipient
       )
     );
 
@@ -344,11 +347,7 @@ const ContactDetails = () => {
 
       // Set isSaved to false
       setRecipients((prev) =>
-        prev.map((recipient) =>
-          recipient.id === contact.id
-            ? { ...recipient, isSaved: false }
-            : recipient
-        )
+        prev.map((recipient) => (recipient.id === contact.id ? { ...recipient, isSaved: false } : recipient))
       );
 
       // Hide the delete modal
@@ -446,9 +445,7 @@ const ContactDetails = () => {
       // Else set isSaved to false
       setRecipients((prev) =>
         prev.map((recipient) =>
-          recipient.id === contactReference.current.id
-            ? { ...recipient, isSaved: false }
-            : recipient
+          recipient.id === contactReference.current.id ? { ...recipient, isSaved: false } : recipient
         )
       );
     }
@@ -506,9 +503,7 @@ const ContactDetails = () => {
       } else {
         // Set isSaved to true in the recipients array for the contact
         setRecipients((prev) =>
-          prev.map((recipient) =>
-            recipient.id === contact.id ? { ...recipient, isSaved: true } : recipient
-          )
+          prev.map((recipient) => (recipient.id === contact.id ? { ...recipient, isSaved: true } : recipient))
         );
       }
 
@@ -538,7 +533,7 @@ const ContactDetails = () => {
   };
 
   return (
-    <Box sx={{ height: "calc(100vh - 100px)", overflow: "hidden", position: "relative" }}>
+    <Box sx={{ height: "calc(100vh - 130px)", overflow: "hidden", position: "relative" }}>
       {/* Header */}
       <Box
         sx={{
@@ -624,8 +619,8 @@ const ContactDetails = () => {
           mt: 7,
           height:
             contact?.isCustomContact || !contact?.isSaved || contact?.isLoggedInUser
-              ? "calc(100vh - 258px)"
-              : "calc(100vh - 188px)",
+              ? "calc(100vh - 288px)"
+              : "calc(100vh - 218px)",
         }}
       >
         {/* Profile pic and name */}
@@ -780,6 +775,73 @@ const ContactDetails = () => {
             disabled={contact?.isLoggedInUser}
           />
         </Box>
+
+        {/* Labels section */}
+        {contact?.labels && contact.labels.length > 0 && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center", justifyContent: "center" }}>
+              {contact.labels.map((label, index) => (
+                <Tooltip
+                  key={`label-${index}`}
+                  title={label}
+                  placement="top"
+                  slotProps={{
+                    popper: {
+                      sx: {
+                        "& .MuiTooltip-tooltip": {
+                          backgroundColor: "rgba(0, 0, 0, 0.9)",
+                          color: "white",
+                          fontSize: "12px",
+                          fontWeight: 200,
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <RouterLink
+                    sx={{ textDecoration: "none" }}
+                    to={`/contacts/label/${getLabelId(label)}`}
+                    target="_blank"
+                  >
+                    <Chip
+                      label={label}
+                      size="small"
+                      icon={
+                        <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>
+                          label
+                        </span>
+                      }
+                      sx={{
+                        backgroundColor: "transparent",
+                        color: "rgba(0, 0, 0, .87)",
+                        border: "1px solid #c4c7c5",
+                        height: "28px",
+                        px: "4px",
+                        "& .MuiChip-label": {
+                          maxWidth: "92px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          fontSize: "0.6875rem",
+                          fontWeight: 500,
+                        },
+                        borderRadius: "8px",
+                        "& .MuiChip-icon": {
+                          color: "#1f1f1f",
+                          fontSize: "18px",
+                        },
+                        "&:hover": {
+                          cursor: "pointer",
+                          backgroundColor: "rgba(31, 31, 31, 0.08)",
+                        },
+                      }}
+                    />
+                  </RouterLink>
+                </Tooltip>
+              ))}
+            </Box>
+          </Box>
+        )}
 
         {/* Contact details section */}
         <Box

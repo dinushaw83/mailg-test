@@ -1,4 +1,3 @@
-
 // src/contexts/normalize.js
 export function normalizeEmails(messages) {
   const messagesById = {};
@@ -110,6 +109,7 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 
       // Attachments
       attachments: last.attachments || [],
+      embeddedImages: last.embeddedImages || [],
     };
   });
 
