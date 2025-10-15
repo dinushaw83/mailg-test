@@ -353,15 +353,28 @@ export default function Editor({
   }, [content, restoreEmbeddedImages]);
 
   useEffect(() => {
-    if (!signaturesState?.list?.length) return "No signature";
-
-    const activeId = signaturesState?.useForNewEmails ?? null;
-      if (activeId === null || activeId === "" || activeId === undefined) {
+    // Guard early if no list
+    if (!signaturesState?.list || signaturesState.list.length === 0) {
       setSelectedSignature("No signature");
+      return;
     }
 
-    const sig = signaturesState.list[Number(activeId)];
+    const activeId = signaturesState?.useForNewEmails;
 
+    // Guard against invalid values cleanly
+    if (activeId === null || activeId === "" || activeId === undefined) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    // Ensure index is in range
+    const index = Number(activeId);
+    if (Number.isNaN(index) || index < 0 || index >= signaturesState.list.length) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    const sig = signaturesState.list[index];
     setSelectedSignature(sig?.name || "No signature");
   }, [signaturesState]);
 
