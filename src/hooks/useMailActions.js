@@ -153,6 +153,11 @@ export default function useMailActions() {
     [updateByIds]
   );
 
+  const deleteAllSpam = useCallback(() => {
+    // fully delete all spam emails
+    setEmails((prev) => prev.filter((m) => !m.labels.includes("Spam")));
+  }, [updateByIds]);
+
   const moveToSpam = useCallback(
     (ids) =>
       updateByIds(ids, (labels) => {
@@ -471,6 +476,7 @@ export default function useMailActions() {
       unsnooze,
       toggleMuted,
       setMuted,
+      deleteAllSpam,
     }),
     [
       addLabels,
@@ -493,6 +499,7 @@ export default function useMailActions() {
       unsnooze,
       toggleMuted,
       setMuted,
+      deleteAllSpam,
     ]
   );
 }

@@ -85,6 +85,13 @@ export const GlobalContextProvider = ({ children }) => {
     insertSignatureBeforeQuotedText: false,
   });
 
+  // Notification settings state
+  const [notificationSettings, setNotificationSettings] = usePersistedState("notificationSettings", {
+    type: "off", // "off", "new", "important"
+    sound: "1",  // Sound ID
+    enabled: false
+  });
+
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -242,6 +249,8 @@ export const GlobalContextProvider = ({ children }) => {
     setDeletedRecipients,
     signaturesState,
     setSignaturesState,
+    notificationSettings,
+    setNotificationSettings,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,
