@@ -87,12 +87,9 @@ export default function ForwardingTab() {
                   Forwarding:
                 </span>
                 <br />
-                <a
+                <span
                   className="e"
                   aria-label="Learn more about forwarding"
-                  href="https://support.google.com/mail/answer/10957?hl=en"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   style={{
                     whiteSpace: "nowrap",
                     cursor: "pointer",
@@ -101,7 +98,7 @@ export default function ForwardingTab() {
                   }}
                 >
                   Learn more
-                </a>
+                </span>
               </td>
               <td
                 className="r9"
@@ -332,7 +329,7 @@ export default function ForwardingTab() {
                 <a
                   className="e"
                   aria-label="Learn more about using POP download"
-                  href="https://support.google.com/mail/answer/10350?hl=en"
+                  href="#"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -532,7 +529,7 @@ export default function ForwardingTab() {
                   <br />
                   <a
                     className="e"
-                    href="https://support.google.com/mail/answer/12103?hl=en"
+                    href="#"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -600,7 +597,7 @@ export default function ForwardingTab() {
                 <a
                   className="e"
                   aria-label="Learn more about using IMAP with MailG"
-                  href="https://support.google.com/mail/answer/75725?hl=en"
+                  href="#"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -1054,7 +1051,7 @@ export default function ForwardingTab() {
                   <br />
                   <a
                     className="e"
-                    href="https://support.google.com/mail/answer/75726?hl=en"
+                    href="#"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -1104,7 +1101,7 @@ export default function ForwardingTab() {
                   >
                     Save Changes
                   </button>
-                    
+                  &nbsp;&nbsp;&nbsp;&nbsp;
                   <button
                     id="cancel-button"
                     className="Gm"

@@ -34,6 +34,7 @@ const ChatTab = () => {
         overflow: "auto",
         backgroundColor: "rgba(255, 255, 255, 0.95)",
         padding: "0px 24px 24px",
+        minHeight: "350px",
       }}
     >
       <table
@@ -115,13 +116,13 @@ const ChatTab = () => {
                       style={{ margin: "0px", padding: "0px" }}
                     >
                       <input
-                        id="chat-google"
+                        id="chat-on"
                         className="aVG"
                         name="ix_ct"
                         type="radio"
-                        checked={chatSetting === "google-chat"}
-                        onChange={() => handleChatChange("google-chat")}
-                        value="google-chat"
+                        checked={chatSetting === "on"}
+                        onChange={() => handleChatChange("on")}
+                        value="on"
                         style={{
                           fontFamily:
                             '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
@@ -144,7 +145,7 @@ const ChatTab = () => {
                       }}
                     >
                       <span className="rS" style={{ fontWeight: "bold" }}>
-                        <label htmlFor="chat-google">Google Chat</label>
+                        <label htmlFor="chat-on">Chat On</label>
                       </span>
                     </td>
                   </tr>
@@ -400,7 +401,7 @@ const ChatTab = () => {
                 >
                   Save Changes
                 </button>
-                {" "}
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <button
                   id="cancel-chat-meet"
                   className="Gm"

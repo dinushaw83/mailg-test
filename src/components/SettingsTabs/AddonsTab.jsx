@@ -9,6 +9,7 @@ export default function AddonsTab() {
           overflow: "auto",
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           padding: "0px 24px 24px",
+          minHeight: "350px",
         }}
       >
         <table
@@ -135,7 +136,7 @@ export default function AddonsTab() {
                   You can{" "}
                   <a
                     className="e"
-                    href="https://developers.google.com/gmail/add-ons/how-tos/install-unpublished#install_an_unpublished_add-on"
+                    href="#"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -150,7 +151,7 @@ export default function AddonsTab() {
                   from{" "}
                   <a
                     className="e"
-                    href="https://script.google.com/u/0?hl=en"
+                    href="#"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{

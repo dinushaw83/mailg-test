@@ -162,9 +162,16 @@ const HistorySettingsCard = ({ onOpenWebActivity, onOpenTimeline }) => (
   </Card>
 );
 
-export default function PrivacyHub({ open, onClose }) {
+export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivacy' }) {
   const { privacySettings, setPrivacySettings } = useGlobalContext();
-  const [activeView, setActiveView] = React.useState('dataAndPrivacy');
+  const [activeView, setActiveView] = React.useState(initialView);
+
+  // Update activeView when initialView changes and dialog opens
+  React.useEffect(() => {
+    if (open) {
+      setActiveView(initialView);
+    }
+  }, [open, initialView]);
 
   const toggle = (key) => (e) => setPrivacySettings({ [key]: e.target.checked });
 
@@ -689,7 +696,7 @@ export default function PrivacyHub({ open, onClose }) {
                         </Grid>
                         <Grid item xs={12} md={6}>
                           <OutlinedPanel sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Typography>Areas where you’ve used Google</Typography>
+                            <Typography>Areas where you've used MailG</Typography>
                             <Typography sx={{ color: 'text.secondary' }}>On</Typography>
                           </OutlinedPanel>
                         </Grid>

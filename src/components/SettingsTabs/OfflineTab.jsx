@@ -38,6 +38,7 @@ export default function OfflineTab() {
           overflow: "auto",
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           padding: "0px 24px 24px",
+          minHeight: "350px",
         }}
       >
         <table
@@ -86,11 +87,9 @@ export default function OfflineTab() {
                   Offline:
                 </span>
                 <div>
-                  <a
+                  <span
                     className="e"
                     aria-label="Learn more about Offline."
-                    href="https://support.google.com/mail/answer/1306849?hl=en"
-                    target="_blank"
                     style={{
                       whiteSpace: "nowrap",
                       cursor: "pointer",
@@ -99,7 +98,7 @@ export default function OfflineTab() {
                     }}
                   >
                     Learn more
-                  </a>
+                  </span>
                 </div>
               </td>
               <td
@@ -176,7 +175,7 @@ export default function OfflineTab() {
                   >
                     Save Changes
                   </button>
-                   
+                  &nbsp;&nbsp;&nbsp;&nbsp;
                   <button
                     id=":1l"
                     className="Gm"
