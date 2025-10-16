@@ -64,12 +64,47 @@ const SearchResultsView = () => {
       // Use advanced search with full email data
       return advancedSearchWithFullData(searchCriteria, emails, { limit: null });
     } else {
-      // Handle regular text search
-      if (!isSearchIndexReady() || !searchQuery.trim()) {
+      // Handle regular text search or refinement search
+      const isRefinementSearch = searchParams.get("isrefinement") === "true";
+
+      let results = [];
+      if (searchQuery.trim() && isSearchIndexReady()) {
+        // Get search results for the query
+        results = searchEmails(searchQuery, { limit: null });
+      } else if (!searchQuery.trim() && !isRefinementSearch) {
+        // No query and not a refinement search
         return [];
+      } else if (!searchQuery.trim() && isRefinementSearch) {
+        // No query but has filters - start with all emails
+        results = emails || [];
       }
-      // Remove limit for search results page - we want all results
-      return searchEmails(searchQuery, { limit: null });
+
+      // Apply refinement filters if present
+      if (isRefinementSearch && results.length > 0) {
+        // Apply "Has attachment" filter
+        if (searchParams.get("attach_or_drive") === "true") {
+          results = results.filter((email) => {
+            const hasAttachments = email.attachments && email.attachments.length > 0;
+            return hasAttachments;
+          });
+        }
+
+        // Apply "Last 7 days" filter
+        if (searchParams.get("last_7_days") === "true") {
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          results = results.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
+        }
+
+        // Apply "From me" filter
+        if (searchParams.get("from_me") === "true") {
+          results = results.filter(
+            (email) => email.from?.email === "john.doe@example.com" || email.from?.name === "me"
+          );
+        }
+      }
+
+      return results;
     }
   }, [searchQuery, emails, isAdvancedSearch, searchParams]); // Add dependencies
 

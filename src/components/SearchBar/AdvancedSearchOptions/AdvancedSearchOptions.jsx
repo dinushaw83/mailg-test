@@ -6,51 +6,17 @@ import EmailField from "./EmailField";
 import dayjs from "dayjs";
 import styles from "./AdvancedSearchOptions.module.css";
 import { addAdvancedSearchQuery } from "../../../utils/search";
-
-const InputStyle = {
-  "& .MuiInput-root": {
-    fontSize: "14px",
-  },
-  "& .MuiInputBase-input": {
-    height: "20px !important",
-    padding: 0,
-  },
-  // override hover underline
-  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-    borderBottom: "1px solid rgba(0,0,0,0.42)",
-  },
-  // override the focused/active line color
-  "& .MuiInput-underline:after": {
-    borderBottom: "1px solid #4285f4",
-  },
-};
-
-const SelectHoverStyle = {
-  "&:hover:not(.Mui-disabled, .Mui-error):before": {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.42)",
-  },
-};
-
-const dateWithinOptions = [
-  { value: "1 day", label: "1 day" },
-  { value: "3 days", label: "3 days" },
-  { value: "1 week", label: "1 week" },
-  { value: "2 weeks", label: "2 weeks" },
-  { value: "1 month", label: "1 month" },
-  { value: "2 months", label: "2 months" },
-  { value: "3 months", label: "3 months" },
-  { value: "6 months", label: "6 months" },
-  { value: "1 year", label: "1 year" },
-];
-
-const subsetOptions = [
-  { value: "All Mail", label: "All Mail" },
-  { value: "Inbox", label: "Inbox" },
-  { value: "Sent", label: "Sent" },
-  { value: "Drafts", label: "Drafts" },
-  { value: "Spam", label: "Spam" },
-  { value: "Trash", label: "Trash" },
-];
+import {
+  parseSearchStringToFormData,
+  buildSearchBarFromUrl,
+  containsSearchOperators,
+} from "../../../utils/helperFunctions";
+import {
+  dateWithinOptions,
+  subsetOptions,
+  AdvancedSearchSelectHoverStyle,
+  AdvancedSearchTextFieldInputStyle,
+} from "./constants";
 
 const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref) => {
   const navigate = useNavigate();
@@ -97,46 +63,63 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
     setPreviousLocation(currentPath);
   }, [location.pathname, previousLocation, formData, setFormData]);
 
-  // Sync formData with URL parameters when modal opens
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     const searchParams = new URLSearchParams(location.search);
-  //     const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
-
-  //     if (isAdvancedSearch && searchParams.toString()) {
-  //       // Populate form data from URL parameters
-  //       const sizeOperator = searchParams.get("sizeOperator") || "less than";
-  //       setFormData({
-  //         from: searchParams.get("from") || "",
-  //         to: searchParams.get("to") || "",
-  //         subject: searchParams.get("subject") || "",
-  //         has: searchParams.get("has") || "",
-  //         hasnot: searchParams.get("hasnot") || "",
-  //         sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
-  //         size: searchParams.get("size") || "",
-  //         sizeUnit: searchParams.get("sizeUnit") || "MB",
-  //         within: searchParams.get("within") || "1 day",
-  //         date: searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
-  //         subset: searchParams.get("subset") || "All Mail",
-  //         attachment: searchParams.get("attachment") === "true",
-  //         excludeChats: searchParams.get("excludeChats") === "true",
-  //       });
-  //     } else {
-  //       // Reset to default values when opening from non-advanced search
-  //       setFormData(getDefaultFormData());
-  //     }
-  //   }
-  // }, [isOpen, location.search, location.pathname]);
-
-  // Sync the "has" field with searchValue when it changes
+  // Sync formData with search string/URL parameters when modal opens
   useEffect(() => {
-    if (searchValue !== undefined && searchValue !== null) {
-      setFormData((prev) => ({
-        ...prev,
-        has: searchValue,
-      }));
+    if (isOpen) {
+      // Build the current search string from the URL
+      const searchString = buildSearchBarFromUrl(location);
+
+      // Check if the search string contains operators
+      const hasOperators = searchString && containsSearchOperators(searchString);
+
+      // If searchString has operators, parse it completely and ignore searchValue
+      if (hasOperators) {
+        const parsedData = parseSearchStringToFormData(searchString);
+
+        if (parsedData) {
+          setFormData({
+            ...parsedData,
+            // Keep date as current date if not parsed
+            date: parsedData.date || dayjs().format("YYYY-MM-DD"),
+          });
+        } else {
+          // Parsing failed, use defaults
+          setFormData(getDefaultFormData());
+        }
+      } else if (searchString && searchString.trim()) {
+        // searchString exists but has no operators - treat as plain text for "has"
+        setFormData({
+          ...getDefaultFormData(),
+          has: searchString,
+        });
+      } else if (searchValue && searchValue.trim()) {
+        // No searchString, but we have searchValue prop
+        const searchValueHasOperators = containsSearchOperators(searchValue);
+
+        if (searchValueHasOperators) {
+          // searchValue has operators, parse it
+          const parsedData = parseSearchStringToFormData(searchValue);
+          if (parsedData) {
+            setFormData({
+              ...parsedData,
+              date: parsedData.date || dayjs().format("YYYY-MM-DD"),
+            });
+          } else {
+            setFormData(getDefaultFormData());
+          }
+        } else {
+          // searchValue is plain text
+          setFormData({
+            ...getDefaultFormData(),
+            has: searchValue,
+          });
+        }
+      } else {
+        // No search string and no searchValue, use defaults
+        setFormData(getDefaultFormData());
+      }
     }
-  }, [searchValue]);
+  }, [isOpen, location.search, location.pathname, searchValue]);
 
   // Auto-focus the "from" field when modal opens
   useEffect(() => {
@@ -150,19 +133,17 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
 
   // Handle escape key to close modal
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscapeKey = (event) => {
       if (event.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscapeKey);
-    }
+    document.addEventListener("keydown", handleEscapeKey);
 
-    return () => {
-      document.removeEventListener("keydown", handleEscapeKey);
-    };
+    return () => document.removeEventListener("keydown", handleEscapeKey);
   }, [isOpen, onClose]);
 
   const handleInputChange = (field, value) => {
@@ -273,7 +254,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
               id="subject"
               value={formData.subject}
               onChange={(e) => handleInputChange("subject", e.target.value)}
-              sx={InputStyle}
+              sx={AdvancedSearchTextFieldInputStyle}
             />
           </div>
 
@@ -288,7 +269,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
               id="has"
               value={formData.has}
               onChange={(e) => handleInputChange("has", e.target.value)}
-              sx={InputStyle}
+              sx={AdvancedSearchTextFieldInputStyle}
             />
           </div>
 
@@ -303,7 +284,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
               variant="standard"
               value={formData.hasnot}
               onChange={(e) => handleInputChange("hasnot", e.target.value)}
-              sx={InputStyle}
+              sx={AdvancedSearchTextFieldInputStyle}
             />
           </div>
 
@@ -345,7 +326,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
                 variant="standard"
                 value={formData.size}
                 onChange={(e) => handleInputChange("size", e.target.value)}
-                sx={InputStyle}
+                sx={AdvancedSearchTextFieldInputStyle}
               />
 
               <Select
@@ -357,7 +338,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
                   disablePortal: true,
                 }}
                 sx={{
-                  ...SelectHoverStyle,
+                  ...AdvancedSearchSelectHoverStyle,
                   fontSize: "14px",
                   width: "118px !important",
                   "& .MuiSelect-select": {
@@ -428,7 +409,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
                 disablePortal: true,
               }}
               sx={{
-                ...SelectHoverStyle,
+                ...AdvancedSearchSelectHoverStyle,
                 fontSize: "14px",
                 flex: 1,
                 "& .MuiSelect-select": {

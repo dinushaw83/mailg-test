@@ -15,7 +15,7 @@ import {
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
-import { encodeForPath, buildSearchBarFromUrl } from "../../utils/helperFunctions";
+import { encodeForPath, buildSearchBarFromUrl, buildSearchUrlWithFilters } from "../../utils/helperFunctions";
 import AutocompleteInput from "./AutocompleteInput/AutocompleteInput";
 
 // Filter options for the search bar
@@ -51,6 +51,32 @@ const SearchBar = () => {
       setRemovedSuggestionsInSession([]);
     }
   }, [isFocused]);
+
+  // Sync activeFilters from URL when on search results page
+  useEffect(() => {
+    const isOnSearchResults = location.pathname.startsWith("/search/");
+    if (isOnSearchResults) {
+      const urlParams = new URLSearchParams(location.search);
+      const isRefinementSearch = urlParams.get("isrefinement") === "true";
+
+      if (isRefinementSearch) {
+        const filters = [];
+        if (urlParams.get("attach_or_drive") === "true") {
+          filters.push("Has attachment");
+        }
+        if (urlParams.get("last_7_days") === "true") {
+          filters.push("Last 7 days");
+        }
+        if (urlParams.get("from_me") === "true") {
+          filters.push("From me");
+        }
+        setActiveFilters(filters);
+      } else {
+        // Clear filters if not a refinement search
+        setActiveFilters([]);
+      }
+    }
+  }, [location.pathname, location.search]);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -219,9 +245,14 @@ const SearchBar = () => {
           addToSearchHistory(searchValue);
           // Track in allSearchQueries
           addBasicSearchQuery(searchValue);
+        } else if (activeFilters.length === 0) {
+          // Don't navigate if no search value and no filters
+          return;
         }
 
-        navigate(`/search/${encodeForPath(searchValue)}`);
+        // Build URL with filters if any are active
+        const searchUrl = buildSearchUrlWithFilters(searchValue, activeFilters);
+        navigate(searchUrl);
         setIsFocused(false);
 
         e.target.blur();
@@ -241,8 +272,9 @@ const SearchBar = () => {
       navigate(`/inbox/${threadId}`);
     } else {
       // Add search query to history when clicked from suggestions
-      if (item && item.trim()) {
+      if (item && item.trim() && typeof item === "string") {
         addToSearchHistory(item);
+        addBasicSearchQuery(item);
       }
       navigate(`/search/${encodeForPath(item)}`);
     }
@@ -275,7 +307,7 @@ const SearchBar = () => {
   };
 
   const handleRemoveSuggestion = (item, e) => {
-    e.stopPropagation(); // Prevent triggering the item click
+    e.stopPropagation();
 
     // Remove from search history permanently
     removeFromSearchHistory(item);

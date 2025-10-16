@@ -446,7 +446,7 @@ function parseSizeToBytes(sizeString) {
 /**
  * Advanced search with full email data (including attachments)
  */
-export function advancedSearchWithFullData(searchCriteria, emails, options = {}) {
+export function advancedSearchWithFullData(searchCriteria, emails) {
   if (!emails || emails.length === 0) {
     return [];
   }
