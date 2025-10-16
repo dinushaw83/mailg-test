@@ -8,6 +8,20 @@ import { useNavigate } from "react-router-dom";
 import GeneralSettings from "./General";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
+const isEmptySignature = (content) => {
+  if (!content) return true;
+
+  const cleaned = content
+    .replace(/<p><\/p>/gi, "")       // remove <p></p>
+    .replace(/<p><br><\/p>/gi, "")   // remove <p><br></p>
+    .replace(/<br\s*\/?>/gi, "")     // remove <br> tags
+    .replace(/&nbsp;/gi, "")         // remove non-breaking spaces
+    .replace(/<[^>]+>/g, "")         // remove all other HTML tags
+    .trim();
+
+  return cleaned === "";
+};
+
 const GeneralTab = () => {
   const {
     vacationResponder,
@@ -44,7 +58,14 @@ const GeneralTab = () => {
 
   const handleSave = useCallback(() => {
     setVacationResponder(localVacationResponder);
-    setGlobalSignatures(localSignatures);
+
+    const filteredSignatures = {
+      ...localSignatures,
+      list: (localSignatures?.list || []).filter(
+        (sig) => !isEmptySignature(sig.content)
+      ),
+    };
+    setGlobalSignatures(filteredSignatures);
     setGlobalNotificationSettings(localNotificationSettings);
 
     setHasChanges(false);
