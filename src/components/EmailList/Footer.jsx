@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import Box from "@mui/material/Box";
-import React, { useState } from "react";
-import PrivacyHub from "../SettingsTabs/PrivacyHub";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const StorageUsageContainer = styled.div`
   text-align: left;
@@ -126,44 +126,38 @@ const FooterContainer = styled.div`
 `;
 
 const Footer = () => {
-  const [privacyHubOpen, setPrivacyHubOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <>
-      <FooterContainer>
-        <StorageUsage />
-        <TermsPrivacyProgramPolicies onPrivacyClick={() => setPrivacyHubOpen(true)} />
-        <LastAccountActivity />
-        <div style={{ clear: "both" }} />
-      </FooterContainer>
-      <PrivacyHub open={privacyHubOpen} onClose={() => setPrivacyHubOpen(false)} />
-    </>
+    <FooterContainer>
+      <StorageUsage />
+      <TermsPrivacyProgramPolicies onPrivacyClick={() => navigate("/mailg-account/data-privacy")} />
+      <LastAccountActivity />
+      <div style={{ clear: "both" }} />
+    </FooterContainer>
   );
 };
 
 export const PanelFooter = () => {
-  const [privacyHubOpen, setPrivacyHubOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <>
-      <Box
-        role="contentinfo"
-        sx={{
-          marginTop: "3em",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1.5em",
-          alignItems: "center",
-          paddingBottom: "4em",
-          paddingTop: "2em",
-        }}
-      >
-        <StorageUsage centerText />
-        <LastAccountActivity centerText />
-        <TermsPrivacyProgramPolicies centerText onPrivacyClick={() => setPrivacyHubOpen(true)} />
-      </Box>
-      <PrivacyHub open={privacyHubOpen} onClose={() => setPrivacyHubOpen(false)} />
-    </>
+    <Box
+      role="contentinfo"
+      sx={{
+        marginTop: "3em",
+        display: "flex",
+        flexDirection: "column",
+        gap: "1.5em",
+        alignItems: "center",
+        paddingBottom: "4em",
+        paddingTop: "2em",
+      }}
+    >
+      <StorageUsage centerText />
+      <LastAccountActivity centerText />
+      <TermsPrivacyProgramPolicies centerText onPrivacyClick={() => navigate("/mailg-account/data-privacy")} />
+    </Box>
   );
 };
 

@@ -1,19 +1,17 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Popover, Box, Typography, Avatar, IconButton, Divider, Button, Dialog, DialogContent } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { generateAvatarColor } from "../utils/helperFunctions";
-import PrivacyHub from "./SettingsTabs/PrivacyHub";
 
 const ProfileMenu = ({ anchorEl, open, onClose }) => {
   const { loggedInUser } = useGlobalContext();
-  const [privacyHubOpen, setPrivacyHubOpen] = useState(false);
-  const [privacyHubInitialView, setPrivacyHubInitialView] = useState("dataAndPrivacy");
+  const navigate = useNavigate();
   const [profilePictureDialogOpen, setProfilePictureDialogOpen] = useState(false);
 
   const handleManageAccount = () => {
-    setPrivacyHubInitialView("personalInfo");
-    setPrivacyHubOpen(true);
+    navigate("/mailg-account/personal-info");
     onClose();
   };
 
@@ -317,16 +315,6 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
           </Box>
         </Box>
       </Popover>
-
-      {/* Privacy Hub Modal */}
-      <PrivacyHub 
-        open={privacyHubOpen} 
-        onClose={() => {
-          setPrivacyHubOpen(false);
-          setPrivacyHubInitialView("dataAndPrivacy");
-        }}
-        initialView={privacyHubInitialView}
-      />
 
       {/* Profile Picture Dialog */}
       <Dialog

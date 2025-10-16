@@ -1,34 +1,196 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 export default function LabelsTab() {
-  const [hasChanges, setHasChanges] = useState(false);
+  const { settingsLabels, setSettingsLabels } = useGlobalContext();
 
-  // Track changes in form inputs
-  useEffect(() => {
-    const handleInputChange = () => setHasChanges(true);
-    const inputs = document.querySelectorAll(
-      '#labels-tab input, #labels-tab select'
-    );
-    inputs.forEach((input) =>
-      input.addEventListener('change', handleInputChange)
-    );
+  const handleToggleSystemLabel = (labelKey, field = 'show') => {
+    setSettingsLabels({
+      ...settingsLabels,
+      systemLabels: {
+        ...settingsLabels.systemLabels,
+        [labelKey]: {
+          ...settingsLabels.systemLabels[labelKey],
+          [field]: !settingsLabels.systemLabels[labelKey][field],
+        },
+      },
+    });
+  };
 
-    return () => {
-      inputs.forEach((input) =>
-        input.removeEventListener('change', handleInputChange)
-      );
+  const handleToggleCategory = (categoryKey) => {
+    setSettingsLabels({
+      ...settingsLabels,
+      categories: {
+        ...settingsLabels.categories,
+        [categoryKey]: !settingsLabels.categories[categoryKey],
+      },
+    });
+  };
+
+  const handleCreateLabel = () => {
+    const labelName = prompt("Enter new label name:");
+    if (labelName && labelName.trim()) {
+      const newLabel = {
+        name: labelName.trim(),
+        show: true,
+        showInMessageList: true,
+      };
+      setSettingsLabels({
+        ...settingsLabels,
+        customLabels: [...(settingsLabels.customLabels || []), newLabel],
+      });
+    }
+  };
+
+  const handleToggleCustomLabel = (index, field) => {
+    const updatedLabels = [...settingsLabels.customLabels];
+    updatedLabels[index] = {
+      ...updatedLabels[index],
+      [field]: !updatedLabels[index][field],
     };
-  }, []);
-
-  const handleSave = () => {
-    // Save logic here
-    setHasChanges(false);
+    setSettingsLabels({
+      ...settingsLabels,
+      customLabels: updatedLabels,
+    });
   };
 
-  const handleCancel = () => {
-    // Reset form
-    setHasChanges(false);
+  const handleRemoveCustomLabel = (index) => {
+    if (confirm(`Remove label "${settingsLabels.customLabels[index].name}"?`)) {
+      const updatedLabels = settingsLabels.customLabels.filter((_, i) => i !== index);
+      setSettingsLabels({
+        ...settingsLabels,
+        customLabels: updatedLabels,
+      });
+    }
   };
+
+  const renderShowHide = (isShown, onToggle) => (
+    <>
+      {isShown ? (
+        <>
+          <span
+            className="alR"
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              fontWeight: "bold",
+            }}
+          >
+            show
+          </span>
+          {" "}
+          <span
+            className="alP"
+            role="link"
+            tabIndex="0"
+            onClick={() => onToggle()}
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              textDecoration: "none",
+              color: "rgb(17, 85, 204)",
+              cursor: "pointer",
+            }}
+          >
+            hide
+          </span>
+        </>
+      ) : (
+        <>
+          <span
+            className="alP"
+            role="link"
+            tabIndex="0"
+            onClick={() => onToggle()}
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              textDecoration: "none",
+              color: "rgb(17, 85, 204)",
+              cursor: "pointer",
+            }}
+          >
+            show
+          </span>
+          {" "}
+          <span
+            className="alR"
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              fontWeight: "bold",
+            }}
+          >
+            hide
+          </span>
+        </>
+      )}
+    </>
+  );
+
+  const renderShowIfUnread = (isShown, onToggle) => (
+    <>
+      {isShown ? (
+        <>
+          <span
+            className="alR"
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              fontWeight: "bold",
+            }}
+          >
+            show if unread
+          </span>
+          {" "}
+          <span
+            className="alP"
+            role="link"
+            tabIndex="0"
+            onClick={() => onToggle()}
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              textDecoration: "none",
+              color: "rgb(17, 85, 204)",
+              cursor: "pointer",
+            }}
+          >
+            hide
+          </span>
+        </>
+      ) : (
+        <>
+          <span
+            className="alP"
+            role="link"
+            tabIndex="0"
+            onClick={() => onToggle()}
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              textDecoration: "none",
+              color: "rgb(17, 85, 204)",
+              cursor: "pointer",
+            }}
+          >
+            show if unread
+          </span>
+          {" "}
+          <span
+            className="alR"
+            style={{
+              margin: "0px 0.3em",
+              whiteSpace: "nowrap",
+              fontWeight: "bold",
+            }}
+          >
+            hide
+          </span>
+        </>
+      )}
+    </>
+  );
 
   return (
     <div id="labels-tab" className="nH">
@@ -36,6 +198,8 @@ export default function LabelsTab() {
         className="nH r4"
         style={{
           overflow: "auto",
+          overflowY: "auto",
+          maxHeight: "calc(100vh - 160px)",
           backgroundColor: "rgba(255, 255, 255, 0.95)",
           padding: "0px 24px 24px",
         }}
@@ -189,31 +353,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.systemLabels.starred.show, () => handleToggleSystemLabel('starred', 'show'))}
               </td>
               <td
                 className="alQ"
@@ -296,31 +436,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.systemLabels.snoozed.show, () => handleToggleSystemLabel('snoozed', 'show'))}
               </td>
               <td
                 className="alQ"
@@ -375,7 +491,7 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* Important */}
+            {/* Sent */}
             <tr id=":8z" className="To">
               <td
                 className="alT"
@@ -392,7 +508,7 @@ export default function LabelsTab() {
                     width: "15em",
                   }}
                 >
-                  Important
+                  Sent
                 </div>
               </td>
               <td
@@ -403,31 +519,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.systemLabels.sent.show, () => handleToggleSystemLabel('sent', 'show'))}
               </td>
               <td
                 className="alQ"
@@ -482,7 +574,7 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* Sent */}
+            {/* Drafts */}
             <tr id=":91" className="To">
               <td
                 className="alT"
@@ -499,7 +591,7 @@ export default function LabelsTab() {
                     width: "15em",
                   }}
                 >
-                  Sent
+                  Drafts
                 </div>
               </td>
               <td
@@ -510,31 +602,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.systemLabels.drafts.show, () => handleToggleSystemLabel('drafts', 'show'))}
               </td>
               <td
                 className="alQ"
@@ -543,7 +611,9 @@ export default function LabelsTab() {
                   padding: "9px 15px",
                   verticalAlign: "top",
                 }}
-              />
+              >
+                {renderShowIfUnread(settingsLabels.systemLabels.drafts.showUnread, () => handleToggleSystemLabel('drafts', 'showUnread'))}
+              </td>
               <td
                 className="alQ"
                 style={{
@@ -589,7 +659,7 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* Scheduled */}
+            {/* Spam */}
             <tr id=":93" className="To">
               <td
                 className="alT"
@@ -606,7 +676,7 @@ export default function LabelsTab() {
                     width: "15em",
                   }}
                 >
-                  Scheduled
+                  Spam
                 </div>
               </td>
               <td
@@ -617,45 +687,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  hide
-                </span>{" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  show if unread
-                </span>{" "}
+                {renderShowHide(settingsLabels.systemLabels.spam.show, () => handleToggleSystemLabel('spam', 'show'))}
               </td>
               <td
                 className="alQ"
@@ -664,7 +696,9 @@ export default function LabelsTab() {
                   padding: "9px 15px",
                   verticalAlign: "top",
                 }}
-              />
+              >
+                {renderShowIfUnread(settingsLabels.systemLabels.spam.showUnread, () => handleToggleSystemLabel('spam', 'showUnread'))}
+              </td>
               <td
                 className="alQ"
                 style={{
@@ -710,7 +744,7 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* Drafts */}
+            {/* Trash */}
             <tr id=":95" className="To">
               <td
                 className="alT"
@@ -727,7 +761,7 @@ export default function LabelsTab() {
                     width: "15em",
                   }}
                 >
-                  Drafts
+                  Trash
                 </div>
               </td>
               <td
@@ -738,45 +772,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  hide
-                </span>{" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show if unread
-                </span>{" "}
+                {renderShowHide(settingsLabels.systemLabels.trash.show, () => handleToggleSystemLabel('trash', 'show'))}
               </td>
               <td
                 className="alQ"
@@ -785,7 +781,9 @@ export default function LabelsTab() {
                   padding: "9px 15px",
                   verticalAlign: "top",
                 }}
-              />
+              >
+                {renderShowIfUnread(settingsLabels.systemLabels.trash.showUnread, () => handleToggleSystemLabel('trash', 'showUnread'))}
+              </td>
               <td
                 className="alQ"
                 style={{
@@ -831,7 +829,7 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* All Mail */}
+            {/* Important */}
             <tr id=":97" className="To">
               <td
                 className="alT"
@@ -848,7 +846,7 @@ export default function LabelsTab() {
                     width: "15em",
                   }}
                 >
-                  All Mail
+                  Important
                 </div>
               </td>
               <td
@@ -859,31 +857,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.systemLabels.important.show, () => handleToggleSystemLabel('important', 'show'))}
               </td>
               <td
                 className="alQ"
@@ -938,249 +912,23 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* Spam */}
-            <tr id=":99" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
-                <div
-                  className="al6"
-                  style={{
-                    padding: "5px 2px",
-                    margin: "1px",
-                    border: "0px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    width: "15em",
-                  }}
-                >
-                  Spam
-                </div>
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show if unread
-                </span>{" "}
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              />
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              />
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alS"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  <input
-                    id=":9a"
-                    type="checkbox"
-                    defaultChecked
-                    style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                      margin: "0px",
-                      fontSize: "100%",
-                      fontWeight: "normal",
-                    }}
-                  />
-                  {" "}
-                  <label htmlFor=":9a">Show in IMAP</label>
-                </span>
-                {" "}
-              </td>
-              <td className="YQh8id" style={{ margin: "0px" }}>
-                {" "}
-              </td>
-            </tr>
-
-            {/* Trash */}
-            <tr id=":9b" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
-                <div
-                  className="al6"
-                  style={{
-                    padding: "5px 2px",
-                    margin: "1px",
-                    border: "0px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    width: "15em",
-                  }}
-                >
-                  Trash
-                </div>
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              />
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              />
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alS"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  <input
-                    id=":9c"
-                    type="checkbox"
-                    defaultChecked
-                    style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                      margin: "0px",
-                      fontSize: "100%",
-                      fontWeight: "normal",
-                    }}
-                  />
-                  {" "}
-                  <label htmlFor=":9c">Show in IMAP</label>
-                </span>
-                {" "}
-              </td>
-              <td className="YQh8id" style={{ margin: "0px" }}>
-                {" "}
-              </td>
-            </tr>
-
-            {/* Divider */}
+            {/* Categories header */}
             <tr>
               <td
-                className="rZ"
+                className="r8 alL"
                 colSpan="6"
                 style={{
                   margin: "0px",
-                  padding: "0px",
-                  backgroundColor: "rgb(229, 229, 229)",
-                  height: "1px",
+                  verticalAlign: "top",
+                  padding: "10px 15px 4px",
+                  paddingLeft: "15px",
+                  paddingTop: "24px",
+                  fontWeight: "bold",
                 }}
-              />
+              >
+                Categories
+              </td>
             </tr>
-
-            {/* Categories header */}
             <tr>
               <td
                 className="r8 alL"
@@ -1190,11 +938,8 @@ export default function LabelsTab() {
                   width: "20%",
                   padding: "10px 15px 4px",
                   paddingLeft: "15px",
-                  fontWeight: "bold",
                 }}
-              >
-                Categories
-              </td>
+              />
               <td
                 className="alL"
                 style={{
@@ -1217,83 +962,8 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* Purchases */}
-            <tr id=":9d" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
-                <div
-                  className="al6"
-                  style={{
-                    padding: "5px 2px",
-                    margin: "1px",
-                    border: "0px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    width: "15em",
-                  }}
-                >
-                  Purchases
-                </div>
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  hide
-                </span>{" "}
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              />
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              />
-              <td className="YQh8id" style={{ margin: "0px" }}>
-                {" "}
-              </td>
-            </tr>
-
             {/* Social */}
-            <tr id=":9e" className="To">
+            <tr id=":99" className="To">
               <td
                 className="alT"
                 style={{ margin: "0px", padding: "3px 15px" }}
@@ -1320,31 +990,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.categories.social, () => handleToggleCategory('social'))}
               </td>
               <td
                 className="alQ"
@@ -1354,31 +1000,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.categories.social, () => handleToggleCategory('social'))}
               </td>
               <td
                 className="alQ"
@@ -1388,200 +1010,6 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               />
-              <td className="YQh8id" style={{ margin: "0px" }}>
-                {" "}
-              </td>
-            </tr>
-
-            {/* Updates */}
-            <tr id=":9f" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
-                <div
-                  className="al6"
-                  style={{
-                    padding: "5px 2px",
-                    margin: "1px",
-                    border: "0px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    width: "15em",
-                  }}
-                >
-                  Updates
-                </div>
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              />
-              <td className="YQh8id" style={{ margin: "0px" }}>
-                {" "}
-              </td>
-            </tr>
-
-            {/* Forums */}
-            <tr id=":9g" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
-                <div
-                  className="al6"
-                  style={{
-                    padding: "5px 2px",
-                    margin: "1px",
-                    border: "0px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    width: "15em",
-                  }}
-                >
-                  Forums
-                </div>
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
-              </td>
-              <td
-                className="alQ"
-                style={{
-                  margin: "0px",
-                  padding: "9px 15px",
-                  verticalAlign: "top",
-                }}
-              >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
-              </td>
               <td
                 className="alQ"
                 style={{
@@ -1596,7 +1024,7 @@ export default function LabelsTab() {
             </tr>
 
             {/* Promotions */}
-            <tr id=":9h" className="To">
+            <tr id=":9a" className="To">
               <td
                 className="alT"
                 style={{ margin: "0px", padding: "3px 15px" }}
@@ -1623,31 +1051,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.categories.promotions, () => handleToggleCategory('promotions'))}
               </td>
               <td
                 className="alQ"
@@ -1657,32 +1061,16 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                <span
-                  className="alP"
-                  role="link"
-                  tabIndex="0"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    color: "rgb(17, 85, 204)",
-                    cursor: "pointer",
-                  }}
-                >
-                  show
-                </span>
-                {" "}
-                <span
-                  className="alR"
-                  style={{
-                    margin: "0px 0.3em",
-                    whiteSpace: "nowrap",
-                    fontWeight: "bold",
-                  }}
-                >
-                  hide
-                </span>{" "}
+                {renderShowHide(settingsLabels.categories.promotions, () => handleToggleCategory('promotions'))}
               </td>
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              />
               <td
                 className="alQ"
                 style={{
@@ -1696,21 +1084,145 @@ export default function LabelsTab() {
               </td>
             </tr>
 
-            {/* Divider */}
-            <tr>
+            {/* Updates */}
+            <tr id=":9b" className="To">
               <td
-                className="rZ"
-                colSpan="6"
+                className="alT"
+                style={{ margin: "0px", padding: "3px 15px" }}
+              >
+                <div
+                  className="al6"
+                  style={{
+                    padding: "5px 2px",
+                    margin: "1px",
+                    border: "0px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    width: "15em",
+                  }}
+                >
+                  Updates
+                </div>
+              </td>
+              <td
+                className="alQ"
                 style={{
                   margin: "0px",
-                  padding: "0px",
-                  backgroundColor: "rgb(229, 229, 229)",
-                  height: "1px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              >
+                {renderShowHide(settingsLabels.categories.updates, () => handleToggleCategory('updates'))}
+              </td>
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              >
+                {renderShowHide(settingsLabels.categories.updates, () => handleToggleCategory('updates'))}
+              </td>
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
                 }}
               />
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              />
+              <td className="YQh8id" style={{ margin: "0px" }}>
+                {" "}
+              </td>
+            </tr>
+
+            {/* Forums */}
+            <tr id=":9c" className="To">
+              <td
+                className="alT"
+                style={{ margin: "0px", padding: "3px 15px" }}
+              >
+                <div
+                  className="al6"
+                  style={{
+                    padding: "5px 2px",
+                    margin: "1px",
+                    border: "0px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    width: "15em",
+                  }}
+                >
+                  Forums
+                </div>
+              </td>
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              >
+                {renderShowHide(settingsLabels.categories.forums, () => handleToggleCategory('forums'))}
+              </td>
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              >
+                {renderShowHide(settingsLabels.categories.forums, () => handleToggleCategory('forums'))}
+              </td>
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              />
+              <td
+                className="alQ"
+                style={{
+                  margin: "0px",
+                  padding: "9px 15px",
+                  verticalAlign: "top",
+                }}
+              />
+              <td className="YQh8id" style={{ margin: "0px" }}>
+                {" "}
+              </td>
             </tr>
 
             {/* Labels header */}
+            <tr>
+              <td
+                className="r8 alL"
+                colSpan="6"
+                style={{
+                  margin: "0px",
+                  verticalAlign: "top",
+                  padding: "10px 15px 4px",
+                  paddingLeft: "15px",
+                  paddingTop: "24px",
+                  fontWeight: "bold",
+                }}
+              >
+        Labels
+              </td>
+            </tr>
             <tr>
               <td
                 className="r8 alL"
@@ -1720,11 +1232,8 @@ export default function LabelsTab() {
                   width: "20%",
                   padding: "10px 15px 4px",
                   paddingLeft: "15px",
-                  fontWeight: "bold",
                 }}
-              >
-                Labels
-              </td>
+              />
               <td
                 className="alL"
                 style={{
@@ -1745,65 +1254,112 @@ export default function LabelsTab() {
               >
                 Show in message list
               </td>
-              <td
-                className="alL"
-                style={{
-                  margin: "0px",
-                  padding: "10px 15px 4px",
-                  fontWeight: "bold",
-                }}
-              >
-                Actions
-              </td>
             </tr>
 
             {/* Create new label button */}
             <tr>
               <td
-                className="al0"
-                colSpan="6"
-                style={{ margin: "0px", padding: "0px 15px" }}
-              >
-                <div>
-                  <button
-                    id=":9j"
-                    className="alZ"
-                    style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                      marginLeft: "4px",
-                    }}
-                  >
-                    Create new label
-                  </button>
-                </div>
-              </td>
-            </tr>
-
-            {/* Note about removing labels */}
-            <tr
-              className="r7"
-              style={{
-                WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
-                fontSize: "0.875rem",
-                letterSpacing: "normal",
-              }}
-            >
-              <td
-                className="q9"
                 colSpan="6"
                 style={{
                   margin: "0px",
-                  padding: "8px",
-                  textAlign: "center",
+                  padding: "10px 15px",
                 }}
               >
-                <b>Note:</b> Removing a label will not remove the messages
-                with that label.
+                <span
+                  role="link"
+                  tabIndex="0"
+                  onClick={handleCreateLabel}
+                  style={{
+                    whiteSpace: "nowrap",
+                    textDecoration: "none",
+                    color: "rgb(17, 85, 204)",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Create new label
+                </span>
               </td>
             </tr>
+
+            {/* Custom labels */}
+            {settingsLabels.customLabels && settingsLabels.customLabels.length > 0 && (
+              settingsLabels.customLabels.map((label, index) => (
+                <tr key={index} className="To">
+                  <td
+                    className="alT"
+                    style={{ margin: "0px", padding: "3px 15px" }}
+                  >
+                    <div
+                      className="al6"
+                      style={{
+                        padding: "5px 2px",
+                        margin: "1px",
+                        border: "0px",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        width: "15em",
+                      }}
+                    >
+                      {label.name}
+                    </div>
+                  </td>
+                  <td
+                    className="alQ"
+                    style={{
+                      margin: "0px",
+                      padding: "9px 15px",
+                      verticalAlign: "top",
+                    }}
+                  >
+                    {renderShowHide(label.show, () => handleToggleCustomLabel(index, 'show'))}
+                  </td>
+                  <td
+                    className="alQ"
+                    style={{
+                      margin: "0px",
+                      padding: "9px 15px",
+                      verticalAlign: "top",
+                    }}
+                  >
+                    {renderShowHide(label.showInMessageList, () => handleToggleCustomLabel(index, 'showInMessageList'))}
+                  </td>
+                  <td
+                    className="alQ"
+                    style={{
+                      margin: "0px",
+                      padding: "9px 15px",
+                      verticalAlign: "top",
+                    }}
+                  >
+                    <span
+                      role="link"
+                      tabIndex="0"
+                      onClick={() => handleRemoveCustomLabel(index)}
+                      style={{
+                        whiteSpace: "nowrap",
+                        textDecoration: "none",
+                        color: "rgb(17, 85, 204)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      remove
+                    </span>
+                  </td>
+                  <td
+                    className="alQ"
+                    style={{
+                      margin: "0px",
+                      padding: "9px 15px",
+                      verticalAlign: "top",
+                    }}
+                  />
+                  <td className="YQh8id" style={{ margin: "0px" }}>
+                    {" "}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

@@ -840,17 +840,29 @@ export default function InboxTab() {
                                 marginLeft: "30px",
                               }}
                             >
-                              <img
+                              <div
                                 className="aJe"
-                                src="https://ssl.gstatic.com/ui/v1/icons/mail/io_tabbed_inbox1.png"
-                                alt="Tabbed Inbox"
                                 style={{
                                   margin: "5px auto",
                                   border: "1px solid rgb(179, 179, 179)",
                                   height: "143px",
                                   width: "343px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  backgroundColor: "#f8f9fa",
                                 }}
-                              />
+                              >
+                                <span
+                                  className="material-symbols-outlined"
+                                  style={{
+                                    fontSize: "72px",
+                                    color: "#5f6368",
+                                  }}
+                                >
+                                  inbox
+                                </span>
+                              </div>
                             </div>
                             <div className="aI7">
                               Choose which message categories to show as inbox

@@ -100,6 +100,178 @@ export const GlobalContextProvider = ({ children }) => {
     adsPersonalizationEnabled: true,
   });
 
+  // General Settings Tab state
+  const [settingsGeneral, setSettingsGeneral] = usePersistedState("settingsGeneral", {
+    language: "en",
+    enableInputTools: false,
+    rtlSupport: false,
+    maxPageSize: 50,
+    undoSendDelay: 30,
+    defaultReplyBehavior: "reply",
+    hoverActions: true,
+    sendAndArchive: true,
+    defaultTextStyle: {
+      fontFamily: "Sans Serif",
+      fontSize: "Normal",
+    },
+    images: "ask",
+    dynamicEmail: true,
+    grammar: true,
+    spelling: true,
+    autoCorrect: true,
+    smartCompose: true,
+    smartComposePersonalization: true,
+    conversationView: true,
+    nudges: {
+      suggestReplies: true,
+      suggestFollowUps: true,
+    },
+    smartReply: true,
+    smartFeatures: true,
+    workspaceSmartFeatures: true,
+    packageTracking: true,
+    stars: ["star", "info", "question", "exclamation", "star_outline"],
+    keyboardShortcuts: true,
+    buttonLabels: "text",
+    showMyPicture: true,
+    autoCompleteContacts: true,
+    adsImportanceSignals: true,
+    personalLevelIndicators: true,
+    snippets: true,
+  });
+
+  // Advanced Settings Tab state
+  const [settingsAdvanced, setSettingsAdvanced] = usePersistedState("settingsAdvanced", {
+    autoAdvance: false,
+    templates: false,
+    customKeyboardShortcuts: false,
+    unreadMessageIcon: false,
+  });
+
+  // Labels Settings Tab state
+  const [settingsLabels, setSettingsLabels] = usePersistedState("settingsLabels", {
+    systemLabels: {
+      inbox: { show: true, showUnread: true },
+      starred: { show: true, showUnread: false },
+      snoozed: { show: true, showUnread: false },
+      sent: { show: true, showUnread: false },
+      drafts: { show: true, showUnread: false },
+      spam: { show: false, showUnread: false },
+      trash: { show: false, showUnread: false },
+      important: { show: true, showUnread: false },
+    },
+    categories: {
+      social: true,
+      promotions: true,
+      updates: true,
+      forums: true,
+    },
+    customLabels: [],
+  });
+
+  // Inbox Settings Tab state
+  const [settingsInbox, setSettingsInbox] = usePersistedState("settingsInbox", {
+    inboxType: "default",
+    inboxSections: [],
+    categoriesEnabled: {
+      primary: true,
+      social: false,
+      promotions: false,
+      updates: false,
+      forums: false,
+    },
+    readingPane: "no_split",
+    importanceMarkers: "show",
+    maxPageSize: 50,
+  });
+
+  // Chat Settings Tab state
+  const [settingsChat, setSettingsChat] = usePersistedState("settingsChat", {
+    chatEnabled: false,
+    meetEnabled: false,
+  });
+
+  // Filters Settings Tab state
+  const [settingsFilters, setSettingsFilters] = usePersistedState("settingsFilters", {
+    filters: [],
+    blockedAddresses: [],
+  });
+
+  // Forwarding Settings Tab state
+  const [settingsForwarding, setSettingsForwarding] = usePersistedState("settingsForwarding", {
+    forwardingEnabled: false,
+    forwardingAddress: "",
+    forwardingAction: "keep",
+    popEnabled: false,
+    popAction: "keep",
+    imapEnabled: true,
+    imapAutoExpunge: false,
+    imapDeleteAction: "archive",
+  });
+
+  // Offline Settings Tab state
+  const [settingsOffline, setSettingsOffline] = usePersistedState("settingsOffline", {
+    offlineEnabled: false,
+    offlineDays: 30,
+  });
+
+  // Themes Settings Tab state
+  const [settingsThemes, setSettingsThemes] = usePersistedState("settingsThemes", {
+    currentTheme: "default",
+  });
+
+  // MailG Account - Personal Info state
+  const [mailGAccountPersonalInfo, setMailGAccountPersonalInfo] = usePersistedState("mailGAccountPersonalInfo", {
+    name: "John Doe",
+    nickname: "",
+    birthday: {
+      month: "January",
+      day: "1",
+      year: "2001",
+      visibility: "private", // "private" or "public"
+    },
+    gender: "Rather not say",
+    emails: ["john.doe@example.com"],
+    phone: {
+      number: "+1 555 123 4567",
+      verified: false,
+    },
+    addresses: {
+      home: "",
+      work: "",
+    },
+  });
+
+  // MailG Account - Data & Privacy state
+  const [mailGAccountDataPrivacy, setMailGAccountDataPrivacy] = usePersistedState("mailGAccountDataPrivacy", {
+    // Web & App Activity
+    webActivityEnabled: true,
+    webActivitySubsettings: {
+      includeWebHistory: true,
+      includeVoiceAudio: false,
+      includeVisualSearch: false,
+    },
+    webActivityAutoDelete: "18m",
+    
+    // Location History / Timeline
+    locationHistoryEnabled: false,
+    locationHistorySubsettings: {
+      shareEdits: true,
+    },
+    
+    // YouTube History
+    youtubeHistoryEnabled: true,
+    
+    // Ad Personalization
+    adPersonalizationEnabled: true,
+    
+    // Search Personalization
+    searchPersonalizationEnabled: true,
+    
+    // Auto-delete
+    autoDeleteActivity: "18m",
+  });
+
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -267,6 +439,30 @@ export const GlobalContextProvider = ({ children }) => {
     setVacationResponder,
     createLabelModal,
     setCreateLabelModal,
+    // Settings tabs state
+    settingsGeneral,
+    setSettingsGeneral,
+    settingsAdvanced,
+    setSettingsAdvanced,
+    settingsLabels,
+    setSettingsLabels,
+    settingsInbox,
+    setSettingsInbox,
+    settingsChat,
+    setSettingsChat,
+    settingsFilters,
+    setSettingsFilters,
+    settingsForwarding,
+    setSettingsForwarding,
+    settingsOffline,
+    setSettingsOffline,
+    settingsThemes,
+    setSettingsThemes,
+    // MailG Account state
+    mailGAccountPersonalInfo,
+    setMailGAccountPersonalInfo,
+    mailGAccountDataPrivacy,
+    setMailGAccountDataPrivacy,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

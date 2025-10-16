@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from "react";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const AdvancedTab = () => {
+  const { settingsAdvanced, setSettingsAdvanced } = useGlobalContext();
+  const [localSettings, setLocalSettings] = useState(settingsAdvanced);
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    // Track if any changes have been made
-    const handleInputChange = () => {
-      setHasChanges(true);
-    };
+    setLocalSettings(settingsAdvanced);
+  }, [settingsAdvanced]);
 
-    // Add event listeners to track changes
-    const inputs = document.querySelectorAll('input[type="radio"]');
-    inputs.forEach((input) => {
-      input.addEventListener("change", handleInputChange);
-    });
+  useEffect(() => {
+    const changed = JSON.stringify(localSettings) !== JSON.stringify(settingsAdvanced);
+    setHasChanges(changed);
+  }, [localSettings, settingsAdvanced]);
 
-    return () => {
-      inputs.forEach((input) => {
-        input.removeEventListener("change", handleInputChange);
-      });
-    };
-  }, []);
+  const handleRadioChange = (field, value) => {
+    setLocalSettings(prev => ({
+      ...prev,
+      [field]: value === "1" || value === true
+    }));
+  };
 
   const handleSave = () => {
-    console.log("Saving advanced settings");
+    setSettingsAdvanced(localSettings);
     setHasChanges(false);
   };
 
   const handleCancel = () => {
-    console.log("Canceling changes");
-    window.location.reload();
+    setLocalSettings(settingsAdvanced);
+    setHasChanges(false);
   };
 
   return (
@@ -79,12 +79,14 @@ const AdvancedTab = () => {
             className="Jj"
             style={{ whiteSpace: "nowrap", marginRight: "32px" }}
           >
-            <input
-              id="auto_advance_enable"
-              name="auto_advance"
-              type="radio"
-              value="1"
-              style={{
+                      <input
+                        id="auto_advance_enable"
+                        name="auto_advance"
+                        type="radio"
+                        value="1"
+                        checked={localSettings.autoAdvance === true}
+                        onChange={() => handleRadioChange("autoAdvance", true)}
+                        style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
@@ -112,13 +114,14 @@ const AdvancedTab = () => {
             className="Jj"
             style={{ whiteSpace: "nowrap", marginRight: "32px" }}
           >
-            <input
-              id="auto_advance_disable"
-              name="auto_advance"
-              type="radio"
-              defaultChecked
-              value="0"
-              style={{
+                      <input
+                        id="auto_advance_disable"
+                        name="auto_advance"
+                        type="radio"
+                        value="0"
+                        checked={localSettings.autoAdvance === false}
+                        onChange={() => handleRadioChange("autoAdvance", false)}
+                        style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
@@ -189,6 +192,8 @@ const AdvancedTab = () => {
               name="templates"
               type="radio"
               value="1"
+              checked={localSettings.templates === true}
+              onChange={() => handleRadioChange("templates", true)}
               style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
@@ -221,8 +226,9 @@ const AdvancedTab = () => {
               id="templates_disable"
               name="templates"
               type="radio"
-              defaultChecked
               value="0"
+              checked={localSettings.templates === false}
+              onChange={() => handleRadioChange("templates", false)}
               style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
@@ -292,6 +298,8 @@ const AdvancedTab = () => {
               name="keyboard_shortcuts"
               type="radio"
               value="1"
+              checked={localSettings.customKeyboardShortcuts === true}
+              onChange={() => handleRadioChange("customKeyboardShortcuts", true)}
               style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
@@ -324,8 +332,9 @@ const AdvancedTab = () => {
               id="keyboard_shortcuts_disable"
               name="keyboard_shortcuts"
               type="radio"
-              defaultChecked
               value="0"
+              checked={localSettings.customKeyboardShortcuts === false}
+              onChange={() => handleRadioChange("customKeyboardShortcuts", false)}
               style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
@@ -388,6 +397,8 @@ const AdvancedTab = () => {
               name="unread_icon"
               type="radio"
               value="1"
+              checked={localSettings.unreadMessageIcon === true}
+              onChange={() => handleRadioChange("unreadMessageIcon", true)}
               style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
@@ -420,8 +431,9 @@ const AdvancedTab = () => {
               id="unread_icon_disable"
               name="unread_icon"
               type="radio"
-              defaultChecked
               value="0"
+              checked={localSettings.unreadMessageIcon === false}
+              onChange={() => handleRadioChange("unreadMessageIcon", false)}
               style={{
                 fontFamily:
                   '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
