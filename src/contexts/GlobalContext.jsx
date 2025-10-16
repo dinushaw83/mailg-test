@@ -92,6 +92,14 @@ export const GlobalContextProvider = ({ children }) => {
     enabled: false
   });
 
+  // Privacy settings state
+  const [privacySettings, setPrivacySettings] = usePersistedState("privacySettings", {
+    analyticsEnabled: false,
+    crashReportsEnabled: false,
+    personalizationEnabled: false,
+    adsPersonalizationEnabled: true,
+  });
+
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -251,6 +259,8 @@ export const GlobalContextProvider = ({ children }) => {
     setSignaturesState,
     notificationSettings,
     setNotificationSettings,
+    privacySettings,
+    setPrivacySettings,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,

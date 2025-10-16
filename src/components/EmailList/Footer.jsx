@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import Box from "@mui/material/Box";
-import React from "react";
+import React, { useState } from "react";
+import PrivacyHub from "../SettingsTabs/PrivacyHub";
 
 const StorageUsageContainer = styled.div`
   text-align: left;
@@ -67,7 +68,7 @@ const Dot = styled.div`
   border-radius: 50%;
 `;
 
-const TermsPrivacyProgramPolicies = ({ centerText = false }) => {
+const TermsPrivacyProgramPolicies = ({ centerText = false, onPrivacyClick }) => {
   return (
     <div
       className="aeU"
@@ -85,7 +86,14 @@ const TermsPrivacyProgramPolicies = ({ centerText = false }) => {
           Terms
         </a>
         <Dot />
-        <a href="#" className="l9">
+        <a 
+          href="#" 
+          className="l9"
+          onClick={(e) => {
+            e.preventDefault();
+            if (onPrivacyClick) onPrivacyClick();
+          }}
+        >
           Privacy
         </a>
         <Dot />
@@ -118,34 +126,44 @@ const FooterContainer = styled.div`
 `;
 
 const Footer = () => {
+  const [privacyHubOpen, setPrivacyHubOpen] = useState(false);
+
   return (
-    <FooterContainer>
-      <StorageUsage />
-      <TermsPrivacyProgramPolicies />
-      <LastAccountActivity />
-      <div style={{ clear: "both" }} />
-    </FooterContainer>
+    <>
+      <FooterContainer>
+        <StorageUsage />
+        <TermsPrivacyProgramPolicies onPrivacyClick={() => setPrivacyHubOpen(true)} />
+        <LastAccountActivity />
+        <div style={{ clear: "both" }} />
+      </FooterContainer>
+      <PrivacyHub open={privacyHubOpen} onClose={() => setPrivacyHubOpen(false)} />
+    </>
   );
 };
 
 export const PanelFooter = () => {
+  const [privacyHubOpen, setPrivacyHubOpen] = useState(false);
+
   return (
-    <Box
-      role="contentinfo"
-      sx={{
-        marginTop: "3em",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.5em",
-        alignItems: "center",
-        paddingBottom: "4em",
-        paddingTop: "2em",
-      }}
-    >
-      <StorageUsage centerText />
-      <LastAccountActivity centerText />
-      <TermsPrivacyProgramPolicies centerText />
-    </Box>
+    <>
+      <Box
+        role="contentinfo"
+        sx={{
+          marginTop: "3em",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1.5em",
+          alignItems: "center",
+          paddingBottom: "4em",
+          paddingTop: "2em",
+        }}
+      >
+        <StorageUsage centerText />
+        <LastAccountActivity centerText />
+        <TermsPrivacyProgramPolicies centerText onPrivacyClick={() => setPrivacyHubOpen(true)} />
+      </Box>
+      <PrivacyHub open={privacyHubOpen} onClose={() => setPrivacyHubOpen(false)} />
+    </>
   );
 };
 
