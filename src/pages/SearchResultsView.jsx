@@ -112,15 +112,24 @@ const SearchResultsView = () => {
           });
         }
 
-        // Apply "Last 7 days" filter
-        if (searchParams.get("last_7_days") === "true") {
-          const sevenDaysAgo = new Date();
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-          results = results.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
+        // Apply date range filter
+        if (searchParams.get("daterangetype") === "custom_range") {
+          // Filter by datestart (emails after this date)
+          if (searchParams.has("datestart")) {
+            const dateStart = new Date(searchParams.get("datestart"));
+            results = results.filter((email) => new Date(email.timestamp) >= dateStart);
+          }
+          // Filter by dateend (emails before this date)
+          if (searchParams.has("dateend")) {
+            const dateEnd = new Date(searchParams.get("dateend"));
+            results = results.filter((email) => new Date(email.timestamp) <= dateEnd);
+          }
         }
 
-        // Note: "From me" filter is now handled by the "from" parameter above
-        // When "From me" is active, the "from" parameter contains the logged-in user's email
+        // Apply "Is unread" filter
+        if (searchParams.get("is_unread") === "true") {
+          results = results.filter((email) => !email.read);
+        }
       }
 
       return results;
@@ -158,6 +167,10 @@ const SearchResultsView = () => {
     return sortedEmails.slice(startIndex, endIndex);
   }, [filteredRows, currentPage, itemsPerPage]);
 
+  const showSearchFilters = useMemo(() => {
+    return rows.length > 0 || searchParams.get("isrefinement") === "true";
+  }, [rows, searchParams]);
+
   return (
     <div className="nH bkK">
       <div className="nH">
@@ -168,7 +181,7 @@ const SearchResultsView = () => {
               <div id=":3" className="Tm" style={{ height: 985 }}>
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
-                    {rows.length > 0 && <SearchResultFilters />}
+                    {showSearchFilters && <SearchResultFilters />}
 
                     <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
                       <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />

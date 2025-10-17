@@ -19,7 +19,13 @@ export function useActiveFiltersSync(location, setActiveFilters, loggedInUserEma
         if (urlParams.get("attach_or_drive") === "true") {
           filters.push("Has attachment");
         }
-        if (urlParams.get("last_7_days") === "true") {
+        if (urlParams.get("is_unread") === "true") {
+          filters.push("Is unread");
+        }
+        if (
+          urlParams.get("daterangetype") === "custom_range" &&
+          (urlParams.has("datestart") || urlParams.has("dateend"))
+        ) {
           filters.push("Last 7 days");
         }
         // Check if "from" parameter matches logged-in user's email

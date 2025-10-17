@@ -186,7 +186,10 @@ export const buildSearchUrlWithFilters = (searchQuery, activeFilters, loggedInUs
     currentParams.has("from") ||
     currentParams.has("to") ||
     currentParams.has("attach_or_drive") ||
-    currentParams.has("last_7_days");
+    currentParams.has("is_unread") ||
+    currentParams.has("datestart") ||
+    currentParams.has("dateend") ||
+    currentParams.has("daterangetype");
 
   // If no filters and no URL filters, return regular search URL
   if ((!activeFilters || activeFilters.length === 0) && !hasUrlFilters) {
@@ -206,10 +209,26 @@ export const buildSearchUrlWithFilters = (searchQuery, activeFilters, loggedInUs
     params.delete("attach_or_drive");
   }
 
+  if (activeFilters.includes("Is unread")) {
+    params.set("is_unread", "true");
+  } else if (!currentParams.has("is_unread")) {
+    params.delete("is_unread");
+  }
+
   if (activeFilters.includes("Last 7 days")) {
-    params.set("last_7_days", "true");
-  } else if (!currentParams.has("last_7_days")) {
-    params.delete("last_7_days");
+    // Calculate last 7 days including today (today - 6 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    const dateString = sevenDaysAgo.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
+    params.set("datestart", dateString);
+    params.set("daterangetype", "custom_range");
+    // Remove dateend if it exists
+    params.delete("dateend");
+  } else if (!currentParams.has("datestart") && !currentParams.has("dateend") && !currentParams.has("daterangetype")) {
+    params.delete("datestart");
+    params.delete("dateend");
+    params.delete("daterangetype");
   }
 
   // Handle "From me" filter by setting "from" parameter to logged-in user's email

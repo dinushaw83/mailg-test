@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button, Chip, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import ContactFilterChip from "./ContactFilterChip";
+import DateFilterChip from "./DateFilterChip";
 
 const filterOptions = ["From", "Has attachment", "Any time", "To", "Is unread"];
-const filterOptionsWithDropdown = ["From", "Any time", "To", "Is unread"];
+const filterOptionsWithDropdown = ["From", "Any time", "To"];
 
 const SearchResultFilters = () => {
   const [activeFilters, setActiveFilters] = useState([]);
@@ -18,9 +19,11 @@ const SearchResultFilters = () => {
     if (searchParams.get("attach_or_drive") === "true") {
       active.push("Has attachment");
     }
-    if (searchParams.get("last_7_days") === "true") {
-      active.push("Last 7 days");
+    if (searchParams.get("is_unread") === "true") {
+      active.push("Is unread");
     }
+    // Note: "Any time" date filter is not added here as it represents the default state
+    // DateFilterChip manages its own active state based on URL parameters
     return active;
   };
 
@@ -28,30 +31,37 @@ const SearchResultFilters = () => {
     const newSearchParams = new URLSearchParams(location.search);
     let currentActiveFilters = getActiveFilters();
 
-    // Map filter names to URL parameters
-    const filterToParamMap = {
-      "Has attachment": "attach_or_drive",
-      "Last 7 days": "last_7_days",
-    };
-
-    const paramName = filterToParamMap[filter];
-
     if (currentActiveFilters.includes(filter)) {
       // Remove filter
       currentActiveFilters = currentActiveFilters.filter((f) => f !== filter);
-      if (paramName) {
-        newSearchParams.delete(paramName);
+
+      if (filter === "Has attachment") {
+        newSearchParams.delete("attach_or_drive");
+      } else if (filter === "Is unread") {
+        newSearchParams.delete("is_unread");
       }
     } else {
       // Add filter
       currentActiveFilters.push(filter);
-      if (paramName) {
-        newSearchParams.set(paramName, "true");
+
+      if (filter === "Has attachment") {
+        newSearchParams.set("attach_or_drive", "true");
+      } else if (filter === "Is unread") {
+        newSearchParams.set("is_unread", "true");
       }
     }
 
-    // Mark as refinement search if any filters are active
-    if (currentActiveFilters.length > 0 || newSearchParams.has("from") || newSearchParams.has("to")) {
+    // Mark as refinement search if any filters are active or we're on search results page
+    const hasAnyFilter =
+      currentActiveFilters.length > 0 ||
+      newSearchParams.has("from") ||
+      newSearchParams.has("to") ||
+      newSearchParams.has("datestart") ||
+      newSearchParams.has("dateend") ||
+      newSearchParams.has("is_unread") ||
+      location.pathname.startsWith("/search");
+
+    if (hasAnyFilter) {
       newSearchParams.set("isrefinement", "true");
     } else {
       newSearchParams.delete("isrefinement");
@@ -81,6 +91,21 @@ const SearchResultFilters = () => {
     } else {
       // Remove filter if no contacts selected
       newSearchParams.delete(filterType.toLowerCase());
+
+      // Keep isrefinement=true if we're on search results page or have other filters
+      const hasOtherFilters =
+        newSearchParams.has("from") ||
+        newSearchParams.has("to") ||
+        newSearchParams.has("attach_or_drive") ||
+        newSearchParams.has("is_unread") ||
+        newSearchParams.has("datestart") ||
+        newSearchParams.has("dateend");
+
+      if (location.pathname.startsWith("/search") || hasOtherFilters) {
+        newSearchParams.set("isrefinement", "true");
+      } else {
+        newSearchParams.delete("isrefinement");
+      }
     }
 
     // Update URL with new search params
@@ -106,6 +131,9 @@ const SearchResultFilters = () => {
               onFilterChange={handleContactFilterChange}
             />
           );
+        }
+        if (filter === "Any time") {
+          return <DateFilterChip key={filter} label={filter} isActive={isActive} />;
         }
         return (
           <Chip

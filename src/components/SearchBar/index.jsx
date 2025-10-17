@@ -74,10 +74,10 @@ const SearchBar = () => {
       filtered = filtered.filter((email) => email.attachments && email.attachments.length > 0);
     }
 
-    // Apply "Last 7 days" filter
+    // Apply "Last 7 days" filter (last 7 days including today)
     if (activeFilters.includes("Last 7 days")) {
       const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
       filtered = filtered.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
     }
 
@@ -119,13 +119,6 @@ const SearchBar = () => {
         // Apply "Has attachment" filter
         if (activeFilters.includes("Has attachment")) {
           if (!result.attachments || result.attachments.length === 0) return false;
-        }
-
-        // Apply "Last 7 days" filter
-        if (activeFilters.includes("Last 7 days")) {
-          const sevenDaysAgo = new Date();
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-          if (new Date(result.timestamp) < sevenDaysAgo) return false;
         }
 
         // Apply "From me" filter
@@ -224,7 +217,17 @@ const SearchBar = () => {
       } else {
         // Check if there are any active filters (including all filter parameters from URL)
         const urlParams = new URLSearchParams(location.search);
-        const filterParams = ["from", "to", "attach_or_drive", "last_7_days", "is_unread", "has_drive", "has_youtube"];
+        const filterParams = [
+          "from",
+          "to",
+          "attach_or_drive",
+          "datestart",
+          "dateend",
+          "daterangetype",
+          "is_unread",
+          "has_drive",
+          "has_youtube",
+        ];
         const hasUrlFilters = filterParams.some((param) => urlParams.has(param));
         const hasAnyFilters = activeFilters.length > 0 || hasUrlFilters;
 
