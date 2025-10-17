@@ -109,14 +109,22 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   const getLabelBadges = (email) => {
     const currentPath = location.pathname.replace("/", "").toLowerCase();
+    const isAllMail = ["all"].includes(currentPath);
 
     return email.labels
       .filter((labelKey) => {
         const lower = labelKey.toLowerCase();
+        const isInbox = lower === "inbox";
+        const isCategory = categoryLabels.map(c => c.toLowerCase()).includes(lower);
 
+        // hide current folder label
         if (lower === currentPath) return false;
-        if (categoryLabels.includes(lower)) return false;
-        if (labels[labelKey]?.system) return false;   // 👈 new
+
+        // hide category labels except inbox in All Mail
+        if (isCategory && !(isInbox && isAllMail)) return false;
+
+        // hide system labels except inbox
+        if (labels[labelKey]?.system && !isInbox) return false;
 
         return true;
       })
