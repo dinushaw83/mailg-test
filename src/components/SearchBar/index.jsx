@@ -17,12 +17,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
 import { encodeForPath, buildSearchBarFromUrl, buildSearchUrlWithFilters } from "../../utils/helperFunctions";
 import AutocompleteInput from "./AutocompleteInput/AutocompleteInput";
+import { useActiveFiltersSync } from "./hooks/useActiveFiltersSync";
 
 // Filter options for the search bar
 const filterOptions = ["Has attachment", "Last 7 days", "From me"];
 
 const SearchBar = () => {
-  const { emails } = useGlobalContext();
+  const { emails, loggedInUser } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -32,6 +33,7 @@ const SearchBar = () => {
 
   const searchContainerRef = useRef(null);
   const advancedSearchRef = useRef(null);
+  const searchInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,6 +44,7 @@ const SearchBar = () => {
   useSearchIndex(emails);
   useSearchUrlSync(location, searchQuery, isAdvancedSearch, setSearchValue);
   useSearchNavigation(location, searchValue, setSearchValue, activeFilters, setActiveFilters);
+  useActiveFiltersSync(location, setActiveFilters, loggedInUser?.email);
   const { autoCompleteSuggestion, setAutoCompleteSuggestion, highlightedIndex, setHighlightedIndex } =
     useAutocompleteState(searchValue, emails, isFocused);
 
@@ -51,32 +54,6 @@ const SearchBar = () => {
       setRemovedSuggestionsInSession([]);
     }
   }, [isFocused]);
-
-  // Sync activeFilters from URL when on search results page
-  useEffect(() => {
-    const isOnSearchResults = location.pathname.startsWith("/search/");
-    if (isOnSearchResults) {
-      const urlParams = new URLSearchParams(location.search);
-      const isRefinementSearch = urlParams.get("isrefinement") === "true";
-
-      if (isRefinementSearch) {
-        const filters = [];
-        if (urlParams.get("attach_or_drive") === "true") {
-          filters.push("Has attachment");
-        }
-        if (urlParams.get("last_7_days") === "true") {
-          filters.push("Last 7 days");
-        }
-        if (urlParams.get("from_me") === "true") {
-          filters.push("From me");
-        }
-        setActiveFilters(filters);
-      } else {
-        // Clear filters if not a refinement search
-        setActiveFilters([]);
-      }
-    }
-  }, [location.pathname, location.search]);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -198,6 +175,11 @@ const SearchBar = () => {
         return [...prev, filter];
       }
     });
+
+    // Focus the search input after clicking a filter
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 0);
   };
 
   // Helper function to highlight search terms
@@ -240,18 +222,24 @@ const SearchBar = () => {
         handleResultClick(selectedItem.data);
         setHighlightedIndex(-1);
       } else {
+        // Check if there are any active filters (including all filter parameters from URL)
+        const urlParams = new URLSearchParams(location.search);
+        const filterParams = ["from", "to", "attach_or_drive", "last_7_days", "is_unread", "has_drive", "has_youtube"];
+        const hasUrlFilters = filterParams.some((param) => urlParams.has(param));
+        const hasAnyFilters = activeFilters.length > 0 || hasUrlFilters;
+
         // Add search query to history when submitted
         if (searchValue.trim()) {
           addToSearchHistory(searchValue);
           // Track in allSearchQueries
           addBasicSearchQuery(searchValue);
-        } else if (activeFilters.length === 0) {
+        } else if (!hasAnyFilters) {
           // Don't navigate if no search value and no filters
           return;
         }
 
         // Build URL with filters if any are active
-        const searchUrl = buildSearchUrlWithFilters(searchValue, activeFilters);
+        const searchUrl = buildSearchUrlWithFilters(searchValue, activeFilters, loggedInUser?.email);
         navigate(searchUrl);
         setIsFocused(false);
 
@@ -334,6 +322,7 @@ const SearchBar = () => {
             />
 
             <AutocompleteInput
+              ref={searchInputRef}
               value={searchValue}
               onChange={setSearchValue}
               onFocus={handleSearchBarFocus}
@@ -538,6 +527,8 @@ const SearchBar = () => {
                         onMouseLeave={() => setHoveredItemIndex(-1)}
                         sx={{
                           backgroundColor: isHighlighted ? "rgba(0, 0, 0, 0.04)" : "transparent",
+                          borderBottom:
+                            activeFilters.length > 0 && expandedContent.length > 1 ? "1px solid #e0e0e0" : "none",
                         }}
                       >
                         <ListItemIcon className={styles.clockIcon}>

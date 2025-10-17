@@ -176,36 +176,62 @@ export const encodeForPath = (raw) => {
  * Build search URL with refinement filters
  * @param {string} searchQuery - The search query
  * @param {Array} activeFilters - Array of active filter names
+ * @param {string} loggedInUserEmail - Optional logged-in user's email for "From me" filter
  * @returns {string} - The constructed URL
  */
-export const buildSearchUrlWithFilters = (searchQuery, activeFilters) => {
-  if (!activeFilters || activeFilters.length === 0) {
-    // No filters, return regular search URL
+export const buildSearchUrlWithFilters = (searchQuery, activeFilters, loggedInUserEmail = null) => {
+  // Check if we have URL parameters from current location (for contact filters, etc.)
+  const currentParams = new URLSearchParams(window.location.search);
+  const hasUrlFilters =
+    currentParams.has("from") ||
+    currentParams.has("to") ||
+    currentParams.has("attach_or_drive") ||
+    currentParams.has("last_7_days");
+
+  // If no filters and no URL filters, return regular search URL
+  if ((!activeFilters || activeFilters.length === 0) && !hasUrlFilters) {
     return `/search/${encodeForPath(searchQuery)}`;
   }
 
   // Build URL with filters
-  const params = new URLSearchParams();
+  const params = new URLSearchParams(currentParams);
 
   // Always add isrefinement=true when filters are active
-  params.append("isrefinement", "true");
+  params.set("isrefinement", "true");
 
   // Map filter names to URL parameters
   if (activeFilters.includes("Has attachment")) {
-    params.append("attach_or_drive", "true");
+    params.set("attach_or_drive", "true");
+  } else if (!currentParams.has("attach_or_drive")) {
+    params.delete("attach_or_drive");
   }
 
   if (activeFilters.includes("Last 7 days")) {
-    params.append("last_7_days", "true");
+    params.set("last_7_days", "true");
+  } else if (!currentParams.has("last_7_days")) {
+    params.delete("last_7_days");
   }
 
-  if (activeFilters.includes("From me")) {
-    params.append("from_me", "true");
+  // Handle "From me" filter by setting "from" parameter to logged-in user's email
+  if (activeFilters.includes("From me") && loggedInUserEmail) {
+    params.set("from", loggedInUserEmail);
+  } else if (activeFilters.includes("From me") && !loggedInUserEmail) {
+    // If "From me" is active but no email provided, keep existing "from" param if any
+    // This handles the case where the filter was set elsewhere (like SearchResultFilters)
+  } else if (!activeFilters.includes("From me") && currentParams.has("from")) {
+    // Only delete "from" param if it matches the logged-in user (i.e., it was set by "From me")
+    // Keep it if it was set by contact filter
+    if (loggedInUserEmail && currentParams.get("from")?.toLowerCase() === loggedInUserEmail.toLowerCase()) {
+      params.delete("from");
+    }
   }
 
-  // Build the URL
-  const queryPart = searchQuery ? encodeForPath(searchQuery) : "";
-  return `/search/${queryPart}?${params.toString()}`;
+  // Build the URL - if no search query, use /search?params, otherwise /search/query?params
+  if (searchQuery && searchQuery.trim()) {
+    return `/search/${encodeForPath(searchQuery)}?${params.toString()}`;
+  } else {
+    return `/search?${params.toString()}`;
+  }
 };
 
 export const queryToSearchBarString = (queryString) => {

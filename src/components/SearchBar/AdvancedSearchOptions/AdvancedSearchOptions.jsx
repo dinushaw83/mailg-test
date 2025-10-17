@@ -303,7 +303,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
                   disablePortal: true,
                 }}
                 sx={{
-                  ...SelectHoverStyle,
+                  ...AdvancedSearchSelectHoverStyle,
                   fontSize: "14px",
                   width: "250px !important",
                   "& .MuiSelect-select": {
@@ -376,7 +376,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
                   disablePortal: true,
                 }}
                 sx={{
-                  ...SelectHoverStyle,
+                  ...AdvancedSearchSelectHoverStyle,
                   fontSize: "14px",
                   flex: 1,
                   "& .MuiSelect-select": {

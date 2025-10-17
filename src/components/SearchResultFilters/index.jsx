@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Chip, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import ContactFilterChip from "./ContactFilterChip";
 
 const filterOptions = ["From", "Has attachment", "Any time", "To", "Is unread"];
 const filterOptionsWithDropdown = ["From", "Any time", "To", "Is unread"];
@@ -20,9 +21,6 @@ const SearchResultFilters = () => {
     if (searchParams.get("last_7_days") === "true") {
       active.push("Last 7 days");
     }
-    if (searchParams.get("from_me") === "true") {
-      active.push("From me");
-    }
     return active;
   };
 
@@ -30,11 +28,10 @@ const SearchResultFilters = () => {
     const newSearchParams = new URLSearchParams(location.search);
     let currentActiveFilters = getActiveFilters();
 
-    // Map filter names to URL parameter names
+    // Map filter names to URL parameters
     const filterToParamMap = {
       "Has attachment": "attach_or_drive",
       "Last 7 days": "last_7_days",
-      "From me": "from_me",
     };
 
     const paramName = filterToParamMap[filter];
@@ -53,7 +50,38 @@ const SearchResultFilters = () => {
       }
     }
 
+    // Mark as refinement search if any filters are active
+    if (currentActiveFilters.length > 0 || newSearchParams.has("from") || newSearchParams.has("to")) {
+      newSearchParams.set("isrefinement", "true");
+    } else {
+      newSearchParams.delete("isrefinement");
+    }
+
     setActiveFilters(currentActiveFilters);
+
+    // Update URL with new search params
+    navigate(
+      {
+        pathname: location.pathname,
+        search: newSearchParams.toString(),
+      },
+      { replace: true }
+    );
+  };
+
+  const handleContactFilterChange = (filterType, selectedContacts) => {
+    const newSearchParams = new URLSearchParams(location.search);
+
+    if (selectedContacts.length > 0) {
+      // Convert selected contacts to comma-separated emails
+      const emails = selectedContacts.map((contact) => contact.email).join(",");
+      newSearchParams.set(filterType.toLowerCase(), emails);
+      // Mark as refinement search
+      newSearchParams.set("isrefinement", "true");
+    } else {
+      // Remove filter if no contacts selected
+      newSearchParams.delete(filterType.toLowerCase());
+    }
 
     // Update URL with new search params
     navigate(
@@ -69,6 +97,16 @@ const SearchResultFilters = () => {
     <Stack direction="row" spacing={1} p={2}>
       {filterOptions.map((filter) => {
         const isActive = getActiveFilters().includes(filter);
+        if (filter === "From" || filter === "To") {
+          return (
+            <ContactFilterChip
+              key={filter}
+              label={filter}
+              isActive={isActive}
+              onFilterChange={handleContactFilterChange}
+            />
+          );
+        }
         return (
           <Chip
             key={filter}

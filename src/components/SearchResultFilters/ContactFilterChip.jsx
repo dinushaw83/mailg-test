@@ -1,0 +1,446 @@
+import React, { useState, useContext, useRef, useMemo, useEffect } from "react";
+import { Box, Chip, Popover, Stack, Typography, Avatar, Autocomplete, TextField } from "@mui/material";
+import { generateAvatarColor, restructureRecipients } from "../../utils/helperFunctions";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import RecipientChip from "../ComposeEmail/RecipientChip";
+import { useLocation } from "react-router-dom";
+
+const InputStyle = {
+  "& .MuiInput-root": {
+    fontSize: "14px",
+  },
+  "& .MuiInputBase-input": {
+    padding: "8px 0 !important",
+  },
+  "& .MuiInput-underline:before": {
+    borderBottom: "none",
+  },
+  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+    borderBottom: "none",
+  },
+  "& .MuiInput-underline:after": {
+    borderBottom: "none",
+  },
+};
+
+export default function ContactFilterChip({ label, isActive, onFilterChange }) {
+  const { recipients: globalRecipients, loggedInUser } = useContext(GlobalContext);
+  const location = useLocation();
+
+  // Process recipients - restructure and remove duplicates
+  const recipients = useMemo(() => {
+    const restructured = restructureRecipients(globalRecipients.filter((recipient) => recipient.email));
+    const seenEmails = new Set();
+    return restructured.filter((recipient) => {
+      const emailLower = recipient.email.toLowerCase();
+      if (seenEmails.has(emailLower)) return false;
+      seenEmails.add(emailLower);
+      return true;
+    });
+  }, [globalRecipients]);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [inputValue, setInputValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setInputValue("");
+    setIsFocused(false);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? `${label.toLowerCase()}-filter-popover` : undefined;
+
+  // Sync selected contacts from URL on mount and when URL changes
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const paramName = label.toLowerCase(); // "from" or "to"
+    const emailsParam = searchParams.get(paramName);
+
+    if (emailsParam) {
+      // Parse comma-separated emails from URL
+      const emails = emailsParam.split(",").map((email) => email.trim().toLowerCase());
+
+      // Find matching recipients from global recipients
+      const matchedContacts = [];
+
+      emails.forEach((email) => {
+        // First check if it matches the logged-in user
+        if (email === loggedInUser.email.toLowerCase()) {
+          matchedContacts.push({
+            ...loggedInUser,
+            id: loggedInUser.email,
+          });
+        } else {
+          // Find in global recipients
+          const recipient = recipients.find((r) => r.email.toLowerCase() === email);
+          if (recipient) {
+            matchedContacts.push(recipient);
+          } else {
+            // Create a custom recipient if not found
+            matchedContacts.push({
+              id: `custom-${email}`,
+              name: email,
+              email: email,
+              avatar: null,
+            });
+          }
+        }
+      });
+
+      setSelectedContacts(matchedContacts);
+    } else {
+      // Clear selected contacts if no parameter in URL
+      setSelectedContacts([]);
+    }
+  }, [location.search, label, recipients, loggedInUser]);
+
+  // Auto-focus input when popover opens and set it to show options
+  useEffect(() => {
+    if (open && inputRef.current) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+        setIsFocused(true);
+      }, 50);
+    } else {
+      setIsFocused(false);
+    }
+  }, [open]);
+
+  // Filter options based on input and exclude already selected
+  const filterOptions = (options, { inputValue }) => {
+    // Ensure inputValue is a string
+    const searchValue = typeof inputValue === "string" ? inputValue : "";
+
+    if (!searchValue || searchValue.trim() === "") {
+      // Show all options when no input, limited to 8
+      return options
+        .filter((option) => {
+          return !selectedContacts.some((selected) => selected.email === option.email && selected.id === option.id);
+        })
+        .slice(0, 8);
+    }
+
+    const filteredOptions = options.filter((option) => {
+      const matchesSearch =
+        option.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        option.email.toLowerCase().includes(searchValue.toLowerCase());
+      return matchesSearch;
+    });
+
+    return filteredOptions.slice(0, 8);
+  };
+
+  // Handle selecting a contact from the dropdown
+  const handleAutocompleteChange = (event, newValue) => {
+    if (newValue) {
+      // Check if already selected
+      const isAlreadySelected = selectedContacts.some(
+        (selected) => selected.email === newValue.email && selected.id === newValue.id
+      );
+
+      if (!isAlreadySelected) {
+        const newSelected = [...selectedContacts, newValue];
+        setSelectedContacts(newSelected);
+
+        // Notify parent component
+        if (onFilterChange) {
+          onFilterChange(label, newSelected);
+        }
+      }
+
+      setInputValue("");
+    }
+  };
+
+  // Handle input value changes
+  const handleInputChange = (event, newInputValue) => {
+    // Ensure newInputValue is a string
+    const value = typeof newInputValue === "string" ? newInputValue : "";
+    setInputValue(value);
+  };
+
+  // Handle keyboard events
+  const handleKeyDown = (event) => {
+    // Handle Backspace to remove last chip when input is empty
+    if (event.key === "Backspace" && !inputValue && selectedContacts.length > 0) {
+      event.preventDefault();
+      const newSelected = selectedContacts.slice(0, -1);
+      setSelectedContacts(newSelected);
+
+      // Notify parent component
+      if (onFilterChange) {
+        onFilterChange(label, newSelected);
+      }
+    }
+  };
+
+  // Handle chip deletion
+  const handleChipDelete = (contactToRemove) => {
+    const newSelected = selectedContacts.filter(
+      (contact) => !(contact.email === contactToRemove.email && contact.id === contactToRemove.id)
+    );
+    setSelectedContacts(newSelected);
+
+    // Notify parent component
+    if (onFilterChange) {
+      onFilterChange(label, newSelected);
+    }
+  };
+
+  // Update chip label to show count when contacts are selected
+  const getChipLabel = () => {
+    if (selectedContacts.length === 0) {
+      return label;
+    } else if (selectedContacts.length === 1) {
+      return `${label} ${selectedContacts[0].name}`;
+    } else {
+      return `${label} ${selectedContacts[0].name} +${selectedContacts.length - 1}`;
+    }
+  };
+
+  const hasSelection = selectedContacts.length > 0;
+  const chipIsActive = isActive || hasSelection;
+
+  return (
+    <Box>
+      <Chip
+        key={label}
+        sx={{
+          bgcolor: chipIsActive ? "#cfdef3" : "white",
+          border: chipIsActive ? "none" : "1px solid #444746",
+          color: chipIsActive ? "#041E49" : "#5f6368",
+          fontSize: "14px",
+          height: "30px",
+          borderRadius: "8px",
+          "&:hover": {
+            bgcolor: chipIsActive ? "#bad2f5" : "#9f9e9e2b",
+          },
+        }}
+        onClick={handleClick}
+        label={
+          <Stack direction="row" alignItems="center">
+            {chipIsActive && (
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 20,
+                  color: "black",
+                  marginRight: "4px",
+                }}
+              >
+                check
+              </span>
+            )}
+            {getChipLabel()}
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 24,
+                color: chipIsActive ? "#1a73e8" : "rgb(68, 68, 68)",
+                marginLeft: "4px",
+              }}
+            >
+              arrow_drop_down
+            </span>
+          </Stack>
+        }
+      />
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        slotProps={{
+          paper: {
+            sx: {
+              height: "540px",
+              width: "400px",
+              overflow: "visible",
+              boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2), 0px 0px 2px rgba(0, 0, 0, 0.1)",
+              borderRadius: "8px",
+            },
+          },
+        }}
+      >
+        <Box sx={{ p: "16px" }}>
+          {/* Selected contacts as chips */}
+          {selectedContacts.length > 0 && (
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+              {selectedContacts.map((contact) => (
+                <RecipientChip
+                  key={`${contact.email}-${contact.id}`}
+                  recipient={contact}
+                  onDelete={() => handleChipDelete(contact)}
+                />
+              ))}
+            </Box>
+          )}
+
+          {/* Autocomplete for searching and selecting contacts */}
+          <Autocomplete
+            options={recipients || []}
+            getOptionLabel={(option) => {
+              if (typeof option === "string") return option;
+              return option.email || "";
+            }}
+            value={null}
+            inputValue={typeof inputValue === "string" ? inputValue : ""}
+            onChange={handleAutocompleteChange}
+            onInputChange={handleInputChange}
+            filterOptions={filterOptions}
+            open={open}
+            disablePortal
+            onOpen={() => setIsFocused(true)}
+            onClose={(event, reason) => {
+              // Keep dropdown open when clicking inside
+              if (reason !== "selectOption") {
+                setIsFocused(false);
+              }
+            }}
+            renderOption={(props, option) => {
+              const { key, ...otherProps } = props;
+              const isCustomRecipient = option.id && typeof option.id === "string" && option.id.startsWith("custom-");
+              const avatarColor = generateAvatarColor(option.name || option.email);
+              const initials = option.name ? option.name.charAt(0).toUpperCase() : "";
+              const isAlreadySelected = selectedContacts.some(
+                (selected) => selected.email === option.email && selected.id === option.id
+              );
+
+              return (
+                <Box
+                  key={key}
+                  component="li"
+                  {...otherProps}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    py: 1,
+                    px: 2,
+                  }}
+                >
+                  <Avatar
+                    sx={{
+                      bgcolor: isCustomRecipient ? "rgba(11, 87, 208, 0.3)" : avatarColor,
+                      color: isCustomRecipient ? "rgb(11, 87, 208)" : "white",
+                      fontSize: "14px",
+                      width: 32,
+                      height: 32,
+                    }}
+                  >
+                    {isCustomRecipient ? (
+                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                        person
+                      </span>
+                    ) : option.avatar ? (
+                      <img
+                        src={option.avatar}
+                        alt={option.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "14px" }}>
+                      {option.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: "12px" }}>
+                      {option.email}
+                    </Typography>
+                  </Box>
+                  {isAlreadySelected && (
+                    <Box
+                      sx={{
+                        width: 30,
+                        height: 30,
+                        borderRadius: "50%",
+                        backgroundColor: "rgb(26, 115, 232)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "white" }}>
+                        check
+                      </span>
+                    </Box>
+                  )}
+                </Box>
+              );
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                variant="standard"
+                placeholder="Name or email"
+                slotProps={{
+                  input: {
+                    ...params.InputProps,
+                    onKeyDown: handleKeyDown,
+                    onFocus: () => setIsFocused(true),
+                    onBlur: (e) => {
+                      // Don't blur if clicking on an option
+                      if (!e.relatedTarget || !e.relatedTarget.closest('[role="option"]')) {
+                        setTimeout(() => setIsFocused(false), 200);
+                      }
+                    },
+                    style: {
+                      fontSize: "14px",
+                      color: "#000",
+                      background: "transparent",
+                      borderBottom: "1px solid #e0e0e0",
+                    },
+                  },
+                }}
+                sx={InputStyle}
+                inputRef={inputRef}
+              />
+            )}
+            slotProps={{
+              paper: {
+                sx: {
+                  boxShadow: "none",
+                  bgcolor: "transparent",
+                  mt: 1,
+                  mx: -2,
+                  width: "calc(100% + 32px)",
+                },
+              },
+              listbox: {
+                sx: {
+                  overflow: "auto",
+                  padding: 0,
+                  maxHeight: "392px",
+                },
+              },
+              option: {
+                sx: {
+                  margin: 0,
+                },
+              },
+            }}
+            sx={{
+              "& .MuiAutocomplete-inputRoot": {
+                padding: 0,
+              },
+            }}
+            freeSolo
+            disableClearable
+          />
+        </Box>
+      </Popover>
+    </Box>
+  );
+}

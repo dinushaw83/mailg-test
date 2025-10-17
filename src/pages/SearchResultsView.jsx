@@ -81,6 +81,29 @@ const SearchResultsView = () => {
 
       // Apply refinement filters if present
       if (isRefinementSearch && results.length > 0) {
+        // Apply "From" contact filter
+        if (searchParams.get("from")) {
+          const fromEmails = searchParams
+            .get("from")
+            .split(",")
+            .map((email) => email.trim().toLowerCase());
+          results = results.filter((email) =>
+            fromEmails.some((fromEmail) => email.from?.email?.toLowerCase() === fromEmail)
+          );
+        }
+
+        // Apply "To" contact filter
+        if (searchParams.get("to")) {
+          const toEmails = searchParams
+            .get("to")
+            .split(",")
+            .map((email) => email.trim().toLowerCase());
+          results = results.filter((email) => {
+            const emailToList = email.to || [];
+            return emailToList.some((recipient) => toEmails.includes(recipient.email?.toLowerCase()));
+          });
+        }
+
         // Apply "Has attachment" filter
         if (searchParams.get("attach_or_drive") === "true") {
           results = results.filter((email) => {
@@ -96,12 +119,8 @@ const SearchResultsView = () => {
           results = results.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
         }
 
-        // Apply "From me" filter
-        if (searchParams.get("from_me") === "true") {
-          results = results.filter(
-            (email) => email.from?.email === "john.doe@example.com" || email.from?.name === "me"
-          );
-        }
+        // Note: "From me" filter is now handled by the "from" parameter above
+        // When "From me" is active, the "from" parameter contains the logged-in user's email
       }
 
       return results;

@@ -13,12 +13,15 @@ export function useSearchNavigation(location, searchValue, setSearchValue, activ
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const isCurrentlyOnSearchResults = currentPath.startsWith("/search/");
-    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search/");
+    const isCurrentlyOnSearchResults = currentPath.startsWith("/search");
+    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search");
 
     // If we were on search results page and now we're not, clear the search input
     if (wasOnSearchResults && !isCurrentlyOnSearchResults && searchValue.trim()) {
       setSearchValue("");
+    }
+
+    if (wasOnSearchResults && !isCurrentlyOnSearchResults) {
       setActiveFilters([]);
     }
 
