@@ -42,7 +42,6 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [inputValue, setInputValue] = useState("");
-  const [isFocused, setIsFocused] = useState(false);
   const [chipsHeight, setChipsHeight] = useState(0);
   const inputRef = useRef(null);
   const chipsContainerRef = useRef(null);
@@ -54,7 +53,6 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
   const handleClose = () => {
     setAnchorEl(null);
     setInputValue("");
-    setIsFocused(false);
   };
 
   const open = Boolean(anchorEl);
@@ -104,15 +102,12 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
     }
   }, [location.search, label, recipients, loggedInUser]);
 
-  // Auto-focus input when popover opens and set it to show options
+  // Auto-focus input when popover opens
   useEffect(() => {
     if (open && inputRef.current) {
       setTimeout(() => {
         inputRef.current?.focus();
-        setIsFocused(true);
       }, 50);
-    } else {
-      setIsFocused(false);
     }
   }, [open]);
 
@@ -126,18 +121,14 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
     }
   }, [selectedContacts]);
 
-  // Filter options based on input and exclude already selected
+  // Filter options based on input (keep selected contacts visible)
   const filterOptions = (options, { inputValue }) => {
     // Ensure inputValue is a string
     const searchValue = typeof inputValue === "string" ? inputValue : "";
 
     if (!searchValue || searchValue.trim() === "") {
       // Show all options when no input, limited to 8
-      return options
-        .filter((option) => {
-          return !selectedContacts.some((selected) => selected.email === option.email && selected.id === option.id);
-        })
-        .slice(0, 8);
+      return options.slice(0, 8);
     }
 
     const filteredOptions = options.filter((option) => {
@@ -169,6 +160,8 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
       }
 
       setInputValue("");
+      // Close the popover after selection
+      handleClose();
     }
   };
 
@@ -200,6 +193,8 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
       (contact) => !(contact.email === contactToRemove.email && contact.id === contactToRemove.id)
     );
     setSelectedContacts(newSelected);
+
+    handleClose();
 
     // Notify parent component
     if (onFilterChange) {
@@ -318,6 +313,7 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
           {/* Autocomplete for searching and selecting contacts */}
           <Autocomplete
             options={recipients || []}
+            blurOnSelect
             getOptionLabel={(option) => {
               if (typeof option === "string") return option;
               return option.email || "";
@@ -329,13 +325,6 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
             filterOptions={filterOptions}
             open={open}
             disablePortal
-            onOpen={() => setIsFocused(true)}
-            onClose={(event, reason) => {
-              // Keep dropdown open when clicking inside
-              if (reason !== "selectOption") {
-                setIsFocused(false);
-              }
-            }}
             renderOption={(props, option) => {
               const { key, ...otherProps } = props;
               const isCustomRecipient = option.id && typeof option.id === "string" && option.id.startsWith("custom-");
@@ -358,42 +347,11 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
                     px: 2,
                   }}
                 >
-                  <Avatar
-                    sx={{
-                      bgcolor: isCustomRecipient ? "rgba(11, 87, 208, 0.3)" : avatarColor,
-                      color: isCustomRecipient ? "rgb(11, 87, 208)" : "white",
-                      fontSize: "14px",
-                      width: 32,
-                      height: 32,
-                    }}
-                  >
-                    {isCustomRecipient ? (
-                      <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
-                        person
-                      </span>
-                    ) : option.avatar ? (
-                      <img
-                        src={option.avatar}
-                        alt={option.name}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      initials
-                    )}
-                  </Avatar>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "14px" }}>
-                      {option.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: "12px" }}>
-                      {option.email}
-                    </Typography>
-                  </Box>
-                  {isAlreadySelected && (
+                  {isAlreadySelected ? (
                     <Box
                       sx={{
-                        width: 30,
-                        height: 30,
+                        width: 32,
+                        height: 32,
                         borderRadius: "50%",
                         backgroundColor: "rgb(26, 115, 232)",
                         display: "flex",
@@ -405,7 +363,39 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
                         check
                       </span>
                     </Box>
+                  ) : (
+                    <Avatar
+                      sx={{
+                        bgcolor: isCustomRecipient ? "rgba(11, 87, 208, 0.3)" : avatarColor,
+                        color: isCustomRecipient ? "rgb(11, 87, 208)" : "white",
+                        fontSize: "14px",
+                        width: 32,
+                        height: 32,
+                      }}
+                    >
+                      {isCustomRecipient ? (
+                        <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
+                          person
+                        </span>
+                      ) : option.avatar ? (
+                        <img
+                          src={option.avatar}
+                          alt={option.name}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        initials
+                      )}
+                    </Avatar>
                   )}
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "14px" }}>
+                      {option.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: "12px" }}>
+                      {option.email}
+                    </Typography>
+                  </Box>
                 </Box>
               );
             }}
@@ -419,13 +409,6 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
                   input: {
                     ...params.InputProps,
                     onKeyDown: handleKeyDown,
-                    onFocus: () => setIsFocused(true),
-                    onBlur: (e) => {
-                      // Don't blur if clicking on an option
-                      if (!e.relatedTarget || !e.relatedTarget.closest('[role="option"]')) {
-                        setTimeout(() => setIsFocused(false), 200);
-                      }
-                    },
                     style: {
                       fontSize: "14px",
                       color: "#000",
