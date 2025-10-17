@@ -43,7 +43,9 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
   const [selectedContacts, setSelectedContacts] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [chipsHeight, setChipsHeight] = useState(0);
   const inputRef = useRef(null);
+  const chipsContainerRef = useRef(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -113,6 +115,16 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
       setIsFocused(false);
     }
   }, [open]);
+
+  // Measure chips container height whenever selectedContacts changes
+  useEffect(() => {
+    if (chipsContainerRef.current) {
+      const height = chipsContainerRef.current.offsetHeight;
+      setChipsHeight(height);
+    } else {
+      setChipsHeight(0);
+    }
+  }, [selectedContacts]);
 
   // Filter options based on input and exclude already selected
   const filterOptions = (options, { inputValue }) => {
@@ -209,6 +221,24 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
   const hasSelection = selectedContacts.length > 0;
   const chipIsActive = isActive || hasSelection;
 
+  // Calculate dynamic listbox height based on chips container height
+  const calculateListboxMaxHeight = () => {
+    const popoverHeight = 540; // Total popover height
+    const topPadding = 16; // p: "16px" top
+    const bottomPadding = 16; // p: "16px" bottom
+    const chipsMarginBottom = selectedContacts.length > 0 ? 16 : 0; // mb: 2 (16px) when chips exist
+    const inputFieldHeight = 36; // TextField default height
+    const spacingMargin = 8; // mt: 1 (8px)
+
+    const usedSpace = topPadding + chipsHeight + chipsMarginBottom + inputFieldHeight + spacingMargin + bottomPadding;
+    const availableHeight = popoverHeight - usedSpace;
+
+    // Ensure a minimum height
+    return Math.max(availableHeight, 100);
+  };
+
+  const listboxMaxHeight = calculateListboxMaxHeight();
+
   return (
     <Box>
       <Chip
@@ -274,7 +304,7 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
         <Box sx={{ p: "16px" }}>
           {/* Selected contacts as chips */}
           {selectedContacts.length > 0 && (
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+            <Box ref={chipsContainerRef} sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
               {selectedContacts.map((contact) => (
                 <RecipientChip
                   key={`${contact.email}-${contact.id}`}
@@ -422,7 +452,7 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
                 sx: {
                   overflow: "auto",
                   padding: 0,
-                  maxHeight: "392px",
+                  maxHeight: `${listboxMaxHeight}px`,
                 },
               },
               option: {
