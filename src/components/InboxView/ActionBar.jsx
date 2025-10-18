@@ -157,7 +157,7 @@ const MailActions = ({ thread }) => {
 
   const {
     moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom,
-    moveToInbox, archive, markRead, snooze, addLabels
+    moveToInbox, archive, markRead, snooze, addLabels, removeLabels
   } = useMailActions();
 
   const handleArchive = useCallback(() => {
@@ -181,10 +181,14 @@ const MailActions = ({ thread }) => {
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              if (inCustomLabel) {
-                moveToLabelFrom(selectedIds, toKey, fromKey);
+              if (isMoving) {
+                if (inCustomLabel) {
+                  moveToLabelFrom(selectedIds, toKey, fromKey);
+                } else {
+                  moveToLabel(selectedIds, fromKey || "Inbox");
+                }
               } else {
-                moveToLabel(selectedIds, fromKey || "Inbox");
+                removeLabels(selectedIds, [toKey]);
               }
               setSnackbar({
                 open: true,
@@ -200,11 +204,10 @@ const MailActions = ({ thread }) => {
       });
 
       if (isMoving) {
-        // Navigate back to list view
         navigate(getBasePath());
       }
     },
-    [moveToLabel, moveToLabelFrom, addLabels, setSnackbar, labels]
+    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels]
   );
 
   const handleDelete = useCallback(() => {
@@ -297,7 +300,7 @@ const MailActions = ({ thread }) => {
             moveToLabel(selectedIds, targetKey); // pass key
           }
 
-          showUndoSnackbar(selectedIds, currentLabel, targetKey, inCustomLabel, false);
+          showUndoSnackbar(selectedIds, currentLabel, targetKey, inCustomLabel, isMovingToLabel);
 
           navigate(getBasePath());
         }
@@ -370,14 +373,15 @@ const MailActions = ({ thread }) => {
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
       const inCustomLabel = curMeta && curMeta.system === false;
       
-      if (inCustomLabel) {
-        if (isMoving) {
+      if (isMoving) {
+        if (inCustomLabel) {
           moveToLabelFrom(ids, currentLabel, newKey);
         } else {
-          addLabels(ids, [newKey]);
+          moveToLabel(ids, newKey);
         }
       } else {
-        moveToLabel(ids, newKey);
+        // Always additive when not moving
+        addLabels(ids, [newKey]);
       }
 
       showUndoSnackbar(ids, currentLabel, newKey, inCustomLabel, isMoving);
