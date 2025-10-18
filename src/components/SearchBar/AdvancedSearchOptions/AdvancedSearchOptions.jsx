@@ -34,7 +34,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
     size: "",
     sizeUnit: "MB",
     within: "1 day",
-    date: dayjs().format("YYYY-MM-DD"),
+    date: "",
     subset: "All Mail",
     attachment: false,
     excludeChats: false,
@@ -83,7 +83,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
           if (parsedData) {
             setFormData({
               ...parsedData,
-              date: parsedData.date || dayjs().format("YYYY-MM-DD"),
+              date: parsedData.date || "",
             });
           } else {
             setFormData(getDefaultFormData());
@@ -111,8 +111,8 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
         if (parsedData) {
           setFormData({
             ...parsedData,
-            // Keep date as current date if not parsed
-            date: parsedData.date || dayjs().format("YYYY-MM-DD"),
+            // Keep date empty if not parsed
+            date: parsedData.date || "",
           });
         } else {
           // Parsing failed, use defaults
