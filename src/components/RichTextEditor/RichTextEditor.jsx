@@ -355,21 +355,21 @@ export default function Editor({
   }, [content, restoreEmbeddedImages]);
 
   useEffect(() => {
-    // Guard early if no list
+    // If no signatures exist at all
     if (!signaturesState?.list || signaturesState.list.length === 0) {
       setSelectedSignature("No signature");
       return;
     }
 
-    const activeId = signaturesState?.useForNewEmails;
+    const activeId = messageId
+      ? signaturesState?.useForRepliesAndForwards
+      : signaturesState?.useForNewEmails;
 
-    // Guard against invalid values cleanly
     if (activeId === null || activeId === "" || activeId === undefined) {
       setSelectedSignature("No signature");
       return;
     }
 
-    // Ensure index is in range
     const index = Number(activeId);
     if (Number.isNaN(index) || index < 0 || index >= signaturesState.list.length) {
       setSelectedSignature("No signature");
@@ -378,7 +378,7 @@ export default function Editor({
 
     const sig = signaturesState.list[index];
     setSelectedSignature(sig?.name || "No signature");
-  }, [signaturesState]);
+  }, [signaturesState, messageId]);
 
   const openLinkPopover = (event) => {
     const editor = rteRef.current?.editor;
@@ -1122,7 +1122,6 @@ export default function Editor({
                         key={name}
                         onClick={() => {
                           if (name === "No signature") {
-                            // optional: remove existing signature
                             replaceSignature(rteRef.current?.editor, "");
                             setSelectedSignature(name);
                             closeSignaturePopover();
@@ -1135,11 +1134,9 @@ export default function Editor({
                           closeSignaturePopover();
                         }}
                         selected={selectedSignature === name}
-                        sx={{
-                          py: 0.8,
-                        }}
+                        sx={{ py: 0.8 }}
                       >
-                        <span style={{width: "20%"}}>
+                        <span style={{ width: "20%" }}>
                           {selectedSignature === name && (
                             <ListItemIcon sx={{ minWidth: 24 }}>
                               <span

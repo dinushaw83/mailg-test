@@ -636,7 +636,7 @@ export default function ActionBar({ thread }) {
         <MailActions thread={thread} />
         <NavigationActions />
       </ActionsContainer>
-      <Divider />
+      {/* <Divider /> */}
     </ActionBarContainer>
   );
 }

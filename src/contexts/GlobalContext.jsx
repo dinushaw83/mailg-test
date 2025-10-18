@@ -66,18 +66,6 @@ export const GlobalContextProvider = ({ children }) => {
   });
 
   // Signatures related settings
-  /**
-   *  {
-   *     list: {
-   *       name: string;
-   *       content: string;
-   *     }[];
-   *     useForNewEmails: string;
-   *     useForRepliesAndForwards: string;
-   *     insertSignatureBeforeQuotedText: boolean;
-   *   }
-   *  }
-   */
   const [signaturesState, setSignaturesState] = usePersistedState("signatures", {
     list: [],
     useForNewEmails: "",
