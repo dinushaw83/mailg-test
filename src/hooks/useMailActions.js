@@ -64,12 +64,49 @@ const normaliseLabels = (arr) => {
   return out;
 };
 
+// Remove all system labels except those in `except` array
+const removeSystemLabels = (labelSet, labelsMap, except = []) => {
+  for (const [key, meta] of Object.entries(labelsMap)) {
+    if (meta.system && !except.includes(key)) {
+      labelSet.delete(key);
+    }
+  }
+};
+
+// Helper to apply an operation with Undo support
+const withUndo = (ids, setEmails, operation) => {
+  const match = makeMatch(ids);
+  const originalStates = new Map();
+
+  setEmails((prev) => {
+    prev.forEach((m) => {
+      if (match(m)) {
+        originalStates.set(m.id, { labels: [...(m.labels || [])] });
+      }
+    });
+    return prev;
+  });
+
+  operation(match);
+
+  return () => {
+    setEmails((prev) =>
+      prev.map((m) =>
+        match(m) && originalStates.has(m.id)
+          ? { ...m, labels: originalStates.get(m.id).labels }
+          : m
+      )
+    );
+  };
+};
+
+
 /* ────────────────────────────────────────────────────────────────────────────
  * Hook
  * ────────────────────────────────────────────────────────────────────────── */
 
 export default function useMailActions() {
-  const { setEmails } = useContext(GlobalContext);
+  const { setEmails, labels } = useContext(GlobalContext);
 
   const updateByIds = useCallback(
     (ids, transform) => {
@@ -106,43 +143,14 @@ export default function useMailActions() {
   );
 
   const moveToInbox = useCallback(
-    (ids) => {
-      // Store original state for undo
-      const match = makeMatch(ids);
-      const originalStates = new Map();
-
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            originalStates.set(m.id, {
-              labels: [...(m.labels || [])],
-            });
-          }
+    (ids) =>
+      withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labelSet) => {
+          removeSystemLabels(labelSet, labels, ["Inbox"]);
+          labelSet.add("Inbox");
         });
-        return prev;
-      });
-
-      updateByIds(ids, (labels) => {
-        const labelsToDelete = ["Trash", "Spam", "Snoozed", "Muted"];
-        labelsToDelete.forEach((label) => labels.delete(label));
-        labels.add("Inbox");
-      });
-
-      const undo = () => {
-        setEmails((prev) =>
-          prev.map((m) => {
-            if (match(m) && originalStates.has(m.id)) {
-              const originalState = originalStates.get(m.id);
-              return { ...m, labels: originalState.labels };
-            }
-            return m;
-          })
-        );
-      };
-
-      return undo;
-    },
-    [updateByIds, setEmails]
+      }),
+    [updateByIds, setEmails, labels]
   );
 
   const archive = useCallback(
@@ -155,11 +163,13 @@ export default function useMailActions() {
 
   const moveToSpam = useCallback(
     (ids) =>
-      updateByIds(ids, (labels) => {
-        labels.clear();
-        labels.add("Spam");
+      withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labelSet) => {
+          removeSystemLabels(labelSet, labels, ["Spam"]);
+          labelSet.add("Spam");
+        });
       }),
-    [updateByIds]
+    [updateByIds, setEmails, labels]
   );
 
   const notSpam = useCallback(
@@ -173,12 +183,13 @@ export default function useMailActions() {
 
   const moveToTrash = useCallback(
     (ids) =>
-      updateByIds(ids, (labels) => {
-        labels.delete("Inbox");
-        labels.delete("Spam");
-        labels.add("Trash");
+      withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labelSet) => {
+          removeSystemLabels(labelSet, labels, ["Trash"]);
+          labelSet.add("Trash");
+        });
       }),
-    [updateByIds]
+    [updateByIds, setEmails, labels]
   );
 
   const restoreFromTrash = useCallback(
@@ -231,112 +242,32 @@ export default function useMailActions() {
   );
 
   const moveToLabel = useCallback(
-    (ids, name) => {
-      // Store original state for undo
-      const match = makeMatch(ids);
-      const originalStates = new Map();
-
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            originalStates.set(m.id, {
-              labels: [...(m.labels || [])],
-            });
-          }
+    (ids, name) =>
+      withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labelSet) => {
+          if (!name) return;
+          const isSystem = labels[name]?.system;
+          if (isSystem) removeSystemLabels(labelSet, labels, [name]);
+          else removeSystemLabels(labelSet, labels);
+          labelSet.add(name);
         });
-        return prev;
-      });
-
-      updateByIds(ids, (labels) => {
-        if (!name) return;
-
-        const target = String(name);
-        const systemLabels = ["Inbox", "Sent", "Drafts", "Scheduled", "Spam", "Trash"];
-
-        if (systemLabels.includes(target)) {
-          // enforce mutual exclusivity of system labels
-          systemLabels.forEach((systemLabel) => {
-            if (systemLabel !== target) labels.delete(systemLabel);
-          });
-        } else {
-          // "Move to": remove system folders
-          labels.delete("Inbox");
-          labels.delete("Spam");
-          labels.delete("Trash");
-        }
-
-        labels.add(target);
-      });
-
-      const undo = () => {
-        setEmails((prev) =>
-          prev.map((m) => {
-            if (match(m) && originalStates.has(m.id)) {
-              const originalState = originalStates.get(m.id);
-              return { ...m, labels: originalState.labels };
-            }
-            return m;
-          })
-        );
-      };
-
-      return undo;
-    },
-    [updateByIds, setEmails]
+      }),
+    [updateByIds, setEmails, labels]
   );
 
   const moveToLabelFrom = useCallback(
-    (ids, sourceLabel, dest) => {
-      // Store original state for undo before any transformations
-      const match = makeMatch(ids);
-      const originalStates = new Map();
-
-      // Get current emails to capture original state
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            originalStates.set(m.id, {
-              labels: [...(m.labels || [])],
-            });
-          }
+    (ids, sourceLabel, dest) =>
+      withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labelSet) => {
+          if (sourceLabel) labelSet.delete(String(sourceLabel));
+          if (!dest) return;
+          const isSystem = labels[dest]?.system;
+          if (isSystem) removeSystemLabels(labelSet, labels, [dest]);
+          else removeSystemLabels(labelSet, labels);
+          labelSet.add(dest);
         });
-        return prev; // Don't modify the state, just capture original values
-      });
-
-      updateByIds(ids, (labels) => {
-        if (sourceLabel) labels.delete(String(sourceLabel));
-
-        if (!dest) return;
-        const systemLabels = ["Inbox", "Sent", "Drafts", "Scheduled", "Spam", "Trash"];
-
-        if (systemLabels.includes(dest)) {
-          systemLabels.forEach((sl) => {
-            if (sl !== dest) labels.delete(sl);
-          });
-        } else {
-          labels.delete("Inbox");
-          labels.delete("Spam");
-          labels.delete("Trash");
-        }
-
-        labels.add(dest);
-      });
-
-      const undo = () => {
-        setEmails((prev) =>
-          prev.map((m) => {
-            if (match(m) && originalStates.has(m.id)) {
-              const originalState = originalStates.get(m.id);
-              return { ...m, labels: originalState.labels };
-            }
-            return m;
-          })
-        );
-      };
-
-      return undo;
-    },
-    [updateByIds, setEmails]
+      }),
+    [updateByIds, setEmails, labels]
   );
 
   const deleteForever = useCallback(
