@@ -13,6 +13,35 @@ const SearchResultFilters = () => {
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
 
+  // Determine which filter chips should be visible based on URL parameters
+  const shouldShowFilterChip = (filter) => {
+    const isRefinementSearch = searchParams.get("isrefinement") === "true";
+
+    // If "From" is already applied via advanced search (has 'from' param but NOT a refinement search), hide the chip
+    // However, if it's a refinement search, show it because the user might have clicked the chip to filter
+    if (filter === "From" && searchParams.has("from") && !isRefinementSearch) {
+      return false;
+    }
+
+    // If "To" is already applied via advanced search (has 'to' param but NOT a refinement search), hide the chip
+    if (filter === "To" && searchParams.has("to") && !isRefinementSearch) {
+      return false;
+    }
+
+    // If "Has attachment" is already applied via advanced search (has 'attachment' param), hide the chip
+    if (filter === "Has attachment" && searchParams.has("attachment")) {
+      return false;
+    }
+
+    // If there's a date 'within' of 1 day, hide the "Any time" chip
+    if (filter === "Any time" && searchParams.has("within") && searchParams.get("within") === "1 day") {
+      return false;
+    }
+
+    // Show all other filters
+    return true;
+  };
+
   // Get active filters from URL
   const getActiveFilters = () => {
     const active = [...activeFilters];
@@ -120,68 +149,70 @@ const SearchResultFilters = () => {
 
   return (
     <Stack direction="row" spacing={1} p={2}>
-      {filterOptions.map((filter) => {
-        const isActive = getActiveFilters().includes(filter);
-        if (filter === "From" || filter === "To") {
+      {filterOptions
+        .filter((filter) => shouldShowFilterChip(filter))
+        .map((filter) => {
+          const isActive = getActiveFilters().includes(filter);
+          if (filter === "From" || filter === "To") {
+            return (
+              <ContactFilterChip
+                key={filter}
+                label={filter}
+                isActive={isActive}
+                onFilterChange={handleContactFilterChange}
+              />
+            );
+          }
+          if (filter === "Any time") {
+            return <DateFilterChip key={filter} label={filter} isActive={isActive} />;
+          }
           return (
-            <ContactFilterChip
+            <Chip
               key={filter}
-              label={filter}
-              isActive={isActive}
-              onFilterChange={handleContactFilterChange}
+              sx={{
+                bgcolor: isActive ? "#cfdef3" : "white",
+                border: isActive ? "none" : "1px solid #444746",
+                color: isActive ? "#041E49" : "#5f6368",
+                fontSize: "14px",
+                height: "30px",
+                borderRadius: "8px",
+                "&:hover": {
+                  bgcolor: isActive ? "#bad2f5" : "#9f9e9e2b",
+                },
+              }}
+              onClick={() => handleFilterClick(filter)}
+              label={
+                <Stack direction="row" alignItems="center">
+                  {isActive && (
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 20,
+                        color: "black",
+                        marginRight: "4px",
+                      }}
+                    >
+                      check
+                    </span>
+                  )}
+                  {filter}
+                  {filterOptionsWithDropdown.includes(filter) && (
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 24,
+                        color: isActive ? "#1a73e8" : "rgb(68, 68, 68)",
+                        marginLeft: "4px",
+                      }}
+                    >
+                      arrow_drop_down
+                    </span>
+                  )}
+                </Stack>
+              }
             />
           );
-        }
-        if (filter === "Any time") {
-          return <DateFilterChip key={filter} label={filter} isActive={isActive} />;
-        }
-        return (
-          <Chip
-            key={filter}
-            sx={{
-              bgcolor: isActive ? "#cfdef3" : "white",
-              border: isActive ? "none" : "1px solid #444746",
-              color: isActive ? "#041E49" : "#5f6368",
-              fontSize: "14px",
-              height: "30px",
-              borderRadius: "8px",
-              "&:hover": {
-                bgcolor: isActive ? "#bad2f5" : "#9f9e9e2b",
-              },
-            }}
-            onClick={() => handleFilterClick(filter)}
-            label={
-              <Stack direction="row" alignItems="center">
-                {isActive && (
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: 20,
-                      color: "black",
-                      marginRight: "4px",
-                    }}
-                  >
-                    check
-                  </span>
-                )}
-                {filter}
-                {filterOptionsWithDropdown.includes(filter) && (
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: 24,
-                      color: isActive ? "#1a73e8" : "rgb(68, 68, 68)",
-                      marginLeft: "4px",
-                    }}
-                  >
-                    arrow_drop_down
-                  </span>
-                )}
-              </Stack>
-            }
-          />
-        );
-      })}
+        })}
 
       <Button variant="text" size="small" sx={{ textTransform: "none", px: 1.5, borderRadius: "16px" }}>
         Advanced search

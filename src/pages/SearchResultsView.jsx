@@ -62,7 +62,37 @@ const SearchResultsView = () => {
       };
 
       // Use advanced search with full email data
-      return advancedSearchWithFullData(searchCriteria, emails, { limit: null });
+      let results = advancedSearchWithFullData(searchCriteria, emails, { limit: null });
+
+      // Apply "Has attachment" filter from filter chip (attach_or_drive param)
+      // Only apply if not already filtered by attachment in advanced search
+      if (searchParams.get("attach_or_drive") === "true" && !searchCriteria.attachment) {
+        results = results.filter((email) => {
+          const hasAttachments = email.attachments && email.attachments.length > 0;
+          return hasAttachments;
+        });
+      }
+
+      // Apply "Is unread" filter from filter chip
+      if (searchParams.get("is_unread") === "true") {
+        results = results.filter((email) => !email.read);
+      }
+
+      // Apply date range filter from filter chips
+      if (searchParams.get("daterangetype") === "custom_range") {
+        // Filter by datestart (emails after this date)
+        if (searchParams.has("datestart")) {
+          const dateStart = new Date(searchParams.get("datestart"));
+          results = results.filter((email) => new Date(email.timestamp) >= dateStart);
+        }
+        // Filter by dateend (emails before this date)
+        if (searchParams.has("dateend")) {
+          const dateEnd = new Date(searchParams.get("dateend"));
+          results = results.filter((email) => new Date(email.timestamp) <= dateEnd);
+        }
+      }
+
+      return results;
     } else {
       // Handle regular text search or refinement search
       const isRefinementSearch = searchParams.get("isrefinement") === "true";
