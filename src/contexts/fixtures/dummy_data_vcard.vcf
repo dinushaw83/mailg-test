@@ -1,0 +1,84 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Olivia Chen
+N:Chen;Olivia;Grace;;
+item1.EMAIL;TYPE=INTERNET:olivia.chen@consulting.com
+item1.X-ABLabel:
+item2.EMAIL;TYPE=INTERNET:olivia.personal@gmail.com
+item2.X-ABLabel:
+item3.TEL;TYPE=MOBILE:+1-555-3001
+item3.X-ABLabel:
+ORG:Strategic Consulting
+TITLE:Management Consultant
+CATEGORIES:Business
+NOTE:Expert in digital transformation
+BDAY:19861215
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Benjamin Foster
+N:Foster;Benjamin;James;;
+item1.EMAIL;TYPE=INTERNET:ben.foster@school.edu
+item1.X-ABLabel:
+item2.EMAIL;TYPE=INTERNET:ben.personal@yahoo.com
+item2.X-ABLabel:
+item3.TEL;TYPE=MOBILE:+1-555-3002
+item3.X-ABLabel:
+ORG:Metro High School
+TITLE:History Teacher
+CATEGORIES:Education
+NOTE:Passionate about world history and travel
+BDAY:19790403
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Sophia Patel
+N:Patel;Sophia;Priya;;
+item1.EMAIL;TYPE=INTERNET:sophia.patel@research.org
+item1.X-ABLabel:
+item2.EMAIL;TYPE=INTERNET:sophia.personal@outlook.com
+item2.X-ABLabel:
+item3.TEL;TYPE=MOBILE:+1-555-3003
+item3.X-ABLabel:
+ORG:Medical Research Institute
+TITLE:Research Scientist
+CATEGORIES:Science
+NOTE:Leading researcher in cancer immunotherapy
+BDAY:19820827
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:William Turner
+N:Turner;William;Alexander;;
+item1.EMAIL;TYPE=INTERNET:will.turner@construction.com
+item1.X-ABLabel:
+item2.EMAIL;TYPE=INTERNET:will.personal@icloud.com
+item2.X-ABLabel:
+item3.TEL;TYPE=MOBILE:+1-555-3004
+item3.X-ABLabel:
+ORG:Turner Construction
+TITLE:Project Manager
+CATEGORIES:Construction
+NOTE:Specializes in sustainable building practices
+BDAY:19851110
+END:VCARD
+
+BEGIN:VCARD
+VERSION:3.0
+FN:Isabella Rodriguez
+N:Rodriguez;Isabella;Carmen;;
+item1.EMAIL;TYPE=INTERNET:isabella.rodriguez@nonprofit.org
+item1.X-ABLabel:
+item2.EMAIL;TYPE=INTERNET:isabella.personal@hotmail.com
+item2.X-ABLabel:
+item3.TEL;TYPE=MOBILE:+1-555-3005
+item3.X-ABLabel:
+ORG:Community Outreach
+TITLE:Program Director
+CATEGORIES:Nonprofit
+NOTE:Dedicated to youth development programs
+BDAY:19910722
+END:VCARD

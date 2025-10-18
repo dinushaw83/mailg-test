@@ -18,6 +18,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateLabelModal from "./Contacts/CreateLabelModal";
 import DeleteLabelModal from "./Contacts/DeleteLabelModal";
+import ImportContactsModal from "./Contacts/ImportContactsModal";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import useDimensions from "../hooks/useDimensions";
 import styles from "./ContactsLeftSidebar.module.css";
@@ -229,6 +230,7 @@ const ContactsLeftSidebar = () => {
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     recipients,
+    setRecipients,
     recipientLabels,
     setRecipientLabels,
     vacationResponder,
@@ -245,6 +247,7 @@ const ContactsLeftSidebar = () => {
     label: null,
   });
   const [createContactAnchor, setCreateContactAnchor] = useState(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   useEffect(() => {
     // When width goes below 1024px, set the contacts left sidebar to collapsed else expanded
@@ -270,7 +273,9 @@ const ContactsLeftSidebar = () => {
   };
 
   const handleMenuItemClick = (item) => {
-    // TODO: Implement navigation functionality
+    if (item === "Import") {
+      setImportModalOpen(true);
+    }
   };
 
   const handleInfoClick = (e) => {
@@ -303,6 +308,39 @@ const ContactsLeftSidebar = () => {
       type: "create",
       labelId: null,
     });
+  };
+
+  // Handle import contacts
+  const handleImportContacts = async (importedContacts) => {
+    try {
+      // Add imported contacts to recipients
+      setRecipients((prev) => [...prev, ...importedContacts]);
+      
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: `Successfully imported ${importedContacts.length} contacts`,
+        action: null,
+        autoHideDuration: 3000,
+        hideClose: true,
+        style: snackbarStyle,
+      });
+    } catch (error) {
+      console.error('Error importing contacts:', error);
+      setSnackbar({
+        open: true,
+        message: 'Error importing contacts. Please try again.',
+        action: null,
+        autoHideDuration: 3000,
+        hideClose: true,
+        style: snackbarStyle,
+      });
+    }
+  };
+
+  // Handle close import modal
+  const handleCloseImportModal = () => {
+    setImportModalOpen(false);
   };
 
   // Handle undo delete label
@@ -515,15 +553,41 @@ const ContactsLeftSidebar = () => {
               icon="person"
               text="Contacts"
               chip={myContacts.length === 0 ? "" : myContacts.length}
+              infoIcon={false}
+              onInfoClick={() => {}}
+              onClick={() => {}}
+              iconType="outlined"
+              showEditDelete={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
             />
-            <MenuItem to="/contacts/frequent" selected={activeItem === "frequent"} icon="history" text="Frequent" />
+            <MenuItem 
+              to="/contacts/frequent" 
+              selected={activeItem === "frequent"} 
+              icon="history" 
+              text="Frequent"
+              chip=""
+              infoIcon={false}
+              onInfoClick={() => {}}
+              onClick={() => {}}
+              iconType="outlined"
+              showEditDelete={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
             <MenuItem
               to="/contacts/other"
               selected={activeItem === "other"}
               icon="archive"
               text="Other contacts"
+              chip=""
               infoIcon={true}
               onInfoClick={handleInfoClick}
+              onClick={() => {}}
+              iconType="outlined"
+              showEditDelete={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
             />
           </List>
         </Box>
@@ -537,14 +601,43 @@ const ContactsLeftSidebar = () => {
               selected={activeItem === "suggestions"}
               icon="handyman"
               text="Merge & fix"
+              chip=""
+              infoIcon={false}
+              onInfoClick={() => {}}
+              onClick={() => {}}
+              iconType="outlined"
+              showEditDelete={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
             />
             <MenuItem
+              to=""
               selected={activeItem === "Import"}
               icon="file_download"
               text="Import"
+              chip=""
+              infoIcon={false}
+              onInfoClick={() => {}}
               onClick={() => handleMenuItemClick("Import")}
+              iconType="outlined"
+              showEditDelete={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
             />
-            <MenuItem to="/contacts/trash" selected={activeItem === "trash"} icon="delete" text="Trash" />
+            <MenuItem 
+              to="/contacts/trash" 
+              selected={activeItem === "trash"} 
+              icon="delete" 
+              text="Trash"
+              chip=""
+              infoIcon={false}
+              onInfoClick={() => {}}
+              onClick={() => {}}
+              iconType="outlined"
+              showEditDelete={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
           </List>
         </Box>
 
@@ -585,6 +678,9 @@ const ContactsLeftSidebar = () => {
                   text={label.label}
                   iconType="filled"
                   chip={getContactsCountByLabel(label.label) === 0 ? "" : getContactsCountByLabel(label.label)}
+                  infoIcon={false}
+                  onInfoClick={() => {}}
+                  onClick={() => {}}
                   showEditDelete={true}
                   onEdit={() => handleEditLabel(label)}
                   onDelete={() => handleDeleteLabel(label)}
@@ -617,6 +713,13 @@ const ContactsLeftSidebar = () => {
           label={deleteLabelModal.label}
         />
       )}
+
+      {/* Import Contacts Modal */}
+      <ImportContactsModal
+        open={importModalOpen}
+        onClose={handleCloseImportModal}
+        onImport={handleImportContacts}
+      />
     </>
   );
 };

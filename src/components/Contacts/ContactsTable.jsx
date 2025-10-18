@@ -24,6 +24,8 @@ import { useNavigate } from "react-router-dom";
 import { generateAvatarColor } from "../../utils/helperFunctions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import ManageLabelsDropdown from "./ManageLabelsDropdown";
+import ExportContactsModal from "./ExportContactsModal";
+import DeleteContactsModal from "./DeleteContactsModal";
 import styles from "./ContactsTable.module.css";
 
 // Snackbar style for this screen
@@ -37,8 +39,8 @@ const snackbarStyle = {
   },
 };
 
-const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
-  const { setRecipients, setSnackbar, recipientLabels } = useGlobalContext();
+const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = null }) => {
+  const { setRecipients, setSnackbar, recipientLabels, recipients } = useGlobalContext();
   const navigate = useNavigate();
   const [tableHeaders, setTableHeaders] = useState([
     "Name",
@@ -57,14 +59,13 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
   const selectedContactRef = useRef(null);
   const [checkedContacts, setCheckedContacts] = useState(new Set());
   const [manageLabelsAnchor, setManageLabelsAnchor] = useState(null);
+  const [bulkMoreMenuAnchor, setBulkMoreMenuAnchor] = useState(null);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteActionType, setDeleteActionType] = useState(null);
 
   // Create set of all contact IDs from all sections (no duplicates)
   const allContactsSet = new Set(contacts.flatMap((section) => section.data || []).map((contact) => contact.id));
-
-  // Check if all contacts are selected
-  const isAllContactsSelected = () => {
-    return checkedContacts.size > 0 && checkedContacts.size === allContactsSet.size;
-  };
 
   // All possible headers with their priority (lower number = higher priority)
   const allHeaders = [
@@ -182,6 +183,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
 
   // Handle more actions dropdown
   const handleMoreActions = (contact, title, event) => {
+    console.log("handleMoreActions", contact, title, event);
     selectedContactRef.current = {
       contact,
       title,
@@ -204,9 +206,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
 
   // Handle export action
   const handleExport = () => {
-    console.log("Export contact:", selectedContactRef.current);
-    handleCloseMoreMenu();
-    // TODO: Implement export functionality
+    // Don't close the menu yet, we need to preserve the selectedContactRef
+    setMoreMenuAnchor(null);
+    setExportModalOpen(true);
   };
 
   // Handle hide from contacts action
@@ -219,8 +221,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
   // Handle delete action
   const handleDelete = () => {
     console.log("Delete contact:", selectedContactRef.current);
-    handleCloseMoreMenu();
-    // TODO: Implement delete functionality
+    setMoreMenuAnchor(null); // Close menu but keep selectedContactRef
+    setDeleteActionType("single");
+    setDeleteModalOpen(true);
   };
 
   // Handle undo label toggle
@@ -253,15 +256,17 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
       );
 
       // Update the ref to reflect the change
-      selectedContactRef.current = {
-        ...selectedContactRef.current,
-        contact: {
-          ...selectedContactRef.current.contact,
-          labels: selectedContactRef.current.contact.labels?.includes(labelName)
-            ? selectedContactRef.current.contact.labels.filter((label) => label !== labelName)
-            : [...(selectedContactRef.current.contact.labels || []), labelName],
-        },
-      };
+      if (selectedContactRef.current) {
+        selectedContactRef.current = {
+          ...selectedContactRef.current,
+          contact: {
+            ...selectedContactRef.current.contact,
+            labels: selectedContactRef.current.contact.labels?.includes(labelName)
+              ? selectedContactRef.current.contact.labels.filter((label) => label !== labelName)
+              : [...(selectedContactRef.current.contact.labels || []), labelName],
+          },
+        };
+      }
 
       // Display success snackbar notification
       setSnackbar({
@@ -277,7 +282,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
 
   // Handle label toggle
   const handleLabelToggle = (labelName) => {
-    if (!selectedContactRef.current && !selectedContactRef.current.contact) return;
+    if (!selectedContactRef.current || !selectedContactRef.current.contact) return;
 
     // Store original contact data before making changes
     const originalContact = selectedContactRef.current.contact;
@@ -311,15 +316,17 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
       );
 
       // Update the ref to reflect the change
-      selectedContactRef.current = {
-        ...selectedContactRef.current,
-        contact: {
-          ...contact,
-          labels: hasLabel
-            ? contact.labels.filter((label) => label !== labelName)
-            : [...(contact.labels || []), labelName],
-        },
-      };
+      if (selectedContactRef.current) {
+        selectedContactRef.current = {
+          ...selectedContactRef.current,
+          contact: {
+            ...contact,
+            labels: hasLabel
+              ? contact.labels.filter((label) => label !== labelName)
+              : [...(contact.labels || []), labelName],
+          },
+        };
+      }
 
       // Display success snackbar notification
       setSnackbar({
@@ -376,9 +383,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
   };
 
   // Handle list settings
-  const handleListSettings = () => {
-    console.log("List settings clicked");
-    // TODO: Implement list settings functionality
+  const handleListSettings = (event) => {
+    event.stopPropagation();
+    setBulkMoreMenuAnchor(event.currentTarget);
   };
 
   // Handle manage labels dropdown
@@ -391,9 +398,179 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
     setManageLabelsAnchor(null);
   };
 
+  // Handle bulk more actions dropdown
+  const handleBulkMoreActions = (event) => {
+    event.stopPropagation();
+    setBulkMoreMenuAnchor(event.currentTarget);
+  };
+
+  // Close bulk more actions dropdown
+  const handleCloseBulkMoreMenu = () => {
+    setBulkMoreMenuAnchor(null);
+  };
+
+  // Handle bulk print action
+  const handleBulkPrint = () => {
+    if (checkedContacts.size > 0) {
+      console.log("Bulk print action clicked for selected contacts:", Array.from(checkedContacts));
+    } else {
+      console.log("Print action clicked for all contacts (list settings)");
+    }
+    handleCloseBulkMoreMenu();
+    // TODO: Implement bulk print functionality
+  };
+
+  // Handle bulk export action
+  const handleBulkExport = () => {
+    handleCloseBulkMoreMenu();
+    setExportModalOpen(true);
+  };
+
+  // Handle close export modal
+  const handleCloseExportModal = () => {
+    setExportModalOpen(false);
+    // Reset the selected contact reference when closing the modal
+    selectedContactRef.current = null;
+  };
+
+  // Handle close delete modal
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setDeleteActionType(null);
+    selectedContactRef.current = null; // Clear the selected contact reference
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = () => {
+    if (deleteActionType === "single" && selectedContactRef.current?.contact) {
+      // Delete single contact
+      const contactToDelete = selectedContactRef.current.contact;
+
+      // Store the deleted contact for undo
+      const deletedContact = contactToDelete;
+
+      setRecipients((prev) => prev.filter((recipient) => recipient.id !== contactToDelete.id));
+
+      // Remove the deleted contact from checked contacts if it was selected
+      setCheckedContacts((prev) => {
+        const newChecked = new Set(prev);
+        newChecked.delete(contactToDelete.id);
+        return newChecked;
+      });
+
+      const undo = () => {
+        // Restore the contact
+        setRecipients((prev) => [...prev, deletedContact]);
+
+        // Restore the contact to checked contacts if it was originally selected
+        setCheckedContacts((prev) => {
+          const newChecked = new Set(prev);
+          newChecked.add(contactToDelete.id);
+          return newChecked;
+        });
+
+        setSnackbar({
+          open: true,
+          message: "Undone",
+          action: null,
+          autoHideDuration: 3000,
+          hideClose: true,
+          style: snackbarStyle,
+        });
+      };
+
+      setSnackbar({
+        open: true,
+        message: `1 contact deleted`,
+        action: (
+          <Button variant="text" size="medium" onClick={undo}>
+            Undo
+          </Button>
+        ),
+        autoHideDuration: 3000,
+        hideClose: true,
+        style: snackbarStyle,
+      });
+    } else if (deleteActionType === "bulk") {
+      // Delete selected contacts
+      const contactsToDelete = Array.from(checkedContacts);
+
+      // Store the deleted contacts for undo
+      const deletedContacts = recipients.filter((recipient) => contactsToDelete.includes(recipient.id));
+
+      setRecipients((prev) => prev.filter((recipient) => !contactsToDelete.includes(recipient.id)));
+
+      const undo = () => {
+        // Restore the contacts
+        setRecipients((prev) => [...prev, ...deletedContacts]);
+        setSnackbar({
+          open: true,
+          message: "Undone",
+          action: null,
+          autoHideDuration: 2000,
+          hideClose: true,
+          style: snackbarStyle,
+        });
+      };
+
+      // Clear selection
+      setCheckedContacts(new Set());
+
+      setSnackbar({
+        open: true,
+        message: `${contactsToDelete.length} contact${contactsToDelete.length > 1 ? "s" : ""} deleted`,
+        action: (
+          <Button variant="text" size="medium" onClick={undo}>
+            Undo
+          </Button>
+        ),
+        autoHideDuration: 3000,
+        hideClose: true,
+        style: snackbarStyle,
+      });
+    }
+  };
+
+  // Handle bulk hide from contacts action
+  const handleBulkHideFromContacts = () => {
+    if (checkedContacts.size > 0) {
+      console.log("Bulk hide from contacts action clicked for selected contacts:", Array.from(checkedContacts));
+    } else {
+      console.log("Hide from contacts action clicked for all contacts (list settings)");
+    }
+    handleCloseBulkMoreMenu();
+    // TODO: Implement bulk hide from contacts functionality
+  };
+
+  // Handle bulk delete action
+  const handleBulkDelete = () => {
+    if (checkedContacts.size > 0) {
+      console.log("Bulk delete action clicked for selected contacts:", Array.from(checkedContacts));
+    } else {
+      console.log("Delete action clicked for all contacts (list settings)");
+    }
+    handleCloseBulkMoreMenu();
+    setDeleteActionType("bulk");
+    setDeleteModalOpen(true);
+  };
+
   // Handle merge contacts
   const handleMergeContacts = () => {
     // TODO: Implement merge contacts functionality
+  };
+
+  // Handle display density action
+  const handleDisplayDensity = () => {
+    console.log("Display Density clicked");
+    handleCloseBulkMoreMenu();
+    // TODO: Implement display density functionality
+  };
+
+  // Handle change column order action
+  const handleChangeColumnOrder = () => {
+    console.log("Change column order clicked");
+    handleCloseBulkMoreMenu();
+    // TODO: Implement change column order functionality
   };
 
   // Handle checkbox change
@@ -410,11 +587,13 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
   };
 
   // Handle select all checkbox
-  const handleSelectAll = (isChecked) => {
-    if (isChecked) {
-      setCheckedContacts(new Set(allContactsSet));
-    } else {
+  const handleSelectAll = () => {
+    // If there are already selected contacts, clicking the header checkbox should deselect all
+    if (checkedContacts.size > 0) {
       setCheckedContacts(new Set());
+    } else {
+      // If no contacts are selected, clicking the header checkbox should select all
+      setCheckedContacts(new Set(allContactsSet));
     }
   };
 
@@ -790,11 +969,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                               },
                             }}
                           >
-                            <IconButton
-                              size="medium"
-                              onClick={() => handleBulkAction("export")}
-                              sx={{ color: "#444746" }}
-                            >
+                            <IconButton size="medium" onClick={handleBulkExport} sx={{ color: "#444746" }}>
                               <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
                                 upload
                               </span>
@@ -862,9 +1037,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Checkbox
                         size="medium"
-                        checked={isAllContactsSelected()}
-                        indeterminate={checkedContacts.size > 0 && checkedContacts.size < allContactsSet.size}
-                        onChange={(event) => handleSelectAll(event.target.checked)}
+                        checked={false}
+                        indeterminate={checkedContacts.size > 0}
+                        onChange={() => handleSelectAll()}
                         sx={{
                           "&.Mui-checked": {
                             color: "#0b57d0",
@@ -904,7 +1079,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                           }}
                         >
                           <IconButton size="medium" onClick={handleMergeContacts} sx={{ color: "#0b57d0" }}>
-                            <span class="material-symbols-outlined" style={{ fontSize: "20px" }}>merge</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
+                              merge
+                            </span>
                           </IconButton>
                         </Tooltip>
                       )}
@@ -977,11 +1154,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
                           },
                         }}
                       >
-                        <IconButton
-                          size="small"
-                          onClick={() => console.log("More actions clicked for selected contacts")}
-                          sx={{ color: "#0b57d0" }}
-                        >
+                        <IconButton size="small" onClick={handleBulkMoreActions} sx={{ color: "#0b57d0" }}>
                           <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
                             more_vert
                           </span>
@@ -1222,6 +1395,164 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
         )}
       </Menu>
 
+      {/* Bulk More Actions Dropdown Menu */}
+      <Menu
+        anchorEl={bulkMoreMenuAnchor}
+        open={Boolean(bulkMoreMenuAnchor)}
+        onClose={handleCloseBulkMoreMenu}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        sx={{
+          "& .MuiPaper-root": {
+            width: "256px",
+            mt: 1,
+            backgroundColor: "#fff",
+            boxShadow:
+              "0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12),0px 5px 5px -3px rgba(0,0,0,.2)",
+            borderRadius: "2px",
+          },
+          "& .MuiMenuItem-root": {
+            px: 3,
+            py: 1.25,
+            "&:hover": {
+              backgroundColor: "#eee",
+            },
+          },
+        }}
+      >
+        {checkedContacts.size === 0 ? (
+          // Options when no contacts are selected
+          <>
+            {/* Display Density option */}
+            <MenuItem onClick={handleDisplayDensity}>
+              <ListItemIcon>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                  format_list_bulleted
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary="Display Density"
+                slotProps={{
+                  primary: {
+                    color: "rgb(60,64,67)",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                  },
+                }}
+              />
+            </MenuItem>
+
+            {/* Change column order option */}
+            <MenuItem onClick={handleChangeColumnOrder}>
+              <ListItemIcon>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                  table_chart
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary="Change column order"
+                slotProps={{
+                  primary: {
+                    color: "rgb(60,64,67)",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                  },
+                }}
+              />
+            </MenuItem>
+          </>
+        ) : (
+          // Options when contacts are selected
+          <>
+            {/* Print action */}
+            {!hidePrintExport && (
+              <MenuItem onClick={handleBulkPrint}>
+                <ListItemIcon>
+                  <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                    print
+                  </span>
+                </ListItemIcon>
+                <ListItemText
+                  primary="Print"
+                  slotProps={{
+                    primary: {
+                      color: "rgb(60,64,67)",
+                      fontSize: "14px",
+                      fontWeight: 400,
+                    },
+                  }}
+                />
+              </MenuItem>
+            )}
+
+            {/* Export action */}
+            {!hidePrintExport && (
+              <MenuItem onClick={handleBulkExport}>
+                <ListItemIcon>
+                  <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                    upload
+                  </span>
+                </ListItemIcon>
+                <ListItemText
+                  primary="Export"
+                  slotProps={{
+                    primary: {
+                      color: "rgb(60,64,67)",
+                      fontSize: "14px",
+                      fontWeight: 400,
+                    },
+                  }}
+                />
+              </MenuItem>
+            )}
+
+            {/* Hide from contacts action */}
+            <MenuItem onClick={handleBulkHideFromContacts}>
+              <ListItemIcon>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                  archive
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary="Hide from contacts"
+                slotProps={{
+                  primary: {
+                    color: "rgb(60,64,67)",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                  },
+                }}
+              />
+            </MenuItem>
+
+            {/* Delete action */}
+            <MenuItem onClick={handleBulkDelete}>
+              <ListItemIcon>
+                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                  delete
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary="Delete"
+                slotProps={{
+                  primary: {
+                    color: "rgb(60,64,67)",
+                    fontSize: "14px",
+                    fontWeight: 400,
+                  },
+                }}
+              />
+            </MenuItem>
+          </>
+        )}
+      </Menu>
+
       {/* Manage Labels Dropdown */}
       <ManageLabelsDropdown
         anchorEl={manageLabelsAnchor}
@@ -1229,6 +1560,28 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false }) => {
         onClose={handleCloseManageLabels}
         selectedContacts={checkedContacts}
         contacts={contacts}
+      />
+
+      {/* Export Contacts Modal */}
+      <ExportContactsModal
+        open={exportModalOpen}
+        onClose={handleCloseExportModal}
+        selectedContactsCount={checkedContacts.size}
+        totalContactsCount={allContactsSet.size}
+        availableLabels={recipientLabels}
+        allContacts={recipients.filter((recipient) => recipient?.isSaved)}
+        selectedContactIds={checkedContacts}
+        singleContact={selectedContactRef.current?.contact}
+        currentLabel={currentLabel}
+      />
+
+      {/* Delete Contacts Modal */}
+      <DeleteContactsModal
+        open={deleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleDeleteConfirm}
+        selectedContactsCount={deleteActionType === "bulk" ? checkedContacts.size : 1}
+        isBulkAction={deleteActionType === "bulk"}
       />
     </Box>
   );
