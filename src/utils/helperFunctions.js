@@ -474,7 +474,12 @@ export function buildSearchBarFromUrl(urlOrLocation) {
     if (token) parts.push(token);
   }
 
-  return parts.join(" ").trim();
+  const ignoreTerms = ["compose:new"];
+
+  return parts
+    .filter((part) => !ignoreTerms.includes(part))
+    .join(" ")
+    .trim();
 }
 // Validate email format
 export const isValidEmail = (email) => {
