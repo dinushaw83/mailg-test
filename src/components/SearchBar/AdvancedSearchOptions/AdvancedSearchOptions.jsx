@@ -66,34 +66,15 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
   // Sync formData with search string/URL parameters when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Build the current search string from the URL
-      const searchString = buildSearchBarFromUrl(location);
+      // If searchValue prop is explicitly empty (user cleared the search bar),
+      // prioritize that over URL to maintain sync with the visible search bar state
+      if (searchValue === "") {
+        setFormData(getDefaultFormData());
+        return;
+      }
 
-      // Check if the search string contains operators
-      const hasOperators = searchString && containsSearchOperators(searchString);
-
-      // If searchString has operators, parse it completely and ignore searchValue
-      if (hasOperators) {
-        const parsedData = parseSearchStringToFormData(searchString);
-
-        if (parsedData) {
-          setFormData({
-            ...parsedData,
-            // Keep date as current date if not parsed
-            date: parsedData.date || dayjs().format("YYYY-MM-DD"),
-          });
-        } else {
-          // Parsing failed, use defaults
-          setFormData(getDefaultFormData());
-        }
-      } else if (searchString && searchString.trim()) {
-        // searchString exists but has no operators - treat as plain text for "has"
-        setFormData({
-          ...getDefaultFormData(),
-          has: searchString,
-        });
-      } else if (searchValue && searchValue.trim()) {
-        // No searchString, but we have searchValue prop
+      // If searchValue prop exists, use it (user typed but hasn't searched yet)
+      if (searchValue && searchValue.trim()) {
         const searchValueHasOperators = containsSearchOperators(searchValue);
 
         if (searchValueHasOperators) {
@@ -114,8 +95,37 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
             has: searchValue,
           });
         }
+        return;
+      }
+
+      // No searchValue prop, so check the URL (e.g., after page reload)
+      const searchString = buildSearchBarFromUrl(location);
+
+      // Check if the search string contains operators
+      const hasOperators = searchString && containsSearchOperators(searchString);
+
+      // If searchString has operators, parse it completely
+      if (hasOperators) {
+        const parsedData = parseSearchStringToFormData(searchString);
+
+        if (parsedData) {
+          setFormData({
+            ...parsedData,
+            // Keep date as current date if not parsed
+            date: parsedData.date || dayjs().format("YYYY-MM-DD"),
+          });
+        } else {
+          // Parsing failed, use defaults
+          setFormData(getDefaultFormData());
+        }
+      } else if (searchString && searchString.trim()) {
+        // searchString exists but has no operators - treat as plain text for "has"
+        setFormData({
+          ...getDefaultFormData(),
+          has: searchString,
+        });
       } else {
-        // No search string and no searchValue, use defaults
+        // No search string, use defaults
         setFormData(getDefaultFormData());
       }
     }
