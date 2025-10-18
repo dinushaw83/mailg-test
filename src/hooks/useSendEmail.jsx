@@ -79,6 +79,8 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       }
     }
 
+    // Duplicate detection removed: Gmail allows duplicates across To/Cc/Bcc
+
     if (invalidRecipient) {
       // Get the actual invalid text (could be email, name, or the recipient itself)
       const invalidText = invalidRecipient.email || invalidRecipient.name || invalidRecipient;
@@ -98,8 +100,30 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       return;
     }
 
+    // 4. If there are blocked attachments (e.g., risky extensions <25MB), ask to send without them
+    const hasBlocked = Array.isArray(attachments) && attachments.some((a) => a && a.isBlocked === true);
+    let sanitizedAttachments = attachments;
+    if (hasBlocked) {
+      const confirmed = confirm(
+        "Note: there were errors attaching your file(s). Send this message without these attachments?"
+      );
+      if (!confirmed) return; // user chose Cancel
+      sanitizedAttachments = attachments.filter((a) => !a?.isBlocked);
+    }
+
     // If all validations pass, send the email
-    await sendEmail({ to, cc, bcc, subject, content, onClose, currentDraftId, isDraft, attachments, embeddedImages });
+    await sendEmail({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      onClose,
+      currentDraftId,
+      isDraft,
+      attachments: sanitizedAttachments,
+      embeddedImages,
+    });
   };
 
   const sendEmail = async ({

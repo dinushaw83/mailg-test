@@ -1,5 +1,9 @@
-import { Stack, Popper, Paper, ClickAwayListener, Box } from "@mui/material";
-import { useCallback, useRef, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useEffect, useMemo } from "react";
+import {
+  Stack, Popper, Paper, ClickAwayListener,
+  MenuItem, ListItemIcon, ListItemText, Menu, Typography,
+  IconButton, Divider
+} from "@mui/material";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
 import InsertLink from "@mui/icons-material/InsertLink";
@@ -10,10 +14,10 @@ import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
 import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
 import InsertPhotoModal from "./InsertPhotoModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
-import React from "react";
 import Attachments from "./Attachments";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateRandomId } from "../../utils/helperFunctions";
+import LargeFileModal from "../ComposeEmail/LargeFileModal";
 import {
   storeEmbeddedImage,
   processHtmlForStorage,
@@ -21,6 +25,7 @@ import {
   getEmbeddedImage,
   processHtmlForDisplay,
 } from "../../utils/embeddedImages";
+import { useNavigate } from "react-router-dom";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -69,12 +74,24 @@ export default function Editor({
   const [attachments, setAttachments] = useState([]);
   const [embeddedImages, setEmbeddedImages] = useState([]);
   const embeddedImagesRef = useRef([]);
-  const { db } = useGlobalContext();
+  const { db, setSnackbar, signaturesState } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
 
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [largeFileModal, setLargeFileModal] = useState({ open: false, file: null });
+
+  const [signaturePopoverOpen, setSignaturePopoverOpen] = useState(false);
+  const [signatureAnchorEl, setSignatureAnchorEl] = useState(null);
+  const [selectedSignature, setSelectedSignature] = useState(null);
+
+  const signatures = useMemo(() => {
+    const signatures = signaturesState.list.map((signature) => signature.name);
+    return ["No signature", ...signatures];
+  }, []);
+
+  const navigate = useNavigate()
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -337,6 +354,32 @@ export default function Editor({
     }
   }, [content, restoreEmbeddedImages]);
 
+  useEffect(() => {
+    // Guard early if no list
+    if (!signaturesState?.list || signaturesState.list.length === 0) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    const activeId = signaturesState?.useForNewEmails;
+
+    // Guard against invalid values cleanly
+    if (activeId === null || activeId === "" || activeId === undefined) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    // Ensure index is in range
+    const index = Number(activeId);
+    if (Number.isNaN(index) || index < 0 || index >= signaturesState.list.length) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    const sig = signaturesState.list[index];
+    setSelectedSignature(sig?.name || "No signature");
+  }, [signaturesState]);
+
   const openLinkPopover = (event) => {
     const editor = rteRef.current?.editor;
     if (!editor) return;
@@ -436,28 +479,176 @@ export default function Editor({
     nativeFilePickerRef.current?.click();
   };
 
+  const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024; // 25MB
+
+  // Block only these dangerous file extensions, everything else is allowed
+  const BLOCKED_EXTENSIONS = new Set([
+    'ade', 'adp',
+    'apk',
+    'appx', 'appxbundle',
+    'bat',
+    'cab', 'chm',
+    'cmd', 'com', 'cpl',
+    'diagcab', 'diagcfg', 'diagpkg',
+    'dll', 'dmg', 'exe',
+    'hta', 'img', 'ins', 'iso', 'isp',
+    'jar', 'jnlp',
+    'js', 'jse', 'lib', 'lnk',
+    'mde', 'mjs', 'msc', 'msi', 'msix', 'msixbundle', 'msp', 'mst',
+    'nsh',
+    'pif', 'ps1',
+    'scr', 'sct', 'shb',
+    'sys',
+    'vb', 'vbe',
+  ]);
+
+  const getFileExtension = (filename) => {
+    const lastDot = filename.lastIndexOf('.');
+    if (lastDot === -1) return '';
+    return filename.substring(lastDot + 1).toLowerCase();
+  };
+
   const handleNativeFilePickerChange = (e) => {
     const { files = [] } = e.target;
 
     const newFiles = [];
+    
     for (const file of files) {
+      // Size validation - show modal for large files instead of blocking
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        setLargeFileModal({ open: true, file });
+        // Clear the file input after setting the modal
+        if (e.target) {
+          e.target.value = '';
+        }
+        return; // Exit early for large files
+      }
+      
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === file.name);
+      if (fileExists) {
+        setSnackbar({
+          open: true,
+          message: "File already attached.",
+          autoHideDuration: 3000,
+        });
+        continue;
+      }
+      
       const id = generateRandomId();
       const url = URL.createObjectURL(file);
+
+      // Block only specific dangerous file extensions
+      const extension = getFileExtension(file.name);
+      const isBlocked = extension && BLOCKED_EXTENSIONS.has(extension);
+
       const metadata = {
         id,
         name: file.name,
         size: file.size,
         type: file.type,
         url,
+        isBlocked,
       };
       newFiles.push(metadata);
 
       db.put("attachments", { id, file });
+
+      // Show Gmail-style dark snackbar when any file is blocked
+      if (isBlocked) {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: "There were errors attaching your file(s).",
+          autoHideDuration: 6000,
+        });
+      }
     }
 
-    // A file should not be added if it already exists in the attachments array
-    const uniqueFiles = newFiles.filter((file) => !attachments.some((attachment) => attachment.name === file.name));
-    setAttachments((prevAttachments) => [...prevAttachments, ...uniqueFiles]);
+    // Only add regular files if there are any
+    if (newFiles.length > 0) {
+      setAttachments((prevAttachments) => [...prevAttachments, ...newFiles]);
+    }
+    
+    // Clear the file input at the end
+    if (e.target) {
+      e.target.value = '';
+    }
+  };
+
+  const handleLargeFileAccept = () => {
+    if (largeFileModal.file) {
+      // Check if file already exists to prevent duplicates
+      const fileExists = attachments.some((attachment) => attachment.name === largeFileModal.file.name);
+      
+      if (!fileExists) {
+        // Create Drive link instead of regular attachment
+        const driveLink = `drive.mailg.com/file/d/${encodeURIComponent(largeFileModal.file.name)}`;
+        
+        // Add as attachment with Drive link metadata
+        const id = generateRandomId();
+        const url = URL.createObjectURL(largeFileModal.file);
+        const metadata = {
+          id,
+          name: largeFileModal.file.name,
+          size: largeFileModal.file.size,
+          type: largeFileModal.file.type,
+          url,
+          isDriveFile: true, // Special flag to indicate it's a "Drive" file
+          driveLink: `https://${driveLink}`, // Store the Drive link
+        };
+        
+        // Add to attachments array
+        setAttachments((prevAttachments) => [...prevAttachments, metadata]);
+        
+        // Also store in IndexedDB
+        db.put("attachments", { id, file: largeFileModal.file });
+        
+        setSnackbar({
+          open: true,
+          message: "File uploaded to MailG Drive. Download link will be included in your email.",
+          autoHideDuration: 4000,
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: "File already attached.",
+          autoHideDuration: 3000,
+        });
+      }
+    }
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const formatFileSize = (size) => {
+    if (size < 1024) {
+      return `${size}B`;
+    } else if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)}K`;
+    } else if (size < 1024 * 1024 * 1024) {
+      return `${(size / 1024 / 1024).toFixed(1)}M`;
+    } else {
+      return `${(size / 1024 / 1024 / 1024).toFixed(1)}G`;
+    }
+  };
+
+  const handleLargeFileCancel = () => {
+    setLargeFileModal({ open: false, file: null });
+  };
+
+  const handleEditorClick = (event) => {
+    // Check if clicked element is a Drive link
+    const target = event.target;
+    if (target.tagName === 'A' && target.getAttribute('data-drive-link') === 'true') {
+      event.preventDefault();
+      event.stopPropagation();
+      // Show a message that this is a Drive link
+      setSnackbar({
+        open: true,
+        message: "This is a MailG Drive link. It will be accessible to recipients.",
+        autoHideDuration: 3000,
+      });
+    }
   };
 
   const openPhotoModal = () => {
@@ -480,6 +671,75 @@ export default function Editor({
     handleNewImageFiles(imageFiles, from);
   };
 
+  const openSignaturePopover = (event) => {
+    setSignatureAnchorEl(event.currentTarget);
+    setSignaturePopoverOpen(true);
+  };
+
+  const closeSignaturePopover = () => {
+    setSignatureAnchorEl(null);
+    setSignaturePopoverOpen(false);
+  };
+
+  const replaceSignature = (editor, html) => {
+    if (!editor) return;
+
+    const src = (html || "").trim();
+    const { doc } = editor.state;
+
+    // Collect ALL deletable nodes (separators + signature) first
+    const toDelete = [];
+    doc.descendants((node, pos) => {
+      if (node.attrs && node.attrs["data-signature"] === "true") {
+        toDelete.push({ pos, size: node.nodeSize });
+      }
+      if (node.type?.name === "paragraph" && node.textContent.trim() === "--") {
+        toDelete.push({ pos, size: node.nodeSize });
+      }
+    });
+
+    // Sort by pos descending to avoid shifting
+    toDelete.sort((a, b) => b.pos - a.pos);
+
+    // Delete them all safely
+    toDelete.forEach(({ pos, size }) => {
+      editor.chain().focus().deleteRange({ from: pos, to: pos + size }).run();
+    });
+
+    // If no new signature, stop here
+    if (!src) return;
+
+    // Build new signature block
+    let toInsert;
+    if (/^\s*<p(\s|>)/i.test(src)) {
+      toInsert = src.replace(/<p([^>]*)>/i, '<p data-signature="true"$1>');
+    } else {
+      toInsert = `<p><br></p><p data-signature="true">${src}</p>`;
+    }
+
+    // Add separator if needed
+    if (!signaturesState?.insertSignatureBeforeQuotedText) {
+      toInsert = `<p>--</p>${toInsert}`;
+    }
+
+    // Determine insert position (end or before blockquote)
+    let insertAt = editor.state.doc.content.size;
+    if (signaturesState?.insertSignatureBeforeQuotedText) {
+      let quotePos = null;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type?.name === "blockquote") {
+          quotePos = pos;
+          return false;
+        }
+        return true;
+      });
+      if (quotePos !== null) insertAt = quotePos;
+    }
+
+    // Insert new signature
+    editor.chain().focus().insertContentAt(insertAt, toInsert).run();
+  };
+
   return (
     <>
       <RichTextEditor
@@ -492,6 +752,7 @@ export default function Editor({
           handleDrop: handleDrop,
           handlePaste: handlePaste,
         }}
+        onClick={handleEditorClick}
         RichTextFieldProps={{
           variant: "standard",
           MenuBarProps: {
@@ -650,6 +911,14 @@ export default function Editor({
                     onClick={openPhotoModal}
                     IconComponent={InsertPhoto}
                   />
+
+                  <IconButton onClick={openSignaturePopover}>
+                    <img
+                      src="/assets/images/ink_pen.png"
+                      alt="Insert Signature"
+                      style={{ width: 20, height: 20 }}
+                    />
+                  </IconButton>
 
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                     <ClickAwayListener
@@ -820,6 +1089,84 @@ export default function Editor({
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
+
+                  <Menu
+                    anchorEl={signatureAnchorEl}
+                    open={signaturePopoverOpen}
+                    onClose={closeSignaturePopover}
+                    anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                    transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+                    keepMounted
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          minWidth: 200,
+                          py: 0.5,
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        closeSignaturePopover();
+                        navigate("/settings/general");
+                      }}
+                      sx={{ py: 0.8 }}
+                    >
+                      <Typography fontSize={14} style={{marginLeft: "20%"}}>Manage signatures</Typography>
+                    </MenuItem>
+                    <Divider />
+
+                    {signatures.map((name) => (
+                      <MenuItem
+                        key={name}
+                        onClick={() => {
+                          if (name === "No signature") {
+                            // optional: remove existing signature
+                            replaceSignature(rteRef.current?.editor, "");
+                            setSelectedSignature(name);
+                            closeSignaturePopover();
+                            return;
+                          }
+
+                          const sig = signaturesState.list.find(sig => sig.name === name);
+                          replaceSignature(rteRef.current?.editor, sig.content);
+                          setSelectedSignature(name);
+                          closeSignaturePopover();
+                        }}
+                        selected={selectedSignature === name}
+                        sx={{
+                          py: 0.8,
+                        }}
+                      >
+                        <span style={{width: "20%"}}>
+                          {selectedSignature === name && (
+                            <ListItemIcon sx={{ minWidth: 24 }}>
+                              <span
+                                className="material-symbols-outlined"
+                                style={{ fontSize: 18 }}
+                              >
+                                check
+                              </span>
+                            </ListItemIcon>
+                          )}
+                        </span>
+                        <ListItemText
+                          primary={
+                            <Typography
+                              fontSize={14}
+                              sx={{
+                                color:
+                                  selectedSignature === name ? "text.primary" : "text.secondary",
+                              }}
+                            >
+                              {name}
+                            </Typography>
+                          }
+                        />
+                      </MenuItem>
+                    ))}
+                  </Menu>
                 </div>
 
                 <div style={{ marginLeft: "auto", display: "flex", gap: "12px", alignItems: "center" }}>
@@ -884,6 +1231,15 @@ export default function Editor({
 
       {/* Insert Photo Modal */}
       <InsertPhotoModal open={photoModalOpen} onClose={closePhotoModal} onInsertImages={handleInsertImages} />
+
+      {/* Large File Modal */}
+      <LargeFileModal
+        open={largeFileModal.open}
+        onClose={handleLargeFileCancel}
+        onAccept={handleLargeFileAccept}
+        fileName={largeFileModal.file?.name}
+        fileSize={largeFileModal.file?.size}
+      />
     </>
   );
 }

@@ -23,7 +23,7 @@ export default function SignatureEditor({ value, onChange, onEditorReady, childr
                 }}
                 RichTextFieldProps={{
                     variant: "outlined",
-                    MenuBarProps: { hide: true }, // ✅ hide default toolbar
+                    MenuBarProps: { hide: true },
                 }}
                 sx={{
                     "& .MuiTiptap-RichTextField-root": {
@@ -42,7 +42,7 @@ export default function SignatureEditor({ value, onChange, onEditorReady, childr
                 }}
             />
 
-            {/* ✅ custom toolbar */}
+            {/* custom toolbar */}
             <div
                 style={{
                     border: "1px solid #dadce0",
