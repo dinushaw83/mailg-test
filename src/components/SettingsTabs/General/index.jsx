@@ -37,7 +37,9 @@ export default function GeneralSettings({
     localVacationResponder,
     setLocalVacationResponder,
     localSignatures,
-    setLocalSignatures
+    setLocalSignatures,
+    localNotificationSettings,
+    setLocalNotificationSettings
  }) {
     return (
         <Container>
@@ -68,7 +70,10 @@ export default function GeneralSettings({
                             <WorkspaceSmartFeaturesRow />
 
                             <PackageTrackingRow />
-                            <DesktopNotificationsRow />
+                            <DesktopNotificationsRow 
+                                localNotificationSettings={localNotificationSettings}
+                                setLocalNotificationSettings={setLocalNotificationSettings}
+                            />
                             <StarsRow />
                             <KeyboardShortcutsRow />
 

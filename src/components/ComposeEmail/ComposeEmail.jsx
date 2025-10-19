@@ -81,18 +81,21 @@ export default function ComposeEmail({ composeWindow }) {
   useLayoutEffect(() => {
     const isNewCompose = !currentDraftId && !composeWindow?.fields?.replyingTo && !content.html?.trim();
 
+    // Sanitize signature so it doesn't bring its own <p> tags
+    const sanitizedSignature = (defaultSignatureHTML || '')
+      .replace(/^<p[^>]*>/i, '')
+      .replace(/<\/p>$/i, '');
+    
     if (isNewCompose && defaultSignatureHTML) {
       if (signaturesState?.insertSignatureBeforeQuotedText) {
-        // insert signature alone (no --)
         setContent({
-          html: `<p><br></p>${defaultSignatureHTML}`,
-          plainText: `\n${defaultSignatureHTML.replace(/<[^>]*>/g, "")}`,
+          html: `<p><br></p><p data-signature="true">${sanitizedSignature}</p>`,
+          plainText: `\n${sanitizedSignature.replace(/<[^>]*>/g, "")}`,
         });
       } else {
-        // include `--` separator
         setContent({
-          html: `<p><br></p>--${defaultSignatureHTML}`,
-          plainText: `\n--\n${defaultSignatureHTML.replace(/<[^>]*>/g, "")}`,
+          html: `<p><br></p><p>--</p><p data-signature="true">${sanitizedSignature}</p>`,
+          plainText: `\n--\n${sanitizedSignature.replace(/<[^>]*>/g, "")}`,
         });
       }
     }
@@ -265,7 +268,6 @@ export default function ComposeEmail({ composeWindow }) {
   const handleSend = ({ attachments = [], embeddedImages = [], processedHtml } = {}) => {
     // Use processed HTML if available, otherwise use the current content
     const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
-
     handleSendEmail({
       to,
       cc,

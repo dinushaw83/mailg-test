@@ -151,23 +151,29 @@ ${email.body}
   }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText, currentDraftId]);
 
   useEffect(() => {
-    if (currentDraftId) return; // don't touch restored drafts
+    if (currentDraftId) return;
 
     const { list, useForRepliesAndForwards, insertSignatureBeforeQuotedText } = signaturesState || {};
     const signature = list?.[useForRepliesAndForwards];
     if (!signature?.content) return;
 
-    // Prevent duplicate insertion
-    if (content.html.includes(signature.content)) return;
+    // Sanitize signature to remove wrapping <p> tags
+    const sanitizedSignature = signature.content
+      .replace(/^<p[^>]*>/i, '')
+      .replace(/<\/p>$/i, '');
 
-    const signatureText = signature.content.replace(/<[^>]*>/g, "");
-    let updatedHTML, updatedPlainText;
+    // Prevent duplicate insertion
+    if (content.html.includes(sanitizedSignature)) return;
+
+    let updatedHTML;
+    let updatedPlainText;
+    const signatureText = sanitizedSignature.replace(/<[^>]*>/g, "");
 
     if (insertSignatureBeforeQuotedText) {
-      updatedHTML = `${signature.content}<br><br>${content.html}`;
+      updatedHTML = `<p data-signature="true">${sanitizedSignature}</p><br><br>${content.html}`;
       updatedPlainText = `${signatureText}\n\n${content.plainText}`;
     } else {
-      updatedHTML = `${content.html}<br><br>--${signature.content}`;
+      updatedHTML = `${content.html}<br><br><p>--</p><p data-signature="true">${sanitizedSignature}</p>`;
       updatedPlainText = `${content.plainText}\n\n--\n${signatureText}`;
     }
 
