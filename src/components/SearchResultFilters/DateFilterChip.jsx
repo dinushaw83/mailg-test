@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Box, Chip, Menu, MenuItem, Divider, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import CustomDateRange from "./CustomDateRange";
 
-export default function DateFilterChip({ label, isActive, onFilterChange }) {
+export default function DateFilterChip({ label }) {
   const [anchorEl, setAnchorEl] = useState(null);
+  const [customRangeAnchorEl, setCustomRangeAnchorEl] = useState(null);
+  const chipRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const open = Boolean(anchorEl);
+  const customRangeOpen = Boolean(customRangeAnchorEl);
   const searchParams = new URLSearchParams(location.search);
 
   const handleClick = (event) => {
@@ -35,12 +39,17 @@ export default function DateFilterChip({ label, isActive, onFilterChange }) {
 
     if (!dateRangeType || (!dateStart && !dateEnd)) return "Any time";
 
-    // If we have datestart, it's "After" filter (Last 7 days default)
+    // If we have both datestart and dateend, it's a custom range
+    if (dateStart && dateEnd) {
+      return `${formatDate(dateStart)} – ${formatDate(dateEnd)}`;
+    }
+
+    // If we have only datestart, it's "After" filter (Last 7 days default)
     if (dateStart) {
       return `After ${formatDate(dateStart)}`;
     }
 
-    // If we have dateend, check which preset it matches
+    // If we have only dateend, check which preset it matches
     if (dateEnd) {
       const endDate = new Date(dateEnd);
       const today = new Date();
@@ -140,6 +149,40 @@ export default function DateFilterChip({ label, isActive, onFilterChange }) {
     handleClose();
   };
 
+  const handleCustomRangeClick = () => {
+    handleClose(); // Close the menu first
+    setCustomRangeAnchorEl(chipRef.current);
+  };
+
+  const handleCustomRangeClose = () => {
+    setCustomRangeAnchorEl(null);
+  };
+
+  const handleCustomRangeApply = ({ startDate, endDate }) => {
+    const newSearchParams = new URLSearchParams(location.search);
+
+    // Set both datestart and dateend for custom range
+    newSearchParams.set("datestart", startDate);
+    newSearchParams.set("dateend", endDate);
+    newSearchParams.set("daterangetype", "custom_range");
+
+    // Always keep isrefinement=true when on search results page
+    if (location.pathname.startsWith("/search")) {
+      newSearchParams.set("isrefinement", "true");
+    }
+
+    // Update URL
+    navigate(
+      {
+        pathname: location.pathname,
+        search: newSearchParams.toString(),
+      },
+      { replace: true }
+    );
+
+    handleCustomRangeClose();
+  };
+
   const activeFilter = getActiveFilter();
   // Chip is only active when a date filter is actually applied (not "Any time")
   const chipIsActive = activeFilter !== "Any time";
@@ -150,6 +193,7 @@ export default function DateFilterChip({ label, isActive, onFilterChange }) {
     <Box>
       <Chip
         key={label}
+        ref={chipRef}
         sx={{
           bgcolor: chipIsActive ? "#cfdef3" : "white",
           border: chipIsActive ? "none" : "1px solid #444746",
@@ -235,16 +279,23 @@ export default function DateFilterChip({ label, isActive, onFilterChange }) {
         ))}
         <Divider sx={{ my: 0.5 }} />
         <MenuItem
-          onClick={handleClose}
+          onClick={handleCustomRangeClick}
           sx={{
             fontSize: "14px",
             py: 1,
-            px: 2,
+            px: "46px",
           }}
         >
           Custom range...
         </MenuItem>
       </Menu>
+
+      <CustomDateRange
+        anchorEl={customRangeAnchorEl}
+        open={customRangeOpen}
+        onClose={handleCustomRangeClose}
+        onApply={handleCustomRangeApply}
+      />
     </Box>
   );
 }

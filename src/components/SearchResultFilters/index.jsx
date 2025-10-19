@@ -42,6 +42,40 @@ const SearchResultFilters = () => {
     return true;
   };
 
+  // Check if a specific filter is active based on URL parameters
+  const isFilterActive = (filter) => {
+    if (filter === "From" && searchParams.has("from")) {
+      return true;
+    }
+    if (filter === "To" && searchParams.has("to")) {
+      return true;
+    }
+    if (filter === "Has attachment" && searchParams.get("attach_or_drive") === "true") {
+      return true;
+    }
+    if (
+      filter === "Any time" &&
+      (searchParams.has("datestart") || searchParams.has("dateend") || searchParams.has("daterangetype"))
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  // Sort filter options to show active filters first
+  const sortedFilterOptions = [...filterOptions].sort((a, b) => {
+    const aActive = isFilterActive(a);
+    const bActive = isFilterActive(b);
+
+    // If both active or both inactive, maintain original order
+    if (aActive === bActive) {
+      return filterOptions.indexOf(a) - filterOptions.indexOf(b);
+    }
+
+    // Active filters come first
+    return bActive ? 1 : -1;
+  });
+
   // Get active filters from URL
   const getActiveFilters = () => {
     const active = [...activeFilters];
@@ -149,7 +183,7 @@ const SearchResultFilters = () => {
 
   return (
     <Stack direction="row" spacing={1} p={2}>
-      {filterOptions
+      {sortedFilterOptions
         .filter((filter) => shouldShowFilterChip(filter))
         .map((filter) => {
           const isActive = getActiveFilters().includes(filter);
