@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Dialog, DialogContent, Box } from "@mui/material";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 export default function EditEmailAddressModal({ open, onClose, fullName = "John Doe", email = "john.doe@example.com" }) {
+  const { sendAsSettings, setSendAsSettings } = useGlobalContext();
   const firstLast = useMemo(() => {
     const [first, ...rest] = fullName.split(" ");
     return { first: first || "John", last: rest.join(" ") || "Doe" };
@@ -10,9 +12,23 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
   const [useCustomName, setUseCustomName] = useState(false);
   const [customName, setCustomName] = useState("");
   const [showReplyTo, setShowReplyTo] = useState(false);
+  const [replyTo, setReplyTo] = useState("");
+
+  // Populate modal with saved values on open
+  useEffect(() => {
+    if (open && sendAsSettings) {
+      setUseCustomName(Boolean(sendAsSettings.displayName && sendAsSettings.displayName !== fullName));
+      setCustomName(sendAsSettings.displayName && sendAsSettings.displayName !== fullName ? sendAsSettings.displayName : "");
+      setReplyTo(sendAsSettings.replyTo || "");
+    }
+  }, [open, sendAsSettings, fullName]);
 
   const handleCancel = () => onClose?.();
-  const handleSave = () => onClose?.();
+  const handleSave = () => {
+    const nextDisplayName = useCustomName && customName.trim() ? customName.trim() : fullName;
+    setSendAsSettings({ displayName: nextDisplayName, email, replyTo });
+    onClose?.();
+  };
 
   return (
     <Dialog
@@ -153,7 +169,7 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
                           <label htmlFor="cfrt">Reply-to address:&nbsp;</label>
                         </td>
                         <td style={{ fontFamily: "arial, sans-serif" }}>
-                          <input id="cfrt" name="cfrt" size={30} style={{ fontFamily: "arial, sans-serif" }} />
+                                  <input id="cfrt" name="cfrt" size={30} value={replyTo} onChange={(e) => setReplyTo(e.target.value)} style={{ fontFamily: "arial, sans-serif" }} />
                           <br />
                           <span style={{ fontSize: "80%" }}>
                             (a reply to mail you send will go to this address. {" "}

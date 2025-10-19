@@ -57,6 +57,13 @@ export const GlobalContextProvider = ({ children }) => {
     activeTab: null,
   });
 
+  // Send mail as settings (display name and optional reply-to)
+  const [sendAsSettings, setSendAsSettings] = usePersistedState("sendAsSettings", {
+    displayName: "John Doe",
+    email: "john.doe@example.com",
+    replyTo: "",
+  });
+
   // Contact management states
   const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
   const [createLabelModal, setCreateLabelModal] = useState({
@@ -242,6 +249,8 @@ export const GlobalContextProvider = ({ children }) => {
     setDeletedRecipients,
     signaturesState,
     setSignaturesState,
+    sendAsSettings,
+    setSendAsSettings,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,

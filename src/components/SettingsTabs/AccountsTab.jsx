@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import EditEmailAddressModal from "./EditEmailAddressModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const AccountsTab = () => {
   const [editOpen, setEditOpen] = useState(false);
+  const { sendAsSettings } = useGlobalContext();
   return (
     <>
       <div
@@ -427,7 +429,7 @@ const AccountsTab = () => {
                                             overflowWrap: "break-word",
                                           }}
                                         >
-                                          {"John Doe <john.doe@example.com>"}
+                                          {`${sendAsSettings.displayName} <${sendAsSettings.email}>`}
                                         </div>
                                       </td>
                                       <td
@@ -511,6 +513,15 @@ const AccountsTab = () => {
                                         </span>
                                       </td>
                                     </tr>
+                                    {sendAsSettings.replyTo && (
+                                      <tr>
+                                        <td className="CY" style={{ margin: "0px", paddingRight: "10px", paddingBottom: "10px", verticalAlign: "top" }}>
+                                          <div className="rc" style={{ fontWeight: "normal", overflowWrap: "break-word" }}>
+                                            {`Reply-to address: ${sendAsSettings.replyTo}`}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
                                   </tbody>
                                 </table>
                               </td>
