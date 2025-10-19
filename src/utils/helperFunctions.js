@@ -653,6 +653,8 @@ export const containsSearchOperators = (str) => {
     /\bhas:/, // has:
     /\blarger:/, // larger:
     /\bsmaller:/, // smaller:
+    /\bafter:/, // after: (date operator)
+    /\bbefore:/, // before: (date operator)
     /^-\w+/, // -word (negation)
     /-\{/, // -{phrase}
   ];

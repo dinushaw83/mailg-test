@@ -3,7 +3,6 @@ import { Box, Checkbox, ClickAwayListener, MenuItem, Select, TextField } from "@
 import { useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "./DatePicker";
 import EmailField from "./EmailField";
-import dayjs from "dayjs";
 import styles from "./AdvancedSearchOptions.module.css";
 import { addAdvancedSearchQuery } from "../../../utils/search";
 import {
@@ -77,13 +76,20 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
       if (searchValue && searchValue.trim()) {
         const searchValueHasOperators = containsSearchOperators(searchValue);
 
+        // Parse URL params directly for within and date
+        const urlParams = new URLSearchParams(location.search);
+        const withinParam = urlParams.get("within");
+        const dateParam = urlParams.get("date");
+
         if (searchValueHasOperators) {
           // searchValue has operators, parse it
           const parsedData = parseSearchStringToFormData(searchValue);
           if (parsedData) {
             setFormData({
               ...parsedData,
-              date: parsedData.date || "",
+              // Override with URL params if they exist
+              within: withinParam || parsedData.within || "1 day",
+              date: dateParam || parsedData.date || "",
             });
           } else {
             setFormData(getDefaultFormData());
@@ -93,6 +99,9 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
           setFormData({
             ...getDefaultFormData(),
             has: searchValue,
+            // Include URL params for within and date
+            within: withinParam || "1 day",
+            date: dateParam || "",
           });
         }
         return;
@@ -104,6 +113,11 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
       // Check if the search string contains operators
       const hasOperators = searchString && containsSearchOperators(searchString);
 
+      // Parse URL params directly for within and date
+      const urlParams = new URLSearchParams(location.search);
+      const withinParam = urlParams.get("within");
+      const dateParam = urlParams.get("date");
+
       // If searchString has operators, parse it completely
       if (hasOperators) {
         const parsedData = parseSearchStringToFormData(searchString);
@@ -111,8 +125,9 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
         if (parsedData) {
           setFormData({
             ...parsedData,
-            // Keep date empty if not parsed
-            date: parsedData.date || "",
+            // Override with URL params if they exist (more reliable than parsing from search string)
+            within: withinParam || parsedData.within || "1 day",
+            date: dateParam || parsedData.date || "",
           });
         } else {
           // Parsing failed, use defaults
@@ -123,10 +138,17 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
         setFormData({
           ...getDefaultFormData(),
           has: searchString,
+          // Include URL params for within and date
+          within: withinParam || "1 day",
+          date: dateParam || "",
         });
       } else {
-        // No search string, use defaults
-        setFormData(getDefaultFormData());
+        // No search string, use defaults but check for URL params
+        setFormData({
+          ...getDefaultFormData(),
+          within: withinParam || "1 day",
+          date: dateParam || "",
+        });
       }
     }
   }, [isOpen, location.search, location.pathname, searchValue]);
