@@ -29,15 +29,15 @@ export const GlobalContextProvider = ({ children }) => {
   const [sortOrder, setSortOrder] = usePersistedState("sortOrder", "newest");
   const [currentPage, setCurrentPage] = usePersistedState("currentPage", 1);
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
-  const [panelState, setPanelState] = useState({
+  const [panelState, setPanelState] = usePersistedState("panelState", {
     showPanel: false,
     direction: "vertical",
   });
   const [previewEmailId, setPreviewEmailId] = useState(null);
-  const [showQuickSettings, setShowQuickSettings] = useState(false);
-  const [density, setDensity] = useState("default");
-  const [threading, setThreading] = useState(true);
-  const [inboxType, setInboxType] = useState("default");
+  const [showQuickSettings, setShowQuickSettings] = usePersistedState("showQuickSettings", false);
+  const [density, setDensity] = usePersistedState("density", "default");
+  const [threading, setThreading] = usePersistedState("threading", true);
+  const [inboxType, setInboxType] = usePersistedState("inboxType", "default");
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
 
   // Vacation responder state
@@ -73,23 +73,18 @@ export const GlobalContextProvider = ({ children }) => {
   });
 
   // Signatures related settings
-  /**
-   *  {
-   *     list: {
-   *       name: string;
-   *       content: string;
-   *     }[];
-   *     useForNewEmails: string;
-   *     useForRepliesAndForwards: string;
-   *     insertSignatureBeforeQuotedText: boolean;
-   *   }
-   *  }
-   */
   const [signaturesState, setSignaturesState] = usePersistedState("signatures", {
     list: [],
     useForNewEmails: "",
     useForRepliesAndForwards: "",
     insertSignatureBeforeQuotedText: false,
+  });
+
+  // Notification settings state
+  const [notificationSettings, setNotificationSettings] = usePersistedState("notificationSettings", {
+    type: "off", // "off", "new", "important"
+    sound: "1",  // Sound ID
+    enabled: false
   });
 
   // Global snackbar state
@@ -251,6 +246,8 @@ export const GlobalContextProvider = ({ children }) => {
     setSignaturesState,
     sendAsSettings,
     setSendAsSettings,
+    notificationSettings,
+    setNotificationSettings,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,

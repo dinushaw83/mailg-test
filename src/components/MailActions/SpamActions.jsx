@@ -8,10 +8,14 @@ import MoveToMenu from "./MoveToMenu";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
+import { Box } from "@mui/material";
 
 export default function SpamActions({ threads = [], folder }) {
-  const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever, moveToLabel, moveToLabelFrom, moveToInbox } =
-    useMailActions();
+  const {
+    moveToSpam, moveToTrash, notSpam,
+    markRead, deleteForever, moveToLabel,
+    moveToLabelFrom, moveToInbox
+  } = useMailActions();
   const { selection, setSnackbar, emails } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
@@ -249,7 +253,42 @@ export default function SpamActions({ threads = [], folder }) {
             marginRight: "8px",
           }}
           onClick={() => {
-            notSpam([...selection.ids]);
+            const ids = [...selection.ids];
+            moveToInbox(ids);
+            selection.clear()
+            setSnackbar({
+              open: true,
+              message: <Box>
+                Conversation unmarked as spam and moved to the inbox. Future messages from this <br />
+                sender will be sent to the inbox.
+              </Box>,
+              autoHideDuration: 10000,
+              action: (
+                <Box>
+                  <Button
+                  sx={{ textTransform: "none" }}
+                  size="small"
+                  onClick={() => {}}
+                >
+                  Learn more
+                  </Button>
+                  <Button
+                    sx={{ textTransform: "none" }}
+                    size="small"
+                    onClick={() => {
+                      moveToSpam(ids);
+                      setSnackbar({
+                        open: true,
+                        message: "Action undone.",
+                        autoHideDuration: 3000,
+                      });
+                    }}
+                  >
+                    Undo
+                  </Button>
+                </Box>
+              ),
+            });
           }}
         >
           Not Spam

@@ -1,5 +1,9 @@
-import { Stack, Popper, Paper, ClickAwayListener, Box } from "@mui/material";
-import { useCallback, useRef, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useEffect, useMemo } from "react";
+import {
+  Stack, Popper, Paper, ClickAwayListener,
+  MenuItem, ListItemIcon, ListItemText, Menu, Typography,
+  IconButton, Divider
+} from "@mui/material";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
 import InsertLink from "@mui/icons-material/InsertLink";
@@ -10,7 +14,6 @@ import ScheduleEmailModal from "../ScheduleEmail/ScheduleEmailModal";
 import DateTimePickerModal from "../ScheduleEmail/DateTimePickerModal";
 import InsertPhotoModal from "./InsertPhotoModal";
 import styles from "../ComposeEmail/ComposeEmail.module.css";
-import React from "react";
 import Attachments from "./Attachments";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateRandomId } from "../../utils/helperFunctions";
@@ -22,6 +25,7 @@ import {
   getEmbeddedImage,
   processHtmlForDisplay,
 } from "../../utils/embeddedImages";
+import { useNavigate } from "react-router-dom";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -70,13 +74,24 @@ export default function Editor({
   const [attachments, setAttachments] = useState([]);
   const [embeddedImages, setEmbeddedImages] = useState([]);
   const embeddedImagesRef = useRef([]);
-  const { db, setSnackbar } = useGlobalContext();
+  const { db, setSnackbar, signaturesState } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
 
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [largeFileModal, setLargeFileModal] = useState({ open: false, file: null });
+
+  const [signaturePopoverOpen, setSignaturePopoverOpen] = useState(false);
+  const [signatureAnchorEl, setSignatureAnchorEl] = useState(null);
+  const [selectedSignature, setSelectedSignature] = useState(null);
+
+  const signatures = useMemo(() => {
+    const signatures = signaturesState.list.map((signature) => signature.name);
+    return ["No signature", ...signatures];
+  }, []);
+
+  const navigate = useNavigate()
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -338,6 +353,32 @@ export default function Editor({
       }
     }
   }, [content, restoreEmbeddedImages]);
+
+  useEffect(() => {
+    // If no signatures exist at all
+    if (!signaturesState?.list || signaturesState.list.length === 0) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    const activeId = messageId
+      ? signaturesState?.useForRepliesAndForwards
+      : signaturesState?.useForNewEmails;
+
+    if (activeId === null || activeId === "" || activeId === undefined) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    const index = Number(activeId);
+    if (Number.isNaN(index) || index < 0 || index >= signaturesState.list.length) {
+      setSelectedSignature("No signature");
+      return;
+    }
+
+    const sig = signaturesState.list[index];
+    setSelectedSignature(sig?.name || "No signature");
+  }, [signaturesState, messageId]);
 
   const openLinkPopover = (event) => {
     const editor = rteRef.current?.editor;
@@ -630,6 +671,75 @@ export default function Editor({
     handleNewImageFiles(imageFiles, from);
   };
 
+  const openSignaturePopover = (event) => {
+    setSignatureAnchorEl(event.currentTarget);
+    setSignaturePopoverOpen(true);
+  };
+
+  const closeSignaturePopover = () => {
+    setSignatureAnchorEl(null);
+    setSignaturePopoverOpen(false);
+  };
+
+  const replaceSignature = (editor, html) => {
+    if (!editor) return;
+
+    const src = (html || "").trim();
+    const { doc } = editor.state;
+
+    // Collect ALL deletable nodes (separators + signature) first
+    const toDelete = [];
+    doc.descendants((node, pos) => {
+      if (node.attrs && node.attrs["data-signature"] === "true") {
+        toDelete.push({ pos, size: node.nodeSize });
+      }
+      if (node.type?.name === "paragraph" && node.textContent.trim() === "--") {
+        toDelete.push({ pos, size: node.nodeSize });
+      }
+    });
+
+    // Sort by pos descending to avoid shifting
+    toDelete.sort((a, b) => b.pos - a.pos);
+
+    // Delete them all safely
+    toDelete.forEach(({ pos, size }) => {
+      editor.chain().focus().deleteRange({ from: pos, to: pos + size }).run();
+    });
+
+    // If no new signature, stop here
+    if (!src) return;
+
+    // Build new signature block
+    let toInsert;
+    if (/^\s*<p(\s|>)/i.test(src)) {
+      toInsert = src.replace(/<p([^>]*)>/i, '<p data-signature="true"$1>');
+    } else {
+      toInsert = `<p><br></p><p data-signature="true">${src}</p>`;
+    }
+
+    // Add separator if needed
+    if (!signaturesState?.insertSignatureBeforeQuotedText) {
+      toInsert = `<p>--</p>${toInsert}`;
+    }
+
+    // Determine insert position (end or before blockquote)
+    let insertAt = editor.state.doc.content.size;
+    if (signaturesState?.insertSignatureBeforeQuotedText) {
+      let quotePos = null;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type?.name === "blockquote") {
+          quotePos = pos;
+          return false;
+        }
+        return true;
+      });
+      if (quotePos !== null) insertAt = quotePos;
+    }
+
+    // Insert new signature
+    editor.chain().focus().insertContentAt(insertAt, toInsert).run();
+  };
+
   return (
     <>
       <RichTextEditor
@@ -802,6 +912,14 @@ export default function Editor({
                     IconComponent={InsertPhoto}
                   />
 
+                  <IconButton onClick={openSignaturePopover}>
+                    <img
+                      src="/assets/images/ink_pen.png"
+                      alt="Insert Signature"
+                      style={{ width: 20, height: 20 }}
+                    />
+                  </IconButton>
+
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                     <ClickAwayListener
                       onClickAway={closeLinkPopover}
@@ -971,6 +1089,81 @@ export default function Editor({
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
+
+                  <Menu
+                    anchorEl={signatureAnchorEl}
+                    open={signaturePopoverOpen}
+                    onClose={closeSignaturePopover}
+                    anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                    transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+                    keepMounted
+                    slotProps={{
+                      paper: {
+                        sx: {
+                          minWidth: 200,
+                          py: 0.5,
+                        },
+                      },
+                    }}
+                  >
+                    <MenuItem
+                      onClick={() => {
+                        closeSignaturePopover();
+                        navigate("/settings/general");
+                      }}
+                      sx={{ py: 0.8 }}
+                    >
+                      <Typography fontSize={14} style={{marginLeft: "20%"}}>Manage signatures</Typography>
+                    </MenuItem>
+                    <Divider />
+
+                    {signatures.map((name) => (
+                      <MenuItem
+                        key={name}
+                        onClick={() => {
+                          if (name === "No signature") {
+                            replaceSignature(rteRef.current?.editor, "");
+                            setSelectedSignature(name);
+                            closeSignaturePopover();
+                            return;
+                          }
+
+                          const sig = signaturesState.list.find(sig => sig.name === name);
+                          replaceSignature(rteRef.current?.editor, sig.content);
+                          setSelectedSignature(name);
+                          closeSignaturePopover();
+                        }}
+                        selected={selectedSignature === name}
+                        sx={{ py: 0.8 }}
+                      >
+                        <span style={{ width: "20%" }}>
+                          {selectedSignature === name && (
+                            <ListItemIcon sx={{ minWidth: 24 }}>
+                              <span
+                                className="material-symbols-outlined"
+                                style={{ fontSize: 18 }}
+                              >
+                                check
+                              </span>
+                            </ListItemIcon>
+                          )}
+                        </span>
+                        <ListItemText
+                          primary={
+                            <Typography
+                              fontSize={14}
+                              sx={{
+                                color:
+                                  selectedSignature === name ? "text.primary" : "text.secondary",
+                              }}
+                            >
+                              {name}
+                            </Typography>
+                          }
+                        />
+                      </MenuItem>
+                    ))}
+                  </Menu>
                 </div>
 
                 <div style={{ marginLeft: "auto", display: "flex", gap: "12px", alignItems: "center" }}>

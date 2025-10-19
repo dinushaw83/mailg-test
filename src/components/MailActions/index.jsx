@@ -1,11 +1,11 @@
 import Box from "@mui/material/Box";
 import { Icon } from "../InboxView/ActionBar";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import Divider from "@mui/material/Divider";
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
@@ -39,6 +39,9 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
   const snoozeAnchorElRef = useRef(null);
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const anchorRef = useRef(null);
 
@@ -69,6 +72,17 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     () => threads.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
     [threads, selectedIds]
   );
+
+  useEffect(() => {
+    console.log(selectedIds, "=======")
+  }, [selectedIds])
+
+  // Get the base path by removing the threadId from the current path
+  const getBasePath = () => {
+    const pathParts = location.pathname.split("/");
+    // Remove the last part (threadId) to get the base path
+    return pathParts.slice(0, -1).join("/") || "/inbox";
+  };
 
   // Check if any selected emails are not in inbox
   const hasEmailsNotInInbox = useMemo(() => {
@@ -157,6 +171,38 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     // Disable only when none of the selected items are in Inbox
     return !hasAnyInInbox;
   }, [threads, selectedIds]);
+
+  const showUndoSnackbarForLabelMove = useCallback(
+    (selectedIds, fromKey, toKey, inCustomLabel) => {
+      setSnackbar({
+        open: true,
+        message: `Conversation ${isMovingToLabel ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              if (inCustomLabel) {
+                moveToLabelFrom(selectedIds, toKey, fromKey);
+              } else {
+                moveToLabel(selectedIds, fromKey || "Inbox");
+              }
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [moveToLabel, moveToLabelFrom, setSnackbar, labels]
+  );
 
   const handleArchiveEmails = useCallback(() => {
     if (!selectedIds.length) return;
@@ -263,8 +309,10 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           const inCustomLabel = curMeta && curMeta.system === false;
           if (inCustomLabel) {
             moveToLabelFrom(selectedIds, currentLabel, targetKey);
+            showUndoSnackbarForLabelMove(selectedIds, currentLabel, targetKey, inCustomLabel);
           } else {
             moveToLabel(selectedIds, targetKey); // pass key
+            showUndoSnackbarForLabelMove(selectedIds, currentLabel, targetKey, inCustomLabel);
           }
         }
         setState((prev) => ({
@@ -307,6 +355,11 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       } else {
         moveToLabel(ids, newKey);
       }
+
+      // if (isMovingToLabel) {
+      //   // Navigate back to list view
+      //   navigate(getBasePath());
+      // }
 
       selection.clear();
 
@@ -582,6 +635,31 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     });
   };
 
+  const showUndoSnackbar = useCallback((message, undoFn) => {
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            undoFn();
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [setSnackbar]);
+
   return (
     <Box display="flex" alignItems="center">
       {inDrafts && (
@@ -661,16 +739,19 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
 
       <SpamOrUnsubModal
         open={spamModalOpen}
-        onClose={() => {
-          toggleSpamModal();
-        }}
+        onClose={toggleSpamModal}
         onReportSpam={() => {
-          moveToSpam(selectedIds);
+          const undo = moveToSpam(selectedIds);
           toggleSpamModal();
+          showUndoSnackbar(
+            selectedIds.length > 1 ? `${selectedIds.length} conversations marked as spam.` : "Conversation marked as spam.",
+            undo
+          );
         }}
         onUnsubscribe={() => {
           moveToSpam(selectedIds);
           toggleSpamModal();
+          showUndoSnackbar("We'll try to unsubscribe you from these emails.", () => {});
         }}
       />
 
@@ -704,7 +785,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
         }}
       />
 
-      <CreateLabelDialog open={createOpen} onClose={() => { setCreateOpen(false); setIsMovingToLabel(null) }} onAfterCreate={handleOnAfterCreate} />
+      <CreateLabelDialog open={createOpen} onClose={() => { setCreateOpen(false); setIsMovingToLabel(null) }} onAfterCreate={handleOnAfterCreate} isMoving={isMovingToLabel} />
     </Box>
   );
 };
