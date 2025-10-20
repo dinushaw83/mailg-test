@@ -49,6 +49,7 @@ function App() {
             <Route path="/:folder" element={<MailView />} />
             <Route path="/label/:label" element={<MailView />} />
             <Route path="/search/:query" element={<SearchResultsView />} />
+            <Route path="/search" element={<SearchResultsView />} />
             <Route path="/verify" element={<VerificationDashboard />} />
             <Route path="/settings/:tab" element={<Settings />} />
             <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
