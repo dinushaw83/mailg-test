@@ -19,6 +19,9 @@ export const recipients = [
     labels: ["Friends"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 2,
@@ -36,6 +39,9 @@ export const recipients = [
     labels: ["Work", "Friends"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 3,
@@ -53,6 +59,9 @@ export const recipients = [
     labels: ["Family"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 4,
@@ -70,6 +79,9 @@ export const recipients = [
     labels: ["Work"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 5,
@@ -86,6 +98,9 @@ export const recipients = [
     avatar: null,
     labels: ["Friends", "Family"],
     isSaved: true,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 6,
@@ -103,6 +118,9 @@ export const recipients = [
     labels: ["Work"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 7,
@@ -120,6 +138,9 @@ export const recipients = [
     labels: ["Friends", "Work"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 8,
@@ -136,6 +157,9 @@ export const recipients = [
     avatar: null,
     labels: ["Work", "Family"],
     isSaved: true,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 9,
@@ -153,6 +177,9 @@ export const recipients = [
     labels: ["Family"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 10,
@@ -170,6 +197,9 @@ export const recipients = [
     labels: ["Work"],
     isSaved: true,
     isFavorite: false,
+    savedAt: "2024-10-21T00:00:00.000Z",
+    createdAt: "2024-10-21T00:00:00.000Z",
+    updatedAt: "2024-10-21T00:00:00.000Z"
   },
   {
     id: 11,
@@ -187,5 +217,8 @@ export const recipients = [
     labels: [],
     isSaved: false,
     isFavorite: false,
+    savedAt: null,
+    createdAt: "2025-08-21T00:00:00.000Z",
+    updatedAt: "2025-08-21T00:00:00.000Z"
   },
 ];
