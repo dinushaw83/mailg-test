@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   AppBar,
@@ -40,6 +41,12 @@ import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import CloudOutlinedIcon from "@mui/icons-material/CloudOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
+import BookmarkBorderOutlinedIcon from "@mui/icons-material/BookmarkBorderOutlined";
+import ExtensionOutlinedIcon from "@mui/icons-material/ExtensionOutlined";
+import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -129,7 +136,7 @@ const HistorySettingsRow = ({ label, status, onClick, icon }) => (
   </Button>
 );
 
-const HistorySettingsCard = ({ onOpenWebActivity, onOpenTimeline }) => (
+const HistorySettingsCard = ({ onOpenWebActivity, onOpenTimeline, onOpenStreamTube, webActivityStatus, timelineStatus, streamTubeStatus }) => (
   <Card>
     <Box sx={{ p: 2.5 }}>
       <Typography sx={{ fontSize: '1rem', mb: 0.5 }}>History settings</Typography>
@@ -139,23 +146,23 @@ const HistorySettingsCard = ({ onOpenWebActivity, onOpenTimeline }) => (
       <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
         <HistorySettingsRow
           label="Web & App Activity"
-          status="On"
+          status={webActivityStatus}
           onClick={onOpenWebActivity}
-          icon={<Box sx={{ width: 18, height: 18, borderRadius: '50%', background: '#1a73e8' }} />}
+          icon={<Box sx={{ width: 18, height: 18, borderRadius: '50%', background: webActivityStatus === 'On' ? '#1a73e8' : '#9aa0a6' }} />}
         />
         <Divider />
         <HistorySettingsRow
           label="Timeline"
-          status="Paused"
+          status={timelineStatus}
           onClick={onOpenTimeline}
-          icon={<MapOutlinedIcon sx={{ color: '#5f6368' }} />}
+          icon={<MapOutlinedIcon sx={{ color: timelineStatus === 'On' ? '#1a73e8' : '#5f6368' }} />}
         />
         <Divider />
         <HistorySettingsRow
           label="StreamTube History"
-          status="On"
-          onClick={() => {}}
-          icon={<VideoLibraryOutlinedIcon sx={{ color: '#5f6368' }} />}
+          status={streamTubeStatus}
+          onClick={onOpenStreamTube}
+          icon={<VideoLibraryOutlinedIcon sx={{ color: streamTubeStatus === 'On' ? '#1a73e8' : '#5f6368' }} />}
         />
       </Paper>
     </Box>
@@ -163,7 +170,8 @@ const HistorySettingsCard = ({ onOpenWebActivity, onOpenTimeline }) => (
 );
 
 export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivacy' }) {
-  const { privacySettings, setPrivacySettings, mailGAccountPersonalInfo, setMailGAccountPersonalInfo, mailGAccountDataPrivacy, setMailGAccountDataPrivacy, thirdPartyApps, setThirdPartyApps } = useGlobalContext();
+  const navigate = useNavigate();
+  const { privacySettings, setPrivacySettings, mailGAccountPersonalInfo, setMailGAccountPersonalInfo, mailGAccountDataPrivacy, setMailGAccountDataPrivacy, thirdPartyApps, setThirdPartyApps, signInSettings, setSignInSettings } = useGlobalContext();
   const [activeView, setActiveView] = React.useState(initialView);
   const [editDialogOpen, setEditDialogOpen] = React.useState(null); // 'name', 'nickname', 'birthday', 'phone', 'gender', 'homeAddress', 'workAddress'
   const [editFormData, setEditFormData] = React.useState({});
@@ -175,6 +183,21 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
       setActiveView(initialView);
     }
   }, [open, initialView]);
+
+  // Function to handle navigation with URL update
+  const handleNavigateToView = (view) => {
+    setActiveView(view);
+    // Convert camelCase to hyphenated URL
+    const viewMap = {
+      'personalInfo': 'personal-info',
+      'dataAndPrivacy': 'data-privacy',
+      'security': 'security',
+      'storage': 'storage',
+      'preferences': 'preferences',
+    };
+    const urlView = viewMap[view] || view;
+    navigate(`/mailg-account/${urlView}`, { replace: true });
+  };
 
   const toggle = (key) => (e) => setPrivacySettings({ ...privacySettings, [key]: e.target.checked });
 
@@ -188,7 +211,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
         month: mailGAccountPersonalInfo.birthday.month,
         day: mailGAccountPersonalInfo.birthday.day,
         year: mailGAccountPersonalInfo.birthday.year,
-        visibility: mailGAccountPersonalInfo.birthday.visibility,
+        visibility: mailGAccountDataPrivacy.profileVisibility.birthdayVisibility,
       });
     } else if (field === 'phone') {
       setEditFormData({ phone: mailGAccountPersonalInfo.phone.number });
@@ -240,6 +263,88 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
       const updatedEmails = [...mailGAccountPersonalInfo.emails];
       updatedEmails[0] = editFormData.email;
       setMailGAccountPersonalInfo({ ...mailGAccountPersonalInfo, emails: updatedEmails });
+    } else if (editDialogOpen === 'nameVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, nameVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'genderVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, genderVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'birthdayVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, birthdayVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'emailVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, emailVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'profilePictureVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, profilePictureVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'linksVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, linksVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'workVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, workVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'educationVisibility') {
+      setMailGAccountDataPrivacy({
+        ...mailGAccountDataPrivacy,
+        profileVisibility: { ...mailGAccountDataPrivacy.profileVisibility, educationVisibility: editFormData.value },
+      });
+    } else if (editDialogOpen === 'addAboutItem') {
+      // Handle adding new about items (links, places, introduction, etc.)
+      const { type, value } = editFormData;
+      if (!value || !value.trim()) return; // Don't save empty values
+      
+      const updatedAbout = { ...mailGAccountPersonalInfo.about };
+      
+      if (type === 'link') {
+        updatedAbout.links = [...updatedAbout.links, value.trim()];
+      } else if (type === 'place') {
+        updatedAbout.places = [...updatedAbout.places, value.trim()];
+      } else if (type === 'profileLink') {
+        updatedAbout.profileLinks = [...updatedAbout.profileLinks, value.trim()];
+      } else if (type === 'contributorLink') {
+        updatedAbout.contributorLinks = [...updatedAbout.contributorLinks, value.trim()];
+      } else if (type === 'introduction') {
+        updatedAbout.introduction = value.trim();
+      }
+      
+      setMailGAccountPersonalInfo({
+        ...mailGAccountPersonalInfo,
+        about: updatedAbout,
+      });
+    } else if (editDialogOpen === 'addWorkEducationItem') {
+      // Handle adding new work & education items
+      const { type, value } = editFormData;
+      if (!value || !value.trim()) return; // Don't save empty values
+      
+      const updatedWorkEducation = { ...mailGAccountPersonalInfo.workAndEducation };
+      
+      if (type === 'occupation') {
+        updatedWorkEducation.occupation = value.trim();
+      } else if (type === 'workHistory') {
+        updatedWorkEducation.workHistory = [...updatedWorkEducation.workHistory, value.trim()];
+      } else if (type === 'educationHistory') {
+        updatedWorkEducation.educationHistory = [...updatedWorkEducation.educationHistory, value.trim()];
+      }
+      
+      setMailGAccountPersonalInfo({
+        ...mailGAccountPersonalInfo,
+        workAndEducation: updatedWorkEducation,
+      });
     }
     setEditDialogOpen(null);
   };
@@ -249,7 +354,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
     setEditFormData({});
   };
 
-  const isSubPage = activeView === 'webAndAppActivity' || activeView === 'locationHistoryControls' || activeView === 'searchPersonalizationControls' || activeView === 'myAdCenter' || activeView === 'thirdPartyApps';
+  const isSubPage = activeView === 'webAndAppActivity' || activeView === 'locationHistoryControls' || activeView === 'streamTubeHistory' || activeView === 'searchPersonalizationControls' || activeView === 'myAdCenter' || activeView === 'thirdPartyApps' || activeView === 'aboutMe' || activeView === 'addMoreAboutYou' || activeView === 'addWorkEducation' || activeView === 'servicesDashboard' || activeView === 'locationSharing' || activeView === 'signInSettings';
 
   return (
     <Dialog fullScreen open={open} onClose={onClose} TransitionComponent={Transition}>
@@ -274,11 +379,11 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
           <Box sx={{ display: 'flex' }}>
             {/* Sidebar */}
             <Box sx={{ width: { xs: 0, md: 240 }, pr: { md: 2 }, pl: 0, display: { xs: 'none', md: isSubPage ? 'none' : 'block' }, ml: 0 }}>
-              <NavItem icon={PersonOutlineOutlinedIcon} label="Personal info" active={activeView==='personalInfo'} onClick={() => setActiveView('personalInfo')} />
-              <NavItem icon={ShieldOutlinedIcon} label="Data & privacy" active={activeView==='dataAndPrivacy'} onClick={() => setActiveView('dataAndPrivacy')} />
-              <NavItem icon={SettingsOutlinedIcon} label="Security" active={activeView==='security'} onClick={() => setActiveView('security')} />
-              <NavItem icon={StorageOutlinedIcon} label="Storage" active={activeView==='storage'} onClick={() => setActiveView('storage')} />
-              <NavItem icon={ManageSearchOutlinedIcon} label="Preferences" active={activeView==='preferences'} onClick={() => setActiveView('preferences')} />
+              <NavItem icon={PersonOutlineOutlinedIcon} label="Personal info" active={activeView==='personalInfo'} onClick={() => handleNavigateToView('personalInfo')} />
+              <NavItem icon={ShieldOutlinedIcon} label="Data & privacy" active={activeView==='dataAndPrivacy'} onClick={() => handleNavigateToView('dataAndPrivacy')} />
+              <NavItem icon={SettingsOutlinedIcon} label="Security" active={activeView==='security'} onClick={() => handleNavigateToView('security')} />
+              <NavItem icon={StorageOutlinedIcon} label="Storage" active={activeView==='storage'} onClick={() => handleNavigateToView('storage')} />
+              <NavItem icon={ManageSearchOutlinedIcon} label="Preferences" active={activeView==='preferences'} onClick={() => handleNavigateToView('preferences')} />
             </Box>
 
             {/* Main */}
@@ -326,6 +431,10 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                         <HistorySettingsCard
                           onOpenWebActivity={() => setActiveView('webAndAppActivity')}
                           onOpenTimeline={() => setActiveView('locationHistoryControls')}
+                          onOpenStreamTube={() => setActiveView('streamTubeHistory')}
+                          webActivityStatus={mailGAccountDataPrivacy.webActivityEnabled ? 'On' : 'Off'}
+                          timelineStatus={mailGAccountDataPrivacy.locationHistoryEnabled ? 'On' : 'Paused'}
+                          streamTubeStatus={mailGAccountDataPrivacy.youtubeHistoryEnabled ? 'On' : 'Off'}
                         />
                       </Box>
 
@@ -424,7 +533,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                           </Box>
                         </Box>
                         <Paper sx={{ mb: 2, overflow: 'hidden' }}>
-                          <Button sx={{ justifyContent: 'space-between', textTransform: 'none', py: 2, px: 2, width: '100%' }}>
+                          <Button onClick={() => setActiveView('aboutMe')} sx={{ justifyContent: 'space-between', textTransform: 'none', py: 2, px: 2, width: '100%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <PersonOutlinedIcon sx={{ color: 'text.secondary', mr: 2 }} />
                               <Typography>Profile</Typography>
@@ -435,7 +544,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                             </Box>
                           </Button>
                           <Divider />
-                          <Button sx={{ justifyContent: 'space-between', textTransform: 'none', py: 2, px: 2, width: '100%' }}>
+                          <Button onClick={() => setActiveView('locationSharing')} sx={{ justifyContent: 'space-between', textTransform: 'none', py: 2, px: 2, width: '100%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <MapOutlinedIcon sx={{ color: 'text.secondary', mr: 2 }} />
                               <Typography>Location Sharing</Typography>
@@ -464,7 +573,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                         <Paper sx={{ overflow: 'hidden' }}>
                           <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
                             <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, mb: 1 }}>Content saved from MailG services</Typography>
-                            <Button sx={{ justifyContent: 'space-between', textTransform: 'none', py: 1, px: 1, width: '100%', borderRadius: 1 }}>
+                            <Button onClick={() => setActiveView('servicesDashboard')} sx={{ justifyContent: 'space-between', textTransform: 'none', py: 1, px: 1, width: '100%', borderRadius: 1 }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Chip icon={<MailOutlineIcon sx={{ color: '#d93025 !important' }} />} label="MailG" variant="outlined" size="small" sx={{ borderRadius: 999 }} />
                                 <Chip icon={<StorageOutlinedIcon sx={{ color: '#1a73e8 !important' }} />} label="CloudVault" variant="outlined" size="small" sx={{ borderRadius: 999 }} />
@@ -665,7 +774,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                       <OutlinedPanel>
                         <Typography sx={{ fontSize: '1.1rem', mb: 1 }}>Timeline</Typography>
                         <Typography sx={{ color: 'text.secondary', mb: 2 }}>
-                          Helps you go back in time, and remember where you’ve been.
+                          Helps you go back in time, and remember where you've been.
                           <Link href="#" underline="hover"> Learn more</Link>
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -726,6 +835,60 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                 </Box>
               )}
 
+              {activeView === 'streamTubeHistory' && (
+                <Box>
+                  <CenterColumn>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>Activity controls</Typography>
+                        <Typography sx={{ color: 'text.secondary' }}>Choose which settings will save data in your MailG Account.</Typography>
+                      </Box>
+
+                      <OutlinedPanel>
+                        <Typography sx={{ fontSize: '1.1rem', mb: 1 }}>StreamTube History</Typography>
+                        <Typography sx={{ color: 'text.secondary', mb: 2 }}>
+                          Save your StreamTube watch and search history to get better recommendations and remember where you left off.
+                          <Link href="#" underline="hover"> Learn more</Link>
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <Typography>{mailGAccountDataPrivacy.youtubeHistoryEnabled ? 'ON' : 'OFF'}</Typography>
+                          <FormGroup>
+                            <FormControlLabel 
+                              control={
+                                <Switch 
+                                  checked={mailGAccountDataPrivacy.youtubeHistoryEnabled}
+                                  onChange={(e) => setMailGAccountDataPrivacy({
+                                    ...mailGAccountDataPrivacy,
+                                    youtubeHistoryEnabled: e.target.checked
+                                  })}
+                                />
+                              } 
+                              label={mailGAccountDataPrivacy.youtubeHistoryEnabled ? 'Turn off' : 'Turn on'} 
+                            />
+                          </FormGroup>
+                        </Box>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.75rem', mt: 1 }}>
+                          {mailGAccountDataPrivacy.youtubeHistoryEnabled ? 'On since you created your account' : 'Off'}
+                        </Typography>
+
+                        <Divider sx={{ my: 2 }} />
+                        <Typography sx={{ fontSize: '0.95rem', mb: 1 }}>Manage your StreamTube History</Typography>
+                        <Button sx={{ justifyContent: 'space-between', textTransform: 'none', width: '100%' }}>
+                          <Typography>View and delete your StreamTube history</Typography>
+                          <ChevronRightIcon sx={{ color: 'text.disabled' }} />
+                        </Button>
+                      </OutlinedPanel>
+
+                      <Box sx={{ textAlign: 'center', mt: 3 }}>
+                        <Button onClick={() => setActiveView('dataAndPrivacy')} sx={{ textTransform: 'none', color: '#1a73e8' }}>
+                          See all activity controls
+                        </Button>
+                      </Box>
+                    </Box>
+                  </CenterColumn>
+                </Box>
+              )}
+
               {activeView === 'searchPersonalizationControls' && (
                 <Box>
                   <CenterColumn>
@@ -738,7 +901,13 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                       <OutlinedPanel>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Typography sx={{ fontSize: '1rem' }}>Personalize Search</Typography>
-                          <Switch checked={!!privacySettings.personalizationEnabled} onChange={toggle('personalizationEnabled')} />
+                          <Switch 
+                            checked={mailGAccountDataPrivacy.searchPersonalizationEnabled} 
+                            onChange={(e) => setMailGAccountDataPrivacy({
+                              ...mailGAccountDataPrivacy,
+                              searchPersonalizationEnabled: e.target.checked
+                            })} 
+                          />
                         </Box>
                         <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mt: 1 }}>
                           You get personalized versions of things like Discover stories, movie recommendations, and auto-complete suggestions.
@@ -890,7 +1059,9 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                           {thirdPartyApps.length} total apps & services
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <SettingsOutlinedIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
+                          <IconButton onClick={() => setActiveView('signInSettings')} size="small">
+                            <SettingsOutlinedIcon sx={{ color: 'text.secondary' }} />
+                          </IconButton>
                         </Box>
                       </Box>
 
@@ -951,6 +1122,847 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                           <Typography sx={{ color: 'text.secondary' }}>No apps connected</Typography>
                         </Box>
                       )}
+                    </Box>
+                  </CenterColumn>
+                </Box>
+              )}
+
+              {activeView === 'signInSettings' && (
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{ width: '100%', maxWidth: 680 }}>
+                      <Box sx={{ textAlign: 'left', mb: 3, px: 2 }}>
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>Sign in with MailG settings</Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                          Changes that you make here apply to Sign in with MailG, where you use it to sign in to third-party apps and services
+                        </Typography>
+                      </Box>
+
+                      {/* Sign-in prompts section */}
+                      <Box sx={{ px: 2 }}>
+                        <Paper variant="outlined" sx={{ borderRadius: 2, p: 3 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography sx={{ fontSize: '1rem', fontWeight: 500, mb: 1 }}>Sign-in prompts</Typography>
+                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 1 }}>
+                                Allow MailG to display a sign-in prompt on Android. <Link href="#" sx={{ color: '#1a73e8', textDecoration: 'none' }}>Learn more about sign-in prompts on Android</Link>
+                              </Typography>
+                            </Box>
+                            <Switch
+                              checked={signInSettings.signInPromptsEnabled}
+                              onChange={(e) => setSignInSettings({ ...signInSettings, signInPromptsEnabled: e.target.checked })}
+                              sx={{
+                                ml: 2,
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: '#1a73e8',
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: '#1a73e8',
+                                },
+                              }}
+                            />
+                          </Box>
+                          
+                          <Divider sx={{ my: 2 }} />
+                          
+                          <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                            To manage third-party sign-ins on Browser, go to Browser settings. <Link href="#" sx={{ color: '#1a73e8', textDecoration: 'none' }}>Learn more about sign-in prompts on Browser</Link>
+                          </Typography>
+                        </Paper>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
+              {activeView === 'servicesDashboard' && (
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{ width: '100%', maxWidth: 680 }}>
+                      <Box sx={{ textAlign: 'left', mb: 3, px: 2 }}>
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>MailG Dashboard</Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                          See a summary of the services you use and the data saved in your MailG Account
+                        </Typography>
+                      </Box>
+
+                      {/* Top action cards */}
+                      <Grid container spacing={2} sx={{ mb: 4, px: 2 }}>
+                        <Grid item xs={12} md={6}>
+                          <Paper variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }}>
+                            <Box sx={{ 
+                              width: 48, 
+                              height: 48, 
+                              borderRadius: '50%', 
+                              bgcolor: '#e8f0fe', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center' 
+                            }}>
+                              <DownloadOutlinedIcon sx={{ color: '#1a73e8', fontSize: 24 }} />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography sx={{ fontWeight: 500, fontSize: '0.95rem', mb: 0.5 }}>Download your data</Typography>
+                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                                You can download a copy of your data to save locally or to use with another account
+                              </Typography>
+                            </Box>
+                            <OpenInNewOutlinedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                          </Paper>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Paper variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2, borderRadius: 2 }}>
+                            <Box sx={{ 
+                              width: 48, 
+                              height: 48, 
+                              borderRadius: '50%', 
+                              bgcolor: '#fef7e0', 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center' 
+                            }}>
+                              <DeleteOutlineIcon sx={{ color: '#f9ab00', fontSize: 24 }} />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                              <Typography sx={{ fontWeight: 500, fontSize: '0.95rem', mb: 0.5 }}>Delete a service</Typography>
+                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                                You can delete a specific MailG service from your account, like StreamTube
+                              </Typography>
+                            </Box>
+                            <OpenInNewOutlinedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                          </Paper>
+                        </Grid>
+                      </Grid>
+
+                      {/* Recently used services */}
+                      <Box sx={{ mb: 4, px: 2 }}>
+                        <Typography sx={{ fontSize: '1.25rem', mb: 2, fontWeight: 500 }}>Recently used MailG services (2)</Typography>
+                        <Grid container spacing={2}>
+                          {/* MailG Service */}
+                          <Grid item xs={12} md={6}>
+                            <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                              <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                                  <MailOutlineIcon sx={{ color: '#d93025', fontSize: 28 }} />
+                                  <Typography sx={{ fontWeight: 500, fontSize: '1rem' }}>MailG</Typography>
+                                </Box>
+                                <Box sx={{ mb: 1 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                    <MailOutlineIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography sx={{ fontSize: '0.875rem' }}>4 conversations</Typography>
+                                  </Box>
+                                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 3 }}>1 in inbox</Typography>
+                                </Box>
+                                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>3 drafts</Typography>
+                              </Box>
+                              <Box sx={{ p: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Download
+                                </Button>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Settings
+                                </Button>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Help Center
+                                </Button>
+                              </Box>
+                            </Paper>
+                          </Grid>
+
+                          {/* CloudVault Service */}
+                          <Grid item xs={12} md={6}>
+                            <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                              <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                                  <StorageOutlinedIcon sx={{ color: '#1a73e8', fontSize: 28 }} />
+                                  <Typography sx={{ fontWeight: 500, fontSize: '1rem' }}>CloudVault</Typography>
+                                </Box>
+                                <Box sx={{ mb: 1 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                    <FolderOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography sx={{ fontSize: '0.875rem' }}>3 files</Typography>
+                                  </Box>
+                                </Box>
+                              </Box>
+                              <Box sx={{ p: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Download
+                                </Button>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Help Center
+                                </Button>
+                              </Box>
+                            </Paper>
+                          </Grid>
+                        </Grid>
+                      </Box>
+
+                      {/* Other services */}
+                      <Box sx={{ px: 2 }}>
+                        <Typography sx={{ fontSize: '1.25rem', mb: 2, fontWeight: 500 }}>Other MailG services (2)</Typography>
+                        <Grid container spacing={2}>
+                          {/* Browser Service */}
+                          <Grid item xs={12} md={6}>
+                            <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                              <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                                  <ExtensionOutlinedIcon sx={{ color: '#5f6368', fontSize: 28 }} />
+                                  <Typography sx={{ fontWeight: 500, fontSize: '1rem' }}>Browser</Typography>
+                                </Box>
+                                <Box sx={{ mb: 1 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                    <ManageHistoryOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography sx={{ fontSize: '0.875rem' }}>Last sync: today at 7:27 PM</Typography>
+                                  </Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                    <BookmarkBorderOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography sx={{ fontSize: '0.875rem' }}>4 bookmarks</Typography>
+                                  </Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <ExtensionOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography sx={{ fontSize: '0.875rem' }}>2 extensions</Typography>
+                                  </Box>
+                                </Box>
+                                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>58 other items</Typography>
+                              </Box>
+                              <Box sx={{ p: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Download
+                                </Button>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Help Center
+                                </Button>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Browser sync help
+                                </Button>
+                              </Box>
+                            </Paper>
+                          </Grid>
+
+                          {/* Tasks Service */}
+                          <Grid item xs={12} md={6}>
+                            <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                              <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+                                  <AssignmentOutlinedIcon sx={{ color: '#1a73e8', fontSize: 28 }} />
+                                  <Typography sx={{ fontWeight: 500, fontSize: '1rem' }}>Tasks</Typography>
+                                </Box>
+                                <Box sx={{ mb: 1 }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                                    <AssignmentOutlinedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                    <Typography sx={{ fontSize: '0.875rem' }}>1 task list</Typography>
+                                  </Box>
+                                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 3 }}>Most recent:</Typography>
+                                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 3 }}>My Tasks</Typography>
+                                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', ml: 3 }}>on October 15</Typography>
+                                </Box>
+                              </Box>
+                              <Box sx={{ p: 1.5, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Download
+                                </Button>
+                                <Button size="small" variant="outlined" sx={{ textTransform: 'none', fontSize: '0.75rem', borderRadius: 999 }}>
+                                  Help Center
+                                </Button>
+                              </Box>
+                            </Paper>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
+              {activeView === 'locationSharing' && (
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <Box sx={{ width: '100%', maxWidth: 680 }}>
+                      <Box sx={{ textAlign: 'left', mb: 3, px: 2 }}>
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>Location Sharing</Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+                          Location Sharing lets you share your real-time location from your devices with people you choose.
+                        </Typography>
+                      </Box>
+
+                      {/* What information is shared */}
+                      <Box sx={{ px: 2, mb: 4 }}>
+                        <Typography sx={{ fontSize: '1.1rem', fontWeight: 500, mb: 2 }}>What information is shared</Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+                          People you share your location with can see your name, photo, and real-time location across MailG services, even when you're not using Maps. They can also see Location Sharing notifications to know when you arrive at or leave specific locations.
+                        </Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 3 }}>
+                          Shared information may include where you've recently been, how you're traveling, and your device info.
+                        </Typography>
+
+                        {/* Status card */}
+                        <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                          <Box sx={{ 
+                            width: 40, 
+                            height: 40, 
+                            borderRadius: '50%', 
+                            bgcolor: '#f5f5f5', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center' 
+                          }}>
+                            <MapOutlinedIcon sx={{ color: '#5f6368', fontSize: 24 }} />
+                          </Box>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>
+                              You aren't sharing your real-time location with anyone on MailG.
+                            </Typography>
+                          </Box>
+                        </Paper>
+
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 1 }}>
+                          <strong>Protect your privacy.</strong> To stop sharing your location with someone, tap Stop next to their name. To temporarily stop all location sharing, turn off location in your device settings. <Link href="#" sx={{ color: '#1a73e8', textDecoration: 'none' }}>Learn more</Link>
+                        </Typography>
+                      </Box>
+
+                      {/* Disable info */}
+                      <Box sx={{ px: 2, mb: 4 }}>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                          You can disable Location Sharing from <Link href="#" sx={{ color: '#1a73e8', textDecoration: 'none' }}>this page</Link>, but you can only start sharing your location from your mobile device. Location Sharing works across MailG apps and services, including MailG Maps and Family Link.
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              )}
+
+              {activeView === 'aboutMe' && (
+                <Box>
+                  <CenterColumn>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>About me</Typography>
+                        <Typography sx={{ color: 'text.secondary', maxWidth: 600, mx: 'auto', fontSize: '0.875rem' }}>
+                          Manage your personal info and control who can see it when you use your main MailG Account profile across MailG services. <Link href="#" sx={{ color: '#1a73e8', textDecoration: 'none' }}>Learn more</Link>
+                        </Typography>
+                      </Box>
+
+                      {/* Visibility indicators */}
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 4, mb: 4 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <PersonOutlinedIcon sx={{ fontSize: 16, color: '#1a73e8' }} />
+                          </Box>
+                          <Box>
+                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Visible only to you</Typography>
+                            <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Only you</Typography>
+                          </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ width: 24, height: 24, borderRadius: '50%', bgcolor: '#e8f0fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <GroupsOutlinedIcon sx={{ fontSize: 16, color: '#1a73e8' }} />
+                          </Box>
+                          <Box>
+                            <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>Visible to anyone</Typography>
+                            <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Anyone</Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+
+                      {/* Basic info */}
+                      <Card>
+                        <Box sx={{ p: 2 }}>
+                          <Typography sx={{ fontSize: '1rem', mb: 2, fontWeight: 500 }}>Basic info</Typography>
+                          
+                          {/* Name */}
+                          <Box
+                            sx={{ display: 'flex', alignItems: 'center', py: 1.5, borderTop: '1px solid #eee', cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                            onClick={() => {
+                              setEditFormData({ field: 'nameVisibility', value: mailGAccountDataPrivacy.profileVisibility.nameVisibility });
+                              setEditDialogOpen('nameVisibility');
+                            }}
+                          >
+                            <Typography sx={{ color: 'text.secondary', width: { xs: '40%', md: '25%' }, fontSize: '0.875rem' }}>Name</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'space-between' }}>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.875rem' }}>{mailGAccountPersonalInfo.name}</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                  {mailGAccountDataPrivacy.profileVisibility.nameVisibility === 'anyone' ? (
+                                    <>
+                                      <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible to anyone</Typography>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible only to you</Typography>
+                                    </>
+                                  )}
+                                </Box>
+                              </Box>
+                              <ChevronRightIcon sx={{ color: 'text.disabled' }} />
+                            </Box>
+                          </Box>
+
+                          {/* Profile picture */}
+                          <Box
+                            sx={{ display: 'flex', alignItems: 'center', py: 1.5, borderTop: '1px solid #eee', cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                            onClick={() => {
+                              setEditFormData({ field: 'profilePictureVisibility', value: mailGAccountDataPrivacy.profileVisibility.profilePictureVisibility });
+                              setEditDialogOpen('profilePictureVisibility');
+                            }}
+                          >
+                            <Typography sx={{ color: 'text.secondary', width: { xs: '40%', md: '25%' }, fontSize: '0.875rem' }}>Profile picture</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'space-between' }}>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>Add a profile picture to personalize your account</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                  {mailGAccountDataPrivacy.profileVisibility.profilePictureVisibility === 'anyone' ? (
+                                    <>
+                                      <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible to anyone</Typography>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible only to you</Typography>
+                                    </>
+                                  )}
+                                </Box>
+                              </Box>
+                              <ChevronRightIcon sx={{ color: 'text.disabled' }} />
+                            </Box>
+                          </Box>
+
+                          {/* Gender */}
+                          <Box
+                            sx={{ display: 'flex', alignItems: 'center', py: 1.5, borderTop: '1px solid #eee', cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                            onClick={() => {
+                              setEditFormData({ field: 'genderVisibility', value: mailGAccountDataPrivacy.profileVisibility.genderVisibility });
+                              setEditDialogOpen('genderVisibility');
+                            }}
+                          >
+                            <Typography sx={{ color: 'text.secondary', width: { xs: '40%', md: '25%' }, fontSize: '0.875rem' }}>Gender</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'space-between' }}>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.875rem' }}>{mailGAccountPersonalInfo.gender}</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                  {mailGAccountDataPrivacy.profileVisibility.genderVisibility === 'anyone' ? (
+                                    <>
+                                      <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible to anyone</Typography>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible only to you</Typography>
+                                    </>
+                                  )}
+                                </Box>
+                              </Box>
+                              <ChevronRightIcon sx={{ color: 'text.disabled' }} />
+                            </Box>
+                          </Box>
+
+                          {/* Birthday */}
+                          <Box
+                            sx={{ display: 'flex', alignItems: 'center', py: 1.5, borderTop: '1px solid #eee', cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                            onClick={() => {
+                              setEditFormData({ field: 'birthdayVisibility', value: mailGAccountDataPrivacy.profileVisibility.birthdayVisibility });
+                              setEditDialogOpen('birthdayVisibility');
+                            }}
+                          >
+                            <Typography sx={{ color: 'text.secondary', width: { xs: '40%', md: '25%' }, fontSize: '0.875rem' }}>Birthday</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'space-between' }}>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.875rem' }}>
+                                  {mailGAccountPersonalInfo.birthday.month.substring(0, 3)} {mailGAccountPersonalInfo.birthday.day}, {mailGAccountPersonalInfo.birthday.year}
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                  {mailGAccountDataPrivacy.profileVisibility.birthdayVisibility === 'anyone' ? (
+                                    <>
+                                      <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible to anyone</Typography>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible only to you</Typography>
+                                    </>
+                                  )}
+                                </Box>
+                              </Box>
+                              <ChevronRightIcon sx={{ color: 'text.disabled' }} />
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Card>
+
+                      {/* Contact info */}
+                      <Card sx={{ mt: 3 }}>
+                        <Box sx={{ p: 2 }}>
+                          <Typography sx={{ fontSize: '1rem', mb: 2, fontWeight: 500 }}>Contact info</Typography>
+                          
+                          {/* Email */}
+                          <Box
+                            sx={{ display: 'flex', alignItems: 'center', py: 1.5, borderTop: '1px solid #eee', cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                            onClick={() => {
+                              setEditFormData({ field: 'emailVisibility', value: mailGAccountDataPrivacy.profileVisibility.emailVisibility });
+                              setEditDialogOpen('emailVisibility');
+                            }}
+                          >
+                            <Typography sx={{ color: 'text.secondary', width: { xs: '40%', md: '25%' }, fontSize: '0.875rem' }}>MailG Account email</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'space-between' }}>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.875rem' }}>{mailGAccountPersonalInfo.emails[0]}</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                  {mailGAccountDataPrivacy.profileVisibility.emailVisibility === 'anyone' ? (
+                                    <>
+                                      <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible to anyone</Typography>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                      <Typography sx={{ fontSize: '0.75rem', color: '#1a73e8' }}>Visible only to you</Typography>
+                                    </>
+                                  )}
+                                </Box>
+                              </Box>
+                              <ChevronRightIcon sx={{ color: 'text.disabled' }} />
+                            </Box>
+                          </Box>
+                        </Box>
+                      </Card>
+
+                      {/* Note about contact info */}
+                      <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mt: 2 }}>
+                        MailG may use contact info not listed here to reach you. To see more contact info go to the <Link href="#" onClick={(e) => { e.preventDefault(); setActiveView('personalInfo'); }} sx={{ color: '#1a73e8', textDecoration: 'none' }}>Personal info section</Link>
+                      </Typography>
+
+                      {/* About section */}
+                      <Card sx={{ mt: 3 }}>
+                        <Box sx={{ p: 2 }}>
+                          <Typography sx={{ fontSize: '1rem', mb: 1, fontWeight: 500 }}>About</Typography>
+                          
+                          {/* Show Links if any */}
+                          {mailGAccountPersonalInfo.about.links.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 1 }}>Links</Typography>
+                              {mailGAccountPersonalInfo.about.links.map((link, index) => (
+                                <Box
+                                  key={index}
+                                  sx={{ display: 'flex', alignItems: 'center', py: 0.5, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                                  onClick={() => {
+                                    setEditFormData({ field: 'linksVisibility', value: mailGAccountDataPrivacy.profileVisibility.linksVisibility || 'anyone' });
+                                    setEditDialogOpen('linksVisibility');
+                                  }}
+                                >
+                                  <Typography sx={{ fontSize: '0.875rem', flex: 1 }}>{link}</Typography>
+                                  <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', mr: 1 }}>Personal Website</Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    {(mailGAccountDataPrivacy.profileVisibility.linksVisibility || 'anyone') === 'anyone' ? (
+                                      <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                    ) : (
+                                      <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                    )}
+                                    <ChevronRightIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                                  </Box>
+                                </Box>
+                              ))}
+                            </Box>
+                          )}
+
+                          {/* Show default text if no data */}
+                          {mailGAccountPersonalInfo.about.links.length === 0 && 
+                           mailGAccountPersonalInfo.about.places.length === 0 && 
+                           !mailGAccountPersonalInfo.about.introduction && (
+                            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+                              Places, links, and introduction
+                            </Typography>
+                          )}
+                          
+                          <Button
+                            onClick={() => setActiveView('addMoreAboutYou')}
+                            startIcon={<AddIcon />}
+                            sx={{
+                              textTransform: 'none',
+                              color: '#1a73e8',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              p: 0,
+                              '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
+                            }}
+                          >
+                            Add more about you
+                          </Button>
+                        </Box>
+                      </Card>
+
+                      {/* Work & education section */}
+                      <Card sx={{ mt: 3 }}>
+                        <Box sx={{ p: 2 }}>
+                          <Typography sx={{ fontSize: '1rem', mb: 1, fontWeight: 500 }}>Work & education</Typography>
+                          
+                          {/* Show Work History if any */}
+                          {mailGAccountPersonalInfo.workAndEducation.workHistory.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 1 }}>Work</Typography>
+                              <Box
+                                sx={{ display: 'flex', alignItems: 'center', py: 0.5, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                                onClick={() => {
+                                  setEditFormData({ field: 'workVisibility', value: mailGAccountDataPrivacy.profileVisibility.workVisibility || 'anyone' });
+                                  setEditDialogOpen('workVisibility');
+                                }}
+                              >
+                                <Box sx={{ flex: 1 }}>
+                                  <Typography sx={{ fontSize: '0.875rem' }}>{mailGAccountPersonalInfo.workAndEducation.workHistory[0]}</Typography>
+                                  {mailGAccountPersonalInfo.workAndEducation.workHistory.length > 1 && (
+                                    <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                                      +{mailGAccountPersonalInfo.workAndEducation.workHistory.length - 1} more
+                                    </Typography>
+                                  )}
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  {(mailGAccountDataPrivacy.profileVisibility.workVisibility || 'anyone') === 'anyone' ? (
+                                    <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                  ) : (
+                                    <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                  )}
+                                  <ChevronRightIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                                </Box>
+                              </Box>
+                            </Box>
+                          )}
+
+                          {/* Show Education History if any */}
+                          {mailGAccountPersonalInfo.workAndEducation.educationHistory.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 1 }}>Education</Typography>
+                              <Box
+                                sx={{ display: 'flex', alignItems: 'center', py: 0.5, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' } }}
+                                onClick={() => {
+                                  setEditFormData({ field: 'educationVisibility', value: mailGAccountDataPrivacy.profileVisibility.educationVisibility || 'anyone' });
+                                  setEditDialogOpen('educationVisibility');
+                                }}
+                              >
+                                <Box sx={{ flex: 1 }}>
+                                  <Typography sx={{ fontSize: '0.875rem' }}>{mailGAccountPersonalInfo.workAndEducation.educationHistory[0]}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                  {(mailGAccountDataPrivacy.profileVisibility.educationVisibility || 'anyone') === 'anyone' ? (
+                                    <GroupsOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                  ) : (
+                                    <PersonOutlinedIcon sx={{ fontSize: 14, color: '#1a73e8' }} />
+                                  )}
+                                  <ChevronRightIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                                </Box>
+                              </Box>
+                            </Box>
+                          )}
+
+                          {/* Show default text if no data */}
+                          {mailGAccountPersonalInfo.workAndEducation.workHistory.length === 0 && 
+                           mailGAccountPersonalInfo.workAndEducation.educationHistory.length === 0 && 
+                           !mailGAccountPersonalInfo.workAndEducation.occupation && (
+                            <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mb: 2 }}>
+                              Current occupation, work history, and education history
+                            </Typography>
+                          )}
+                          
+                          <Button
+                            onClick={() => setActiveView('addWorkEducation')}
+                            startIcon={<AddIcon />}
+                            sx={{
+                              textTransform: 'none',
+                              color: '#1a73e8',
+                              fontSize: '0.875rem',
+                              fontWeight: 500,
+                              p: 0,
+                              '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
+                            }}
+                          >
+                            Add work & education
+                          </Button>
+                        </Box>
+                      </Card>
+                    </Box>
+                  </CenterColumn>
+                </Box>
+              )}
+
+              {activeView === 'addMoreAboutYou' && (
+                <Box>
+                  <CenterColumn>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 4 }}>
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>Add more about you</Typography>
+                      </Box>
+
+                      {/* Options list */}
+                      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'place' });
+                            setEditDialogOpen('addAboutItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add place
+                        </Button>
+                        <Divider />
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'link' });
+                            setEditDialogOpen('addAboutItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add link
+                        </Button>
+                        <Divider />
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'profileLink' });
+                            setEditDialogOpen('addAboutItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add profile link
+                        </Button>
+                        <Divider />
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'contributorLink' });
+                            setEditDialogOpen('addAboutItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add contributor link
+                        </Button>
+                        <Divider />
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'introduction' });
+                            setEditDialogOpen('addAboutItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add introduction
+                        </Button>
+                      </Paper>
+                    </Box>
+                  </CenterColumn>
+                </Box>
+              )}
+
+              {activeView === 'addWorkEducation' && (
+                <Box>
+                  <CenterColumn>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 4 }}>
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>Add work & education</Typography>
+                      </Box>
+
+                      {/* Options list */}
+                      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'occupation' });
+                            setEditDialogOpen('addWorkEducationItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add occupation
+                        </Button>
+                        <Divider />
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'workHistory' });
+                            setEditDialogOpen('addWorkEducationItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add work history
+                        </Button>
+                        <Divider />
+                        <Button
+                          onClick={() => {
+                            setEditFormData({ type: 'educationHistory' });
+                            setEditDialogOpen('addWorkEducationItem');
+                          }}
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            py: 2,
+                            px: 2,
+                            width: '100%',
+                            color: '#1a73e8',
+                            fontSize: '0.875rem',
+                            '&:hover': { bgcolor: '#f5f5f5' }
+                          }}
+                        >
+                          Add education history
+                        </Button>
+                      </Paper>
                     </Box>
                   </CenterColumn>
                 </Box>
@@ -1622,6 +2634,328 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
               sx={{ textTransform: 'none' }}
             >
               Remove access
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Add About Item Dialog */}
+      <Dialog 
+        open={editDialogOpen === 'addAboutItem'} 
+        onClose={handleCancelEdit} 
+        maxWidth="sm" 
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <IconButton onClick={handleCancelEdit} sx={{ mr: 2 }}>
+              <ChevronLeftIcon />
+            </IconButton>
+            <Typography sx={{ fontSize: '1.375rem' }}>
+              {editFormData.type === 'place' && 'Add place'}
+              {editFormData.type === 'link' && 'Add link'}
+              {editFormData.type === 'profileLink' && 'Add profile link'}
+              {editFormData.type === 'contributorLink' && 'Add contributor link'}
+              {editFormData.type === 'introduction' && 'Add introduction'}
+            </Typography>
+          </Box>
+          
+          <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 2, p: 3, mb: 3 }}>
+            <Typography sx={{ fontSize: '0.875rem', mb: 2 }}>
+              {editFormData.type === 'introduction' ? 'Introduction' : 'Value'}
+            </Typography>
+            
+            {editFormData.type === 'introduction' ? (
+              <textarea
+                value={editFormData.value || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, value: e.target.value })}
+                placeholder="Write a brief introduction about yourself"
+                style={{
+                  width: '100%',
+                  minHeight: '120px',
+                  padding: '12px',
+                  fontSize: '1rem',
+                  border: '1px solid #dadce0',
+                  borderRadius: '4px',
+                  outline: 'none',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                }}
+              />
+            ) : (
+              <input
+                type="text"
+                value={editFormData.value || ''}
+                onChange={(e) => setEditFormData({ ...editFormData, value: e.target.value })}
+                placeholder={
+                  editFormData.type === 'place' ? 'e.g., New York, USA' :
+                  editFormData.type === 'link' ? 'e.g., https://example.com' :
+                  editFormData.type === 'profileLink' ? 'e.g., https://linkedin.com/in/yourname' :
+                  'e.g., https://github.com/yourname'
+                }
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '1rem',
+                  border: '1px solid #dadce0',
+                  borderRadius: '4px',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                }}
+              />
+            )}
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button onClick={handleCancelEdit} sx={{ textTransform: 'none', color: '#1a73e8' }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                const type = editFormData.type;
+                const value = editFormData.value;
+                
+                if (!value || !value.trim()) {
+                  handleCancelEdit();
+                  return;
+                }
+
+                const updatedAbout = { ...mailGAccountPersonalInfo.about };
+                
+                if (type === 'place') {
+                  updatedAbout.places = [...updatedAbout.places, value];
+                } else if (type === 'link') {
+                  updatedAbout.links = [...updatedAbout.links, value];
+                } else if (type === 'profileLink') {
+                  updatedAbout.profileLinks = [...updatedAbout.profileLinks, value];
+                } else if (type === 'contributorLink') {
+                  updatedAbout.contributorLinks = [...updatedAbout.contributorLinks, value];
+                } else if (type === 'introduction') {
+                  updatedAbout.introduction = value;
+                }
+                
+                setMailGAccountPersonalInfo({
+                  ...mailGAccountPersonalInfo,
+                  about: updatedAbout
+                });
+                
+                setActiveView('aboutMe');
+                handleCancelEdit();
+              }}
+              variant="contained" 
+              sx={{ textTransform: 'none' }}
+            >
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Add Work/Education Item Dialog */}
+      <Dialog 
+        open={editDialogOpen === 'addWorkEducationItem'} 
+        onClose={handleCancelEdit} 
+        maxWidth="sm" 
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <IconButton onClick={handleCancelEdit} sx={{ mr: 2 }}>
+              <ChevronLeftIcon />
+            </IconButton>
+            <Typography sx={{ fontSize: '1.375rem' }}>
+              {editFormData.type === 'occupation' && 'Add occupation'}
+              {editFormData.type === 'workHistory' && 'Add work history'}
+              {editFormData.type === 'educationHistory' && 'Add education history'}
+            </Typography>
+          </Box>
+          
+          <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 2, p: 3, mb: 3 }}>
+            <Typography sx={{ fontSize: '0.875rem', mb: 2 }}>
+              {editFormData.type === 'occupation' ? 'Occupation' : 
+               editFormData.type === 'workHistory' ? 'Company/Position' : 'School/Degree'}
+            </Typography>
+            
+            <input
+              type="text"
+              value={editFormData.value || ''}
+              onChange={(e) => setEditFormData({ ...editFormData, value: e.target.value })}
+              placeholder={
+                editFormData.type === 'occupation' ? 'e.g., Software Engineer' :
+                editFormData.type === 'workHistory' ? 'e.g., Google - Senior Developer' :
+                'e.g., MIT - Computer Science'
+              }
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '1rem',
+                border: '1px solid #dadce0',
+                borderRadius: '4px',
+                outline: 'none',
+                fontFamily: 'inherit',
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button onClick={handleCancelEdit} sx={{ textTransform: 'none', color: '#1a73e8' }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                const type = editFormData.type;
+                const value = editFormData.value;
+                
+                if (!value || !value.trim()) {
+                  handleCancelEdit();
+                  return;
+                }
+
+                const updatedWorkEducation = { ...mailGAccountPersonalInfo.workAndEducation };
+                
+                if (type === 'occupation') {
+                  updatedWorkEducation.occupation = value;
+                } else if (type === 'workHistory') {
+                  updatedWorkEducation.workHistory = [...updatedWorkEducation.workHistory, value];
+                } else if (type === 'educationHistory') {
+                  updatedWorkEducation.educationHistory = [...updatedWorkEducation.educationHistory, value];
+                }
+                
+                setMailGAccountPersonalInfo({
+                  ...mailGAccountPersonalInfo,
+                  workAndEducation: updatedWorkEducation
+                });
+                
+                setActiveView('aboutMe');
+                handleCancelEdit();
+              }}
+              variant="contained" 
+              sx={{ textTransform: 'none' }}
+            >
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Visibility Edit Dialogs */}
+      <Dialog 
+        open={editDialogOpen === 'nameVisibility' || editDialogOpen === 'genderVisibility' || editDialogOpen === 'birthdayVisibility' || editDialogOpen === 'emailVisibility' || editDialogOpen === 'profilePictureVisibility' || editDialogOpen === 'linksVisibility' || editDialogOpen === 'workVisibility' || editDialogOpen === 'educationVisibility'} 
+        onClose={handleCancelEdit} 
+        maxWidth="sm" 
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <IconButton onClick={handleCancelEdit} sx={{ mr: 2 }}>
+              <ChevronLeftIcon />
+            </IconButton>
+            <Typography sx={{ fontSize: '1.375rem' }}>
+              {editDialogOpen === 'nameVisibility' && 'Name visibility'}
+              {editDialogOpen === 'genderVisibility' && 'Gender visibility'}
+              {editDialogOpen === 'birthdayVisibility' && 'Birthday visibility'}
+              {editDialogOpen === 'emailVisibility' && 'Email visibility'}
+              {editDialogOpen === 'profilePictureVisibility' && 'Profile picture visibility'}
+              {editDialogOpen === 'linksVisibility' && 'Links visibility'}
+              {editDialogOpen === 'workVisibility' && 'Work visibility'}
+              {editDialogOpen === 'educationVisibility' && 'Education visibility'}
+            </Typography>
+          </Box>
+          
+          <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mb: 3 }}>
+            Choose who can see this information
+          </Typography>
+
+          <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 2, overflow: 'hidden', mb: 3 }}>
+            {/* Only you option */}
+            <Box 
+              onClick={() => setEditFormData({ ...editFormData, value: 'onlyYou' })}
+              sx={{ 
+                p: 2, 
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                bgcolor: editFormData.value === 'onlyYou' ? '#e8f0fe' : 'transparent',
+                '&:hover': { bgcolor: editFormData.value === 'onlyYou' ? '#e8f0fe' : '#f5f5f5' }
+              }}
+            >
+              <Box sx={{ 
+                width: 20, 
+                height: 20, 
+                borderRadius: '50%', 
+                border: '2px solid',
+                borderColor: editFormData.value === 'onlyYou' ? '#1a73e8' : '#5f6368',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mr: 2
+              }}>
+                {editFormData.value === 'onlyYou' && (
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#1a73e8' }} />
+                )}
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <PersonOutlinedIcon sx={{ fontSize: 18, color: '#1a73e8' }} />
+                  <Typography sx={{ fontWeight: 500 }}>Only you</Typography>
+                </Box>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  Only you can see this information
+                </Typography>
+              </Box>
+            </Box>
+
+            <Divider />
+
+            {/* Anyone option */}
+            <Box 
+              onClick={() => setEditFormData({ ...editFormData, value: 'anyone' })}
+              sx={{ 
+                p: 2, 
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                bgcolor: editFormData.value === 'anyone' ? '#e8f0fe' : 'transparent',
+                '&:hover': { bgcolor: editFormData.value === 'anyone' ? '#e8f0fe' : '#f5f5f5' }
+              }}
+            >
+              <Box sx={{ 
+                width: 20, 
+                height: 20, 
+                borderRadius: '50%', 
+                border: '2px solid',
+                borderColor: editFormData.value === 'anyone' ? '#1a73e8' : '#5f6368',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mr: 2
+              }}>
+                {editFormData.value === 'anyone' && (
+                  <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: '#1a73e8' }} />
+                )}
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <GroupsOutlinedIcon sx={{ fontSize: 18, color: '#1a73e8' }} />
+                  <Typography sx={{ fontWeight: 500 }}>Anyone</Typography>
+                </Box>
+                <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                  Anyone can see this information when they interact with you
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button onClick={handleCancelEdit} sx={{ textTransform: 'none', color: '#1a73e8' }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveEdit}
+              variant="contained" 
+              sx={{ textTransform: 'none', bgcolor: '#1a73e8', '&:hover': { bgcolor: '#1557b0' } }}
+            >
+              Save
             </Button>
           </Box>
         </Box>

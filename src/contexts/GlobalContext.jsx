@@ -228,7 +228,6 @@ export const GlobalContextProvider = ({ children }) => {
       month: "January",
       day: "1",
       year: "2001",
-      visibility: "private", // "private" or "public"
     },
     gender: "Rather not say",
     emails: ["john.doe@example.com"],
@@ -237,8 +236,22 @@ export const GlobalContextProvider = ({ children }) => {
       verified: false,
     },
     addresses: {
-      home: "",
-      work: "",
+      home: "123 Main Street, New York, NY 10001",
+      work: "456 Business Ave, New York, NY 10002",
+    },
+    // About section
+    about: {
+      places: [],
+      links: ["JohnDoe.com"],
+      profileLinks: [],
+      contributorLinks: [],
+      introduction: "",
+    },
+    // Work & education section
+    workAndEducation: {
+      occupation: "Software Engineer",
+      workHistory: ["Tech Corp - Senior Developer", "StartupXYZ - Lead Engineer"],
+      educationHistory: ["Harvard University - Computer Science"],
     },
   });
 
@@ -270,6 +283,25 @@ export const GlobalContextProvider = ({ children }) => {
     
     // Auto-delete
     autoDeleteActivity: "18m",
+    
+    // Profile Visibility Settings (Info you can share with others)
+    profileVisibility: {
+      nameVisibility: "anyone", // "onlyYou" or "anyone"
+      genderVisibility: "onlyYou", // "onlyYou" or "anyone"
+      birthdayVisibility: "onlyYou", // "onlyYou" or "anyone"
+      emailVisibility: "anyone", // "onlyYou" or "anyone"
+      phoneVisibility: "onlyYou", // "onlyYou" or "anyone"
+      addressVisibility: "onlyYou", // "onlyYou" or "anyone"
+      profilePictureVisibility: "anyone", // "onlyYou" or "anyone"
+      linksVisibility: "anyone", // "onlyYou" or "anyone"
+      workVisibility: "anyone", // "onlyYou" or "anyone"
+      educationVisibility: "anyone", // "onlyYou" or "anyone"
+    },
+  });
+
+  // Sign-in settings
+  const [signInSettings, setSignInSettings] = usePersistedState("signInSettings", {
+    signInPromptsEnabled: true,
   });
 
   // MailG Account - Third-party Apps & Services
@@ -514,6 +546,8 @@ export const GlobalContextProvider = ({ children }) => {
     setMailGAccountDataPrivacy,
     thirdPartyApps,
     setThirdPartyApps,
+    signInSettings,
+    setSignInSettings,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
