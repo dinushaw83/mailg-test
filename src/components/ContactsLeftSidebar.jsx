@@ -19,6 +19,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateLabelModal from "./Contacts/CreateLabelModal";
 import DeleteLabelModal from "./Contacts/DeleteLabelModal";
 import ImportContactsModal from "./Contacts/ImportContactsModal";
+import CreateMultipleContactsModal from "./Contacts/CreateMultipleContactsModal";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import useDimensions from "../hooks/useDimensions";
 import styles from "./ContactsLeftSidebar.module.css";
@@ -248,6 +249,7 @@ const ContactsLeftSidebar = () => {
   });
   const [createContactAnchor, setCreateContactAnchor] = useState(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [showCreateMultipleContactsModal, setShowCreateMultipleContactsModal] = useState(false);
 
   useEffect(() => {
     // When width goes below 1024px, set the contacts left sidebar to collapsed else expanded
@@ -268,6 +270,9 @@ const ContactsLeftSidebar = () => {
     if (menuType === "single") {
       // Navigate to the create contact screen
       navigate("/contacts/new");
+    } else if (menuType === "multiple") {
+      // Show create multiple contacts modal
+      setShowCreateMultipleContactsModal(true);
     }
     setCreateContactAnchor(null);
   };
@@ -705,10 +710,12 @@ const ContactsLeftSidebar = () => {
       {deleteLabelModal.show && (
         <DeleteLabelModal
           open={deleteLabelModal.show}
-          onClose={() => setDeleteLabelModal({
-            show: false,
-            label: null,
-          })}
+          onClose={() =>
+            setDeleteLabelModal({
+              show: false,
+              label: null,
+            })
+          }
           backdropStyle={{ top: "-66px" }}
           label={deleteLabelModal.label}
         />
@@ -720,6 +727,14 @@ const ContactsLeftSidebar = () => {
         onClose={handleCloseImportModal}
         onImport={handleImportContacts}
       />
+
+      {/* Create Multiple Contacts Modal */}
+      {showCreateMultipleContactsModal && (
+        <CreateMultipleContactsModal
+          open={showCreateMultipleContactsModal}
+          onClose={() => setShowCreateMultipleContactsModal(false)}
+        />
+      )}
     </>
   );
 };

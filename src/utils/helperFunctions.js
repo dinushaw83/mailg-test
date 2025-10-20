@@ -610,7 +610,7 @@ export const restructureRecipients = (recipients) => {
 };
 
 // Generate address string
-export const generateAddressString = (address) => {
+export const generateAddressString = (address, returnType = "string") => {
   const parts = [];
   if (address.streetAddress) parts.push(address.streetAddress);
   if (address.poBox) parts.push(address.poBox);
@@ -621,7 +621,7 @@ export const generateAddressString = (address) => {
   if (address.zipCode) stateZip.push(address.zipCode);
   if (stateZip.length > 0) parts.push(stateZip.join(" "));
   if (address.countryCode) parts.push(address.countryCode);
-  return parts.join(" ");
+  return returnType === "array" ? parts : parts.join(" ");
 };
 
 // Get formatted website URL

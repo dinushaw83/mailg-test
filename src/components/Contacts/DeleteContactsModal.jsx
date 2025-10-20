@@ -28,13 +28,15 @@ const DeleteContactsModal = ({ open, onClose, onConfirm, selectedContactsCount, 
       open={open}
       onClose={onClose}
       maxWidth={false}
-      PaperProps={{
-        sx: {
-          width: "528.66px",
-          borderRadius: "28px",
-          boxShadow:
-            "0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12),0px 5px 5px -3px rgba(0,0,0,.2)",
-        },
+      slotProps={{
+        paper: {
+          sx: {
+            width: "528.66px",
+            borderRadius: "28px",
+            boxShadow:
+              "0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12),0px 5px 5px -3px rgba(0,0,0,.2)",
+          },
+        }
       }}
     >
       <DialogTitle

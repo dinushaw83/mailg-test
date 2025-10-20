@@ -89,6 +89,8 @@ const CreateContact = ({ onClose, onTabClose }) => {
     setRightSidebarActiveTab,
     emails,
     recipientLabels,
+    hiddenRecipients,
+    deletedRecipients,
   } = useGlobalContext();
 
   // Check if contact to update is present in recipients or create a custom contact if it is a valid email in case of edit contact
@@ -766,7 +768,9 @@ const CreateContact = ({ onClose, onTabClose }) => {
     if (originalContact.current.type === "EDIT" && !originalContact.current.contact?.isCustomContact) {
       setRecipients((prev) =>
         prev.map((recipient) =>
-          recipient.id === originalContact.current.contact.id ? originalContact.current.contact : recipient
+          recipient.id === originalContact.current.contact.id
+            ? { ...originalContact.current.contact, updatedAt: new Date().toISOString() }
+            : recipient
         )
       );
     } else {
@@ -856,11 +860,14 @@ const CreateContact = ({ onClose, onTabClose }) => {
           id:
             !contactToUpdate?.isCustomContact && contactToUpdate?.id
               ? contactToUpdate?.id
-              : generateNextIntegerId(recipients),
+              : generateNextIntegerId([...recipients, ...hiddenRecipients, ...deletedRecipients]),
           avatar: contactToUpdate?.avatar || null,
           labels,
           // Set isSaved to true
           isSaved: true,
+          updatedAt: new Date().toISOString(),
+          createdAt: contactToUpdate?.createdAt ?? new Date().toISOString(),
+          savedAt: contactToUpdate?.savedAt ?? new Date().toISOString(),
           // First email should be the primary email if it exists
           email: Array.isArray(formData.emails) && formData.emails.length > 0 ? formData.emails[0].value : null,
         };
@@ -1594,6 +1601,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
                       displayEmpty
                       sx={{
                         height: "35px",
+                        maxWidth: "200px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           borderColor: "#747775",
                           borderWidth: "1px",
@@ -1669,6 +1677,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
                         displayEmpty
                         sx={{
                           height: "35px",
+                          maxWidth: "200px",
                           "& .MuiOutlinedInput-notchedOutline": {
                             borderColor: "#747775",
                             borderWidth: "1px",
