@@ -372,7 +372,6 @@ const ContextMenu = ({
             <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
               {item.icon}
             </span>
-            jeje
             {item.label}
           </Item>
         ))}

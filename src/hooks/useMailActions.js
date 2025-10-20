@@ -147,6 +147,7 @@ export default function useMailActions() {
       withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
           removeSystemLabels(labelSet, labels, ["Inbox"]);
+          labelSet.delete("Muted"); 
           labelSet.add("Inbox");
         });
       }),
