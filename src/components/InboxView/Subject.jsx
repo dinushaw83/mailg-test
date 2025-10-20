@@ -5,7 +5,7 @@ import EmailLabelChips from "../Labels/EmailLabelChips";
 
 const StyledSubject = styled.h2`
   font-weight: 400;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.1rem;
   font-size: 1.375rem;
 `;
 

@@ -13,7 +13,17 @@ import { updateEmbeddedImagesEmailId } from "../utils/embeddedImages";
 
 export const useScheduleEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
-  const { emails, setEmails, setSnackbar, loggedInUser, recipients, setRecipients, db } = useContext(GlobalContext);
+  const {
+    emails,
+    setEmails,
+    setSnackbar,
+    loggedInUser,
+    recipients,
+    setRecipients,
+    db,
+    hiddenRecipients,
+    deletedRecipients,
+  } = useContext(GlobalContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastScheduledEmailRef = useRef(null);
@@ -202,7 +212,13 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
       newRecipients.forEach((recipient, index) => {
         updatedRecipients.push({
           ...recipient,
-          id: generateNextIntegerId(recipients) + index,
+          id: generateNextIntegerId([...recipients, ...hiddenRecipients, ...deletedRecipients]) + index,
+          isSaved: false,
+          isFavorite: false,
+          labels: [],
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          savedAt: null,
         });
       });
       setRecipients(updatedRecipients);

@@ -8,12 +8,14 @@ const ContactsByLabel = () => {
   const { recipients, recipientLabels } = useGlobalContext();
   const { labelId } = useParams();
   const label = recipientLabels.find((label) => label.id === parseInt(labelId));
-  const contacts = recipients.filter((recipient) => recipient.labels.includes(label?.label));
+  const contacts = recipients.filter((recipient) => label?.label && recipient.labels?.includes(label.label));
 
   useEffect(() => {
     // Update the document title
-    document.title = `Label - ${label.label}`;
-  }, [labelId]);
+    if (label?.label) {
+      document.title = `Label - ${label.label}`;
+    }
+  }, [labelId, label]);
 
   return (
     <Box
@@ -36,7 +38,7 @@ const ContactsByLabel = () => {
 
       {/* Contacts list */}
       {contacts?.length > 0 ? (
-        <ContactsTable contacts={[{ heading: "", data: contacts, title: "Contacts by Label" }]} />
+        <ContactsTable contacts={[{ heading: "", data: contacts, title: "Contacts by Label" }]} currentLabel={label} />
       ) : (
         <Box
           sx={{

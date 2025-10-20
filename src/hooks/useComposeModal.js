@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { isValidEmail } from "../utils/helperFunctions";
 
 export const useComposeModal = () => {
-  const { composeWindows, setComposeWindows, emails, rightSidebarActiveTab } = useGlobalContext();
+  const { composeWindows, setComposeWindows, emails, rightSidebarActiveTab, recipients } = useGlobalContext();
   const [visibleWindowCount, setVisibleWindowCount] = useState(3);
   const location = useLocation();
   const navigate = useNavigate();
@@ -180,7 +181,7 @@ export const useComposeModal = () => {
           newSearchParams.delete("compose");
           const newSearch = newSearchParams.toString();
           const newUrl = `${location.pathname}${newSearch ? `?${newSearch}` : ""}`;
-          navigate(newUrl);
+          navigate(newUrl, { replace: true });
         } else {
           // Windows remaining, set compose parameter to the last window
           const lastWindow = updatedWindows[updatedWindows.length - 1];
@@ -323,15 +324,47 @@ export const useComposeModal = () => {
 
     // Handle URL parameters - we know composeParam exists and composeWindows is empty
     if (composeParam === "new") {
+      // Check if to parameter is present in the url
+      const toParam = searchParams.get("to");
+
+      let contactObj = {};
+
+      // If to param exists verify if it's a valid email
+      if (toParam && isValidEmail(toParam)) {
+        // Check if the contact is in the recipients array
+        const contact = recipients.find((recipient) => recipient.emails.some((email) => email.value === toParam));
+
+        // Create a contact object with the contact if it exists
+        if (contact) {
+          const { emails, ...rest } = contact;
+          contactObj = { ...rest, email: toParam };
+        } else {
+          // Create a custom contact object with the email
+          contactObj = {
+            id: `custom-${toParam}`,
+            name: toParam,
+            email: toParam,
+          };
+        }
+      }
+
       // Create a new compose window
       const newWindow = {
         id: Date.now(),
         draftId: null,
         isMinimized: false,
         isMaximized: false,
-        fields: {},
+        fields: Object.keys(contactObj).length > 0 ? { to: [contactObj] } : {},
       };
+
       setComposeWindows([newWindow]);
+
+      // Now remove the to parameter from the url
+      const newSearchParams = new URLSearchParams(location.search);
+      newSearchParams.delete("to");
+      const newSearch = newSearchParams.toString();
+      const newUrl = `${location.pathname}?${newSearch}`;
+      navigate(newUrl);
     } else {
       // Check if the composeParam is a valid draft ID
       const draftEmails = emails.filter((email) => email.labels.includes("Drafts"));

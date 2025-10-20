@@ -17,18 +17,21 @@ const InboxViewContainer = styled.div`
   width: 100%;
   height: ${(props) => (props.isPreview ? "100%" : "100vh")};
   overflow: hidden;
+  background-color: #fff;
+  border-radius: 16px;
 `;
 
 const ScrollableContent = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 24px 24px 120px 24px;
+  padding: 0px 24px 120px 2px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(95, 99, 104, 0.6) transparent;
   will-change: scroll-position;
   transform: translateZ(0);
   -webkit-overflow-scrolling: touch;
+  margin-top: -6px;
 
   &::-webkit-scrollbar {
     width: 8px;
