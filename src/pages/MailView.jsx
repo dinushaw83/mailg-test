@@ -30,7 +30,10 @@ import Banner from "../components/Banners";
 import { CATEGORIES } from "../utils/categories";
 
 const Inbox = () => {
-  const { emails, sortOrder, currentPage, itemsPerPage, loggedInUser, vacationResponder } = useContext(GlobalContext);
+  const {
+    emails, sortOrder, setCurrentPage, currentPage,
+    itemsPerPage, loggedInUser, vacationResponder
+  } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -59,22 +62,30 @@ const Inbox = () => {
     return filteredRows.filter((r) => isInbox(r) && has(r, activeInboxTab));
   }, [filteredRows, activeInboxTab]);
 
-  // pick rows based on folder/label, then sort and paginate
-  const rows = useMemo(() => {
-    // choose source depending on folder
-    const source = !label && activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;
+  // Determine what rows to display based on active folder
+  let displayRows;
+  if (activeFolder.toLowerCase() === "inbox") {
+    displayRows = tabFilteredRows;
+  } else {
+    displayRows = filteredRows;
+  }
 
-    const sortedThreads = [...source].sort((a, b) => {
+  // Sort and paginate the displayRows
+  const rows = useMemo(() => {
+    const sorted = [...displayRows].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
-      return dateB - dateA;
+      return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
     });
 
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const totalPages = Math.max(1, Math.ceil(sorted.length / itemsPerPage));
+    const safePage = Math.min(currentPage, totalPages);
+    const startIndex = (safePage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
-    return sortedThreads.slice(startIndex, endIndex);
-  }, [filteredRows, tabFilteredRows, activeFolder, currentPage, itemsPerPage, label]);
+    return sorted.slice(startIndex, endIndex);
+  }, [displayRows, sortOrder, currentPage, itemsPerPage]);
+
 
   useEffect(() => {
     // Calculate total unread emails count
@@ -83,11 +94,15 @@ const Inbox = () => {
     document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
   }, [emails, loggedInUser.email]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeInboxTab, activeFolder]);
+
   return (
     <Container id="cont-123">
       <EmailListContainer role="main" vacationResponderEnabled={vacationResponder.enabled}>
         <ToolBar
-          totalFilteredItems={filteredRows.length}
+          totalFilteredItems={displayRows.length}
           threads={rows}
           showAdvancedMenu={showAdvancedMenu}
           setShowAdvancedMenu={setShowAdvancedMenu}
