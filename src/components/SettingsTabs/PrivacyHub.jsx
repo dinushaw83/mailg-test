@@ -163,10 +163,11 @@ const HistorySettingsCard = ({ onOpenWebActivity, onOpenTimeline }) => (
 );
 
 export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivacy' }) {
-  const { privacySettings, setPrivacySettings, mailGAccountPersonalInfo, setMailGAccountPersonalInfo, mailGAccountDataPrivacy, setMailGAccountDataPrivacy } = useGlobalContext();
+  const { privacySettings, setPrivacySettings, mailGAccountPersonalInfo, setMailGAccountPersonalInfo, mailGAccountDataPrivacy, setMailGAccountDataPrivacy, thirdPartyApps, setThirdPartyApps } = useGlobalContext();
   const [activeView, setActiveView] = React.useState(initialView);
   const [editDialogOpen, setEditDialogOpen] = React.useState(null); // 'name', 'nickname', 'birthday', 'phone', 'gender', 'homeAddress', 'workAddress'
   const [editFormData, setEditFormData] = React.useState({});
+  const [deleteAppDialog, setDeleteAppDialog] = React.useState(null); // stores app id to delete
 
   // Update activeView when initialView changes and dialog opens
   React.useEffect(() => {
@@ -248,7 +249,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
     setEditFormData({});
   };
 
-  const isSubPage = activeView === 'webAndAppActivity' || activeView === 'locationHistoryControls' || activeView === 'searchPersonalizationControls' || activeView === 'myAdCenter';
+  const isSubPage = activeView === 'webAndAppActivity' || activeView === 'locationHistoryControls' || activeView === 'searchPersonalizationControls' || activeView === 'myAdCenter' || activeView === 'thirdPartyApps';
 
   return (
     <Dialog fullScreen open={open} onClose={onClose} TransitionComponent={Transition}>
@@ -474,13 +475,15 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                               </Box>
                             </Button>
                           </Box>
-                          <Button sx={{ justifyContent: 'space-between', textTransform: 'none', py: 2, px: 2, width: '100%' }}>
+                          <Button onClick={() => setActiveView('thirdPartyApps')} sx={{ justifyContent: 'space-between', textTransform: 'none', py: 2, px: 2, width: '100%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                               <CloudOutlinedIcon sx={{ color: 'text.secondary', mr: 2 }} />
                               <Typography>Third-party apps & services</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mr: 1 }}>No apps connected</Typography>
+                              <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mr: 1 }}>
+                                {thirdPartyApps.length === 0 ? 'No apps connected' : `${thirdPartyApps.length} total apps & services`}
+                              </Typography>
                               <ChevronRightIcon sx={{ color: 'text.disabled' }} />
                             </Box>
                           </Button>
@@ -865,6 +868,94 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
                   </CenterColumn>
                 </Box>
               )}
+
+              {activeView === 'thirdPartyApps' && (
+                <Box>
+                  <CenterColumn>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <CloudOutlinedIcon sx={{ fontSize: 48, color: '#5f6368', mb: 1 }} />
+                        <Typography sx={{ fontSize: '1.5rem', mb: 1 }}>Third-party apps & services</Typography>
+                        <Typography sx={{ color: 'text.secondary', maxWidth: 600, mx: 'auto' }}>
+                          Keep track of your connections
+                        </Typography>
+                        <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem', mt: 1 }}>
+                          You shared data with these third-party apps and services. <Link href="#" sx={{ color: '#1a73e8', textDecoration: 'none' }}>Learn more</Link>
+                        </Typography>
+                      </Box>
+
+                      {/* Total count and search */}
+                      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography sx={{ fontSize: '1.25rem', fontWeight: 500 }}>
+                          {thirdPartyApps.length} total apps & services
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <SettingsOutlinedIcon sx={{ color: 'text.secondary', cursor: 'pointer' }} />
+                        </Box>
+                      </Box>
+
+                      {/* Filter tabs */}
+                      <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        <Chip 
+                          label={`Sign in with Google (${thirdPartyApps.filter(app => app.access === 'Sign in with Google').length})`}
+                          variant="outlined"
+                          sx={{ borderRadius: '16px', fontSize: '0.875rem' }}
+                        />
+                        <Chip 
+                          label={`Access to Any account access (${thirdPartyApps.length})`}
+                          variant="outlined"
+                          sx={{ borderRadius: '16px', fontSize: '0.875rem' }}
+                        />
+                      </Box>
+
+                      {/* Apps list */}
+                      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                        {thirdPartyApps.map((app, index) => (
+                          <React.Fragment key={app.id}>
+                            {index > 0 && <Divider />}
+                            <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', '&:hover': { bgcolor: '#f5f5f5' } }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
+                                {/* App icon placeholder */}
+                                <Box sx={{ 
+                                  width: 40, 
+                                  height: 40, 
+                                  borderRadius: '50%', 
+                                  bgcolor: '#e8f0fe', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center',
+                                  border: '1px solid #dadce0'
+                                }}>
+                                  <CloudOutlinedIcon sx={{ color: '#1a73e8', fontSize: 20 }} />
+                                </Box>
+                                
+                                {/* App info */}
+                                <Box sx={{ flex: 1 }}>
+                                  <Typography sx={{ fontWeight: 500, fontSize: '0.95rem' }}>{app.name}</Typography>
+                                  <Typography sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
+                                    Last accessed: {app.lastAccessed}
+                                  </Typography>
+                                </Box>
+                              </Box>
+
+                              {/* Chevron */}
+                              <ChevronRightIcon sx={{ color: 'text.disabled', cursor: 'pointer' }} onClick={() => setDeleteAppDialog(app.id)} />
+                            </Box>
+                          </React.Fragment>
+                        ))}
+                      </Paper>
+
+                      {thirdPartyApps.length === 0 && (
+                        <Box sx={{ textAlign: 'center', py: 6 }}>
+                          <CloudOutlinedIcon sx={{ fontSize: 64, color: '#dadce0', mb: 2 }} />
+                          <Typography sx={{ color: 'text.secondary' }}>No apps connected</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </CenterColumn>
+                </Box>
+              )}
+
               {activeView === 'personalInfo' && (
                 <Box>
                   <CenterColumn>
@@ -1477,6 +1568,60 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
             </Button>
             <Button onClick={handleSaveEdit} variant="contained" sx={{ textTransform: 'none' }}>
               Save
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      {/* Delete App Confirmation Dialog */}
+      <Dialog 
+        open={deleteAppDialog !== null} 
+        onClose={() => setDeleteAppDialog(null)} 
+        maxWidth="sm" 
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography sx={{ fontSize: '1.5rem', mb: 2 }}>
+            Remove {thirdPartyApps.find(app => app.id === deleteAppDialog)?.name}?
+          </Typography>
+          
+          <Typography sx={{ color: 'text.secondary', mb: 3 }}>
+            This will remove {thirdPartyApps.find(app => app.id === deleteAppDialog)?.name}'s access to your MailG Account. 
+            You may lose access to the app and its data.
+          </Typography>
+
+          <Box sx={{ bgcolor: '#f8f9fa', p: 2, borderRadius: 1, mb: 3 }}>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              <strong>What happens next:</strong>
+            </Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary', mt: 1 }}>
+              • The app will no longer have access to your MailG Account
+            </Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              • You may need to sign in again if you use this app
+            </Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+              • Some app features may stop working
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Button 
+              onClick={() => setDeleteAppDialog(null)} 
+              sx={{ textTransform: 'none', color: '#1a73e8' }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                setThirdPartyApps(thirdPartyApps.filter(app => app.id !== deleteAppDialog));
+                setDeleteAppDialog(null);
+              }}
+              variant="contained" 
+              color="error"
+              sx={{ textTransform: 'none' }}
+            >
+              Remove access
             </Button>
           </Box>
         </Box>

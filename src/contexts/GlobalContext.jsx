@@ -272,6 +272,55 @@ export const GlobalContextProvider = ({ children }) => {
     autoDeleteActivity: "18m",
   });
 
+  // MailG Account - Third-party Apps & Services
+  const [thirdPartyApps, setThirdPartyApps] = usePersistedState("thirdPartyApps", [
+    {
+      id: "cursor-ai",
+      name: "Cursor",
+      icon: "cursor",
+      access: "Sign in with Google",
+      accessCount: 12,
+      description: "Access to Any account access",
+      lastAccessed: "2 days ago",
+    },
+    {
+      id: "evernote",
+      name: "Evernote",
+      icon: "evernote",
+      access: "Sign in with Google",
+      accessCount: 12,
+      description: "Access to Any account access",
+      lastAccessed: "1 week ago",
+    },
+    {
+      id: "jibble",
+      name: "Jibble 2.0",
+      icon: "jibble",
+      access: "Sign in with Google",
+      accessCount: 12,
+      description: "Access to Any account access",
+      lastAccessed: "3 weeks ago",
+    },
+    {
+      id: "openai",
+      name: "OpenAI",
+      icon: "openai",
+      access: "Sign in with Google",
+      accessCount: 12,
+      description: "Access to Any account access",
+      lastAccessed: "1 month ago",
+    },
+    {
+      id: "slack",
+      name: "Slack",
+      icon: "slack",
+      access: "Sign in with Google",
+      accessCount: 12,
+      description: "Access to Any account access",
+      lastAccessed: "2 months ago",
+    },
+  ]);
+
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -463,6 +512,8 @@ export const GlobalContextProvider = ({ children }) => {
     setMailGAccountPersonalInfo,
     mailGAccountDataPrivacy,
     setMailGAccountDataPrivacy,
+    thirdPartyApps,
+    setThirdPartyApps,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
