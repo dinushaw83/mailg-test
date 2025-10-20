@@ -73,10 +73,6 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     [threads, selectedIds]
   );
 
-  useEffect(() => {
-    console.log(selectedIds, "=======")
-  }, [selectedIds])
-
   // Get the base path by removing the threadId from the current path
   const getBasePath = () => {
     const pathParts = location.pathname.split("/");
