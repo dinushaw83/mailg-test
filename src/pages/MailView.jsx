@@ -71,22 +71,16 @@ const Inbox = () => {
   }
 
   // Sort and paginate the displayRows
+  const baseSource = !label && activeFolder.toLowerCase() === "inbox"
+    ? tabFilteredRows
+    : filteredRows;
+
   const rows = useMemo(() => {
-    const source = !label && activeFolder.toLowerCase() === "inbox"
-      ? tabFilteredRows
-      : filteredRows;
-
-    const sortedThreads = [...source].sort((a, b) => {
-      const dateA = new Date(a.timestamp);
-      const dateB = new Date(b.timestamp);
-      return dateB - dateA;
-    });
-
+    const sortedThreads = [...baseSource].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-
     return sortedThreads.slice(startIndex, endIndex);
-  }, [filteredRows, tabFilteredRows, activeFolder, currentPage, itemsPerPage, label]);
+  }, [baseSource, currentPage, itemsPerPage]);
 
   useEffect(() => {
     // Calculate total unread emails count
@@ -104,7 +98,7 @@ const Inbox = () => {
     <Container id="cont-123">
       <EmailListContainer role="main" vacationResponderEnabled={vacationResponder.enabled}>
         <ToolBar
-          totalFilteredItems={displayRows.length}
+          totalFilteredItems={baseSource.length}
           threads={rows}
           showAdvancedMenu={showAdvancedMenu}
           setShowAdvancedMenu={setShowAdvancedMenu}
