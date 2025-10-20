@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import dayjs from "dayjs";
-import { Box, Popover, Button, TextField, ClickAwayListener } from "@mui/material";
+import { Box, Popover, Button, TextField } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
@@ -140,187 +140,183 @@ export default function CustomDateRange({ anchorEl, open, onClose, onApply }) {
 
       {/* Start Date Calendar Popover */}
       {startCalendarOpen && (
-        <ClickAwayListener onClickAway={() => setStartCalendarOpen(false)}>
-          <Popover
-            open={startCalendarOpen}
-            anchorEl={startDateInputRef.current}
-            onClose={() => setStartCalendarOpen(false)}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
-            }}
-            slotProps={{
-              paper: {
-                sx: {
-                  mt: 0.5,
-                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2), 0px 0px 2px rgba(0, 0, 0, 0.1)",
-                },
+        <Popover
+          open={startCalendarOpen}
+          anchorEl={startDateInputRef.current}
+          onClose={() => setStartCalendarOpen(false)}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          slotProps={{
+            paper: {
+              sx: {
+                mt: 0.5,
+                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2), 0px 0px 2px rgba(0, 0, 0, 0.1)",
               },
-            }}
-            disableAutoFocus
-            disableEnforceFocus
-          >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <Box>
-                <DateCalendar
-                  value={startDate}
-                  onChange={(newValue) => {
-                    setStartDate(newValue);
-                    isClosingStartRef.current = true;
+            },
+          }}
+          disableAutoFocus
+          disableEnforceFocus
+        >
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box>
+              <DateCalendar
+                value={startDate}
+                onChange={(newValue) => {
+                  setStartDate(newValue);
+                  isClosingStartRef.current = true;
+                  setStartCalendarOpen(false);
+                  startDateInputRef.current?.blur();
+                  setTimeout(() => {
+                    isClosingStartRef.current = false;
+                  }, 100);
+                }}
+                maxDate={dayjs().subtract(1, "day")}
+                sx={{
+                  height: "300px",
+                  "& .MuiPickersDay-root": {
+                    fontSize: "0.875rem",
+                    border: "none",
+                    "&.Mui-selected": {
+                      backgroundColor: "#1a73e8",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#1557b0",
+                      },
+                    },
+                    "&:hover": {
+                      backgroundColor: "#C6DAFC",
+                    },
+                  },
+                  "& .MuiPickersDay-today": {
+                    border: "none !important",
+                    backgroundColor: "transparent",
+                  },
+                }}
+              />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  pb: 1,
+                  pt: 0,
+                }}
+              >
+                <Button
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setStartDate(null);
                     setStartCalendarOpen(false);
                     startDateInputRef.current?.blur();
-                    setTimeout(() => {
-                      isClosingStartRef.current = false;
-                    }, 100);
                   }}
-                  maxDate={dayjs().subtract(1, "day")}
                   sx={{
-                    height: "300px",
-                    "& .MuiPickersDay-root": {
-                      fontSize: "0.875rem",
-                      border: "none",
-                      "&.Mui-selected": {
-                        backgroundColor: "#1a73e8",
-                        color: "white",
-                        "&:hover": {
-                          backgroundColor: "#1557b0",
-                        },
-                      },
-                      "&:hover": {
-                        backgroundColor: "#C6DAFC",
-                      },
+                    textTransform: "none",
+                    color: "#1a73e8",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(26, 115, 232, 0.04)",
                     },
-                    "& .MuiPickersDay-today": {
-                      border: "none !important",
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    pb: 1,
-                    pt: 0,
                   }}
                 >
-                  <Button
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setStartDate(null);
-                      setStartCalendarOpen(false);
-                      startDateInputRef.current?.blur();
-                    }}
-                    sx={{
-                      textTransform: "none",
-                      color: "#1a73e8",
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      "&:hover": {
-                        backgroundColor: "rgba(26, 115, 232, 0.04)",
-                      },
-                    }}
-                  >
-                    None
-                  </Button>
-                </Box>
+                  None
+                </Button>
               </Box>
-            </LocalizationProvider>
-          </Popover>
-        </ClickAwayListener>
+            </Box>
+          </LocalizationProvider>
+        </Popover>
       )}
 
       {/* End Date Calendar Popover */}
       {endCalendarOpen && (
-        <ClickAwayListener onClickAway={() => setEndCalendarOpen(false)}>
-          <Popover
-            open={endCalendarOpen}
-            anchorEl={endDateInputRef.current}
-            onClose={() => setEndCalendarOpen(false)}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "left",
-            }}
-            slotProps={{
-              paper: {
-                sx: {
-                  mt: 0.5,
-                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2), 0px 0px 2px rgba(0, 0, 0, 0.1)",
-                },
+        <Popover
+          open={endCalendarOpen}
+          anchorEl={endDateInputRef.current}
+          onClose={() => setEndCalendarOpen(false)}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          slotProps={{
+            paper: {
+              sx: {
+                mt: 0.5,
+                boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2), 0px 0px 2px rgba(0, 0, 0, 0.1)",
               },
-            }}
-            disableAutoFocus
-            disableEnforceFocus
-          >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <Box>
-                <DateCalendar
-                  value={endDate}
-                  onChange={(newValue) => {
-                    setEndDate(newValue);
-                    isClosingEndRef.current = true;
+            },
+          }}
+          disableAutoFocus
+          disableEnforceFocus
+        >
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box>
+              <DateCalendar
+                value={endDate}
+                onChange={(newValue) => {
+                  setEndDate(newValue);
+                  isClosingEndRef.current = true;
+                  setEndCalendarOpen(false);
+                  endDateInputRef.current?.blur();
+                  setTimeout(() => {
+                    isClosingEndRef.current = false;
+                  }, 100);
+                }}
+                minDate={startDate || undefined}
+                maxDate={dayjs()}
+                sx={{
+                  height: "300px",
+                  "& .MuiPickersDay-root": {
+                    fontSize: "0.875rem",
+                    border: "none",
+                    "&.Mui-selected": {
+                      backgroundColor: "#1a73e8",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#1557b0",
+                      },
+                    },
+                    "&:hover": {
+                      backgroundColor: "#C6DAFC",
+                    },
+                  },
+                  "& .MuiPickersDay-today": {
+                    border: "none !important",
+                    backgroundColor: "transparent",
+                  },
+                }}
+              />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  pb: 1,
+                  pt: 0,
+                }}
+              >
+                <Button
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setEndDate(null);
                     setEndCalendarOpen(false);
                     endDateInputRef.current?.blur();
-                    setTimeout(() => {
-                      isClosingEndRef.current = false;
-                    }, 100);
                   }}
-                  minDate={startDate || undefined}
-                  maxDate={dayjs()}
                   sx={{
-                    height: "300px",
-                    "& .MuiPickersDay-root": {
-                      fontSize: "0.875rem",
-                      border: "none",
-                      "&.Mui-selected": {
-                        backgroundColor: "#1a73e8",
-                        color: "white",
-                        "&:hover": {
-                          backgroundColor: "#1557b0",
-                        },
-                      },
-                      "&:hover": {
-                        backgroundColor: "#C6DAFC",
-                      },
+                    textTransform: "none",
+                    color: "#1a73e8",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    "&:hover": {
+                      backgroundColor: "rgba(26, 115, 232, 0.04)",
                     },
-                    "& .MuiPickersDay-today": {
-                      border: "none !important",
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                />
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    pb: 1,
-                    pt: 0,
                   }}
                 >
-                  <Button
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setEndDate(null);
-                      setEndCalendarOpen(false);
-                      endDateInputRef.current?.blur();
-                    }}
-                    sx={{
-                      textTransform: "none",
-                      color: "#1a73e8",
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      "&:hover": {
-                        backgroundColor: "rgba(26, 115, 232, 0.04)",
-                      },
-                    }}
-                  >
-                    None
-                  </Button>
-                </Box>
+                  None
+                </Button>
               </Box>
-            </LocalizationProvider>
-          </Popover>
-        </ClickAwayListener>
+            </Box>
+          </LocalizationProvider>
+        </Popover>
       )}
     </>
   );
