@@ -28,10 +28,11 @@ const ContextMenu = ({
   const threadId = contextRow?.threadId.split(":")[1];
   const selectedIds = [threadId];
 
+  const isSpamFolder = folder === "spam";
   const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
   const muted = contextRow?.labels?.includes("Muted");
 
-  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, addLabels, removeLabels } =
+  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, addLabels, removeLabels, deleteForever } =
     useMailActions();
   const { setSnackbar } = useGlobalContext();
 
@@ -259,6 +260,45 @@ const ContextMenu = ({
     [moveToInbox, setSnackbar, contextRow]
   );
 
+  const handleNotSpam = useCallback(
+    (threadId) => {
+      const undo = moveToInbox([threadId]);
+
+      const handleUndo = () => {
+        undo();
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      };
+
+      setSnackbar({
+        open: true,
+        message:
+          "Conversation unmarked as spam and moved to the inbox. Future messages from this sender will be sent to the inbox.",
+        autoHideDuration: 3000,
+        action: (
+          <Button size="small" onClick={handleUndo}>
+            Undo
+          </Button>
+        ),
+        style: {
+          maxWidth: "600px",
+        },
+      });
+    },
+    [moveToInbox, setSnackbar, contextRow]
+  );
+
+  const handleDeleteForever = useCallback(
+    (threadId) => {
+      deleteForever(threadId);
+    },
+    [deleteForever]
+  );
+
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
@@ -280,6 +320,12 @@ const ContextMenu = ({
         break;
       case "move_to_inbox":
         handleMoveToInbox(threadId);
+        break;
+      case "not_spam":
+        handleNotSpam(threadId);
+        break;
+      case "delete_forever":
+        handleDeleteForever(threadId);
         break;
       //etc...
     }
@@ -316,18 +362,22 @@ const ContextMenu = ({
         ];
 
   const sectionTwoItems = [
-    isThreadNotInInbox
+    isSpamFolder
+      ? { id: "not_spam", label: "Not Spam", icon: "report_off" }
+      : isThreadNotInInbox
       ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
       : {
           id: "archive",
           label: "Archive",
           icon: "archive",
         },
-    {
-      id: "delete",
-      label: "Delete",
-      icon: "delete",
-    },
+    isSpamFolder
+      ? { id: "delete_forever", label: "Delete forever", icon: "delete" }
+      : {
+          id: "delete",
+          label: "Delete",
+          icon: "delete",
+        },
     ...(isRead
       ? [
           {
