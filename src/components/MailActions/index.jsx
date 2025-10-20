@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import { Icon } from "../InboxView/ActionBar";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import Divider from "@mui/material/Divider";
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -72,6 +72,10 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     () => threads.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
     [threads, selectedIds]
   );
+
+  useEffect(() => {
+    console.log(selectedIds, "=======")
+  }, [selectedIds])
 
   // Get the base path by removing the threadId from the current path
   const getBasePath = () => {
@@ -631,6 +635,31 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     });
   };
 
+  const showUndoSnackbar = useCallback((message, undoFn) => {
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            undoFn();
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [setSnackbar]);
+
   return (
     <Box display="flex" alignItems="center">
       {inDrafts && (
@@ -710,16 +739,19 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
 
       <SpamOrUnsubModal
         open={spamModalOpen}
-        onClose={() => {
-          toggleSpamModal();
-        }}
+        onClose={toggleSpamModal}
         onReportSpam={() => {
-          moveToSpam(selectedIds);
+          const undo = moveToSpam(selectedIds);
           toggleSpamModal();
+          showUndoSnackbar(
+            selectedIds.length > 1 ? `${selectedIds.length} conversations marked as spam.` : "Conversation marked as spam.",
+            undo
+          );
         }}
         onUnsubscribe={() => {
           moveToSpam(selectedIds);
           toggleSpamModal();
+          showUndoSnackbar("We'll try to unsubscribe you from these emails.", () => {});
         }}
       />
 

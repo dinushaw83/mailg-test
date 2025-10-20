@@ -9,7 +9,11 @@ import useMailActions from "../../hooks/useMailActions";
 import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
 import Button from "@mui/material/Button";
 
-export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
+export const LabelsSubMenu = ({
+  selectedIds,
+  openCreateLabelDialog,
+  shouldFocus = false,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { labels, setSnackbar, selection } = useGlobalContext();
   const { addLabels, removeLabels } = useMailActions();

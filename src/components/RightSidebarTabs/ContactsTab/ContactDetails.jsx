@@ -47,6 +47,8 @@ const ContactDetails = () => {
     emails,
     loggedInUser,
     recipientLabels,
+    hiddenRecipients,
+    deletedRecipients,
   } = useGlobalContext();
   // If contact id is an email, then check if it is a logged in user or create a custom contact if it is a valid email
   const contact = useMemo(() => {
@@ -112,7 +114,7 @@ const ContactDetails = () => {
   // Get the label id
   const getLabelId = (label) => recipientLabels.find((l) => l.label === label)?.id;
 
-  // Filter emails where contact appears in to, cc, or bcc
+  // Filter emails where contact appears in to, cc, bcc or from field
   const getRecentEmails = () => {
     if (!contact?.emails || !emails) return [];
 
@@ -120,19 +122,21 @@ const ContactDetails = () => {
 
     return emails
       .filter((email) => {
-        // Don't include draft emails
-        if (email.labels?.includes("Drafts")) return false;
+        // Don't include draft emails or empty label emails
+        if (email.labels?.includes("Drafts") || email?.labels?.length === 0) return false;
 
         // Check if contact email appears in to, cc, or bcc
         const toEmails = Array.isArray(email.to) ? email.to : [email.to].filter(Boolean);
         const ccEmails = Array.isArray(email.cc) ? email.cc : [email.cc].filter(Boolean);
         const bccEmails = Array.isArray(email.bcc) ? email.bcc : [email.bcc].filter(Boolean);
 
-        const allRecipients = [...toEmails, ...ccEmails, ...bccEmails];
+        // Get the from email
+        const fromEmail = email.from.email;
+
+        const allRecipients = [...toEmails, ...ccEmails, ...bccEmails, fromEmail];
         return allRecipients.some((recipient) => contactEmails.includes(recipient));
       })
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-      .slice(0, 5); // Show only the 5 most recent
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   };
 
   // Format date for recent interactions
@@ -152,7 +156,6 @@ const ContactDetails = () => {
   const navigateToEmailDetails = (email) => {
     const threadId = email.threadId.split(":")[1];
 
-    // If labels includes Drafts, then add new compose window with the draft id
     if (!email.labels.includes("Drafts")) {
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
@@ -253,6 +256,8 @@ const ContactDetails = () => {
               ...recipient,
               isFavorite: !isFavorite,
               isSaved: !isFavorite ? true : recipient?.isSaved,
+              updatedAt: new Date().toISOString(),
+              savedAt: recipient?.savedAt ?? new Date().toISOString(),
             }
           : recipient
       )
@@ -309,7 +314,9 @@ const ContactDetails = () => {
     // Save the contact back
     setRecipients((prev) =>
       prev.map((recipient) =>
-        recipient.id === deletedContact.current.id ? { ...recipient, isSaved: true } : recipient
+        recipient.id === deletedContact.current.id
+          ? { ...recipient, isSaved: true, updatedAt: new Date().toISOString(), savedAt: new Date().toISOString() }
+          : recipient
       )
     );
 
@@ -347,7 +354,11 @@ const ContactDetails = () => {
 
       // Set isSaved to false
       setRecipients((prev) =>
-        prev.map((recipient) => (recipient.id === contact.id ? { ...recipient, isSaved: false } : recipient))
+        prev.map((recipient) =>
+          recipient.id === contact.id
+            ? { ...recipient, isSaved: false, updatedAt: new Date().toISOString(), savedAt: null }
+            : recipient
+        )
       );
 
       // Hide the delete modal
@@ -445,7 +456,9 @@ const ContactDetails = () => {
       // Else set isSaved to false
       setRecipients((prev) =>
         prev.map((recipient) =>
-          recipient.id === contactReference.current.id ? { ...recipient, isSaved: false } : recipient
+          recipient.id === contactReference.current.id
+            ? { ...recipient, isSaved: false, updatedAt: new Date().toISOString(), savedAt: null }
+            : recipient
         )
       );
     }
@@ -483,7 +496,7 @@ const ContactDetails = () => {
       // If contact is a custom contact add it to the recipients array
       if (contact?.isCustomContact) {
         const newContact = {
-          id: generateNextIntegerId(recipients),
+          id: generateNextIntegerId([...recipients, ...hiddenRecipients, ...deletedRecipients]),
           email: contact.email,
           emails: contact.emails,
           name: contact.name,
@@ -503,7 +516,11 @@ const ContactDetails = () => {
       } else {
         // Set isSaved to true in the recipients array for the contact
         setRecipients((prev) =>
-          prev.map((recipient) => (recipient.id === contact.id ? { ...recipient, isSaved: true } : recipient))
+          prev.map((recipient) =>
+            recipient.id === contact.id
+              ? { ...recipient, isSaved: true, updatedAt: new Date().toISOString(), savedAt: new Date().toISOString() }
+              : recipient
+          )
         );
       }
 
@@ -680,6 +697,7 @@ const ContactDetails = () => {
               "& .MuiTooltip-tooltip": {
                 backgroundColor: "rgba(0, 0, 0, 0.8)",
                 fontSize: "13px",
+                fontWeight: 200,
               },
             }}
             onClick={(event) => handleActionIconButtonClick("send_email", event)}
@@ -708,6 +726,7 @@ const ContactDetails = () => {
               "& .MuiTooltip-tooltip": {
                 backgroundColor: "rgba(0, 0, 0, 0.8)",
                 fontSize: "13px",
+                fontWeight: 200,
               },
             }}
             data-available={false}
@@ -738,6 +757,7 @@ const ContactDetails = () => {
               "& .MuiTooltip-tooltip": {
                 backgroundColor: "rgba(0, 0, 0, 0.8)",
                 fontSize: "13px",
+                fontWeight: 200,
               },
             }}
             data-available={false}
@@ -769,6 +789,7 @@ const ContactDetails = () => {
               "& .MuiTooltip-tooltip": {
                 backgroundColor: "rgba(0, 0, 0, 0.8)",
                 fontSize: "13px",
+                fontWeight: 200,
               },
             }}
             data-available={false}
@@ -876,6 +897,7 @@ const ContactDetails = () => {
             emptyText="Add phone number"
             onAddClick={handleEditClick}
             itemType="phone"
+            iconStyle={{ marginTop: "6px" }}
           />
 
           {/* Address section */}

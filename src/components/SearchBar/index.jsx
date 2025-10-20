@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } from "@mui/material";
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
@@ -10,24 +10,30 @@ import {
   isSearchIndexReady,
   addToSearchHistory,
   searchContacts,
+  addBasicSearchQuery,
+  removeFromSearchHistory,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
-import { encodeForPath, buildSearchBarFromUrl } from "../../utils/helperFunctions";
+import { encodeForPath, buildSearchBarFromUrl, buildSearchUrlWithFilters } from "../../utils/helperFunctions";
 import AutocompleteInput from "./AutocompleteInput/AutocompleteInput";
+import { useActiveFiltersSync } from "./hooks/useActiveFiltersSync";
 
 // Filter options for the search bar
 const filterOptions = ["Has attachment", "Last 7 days", "From me"];
 
 const SearchBar = () => {
-  const { emails } = useGlobalContext();
+  const { emails, loggedInUser } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
+  const [hoveredItemIndex, setHoveredItemIndex] = useState(-1);
+  const [removedSuggestionsInSession, setRemovedSuggestionsInSession] = useState([]);
 
   const searchContainerRef = useRef(null);
   const advancedSearchRef = useRef(null);
+  const searchInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,9 +43,17 @@ const SearchBar = () => {
   // Custom hooks for managing search bar state and effects
   useSearchIndex(emails);
   useSearchUrlSync(location, searchQuery, isAdvancedSearch, setSearchValue);
-  useSearchNavigation(location, searchValue, setSearchValue);
+  useSearchNavigation(location, searchValue, setSearchValue, activeFilters, setActiveFilters);
+  useActiveFiltersSync(location, setActiveFilters, loggedInUser?.email);
   const { autoCompleteSuggestion, setAutoCompleteSuggestion, highlightedIndex, setHighlightedIndex } =
     useAutocompleteState(searchValue, emails, isFocused);
+
+  // Reset removed suggestions when the dropdown closes
+  useEffect(() => {
+    if (!isFocused) {
+      setRemovedSuggestionsInSession([]);
+    }
+  }, [isFocused]);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -60,10 +74,10 @@ const SearchBar = () => {
       filtered = filtered.filter((email) => email.attachments && email.attachments.length > 0);
     }
 
-    // Apply "Last 7 days" filter
+    // Apply "Last 7 days" filter (last 7 days including today)
     if (activeFilters.includes("Last 7 days")) {
       const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
       filtered = filtered.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
     }
 
@@ -81,8 +95,14 @@ const SearchBar = () => {
     if (searchValue.trim() || !isSearchIndexReady()) {
       return [];
     }
-    return getRecentSearchSuggestions(6);
-  }, [searchValue, isFocused]);
+    const allSuggestions = getRecentSearchSuggestions(5);
+    // Filter out suggestions that were removed in this session
+    const filteredSuggestions = allSuggestions.filter(
+      (suggestion) => !removedSuggestionsInSession.includes(suggestion)
+    );
+    // Return only up to 6 suggestions
+    return filteredSuggestions.slice(0, 6);
+  }, [searchValue, isFocused, removedSuggestionsInSession]);
 
   // Get matching contacts
   const matchingContacts = useMemo(() => {
@@ -93,7 +113,28 @@ const SearchBar = () => {
   }, [searchValue, emails]);
 
   const expandedContent = useMemo(() => {
-    if (searchValue.trim()) {
+    if (searchValue.trim() && activeFilters.length > 0) {
+      // When both search and filters are active, apply filters to search results
+      let filtered = searchResults.filter((result) => {
+        // Apply "Has attachment" filter
+        if (activeFilters.includes("Has attachment")) {
+          if (!result.attachments || result.attachments.length === 0) return false;
+        }
+
+        // Apply "From me" filter
+        if (activeFilters.includes("From me")) {
+          if (result.from?.email !== "john.doe@example.com" && result.from?.name !== "me") return false;
+        }
+
+        return true;
+      });
+
+      // Show only 1 recent suggestion when filters are active, then filtered results
+      const limitedSuggestions = recentSuggestions.slice(0, 1);
+      const combined = [...limitedSuggestions, ...filtered];
+
+      return combined;
+    } else if (searchValue.trim()) {
       return searchResults;
     } else if (activeFilters.length > 0) {
       // Show only 1 recent suggestion when filters are active, then filtered emails
@@ -127,6 +168,11 @@ const SearchBar = () => {
         return [...prev, filter];
       }
     });
+
+    // Focus the search input after clicking a filter
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 0);
   };
 
   // Helper function to highlight search terms
@@ -169,12 +215,35 @@ const SearchBar = () => {
         handleResultClick(selectedItem.data);
         setHighlightedIndex(-1);
       } else {
+        // Check if there are any active filters (including all filter parameters from URL)
+        const urlParams = new URLSearchParams(location.search);
+        const filterParams = [
+          "from",
+          "to",
+          "attach_or_drive",
+          "datestart",
+          "dateend",
+          "daterangetype",
+          "is_unread",
+          "has_drive",
+          "has_youtube",
+        ];
+        const hasUrlFilters = filterParams.some((param) => urlParams.has(param));
+        const hasAnyFilters = activeFilters.length > 0 || hasUrlFilters;
+
         // Add search query to history when submitted
         if (searchValue.trim()) {
           addToSearchHistory(searchValue);
+          // Track in allSearchQueries
+          addBasicSearchQuery(searchValue);
+        } else if (!hasAnyFilters) {
+          // Don't navigate if no search value and no filters
+          return;
         }
 
-        navigate(`/search/${encodeForPath(searchValue)}`);
+        // Build URL with filters if any are active
+        const searchUrl = buildSearchUrlWithFilters(searchValue, activeFilters, loggedInUser?.email);
+        navigate(searchUrl);
         setIsFocused(false);
 
         e.target.blur();
@@ -194,8 +263,9 @@ const SearchBar = () => {
       navigate(`/inbox/${threadId}`);
     } else {
       // Add search query to history when clicked from suggestions
-      if (item && item.trim()) {
+      if (item && item.trim() && typeof item === "string") {
         addToSearchHistory(item);
+        addBasicSearchQuery(item);
       }
       navigate(`/search/${encodeForPath(item)}`);
     }
@@ -227,6 +297,16 @@ const SearchBar = () => {
     setIsFocused(false);
   };
 
+  const handleRemoveSuggestion = (item, e) => {
+    e.stopPropagation();
+
+    // Remove from search history permanently
+    removeFromSearchHistory(item);
+
+    // Add to session list to hide it until the dropdown closes
+    setRemovedSuggestionsInSession((prev) => [...prev, item]);
+  };
+
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <div className={styles.searchContainer} ref={searchContainerRef}>
@@ -245,6 +325,7 @@ const SearchBar = () => {
             />
 
             <AutocompleteInput
+              ref={searchInputRef}
               value={searchValue}
               onChange={setSearchValue}
               onFocus={handleSearchBarFocus}
@@ -436,14 +517,21 @@ const SearchBar = () => {
                     );
                   } else {
                     // Suggestions
+                    const isHovered = hoveredItemIndex === actualIndex;
                     return (
                       <ListItem
                         key={contentIndex}
                         className={styles.searchSuggestion}
                         onClick={() => handleResultClick(item)}
-                        onMouseEnter={() => setHighlightedIndex(-1)}
+                        onMouseEnter={() => {
+                          setHighlightedIndex(-1);
+                          setHoveredItemIndex(actualIndex);
+                        }}
+                        onMouseLeave={() => setHoveredItemIndex(-1)}
                         sx={{
                           backgroundColor: isHighlighted ? "rgba(0, 0, 0, 0.04)" : "transparent",
+                          borderBottom:
+                            activeFilters.length > 0 && expandedContent.length > 1 ? "1px solid #e0e0e0" : "none",
                         }}
                       >
                         <ListItemIcon className={styles.clockIcon}>
@@ -460,7 +548,38 @@ const SearchBar = () => {
                         <ListItemText
                           primary={highlightSearchTerm(item, searchValue)}
                           className={styles.suggestionText}
+                          slotProps={{
+                            primary: {
+                              style: {
+                                maxWidth: "500px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              },
+                            },
+                          }}
                         />
+                        {isHovered && (
+                          <ListItemIcon
+                            style={{
+                              display: "flex",
+                              justifyContent: "end",
+                              minWidth: "auto",
+                              cursor: "pointer",
+                            }}
+                            onClick={(e) => handleRemoveSuggestion(item, e)}
+                          >
+                            <span
+                              className="material-symbols-outlined"
+                              style={{
+                                fontSize: 20,
+                                color: "rgb(68, 68, 68)",
+                              }}
+                            >
+                              close_small
+                            </span>
+                          </ListItemIcon>
+                        )}
                       </ListItem>
                     );
                   }
@@ -492,7 +611,12 @@ const SearchBar = () => {
               <div style={{ color: "rgba(0, 0, 0, 0.87)" }}>
                 {searchValue ? (
                   <>
-                    All search results for <span className={styles.searchValue}>"{searchValue}"</span>
+                    All search results for &nbsp;<span className={styles.searchValue}>"{searchValue}</span>"
+                    {activeFilters.length > 0 && (
+                      <>
+                        &nbsp; + {activeFilters.length} filter{activeFilters.length > 1 ? "s" : ""}
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
@@ -508,6 +632,7 @@ const SearchBar = () => {
         <AdvancedSearchOptions
           ref={advancedSearchRef}
           isOpen={showAdvancedSearch}
+          searchValue={searchValue}
           onClose={() => setShowAdvancedSearch(false)}
         />
       </div>

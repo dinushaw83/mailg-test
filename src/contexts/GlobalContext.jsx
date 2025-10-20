@@ -20,6 +20,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [recipients, setRecipients] = usePersistedState("recipients", initialRecipients);
   const [recipientLabels, setRecipientLabels] = usePersistedState("recipientLabels", initialRecipientLabels);
   const [deletedRecipients, setDeletedRecipients] = usePersistedState("deletedRecipients", []);
+  const [hiddenRecipients, setHiddenRecipients] = usePersistedState("hiddenRecipients", []);
 
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
@@ -66,18 +67,6 @@ export const GlobalContextProvider = ({ children }) => {
   });
 
   // Signatures related settings
-  /**
-   *  {
-   *     list: {
-   *       name: string;
-   *       content: string;
-   *     }[];
-   *     useForNewEmails: string;
-   *     useForRepliesAndForwards: string;
-   *     insertSignatureBeforeQuotedText: boolean;
-   *   }
-   *  }
-   */
   const [signaturesState, setSignaturesState] = usePersistedState("signatures", {
     list: [],
     useForNewEmails: "",
@@ -257,6 +246,8 @@ export const GlobalContextProvider = ({ children }) => {
     setVacationResponder,
     createLabelModal,
     setCreateLabelModal,
+    hiddenRecipients,
+    setHiddenRecipients,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
