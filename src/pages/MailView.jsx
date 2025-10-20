@@ -32,7 +32,7 @@ import { CATEGORIES } from "../utils/categories";
 const Inbox = () => {
   const {
     emails, sortOrder, setCurrentPage, currentPage,
-    itemsPerPage, loggedInUser, vacationResponder
+    itemsPerPage, loggedInUser, vacationResponder, setSortOrder
   } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
@@ -96,6 +96,7 @@ const Inbox = () => {
 
   useEffect(() => {
     setCurrentPage(1);
+    setSortOrder("newest")
   }, [activeInboxTab, activeFolder]);
 
   return (
