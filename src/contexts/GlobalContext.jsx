@@ -211,6 +211,8 @@ export const GlobalContextProvider = ({ children }) => {
     setComposeWindows,
     currentPage,
     setCurrentPage,
+    sortOrder,
+    setSortOrder,
     itemsPerPage,
     setItemsPerPage,
     normalizedEmails,
