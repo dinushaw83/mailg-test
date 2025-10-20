@@ -72,20 +72,21 @@ const Inbox = () => {
 
   // Sort and paginate the displayRows
   const rows = useMemo(() => {
-    const sorted = [...displayRows].sort((a, b) => {
+    const source = !label && activeFolder.toLowerCase() === "inbox"
+      ? tabFilteredRows
+      : filteredRows;
+
+    const sortedThreads = [...source].sort((a, b) => {
       const dateA = new Date(a.timestamp);
       const dateB = new Date(b.timestamp);
-      return sortOrder === "oldest" ? dateA - dateB : dateB - dateA;
+      return dateB - dateA;
     });
 
-    const totalPages = Math.max(1, Math.ceil(sorted.length / itemsPerPage));
-    const safePage = Math.min(currentPage, totalPages);
-    const startIndex = (safePage - 1) * itemsPerPage;
+    const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
 
-    return sorted.slice(startIndex, endIndex);
-  }, [displayRows, sortOrder, currentPage, itemsPerPage]);
-
+    return sortedThreads.slice(startIndex, endIndex);
+  }, [filteredRows, tabFilteredRows, activeFolder, currentPage, itemsPerPage, label]);
 
   useEffect(() => {
     // Calculate total unread emails count
