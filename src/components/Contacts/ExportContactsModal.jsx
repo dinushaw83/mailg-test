@@ -361,8 +361,7 @@ const ExportContactsModal = ({
               >
                 Trying to back up your mobile contacts?{" "}
                 <a
-                  href="https://support.google.com/contacts?p=mobile-contacts-sync&hl=en"
-                  target="_blank"
+                  href="#"
                   rel="noopener noreferrer"
                   style={{
                     color: "#1a73e8",
