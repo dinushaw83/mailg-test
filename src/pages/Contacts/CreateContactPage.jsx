@@ -83,7 +83,8 @@ const normalizeContact = (contact) => ({
 const CreateContactPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { recipients, setRecipients, setSnackbar, emails, recipientLabels } = useGlobalContext();
+  const { recipients, setRecipients, setSnackbar, emails, recipientLabels, hiddenRecipients, deletedRecipients } =
+    useGlobalContext();
 
   // Check if this is edit mode based on URL
   const isEditMode = location.pathname.includes("/person/") && new URLSearchParams(location.search).get("edit") === "1";
@@ -310,7 +311,11 @@ const CreateContactPage = () => {
     if (hasFieldChange()) {
       setShowUnsavedModal(true);
     } else {
-      navigate(-1);
+      if (location.key !== "default") {
+        navigate(-1);
+      } else {
+        navigate("/contacts", { replace: true });
+      }
     }
   };
 
@@ -401,7 +406,9 @@ const CreateContactPage = () => {
     if (originalContact.current.type === "EDIT" && !originalContact.current.contact?.isCustomContact) {
       setRecipients((prev) =>
         prev.map((recipient) =>
-          recipient.id === originalContact.current.contact.id ? originalContact.current.contact : recipient
+          recipient.id === originalContact.current.contact.id
+            ? { ...originalContact.current.contact, updatedAt: new Date().toISOString() }
+            : recipient
         )
       );
     } else {
@@ -420,10 +427,10 @@ const CreateContactPage = () => {
 
     // Navigate back to contacts list in case of create contact
     if (originalContact.current.type === "CREATE") {
-      navigate("/contacts");
+      navigate("/contacts", { replace: true });
     } else if (originalContact.current.type === "EDIT" && originalContact.current.contact?.isCustomContact) {
       // Navigate to the original contact details
-      navigate(`/contacts/person/${originalContact.current.contact.id}`);
+      navigate(`/contacts/person/${originalContact.current.contact.id}`, { replace: true, state: { from: "create" } });
     }
   };
 
@@ -455,11 +462,14 @@ const CreateContactPage = () => {
           id:
             !contactToUpdate?.isCustomContact && contactToUpdate?.id
               ? contactToUpdate?.id
-              : generateNextIntegerId(recipients),
+              : generateNextIntegerId([...recipients, ...hiddenRecipients, ...deletedRecipients]),
           avatar: contactToUpdate?.avatar || null,
           labels,
           // Set isSaved to true
           isSaved: true,
+          updatedAt: new Date().toISOString(),
+          createdAt: contactToUpdate?.createdAt ?? new Date().toISOString(),
+          savedAt: contactToUpdate?.savedAt ?? new Date().toISOString(),
           // First email should be the primary email if it exists
           email: Array.isArray(formData.emails) && formData.emails.length > 0 ? formData.emails[0].value : null,
         };
@@ -478,12 +488,12 @@ const CreateContactPage = () => {
         }
 
         // Navigate to the contact details screen
-        navigate(`/contacts/person/${contact.id}`);
+        navigate(`/contacts/person/${contact.id}`, { replace: true, state: { from: "create" } });
 
         // Display snackbar notification indicating contact created
         setSnackbar({
           open: true,
-          message: contactToUpdate ? "Contact details saved" : "New contact created",
+          message: contactToUpdate ? "Contact details updated" : "New contact created",
           action: (
             <Button
               variant="text"
@@ -509,7 +519,11 @@ const CreateContactPage = () => {
   // Handle modal discard
   const handleModalDiscard = () => {
     setShowUnsavedModal(false);
-    navigate(-1);
+    if (location.key !== "default") {
+      navigate(-1);
+    } else {
+      navigate("/contacts", { replace: true });
+    }
   };
 
   return (
@@ -1299,7 +1313,7 @@ const CreateContactPage = () => {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, width: "100%" }}>
               {formData.addresses.map((address, index) => (
                 <Box key={`address-${index}`} className={styles.inputGroup}>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, width: "100%" }}>
                     {/* Country/Region */}
                     <FormControl fullWidth className={styles.dropdownContainer}>
                       <Select

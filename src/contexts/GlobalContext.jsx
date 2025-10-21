@@ -20,6 +20,7 @@ export const GlobalContextProvider = ({ children }) => {
   const [recipients, setRecipients] = usePersistedState("recipients", initialRecipients);
   const [recipientLabels, setRecipientLabels] = usePersistedState("recipientLabels", initialRecipientLabels);
   const [deletedRecipients, setDeletedRecipients] = usePersistedState("deletedRecipients", []);
+  const [hiddenRecipients, setHiddenRecipients] = usePersistedState("hiddenRecipients", []);
 
   const [currentView, setCurrentView] = usePersistedState("currentView", "inbox");
   const [selectedEmails, setSelectedEmails] = usePersistedState("selectedEmails", []);
@@ -33,6 +34,7 @@ export const GlobalContextProvider = ({ children }) => {
     showPanel: false,
     direction: "vertical",
   });
+  const [softRemovedLabels, setSoftRemovedLabels] = useState({});
   const [previewEmailId, setPreviewEmailId] = useState(null);
   const [showQuickSettings, setShowQuickSettings] = usePersistedState("showQuickSettings", false);
   const [density, setDensity] = usePersistedState("density", "default");
@@ -224,6 +226,8 @@ export const GlobalContextProvider = ({ children }) => {
     setComposeWindows,
     currentPage,
     setCurrentPage,
+    sortOrder,
+    setSortOrder,
     itemsPerPage,
     setItemsPerPage,
     normalizedEmails,
@@ -263,6 +267,10 @@ export const GlobalContextProvider = ({ children }) => {
     setVacationResponder,
     createLabelModal,
     setCreateLabelModal,
+    hiddenRecipients,
+    setHiddenRecipients,
+    softRemovedLabels,
+    setSoftRemovedLabels,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

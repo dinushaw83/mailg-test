@@ -13,7 +13,7 @@ import Contacts from "./pages/Contacts/Contacts";
 import Frequent from "./pages/Contacts/Frequent";
 import OtherContacts from "./pages/Contacts/OtherContacts";
 import ContactsByLabel from "./pages/Contacts/ContactsByLabel";
-import ContactDetails from "./pages/Contacts/ContactDetails";
+import ContactDetailsPage from "./pages/Contacts/ContactDetailsPage";
 import ContactTrash from "./pages/Contacts/ContactTrash";
 import ContactsSearch from "./pages/Contacts/ContactsSearch";
 import MergeAndFix from "./pages/Contacts/MergeAndFix";
@@ -28,7 +28,7 @@ const ContactDetailsWithEdit = () => {
   const searchParams = new URLSearchParams(location.search);
   const isEdit = searchParams.get("edit") === "1";
 
-  return isEdit ? <CreateContactPage /> : <ContactDetails />;
+  return isEdit ? <CreateContactPage /> : <ContactDetailsPage />;
 };
 
 function App() {
@@ -49,6 +49,7 @@ function App() {
             <Route path="/:folder" element={<MailView />} />
             <Route path="/label/:label" element={<MailView />} />
             <Route path="/search/:query" element={<SearchResultsView />} />
+            <Route path="/search" element={<SearchResultsView />} />
             <Route path="/verify" element={<VerificationDashboard />} />
             <Route path="/settings/:tab" element={<Settings />} />
             <Route path="/settings" element={<Navigate to="/settings/general" replace />} />

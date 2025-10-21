@@ -323,7 +323,6 @@ export const initialEmails = [
     "important": false,
     "labels": [
       "Inbox",
-      "Promotions"
     ],
     "labelColor": "#ffe1e1"
   },
@@ -347,7 +346,6 @@ export const initialEmails = [
     "important": false,
     "labels": [
       "Inbox",
-      "Social"
     ],
     "labelColor": "#ffe6cc"
   },
@@ -371,7 +369,6 @@ export const initialEmails = [
     "important": true,
     "labels": [
       "Inbox",
-      "Updates"
     ],
     "labelColor": "#e1f7e1"
   },
@@ -537,8 +534,7 @@ export const initialEmails = [
     "starred": false,
     "important": true,
     "labels": [
-      "Inbox",
-      "Updates"
+      "Inbox"
     ],
     "labelColor": "#e1f7e1"
   },
@@ -564,8 +560,7 @@ export const initialEmails = [
     "starred": false,
     "important": false,
     "labels": [
-      "Inbox",
-      "Promotions"
+      "Inbox"
     ],
     "labelColor": "#ffe1e1"
   },
@@ -645,8 +640,7 @@ export const initialEmails = [
     "starred": false,
     "important": false,
     "labels": [
-      "Inbox",
-      "Promotions"
+      "Inbox"
     ],
     "labelColor": "#ffe1e1"
   },
@@ -699,8 +693,7 @@ export const initialEmails = [
     "starred": false,
     "important": false,
     "labels": [
-      "Inbox",
-      "Updates"
+      "Inbox"
     ],
     "labelColor": "#e1f7e1"
   },
@@ -878,7 +871,6 @@ export const initialEmails = [
     "important": false,
     "labels": [
       "Inbox",
-      "Promotions"
     ],
     "labelColor": "#ffe1e1"
   },
@@ -931,8 +923,7 @@ export const initialEmails = [
     "starred": false,
     "important": true,
     "labels": [
-      "Inbox",
-      "Updates"
+      "Inbox"
     ],
     "labelColor": "#e1f7e1"
   },
@@ -958,8 +949,7 @@ export const initialEmails = [
     "starred": false,
     "important": false,
     "labels": [
-      "Inbox",
-      "Promotions"
+      "Inbox"
     ],
     "labelColor": "#ffe1e1"
   },
@@ -1067,7 +1057,6 @@ export const initialEmails = [
     "important": false,
     "labels": [
       "Inbox",
-      "Promotions"
     ],
     "labelColor": "#ffe1e1"
   },
@@ -1175,7 +1164,6 @@ export const initialEmails = [
     "important": false,
     "labels": [
       "Inbox",
-      "Promotions"
     ],
     "labelColor": "#ffe1e1"
   },
@@ -5421,5 +5409,141 @@ export const initialEmails = [
       "Promotions"
     ],
     "labelColor": "#ffe1e1"
+  },
+
+  {
+    "id": 202,
+    "threadId": "#thread-f:1849236573412379202",
+    "legacyThreadId": "1990a2be9a3fd202",
+    "legacyLastMessageId": "1990a2be9a3fd202",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd202",
+    "from": {
+      "name": "HR Team",
+      "email": "hr@oakwoodltd.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Reminder: Onboarding session tomorrow",
+    "body": "<div style=\"font-family: Arial; max-width:600px; margin:auto; line-height:1.5;\">\n<p>Hi John,</p>\n<p>This is a reminder that your onboarding session is scheduled for <strong>10:00 AM tomorrow</strong> in the main conference room.</p>\n<p>Regards,<br/>HR Team</p>\n</div>",
+    "preview": "This is a reminder that your onboarding session is scheduled for 10:00 AM tomorrow…",
+    "timestamp": "2025-01-22T08:30:00.000000+00:00",
+    "timeDisplay": "Jan 22",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 203,
+    "threadId": "#thread-f:1849236573412379203",
+    "legacyThreadId": "1990a2be9a3fd203",
+    "legacyLastMessageId": "1990a2be9a3fd203",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd203",
+    "from": {
+      "name": "Esther Okafor",
+      "email": "esther.okafor@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Meeting notes from today",
+    "body": "Hey John,\n\nI’ve summarised the key points from this morning’s meeting. Let’s review tomorrow before we send the final report.\n\nEsther",
+    "preview": "I’ve summarised the key points from this morning’s meeting.",
+    "timestamp": "2025-03-10T15:45:00.000000+00:00",
+    "timeDisplay": "Mar 10",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 204,
+    "threadId": "#thread-f:1849236573412379204",
+    "legacyThreadId": "1990a2be9a3fd204",
+    "legacyLastMessageId": "1990a2be9a3fd204",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd204",
+    "from": {
+      "name": "Accounts Department",
+      "email": "accounts@stellarbuild.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "March payroll slip",
+    "body": "<div style=\"font-family: Arial; max-width:600px; margin:auto;\">\n<p>Dear John,</p>\n<p>Your March payroll slip has been processed and is now available for review in your personnel file.</p>\n<p>Please reach out if there are any discrepancies.</p>\n</div>",
+    "preview": "Your March payroll slip has been processed and is now available for review…",
+    "timestamp": "2025-03-25T11:15:00.000000+00:00",
+    "timeDisplay": "Mar 25",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 205,
+    "threadId": "#thread-f:1849236573412379205",
+    "legacyThreadId": "1990a2be9a3fd205",
+    "legacyLastMessageId": "1990a2be9a3fd205",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd205",
+    "from": {
+      "name": "Tunde Akinwale",
+      "email": "tundeakinwale@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Photos from the office event",
+    "body": "Hi John,\n\nI’ve sorted the photos from Friday’s event. I’ll bring the printed copies to the office tomorrow.\n\nTunde",
+    "preview": "I’ve sorted the photos from Friday’s event.",
+    "timestamp": "2025-06-14T19:10:00.000000+00:00",
+    "timeDisplay": "Jun 14",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 206,
+    "threadId": "#thread-f:1849236573412379206",
+    "legacyThreadId": "1990a2be9a3fd206",
+    "legacyLastMessageId": "1990a2be9a3fd206",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd206",
+    "from": {
+      "name": "Facility Manager",
+      "email": "facility@citysquare.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Scheduled maintenance notice",
+    "body": "<div style=\"font-family: Arial; max-width:600px; margin:auto;\">\n<p>Dear Occupant,</p>\n<p>This is to inform you that routine maintenance has been scheduled for <strong>October 20</strong> between <strong>2:00 PM</strong> and <strong>4:00 PM</strong>.</p>\n<p>Thank you for your cooperation.</p>\n</div>",
+    "preview": "Routine maintenance has been scheduled for October 20 between 2:00 PM and 4:00 PM.",
+    "timestamp": "2025-10-20T09:00:00.000000+00:00",
+    "timeDisplay": "Oct 20",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   }
 ];
