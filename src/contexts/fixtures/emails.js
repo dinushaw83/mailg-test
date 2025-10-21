@@ -2,634 +2,5548 @@
 
 export const initialEmails = [
   {
-    id: 1,
-    threadId: "#thread-f:1842139573356840007",
-    legacyThreadId: "1990982e909fc447",
-    legacyLastMessageId: "1990982e909fc447",
-    legacyLastNonDraftMessageId: "1990982e909fc447",
-    from: {
-      name: "GitHub",
-      email: "noreply@github.com",
+    "id": 1,
+    "threadId": "#thread-f:1842139573356840007",
+    "legacyThreadId": "1990982e909fc447",
+    "legacyLastMessageId": "1990982e909fc447",
+    "legacyLastNonDraftMessageId": "1990982e909fc447",
+    "from": {
+      "name": "GitHub",
+      "email": "noreply@github.com"
     },
-    to: ["john.doe@example.com"],
-    subject: "[GitHub] Your Dependabot alerts for the week of Aug 26 - Sep 2",
-    body: "Explore this week on GitHub GitHub security alert digest john's repository security updates from the week of Aug 26 - Sep 2 john's personal account john / aspiod Known security",
-    preview:
-      "Explore this week on GitHub GitHub security alert digest john's repository security updates from the week of Aug 26 - Sep 2 john's personal account john / aspiod Known security",
-    timestamp: "2025-09-02T11:19:00.000Z",
-    timeDisplay: "11:19 AM",
-    read: false,
-    starred: true,
-    important: false,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
-  },
-  // Thread with multiple messages (GitHub device verification)
-  // Existing message id:2 is the first one in this thread. Add replies/follow-ups.
-  {
-    id: 2,
-    threadId: "#thread-f:1842087366422769452",
-    legacyThreadId: "199068b330dd2f2c",
-    legacyLastMessageId: "199068b330dd2f2c",
-    legacyLastNonDraftMessageId: "199068b330dd2f2c",
-    from: {
-      name: "GitHub",
-      email: "noreply@github.com",
-    },
-    to: ["john.doe@example.com"],
-    subject: "[GitHub] Please verify your device",
-    body: "Hey john! A sign in attempt requires further verification because we did not recognize your device. To complete the sign in, enter the verification code on the unrecognized device. Device: Chrome on",
-    preview:
-      "Hey john! A sign in attempt requires further verification because we did not recognize your device. To complete the sign in, enter the verification code on the unrecognized device. Device: Chrome on",
-    timestamp: "2025-09-01T21:30:00.000Z",
-    timeDisplay: "Sep 1",
-    read: true,
-    starred: true,
-    important: true,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
-    attachments: [
-      {
-        id: 18420873664227694521,
-        name: "attachment.webp",
-        url: "/assets/images/attachment.webp",
-        size: "1.2 MB",
-        type: "image/webp",
-      },
-      {
-        id: 18320873464227694522,
-        name: "attachment2.webp",
-        url: "/assets/images/attachment.webp",
-        size: "980 KB",
-        type: "image/webp",
-      },
+    "to": [
+      "john.doe@example.com"
     ],
-  },
-  {
-    id: 3,
-    threadId: "#thread-f:1842085083087208760",
-    legacyThreadId: "1990669f8f758138",
-    legacyLastMessageId: "1990669f8f758138",
-    legacyLastNonDraftMessageId: "1990669f8f758138",
-    from: {
-      name: "Notion Team",
-      email: "notify@updates.notion.so",
-    },
-    to: ["john.doe@example.com"],
-    subject: "A new device logged into your account",
-    body: "Review a recent login from a new device There was a recent login to your Notion account. Please review the details: Account john.doe@example.com Login method Login with Google IP & approximate",
-    preview:
-      "Review a recent login from a new device There was a recent login to your Notion account. Please review the details: Account john.doe@example.com Login method Login with Google IP & approximate",
-    timestamp: "2025-09-01T20:53:00.000Z",
-    timeDisplay: "Sep 1",
-    read: true,
-    starred: true,
-    important: false,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
-    attachments: [
-      {
-        id: 18420850830872087601,
-        name: "attachment.webp",
-        url: "/assets/images/attachment.webp",
-        size: "1.3 MB",
-        type: "image/webp",
-      },
+    "subject": "[GitHub] Your Dependabot alerts for the week of Aug 26 - Sep 2",
+    "body": "Explore this week on GitHub GitHub security alert digest john's repository security updates from the week of Aug 26 - Sep 2 john's personal account john / aspiod Known security",
+    "preview": "Explore this week on GitHub GitHub security alert digest john's repository security updates from the week of Aug 26 - Sep 2 john's personal account john / aspiod Known security",
+    "timestamp": "2024-08-25T23:52:53.702000+00:00",
+    "timeDisplay": "Aug 26",
+    "read": false,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
     ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 4,
-    threadId: "#thread-f:1842085083087208761",
-    legacyThreadId: "1990669f8f758139",
-    legacyLastMessageId: "1990669f8f758139",
-    legacyLastNonDraftMessageId: "1990669f8f758139",
-    from: {
-      name: "Stripe",
-      email: "receipts@stripe.com",
+    "id": 2,
+    "threadId": "#thread-f:1842087366422769452",
+    "legacyThreadId": "199068b330dd2f2c",
+    "legacyLastMessageId": "199068b330dd2f2c",
+    "legacyLastNonDraftMessageId": "199068b330dd2f2c",
+    "from": {
+      "name": "GitHub",
+      "email": "noreply@github.com"
     },
-    to: "john.doe@example.com",
-    subject: "Receipt for your payment to Acme Corp",
-    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #635bff; margin: 0; font-size: 24px;">Stripe</h1>
-      </div>
-      
-      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-        <h2 style="color: #1a1a1a; margin: 0 0 10px 0; font-size: 18px;">Payment Receipt</h2>
-        <p style="color: #6b7280; margin: 0; font-size: 14px;">Thank you for your payment!</p>
-      </div>
-      
-      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-          <span style="font-weight: bold; color: #1a1a1a;">Amount:</span>
-          <span style="font-weight: bold; color: #1a1a1a;">$29.99</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-          <span style="color: #6b7280;">Description:</span>
-          <span style="color: #1a1a1a;">Acme Corp - Pro Plan</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-          <span style="color: #6b7280;">Date:</span>
-          <span style="color: #1a1a1a;">September 1, 2025</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-          <span style="color: #6b7280;">Payment Method:</span>
-          <span style="color: #1a1a1a;">•••• •••• •••• 4242</span>
-        </div>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-        <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold;">
-          <span style="color: #1a1a1a;">Total:</span>
-          <span style="color: #1a1a1a;">$29.99</span>
-        </div>
-      </div>
-      
-      <div style="text-align: center; margin-top: 30px;">
-        <a href="#" style="background: #635bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Download Receipt</a>
-      </div>
-      
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px;">
-        <p>Questions? Contact us at support@stripe.com</p>
-        <p>Stripe, Inc. • 510 Townsend Street, San Francisco, CA 94103</p>
-      </div>
-    </div>`,
-    preview: "Receipt for your payment to Acme Corp - Thank you for your payment! Amount: $29.99",
-    timestamp: "2025-09-01T18:45:00.000Z",
-    timeDisplay: "Sep 1",
-    read: false,
-    starred: false,
-    important: false,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[GitHub] Please verify your device",
+    "body": "Hey john! A sign in attempt requires further verification because we did not recognize your device. To complete the sign in, enter the verification code on the unrecognized device. Device: Chrome on",
+    "preview": "Hey john! A sign in attempt requires further verification because we did not recognize your device. To complete the sign in, enter the verification code on the unrecognized device. Device: Chrome on",
+    "timestamp": "2024-04-10T10:49:53.771000+00:00",
+    "timeDisplay": "Apr 10",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1",
+    "attachments": [
+      {
+        "id": 18420873664227695000,
+        "name": "attachment.webp",
+        "url": "/assets/images/attachment.webp",
+        "size": "1.2 MB",
+        "type": "image/webp"
+      },
+      {
+        "id": 18320873464227695000,
+        "name": "attachment2.webp",
+        "url": "/assets/images/attachment.webp",
+        "size": "980 KB",
+        "type": "image/webp"
+      }
+    ]
   },
   {
-    id: 5,
-    threadId: "#thread-f:1842085083087208762",
-    legacyThreadId: "1990669f8f758140",
-    legacyLastMessageId: "1990669f8f758140",
-    legacyLastNonDraftMessageId: "1990669f8f758140",
-    from: {
-      name: "LinkedIn",
-      email: "notifications@linkedin.com",
+    "id": 3,
+    "threadId": "#thread-f:1842085083087208760",
+    "legacyThreadId": "1990669f8f758138",
+    "legacyLastMessageId": "1990669f8f758138",
+    "legacyLastNonDraftMessageId": "1990669f8f758138",
+    "from": {
+      "name": "Notion Team",
+      "email": "notify@updates.notion.so"
     },
-    to: ["john.doe@example.com"],
-    subject: "You have 3 new connection requests",
-    body: `<div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f3f2ef;">
-      <div style="background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <img src="https://static.licdn.com/sc/h/8s162nmoekm8yvs0y8y5k8q4y" alt="LinkedIn" style="height: 32px; margin-bottom: 16px;">
-          <h1 style="color: #0a66c2; margin: 0; font-size: 20px; font-weight: 600;">New Connection Requests</h1>
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-          <p style="margin: 0; color: #666; font-size: 14px;">You have <strong>3 new connection requests</strong> waiting for your response.</p>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-          <div style="display: flex; align-items: center; padding: 12px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 8px; background: white;">
-            <div style="width: 48px; height: 48px; background: #0a66c2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-              <span style="color: white; font-weight: bold; font-size: 18px;">JS</span>
-            </div>
-            <div style="flex: 1;">
-              <h3 style="margin: 0 0 4px 0; font-size: 16px; color: #1a1a1a;">Jane Smith</h3>
-              <p style="margin: 0; color: #666; font-size: 14px;">Senior Software Engineer at Tech Corp</p>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button style="background: #0a66c2; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;">Accept</button>
-              <button style="background: transparent; color: #666; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;">Ignore</button>
-            </div>
-          </div>
-          
-          <div style="display: flex; align-items: center; padding: 12px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 8px; background: white;">
-            <div style="width: 48px; height: 48px; background: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-              <span style="color: white; font-weight: bold; font-size: 18px;">MJ</span>
-            </div>
-            <div style="flex: 1;">
-              <h3 style="margin: 0 0 4px 0; font-size: 16px; color: #1a1a1a;">Mike Johnson</h3>
-              <p style="margin: 0; color: #666; font-size: 14px;">Product Manager at StartupXYZ</p>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button style="background: #0a66c2; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;">Accept</button>
-              <button style="background: transparent; color: #666; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;">Ignore</button>
-            </div>
-          </div>
-          
-          <div style="display: flex; align-items: center; padding: 12px; border: 1px solid #e1e5e9; border-radius: 8px; background: white;">
-            <div style="width: 48px; height: 48px; background: #ff6b35; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-              <span style="color: white; font-weight: bold; font-size: 18px;">AL</span>
-            </div>
-            <div style="flex: 1;">
-              <h3 style="margin: 0 0 4px 0; font-size: 16px; color: #1a1a1a;">Alex Lee</h3>
-              <p style="margin: 0; color: #666; font-size: 14px;">UX Designer at Creative Agency</p>
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button style="background: #0a66c2; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;">Accept</button>
-              <button style="background: transparent; color: #666; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;">Ignore</button>
-            </div>
-          </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 24px;">
-          <a href="#" style="background: #0a66c2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">View All Requests</a>
-        </div>
-        
-        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e1e5e9; text-align: center; color: #666; font-size: 12px;">
-          <p>This email was sent to john.doe@example.com</p>
-          <p>© 2025 LinkedIn Corporation. All rights reserved.</p>
-        </div>
-      </div>
-    </div>`,
-    preview:
-      "You have 3 new connection requests - Jane Smith, Mike Johnson, and Alex Lee want to connect with you on LinkedIn.",
-    timestamp: "2025-08-31T14:22:00.000Z",
-    timeDisplay: "Aug 31",
-    read: false,
-    starred: true,
-    important: false,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "A new device logged into your account",
+    "body": "Review a recent login from a new device There was a recent login to your Notion account. Please review the details: Account john.doe@example.com Login method Login with Google IP & approximate",
+    "preview": "Review a recent login from a new device There was a recent login to your Notion account. Please review the details: Account john.doe@example.com Login method Login with Google IP & approximate",
+    "timestamp": "2022-11-13T20:55:40.079000+00:00",
+    "timeDisplay": "Nov 13",
+    "read": true,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1",
+    "attachments": [
+      {
+        "id": 18420850830872089000,
+        "name": "attachment.webp",
+        "url": "/assets/images/attachment.webp",
+        "size": "1.3 MB",
+        "type": "image/webp"
+      }
+    ]
   },
   {
-    id: 6,
-    threadId: "#thread-f:1842087366422769452",
-    legacyThreadId: "199068b330dd2f2c",
-    legacyLastMessageId: "199068b330dd2f2d",
-    legacyLastNonDraftMessageId: "199068b330dd2f2d",
-    from: {
-      name: "John Doe",
-      email: "john.doe@example.com",
+    "id": 4,
+    "threadId": "#thread-f:1842085083087208761",
+    "legacyThreadId": "1990669f8f758139",
+    "legacyLastMessageId": "1990669f8f758139",
+    "legacyLastNonDraftMessageId": "1990669f8f758139",
+    "from": {
+      "name": "Stripe",
+      "email": "receipts@stripe.com"
     },
-    to: ["noreply@github.com"],
-    subject: "Re: [GitHub] Please verify your device",
-    body: "Hi GitHub team, this was me. I successfully verified my device. Thanks!",
-    preview: "Hi GitHub team, this was me. I successfully verified my device.",
-    timestamp: "2025-09-01T21:35:00.000Z",
-    timeDisplay: "Sep 1",
-    read: true,
-    starred: true,
-    important: false,
-    labels: ["Sent", "Primary"],
-    labelColor: "#e1e3e1",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Receipt for your payment to Acme Corp",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n      <div style=\"text-align: center; margin-bottom: 30px;\">\n        <h1 style=\"color: #635bff; margin: 0; font-size: 24px;\">Stripe</h1>\n      </div>\n      \n      <div style=\"background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;\">\n        <h2 style=\"color: #1a1a1a; margin: 0 0 10px 0; font-size: 18px;\">Payment Receipt</h2>\n        <p style=\"color: #6b7280; margin: 0; font-size: 14px;\">Thank you for your payment!</p>\n      </div>\n      \n      <div style=\"background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px;\">\n        <div style=\"display: flex; justify-content: space-between; margin-bottom: 15px;\">\n          <span style=\"font-weight: bold; color: #1a1a1a;\">Amount:</span>\n          <span style=\"font-weight: bold; color: #1a1a1a;\">$29.99</span>\n        </div>\n        <div style=\"display: flex; justify-content: space-between; margin-bottom: 15px;\">\n          <span style=\"color: #6b7280;\">Description:</span>\n          <span style=\"color: #1a1a1a;\">Acme Corp - Pro Plan</span>\n        </div>\n        <div style=\"display: flex; justify-content: space-between; margin-bottom: 15px;\">\n          <span style=\"color: #6b7280;\">Date:</span>\n          <span style=\"color: #1a1a1a;\">September 1, 2025</span>\n        </div>\n        <div style=\"display: flex; justify-content: space-between; margin-bottom: 15px;\">\n          <span style=\"color: #6b7280;\">Payment Method:</span>\n          <span style=\"color: #1a1a1a;\">•••• •••• •••• 4242</span>\n        </div>\n        <hr style=\"border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;\">\n        <div style=\"display: flex; justify-content: space-between; font-size: 18px; font-weight: bold;\">\n          <span style=\"color: #1a1a1a;\">Total:</span>\n          <span style=\"color: #1a1a1a;\">$29.99</span>\n        </div>\n      </div>\n      \n      <div style=\"text-align: center; margin-top: 30px;\">\n        <a href=\"#\" style=\"background: #635bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;\">Download Receipt</a>\n      </div>\n      \n      <div style=\"margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px;\">\n        <p>Questions? Contact us at support@stripe.com</p>\n        <p>Stripe, Inc. • 510 Townsend Street, San Francisco, CA 94103</p>\n      </div>\n    </div>",
+    "preview": "Receipt for your payment to Acme Corp - Thank you for your payment! Amount: $29.99",
+    "timestamp": "2025-02-27T09:31:54.913000+00:00",
+    "timeDisplay": "Feb 27",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 7,
-    threadId: "#thread-f:1842087366422769452",
-    legacyThreadId: "199068b330dd2f2c",
-    legacyLastMessageId: "199068b330dd2f2e",
-    legacyLastNonDraftMessageId: "199068b330dd2f2e",
-    from: {
-      name: "GitHub",
-      email: "noreply@github.com",
+    "id": 5,
+    "threadId": "#thread-f:1842085083087208762",
+    "legacyThreadId": "1990669f8f758140",
+    "legacyLastMessageId": "1990669f8f758140",
+    "legacyLastNonDraftMessageId": "1990669f8f758140",
+    "from": {
+      "name": "LinkedIn",
+      "email": "notifications@linkedin.com"
     },
-    to: ["john.doe@example.com"],
-    subject: "Re: [GitHub] Please verify your device",
-    body: "Thanks for confirming, John. If this wasn’t you, reset your password immediately. This email address is not monitored.",
-    preview: "Thanks for confirming, John. If this wasn’t you, reset your password immediately.",
-    timestamp: "2025-09-01T21:36:00.000Z",
-    timeDisplay: "Sep 1",
-    read: false,
-    starred: true,
-    important: true,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "You have 3 new connection requests",
+    "body": "<div style=\"font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f3f2ef;\">\n      <div style=\"background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\">\n        <div style=\"text-align: center; margin-bottom: 24px;\">\n  \n  <h1 style=\"color: #0a66c2; margin: 0; font-size: 20px; font-weight: 600;\">New Connection Requests</h1>\n        </div>\n        \n        <div style=\"background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px;\">\n          <p style=\"margin: 0; color: #666; font-size: 14px;\">You have <strong>3 new connection requests</strong> waiting for your response.</p>\n        </div>\n        \n        <div style=\"margin-bottom: 20px;\">\n          <div style=\"display: flex; align-items: center; padding: 12px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 8px; background: white;\">\n            <div style=\"width: 48px; height: 48px; background: #0a66c2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;\">\n              <span style=\"color: white; font-weight: bold; font-size: 18px;\">JS</span>\n            </div>\n            <div style=\"flex: 1;\">\n              <h3 style=\"margin: 0 0 4px 0; font-size: 16px; color: #1a1a1a;\">Jane Smith</h3>\n              <p style=\"margin: 0; color: #666; font-size: 14px;\">Senior Software Engineer at Tech Corp</p>\n            </div>\n            <div style=\"display: flex; gap: 8px;\">\n              <button style=\"background: #0a66c2; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;\">Accept</button>\n              <button style=\"background: transparent; color: #666; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;\">Ignore</button>\n            </div>\n          </div>\n          \n          <div style=\"display: flex; align-items: center; padding: 12px; border: 1px solid #e1e5e9; border-radius: 8px; margin-bottom: 8px; background: white;\">\n            <div style=\"width: 48px; height: 48px; background: #28a745; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;\">\n              <span style=\"color: white; font-weight: bold; font-size: 18px;\">MJ</span>\n            </div>\n            <div style=\"flex: 1;\">\n              <h3 style=\"margin: 0 0 4px 0; font-size: 16px; color: #1a1a1a;\">Mike Johnson</h3>\n              <p style=\"margin: 0; color: #666; font-size: 14px;\">Product Manager at StartupXYZ</p>\n            </div>\n            <div style=\"display: flex; gap: 8px;\">\n              <button style=\"background: #0a66c2; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;\">Accept</button>\n              <button style=\"background: transparent; color: #666; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;\">Ignore</button>\n            </div>\n          </div>\n          \n          <div style=\"display: flex; align-items: center; padding: 12px; border: 1px solid #e1e5e9; border-radius: 8px; background: white;\">\n            <div style=\"width: 48px; height: 48px; background: #ff6b35; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;\">\n              <span style=\"color: white; font-weight: bold; font-size: 18px;\">AL</span>\n            </div>\n            <div style=\"flex: 1;\">\n              <h3 style=\"margin: 0 0 4px 0; font-size: 16px; color: #1a1a1a;\">Alex Lee</h3>\n              <p style=\"margin: 0; color: #666; font-size: 14px;\">UX Designer at Creative Agency</p>\n            </div>\n            <div style=\"display: flex; gap: 8px;\">\n              <button style=\"background: #0a66c2; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;\">Accept</button>\n              <button style=\"background: transparent; color: #666; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px; font-size: 14px; cursor: pointer;\">Ignore</button>\n            </div>\n          </div>\n        </div>\n        \n        <div style=\"text-align: center; margin-top: 24px;\">\n          <a href=\"#\" style=\"background: #0a66c2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;\">View All Requests</a>\n        </div>\n        \n        <div style=\"margin-top: 24px; padding-top: 16px; border-top: 1px solid #e1e5e9; text-align: center; color: #666; font-size: 12px;\">\n          <p>This email was sent to john.doe@example.com</p>\n          <p>© 2025 LinkedIn Corporation. All rights reserved.</p>\n        </div>\n      </div>\n    </div>",
+    "preview": "You have 3 new connection requests - Jane Smith, Mike Johnson, and Alex Lee want to connect with you on LinkedIn.",
+    "timestamp": "2024-12-26T14:42:41.733000+00:00",
+    "timeDisplay": "Dec 26",
+    "read": false,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 8,
-    threadId: "#thread-f:1842087366422769452",
-    legacyThreadId: "199068b330dd2f2c",
-    legacyLastMessageId: "199068b330dd2f2f",
-    legacyLastNonDraftMessageId: "199068b330dd2f2f",
-    from: {
-      name: "GitHub",
-      email: "noreply@github.com",
+    "id": 6,
+    "threadId": "#thread-f:1842087366422769452",
+    "legacyThreadId": "199068b330dd2f2c",
+    "legacyLastMessageId": "199068b330dd2f2d",
+    "legacyLastNonDraftMessageId": "199068b330dd2f2d",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
     },
-    to: ["john.doe@example.com"],
-    subject: "[GitHub] New sign-in from Chrome on Mac",
-    body: "We noticed a new sign-in to your account from Chrome on macOS. If this was you, no further action is required.",
-    preview: "New sign-in to your account from Chrome on macOS.",
-    timestamp: "2025-09-01T21:25:00.000Z",
-    timeDisplay: "Sep 1",
-    read: true,
-    starred: false,
-    important: false,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
+    "to": [
+      "noreply@github.com"
+    ],
+    "subject": "Re: [GitHub] Please verify your device",
+    "body": "Hi GitHub team, this was me. I successfully verified my device. Thanks!",
+    "preview": "Hi GitHub team, this was me. I successfully verified my device.",
+    "timestamp": "2023-03-24T23:26:13.128000+00:00",
+    "timeDisplay": "Mar 25",
+    "read": true,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 9,
-    threadId: "#thread-f:1849139573456812324207",
-    legacyThreadId: "1990982e903fc666",
-    legacyLastMessageId: "1990982e903fc666",
-    legacyLastNonDraftMessageId: "1990982e903fc666",
-    from: {
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
+    "id": 7,
+    "threadId": "#thread-f:1842087366422769452",
+    "legacyThreadId": "199068b330dd2f2c",
+    "legacyLastMessageId": "199068b330dd2f2e",
+    "legacyLastNonDraftMessageId": "199068b330dd2f2e",
+    "from": {
+      "name": "GitHub",
+      "email": "noreply@github.com"
     },
-    cc: ["michael.johnson@example.com", "sarah.wilson@example.com"],
-    to: ["john.doe@example.com", "robert.miller@example.com"],
-    subject: "IMPORTANT: Discussion on the Acme Project",
-    body: "We want to discuss the Acme Project with you. Please let us know your availability.",
-    preview: "We want to discuss the Acme Project with you. Please let us know your availability.",
-    timestamp: "2025-09-02T11:19:00.000Z",
-    timeDisplay: "11:19 AM",
-    read: false,
-    starred: true,
-    important: true,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: [GitHub] Please verify your device",
+    "body": "Thanks for confirming, John. If this wasn’t you, reset your password immediately. This email address is not monitored.",
+    "preview": "Thanks for confirming, John. If this wasn’t you, reset your password immediately.",
+    "timestamp": "2022-02-14T02:12:07.727000+00:00",
+    "timeDisplay": "Feb 14",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 10,
-    threadId: "#thread-f:1849139573456812324208",
-    legacyThreadId: "1990982e903fc667",
-    legacyLastMessageId: "1990982e903fc667",
-    legacyLastNonDraftMessageId: "1990982e903fc667",
-    from: {
-      name: "Smith Cooper",
-      email: "smithcooper@example.com",
+    "id": 8,
+    "threadId": "#thread-f:1842087366422769452",
+    "legacyThreadId": "199068b330dd2f2c",
+    "legacyLastMessageId": "199068b330dd2f2f",
+    "legacyLastNonDraftMessageId": "199068b330dd2f2f",
+    "from": {
+      "name": "GitHub",
+      "email": "noreply@github.com"
     },
-    to: ["john.doe@example.com"],
-    cc: [],
-    bcc: [],
-    subject: "Meeting Follow-up",
-    body: "Hi John, I wanted to follow up on our meeting yesterday. The project timeline looks good and I'm excited to move forward with the collaboration.",
-    preview:
-      "Hi John, I wanted to follow up on our meeting yesterday. The project timeline looks good and I'm excited to move forward with the collaboration.",
-    timestamp: "2025-09-02T14:30:00.000Z",
-    timeDisplay: "2:30 PM",
-    read: false,
-    starred: false,
-    important: false,
-    labels: ["Inbox", "Primary"],
-    labelColor: "#e1e3e1",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[GitHub] New sign-in from Chrome on Mac",
+    "body": "We noticed a new sign-in to your account from Chrome on macOS. If this was you, no further action is required.",
+    "preview": "New sign-in to your account from Chrome on macOS.",
+    "timestamp": "2024-11-06T18:28:13.006000+00:00",
+    "timeDisplay": "Nov 6",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 11,
-    threadId: "#thread-f:1849139573456812324301",
-    from: { name: "Amazon Deals", email: "deals@amazon.com" },
-    to: ["john.doe@example.com"],
-    subject: "🔥 50% OFF Electronics — Today Only!",
-    body: "Huge sale on gadgets. View in browser. Unsubscribe here.",
-    preview: "Huge sale on gadgets. 50% off electronics. Limited time!",
-    timestamp: "2025-09-02T09:00:00.000Z",
-    timeDisplay: "Sep 2",
-    read: false,
-    starred: false,
-    important: false,
-    labels: ["Inbox", "Promotions"],
-    labelColor: "#ffe1e1",
-  },
-  {
-    id: 12,
-    threadId: "#thread-f:1849139573456812324302",
-    from: { name: "Nike Store", email: "news@nike.com" },
-    to: ["john.doe@example.com"],
-    subject: "Exclusive Offer: 30% Off Running Shoes",
-    body: "Shop our latest collection with a 30% discount. Limited time only. Unsubscribe here.",
-    preview: "30% off Nike Running Shoes. Don’t miss out!",
-    timestamp: "2025-09-02T12:00:00.000Z",
-    timeDisplay: "Sep 2",
-    read: true,
-    starred: false,
-    important: false,
-    labels: ["Inbox", "Social"],
-    labelColor: "#ffe6cc",
-  },
-  {
-    id: 13,
-    threadId: "#thread-f:1849139573456812324303",
-    from: { name: "Apple", email: "no-reply@apple.com" },
-    to: ["john.doe@example.com"],
-    subject: "Your Apple receipt for iCloud storage",
-    body: "Payment confirmation: $0.99 charged for 50GB iCloud storage plan.",
-    preview: "Receipt: $0.99 charged for iCloud storage.",
-    timestamp: "2025-09-02T08:30:00.000Z",
-    timeDisplay: "Sep 2",
-    read: true,
-    starred: false,
-    important: true,
-    labels: ["Inbox", "Updates"],
-    labelColor: "#e1f7e1",
-  },
-  // Spam emails
-  {
-    id: 14,
-    threadId: "#thread-f:1849139573456812324401",
-    legacyThreadId: "1990982e903fc668",
-    legacyLastMessageId: "1990982e903fc668",
-    legacyLastNonDraftMessageId: "1990982e903fc668",
-    from: {
-      name: "Lucky Winner",
-      email: "winner@mega-lottery-winners.com",
+    "id": 9,
+    "threadId": "#thread-f:1849139573456812324207",
+    "legacyThreadId": "1990982e903fc666",
+    "legacyLastMessageId": "1990982e903fc666",
+    "legacyLastNonDraftMessageId": "1990982e903fc666",
+    "from": {
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com"
     },
-    to: ["john.doe@example.com"],
-    subject: "🎉 CONGRATULATIONS! You've Won $1,000,000!",
-    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #ff6b6b, #ffd93d);">
-      <div style="text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-        <h1 style="color: #ff6b6b; font-size: 32px; margin: 0 0 20px 0;">🎉 CONGRATULATIONS! 🎉</h1>
-        <h2 style="color: #333; font-size: 24px; margin: 0 0 20px 0;">You've Won $1,000,000!</h2>
-        <p style="font-size: 18px; color: #666; margin: 0 0 30px 0;">Dear Winner,</p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
-          Congratulations! You have been selected as the winner of our Mega Lottery Prize of <strong style="color: #ff6b6b;">$1,000,000 USD</strong>!
-        </p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 30px 0;">
-          To claim your prize, please click the button below and provide your personal information including your bank account details for immediate transfer.
-        </p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="#" style="background: #ff6b6b; color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-size: 18px; font-weight: bold; display: inline-block;">CLAIM YOUR PRIZE NOW</a>
-        </div>
-        <p style="font-size: 12px; color: #999; margin: 30px 0 0 0;">
-          This offer expires in 24 hours. Act now to secure your winnings!
-        </p>
-      </div>
-    </div>`,
-    preview: "🎉 CONGRATULATIONS! You've Won $1,000,000! - Claim your prize now!",
-    timestamp: "2025-09-02T16:45:00.000Z",
-    timeDisplay: "4:45 PM",
-    read: false,
-    starred: false,
-    important: false,
-    labels: ["Spam"],
-    labelColor: "#ffebee",
+    "cc": [
+      "michael.johnson@example.com",
+      "sarah.wilson@example.com"
+    ],
+    "to": [
+      "john.doe@example.com",
+      "robert.miller@example.com"
+    ],
+    "subject": "IMPORTANT: Discussion on the Acme Project",
+    "body": "We want to discuss the Acme Project with you. Please let us know your availability.",
+    "preview": "We want to discuss the Acme Project with you. Please let us know your availability.",
+    "timestamp": "2025-10-18T06:14:59.743607+00:00",
+    "timeDisplay": "Dec 2",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 15,
-    threadId: "#thread-f:1849139573456812324402",
-    legacyThreadId: "1990982e903fc669",
-    legacyLastMessageId: "1990982e903fc669",
-    legacyLastNonDraftMessageId: "1990982e903fc669",
-    from: {
-      name: "Dr. Sarah Williams",
-      email: "sarah.williams@miracle-pills-now.com",
+    "id": 10,
+    "threadId": "#thread-f:1849139573456812324208",
+    "legacyThreadId": "1990982e903fc667",
+    "legacyLastMessageId": "1990982e903fc667",
+    "legacyLastNonDraftMessageId": "1990982e903fc667",
+    "from": {
+      "name": "Smith Cooper",
+      "email": "smithcooper@example.com"
     },
-    to: ["john.doe@example.com"],
-    subject: "URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution",
-    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
-      <div style="background: white; padding: 25px; border-radius: 10px; border-left: 5px solid #28a745;">
-        <h1 style="color: #28a745; font-size: 24px; margin: 0 0 20px 0;">⚠️ URGENT HEALTH ALERT ⚠️</h1>
-        <p style="font-size: 16px; color: #333; margin: 0 0 20px 0;">Dear John,</p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
-          As a medical professional, I'm concerned about your health. Recent studies show that excess weight can lead to serious health complications including diabetes, heart disease, and even cancer.
-        </p>
-        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
-          I've discovered a revolutionary weight loss solution that has helped over 10,000 patients lose 30+ pounds in just 30 days! This breakthrough formula contains natural ingredients that boost metabolism and burn fat while you sleep.
-        </p>
-        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #28a745; margin: 0 0 10px 0;">✨ SPECIAL OFFER - LIMITED TIME ✨</h3>
-          <p style="margin: 0; color: #333;">Get 50% OFF + FREE shipping when you order today!</p>
-          <p style="margin: 10px 0 0 0; font-size: 18px; color: #ff6b6b; font-weight: bold;">Regular Price: $199.99 | Today Only: $99.99</p>
-        </div>
-        <div style="text-align: center; margin: 25px 0;">
-          <a href="#" style="background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">ORDER NOW - SAVE 50%</a>
-        </div>
-        <p style="font-size: 12px; color: #666; margin: 20px 0 0 0;">
-          *Results may vary. This email was sent to john.doe@example.com. If you no longer wish to receive these emails, click here to unsubscribe.
-        </p>
-      </div>
-    </div>`,
-    preview: "URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution - 50% OFF today only!",
-    timestamp: "2025-09-02T14:20:00.000Z",
-    timeDisplay: "2:20 PM",
-    read: false,
-    starred: false,
-    important: false,
-    labels: ["Spam"],
-    labelColor: "#ffebee",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "cc": [],
+    "bcc": [],
+    "subject": "Meeting Follow-up",
+    "body": "Hi John, I wanted to follow up on our meeting yesterday. The project timeline looks good and I'm excited to move forward with the collaboration.",
+    "preview": "Hi John, I wanted to follow up on our meeting yesterday. The project timeline looks good and I'm excited to move forward with the collaboration.",
+    "timestamp": "2024-07-19T05:31:06.863000+00:00",
+    "timeDisplay": "Jul 19",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
   },
   {
-    id: 18,
-    threadId: "#thread-f:1849139573456812324405",
-    legacyThreadId: "1990982e903fc672",
-    legacyLastMessageId: "1990982e903fc672",
-    legacyLastNonDraftMessageId: "1990982e903fc672",
-    from: {
-      name: "Bank Security Alert",
-      email: "security@your-bank-urgent.com",
+    "id": 11,
+    "threadId": "#thread-f:1849139573456812324301",
+    "from": {
+      "name": "Amazon Deals",
+      "email": "deals@amazon.com"
     },
-    to: ["john.doe@example.com"],
-    subject: "🚨 URGENT: Suspicious Activity Detected - Verify Your Account",
-    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
-      <div style="background: white; padding: 25px; border-radius: 10px; border: 2px solid #dc3545;">
-        <div style="text-align: center; margin-bottom: 25px;">
-          <h1 style="color: #dc3545; font-size: 24px; margin: 0 0 10px 0;">🚨 SECURITY ALERT 🚨</h1>
-          <p style="color: #666; font-size: 16px; margin: 0;">Your Bank Security Team</p>
-        </div>
-        
-        <div style="background: #fff5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
-          <h2 style="color: #dc3545; margin: 0 0 15px 0; font-size: 18px;">Suspicious Activity Detected</h2>
-          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 15px 0;">
-            We have detected unusual activity on your account. Someone attempted to access your account from an unrecognized device in a foreign country.
-          </p>
-          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 15px 0;">
-            <strong>Transaction Details:</strong><br>
-            • Amount: $2,847.50<br>
-            • Location: Moscow, Russia<br>
-            • Time: Today, 3:47 AM<br>
-            • Status: PENDING VERIFICATION
-          </p>
-        </div>
-        
-        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #28a745; margin: 0 0 10px 0;">✅ Immediate Action Required</h3>
-          <p style="margin: 0 0 15px 0; color: #333;">
-            To secure your account and prevent unauthorized access, please verify your identity by clicking the button below:
-          </p>
-          <div style="text-align: center;">
-            <a href="#" style="background: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">VERIFY ACCOUNT NOW</a>
-          </div>
-        </div>
-        
-        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffeaa7;">
-          <p style="margin: 0; color: #856404; font-size: 14px;">
-            <strong>⚠️ Important:</strong> If you do not verify your account within 24 hours, your account will be temporarily suspended for security reasons.
-          </p>
-        </div>
-        
-        <p style="font-size: 12px; color: #666; margin: 20px 0 0 0;">
-          This email was sent to john.doe@example.com. If you did not request this verification, please contact our security team immediately.
-        </p>
-      </div>
-    </div>`,
-    preview: "🚨 URGENT: Suspicious Activity Detected - Verify Your Account - Transaction from Moscow, Russia",
-    timestamp: "2025-09-01T22:30:00.000Z",
-    timeDisplay: "Sep 1",
-    read: false,
-    starred: false,
-    important: false,
-    labels: ["Spam"],
-    labelColor: "#ffebee",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔥 50% OFF Electronics — Today Only!",
+    "body": "Huge sale on gadgets. View in browser. Unsubscribe here.",
+    "preview": "Huge sale on gadgets. 50% off electronics. Limited time!",
+    "timestamp": "2022-07-19T04:46:32.687000+00:00",
+    "timeDisplay": "Jul 19",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+    ],
+    "labelColor": "#ffe1e1"
   },
   {
-    id: 19,
-    threadId: "#thread-f:1849139573456812324406",
-    legacyThreadId: "1990982e903fc673",
-    legacyLastMessageId: "1990982e903fc673",
-    legacyLastNonDraftMessageId: "1990982e903fc673",
-    from: {
-      name: "Cryptocurrency Expert",
-      email: "crypto@bitcoin-millionaire-secrets.com",
+    "id": 12,
+    "threadId": "#thread-f:1849139573456812324302",
+    "from": {
+      "name": "Nike Store",
+      "email": "news@nike.com"
     },
-    to: ["john.doe@example.com"],
-    subject: "💰 Turn $100 into $100,000 with this ONE crypto secret!",
-    body: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #f093fb, #f5576c);">
-      <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
-        <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #f5576c; font-size: 28px; margin: 0 0 10px 0;">💰 CRYPTO MILLIONAIRE SECRET 💰</h1>
-          <p style="color: #666; font-size: 16px; margin: 0;">From: Crypto Expert Mike</p>
-        </div>
-        
-        <div style="background: #fff5f5; padding: 25px; border-radius: 10px; margin: 20px 0;">
-          <h2 style="color: #f5576c; margin: 0 0 20px 0; font-size: 22px;">🚀 The Secret That Made Me $2.3 Million</h2>
-          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
-            I discovered a little-known cryptocurrency that's about to explode! While everyone else is focused on Bitcoin and Ethereum, I found a hidden gem that's already made me $2.3 million in just 6 months.
-          </p>
-          <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;">
-            This crypto is backed by major tech companies and has partnerships with Google, Amazon, and Microsoft. The price is about to skyrocket by 1,000% in the next 30 days!
-          </p>
-        </div>
-        
-        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="color: #28a745; margin: 0 0 15px 0;">📈 PROVEN RESULTS 📈</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div style="text-align: center;">
-              <div style="font-size: 24px; font-weight: bold; color: #28a745;">$100 → $1,200</div>
-              <div style="font-size: 14px; color: #666;">Month 1</div>
-            </div>
-            <div style="text-align: center;">
-              <div style="font-size: 24px; font-weight: bold; color: #28a745;">$1,200 → $15,000</div>
-              <div style="font-size: 14px; color: #666;">Month 3</div>
-            </div>
-          </div>
-        </div>
-        
-        <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #ffc107;">
-          <h3 style="color: #856404; margin: 0 0 10px 0;">⚡ LIMITED TIME OFFER ⚡</h3>
-          <p style="margin: 0 0 15px 0; color: #333;">
-            Get my exclusive crypto trading course for just $97 (Regular price $497). This includes:
-          </p>
-          <ul style="margin: 0; padding-left: 20px; color: #333;">
-            <li>Exact crypto name and where to buy it</li>
-            <li>Step-by-step trading strategy</li>
-            <li>24/7 support from my team</li>
-            <li>Money-back guarantee</li>
-          </ul>
-        </div>
-        
-        <div style="text-align: center; margin: 25px 0;">
-          <a href="#" style="background: #f5576c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-size: 18px; font-weight: bold;">GET THE SECRET NOW</a>
-        </div>
-        
-        <p style="font-size: 12px; color: #999; margin: 20px 0 0 0; text-align: center;">
-          This email was sent to john.doe@example.com. Unsubscribe here.
-        </p>
-      </div>
-    </div>`,
-    preview: "💰 Turn $100 into $100,000 with this ONE crypto secret! - Get my exclusive trading course for $97",
-    timestamp: "2025-09-01T19:45:00.000Z",
-    timeDisplay: "Sep 1",
-    read: false,
-    starred: false,
-    important: false,
-    labels: ["Spam"],
-    labelColor: "#ffebee",
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Exclusive Offer: 30% Off Running Shoes",
+    "body": "Shop our latest collection with a 30% discount. Limited time only. Unsubscribe here.",
+    "preview": "30% off Nike Running Shoes. Don’t miss out!",
+    "timestamp": "2024-03-26T04:45:54.741000+00:00",
+    "timeDisplay": "Mar 26",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+    ],
+    "labelColor": "#ffe6cc"
   },
+  {
+    "id": 13,
+    "threadId": "#thread-f:1849139573456812324303",
+    "from": {
+      "name": "Apple",
+      "email": "no-reply@apple.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your Apple receipt for iCloud storage",
+    "body": "Payment confirmation: $0.99 charged for 50GB iCloud storage plan.",
+    "preview": "Receipt: $0.99 charged for iCloud storage.",
+    "timestamp": "2025-10-18T06:14:59.743612+00:00",
+    "timeDisplay": "Nov 27",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 14,
+    "threadId": "#thread-f:1849139573456812324401",
+    "legacyThreadId": "1990982e903fc668",
+    "legacyLastMessageId": "1990982e903fc668",
+    "legacyLastNonDraftMessageId": "1990982e903fc668",
+    "from": {
+      "name": "Lucky Winner",
+      "email": "winner@mega-lottery-winners.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎉 CONGRATULATIONS! You've Won $1,000,000!",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #ff6b6b, #ffd93d);\">\n      <div style=\"text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);\">\n        <h1 style=\"color: #ff6b6b; font-size: 32px; margin: 0 0 20px 0;\">🎉 CONGRATULATIONS! 🎉</h1>\n        <h2 style=\"color: #333; font-size: 24px; margin: 0 0 20px 0;\">You've Won $1,000,000!</h2>\n        <p style=\"font-size: 18px; color: #666; margin: 0 0 30px 0;\">Dear Winner,</p>\n        <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;\">\n          Congratulations! You have been selected as the winner of our Mega Lottery Prize of <strong style=\"color: #ff6b6b;\">$1,000,000 USD</strong>!\n        </p>\n        <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 30px 0;\">\n          To claim your prize, please click the button below and provide your personal information including your bank account details for immediate transfer.\n        </p>\n        <div style=\"text-align: center; margin: 30px 0;\">\n          <a href=\"#\" style=\"background: #ff6b6b; color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-size: 18px; font-weight: bold; display: inline-block;\">CLAIM YOUR PRIZE NOW</a>\n        </div>\n        <p style=\"font-size: 12px; color: #999; margin: 30px 0 0 0;\">\n          This offer expires in 24 hours. Act now to secure your winnings!\n        </p>\n      </div>\n    </div>",
+    "preview": "🎉 CONGRATULATIONS! You've Won $1,000,000! - Claim your prize now!",
+    "timestamp": "2023-05-02T23:28:38.153000+00:00",
+    "timeDisplay": "May 3",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Spam"
+    ],
+    "labelColor": "#ffebee"
+  },
+  {
+    "id": 15,
+    "threadId": "#thread-f:1849139573456812324402",
+    "legacyThreadId": "1990982e903fc669",
+    "legacyLastMessageId": "1990982e903fc669",
+    "legacyLastNonDraftMessageId": "1990982e903fc669",
+    "from": {
+      "name": "Dr. Sarah Williams",
+      "email": "sarah.williams@miracle-pills-now.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;\">\n      <div style=\"background: white; padding: 25px; border-radius: 10px; border-left: 5px solid #28a745;\">\n        <h1 style=\"color: #28a745; font-size: 24px; margin: 0 0 20px 0;\">⚠️ URGENT HEALTH ALERT ⚠️</h1>\n        <p style=\"font-size: 16px; color: #333; margin: 0 0 20px 0;\">Dear John,</p>\n        <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;\">\n          As a medical professional, I'm concerned about your health. Recent studies show that excess weight can lead to serious health complications including diabetes, heart disease, and even cancer.\n        </p>\n        <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;\">\n          I've discovered a revolutionary weight loss solution that has helped over 10,000 patients lose 30+ pounds in just 30 days! This breakthrough formula contains natural ingredients that boost metabolism and burn fat while you sleep.\n        </p>\n        <div style=\"background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;\">\n          <h3 style=\"color: #28a745; margin: 0 0 10px 0;\">✨ SPECIAL OFFER - LIMITED TIME ✨</h3>\n          <p style=\"margin: 0; color: #333;\">Get 50% OFF + FREE shipping when you order today!</p>\n          <p style=\"margin: 10px 0 0 0; font-size: 18px; color: #ff6b6b; font-weight: bold;\">Regular Price: $199.99 | Today Only: $99.99</p>\n        </div>\n        <div style=\"text-align: center; margin: 25px 0;\">\n          <a href=\"#\" style=\"background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;\">ORDER NOW - SAVE 50%</a>\n        </div>\n        <p style=\"font-size: 12px; color: #666; margin: 20px 0 0 0;\">\n          *Results may vary. This email was sent to john.doe@example.com. If you no longer wish to receive these emails, click here to unsubscribe.\n        </p>\n      </div>\n    </div>",
+    "preview": "URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution - 50% OFF today only!",
+    "timestamp": "2022-09-28T00:54:40.915000+00:00",
+    "timeDisplay": "Sep 28",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Spam"
+    ],
+    "labelColor": "#ffebee"
+  },
+  {
+    "id": 18,
+    "threadId": "#thread-f:1849139573456812324405",
+    "legacyThreadId": "1990982e903fc672",
+    "legacyLastMessageId": "1990982e903fc672",
+    "legacyLastNonDraftMessageId": "1990982e903fc672",
+    "from": {
+      "name": "Bank Security Alert",
+      "email": "security@your-bank-urgent.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🚨 URGENT: Suspicious Activity Detected - Verify Your Account",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;\">\n      <div style=\"background: white; padding: 25px; border-radius: 10px; border: 2px solid #dc3545;\">\n        <div style=\"text-align: center; margin-bottom: 25px;\">\n          <h1 style=\"color: #dc3545; font-size: 24px; margin: 0 0 10px 0;\">🚨 SECURITY ALERT 🚨</h1>\n          <p style=\"color: #666; font-size: 16px; margin: 0;\">Your Bank Security Team</p>\n        </div>\n        \n        <div style=\"background: #fff5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;\">\n          <h2 style=\"color: #dc3545; margin: 0 0 15px 0; font-size: 18px;\">Suspicious Activity Detected</h2>\n          <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 15px 0;\">\n            We have detected unusual activity on your account. Someone attempted to access your account from an unrecognized device in a foreign country.\n          </p>\n          <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 15px 0;\">\n            <strong>Transaction Details:</strong><br>\n            • Amount: $2,847.50<br>\n            • Location: Moscow, Russia<br>\n            • Time: Today, 3:47 AM<br>\n            • Status: PENDING VERIFICATION\n          </p>\n        </div>\n        \n        <div style=\"background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;\">\n          <h3 style=\"color: #28a745; margin: 0 0 10px 0;\">✅ Immediate Action Required</h3>\n          <p style=\"margin: 0 0 15px 0; color: #333;\">\n            To secure your account and prevent unauthorized access, please verify your identity by clicking the button below:\n          </p>\n          <div style=\"text-align: center;\">\n            <a href=\"#\" style=\"background: #dc3545; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;\">VERIFY ACCOUNT NOW</a>\n          </div>\n        </div>\n        \n        <div style=\"background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffeaa7;\">\n          <p style=\"margin: 0; color: #856404; font-size: 14px;\">\n            <strong>⚠️ Important:</strong> If you do not verify your account within 24 hours, your account will be temporarily suspended for security reasons.\n          </p>\n        </div>\n        \n        <p style=\"font-size: 12px; color: #666; margin: 20px 0 0 0;\">\n          This email was sent to john.doe@example.com. If you did not request this verification, please contact our security team immediately.\n        </p>\n      </div>\n    </div>",
+    "preview": "🚨 URGENT: Suspicious Activity Detected - Verify Your Account - Transaction from Moscow, Russia",
+    "timestamp": "2022-09-17T10:30:32.385000+00:00",
+    "timeDisplay": "Sep 17",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Spam"
+    ],
+    "labelColor": "#ffebee"
+  },
+  {
+    "id": 19,
+    "threadId": "#thread-f:1849139573456812324406",
+    "legacyThreadId": "1990982e903fc673",
+    "legacyLastMessageId": "1990982e903fc673",
+    "legacyLastNonDraftMessageId": "1990982e903fc673",
+    "from": {
+      "name": "Cryptocurrency Expert",
+      "email": "crypto@bitcoin-millionaire-secrets.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💰 Turn $100 into $100,000 with this ONE crypto secret!",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: linear-gradient(135deg, #f093fb, #f5576c);\">\n      <div style=\"background: white; padding: 30px; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);\">\n        <div style=\"text-align: center; margin-bottom: 30px;\">\n          <h1 style=\"color: #f5576c; font-size: 28px; margin: 0 0 10px 0;\">💰 CRYPTO MILLIONAIRE SECRET 💰</h1>\n          <p style=\"color: #666; font-size: 16px; margin: 0;\">From: Crypto Expert Mike</p>\n        </div>\n        \n        <div style=\"background: #fff5f5; padding: 25px; border-radius: 10px; margin: 20px 0;\">\n          <h2 style=\"color: #f5576c; margin: 0 0 20px 0; font-size: 22px;\">🚀 The Secret That Made Me $2.3 Million</h2>\n          <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;\">\n            I discovered a little-known cryptocurrency that's about to explode! While everyone else is focused on Bitcoin and Ethereum, I found a hidden gem that's already made me $2.3 million in just 6 months.\n          </p>\n          <p style=\"font-size: 16px; color: #333; line-height: 1.6; margin: 0 0 20px 0;\">\n            This crypto is backed by major tech companies and has partnerships with Google, Amazon, and Microsoft. The price is about to skyrocket by 1,000% in the next 30 days!\n          </p>\n        </div>\n        \n        <div style=\"background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;\">\n          <h3 style=\"color: #28a745; margin: 0 0 15px 0;\">📈 PROVEN RESULTS 📈</h3>\n          <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 15px;\">\n            <div style=\"text-align: center;\">\n              <div style=\"font-size: 24px; font-weight: bold; color: #28a745;\">$100 → $1,200</div>\n              <div style=\"font-size: 14px; color: #666;\">Month 1</div>\n            </div>\n            <div style=\"text-align: center;\">\n              <div style=\"font-size: 24px; font-weight: bold; color: #28a745;\">$1,200 → $15,000</div>\n              <div style=\"font-size: 14px; color: #666;\">Month 3</div>\n            </div>\n          </div>\n        </div>\n        \n        <div style=\"background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #ffc107;\">\n          <h3 style=\"color: #856404; margin: 0 0 10px 0;\">⚡ LIMITED TIME OFFER ⚡</h3>\n          <p style=\"margin: 0 0 15px 0; color: #333;\">\n            Get my exclusive crypto trading course for just $97 (Regular price $497). This includes:\n          </p>\n          <ul style=\"margin: 0; padding-left: 20px; color: #333;\">\n            <li>Exact crypto name and where to buy it</li>\n            <li>Step-by-step trading strategy</li>\n            <li>24/7 support from my team</li>\n            <li>Money-back guarantee</li>\n          </ul>\n        </div>\n        \n        <div style=\"text-align: center; margin: 25px 0;\">\n          <a href=\"#\" style=\"background: #f5576c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 25px; font-size: 18px; font-weight: bold;\">GET THE SECRET NOW</a>\n        </div>\n        \n        <p style=\"font-size: 12px; color: #999; margin: 20px 0 0 0; text-align: center;\">\n          This email was sent to john.doe@example.com. Unsubscribe here.\n        </p>\n      </div>\n    </div>",
+    "preview": "💰 Turn $100 into $100,000 with this ONE crypto secret! - Get my exclusive trading course for $97",
+    "timestamp": "2022-06-03T17:59:04.755000+00:00",
+    "timeDisplay": "Jun 3",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Spam"
+    ],
+    "labelColor": "#ffebee"
+  },
+  {
+    "id": 20,
+    "threadId": "#thread-f:1849236573412378900",
+    "legacyThreadId": "1990a2be9a3fd100",
+    "legacyLastMessageId": "1990a2be9a3fd100",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd100",
+    "from": {
+      "name": "Figma",
+      "email": "no-reply@figma.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 Your Figma team has invited you to a new project",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <div style=\"text-align: center; margin-bottom: 30px;\">\n      <img src=\"/assets/images/figma-favicon.png\" alt=\"Figma\" style=\"width: 40px; height: 40px;\">\n      <h1 style=\"margin: 10px 0 0 0; font-size: 22px; color: #333;\">You're invited to collaborate on a new Figma project</h1>\n    </div>\n    <p style=\"font-size: 15px; color: #444; line-height: 1.6;\">\n      <strong>Jane Smith</strong> has invited you to join the project \n      <strong>“Product Launch UI Kit”</strong> in the Acme Design Team.\n    </p>\n    <div style=\"text-align: center; margin: 30px 0;\">\n      <a href=\"#\" style=\"background: #1abcfe; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;\">\n        View Project\n      </a>\n    </div>\n    <p style=\"font-size: 13px; color: #666; text-align: center;\">\n      If you didn’t expect this invitation, you can safely ignore this email.\n    </p>\n    <hr style=\"border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;\">\n    <p style=\"font-size: 12px; color: #999; text-align: center;\">\n      © 2025 Figma, Inc. • 760 Market St, San Francisco, CA\n    </p>\n  </div>",
+    "preview": "Jane Smith invited you to collaborate on “Product Launch UI Kit” in Figma.",
+    "timestamp": "2022-10-28T12:04:49.102000+00:00",
+    "timeDisplay": "Oct 28",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1",
+    "attachments": [
+      {
+        "id": 18420873664227695000,
+        "name": "attachment.webp",
+        "url": "/assets/images/attachment.webp",
+        "size": "1.2 MB",
+        "type": "image/webp"
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "threadId": "#thread-f:1849236573412378901",
+    "legacyThreadId": "1990a2be9a3fd101",
+    "legacyLastMessageId": "1990a2be9a3fd101",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd101",
+    "from": {
+      "name": "Google Calendar",
+      "email": "calendar-notifications@google.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📅 Meeting Invitation: Product Design Sync — Sep 8, 2:00 PM",
+    "body": "<div style=\"font-family: Roboto, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n  \n      <h1 style=\"margin: 10px 0 0 0; font-size: 22px; color: #333;\">Product Design Sync</h1>\n    </div>\n    <p style=\"font-size: 15px; color: #444; line-height: 1.6; text-align: center;\">\n      You have been invited to a meeting.\n    </p>\n    <div style=\"background: #f8f9fa; border-radius: 8px; padding: 16px; margin: 20px 0;\">\n      <p><strong>When:</strong> Monday, September 8 · 2:00 – 2:45 PM (WAT)</p>\n      <p><strong>Where:</strong> Google Meet</p>\n      <p><strong>Organizer:</strong> Jane Smith</p>\n    </div>\n    <div style=\"text-align: center; margin: 20px 0;\">\n      <a href=\"#\" style=\"background: #1a73e8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;\">\n        Join with Google Meet\n      </a>\n    </div>\n    <p style=\"font-size: 12px; color: #999; text-align: center;\">\n      This email was sent by Google Calendar • 1600 Amphitheatre Pkwy, Mountain View, CA\n    </p>\n  </div>",
+    "preview": "You’ve been invited to Product Design Sync — Monday, September 8 · 2:00 PM",
+    "timestamp": "2022-03-05T01:02:32.826000+00:00",
+    "timeDisplay": "Mar 5",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 22,
+    "threadId": "#thread-f:1849236573412378902",
+    "legacyThreadId": "1990a2be9a3fd102",
+    "legacyLastMessageId": "1990a2be9a3fd102",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd102",
+    "from": {
+      "name": "Notion Team",
+      "email": "updates@notion.so"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✨ New Notion Features: Database Templates & AI Enhancements",
+    "body": "<div style=\"font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f6f7f9;\">\n    <div style=\"background: white; padding: 24px; border-radius: 12px;\">\n      <div style=\"text-align: center; margin-bottom: 20px;\">\n        <img src=\"/assets/images/notion.png\" alt=\"Notion Logo\" style=\"width: 48px;\">\n        <h1 style=\"margin: 12px 0 0 0; font-size: 22px; color: #333;\">What’s New in Notion</h1>\n      </div>\n      <p style=\"font-size: 15px; color: #444; line-height: 1.6;\">\n        🚀 We’ve launched new database templates to help you work faster and smarter. Plus, Notion AI just got even better at automating your workflows.\n      </p>\n      <ul style=\"color: #444; padding-left: 20px; margin-top: 15px;\">\n        <li>Pre-built templates for task & project tracking</li>\n        <li>Smart suggestions with Notion AI</li>\n        <li>Improved mobile editing experience</li>\n      </ul>\n      <div style=\"text-align: center; margin-top: 25px;\">\n        <a href=\"#\" style=\"background: #2f80ed; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;\">\n          Try New Features\n        </a>\n      </div>\n    </div>\n    <p style=\"font-size: 12px; color: #999; text-align: center; margin-top: 20px;\">\n      © 2025 Notion Labs, Inc. • 2300 Harrison St, San Francisco, CA\n    </p>\n  </div>",
+    "preview": "🚀 We’ve launched new database templates and AI enhancements in Notion.",
+    "timestamp": "2022-02-03T14:18:13.092000+00:00",
+    "timeDisplay": "Feb 3",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 23,
+    "threadId": "#thread-f:1849236573412378903",
+    "legacyThreadId": "1990a2be9a3fd103",
+    "legacyLastMessageId": "1990a2be9a3fd103",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd103",
+    "from": {
+      "name": "Slack",
+      "email": "no-reply@slack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "⚠️ New sign-in to your Slack workspace",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <h2 style=\"color:#4A154B;\">New sign-in detected</h2>\n    <p>We noticed a sign-in to your Slack account from a new browser:</p>\n    <ul>\n      <li><strong>Workspace:</strong> Acme Corp</li>\n      <li><strong>Browser:</strong> Chrome on macOS</li>\n      <li><strong>Time:</strong> September 5, 2025 2:45 PM WAT</li>\n    </ul>\n    <p>If this was you, no further action is needed. If not, <a href=\"#\">secure your account</a>.</p>\n    <p style=\"font-size: 12px; color: #999;\">© 2025 Slack Technologies</p>\n  </div>",
+    "preview": "We noticed a sign-in to your Slack account from a new browser.",
+    "timestamp": "2022-05-25T21:10:27.299000+00:00",
+    "timeDisplay": "May 25",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 24,
+    "threadId": "#thread-f:1849236573412378904",
+    "legacyThreadId": "1990a2be9a3fd104",
+    "legacyLastMessageId": "1990a2be9a3fd104",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd104",
+    "from": {
+      "name": "Amazon",
+      "email": "order-update@amazon.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your Amazon order has been confirmed",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <h2 style=\"color:#232F3E;\">Order Confirmed</h2>\n    <p>Thank you for shopping with us. Your order #113-5472890-993204 has been confirmed.</p>\n    <p><strong>Estimated delivery:</strong> September 10, 2025</p>\n    <p><strong>Item:</strong> Wireless Noise Cancelling Headphones</p>\n    <p>You can <a href=\"#\">track your order</a> at any time.</p>\n    <p style=\"font-size: 12px; color: #999;\">© 2025 Amazon.com</p>\n  </div>",
+    "preview": "Thank you for shopping with us. Your order has been confirmed.",
+    "timestamp": "2025-07-25T03:08:05+00:00",
+    "timeDisplay": "Jul 25",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 25,
+    "threadId": "#thread-f:1849236573412378905",
+    "legacyThreadId": "1990a2be9a3fd105",
+    "legacyLastMessageId": "1990a2be9a3fd105",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd105",
+    "from": {
+      "name": "Spotify",
+      "email": "offers@spotify.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎧 3 months of Premium — only $0.99",
+    "body": "<div style=\"font-family: Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #1DB954; color: white;\">\n    <h1 style=\"font-size: 24px;\">Limited Time Offer</h1>\n    <p>Get 3 months of Spotify Premium for only $0.99. Cancel anytime.</p>\n    <div style=\"text-align: center; margin-top: 20px;\">\n      <a href=\"#\" style=\"background: white; color: #1DB954; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;\">Get Premium</a>\n    </div>\n    <p style=\"font-size: 12px; color: #d1d1d1; margin-top: 30px;\">Offer valid until September 15, 2025.</p>\n  </div>",
+    "preview": "Get 3 months of Spotify Premium for only $0.99.",
+    "timestamp": "2023-10-30T01:54:51.971000+00:00",
+    "timeDisplay": "Oct 30",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 26,
+    "threadId": "#thread-f:1849236573412378906",
+    "legacyThreadId": "1990a2be9a3fd106",
+    "legacyLastMessageId": "1990a2be9a3fd106",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd106",
+    "from": {
+      "name": "OpenAI Security",
+      "email": "security@openai.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔐 New login detected on your OpenAI account",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <h2 style=\"color:#10a37f;\">New Login Detected</h2>\n    <p>A new login to your OpenAI account was detected:</p>\n    <ul>\n      <li><strong>Device:</strong> Chrome on Windows</li>\n      <li><strong>Location:</strong> Lagos, Nigeria</li>\n      <li><strong>Time:</strong> September 5, 2025 4:05 PM WAT</li>\n    </ul>\n    <p>If this was not you, <a href=\"#\">reset your password immediately</a>.</p>\n    <p style=\"font-size: 12px; color: #999;\">© 2025 OpenAI</p>\n  </div>",
+    "preview": "A new login to your OpenAI account was detected.",
+    "timestamp": "2023-07-05T04:40:04.211000+00:00",
+    "timeDisplay": "Jul 5",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 27,
+    "threadId": "#thread-f:1849236573412378907",
+    "legacyThreadId": "1990a2be9a3fd107",
+    "legacyLastMessageId": "1990a2be9a3fd107",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd107",
+    "from": {
+      "name": "Linear",
+      "email": "updates@linear.app"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✨ New Linear Features — September 2025",
+    "body": "<div style=\"font-family: Inter, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <h2 style=\"color:#000;\">This month in Linear</h2>\n    <p>We've rolled out new features to make issue tracking and sprints even smoother:</p>\n    <ul>\n      <li>⚡ Faster keyboard navigation</li>\n      <li>📅 Improved project timeline view</li>\n      <li>👥 Role-based permissions for teams</li>\n    </ul>\n    <p><a href=\"#\">Read the full changelog</a></p>\n    <p style=\"font-size: 12px; color: #999;\">© 2025 Linear HQ</p>\n  </div>",
+    "preview": "We've rolled out new features to make issue tracking and sprints even smoother.",
+    "timestamp": "2024-12-11T21:44:25.782000+00:00",
+    "timeDisplay": "Dec 11",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 28,
+    "threadId": "#thread-f:1849236573412378908",
+    "legacyThreadId": "1990a2be9a3fd108",
+    "legacyLastMessageId": "1990a2be9a3fd108",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd108",
+    "from": {
+      "name": "Jane Smith",
+      "email": "jane.smith@acmecorp.com"
+    },
+    "to": [
+      "john.doe@example.com",
+      "alex.tan@acmecorp.com"
+    ],
+    "cc": [
+      "product.team@acmecorp.com"
+    ],
+    "subject": "🚀 Project Aurora Kickoff Meeting",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <p>Hi team,</p>\n    <p>We're kicking off <strong>Project Aurora</strong> next week. Let's meet to align on goals, milestones, and responsibilities.</p>\n    <ul>\n      <li><strong>Date:</strong> September 9, 2025</li>\n      <li><strong>Time:</strong> 11:00 AM (WAT)</li>\n      <li><strong>Location:</strong> Google Meet</li>\n    </ul>\n    <p>Looking forward to collaborating with everyone.</p>\n    <p>- Jane</p>\n  </div>",
+    "preview": "We're kicking off Project Aurora next week. Let's meet to align on goals...",
+    "timestamp": "2023-11-05T06:18:07.369000+00:00",
+    "timeDisplay": "Nov 5",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 29,
+    "threadId": "#thread-f:1849236573412378908",
+    "legacyThreadId": "1990a2be9a3fd108",
+    "legacyLastMessageId": "1990a2be9a3fd109",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd109",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "jane.smith@acmecorp.com"
+    ],
+    "cc": [
+      "alex.tan@acmecorp.com",
+      "product.team@acmecorp.com"
+    ],
+    "subject": "Re: 🚀 Project Aurora Kickoff Meeting",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <p>Thanks Jane,</p>\n    <p>Got it. I'll prepare the API integration draft before the meeting so we can review it together.</p>\n    <p>- John</p>\n  </div>",
+    "preview": "Thanks Jane, Got it. I'll prepare the API integration draft...",
+    "timestamp": "2025-01-08T20:42:16.066000+00:00",
+    "timeDisplay": "Jan 8",
+    "read": true,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 30,
+    "threadId": "#thread-f:1849236573412378908",
+    "legacyThreadId": "1990a2be9a3fd108",
+    "legacyLastMessageId": "1990a2be9a3fd110",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd110",
+    "from": {
+      "name": "Alex Tan",
+      "email": "alex.tan@acmecorp.com"
+    },
+    "to": [
+      "jane.smith@acmecorp.com",
+      "john.doe@example.com"
+    ],
+    "cc": [
+      "product.team@acmecorp.com"
+    ],
+    "subject": "Re: 🚀 Project Aurora Kickoff Meeting",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <p>Hey team,</p>\n    <p>Would it be okay if we also review the sprint 1 tasks in the same session? I’ve drafted the initial backlog and would love to align early.</p>\n    <p>- Alex</p>\n  </div>",
+    "preview": "Would it be okay if we also review the sprint 1 tasks in the same session?",
+    "timestamp": "2025-04-01T00:54:00.215000+00:00",
+    "timeDisplay": "Apr 1",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 31,
+    "threadId": "#thread-f:1849236573412378908",
+    "legacyThreadId": "1990a2be9a3fd108",
+    "legacyLastMessageId": "1990a2be9a3fd111",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd111",
+    "from": {
+      "name": "Jane Smith",
+      "email": "jane.smith@acmecorp.com"
+    },
+    "to": [
+      "john.doe@example.com",
+      "alex.tan@acmecorp.com"
+    ],
+    "cc": [
+      "product.team@acmecorp.com"
+    ],
+    "subject": "Re: 🚀 Project Aurora Kickoff Meeting",
+    "body": "<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n    <p>Perfect.</p>\n    <p>Let's add the sprint backlog review to the agenda. John, your API draft will fit in nicely there too. Excited to get this rolling 🚀</p>\n    <p>- Jane</p>\n  </div>",
+    "preview": "Let's add the sprint backlog review to the agenda. John, your API draft...",
+    "timestamp": "2025-09-11T16:23:20.048000+00:00",
+    "timeDisplay": "Sep 11",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 32,
+    "threadId": "#thread-f:1849236573412378909",
+    "legacyThreadId": "1990a2be9a3fd112",
+    "legacyLastMessageId": "1990a2be9a3fd112",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd112",
+    "from": {
+      "name": "Dropbox",
+      "email": "no-reply@dropbox.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📁 Your files were successfully synced",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>Sync Complete</h2>\n      <p>Your recent changes have been successfully synced to your Dropbox account.</p>\n      <p><strong>Device:</strong> MacBook Pro</p>\n      <p><strong>Time:</strong> September 5, 2025 11:05 AM WAT</p>\n      <p style=\"font-size:12px;color:#999;\">© 2025 Dropbox Inc.</p>\n    </div>",
+    "preview": "Your recent changes have been successfully synced to your Dropbox account.",
+    "timestamp": "2023-03-28T16:43:53.417000+00:00",
+    "timeDisplay": "Mar 28",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 33,
+    "threadId": "#thread-f:1849236573412378910",
+    "legacyThreadId": "1990a2be9a3fd113",
+    "legacyLastMessageId": "1990a2be9a3fd113",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd113",
+    "from": {
+      "name": "Netflix",
+      "email": "info@mailer.netflix.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🍿 New shows just for you this weekend",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <h2>Top Picks This Weekend</h2>\n      <p>Relax and binge — we've curated top recommendations for you.</p>\n      <ul>\n        <li>The Edge of Tomorrow</li>\n        <li>Breaking Shadows</li>\n        <li>The Painter</li>\n      </ul>\n      <p><a href=\"#\">Start watching</a></p>\n      <p style=\"font-size:12px;color:#999;\">© 2025 Netflix Inc.</p>\n    </div>",
+    "preview": "Relax and binge — we've curated top recommendations for you.",
+    "timestamp": "2025-10-07T02:04:00.338000+00:00",
+    "timeDisplay": "Oct 7",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 34,
+    "threadId": "#thread-f:1849236573412378911",
+    "legacyThreadId": "1990a2be9a3fd114",
+    "legacyLastMessageId": "1990a2be9a3fd114",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd114",
+    "from": {
+      "name": "GitHub",
+      "email": "noreply@github.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✅ Pull Request merged in acme/project",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <p>Your pull request <strong>#245</strong> has been merged into <strong>main</strong>.</p>\n      <p>Repository: acme/project</p>\n      <p>Branch: feature/auth-fix</p>\n      <p style=\"font-size:12px;color:#999;\">© 2025 GitHub</p>\n    </div>",
+    "preview": "Your pull request #245 has been merged into main.",
+    "timestamp": "2022-06-07T16:21:51.123000+00:00",
+    "timeDisplay": "Jun 7",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 35,
+    "threadId": "#thread-f:1849236573412378912",
+    "legacyThreadId": "1990a2be9a3fd115",
+    "legacyLastMessageId": "1990a2be9a3fd115",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd115",
+    "from": {
+      "name": "Airbnb",
+      "email": "booking@airbnb.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🏡 Your trip to Lisbon is confirmed",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <h2>Booking Confirmed</h2>\n      <p>Your stay at <strong>Casa Azul, Lisbon</strong> is booked for <strong>Oct 10–15</strong>.</p>\n      <p>Check your itinerary and contact your host through the Airbnb app.</p>\n    </div>",
+    "preview": "Your stay at Casa Azul, Lisbon is booked for Oct 10–15.",
+    "timestamp": "2023-11-24T11:12:22.845000+00:00",
+    "timeDisplay": "Nov 24",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 36,
+    "threadId": "#thread-f:1849236573412378913",
+    "legacyThreadId": "1990a2be9a3fd116",
+    "legacyLastMessageId": "1990a2be9a3fd116",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd116",
+    "from": {
+      "name": "Udemy",
+      "email": "deals@udemy.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🚀 90% OFF — Master React in 2025",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <h2>Today's Top Deal</h2>\n      <p>Get the React Masterclass at <strong>90% off</strong> for a limited time.</p>\n      <p><a href=\"#\">Enroll now</a></p>\n      <p style=\"font-size:12px;color:#999;\">© 2025 Udemy</p>\n    </div>",
+    "preview": "Get the React Masterclass at 90% off for a limited time.",
+    "timestamp": "2023-03-31T14:11:28.919000+00:00",
+    "timeDisplay": "Mar 31",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 37,
+    "threadId": "#thread-f:1849236573412378914",
+    "legacyThreadId": "1990a2be9a3fd117",
+    "legacyLastMessageId": "1990a2be9a3fd117",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd117",
+    "from": {
+      "name": "Notion Team",
+      "email": "updates@notion.so"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🆕 Inline Databases just got smarter",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <h2>New in Notion</h2>\n      <p>Inline databases now support advanced filters, formulas, and better collaboration.</p>\n      <p><a href=\"#\">Learn more</a></p>\n    </div>",
+    "preview": "Inline databases now support advanced filters, formulas, and better collaboration.",
+    "timestamp": "2024-03-13T08:20:38.219000+00:00",
+    "timeDisplay": "Mar 13",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 38,
+    "threadId": "#thread-f:1849236573412378915",
+    "legacyThreadId": "1990a2be9a3fd118",
+    "legacyLastMessageId": "1990a2be9a3fd118",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd118",
+    "from": {
+      "name": "Figma",
+      "email": "no-reply@figma.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎨 Your design file was shared with Acme Team",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <p>Your file <strong>Marketing Website Mockups</strong> has been shared with the Acme Team.</p>\n      <p><a href=\"#\">Open in Figma</a></p>\n    </div>",
+    "preview": "Your file Marketing Website Mockups has been shared with the Acme Team.",
+    "timestamp": "2023-08-22T08:18:05.055000+00:00",
+    "timeDisplay": "Aug 22",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 39,
+    "threadId": "#thread-f:1849236573412378916",
+    "legacyThreadId": "1990a2be9a3fd119",
+    "legacyLastMessageId": "1990a2be9a3fd119",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd119",
+    "from": {
+      "name": "Discord",
+      "email": "no-reply@discord.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔑 New login to your Discord account",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <p>We noticed a new login to your Discord account from Chrome on macOS.</p>\n      <p>If this was not you, reset your password immediately.</p>\n    </div>",
+    "preview": "We noticed a new login to your Discord account from Chrome on macOS.",
+    "timestamp": "2025-05-17T12:32:32.185000+00:00",
+    "timeDisplay": "May 17",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 40,
+    "threadId": "#thread-f:1849236573412378917",
+    "legacyThreadId": "1990a2be9a3fd120",
+    "legacyLastMessageId": "1990a2be9a3fd120",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd120",
+    "from": {
+      "name": "Medium Daily Digest",
+      "email": "digest@medium.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📰 Top stories for you today",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <h2>Today's Highlights</h2>\n      <ul>\n        <li>“The Future of AI” by Sarah Wilson</li>\n        <li>“Building Better UIs” by Alex Lee</li>\n        <li>“How to stay focused as a developer” by Jane Doe</li>\n      </ul>\n      <p><a href=\"#\">Read on Medium</a></p>\n    </div>",
+    "preview": "Today's top stories: The Future of AI, Building Better UIs, and more.",
+    "timestamp": "2025-06-29T00:39:07.193000+00:00",
+    "timeDisplay": "Jun 29",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 41,
+    "threadId": "#thread-f:1849236573412378918",
+    "legacyThreadId": "1990a2be9a3fd121",
+    "legacyLastMessageId": "1990a2be9a3fd121",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd121",
+    "from": {
+      "name": "Trello",
+      "email": "no-reply@trello.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📌 You were added to the board “Product Roadmap”",
+    "body": "<div style=\"font-family:Arial;max-width:600px;margin:auto;padding:20px;\">\n      <p>Jane Smith added you to the board <strong>Product Roadmap</strong>.</p>\n      <p><a href=\"#\">Open board</a></p>\n    </div>",
+    "preview": "Jane Smith added you to the board Product Roadmap.",
+    "timestamp": "2023-07-01T22:00:38.454000+00:00",
+    "timeDisplay": "Jul 1",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 42,
+    "threadId": "#thread-f:1849236573412378919",
+    "legacyThreadId": "1990a2be9a3fd122",
+    "legacyLastMessageId": "1990a2be9a3fd122",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd122",
+    "from": {
+      "name": "Google Account",
+      "email": "no-reply@google.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔐 Security alert — new sign-in from Lagos, Nigeria",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>New sign-in detected</h2>\n      <p>We detected a new sign-in to your Google Account (john.doe@example.com) from:</p>\n      <ul>\n        <li><strong>Device:</strong> Chrome on Mac</li>\n        <li><strong>Location:</strong> Lagos, Nigeria</li>\n        <li><strong>Time:</strong> September 5, 2025 4:48 PM WAT</li>\n      </ul>\n      <p>If this wasn’t you, secure your account immediately.</p>\n    </div>",
+    "preview": "We detected a new sign-in to your Google Account from Lagos, Nigeria.",
+    "timestamp": "2024-08-24T10:17:17.252000+00:00",
+    "timeDisplay": "Aug 24",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 43,
+    "threadId": "#thread-f:1849236573412378920",
+    "legacyThreadId": "1990a2be9a3fd123",
+    "legacyLastMessageId": "1990a2be9a3fd123",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd123",
+    "from": {
+      "name": "Zoom",
+      "email": "no-reply@zoom.us"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📅 Meeting Reminder: Design Sprint Planning",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>Reminder: Design Sprint Planning</h2>\n      <p>This meeting is scheduled for:</p>\n      <ul>\n        <li><strong>Date:</strong> September 6, 2025</li>\n        <li><strong>Time:</strong> 10:00 AM (WAT)</li>\n      </ul>\n      <p><a href=\"#\">Join Zoom Meeting</a></p>\n    </div>",
+    "preview": "Reminder: Design Sprint Planning scheduled for September 6 at 10:00 AM.",
+    "timestamp": "2023-09-10T13:37:54.710000+00:00",
+    "timeDisplay": "Sep 10",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 44,
+    "threadId": "#thread-f:1849236573412378921",
+    "legacyThreadId": "1990a2be9a3fd124",
+    "legacyLastMessageId": "1990a2be9a3fd124",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd124",
+    "from": {
+      "name": "Twitter",
+      "email": "notify@x.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔥 Trending topics you might like today",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>Today on X</h2>\n      <ul>\n        <li>#AIRevolution</li>\n        <li>#FridayVibes</li>\n        <li>#Startups</li>\n      </ul>\n      <p>Check out what people are talking about.</p>\n    </div>",
+    "preview": "Top trending topics today: #AIRevolution, #FridayVibes, #Startups.",
+    "timestamp": "2025-06-22T04:59:16.535000+00:00",
+    "timeDisplay": "Jun 22",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 45,
+    "threadId": "#thread-f:1849236573412378922",
+    "legacyThreadId": "1990a2be9a3fd125",
+    "legacyLastMessageId": "1990a2be9a3fd125",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd125",
+    "from": {
+      "name": "Stripe",
+      "email": "receipts@stripe.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✅ Payment receipt for your subscription — $19.99",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>Payment Successful</h2>\n      <p>We’ve charged your card for your monthly subscription.</p>\n      <ul>\n        <li><strong>Amount:</strong> $19.99</li>\n        <li><strong>Date:</strong> September 5, 2025</li>\n        <li><strong>Invoice ID:</strong> INV-20384</li>\n      </ul>\n    </div>",
+    "preview": "Payment receipt for your subscription — $19.99 charged.",
+    "timestamp": "2023-12-01T11:39:54.754000+00:00",
+    "timeDisplay": "Dec 1",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 46,
+    "threadId": "#thread-f:1849236573412378923",
+    "legacyThreadId": "1990a2be9a3fd126",
+    "legacyLastMessageId": "1990a2be9a3fd126",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd126",
+    "from": {
+      "name": "Jane Smith",
+      "email": "jane.smith@acmecorp.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "RE: UI Components Review",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <p>Hey John,</p>\n      <p>Thanks for your feedback on the UI components yesterday. I’ve updated the buttons and modals based on your suggestions. Could you give it a quick look before stand-up tomorrow?</p>\n      <p>- Jane</p>\n    </div>",
+    "preview": "Thanks for your feedback on the UI components yesterday...",
+    "timestamp": "2023-08-17T18:03:06.248000+00:00",
+    "timeDisplay": "Aug 17",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 47,
+    "threadId": "#thread-f:1849236573412378924",
+    "legacyThreadId": "1990a2be9a3fd127",
+    "legacyLastMessageId": "1990a2be9a3fd127",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd127",
+    "from": {
+      "name": "Coursera",
+      "email": "offers@coursera.org"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📚 Learn AI with Stanford — Enrollment closing soon",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>AI & Machine Learning Specialization</h2>\n      <p>Join thousands of learners in this highly-rated course from Stanford University.</p>\n      <p>Enrollment closes in <strong>2 days</strong>.</p>\n    </div>",
+    "preview": "Join thousands of learners in this highly-rated course from Stanford University.",
+    "timestamp": "2022-07-16T04:59:58.338000+00:00",
+    "timeDisplay": "Jul 16",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 48,
+    "threadId": "#thread-f:1849236573412378925",
+    "legacyThreadId": "1990a2be9a3fd128",
+    "legacyLastMessageId": "1990a2be9a3fd128",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd128",
+    "from": {
+      "name": "Slack",
+      "email": "no-reply@slack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "👋 You were mentioned in #marketing",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <p><strong>Alex Tan</strong> mentioned you in <strong>#marketing</strong>:</p>\n      <blockquote>“@John can you share the updated presentation deck?”</blockquote>\n      <p><a href=\"#\">View in Slack</a></p>\n    </div>",
+    "preview": "Alex Tan mentioned you in #marketing: “@John can you share the deck?”",
+    "timestamp": "2024-12-30T14:56:16.939000+00:00",
+    "timeDisplay": "Dec 30",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 49,
+    "threadId": "#thread-f:1849236573412378926",
+    "legacyThreadId": "1990a2be9a3fd129",
+    "legacyLastMessageId": "1990a2be9a3fd129",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd129",
+    "from": {
+      "name": "Substack",
+      "email": "digest@substack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📝 Your weekly digest — 4 new stories from authors you follow",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>This Week's Top Reads</h2>\n      <ul>\n        <li>\"The Calm Before the Launch\" by Sarah Wells</li>\n        <li>\"When AI Meets Reality\" by Daniel Young</li>\n        <li>\"Why Design Systems Matter\" by Ella Moore</li>\n        <li>\"The Great API Refactor\" by Alex Lee</li>\n      </ul>\n    </div>",
+    "preview": "Your weekly digest — 4 new stories from authors you follow.",
+    "timestamp": "2024-07-20T03:50:32.115000+00:00",
+    "timeDisplay": "Jul 20",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 50,
+    "threadId": "#thread-f:1849236573412378927",
+    "legacyThreadId": "1990a2be9a3fd130",
+    "legacyLastMessageId": "1990a2be9a3fd130",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd130",
+    "from": {
+      "name": "LinkedIn",
+      "email": "notifications@linkedin.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 2 people viewed your profile this week",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <p>You had <strong>2 profile views</strong> this week.</p>\n      <p>See who’s interested in your professional journey and make new connections.</p>\n    </div>",
+    "preview": "You had 2 profile views this week. See who’s interested in your profile.",
+    "timestamp": "2025-08-05T09:49:22.598000+00:00",
+    "timeDisplay": "Aug 5",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 51,
+    "threadId": "#thread-f:1849236573412378928",
+    "legacyThreadId": "1990a2be9a3fd131",
+    "legacyLastMessageId": "1990a2be9a3fd131",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd131",
+    "from": {
+      "name": "PayPal",
+      "email": "service@paypal.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💳 You sent $120.00 to Acme Hosting",
+    "body": "<div style=\"font-family: Arial; max-width:600px;margin:auto;padding:20px;\">\n      <h2>Payment Sent</h2>\n      <p>You successfully sent <strong>$120.00</strong> to <strong>Acme Hosting</strong>.</p>\n      <p>Transaction ID: 7T291004YT45533K</p>\n    </div>",
+    "preview": "You successfully sent $120.00 to Acme Hosting.",
+    "timestamp": "2025-01-12T14:48:23.027000+00:00",
+    "timeDisplay": "Jan 12",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 52,
+    "threadId": "#thread-f:1849236573412378929",
+    "legacyThreadId": "1990a2be9a3fd132",
+    "legacyLastMessageId": "1990a2be9a3fd132",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd132",
+    "from": {
+      "name": "GitLab",
+      "email": "notifications@gitlab.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[GitLab] Merge Request #312 has been approved",
+    "body": "Your merge request #312 \"Refactor user onboarding flow\" has been approved by Jane Smith.\n\nProject: acme/website\nBranch: feature/onboarding-refactor\n\nYou can merge it anytime.",
+    "preview": "Your merge request #312 has been approved by Jane Smith.",
+    "timestamp": "2025-05-01T04:15:42.645000+00:00",
+    "timeDisplay": "May 1",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 53,
+    "threadId": "#thread-f:1849236573412378930",
+    "legacyThreadId": "1990a2be9a3fd133",
+    "legacyLastMessageId": "1990a2be9a3fd133",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd133",
+    "from": {
+      "name": "Asana",
+      "email": "no-reply@asana.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 Task assigned to you: Finalize launch assets",
+    "body": "<div style=\"font-family: Arial; padding: 10px;\">\n      <p><strong>Jane Smith</strong> assigned you a task:</p>\n      <p><strong>“Finalize launch assets”</strong></p>\n      <p>Due: September 10, 2025</p>\n      <p><a href=\"#\">View in Asana</a></p>\n    </div>",
+    "preview": "Jane Smith assigned you a task: Finalize launch assets.",
+    "timestamp": "2023-10-28T21:50:52.532000+00:00",
+    "timeDisplay": "Oct 28",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 54,
+    "threadId": "#thread-f:1849236573412378931",
+    "legacyThreadId": "1990a2be9a3fd134",
+    "legacyLastMessageId": "1990a2be9a3fd134",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd134",
+    "from": {
+      "name": "Spotify",
+      "email": "offers@spotify.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your summer playlist is ready ☀️",
+    "body": "<html>\n      <body style=\"font-family: Helvetica; background: #f5f5f5; padding: 20px;\">\n        <h2 style=\"color:#1DB954;\">Your Summer Playlist</h2>\n        <p>We’ve curated songs based on what you played the most this month.</p>\n        <p><a href=\"#\" style=\"background:#1DB954;color:#fff;padding:10px 15px;text-decoration:none;\">Listen Now</a></p>\n      </body>\n    </html>",
+    "preview": "We’ve curated songs based on what you played the most this month.",
+    "timestamp": "2025-02-26T04:40:20.535000+00:00",
+    "timeDisplay": "Feb 26",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 55,
+    "threadId": "#thread-f:1849236573412378932",
+    "legacyThreadId": "1990a2be9a3fd135",
+    "legacyLastMessageId": "1990a2be9a3fd135",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd135",
+    "from": {
+      "name": "Jane Doe",
+      "email": "jane.doe@gmail.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Dinner plans?",
+    "body": "Hey John,  \nAre you still down for dinner tomorrow at that new Thai place?  \nIf so, 7:30 PM still works for me.  \nLet me know.\n\n— Jane",
+    "preview": "Hey John, are you still down for dinner tomorrow at that new Thai place?",
+    "timestamp": "2024-03-10T22:49:08.320000+00:00",
+    "timeDisplay": "Mar 10",
+    "read": false,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 56,
+    "threadId": "#thread-f:1849236573412378933",
+    "legacyThreadId": "1990a2be9a3fd136",
+    "legacyLastMessageId": "1990a2be9a3fd136",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd136",
+    "from": {
+      "name": "Cloudflare",
+      "email": "alerts@cloudflare.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[Cloudflare] High error rate detected",
+    "body": "Alert: Your domain *api.acme.io* has exceeded the error threshold in the last 10 minutes.\n\nCurrent error rate: 5.3%  \nThreshold: 2.0%  \nTime: 10:45 AM WAT\n\nCheck your dashboard for more details.",
+    "preview": "Alert: Your domain api.acme.io has exceeded the error threshold in the last 10 minutes.",
+    "timestamp": "2024-10-17T22:40:26.772000+00:00",
+    "timeDisplay": "Oct 17",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 57,
+    "threadId": "#thread-f:1849236573412378934",
+    "legacyThreadId": "1990a2be9a3fd137",
+    "legacyLastMessageId": "1990a2be9a3fd137",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd137",
+    "from": {
+      "name": "Dribbble",
+      "email": "team@dribbble.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Inspiration for your next shot 🎨",
+    "body": "<div style=\"font-family: Verdana; padding: 15px;\">\n      <h3>Fresh design inspiration</h3>\n      <p>Check out the latest trending shots from the community.</p>\n      <ul>\n        <li>Modern dashboards</li>\n        <li>Typography experiments</li>\n        <li>UI motion patterns</li>\n      </ul>\n      <a href=\"#\">Explore now</a>\n    </div>",
+    "preview": "Fresh design inspiration — trending shots from the community.",
+    "timestamp": "2025-04-03T08:05:53.194000+00:00",
+    "timeDisplay": "Apr 3",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 58,
+    "threadId": "#thread-f:1849236573412378935",
+    "legacyThreadId": "1990a2be9a3fd138",
+    "legacyLastMessageId": "1990a2be9a3fd138",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd138",
+    "from": {
+      "name": "John Miller",
+      "email": "john.miller@startup.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Follow up on yesterday’s call",
+    "body": "Hey,  \n\nThanks again for the call yesterday. Really liked your take on the product strategy.  \nI’ve attached the notes to our shared folder.  \n\nLet’s sync up early next week to keep the momentum.  \n\nCheers,  \nJohn",
+    "preview": "Thanks again for the call yesterday. Really liked your take on the product strategy.",
+    "timestamp": "2025-06-21T22:12:10.036000+00:00",
+    "timeDisplay": "Jun 21",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 59,
+    "threadId": "#thread-f:1849236573412378936",
+    "legacyThreadId": "1990a2be9a3fd139",
+    "legacyLastMessageId": "1990a2be9a3fd139",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd139",
+    "from": {
+      "name": "Notion AI",
+      "email": "updates@notion.so"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✨ Automate your notes with new AI actions",
+    "body": "<div style=\"font-family: 'Segoe UI'; padding: 20px;\">\n      <p>Notion AI can now summarize, format, and rewrite your content in seconds.</p>\n      <p>Try it in any page by typing <code>/ai</code> and selecting an action.</p>\n    </div>",
+    "preview": "Notion AI can now summarize, format, and rewrite your content in seconds.",
+    "timestamp": "2024-11-23T07:19:04.989000+00:00",
+    "timeDisplay": "Nov 23",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 60,
+    "threadId": "#thread-f:1849236573412378937",
+    "legacyThreadId": "1990a2be9a3fd140",
+    "legacyLastMessageId": "1990a2be9a3fd140",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd140",
+    "from": {
+      "name": "Trello",
+      "email": "no-reply@trello.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🧭 Weekly digest: 3 cards due soon",
+    "body": "<div style=\"font-family: Arial; padding: 15px;\">\n      <h4>Your upcoming Trello deadlines</h4>\n      <ul>\n        <li>Update landing page copy (due Sep 7)</li>\n        <li>QA for sprint 12 (due Sep 8)</li>\n        <li>Design review (due Sep 10)</li>\n      </ul>\n    </div>",
+    "preview": "3 Trello cards are due soon — check your weekly digest.",
+    "timestamp": "2025-06-05T09:57:19.197000+00:00",
+    "timeDisplay": "Jun 5",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 61,
+    "threadId": "#thread-f:1849236573412378938",
+    "legacyThreadId": "1990a2be9a3fd141",
+    "legacyLastMessageId": "1990a2be9a3fd141",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd141",
+    "from": {
+      "name": "Amazon",
+      "email": "order-update@amazon.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📦 Your package has been shipped",
+    "body": "Hello John,  \n\nYour order #112-6654890-332840 has shipped and will be delivered on Tuesday, September 9.  \n\nTrack your package here: #  \n\nThanks for shopping with us,  \nAmazon",
+    "preview": "Your order 112-6654890-332840 has shipped and will be delivered on Tuesday.",
+    "timestamp": "2022-10-03T13:24:43.926000+00:00",
+    "timeDisplay": "Oct 3",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 62,
+    "threadId": "#thread-f:1849236573412378939",
+    "legacyThreadId": "1990a2be9a3fd142",
+    "legacyLastMessageId": "1990a2be9a3fd142",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd142",
+    "from": {
+      "name": "Linear",
+      "email": "notifications@linear.app"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[Linear] Issue #234 assigned to you",
+    "body": "Issue #234 \"Add support for dark mode\" has been assigned to you by Jane Smith.\n\nPriority: High  \nDue date: Sep 12, 2025",
+    "preview": "Issue #234 'Add support for dark mode' has been assigned to you by Jane Smith.",
+    "timestamp": "2024-10-10T23:49:18.343000+00:00",
+    "timeDisplay": "Oct 11",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 63,
+    "threadId": "#thread-f:1849236573412378940",
+    "legacyThreadId": "1990a2be9a3fd143",
+    "legacyLastMessageId": "1990a2be9a3fd143",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd143",
+    "from": {
+      "name": "Hulu",
+      "email": "deals@hulu.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎬 New releases this weekend",
+    "body": "<div style=\"font-family: Helvetica; padding: 15px;\">\n      <h2>New on Hulu</h2>\n      <p>Watch the latest releases and trending shows.</p>\n      <ul>\n        <li>The Detective’s Case</li>\n        <li>Legends of the Sky</li>\n        <li>Hidden Truth</li>\n      </ul>\n    </div>",
+    "preview": "Watch the latest releases and trending shows this weekend.",
+    "timestamp": "2022-08-05T13:20:28.493000+00:00",
+    "timeDisplay": "Aug 5",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 64,
+    "threadId": "#thread-f:1849236573412378941",
+    "legacyThreadId": "1990a2be9a3fd144",
+    "legacyLastMessageId": "1990a2be9a3fd144",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd144",
+    "from": {
+      "name": "GitHub Actions",
+      "email": "no-reply@github.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✅ Workflow succeeded — deploy-prod",
+    "body": "Workflow “deploy-prod” for repository acme/backend completed successfully.\n\nBranch: main  \nDuration: 1m 43s",
+    "preview": "Workflow “deploy-prod” for repository acme/backend completed successfully.",
+    "timestamp": "2025-03-04T09:52:10.536000+00:00",
+    "timeDisplay": "Mar 4",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 65,
+    "threadId": "#thread-f:1849236573412378942",
+    "legacyThreadId": "1990a2be9a3fd145",
+    "legacyLastMessageId": "1990a2be9a3fd145",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd145",
+    "from": {
+      "name": "Shopify",
+      "email": "no-reply@shopify.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🛍️ Order #4598 confirmed",
+    "body": "Hi John,  \n\nYour order #4598 has been confirmed.  \nEstimated delivery: September 12, 2025.  \n\nThank you for shopping with us.",
+    "preview": "Your order #4598 has been confirmed. Estimated delivery: September 12, 2025.",
+    "timestamp": "2025-08-30T01:30:15.215000+00:00",
+    "timeDisplay": "Aug 30",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 66,
+    "threadId": "#thread-f:1849236573412378943",
+    "legacyThreadId": "1990a2be9a3fd146",
+    "legacyLastMessageId": "1990a2be9a3fd146",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd146",
+    "from": {
+      "name": "Dev.to",
+      "email": "digest@dev.to"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📰 Weekly dev digest — 5 stories to read",
+    "body": "<div style=\"font-family: Arial; padding: 15px;\">\n      <p>Here’s what developers are talking about:</p>\n      <ul>\n        <li>Improving DX with better tooling</li>\n        <li>React server components explained</li>\n        <li>Why performance budgets matter</li>\n      </ul>\n    </div>",
+    "preview": "Here’s what developers are talking about: Improving DX with better tooling...",
+    "timestamp": "2023-02-28T00:43:35.745000+00:00",
+    "timeDisplay": "Feb 28",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 67,
+    "threadId": "#thread-f:1849236573412378944",
+    "legacyThreadId": "1990a2be9a3fd147",
+    "legacyLastMessageId": "1990a2be9a3fd147",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd147",
+    "from": {
+      "name": "Slack",
+      "email": "no-reply@slack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💬 New message from Alex in #product",
+    "body": "Alex Tan:  \n“Hey John, can you review the PR before 3 PM?”",
+    "preview": "Alex Tan: “Hey John, can you review the PR before 3 PM?”",
+    "timestamp": "2023-12-01T03:19:27.399000+00:00",
+    "timeDisplay": "Dec 1",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 68,
+    "threadId": "#thread-f:1849236573412378945",
+    "legacyThreadId": "1990a2be9a3fd148",
+    "legacyLastMessageId": "1990a2be9a3fd148",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd148",
+    "from": {
+      "name": "Calendly",
+      "email": "no-reply@calendly.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📅 Meeting booked: 1:1 with Sarah",
+    "body": "<div style=\"font-family: Arial; padding: 15px;\">\n      <h3>Meeting details</h3>\n      <p>Event: 1:1 with Sarah Wilson</p>\n      <p>Date: September 8, 2025</p>\n      <p>Time: 2:00 PM WAT</p>\n    </div>",
+    "preview": "Meeting booked: 1:1 with Sarah Wilson on September 8 at 2:00 PM.",
+    "timestamp": "2025-10-18T06:14:59.743679+00:00",
+    "timeDisplay": "Nov 1",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 69,
+    "threadId": "#thread-f:1849236573412378946",
+    "legacyThreadId": "1990a2be9a3fd149",
+    "legacyLastMessageId": "1990a2be9a3fd149",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd149",
+    "from": {
+      "name": "Mary Allen",
+      "email": "mary.allen@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Budget proposal",
+    "body": "Hey John,  \n\nI've made some changes to the marketing line items — mainly reduced the ad spend and increased the testing allocation.  \n\nLet me know what you think,  \nMary",
+    "preview": "I've made some changes to the marketing line items...",
+    "timestamp": "2024-02-24T06:17:12.100000+00:00",
+    "timeDisplay": "Feb 24",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 70,
+    "threadId": "#thread-f:1849236573412378947",
+    "legacyThreadId": "1990a2be9a3fd150",
+    "legacyLastMessageId": "1990a2be9a3fd150",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd150",
+    "from": {
+      "name": "Apple",
+      "email": "no-reply@apple.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🧾 Your receipt from Apple",
+    "body": "Thanks for your purchase on September 6, 2025.  \n\nAmount: $0.99  \nItem: iCloud+ 50 GB Plan",
+    "preview": "Thanks for your purchase on September 6, 2025 — $0.99 for iCloud+ 50 GB Plan.",
+    "timestamp": "2023-05-29T23:10:23.847000+00:00",
+    "timeDisplay": "May 30",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 71,
+    "threadId": "#thread-f:1849236573412378948",
+    "legacyThreadId": "1990a2be9a3fd151",
+    "legacyLastMessageId": "1990a2be9a3fd151",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd151",
+    "from": {
+      "name": "Figma",
+      "email": "no-reply@figma.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 Alex mentioned you in a comment",
+    "body": "Alex Tan left a comment in “Homepage Redesign”:\n\n> “@John I love this direction. Can we tweak the hero section spacing a bit?”",
+    "preview": "Alex Tan mentioned you in a comment: “@John I love this direction...”",
+    "timestamp": "2025-02-08T19:59:36.081000+00:00",
+    "timeDisplay": "Feb 8",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 72,
+    "threadId": "#thread-f:1849236573412378949",
+    "legacyThreadId": "1990a2be9a3fd152",
+    "legacyLastMessageId": "1990a2be9a3fd152",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd152",
+    "from": {
+      "name": "YouTube",
+      "email": "noreply@youtube.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎥 New video from Tech Explained",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Tech Explained just uploaded:</p>\n      <p><strong>“The Future of AI in 5 Minutes”</strong></p>\n      <p><a href=\"#\">Watch now</a></p>\n    </div>",
+    "preview": "Tech Explained just uploaded: The Future of AI in 5 Minutes.",
+    "timestamp": "2024-01-12T23:49:32.276000+00:00",
+    "timeDisplay": "Jan 13",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 73,
+    "threadId": "#thread-f:1849236573412378950",
+    "legacyThreadId": "1990a2be9a3fd153",
+    "legacyLastMessageId": "1990a2be9a3fd153",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd153",
+    "from": {
+      "name": "Monday.com",
+      "email": "updates@monday.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🚀 Your dashboard is ready",
+    "body": "Hi John,  \n\nYour team dashboard has been successfully set up.  \nYou can customize columns, groups, and automations directly from the board.",
+    "preview": "Your team dashboard has been successfully set up.",
+    "timestamp": "2023-11-16T19:33:47.481000+00:00",
+    "timeDisplay": "Nov 16",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 74,
+    "threadId": "#thread-f:1849236573412378951",
+    "legacyThreadId": "1990a2be9a3fd154",
+    "legacyLastMessageId": "1990a2be9a3fd154",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd154",
+    "from": {
+      "name": "Ben Carson",
+      "email": "ben.carson@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Quick question",
+    "body": "Hey,  \n\nDo you have a minute tomorrow to discuss the new onboarding flow? Shouldn’t take long.  \n\nBen",
+    "preview": "Hey, do you have a minute tomorrow to discuss the new onboarding flow?",
+    "timestamp": "2024-06-10T13:47:47.031000+00:00",
+    "timeDisplay": "Jun 10",
+    "read": false,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 75,
+    "threadId": "#thread-f:1849236573412378952",
+    "legacyThreadId": "1990a2be9a3fd155",
+    "legacyLastMessageId": "1990a2be9a3fd155",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd155",
+    "from": {
+      "name": "Airbnb",
+      "email": "info@airbnb.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🧳 Your host sent you a message",
+    "body": "Hi John,  \n\nYour host Carlos wrote:  \n> “Looking forward to hosting you in Madrid! Let me know if you have any special requests.”",
+    "preview": "Your host Carlos wrote: “Looking forward to hosting you in Madrid!”",
+    "timestamp": "2023-12-03T17:20:39.716000+00:00",
+    "timeDisplay": "Dec 3",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 76,
+    "threadId": "#thread-f:1849236573412378953",
+    "legacyThreadId": "1990a2be9a3fd156",
+    "legacyLastMessageId": "1990a2be9a3fd156",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd156",
+    "from": {
+      "name": "Meta Ads",
+      "email": "ads@meta.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "⚡ Your ad campaign has been approved",
+    "body": "Hi John,  \n\nYour campaign “Summer Launch” has been approved and will start running today.",
+    "preview": "Your campaign “Summer Launch” has been approved and will start running today.",
+    "timestamp": "2025-07-06T23:47:08.700000+00:00",
+    "timeDisplay": "Jul 7",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 77,
+    "threadId": "#thread-f:1849236573412378954",
+    "legacyThreadId": "1990a2be9a3fd157",
+    "legacyLastMessageId": "1990a2be9a3fd157",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd157",
+    "from": {
+      "name": "Netflix",
+      "email": "info@mailer.netflix.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🍿 Watch the new thriller everyone's talking about",
+    "body": "<div style=\"font-family: Arial;\">\n      <h3>Now streaming: The Last Signal</h3>\n      <p>Critics are calling it the most intense thriller of the year.</p>\n    </div>",
+    "preview": "Now streaming: The Last Signal — critics are calling it the most intense thriller of the year.",
+    "timestamp": "2025-05-16T12:16:09.985000+00:00",
+    "timeDisplay": "May 16",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 78,
+    "threadId": "#thread-f:1849236573412378955",
+    "legacyThreadId": "1990a2be9a3fd158",
+    "legacyLastMessageId": "1990a2be9a3fd158",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd158",
+    "from": {
+      "name": "Zoom",
+      "email": "no-reply@zoom.us"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 Reminder: All-hands meeting tomorrow",
+    "body": "All-hands Meeting  \nDate: Sep 7, 2025  \nTime: 10:00 AM WAT",
+    "preview": "All-hands meeting reminder for Sep 7, 10:00 AM WAT.",
+    "timestamp": "2025-05-04T06:37:04.978000+00:00",
+    "timeDisplay": "May 4",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 79,
+    "threadId": "#thread-f:1849236573412378956",
+    "legacyThreadId": "1990a2be9a3fd159",
+    "legacyLastMessageId": "1990a2be9a3fd159",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd159",
+    "from": {
+      "name": "OpenAI",
+      "email": "updates@openai.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✨ New features in GPT-5",
+    "body": "<div style=\"font-family: 'Segoe UI'; padding: 10px;\">\n      <h2>GPT-5 just got better</h2>\n      <p>We’ve added new capabilities to make it easier to build and deploy AI applications.</p>\n    </div>",
+    "preview": "GPT-5 just got better — new capabilities to make building easier.",
+    "timestamp": "2024-07-16T20:14:42.556000+00:00",
+    "timeDisplay": "Jul 16",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 80,
+    "threadId": "#thread-f:1849236573412378957",
+    "legacyThreadId": "1990a2be9a3fd160",
+    "legacyLastMessageId": "1990a2be9a3fd160",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd160",
+    "from": {
+      "name": "Quora Digest",
+      "email": "digest-noreply@quora.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "❓ Top answers for you today",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>See what’s trending today on Quora:</p>\n      <ul>\n        <li>“What happens if AI surpasses human intelligence?”</li>\n        <li>“Best habits for deep work”</li>\n      </ul>\n    </div>",
+    "preview": "See what’s trending today on Quora: What happens if AI surpasses human intelligence?",
+    "timestamp": "2025-02-17T20:19:25.085000+00:00",
+    "timeDisplay": "Feb 17",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 81,
+    "threadId": "#thread-f:1849236573412378958",
+    "legacyThreadId": "1990a2be9a3fd161",
+    "legacyLastMessageId": "1990a2be9a3fd161",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd161",
+    "from": {
+      "name": "Dropbox",
+      "email": "no-reply@dropbox.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📁 Shared folder: Marketing assets",
+    "body": "Jane Smith has shared the folder “Marketing assets” with you.  \n\nAccess it here: #",
+    "preview": "Jane Smith has shared the folder “Marketing assets” with you.",
+    "timestamp": "2022-03-27T15:14:48.981000+00:00",
+    "timeDisplay": "Mar 27",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 82,
+    "threadId": "#thread-f:1849236573412378959",
+    "legacyThreadId": "1990a2be9a3fd162",
+    "legacyLastMessageId": "1990a2be9a3fd162",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd162",
+    "from": {
+      "name": "Notion",
+      "email": "team@notion.so"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📢 New update: More flexible databases",
+    "body": "<div style=\"font-family: Arial; padding: 15px;\">\n      <h3>What’s new in Notion</h3>\n      <p>You can now group and sort database views more easily with the new flexible layout.</p>\n      <p><a href=\"#\">Read announcement</a></p>\n    </div>",
+    "preview": "You can now group and sort database views more easily with the new layout.",
+    "timestamp": "2025-10-18T06:14:59.743696+00:00",
+    "timeDisplay": "Dec 19",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 83,
+    "threadId": "#thread-f:1849236573412378960",
+    "legacyThreadId": "1990a2be9a3fd163",
+    "legacyLastMessageId": "1990a2be9a3fd163",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd163",
+    "from": {
+      "name": "Dr. Sarah Lee",
+      "email": "sarah.lee@hospital.org"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Lab results available",
+    "body": "Hello John,\n\nYour lab results are now available in the patient portal.  \nPlease log in to view your test outcomes.\n\n— Dr. Lee",
+    "preview": "Your lab results are now available in the patient portal.",
+    "timestamp": "2022-08-19T08:18:05.710000+00:00",
+    "timeDisplay": "Aug 19",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 84,
+    "threadId": "#thread-f:1849236573412378961",
+    "legacyThreadId": "1990a2be9a3fd164",
+    "legacyLastMessageId": "1990a2be9a3fd164",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd164",
+    "from": {
+      "name": "Twitch",
+      "email": "no-reply@twitch.tv"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎮 Your favourite streamer is live",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>“CodeWithSam” just went live: <strong>Building a 2D game with JavaScript</strong>.</p>\n      <p><a href=\"#\">Watch now</a></p>\n    </div>",
+    "preview": "CodeWithSam just went live: Building a 2D game with JavaScript.",
+    "timestamp": "2023-06-04T19:57:34.999000+00:00",
+    "timeDisplay": "Jun 4",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 85,
+    "threadId": "#thread-f:1849236573412378962",
+    "legacyThreadId": "1990a2be9a3fd165",
+    "legacyLastMessageId": "1990a2be9a3fd165",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd165",
+    "from": {
+      "name": "Bank Alert",
+      "email": "alerts@banksecure.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🚨 Unusual login detected",
+    "body": "Security Alert: A new login was detected on your account from Abuja, Nigeria at 7:12 PM.\n\nIf this wasn’t you, please secure your account immediately.",
+    "preview": "A new login was detected on your account from Abuja, Nigeria at 7:12 PM.",
+    "timestamp": "2023-04-20T05:17:46.644000+00:00",
+    "timeDisplay": "Apr 20",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 86,
+    "threadId": "#thread-f:1849236573412378963",
+    "legacyThreadId": "1990a2be9a3fd166",
+    "legacyLastMessageId": "1990a2be9a3fd166",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd166",
+    "from": {
+      "name": "Zendesk",
+      "email": "support@zendesk.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Ticket #84729 has been updated",
+    "body": "Hi John,\n\nYour support ticket has been updated by our team.  \nLog in to your account to review the response.\n\n— Zendesk Support",
+    "preview": "Your support ticket has been updated by our team.",
+    "timestamp": "2023-04-20T06:47:48.569000+00:00",
+    "timeDisplay": "Apr 20",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 87,
+    "threadId": "#thread-f:1849236573412378964",
+    "legacyThreadId": "1990a2be9a3fd167",
+    "legacyLastMessageId": "1990a2be9a3fd167",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd167",
+    "from": {
+      "name": "John Peterson",
+      "email": "john.peterson@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Project timeline feedback",
+    "body": "Hey,  \nI went through your updated timeline — looks solid. The only thing I’d suggest is pulling the QA phase a bit earlier.  \n\nCheers,  \nJohn",
+    "preview": "I went through your updated timeline — looks solid.",
+    "timestamp": "2022-12-18T20:01:53.212000+00:00",
+    "timeDisplay": "Dec 18",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 88,
+    "threadId": "#thread-f:1849236573412378965",
+    "legacyThreadId": "1990a2be9a3fd168",
+    "legacyLastMessageId": "1990a2be9a3fd168",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd168",
+    "from": {
+      "name": "GitLab",
+      "email": "no-reply@gitlab.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📦 Pipeline failed: deploy-main",
+    "body": "The pipeline “deploy-main” for acme/backend failed on step “Build frontend”.",
+    "preview": "The pipeline “deploy-main” for acme/backend failed on step “Build frontend”.",
+    "timestamp": "2023-03-21T12:09:28.343000+00:00",
+    "timeDisplay": "Mar 21",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 89,
+    "threadId": "#thread-f:1849236573412378966",
+    "legacyThreadId": "1990a2be9a3fd169",
+    "legacyLastMessageId": "1990a2be9a3fd169",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd169",
+    "from": {
+      "name": "Nike",
+      "email": "offers@nike.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "👟 End of season sale — up to 40% off",
+    "body": "<div style=\"font-family: Helvetica;\">\n      <p>Don’t miss out on the latest discounts on running and training shoes.</p>\n    </div>",
+    "preview": "Don’t miss out on the latest discounts on running and training shoes.",
+    "timestamp": "2025-01-27T01:32:51.593000+00:00",
+    "timeDisplay": "Jan 27",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 90,
+    "threadId": "#thread-f:1849236573412378967",
+    "legacyThreadId": "1990a2be9a3fd170",
+    "legacyLastMessageId": "1990a2be9a3fd170",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd170",
+    "from": {
+      "name": "Udemy",
+      "email": "offers@udemy.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔥 90% OFF today — learn anything",
+    "body": "<div style=\"font-family: Arial; padding: 10px;\">\n      <h3>Flash Sale</h3>\n      <p>Courses starting at $9.99. This offer ends tonight.</p>\n    </div>",
+    "preview": "Flash Sale — Courses starting at $9.99. This offer ends tonight.",
+    "timestamp": "2023-04-21T03:23:01.024000+00:00",
+    "timeDisplay": "Apr 21",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 91,
+    "threadId": "#thread-f:1849236573412378968",
+    "legacyThreadId": "1990a2be9a3fd171",
+    "legacyLastMessageId": "1990a2be9a3fd171",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd171",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "emily.richards@example.com"
+    ],
+    "subject": "Re: Dinner on Friday",
+    "body": "Yes, Friday works for me. Let’s meet at that Italian place near the park at 7:30 PM.",
+    "preview": "Yes, Friday works for me. Let’s meet at that Italian place near the park at 7:30 PM.",
+    "timestamp": "2025-10-18T06:14:59.743707+00:00",
+    "timeDisplay": "Nov 5",
+    "read": true,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 92,
+    "threadId": "#thread-f:1849236573412378969",
+    "legacyThreadId": "1990a2be9a3fd172",
+    "legacyLastMessageId": "1990a2be9a3fd172",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd172",
+    "from": {
+      "name": "Dropbox",
+      "email": "no-reply@dropbox.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "⚡ 2 GB left in your Dropbox",
+    "body": "Your Dropbox storage is almost full.  \nUpgrade your plan to continue syncing files.",
+    "preview": "Your Dropbox storage is almost full.",
+    "timestamp": "2025-06-30T14:27:32.606000+00:00",
+    "timeDisplay": "Jun 30",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 93,
+    "threadId": "#thread-f:1849236573412378970",
+    "legacyThreadId": "1990a2be9a3fd173",
+    "legacyLastMessageId": "1990a2be9a3fd173",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd173",
+    "from": {
+      "name": "Medium",
+      "email": "updates@medium.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📰 New stories for you",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Here are 3 new stories based on your reading history:</p>\n      <ul>\n        <li>“AI won’t replace you — someone using AI will”</li>\n        <li>“Designing for speed and clarity”</li>\n        <li>“The art of learning faster”</li>\n      </ul>\n    </div>",
+    "preview": "Here are 3 new stories based on your reading history.",
+    "timestamp": "2022-04-24T14:33:34.097000+00:00",
+    "timeDisplay": "Apr 24",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 94,
+    "threadId": "#thread-f:1849236573412378971",
+    "legacyThreadId": "1990a2be9a3fd174",
+    "legacyLastMessageId": "1990a2be9a3fd174",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd174",
+    "from": {
+      "name": "Netflix",
+      "email": "info@mailer.netflix.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔥 Top 10 movies trending today",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Discover the top 10 movies streaming today.</p>\n      <p><a href=\"#\">Browse now</a></p>\n    </div>",
+    "preview": "Discover the top 10 movies streaming today.",
+    "timestamp": "2022-11-29T08:36:03.569000+00:00",
+    "timeDisplay": "Nov 29",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 95,
+    "threadId": "#thread-f:1849236573412378972",
+    "legacyThreadId": "1990a2be9a3fd175",
+    "legacyLastMessageId": "1990a2be9a3fd175",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd175",
+    "from": {
+      "name": "Calendly",
+      "email": "no-reply@calendly.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Meeting reminder — Product Sync",
+    "body": "Reminder: Product Sync  \nDate: Sep 7, 2025  \nTime: 11:00 AM WAT",
+    "preview": "Reminder: Product Sync, Sep 7 at 11:00 AM WAT.",
+    "timestamp": "2023-12-15T07:06:41.444000+00:00",
+    "timeDisplay": "Dec 15",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 96,
+    "threadId": "#thread-f:1849236573412378973",
+    "legacyThreadId": "1990a2be9a3fd176",
+    "legacyLastMessageId": "1990a2be9a3fd176",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd176",
+    "from": {
+      "name": "Clubhouse",
+      "email": "hello@clubhouse.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎤 New talk starting soon: The Future of Tech",
+    "body": "A new talk “The Future of Tech” starts in 15 minutes. Join to listen in.",
+    "preview": "A new talk “The Future of Tech” starts in 15 minutes.",
+    "timestamp": "2024-08-31T02:56:32.481000+00:00",
+    "timeDisplay": "Aug 31",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 97,
+    "threadId": "#thread-f:1849236573412378974",
+    "legacyThreadId": "1990a2be9a3fd177",
+    "legacyLastMessageId": "1990a2be9a3fd177",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd177",
+    "from": {
+      "name": "Jira",
+      "email": "notifications@jira.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[Jira] Ticket #AC-221 moved to 'In Review'",
+    "body": "Ticket #AC-221 “Refactor search API” was moved to In Review by Jane Smith.",
+    "preview": "Ticket #AC-221 “Refactor search API” was moved to In Review by Jane Smith.",
+    "timestamp": "2024-11-30T18:19:49.287000+00:00",
+    "timeDisplay": "Nov 30",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 98,
+    "threadId": "#thread-f:1849236573412378975",
+    "legacyThreadId": "1990a2be9a3fd178",
+    "legacyLastMessageId": "1990a2be9a3fd178",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd178",
+    "from": {
+      "name": "PayPal",
+      "email": "service@paypal.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💵 You received $65.00 from Alex Green",
+    "body": "Hello John,\n\nAlex Green has sent you $65.00 USD.  \nTransaction ID: 4T892KDG212.\n\nThank you for using PayPal.",
+    "preview": "Alex Green has sent you $65.00 USD.",
+    "timestamp": "2024-02-02T01:40:19.263000+00:00",
+    "timeDisplay": "Feb 2",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 99,
+    "threadId": "#thread-f:1849236573412378976",
+    "legacyThreadId": "1990a2be9a3fd179",
+    "legacyLastMessageId": "1990a2be9a3fd179",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd179",
+    "from": {
+      "name": "Spotify",
+      "email": "news@spotify.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your weekly mix is here 🎧",
+    "body": "<div style=\"font-family: Helvetica;\">\n      <p>Discover songs picked just for you.</p>\n      <p><a href=\"#\">Listen now</a></p>\n    </div>",
+    "preview": "Discover songs picked just for you.",
+    "timestamp": "2022-05-06T18:06:12.983000+00:00",
+    "timeDisplay": "May 6",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 100,
+    "threadId": "#thread-f:1849236573412378977",
+    "legacyThreadId": "1990a2be9a3fd180",
+    "legacyLastMessageId": "1990a2be9a3fd180",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd180",
+    "from": {
+      "name": "Zoom",
+      "email": "no-reply@zoom.us"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 Reminder: Design Review tomorrow",
+    "body": "Design Review  \nDate: Sep 7, 2025  \nTime: 2:30 PM WAT",
+    "preview": "Reminder: Design Review tomorrow at 2:30 PM WAT.",
+    "timestamp": "2024-07-15T06:16:24.840000+00:00",
+    "timeDisplay": "Jul 15",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 101,
+    "threadId": "#thread-f:1849236573412378978",
+    "legacyThreadId": "1990a2be9a3fd181",
+    "legacyLastMessageId": "1990a2be9a3fd181",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd181",
+    "from": {
+      "name": "Dribbble",
+      "email": "team@dribbble.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎨 Trending shots this week",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Check out the latest design inspiration trending on Dribbble this week.</p>\n    </div>",
+    "preview": "Check out the latest design inspiration trending on Dribbble this week.",
+    "timestamp": "2025-04-29T11:42:29.734000+00:00",
+    "timeDisplay": "Apr 29",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 102,
+    "threadId": "#thread-f:1849236573412378979",
+    "legacyThreadId": "1990a2be9a3fd182",
+    "legacyLastMessageId": "1990a2be9a3fd182",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd182",
+    "from": {
+      "name": "Jira",
+      "email": "notifications@jira.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[Jira] Sprint Planning Meeting Notes Attached",
+    "body": "Hi John,  \nThe notes from this morning's sprint planning have been added to the board. Check the “Sprint Docs” column.",
+    "preview": "The notes from this morning's sprint planning have been added to the board.",
+    "timestamp": "2025-10-18T06:14:59.743721+00:00",
+    "timeDisplay": "Nov 26",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 103,
+    "threadId": "#thread-f:1849236573412378980",
+    "legacyThreadId": "1990a2be9a3fd183",
+    "legacyLastMessageId": "1990a2be9a3fd183",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd183",
+    "from": {
+      "name": "Shopify",
+      "email": "no-reply@shopify.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🧾 Your invoice for Order #9918",
+    "body": "Hello John,  \nWe’ve processed your order #9918. The invoice is now available in your account dashboard.",
+    "preview": "We’ve processed your order #9918. The invoice is now available.",
+    "timestamp": "2024-05-17T10:56:24.869000+00:00",
+    "timeDisplay": "May 17",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 104,
+    "threadId": "#thread-f:1849236573412378981",
+    "legacyThreadId": "1990a2be9a3fd184",
+    "legacyLastMessageId": "1990a2be9a3fd184",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd184",
+    "from": {
+      "name": "LinkedIn",
+      "email": "notifications@linkedin.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 4 new people viewed your profile",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Your profile is getting attention! See who viewed it this week.</p>\n      <a href=\"#\">View profile insights</a>\n    </div>",
+    "preview": "Your profile is getting attention! See who viewed it this week.",
+    "timestamp": "2025-08-14T11:58:11.120000+00:00",
+    "timeDisplay": "Aug 14",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 105,
+    "threadId": "#thread-f:1849236573412378982",
+    "legacyThreadId": "1990a2be9a3fd185",
+    "legacyLastMessageId": "1990a2be9a3fd185",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd185",
+    "from": {
+      "name": "Figma",
+      "email": "no-reply@figma.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎨 New comment on your design file",
+    "body": "Alex Tan commented on “Checkout Redesign”:\n> “This looks great! Can we soften the shadow a little?”",
+    "preview": "Alex Tan commented on “Checkout Redesign”: “This looks great!...”",
+    "timestamp": "2023-02-09T16:57:40.945000+00:00",
+    "timeDisplay": "Feb 9",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 106,
+    "threadId": "#thread-f:1849236573412378983",
+    "legacyThreadId": "1990a2be9a3fd186",
+    "legacyLastMessageId": "1990a2be9a3fd186",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd186",
+    "from": {
+      "name": "Netflix",
+      "email": "info@mailer.netflix.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🍿 What’s trending today on Netflix",
+    "body": "<div style=\"font-family: Helvetica;\">\n      <p>See the latest top 10 TV shows and movies streaming today.</p>\n      <a href=\"#\">Browse now</a>\n    </div>",
+    "preview": "See the latest top 10 TV shows and movies streaming today.",
+    "timestamp": "2025-10-18T06:14:59.743725+00:00",
+    "timeDisplay": "Oct 24",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 107,
+    "threadId": "#thread-f:1849236573412378984",
+    "legacyThreadId": "1990a2be9a3fd187",
+    "legacyLastMessageId": "1990a2be9a3fd187",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd187",
+    "from": {
+      "name": "DHL Express",
+      "email": "tracking@dhl.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📦 Your package is out for delivery",
+    "body": "Hello John,  \nYour shipment #DHL-90334212 is out for delivery today.",
+    "preview": "Your shipment #DHL-90334212 is out for delivery today.",
+    "timestamp": "2022-12-01T08:32:52.987000+00:00",
+    "timeDisplay": "Dec 1",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 108,
+    "threadId": "#thread-f:1849236573412378985",
+    "legacyThreadId": "1990a2be9a3fd188",
+    "legacyLastMessageId": "1990a2be9a3fd188",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd188",
+    "from": {
+      "name": "GitHub",
+      "email": "no-reply@github.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✅ Pull Request #454 merged successfully",
+    "body": "Pull Request #454 “Improve caching logic” has been merged into main.",
+    "preview": "Pull Request #454 “Improve caching logic” has been merged into main.",
+    "timestamp": "2025-02-19T05:59:01.688000+00:00",
+    "timeDisplay": "Feb 19",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 109,
+    "threadId": "#thread-f:1849236573412378986",
+    "legacyThreadId": "1990a2be9a3fd189",
+    "legacyLastMessageId": "1990a2be9a3fd189",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd189",
+    "from": {
+      "name": "Twitter",
+      "email": "notify@x.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔥 Trending now: #MondayMotivation",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Here are some of today’s trending conversations.</p>\n    </div>",
+    "preview": "Here are some of today’s trending conversations.",
+    "timestamp": "2022-04-02T15:03:13.610000+00:00",
+    "timeDisplay": "Apr 2",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 110,
+    "threadId": "#thread-f:1849236573412378987",
+    "legacyThreadId": "1990a2be9a3fd190",
+    "legacyLastMessageId": "1990a2be9a3fd190",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd190",
+    "from": {
+      "name": "Zoom",
+      "email": "no-reply@zoom.us"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📅 Meeting reminder — Product Demo",
+    "body": "Reminder: Product Demo scheduled for today  \nTime: 11:00 AM WAT.",
+    "preview": "Product Demo scheduled for today at 11:00 AM WAT.",
+    "timestamp": "2025-10-18T06:14:59.743730+00:00",
+    "timeDisplay": "Nov 5",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 111,
+    "threadId": "#thread-f:1849236573412378988",
+    "legacyThreadId": "1990a2be9a3fd191",
+    "legacyLastMessageId": "1990a2be9a3fd191",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd191",
+    "from": {
+      "name": "Meta Ads",
+      "email": "ads@meta.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "⚡ Campaign completed: Summer Launch",
+    "body": "Your campaign “Summer Launch” has ended. Check performance metrics in your dashboard.",
+    "preview": "Your campaign “Summer Launch” has ended.",
+    "timestamp": "2022-09-19T07:01:19.205000+00:00",
+    "timeDisplay": "Sep 19",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 112,
+    "threadId": "#thread-f:1849236573412378989",
+    "legacyThreadId": "1990a2be9a3fd192",
+    "legacyLastMessageId": "1990a2be9a3fd192",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd192",
+    "from": {
+      "name": "YouTube",
+      "email": "noreply@youtube.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎥 New video from Coding Academy",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Coding Academy just uploaded “Build a full-stack app in 20 minutes”.</p>\n    </div>",
+    "preview": "Coding Academy just uploaded “Build a full-stack app in 20 minutes”.",
+    "timestamp": "2022-08-26T21:41:47.229000+00:00",
+    "timeDisplay": "Aug 26",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 113,
+    "threadId": "#thread-f:1849236573412378990",
+    "legacyThreadId": "1990a2be9a3fd193",
+    "legacyLastMessageId": "1990a2be9a3fd193",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd193",
+    "from": {
+      "name": "Emma Johnson",
+      "email": "emma.johnson@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Coffee later today?",
+    "body": "Hey John,  \nAre you free for a quick coffee at the café near the office around 4 PM?",
+    "preview": "Are you free for a quick coffee at the café near the office around 4 PM?",
+    "timestamp": "2025-08-14T06:32:27.810000+00:00",
+    "timeDisplay": "Aug 14",
+    "read": false,
+    "starred": true,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 114,
+    "threadId": "#thread-f:1849236573412378991",
+    "legacyThreadId": "1990a2be9a3fd194",
+    "legacyLastMessageId": "1990a2be9a3fd194",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd194",
+    "from": {
+      "name": "Calendly",
+      "email": "no-reply@calendly.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📅 1:1 with Sarah scheduled",
+    "body": "Event: 1:1 with Sarah Wilson  \nDate: Sep 9, 2025  \nTime: 2:00 PM WAT",
+    "preview": "1:1 with Sarah Wilson scheduled for Sep 9, 2025.",
+    "timestamp": "2022-10-01T01:15:21.759000+00:00",
+    "timeDisplay": "Oct 1",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 115,
+    "threadId": "#thread-f:1849236573412378992",
+    "legacyThreadId": "1990a2be9a3fd195",
+    "legacyLastMessageId": "1990a2be9a3fd195",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd195",
+    "from": {
+      "name": "Slack",
+      "email": "no-reply@slack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💬 You were mentioned in #design",
+    "body": "Alex mentioned you in #design:  \n“@John can you review the wireframe today?”",
+    "preview": "Alex mentioned you in #design: “@John can you review the wireframe today?”",
+    "timestamp": "2024-06-02T05:55:19.747000+00:00",
+    "timeDisplay": "Jun 2",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 116,
+    "threadId": "#thread-f:1849236573412378993",
+    "legacyThreadId": "1990a2be9a3fd196",
+    "legacyLastMessageId": "1990a2be9a3fd196",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd196",
+    "from": {
+      "name": "Zoom",
+      "email": "no-reply@zoom.us"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 All-hands meeting starts in 15 mins",
+    "body": "All-hands meeting  \nTime: 12:00 PM WAT.",
+    "preview": "All-hands meeting starts in 15 mins.",
+    "timestamp": "2023-10-05T02:06:05.379000+00:00",
+    "timeDisplay": "Oct 5",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 117,
+    "threadId": "#thread-f:1849236573412378994",
+    "legacyThreadId": "1990a2be9a3fd197",
+    "legacyLastMessageId": "1990a2be9a3fd197",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd197",
+    "from": {
+      "name": "TechCrunch",
+      "email": "newsletter@techcrunch.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📰 Morning Brief — Tech roundup",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Top stories this morning:</p>\n      <ul>\n        <li>AI chips are reshaping the industry</li>\n        <li>Startups to watch in 2025</li>\n        <li>Cloud wars continue to heat up</li>\n      </ul>\n    </div>",
+    "preview": "Top stories this morning: AI chips reshaping the industry...",
+    "timestamp": "2023-03-23T05:21:16.099000+00:00",
+    "timeDisplay": "Mar 23",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 118,
+    "threadId": "#thread-f:1849236573412378995",
+    "legacyThreadId": "1990a2be9a3fd198",
+    "legacyLastMessageId": "1990a2be9a3fd198",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd198",
+    "from": {
+      "name": "GitLab",
+      "email": "no-reply@gitlab.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🚨 Pipeline failed: hotfix/login-bug",
+    "body": "Pipeline “hotfix/login-bug” failed on step “Run tests”.",
+    "preview": "Pipeline “hotfix/login-bug” failed on step “Run tests”.",
+    "timestamp": "2023-09-12T15:36:49.594000+00:00",
+    "timeDisplay": "Sep 12",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 119,
+    "threadId": "#thread-f:1849236573412378996",
+    "legacyThreadId": "1990a2be9a3fd199",
+    "legacyLastMessageId": "1990a2be9a3fd199",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd199",
+    "from": {
+      "name": "PayPal",
+      "email": "service@paypal.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💰 Payment received from Laura Kim",
+    "body": "You’ve received $120.00 from Laura Kim.  \nTransaction ID: 1HB839DL221.",
+    "preview": "You’ve received $120.00 from Laura Kim.",
+    "timestamp": "2023-07-25T19:45:48.323000+00:00",
+    "timeDisplay": "Jul 25",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 120,
+    "threadId": "#thread-f:1849236573412378997",
+    "legacyThreadId": "1990a2be9a3fd200",
+    "legacyLastMessageId": "1990a2be9a3fd200",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd200",
+    "from": {
+      "name": "Medium",
+      "email": "updates@medium.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✍️ 5 articles tailored for you",
+    "body": "<div style=\"font-family: Arial;\">\n      <ul>\n        <li>“Why some engineers build faster than others”</li>\n        <li>“How to stay productive as a remote worker”</li>\n      </ul>\n    </div>",
+    "preview": "5 articles tailored for you.",
+    "timestamp": "2023-06-09T01:01:24.792000+00:00",
+    "timeDisplay": "Jun 9",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 121,
+    "threadId": "#thread-f:1849236573412378998",
+    "legacyThreadId": "1990a2be9a3fd201",
+    "legacyLastMessageId": "1990a2be9a3fd201",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd201",
+    "from": {
+      "name": "Coursera",
+      "email": "learn@coursera.org"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎓 Recommended courses based on your interest",
+    "body": "<div style=\"font-family: Helvetica;\">\n      <p>Learn skills that matter to you:</p>\n      <ul>\n        <li>Machine Learning Specialization</li>\n        <li>UI/UX Design Essentials</li>\n        <li>Python for Everybody</li>\n      </ul>\n    </div>",
+    "preview": "Learn skills that matter to you: Machine Learning, UI/UX, Python...",
+    "timestamp": "2022-01-11T02:44:33.992000+00:00",
+    "timeDisplay": "Jan 11",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 122,
+    "threadId": "#thread-f:1849236573412378999",
+    "legacyThreadId": "1990a2be9a3fd202",
+    "legacyLastMessageId": "1990a2be9a3fd202",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd202",
+    "from": {
+      "name": "Sarah Wilson",
+      "email": "sarah.wilson@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "UX feedback for the dashboard revamp",
+    "body": "Hey John,  \nI went through the prototype this morning — overall it looks clean. I’ll leave some specific comments on the buttons and card spacing.",
+    "preview": "I went through the prototype this morning — overall it looks clean.",
+    "timestamp": "2023-08-13T12:14:58.022000+00:00",
+    "timeDisplay": "Aug 13",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 123,
+    "threadId": "#thread-f:1849236573412378999",
+    "legacyThreadId": "1990a2be9a3fd202",
+    "legacyLastMessageId": "1990a2be9a3fd203",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd203",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "sarah.wilson@company.com"
+    ],
+    "subject": "Re: UX feedback for the dashboard revamp",
+    "body": "Thanks, Sarah. I’ll review your notes and push an updated build by tomorrow morning.",
+    "preview": "Thanks, Sarah. I’ll review your notes and push an updated build.",
+    "timestamp": "2023-01-01T03:49:45.657000+00:00",
+    "timeDisplay": "Jan 1",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 124,
+    "threadId": "#thread-f:1849236573412378999",
+    "legacyThreadId": "1990a2be9a3fd202",
+    "legacyLastMessageId": "1990a2be9a3fd204",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd204",
+    "from": {
+      "name": "Sarah Wilson",
+      "email": "sarah.wilson@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: UX feedback for the dashboard revamp",
+    "body": "Perfect. Also, consider slightly increasing the header font size for better visual balance.",
+    "preview": "Also, consider slightly increasing the header font size...",
+    "timestamp": "2024-07-09T13:04:41.911000+00:00",
+    "timeDisplay": "Jul 9",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 125,
+    "threadId": "#thread-f:1849236573412379000",
+    "legacyThreadId": "1990a2be9a3fd205",
+    "legacyLastMessageId": "1990a2be9a3fd205",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd205",
+    "from": {
+      "name": "Ben Carson",
+      "email": "ben.carson@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Weekend plans?",
+    "body": "Hey man,  \nAre you free for a quick hangout this Saturday? Maybe lunch and a game.",
+    "preview": "Are you free for a quick hangout this Saturday?",
+    "timestamp": "2022-03-03T23:09:06.794000+00:00",
+    "timeDisplay": "Mar 4",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 126,
+    "threadId": "#thread-f:1849236573412379000",
+    "legacyThreadId": "1990a2be9a3fd205",
+    "legacyLastMessageId": "1990a2be9a3fd206",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd206",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "ben.carson@example.com"
+    ],
+    "subject": "Re: Weekend plans?",
+    "body": "Haha sounds great! Saturday afternoon works for me. Let’s pick a place.",
+    "preview": "Haha sounds great! Saturday afternoon works for me.",
+    "timestamp": "2022-05-26T15:11:33.284000+00:00",
+    "timeDisplay": "May 26",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 127,
+    "threadId": "#thread-f:1849236573412379001",
+    "legacyThreadId": "1990a2be9a3fd207",
+    "legacyLastMessageId": "1990a2be9a3fd207",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd207",
+    "from": {
+      "name": "Bank Alert",
+      "email": "alerts@banksecure.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "⚠️ Login attempt detected",
+    "body": "A login attempt was detected from a new device in Abuja, Nigeria.",
+    "preview": "A login attempt was detected from a new device in Abuja.",
+    "timestamp": "2024-08-18T03:25:05.044000+00:00",
+    "timeDisplay": "Aug 18",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 128,
+    "threadId": "#thread-f:1849236573412379001",
+    "legacyThreadId": "1990a2be9a3fd207",
+    "legacyLastMessageId": "1990a2be9a3fd208",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd208",
+    "from": {
+      "name": "Bank Alert",
+      "email": "alerts@banksecure.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "✅ Login verified",
+    "body": "We’ve confirmed the device is trusted. No further action needed.",
+    "preview": "We’ve confirmed the device is trusted. No further action needed.",
+    "timestamp": "2023-09-06T08:32:50.054000+00:00",
+    "timeDisplay": "Sep 6",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 129,
+    "threadId": "#thread-f:1849236573412379002",
+    "legacyThreadId": "1990a2be9a3fd209",
+    "legacyLastMessageId": "1990a2be9a3fd209",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd209",
+    "from": {
+      "name": "Client Services",
+      "email": "support@clientco.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Follow-up: Project invoice approval",
+    "body": "Hi John,  \nHave you had a chance to review the updated invoice? We’d love to close this out this week.",
+    "preview": "Have you had a chance to review the updated invoice?",
+    "timestamp": "2022-10-02T10:22:35.444000+00:00",
+    "timeDisplay": "Oct 2",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 130,
+    "threadId": "#thread-f:1849236573412379002",
+    "legacyThreadId": "1990a2be9a3fd209",
+    "legacyLastMessageId": "1990a2be9a3fd210",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd210",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "support@clientco.com"
+    ],
+    "subject": "Re: Follow-up: Project invoice approval",
+    "body": "Yes, I reviewed it this morning. Expect a final sign-off by end of day.",
+    "preview": "Yes, I reviewed it this morning. Expect a final sign-off...",
+    "timestamp": "2024-02-16T03:45:16.006000+00:00",
+    "timeDisplay": "Feb 16",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 131,
+    "threadId": "#thread-f:1849236573412379003",
+    "legacyThreadId": "1990a2be9a3fd211",
+    "legacyLastMessageId": "1990a2be9a3fd211",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd211",
+    "from": {
+      "name": "TechCrunch",
+      "email": "newsletter@techcrunch.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📰 Morning Brief — Tech roundup",
+    "body": "- AI funding hits record highs  \n- Google announces new AI assistant  \n- Open source adoption grows",
+    "preview": "AI funding hits record highs. Google announces new AI assistant...",
+    "timestamp": "2025-10-18T06:14:59.743756+00:00",
+    "timeDisplay": "Dec 21",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 132,
+    "threadId": "#thread-f:1849236573412379003",
+    "legacyThreadId": "1990a2be9a3fd211",
+    "legacyLastMessageId": "1990a2be9a3fd212",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd212",
+    "from": {
+      "name": "TechCrunch",
+      "email": "newsletter@techcrunch.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📰 Evening Brief — Tech roundup",
+    "body": "- Cloud computing stocks surge  \n- SpaceX schedules next launch  \n- Startups to watch this fall",
+    "preview": "Cloud computing stocks surge. SpaceX schedules next launch...",
+    "timestamp": "2024-06-17T16:28:48.303000+00:00",
+    "timeDisplay": "Jun 17",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 133,
+    "threadId": "#thread-f:1849236573412379004",
+    "legacyThreadId": "1990a2be9a3fd213",
+    "legacyLastMessageId": "1990a2be9a3fd213",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd213",
+    "from": {
+      "name": "Alex Tan",
+      "email": "alex.tan@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Quick team sync",
+    "body": "Hey,  \nJust a heads up — we might shift tomorrow’s sync to 4 PM.",
+    "preview": "Hey, just a heads up — we might shift tomorrow’s sync to 4 PM.",
+    "timestamp": "2023-11-14T16:12:33.616000+00:00",
+    "timeDisplay": "Nov 14",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 134,
+    "threadId": "#thread-f:1849236573412379004",
+    "legacyThreadId": "1990a2be9a3fd213",
+    "legacyLastMessageId": "1990a2be9a3fd214",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd214",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "alex.tan@company.com"
+    ],
+    "subject": "Re: Quick team sync",
+    "body": "Got it — 4 PM works fine for me.",
+    "preview": "Got it — 4 PM works fine for me.",
+    "timestamp": "2025-10-18T06:14:59.743760+00:00",
+    "timeDisplay": "Nov 12",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 135,
+    "threadId": "#thread-f:1849236573412379005",
+    "legacyThreadId": "1990a2be9a3fd215",
+    "legacyLastMessageId": "1990a2be9a3fd215",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd215",
+    "from": {
+      "name": "Spotify",
+      "email": "news@spotify.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎧 Your daily mix is ready",
+    "body": "Discover songs picked just for you.",
+    "preview": "Discover songs picked just for you.",
+    "timestamp": "2023-02-17T13:14:31.274000+00:00",
+    "timeDisplay": "Feb 17",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 136,
+    "threadId": "#thread-f:1849236573412379006",
+    "legacyThreadId": "1990a2be9a3fd216",
+    "legacyLastMessageId": "1990a2be9a3fd216",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd216",
+    "from": {
+      "name": "Stripe",
+      "email": "no-reply@stripe.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💵 Payment processed — Invoice #8893",
+    "body": "We’ve successfully processed payment of $84.00 for invoice #8893.",
+    "preview": "We’ve successfully processed payment of $84.00 for invoice #8893.",
+    "timestamp": "2024-02-01T06:38:37.933000+00:00",
+    "timeDisplay": "Feb 1",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 137,
+    "threadId": "#thread-f:1849236573412379007",
+    "legacyThreadId": "1990a2be9a3fd217",
+    "legacyLastMessageId": "1990a2be9a3fd217",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd217",
+    "from": {
+      "name": "Udemy",
+      "email": "offers@udemy.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔥 Top 5 courses to learn AI",
+    "body": "<div style=\"font-family: Arial;\">\n      <p>Master AI with these top-rated courses — starting at $9.99.</p>\n    </div>",
+    "preview": "Master AI with these top-rated courses — starting at $9.99.",
+    "timestamp": "2023-07-26T04:12:24.970000+00:00",
+    "timeDisplay": "Jul 26",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 138,
+    "threadId": "#thread-f:1849236573412379008",
+    "legacyThreadId": "1990a2be9a3fd218",
+    "legacyLastMessageId": "1990a2be9a3fd218",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd218",
+    "from": {
+      "name": "GitLab",
+      "email": "no-reply@gitlab.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🚨 Pipeline failed: build-main",
+    "body": "Pipeline “build-main” failed on step “Install dependencies”.",
+    "preview": "Pipeline “build-main” failed on step “Install dependencies”.",
+    "timestamp": "2022-10-27T18:12:50.888000+00:00",
+    "timeDisplay": "Oct 27",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 139,
+    "threadId": "#thread-f:1849236573412379009",
+    "legacyThreadId": "1990a2be9a3fd219",
+    "legacyLastMessageId": "1990a2be9a3fd219",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd219",
+    "from": {
+      "name": "Dropbox",
+      "email": "no-reply@dropbox.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📁 Shared folder: Design Assets",
+    "body": "Jane Doe has shared the folder “Design Assets” with you.  \nAccess link: #",
+    "preview": "Jane Doe has shared the folder “Design Assets” with you.",
+    "timestamp": "2024-03-08T10:22:15.011000+00:00",
+    "timeDisplay": "Mar 8",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 140,
+    "threadId": "#thread-f:1849236573412379010",
+    "legacyThreadId": "1990a2be9a3fd220",
+    "legacyLastMessageId": "1990a2be9a3fd220",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd220",
+    "from": {
+      "name": "Twitch",
+      "email": "no-reply@twitch.tv"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎮 Stream starting soon",
+    "body": "<div style=\"font-family: Helvetica;\">\n      <p>CodeWithSam is going live in 10 minutes: <strong>“JS Game Dev Workshop”</strong>.</p>\n    </div>",
+    "preview": "CodeWithSam is going live in 10 minutes: JS Game Dev Workshop.",
+    "timestamp": "2024-04-30T14:53:30.843000+00:00",
+    "timeDisplay": "Apr 30",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 141,
+    "threadId": "#thread-f:1849236573412379011",
+    "legacyThreadId": "1990a2be9a3fd221",
+    "legacyLastMessageId": "1990a2be9a3fd221",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd221",
+    "from": {
+      "name": "Apple",
+      "email": "no-reply@apple.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🧾 Your receipt from Apple",
+    "body": "Thanks for your purchase on September 7, 2025.  \n        Amount: $2.99  \n        Item: iCloud+ Storage",
+    "preview": "Thanks for your purchase on September 7, 2025 — $2.99 for iCloud+.",
+    "timestamp": "2025-09-14T01:42:56.201000+00:00",
+    "timeDisplay": "Sep 14",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 142,
+    "threadId": "#thread-f:1849236573412379012",
+    "legacyThreadId": "1990a2be9a3fd222",
+    "legacyLastMessageId": "1990a2be9a3fd222",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd222",
+    "from": {
+      "name": "Maria Gomez",
+      "email": "maria.gomez@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🚀 Launch coordination for new dashboard",
+    "body": "Hi team,  \nWe’re targeting Thursday for the rollout. Can we lock down all outstanding tickets by tomorrow noon?",
+    "preview": "We’re targeting Thursday for the rollout. Can we lock down tickets by tomorrow?",
+    "timestamp": "2023-12-10T19:37:00.763000+00:00",
+    "timeDisplay": "Dec 10",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 143,
+    "threadId": "#thread-f:1849236573412379012",
+    "legacyThreadId": "1990a2be9a3fd222",
+    "legacyLastMessageId": "1990a2be9a3fd223",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd223",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "maria.gomez@company.com"
+    ],
+    "subject": "Re: Launch coordination for new dashboard",
+    "body": "Got it. I’ll close the pending pull requests and run a final check on staging.",
+    "preview": "Got it. I’ll close the pending pull requests and run a final check.",
+    "timestamp": "2022-12-13T12:50:26.796000+00:00",
+    "timeDisplay": "Dec 13",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 144,
+    "threadId": "#thread-f:1849236573412379012",
+    "legacyThreadId": "1990a2be9a3fd222",
+    "legacyLastMessageId": "1990a2be9a3fd224",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd224",
+    "from": {
+      "name": "Alex Tan",
+      "email": "alex.tan@company.com"
+    },
+    "to": [
+      "john.doe@example.com",
+      "maria.gomez@company.com"
+    ],
+    "subject": "Re: Launch coordination for new dashboard",
+    "body": "I’ll handle the analytics configuration today and push the final env variables by 6 PM.",
+    "preview": "I’ll handle the analytics configuration today and push the final env...",
+    "timestamp": "2022-08-30T17:13:36.824000+00:00",
+    "timeDisplay": "Aug 30",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 145,
+    "threadId": "#thread-f:1849236573412379012",
+    "legacyThreadId": "1990a2be9a3fd222",
+    "legacyLastMessageId": "1990a2be9a3fd225",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd225",
+    "from": {
+      "name": "Maria Gomez",
+      "email": "maria.gomez@company.com"
+    },
+    "to": [
+      "john.doe@example.com",
+      "alex.tan@company.com"
+    ],
+    "subject": "Re: Launch coordination for new dashboard",
+    "body": "Perfect — thanks, both. Don’t forget to update the deployment checklist once everything is green.",
+    "preview": "Perfect — thanks, both. Don’t forget to update the deployment checklist...",
+    "timestamp": "2023-03-06T18:01:44.466000+00:00",
+    "timeDisplay": "Mar 6",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 146,
+    "threadId": "#thread-f:1849236573412379012",
+    "legacyThreadId": "1990a2be9a3fd222",
+    "legacyLastMessageId": "1990a2be9a3fd226",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd226",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "maria.gomez@company.com",
+      "alex.tan@company.com"
+    ],
+    "subject": "Re: Launch coordination for new dashboard",
+    "body": "Checklist updated ✅. Staging tests are all green. Ready to go.",
+    "preview": "Checklist updated ✅. Staging tests are all green. Ready to go.",
+    "timestamp": "2024-10-02T23:12:34.410000+00:00",
+    "timeDisplay": "Oct 3",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 147,
+    "threadId": "#thread-f:1849236573412379012",
+    "legacyThreadId": "1990a2be9a3fd222",
+    "legacyLastMessageId": "1990a2be9a3fd227",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd227",
+    "from": {
+      "name": "Maria Gomez",
+      "email": "maria.gomez@company.com"
+    },
+    "to": [
+      "john.doe@example.com",
+      "alex.tan@company.com"
+    ],
+    "subject": "Re: Launch coordination for new dashboard",
+    "body": "👏 Amazing. Let’s do a quick pre-launch sync tomorrow at 9 AM.",
+    "preview": "👏 Amazing. Let’s do a quick pre-launch sync tomorrow at 9 AM.",
+    "timestamp": "2022-12-31T06:46:00.658000+00:00",
+    "timeDisplay": "Dec 31",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 148,
+    "threadId": "#thread-f:1849236573412379013",
+    "legacyThreadId": "1990a2be9a3fd228",
+    "legacyLastMessageId": "1990a2be9a3fd228",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd228",
+    "from": {
+      "name": "Acme Support",
+      "email": "support@acme.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your case #48321 has been received",
+    "body": "Hi John,  \nWe’ve received your request regarding login errors. A support engineer will reach out shortly.",
+    "preview": "We’ve received your request regarding login errors.",
+    "timestamp": "2024-07-20T09:00:02.413000+00:00",
+    "timeDisplay": "Jul 20",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 149,
+    "threadId": "#thread-f:1849236573412379013",
+    "legacyThreadId": "1990a2be9a3fd228",
+    "legacyLastMessageId": "1990a2be9a3fd229",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd229",
+    "from": {
+      "name": "Support Engineer Mike",
+      "email": "mike@acme.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Your case #48321 has been received",
+    "body": "Hi John,  \nCan you confirm if you’re receiving any specific error message when attempting to log in?",
+    "preview": "Can you confirm if you’re receiving any specific error message...",
+    "timestamp": "2022-04-24T02:02:16.551000+00:00",
+    "timeDisplay": "Apr 24",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 150,
+    "threadId": "#thread-f:1849236573412379013",
+    "legacyThreadId": "1990a2be9a3fd228",
+    "legacyLastMessageId": "1990a2be9a3fd230",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd230",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "mike@acme.com"
+    ],
+    "subject": "Re: Your case #48321 has been received",
+    "body": "Yeah — it says “Invalid token. Please contact support.” It started after yesterday’s update.",
+    "preview": "Yeah — it says “Invalid token. Please contact support.”",
+    "timestamp": "2023-06-09T01:33:38.529000+00:00",
+    "timeDisplay": "Jun 9",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 151,
+    "threadId": "#thread-f:1849236573412379013",
+    "legacyThreadId": "1990a2be9a3fd228",
+    "legacyLastMessageId": "1990a2be9a3fd231",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd231",
+    "from": {
+      "name": "Support Engineer Mike",
+      "email": "mike@acme.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Your case #48321 has been received",
+    "body": "Thanks for the detail. We identified this as a cache token issue affecting multiple users. I’ve reset your session manually.",
+    "preview": "Thanks for the detail. We identified this as a cache token issue...",
+    "timestamp": "2022-07-01T22:06:09.246000+00:00",
+    "timeDisplay": "Jul 1",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 152,
+    "threadId": "#thread-f:1849236573412379013",
+    "legacyThreadId": "1990a2be9a3fd228",
+    "legacyLastMessageId": "1990a2be9a3fd232",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd232",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "mike@acme.com"
+    ],
+    "subject": "Re: Your case #48321 has been received",
+    "body": "All good now 🙌 I can log in again. Appreciate the quick fix!",
+    "preview": "All good now 🙌 I can log in again.",
+    "timestamp": "2023-06-23T16:42:31.810000+00:00",
+    "timeDisplay": "Jun 23",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 153,
+    "threadId": "#thread-f:1849236573412379014",
+    "legacyThreadId": "1990a2be9a3fd233",
+    "legacyLastMessageId": "1990a2be9a3fd233",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd233",
+    "from": {
+      "name": "David Lee",
+      "email": "david.lee@client.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📄 Proposal feedback",
+    "body": "Hi John,  \nWe reviewed the proposal. It looks solid overall but we’d like to adjust the pricing model slightly.",
+    "preview": "We reviewed the proposal. It looks solid overall but we’d like...",
+    "timestamp": "2023-12-18T06:58:25.776000+00:00",
+    "timeDisplay": "Dec 18",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 154,
+    "threadId": "#thread-f:1849236573412379014",
+    "legacyThreadId": "1990a2be9a3fd233",
+    "legacyLastMessageId": "1990a2be9a3fd234",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd234",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "david.lee@client.com"
+    ],
+    "subject": "Re: Proposal feedback",
+    "body": "Thanks for reviewing, David. Happy to adjust — can you share what numbers work for you?",
+    "preview": "Thanks for reviewing, David. Happy to adjust — can you share...",
+    "timestamp": "2022-10-24T06:34:07.643000+00:00",
+    "timeDisplay": "Oct 24",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 155,
+    "threadId": "#thread-f:1849236573412379014",
+    "legacyThreadId": "1990a2be9a3fd233",
+    "legacyLastMessageId": "1990a2be9a3fd235",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd235",
+    "from": {
+      "name": "David Lee",
+      "email": "david.lee@client.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Proposal feedback",
+    "body": "We’re thinking about bringing the retainer down by 10%, and extending the timeline by 2 weeks.",
+    "preview": "We’re thinking about bringing the retainer down by 10%...",
+    "timestamp": "2025-04-07T20:45:50.018000+00:00",
+    "timeDisplay": "Apr 7",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 156,
+    "threadId": "#thread-f:1849236573412379014",
+    "legacyThreadId": "1990a2be9a3fd233",
+    "legacyLastMessageId": "1990a2be9a3fd236",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd236",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "david.lee@client.com"
+    ],
+    "subject": "Re: Proposal feedback",
+    "body": "That works for me. I’ll update the numbers and send over the revised agreement today.",
+    "preview": "That works for me. I’ll update the numbers and send over the revised...",
+    "timestamp": "2023-07-28T18:13:25.233000+00:00",
+    "timeDisplay": "Jul 28",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 157,
+    "threadId": "#thread-f:1849236573412379015",
+    "legacyThreadId": "1990a2be9a3fd237",
+    "legacyLastMessageId": "1990a2be9a3fd237",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd237",
+    "from": {
+      "name": "Laura Kim",
+      "email": "laura.kim@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🎉 Team outing ideas",
+    "body": "Hey,  \nWe should plan something fun for Friday. Any ideas?",
+    "preview": "We should plan something fun for Friday. Any ideas?",
+    "timestamp": "2022-10-13T22:10:02.433000+00:00",
+    "timeDisplay": "Oct 13",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 158,
+    "threadId": "#thread-f:1849236573412379015",
+    "legacyThreadId": "1990a2be9a3fd237",
+    "legacyLastMessageId": "1990a2be9a3fd238",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd238",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "laura.kim@example.com"
+    ],
+    "subject": "Re: Team outing ideas",
+    "body": "Bowling or mini-golf could be fun. Or maybe a team brunch?",
+    "preview": "Bowling or mini-golf could be fun. Or maybe a team brunch?",
+    "timestamp": "2025-06-26T10:54:08.832000+00:00",
+    "timeDisplay": "Jun 26",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 159,
+    "threadId": "#thread-f:1849236573412379015",
+    "legacyThreadId": "1990a2be9a3fd237",
+    "legacyLastMessageId": "1990a2be9a3fd239",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd239",
+    "from": {
+      "name": "Laura Kim",
+      "email": "laura.kim@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Team outing ideas",
+    "body": "Brunch sounds great! I’ll make a reservation for 10.",
+    "preview": "Brunch sounds great! I’ll make a reservation for 10.",
+    "timestamp": "2024-11-23T04:31:19.058000+00:00",
+    "timeDisplay": "Nov 23",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 160,
+    "threadId": "#thread-f:1849236573412379015",
+    "legacyThreadId": "1990a2be9a3fd237",
+    "legacyLastMessageId": "1990a2be9a3fd240",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd240",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "laura.kim@example.com"
+    ],
+    "subject": "Re: Team outing ideas",
+    "body": "Awesome. I’ll send a calendar invite once it’s confirmed.",
+    "preview": "Awesome. I’ll send a calendar invite once it’s confirmed.",
+    "timestamp": "2025-06-21T07:15:40.487000+00:00",
+    "timeDisplay": "Jun 21",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 161,
+    "threadId": "#thread-f:1849236573412379015",
+    "legacyThreadId": "1990a2be9a3fd237",
+    "legacyLastMessageId": "1990a2be9a3fd241",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd241",
+    "from": {
+      "name": "Laura Kim",
+      "email": "laura.kim@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Team outing ideas",
+    "body": "Reservation done ✅. 11 AM brunch at The Green Café.",
+    "preview": "Reservation done ✅. 11 AM brunch at The Green Café.",
+    "timestamp": "2025-03-20T15:27:50.976000+00:00",
+    "timeDisplay": "Mar 20",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 162,
+    "threadId": "#thread-f:1849236573412379016",
+    "legacyThreadId": "1990a2be9a3fd242",
+    "legacyLastMessageId": "1990a2be9a3fd242",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd242",
+    "from": {
+      "name": "Sarah Wilson",
+      "email": "sarah.wilson@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Task update — onboarding page",
+    "body": "Hey John,  \nDid you manage to update the onboarding layout with the new buttons we discussed yesterday?",
+    "preview": "Did you manage to update the onboarding layout with the new buttons?",
+    "timestamp": "2025-07-12T00:55:15.997000+00:00",
+    "timeDisplay": "Jul 12",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 163,
+    "threadId": "#thread-f:1849236573412379016",
+    "legacyThreadId": "1990a2be9a3fd242",
+    "legacyLastMessageId": "1990a2be9a3fd243",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd243",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "sarah.wilson@company.com"
+    ],
+    "subject": "Re: Task update — onboarding page",
+    "body": "Yes — pushed it to staging last night. Waiting on your approval before merging.",
+    "preview": "Yes — pushed it to staging last night. Waiting on your approval...",
+    "timestamp": "2023-12-16T08:08:26.168000+00:00",
+    "timeDisplay": "Dec 16",
+    "read": true,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 164,
+    "threadId": "#thread-f:1849236573412379016",
+    "legacyThreadId": "1990a2be9a3fd242",
+    "legacyLastMessageId": "1990a2be9a3fd244",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd244",
+    "from": {
+      "name": "Sarah Wilson",
+      "email": "sarah.wilson@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Task update — onboarding page",
+    "body": "Just checked — looks great. Go ahead and merge it 🚀",
+    "preview": "Just checked — looks great. Go ahead and merge it 🚀",
+    "timestamp": "2025-10-18T06:14:59.743796+00:00",
+    "timeDisplay": "Nov 20",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 165,
+    "threadId": "#thread-f:1849236573412379017",
+    "legacyThreadId": "1990a2be9a3fd245",
+    "legacyLastMessageId": "1990a2be9a3fd245",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd245",
+    "from": {
+      "name": "Alex Tan",
+      "email": "alex.tan@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Morning sync at 10",
+    "body": "Quick reminder — our stand-up is at 10. Nothing major today, just status updates.",
+    "preview": "Quick reminder — our stand-up is at 10.",
+    "timestamp": "2024-05-14T03:58:10.671000+00:00",
+    "timeDisplay": "May 14",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 166,
+    "threadId": "#thread-f:1849236573412379017",
+    "legacyThreadId": "1990a2be9a3fd245",
+    "legacyLastMessageId": "1990a2be9a3fd246",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd246",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "alex.tan@company.com"
+    ],
+    "subject": "Re: Morning sync at 10",
+    "body": "Got it — I’ll be there.",
+    "preview": "Got it — I’ll be there.",
+    "timestamp": "2022-07-12T19:38:18.950000+00:00",
+    "timeDisplay": "Jul 12",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 167,
+    "threadId": "#thread-f:1849236573412379018",
+    "legacyThreadId": "1990a2be9a3fd247",
+    "legacyLastMessageId": "1990a2be9a3fd247",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd247",
+    "from": {
+      "name": "HR Team",
+      "email": "hr@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Reschedule: 1:1 Check-in",
+    "body": "Hi John,  \nWe need to move your 1:1 with Linda to 4 PM. Hope that works for you.",
+    "preview": "We need to move your 1:1 with Linda to 4 PM.",
+    "timestamp": "2025-09-15T02:50:18.009000+00:00",
+    "timeDisplay": "Sep 15",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 168,
+    "threadId": "#thread-f:1849236573412379018",
+    "legacyThreadId": "1990a2be9a3fd247",
+    "legacyLastMessageId": "1990a2be9a3fd248",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd248",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "hr@company.com"
+    ],
+    "subject": "Re: Reschedule: 1:1 Check-in",
+    "body": "4 PM works fine. Thanks for letting me know.",
+    "preview": "4 PM works fine. Thanks for letting me know.",
+    "timestamp": "2025-10-18T06:14:59.743801+00:00",
+    "timeDisplay": "Nov 24",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Sent",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 169,
+    "threadId": "#thread-f:1849236573412379019",
+    "legacyThreadId": "1990a2be9a3fd249",
+    "legacyLastMessageId": "1990a2be9a3fd249",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd249",
+    "from": {
+      "name": "Ben Carson",
+      "email": "ben.carson@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Lunch?",
+    "body": "Hey,  \nUp for lunch at the usual spot today?",
+    "preview": "Up for lunch at the usual spot today?",
+    "timestamp": "2023-08-29T12:02:15.683000+00:00",
+    "timeDisplay": "Aug 29",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 170,
+    "threadId": "#thread-f:1849236573412379019",
+    "legacyThreadId": "1990a2be9a3fd249",
+    "legacyLastMessageId": "1990a2be9a3fd250",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd250",
+    "from": {
+      "name": "John Doe",
+      "email": "john.doe@example.com"
+    },
+    "to": [
+      "ben.carson@example.com"
+    ],
+    "subject": "Re: Lunch?",
+    "body": "Yeah — 1 PM works.",
+    "preview": "Yeah — 1 PM works.",
+    "timestamp": "2022-10-13T18:07:27.626000+00:00",
+    "timeDisplay": "Oct 13",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Sent",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 171,
+    "threadId": "#thread-f:1849236573412379019",
+    "legacyThreadId": "1990a2be9a3fd249",
+    "legacyLastMessageId": "1990a2be9a3fd251",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd251",
+    "from": {
+      "name": "Ben Carson",
+      "email": "ben.carson@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Lunch?",
+    "body": "Cool. See you then 🍽️",
+    "preview": "Cool. See you then 🍽️",
+    "timestamp": "2025-10-18T06:14:59.743805+00:00",
+    "timeDisplay": "Oct 29",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 172,
+    "threadId": "#thread-f:1849236573412379020",
+    "legacyThreadId": "1990a2be9a3fd252",
+    "legacyLastMessageId": "1990a2be9a3fd252",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd252",
+    "from": {
+      "name": "Project Tracker",
+      "email": "noreply@tracker.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Reminder: Weekly status report due today",
+    "body": "Please submit your team’s weekly status report by 5 PM.",
+    "preview": "Please submit your team’s weekly status report by 5 PM.",
+    "timestamp": "2024-08-24T13:44:07.300000+00:00",
+    "timeDisplay": "Aug 24",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 173,
+    "threadId": "#thread-f:1849236573412379021",
+    "legacyThreadId": "1990a2be9a3fd253",
+    "legacyLastMessageId": "1990a2be9a3fd253",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd253",
+    "from": {
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Quick question about tomorrow",
+    "body": "Hey John, are we still on for the product demo tomorrow morning?",
+    "preview": "Hey John, are we still on for the product demo tomorrow morning?",
+    "timestamp": "2023-09-22T22:29:31.245000+00:00",
+    "timeDisplay": "Sep 22",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 174,
+    "threadId": "#thread-f:1849236573412379022",
+    "legacyThreadId": "1990a2be9a3fd254",
+    "legacyLastMessageId": "1990a2be9a3fd254",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd254",
+    "from": {
+      "name": "IT Support",
+      "email": "it@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "⚠️ Scheduled maintenance tonight",
+    "body": "Please note: our internal VPN will be down for scheduled maintenance from 11 PM to 1 AM.",
+    "preview": "Our internal VPN will be down for scheduled maintenance...",
+    "timestamp": "2023-02-22T09:24:51.824000+00:00",
+    "timeDisplay": "Feb 22",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 175,
+    "threadId": "#thread-f:1849236573412379023",
+    "legacyThreadId": "1990a2be9a3fd255",
+    "legacyLastMessageId": "1990a2be9a3fd255",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd255",
+    "from": {
+      "name": "Slack",
+      "email": "no-reply@slack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "💬 You were mentioned in #frontend",
+    "body": "Alex mentioned you in #frontend: “@John can you review the modal changes today?”",
+    "preview": "Alex mentioned you in #frontend...",
+    "timestamp": "2024-09-21T23:35:01.163000+00:00",
+    "timeDisplay": "Sep 22",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 176,
+    "threadId": "#thread-f:1849236573412379024",
+    "legacyThreadId": "1990a2be9a3fd256",
+    "legacyLastMessageId": "1990a2be9a3fd256",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd256",
+    "from": {
+      "name": "Calendly",
+      "email": "no-reply@calendly.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📅 New meeting scheduled",
+    "body": "Event: Sprint Review Meeting  \nDate: Sep 10  \nTime: 2:00 PM WAT",
+    "preview": "Event: Sprint Review Meeting — Sep 10, 2:00 PM WAT.",
+    "timestamp": "2025-03-14T17:25:57.198000+00:00",
+    "timeDisplay": "Mar 14",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 177,
+    "threadId": "#thread-f:1849236573412379025",
+    "legacyThreadId": "1990a2be9a3fd257",
+    "legacyLastMessageId": "1990a2be9a3fd257",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd257",
+    "from": {
+      "name": "Emma Johnson",
+      "email": "emma.johnson@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Coffee later?",
+    "body": "Hey — if you're free after work, want to grab a quick coffee?",
+    "preview": "Hey — if you're free after work, want to grab a quick coffee?",
+    "timestamp": "2024-09-11T01:23:03.996000+00:00",
+    "timeDisplay": "Sep 11",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 178,
+    "threadId": "#thread-f:1849236573412379026",
+    "legacyThreadId": "1990a2be9a3fd258",
+    "legacyLastMessageId": "1990a2be9a3fd258",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd258",
+    "from": {
+      "name": "System Admin",
+      "email": "sysadmin@company.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔐 Password expiry warning",
+    "body": "Your password will expire in 5 days. Please update it via the company portal.",
+    "preview": "Your password will expire in 5 days.",
+    "timestamp": "2023-02-16T07:26:24.080000+00:00",
+    "timeDisplay": "Feb 16",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 179,
+    "threadId": "#thread-f:1849236573412379027",
+    "legacyThreadId": "1990a2be9a3fd259",
+    "legacyLastMessageId": "1990a2be9a3fd259",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd259",
+    "from": {
+      "name": "GitHub",
+      "email": "noreply@github.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "🔔 New comment on PR #87",
+    "body": "Alex commented: “I think we should refactor this hook.”",
+    "preview": "Alex commented: “I think we should refactor this hook.”",
+    "timestamp": "2025-04-15T15:51:30.146000+00:00",
+    "timeDisplay": "Apr 15",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 180,
+    "threadId": "#thread-f:1849236573412379028",
+    "legacyThreadId": "1990a2be9a3fd260",
+    "legacyLastMessageId": "1990a2be9a3fd260",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd260",
+    "from": {
+      "name": "Calendar",
+      "email": "no-reply@calendar.app"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "📅 Event reminder: Design Review",
+    "body": "Reminder: Design Review meeting starts in 30 minutes.",
+    "preview": "Reminder: Design Review meeting starts in 30 minutes.",
+    "timestamp": "2023-03-10T00:51:39.629000+00:00",
+    "timeDisplay": "Mar 10",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 181,
+    "threadId": "#thread-f:1849236573412379029",
+    "legacyThreadId": "1990a2be9a3fd261",
+    "legacyLastMessageId": "1990a2be9a3fd261",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd261",
+    "from": {
+      "name": "Linda Okafor",
+      "email": "linda.okafor@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Re: Thanks for the help earlier",
+    "body": "Really appreciate your time earlier today 🙏",
+    "preview": "Really appreciate your time earlier today 🙏",
+    "timestamp": "2022-09-10T09:19:47.591000+00:00",
+    "timeDisplay": "Sep 10",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 182,
+    "threadId": "#thread-f:1849236573412379030",
+    "legacyThreadId": "1990a2be9a3fd262",
+    "legacyLastMessageId": "1990a2be9a3fd262",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd262",
+    "from": {
+      "name": "Stripe",
+      "email": "receipts@stripe.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Receipt • Acme Pro Annual — $199.00",
+    "body": "<div style=\"font-family: Inter, Arial, sans-serif; max-width:640px; margin:0 auto; padding:24px;\">\n      <header style=\"display:flex; align-items:center; gap:12px; margin-bottom:16px;\">\n        <img src=\"/assets/icons/stripe.jpeg\" alt=\"Stripe\" style=\"height:28px;\">\n        <h1 style=\"font-size:18px; margin:0;\">Payment Receipt</h1>\n      </header>\n      <section style=\"background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;\">\n        <div style=\"display:flex; justify-content:space-between; margin-bottom:10px;\">\n          <span>Amount</span><strong>$199.00</strong>\n        </div>\n        <div style=\"display:flex; justify-content:space-between; margin-bottom:10px;\">\n          <span>Description</span><strong>Acme Pro — Annual</strong>\n        </div>\n        <div style=\"display:flex; justify-content:space-between; margin-bottom:10px;\">\n          <span>Date</span><span>September 9, 2025</span>\n        </div>\n        <div style=\"display:flex; justify-content:space-between;\">\n          <span>Card</span><span>•••• •••• •••• 4242</span>\n        </div>\n      </section>\n      <p style=\"font-size:12px; color:#64748b; margin-top:16px;\">This email confirms your payment. Keep for your records.</p>\n    </div>",
+    "preview": "Payment Receipt — Acme Pro Annual: $199.00 charged on September 9, 2025.",
+    "timestamp": "2022-04-18T04:17:16.217000+00:00",
+    "timeDisplay": "Apr 18",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 183,
+    "threadId": "#thread-f:1849236573412379031",
+    "legacyThreadId": "1990a2be9a3fd263",
+    "legacyLastMessageId": "1990a2be9a3fd263",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd263",
+    "from": {
+      "name": "Airbnb",
+      "email": "info@airbnb.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your trip to Madrid — Itinerary & House Rules",
+    "body": "<div style=\"font-family: 'Segoe UI', Arial; max-width:660px; margin:auto; padding:20px;\">\n      <h2 style=\"margin:0 0 8px;\">Hola, John 👋</h2>\n      <p style=\"margin:0 0 16px;\">Here’s everything for your upcoming stay.</p>\n      <table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"border-collapse:collapse;\">\n        <tr>\n          <td style=\"padding:12px; border:1px solid #eee; width:50%;\">\n            <strong>Check-in</strong><br> Sep 14, 3:00 PM\n          </td>\n          <td style=\"padding:12px; border:1px solid #eee;\">\n            <strong>Check-out</strong><br> Sep 18, 11:00 AM\n          </td>\n        </tr>\n        <tr>\n          <td style=\"padding:12px; border:1px solid #eee;\">\n            <strong>Address</strong><br> Calle Mayor, 24, Madrid\n          </td>\n          <td style=\"padding:12px; border:1px solid #eee;\">\n            <strong>Host</strong><br> Carlos\n          </td>\n        </tr>\n      </table>\n      <div style=\"margin-top:16px; background:#f7f7f7; padding:12px; border-radius:8px;\">\n        <strong>House Rules</strong>\n        <ol style=\"margin:8px 0 0 18px;\">\n          <li>No smoking</li>\n          <li>Quiet hours after 10 PM</li>\n          <li>Key returns to lockbox #42</li>\n        </ol>\n      </div>\n    </div>",
+    "preview": "Your Madrid itinerary — check-in Sep 14, check-out Sep 18. House rules included.",
+    "timestamp": "2022-11-14T23:37:39.637000+00:00",
+    "timeDisplay": "Nov 15",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 184,
+    "threadId": "#thread-f:1849236573412379032",
+    "legacyThreadId": "1990a2be9a3fd264",
+    "legacyLastMessageId": "1990a2be9a3fd264",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd264",
+    "from": {
+      "name": "Notion",
+      "email": "team@notion.so"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "What’s new in Notion — September",
+    "body": "<div style=\"font-family:Arial; max-width:680px; margin:0 auto;\">\n      <div style=\"padding:18px 0;\">\n        <h2 style=\"margin:0 0 10px;\">September Release Notes</h2>\n        <p style=\"color:#555; margin:0;\">Database grouping, AI autofill, and more.</p>\n      </div>\n      <div style=\"display:grid; grid-template-columns:1fr 1fr; gap:12px;\">\n        <div style=\"border:1px solid #eee; padding:12px; border-radius:8px;\">\n          <h3 style=\"margin:0 0 8px;\">Group by anything</h3>\n          <p style=\"margin:0;\">New grouping in board and list views for faster organization.</p>\n        </div>\n        <div style=\"border:1px solid #eee; padding:12px; border-radius:8px;\">\n          <h3 style=\"margin:0 0 8px;\">AI autofill</h3>\n          <p style=\"margin:0;\">Auto-summarize and tag entries with one click.</p>\n        </div>\n      </div>\n      <p style=\"margin:14px 0 0;\">→ <a href=\"#\" style=\"color:#2b6cb0;\">Read the full changelog</a></p>\n    </div>",
+    "preview": "September Release Notes — database grouping, AI autofill, and more.",
+    "timestamp": "2024-01-27T16:36:45.201000+00:00",
+    "timeDisplay": "Jan 27",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 185,
+    "threadId": "#thread-f:1849236573412379033",
+    "legacyThreadId": "1990a2be9a3fd265",
+    "legacyLastMessageId": "1990a2be9a3fd265",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd265",
+    "from": {
+      "name": "Eventbrite",
+      "email": "tickets@eventbrite.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your ticket to Dev Product Summit 2025",
+    "body": "<div style=\"font-family:Arial; max-width:620px; margin:auto; border:1px solid #eee; border-radius:10px;\">\n      <div style=\"padding:18px; border-bottom:1px solid #eee;\">\n        <h2 style=\"margin:0;\">Dev Product Summit 2025</h2>\n        <p style=\"margin:6px 0 0;\">Wed, Sep 24 • 9:00 AM</p>\n      </div>\n      <div style=\"padding:18px;\">\n        <table style=\"width:100%; border-collapse:collapse;\">\n          <tr>\n            <td style=\"padding:8px 0;\"><strong>Attendee</strong></td>\n            <td style=\"padding:8px 0;\">John Doe</td>\n          </tr>\n          <tr>\n            <td style=\"padding:8px 0;\"><strong>Order #</strong></td>\n            <td style=\"padding:8px 0;\">EB-7721-4412</td>\n          </tr>\n          <tr>\n            <td style=\"padding:8px 0;\"><strong>Venue</strong></td>\n            <td style=\"padding:8px 0;\">Pier 27, San Francisco</td>\n          </tr>\n        </table>\n        <div style=\"margin-top:16px;\">\n          <a href=\"#\" style=\"display:inline-block; padding:10px 16px; background:#1a73e8; color:#fff; border-radius:6px; text-decoration:none;\">View Ticket</a>\n        </div>\n      </div>\n    </div>",
+    "preview": "Dev Product Summit 2025 — ticket and order EB-7721-4412.",
+    "timestamp": "2023-05-17T20:42:20.136000+00:00",
+    "timeDisplay": "May 17",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 186,
+    "threadId": "#thread-f:1849236573412379034",
+    "legacyThreadId": "1990a2be9a3fd266",
+    "legacyLastMessageId": "1990a2be9a3fd266",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd266",
+    "from": {
+      "name": "Amazon",
+      "email": "order-update@amazon.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Shipped: USB-C Hub 7-in-1",
+    "body": "<div style=\"font-family:Verdana; max-width:640px; margin:auto;\">\n      <h2 style=\"margin:0 0 12px;\">Your package is on the way</h2>\n      <table style=\"width:100%; border:1px solid #ddd; border-collapse:collapse;\">\n        <tr>\n          <th style=\"text-align:left; padding:8px; background:#f3f4f6;\">Item</th>\n          <th style=\"text-align:left; padding:8px; background:#f3f4f6;\">Qty</th>\n          <th style=\"text-align:left; padding:8px; background:#f3f4f6;\">Delivery</th>\n        </tr>\n        <tr>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">USB-C Hub 7-in-1</td>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">1</td>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">Sep 12</td>\n        </tr>\n      </table>\n      <p style=\"margin:12px 0;\">Track your package: <a href=\"#\">Tracking #1Z89231</a></p>\n    </div>",
+    "preview": "Your package is on the way — delivery by Sep 12. Track #1Z89231.",
+    "timestamp": "2025-06-07T14:58:35.056000+00:00",
+    "timeDisplay": "Jun 7",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 187,
+    "threadId": "#thread-f:1849236573412379035",
+    "legacyThreadId": "1990a2be9a3fd267",
+    "legacyLastMessageId": "1990a2be9a3fd267",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd267",
+    "from": {
+      "name": "Product Hunt",
+      "email": "hello@producthunt.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Today’s top launches 🚀",
+    "body": "<div style=\"font-family:Arial; max-width:620px; margin:auto;\">\n      <h2 style=\"margin:0 0 12px;\">Top Launches</h2>\n      <div style=\"display:flex; gap:12px; align-items:flex-start;\">\n        <div style=\"flex:1; border:1px solid #eee; border-radius:8px; padding:12px;\">\n          <h3 style=\"margin:0 0 6px;\">MockAPI Studio</h3>\n          <p style=\"margin:0; color:#555;\">Spin up REST endpoints in seconds.</p>\n        </div>\n        <div style=\"flex:1; border:1px solid #eee; border-radius:8px; padding:12px;\">\n          <h3 style=\"margin:0 0 6px;\">DashSketch</h3>\n          <p style=\"margin:0; color:#555;\">Design-to-dashboard in one click.</p>\n        </div>\n      </div>\n      <p style=\"margin:14px 0 0;\">See more → <a href=\"#\">producthunt.com/today</a></p>\n    </div>",
+    "preview": "Top launches today — MockAPI Studio, DashSketch and more.",
+    "timestamp": "2024-09-09T14:34:56.970000+00:00",
+    "timeDisplay": "Sep 9",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 188,
+    "threadId": "#thread-f:1849236573412379036",
+    "legacyThreadId": "1990a2be9a3fd268",
+    "legacyLastMessageId": "1990a2be9a3fd268",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd268",
+    "from": {
+      "name": "Google Flights",
+      "email": "alerts-noreply@google.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Price drop alert: Lagos → Madrid",
+    "body": "<div style=\"font-family:Roboto, Arial; max-width:640px; margin:auto;\">\n      <h2 style=\"margin:0 0 6px;\">Good news! ✈️</h2>\n      <p style=\"margin:0 0 12px;\">Prices dropped for your tracked route.</p>\n      <table style=\"width:100%; border:1px solid #e5e7eb; border-collapse:collapse;\">\n        <tr>\n          <td style=\"padding:10px; background:#f9fafb;\"><strong>Route</strong></td>\n          <td style=\"padding:10px; background:#f9fafb;\">LOS → MAD</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px;\">New lowest</td>\n          <td style=\"padding:10px;\"><strong>$512</strong> (−$73)</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px;\">Dates</td>\n          <td style=\"padding:10px;\">Oct 10 – Oct 17</td>\n        </tr>\n      </table>\n      <p style=\"margin:12px 0;\">Book now → <a href=\"#\">View fares</a></p>\n    </div>",
+    "preview": "Price drop for LOS → MAD — as low as $512 for Oct 10–17.",
+    "timestamp": "2022-12-30T22:00:49.703000+00:00",
+    "timeDisplay": "Dec 30",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 189,
+    "threadId": "#thread-f:1849236573412379037",
+    "legacyThreadId": "1990a2be9a3fd269",
+    "legacyLastMessageId": "1990a2be9a3fd269",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd269",
+    "from": {
+      "name": "Coinbase",
+      "email": "no-reply@coinbase.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your monthly account statement",
+    "body": "<div style=\"font-family:Arial; max-width:680px; margin:auto; padding:18px;\">\n      <h2 style=\"margin:0 0 8px;\">Statement — August 2025</h2>\n      <p style=\"margin:0 0 12px;\">Summary of your holdings and recent activity.</p>\n      <table style=\"width:100%; border:1px solid #ddd; border-collapse:collapse;\">\n        <tr>\n          <th style=\"text-align:left; padding:8px; background:#f3f4f6;\">Asset</th>\n          <th style=\"text-align:left; padding:8px; background:#f3f4f6;\">Balance</th>\n          <th style=\"text-align:left; padding:8px; background:#f3f4f6;\">Change</th>\n        </tr>\n        <tr>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">BTC</td>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">0.0821</td>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">+3.2%</td>\n        </tr>\n        <tr>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">ETH</td>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">1.74</td>\n          <td style=\"padding:8px; border-top:1px solid #eee;\">+1.1%</td>\n        </tr>\n      </table>\n      <p style=\"margin:12px 0;\">Download PDF → <a href=\"#\">Statement</a></p>\n    </div>",
+    "preview": "August 2025 statement — balances and activity summary.",
+    "timestamp": "2022-10-26T12:01:01.833000+00:00",
+    "timeDisplay": "Oct 26",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 190,
+    "threadId": "#thread-f:1849236573412379038",
+    "legacyThreadId": "1990a2be9a3fd270",
+    "legacyLastMessageId": "1990a2be9a3fd270",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd270",
+    "from": {
+      "name": "Coursera",
+      "email": "learn@coursera.org"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "New session starts next week: Machine Learning Specialization",
+    "body": "<div style=\"font-family:Helvetica; max-width:660px; margin:auto;\">\n      <div style=\"padding:12px 0;\">\n        <h2 style=\"margin:0;\">Start learning next week</h2>\n        <p style=\"margin:6px 0 0;\">Enroll now to secure your spot.</p>\n      </div>\n      <ul style=\"margin:10px 0 0 18px;\">\n        <li>Hands-on projects</li>\n        <li>Self-paced deadlines</li>\n        <li>Certificate upon completion</li>\n      </ul>\n      <p style=\"margin:14px 0;\"><a href=\"#\" style=\"background:#2a73cc; color:#fff; padding:10px 14px; border-radius:6px; text-decoration:none;\">Enroll</a></p>\n    </div>",
+    "preview": "Machine Learning Specialization — new session starts next week.",
+    "timestamp": "2024-06-28T16:35:56.976000+00:00",
+    "timeDisplay": "Jun 28",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 191,
+    "threadId": "#thread-f:1849236573412379039",
+    "legacyThreadId": "1990a2be9a3fd271",
+    "legacyLastMessageId": "1990a2be9a3fd271",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd271",
+    "from": {
+      "name": "GitHub",
+      "email": "noreply@github.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "[Security] Weekly Dependabot digest",
+    "body": "<div style=\"font-family:Arial; max-width:680px; margin:auto;\">\n      <h2 style=\"margin:0 0 10px;\">Security alerts for john/aspiod</h2>\n      <div style=\"border:1px solid #eee; border-radius:8px; overflow:hidden;\">\n        <div style=\"padding:10px; background:#f8fafc;\">2 advisories require review</div>\n        <div style=\"padding:12px;\">\n          <ul style=\"margin:0 0 0 18px;\">\n            <li>lodash &lt; 4.17.21 — Prototype Pollution</li>\n            <li>axios &lt; 1.6.0 — SSRF risk</li>\n          </ul>\n        </div>\n      </div>\n      <p style=\"margin:10px 0;\">Review on GitHub → <a href=\"#\">Alerts</a></p>\n    </div>",
+    "preview": "Security alerts for john/aspiod — 2 advisories require review.",
+    "timestamp": "2024-03-08T07:58:27.495000+00:00",
+    "timeDisplay": "Mar 8",
+    "read": false,
+    "starred": true,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 192,
+    "threadId": "#thread-f:1849236573412379040",
+    "legacyThreadId": "1990a2be9a3fd272",
+    "legacyLastMessageId": "1990a2be9a3fd272",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd272",
+    "from": {
+      "name": "Expedia",
+      "email": "travel@expedia.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your itinerary is confirmed: Lagos → Madrid",
+    "body": "<div style=\"font-family:Arial; max-width:640px; margin:auto;\">\n      <h2 style=\"margin:0 0 10px;\">Itinerary Confirmed</h2>\n      <table style=\"width:100%; border-collapse:collapse; border:1px solid #eee;\">\n        <tr>\n          <td style=\"padding:10px; background:#f9fafb;\"><strong>Flight</strong></td>\n          <td style=\"padding:10px;\">LOS → MAD (EB 452)</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px;\"><strong>Depart</strong></td>\n          <td style=\"padding:10px;\">Oct 10, 21:15</td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px;\"><strong>Arrive</strong></td>\n          <td style=\"padding:10px;\">Oct 11, 05:40</td>\n        </tr>\n      </table>\n      <p style=\"margin:12px 0;\">Manage booking → <a href=\"#\">View trip</a></p>\n    </div>",
+    "preview": "Expedia itinerary confirmed — LOS → MAD (EB 452) on Oct 10.",
+    "timestamp": "2024-03-25T19:25:08.940000+00:00",
+    "timeDisplay": "Mar 25",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 193,
+    "threadId": "#thread-f:1849236573412379041",
+    "legacyThreadId": "1990a2be9a3fd273",
+    "legacyLastMessageId": "1990a2be9a3fd273",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd273",
+    "from": {
+      "name": "Substack",
+      "email": "updates@substack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "The Builder’s Notebook — Issue #41",
+    "body": "<div style=\"font-family:Georgia, 'Times New Roman', serif; max-width:700px; margin:auto; line-height:1.6;\">\n      <h1 style=\"font-size:26px; margin:0 0 10px;\">Five lessons from shipping scrappy</h1>\n      <p style=\"margin:0 0 14px; color:#444;\">Why small teams can out-ship big orgs.</p>\n      <blockquote style=\"margin:0; padding:10px 14px; background:#fafaf9; border-left:3px solid #e5e7eb;\">\n        Move fast, but maintain taste. Quality compounds.\n      </blockquote>\n      <p style=\"margin:14px 0;\">Read online → <a href=\"#\">Substack</a></p>\n    </div>",
+    "preview": "Five lessons from shipping scrappy — small teams out-ship big orgs.",
+    "timestamp": "2025-10-18T06:14:59.743831+00:00",
+    "timeDisplay": "Dec 18",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 194,
+    "threadId": "#thread-f:1849236573412379042",
+    "legacyThreadId": "1990a2be9a3fd274",
+    "legacyLastMessageId": "1990a2be9a3fd274",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd274",
+    "from": {
+      "name": "Trello",
+      "email": "no-reply@trello.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Weekly board summary — Website Revamp",
+    "body": "<div style=\"font-family:Arial; max-width:660px; margin:auto;\">\n      <h2 style=\"margin:0 0 10px;\">This week on “Website Revamp”</h2>\n      <ul style=\"margin:0 0 0 18px;\">\n        <li>3 cards completed</li>\n        <li>2 cards due next week</li>\n        <li>1 blocked (awaiting copy)</li>\n      </ul>\n      <div style=\"margin-top:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;\">\n        <strong>Due soon</strong>\n        <ol style=\"margin:8px 0 0 18px;\">\n          <li>Finalize hero animation — Sep 12</li>\n          <li>QA checkout flow — Sep 13</li>\n        </ol>\n      </div>\n    </div>",
+    "preview": "Weekly summary — 3 done, 2 due, 1 blocked on “Website Revamp”.",
+    "timestamp": "2023-10-22T11:10:06.730000+00:00",
+    "timeDisplay": "Oct 22",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 195,
+    "threadId": "#thread-f:1849236573412379043",
+    "legacyThreadId": "1990a2be9a3fd275",
+    "legacyLastMessageId": "1990a2be9a3fd275",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd275",
+    "from": {
+      "name": "Intercom",
+      "email": "team@intercom.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Changelog — New inbox routing rules",
+    "body": "<div style=\"font-family:Arial; max-width:640px; margin:auto;\">\n      <h2 style=\"margin:0 0 10px;\">Changelog</h2>\n      <p style=\"margin:0 0 10px;\">Route conversations by topic, priority, and time of day.</p>\n      <table style=\"width:100%; border-collapse:collapse;\">\n        <tr>\n          <td style=\"padding:8px; background:#f3f4f6;\"><strong>What’s new</strong></td>\n          <td style=\"padding:8px; background:#f3f4f6;\">Rules, Schedules, SLA views</td>\n        </tr>\n        <tr>\n          <td style=\"padding:8px;\">Docs</td>\n          <td style=\"padding:8px;\"><a href=\"#\">Read more</a></td>\n        </tr>\n      </table>\n    </div>",
+    "preview": "New: route conversations by topic, priority, and time of day.",
+    "timestamp": "2022-12-01T05:33:40.219000+00:00",
+    "timeDisplay": "Dec 1",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 196,
+    "threadId": "#thread-f:1849236573412379044",
+    "legacyThreadId": "1990a2be9a3fd276",
+    "legacyLastMessageId": "1990a2be9a3fd276",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd276",
+    "from": {
+      "name": "Apple",
+      "email": "no-reply@apple.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Your App Store purchase was successful",
+    "body": "<div style=\"font-family: -apple-system, BlinkMacSystemFont, Arial; max-width:620px; margin:auto;\">\n      <h2 style=\"margin:0 0 8px;\">Purchase Confirmation</h2>\n      <div style=\"border:1px solid #eee; border-radius:9px; padding:12px;\">\n        <p style=\"margin:0 0 6px;\"><strong>Item:</strong> ProCam+ (Annual)</p>\n        <p style=\"margin:0 0 6px;\"><strong>Amount:</strong> $14.99</p>\n        <p style=\"margin:0;\"><strong>Date:</strong> September 9, 2025</p>\n      </div>\n      <p style=\"margin:12px 0;\">Manage subscriptions → <a href=\"#\">View</a></p>\n    </div>",
+    "preview": "App Store purchase confirmed — ProCam+ Annual, $14.99.",
+    "timestamp": "2022-11-28T03:46:40.611000+00:00",
+    "timeDisplay": "Nov 28",
+    "read": true,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 197,
+    "threadId": "#thread-f:1849236573412379045",
+    "legacyThreadId": "1990a2be9a3fd277",
+    "legacyLastMessageId": "1990a2be9a3fd277",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd277",
+    "from": {
+      "name": "YouTube",
+      "email": "noreply@youtube.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "New from Tech Explained: “AI Agents in the Wild”",
+    "body": "<div style=\"font-family:Roboto, Arial; max-width:660px; margin:auto;\">\n      <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-collapse:collapse;\">\n        <tr>\n          <td style=\"padding:0 0 10px;\">\n            <h2 style=\"margin:0;\">AI Agents in the Wild</h2>\n            <p style=\"margin:6px 0 0;\">Tech Explained just uploaded a new video.</p>\n          </td>\n        </tr>\n        <tr>\n          <td style=\"padding:10px 0;\">\n            <a href=\"#\" style=\"display:inline-block; background:#cc0000; color:#fff; padding:10px 14px; border-radius:6px; text-decoration:none;\">Watch now</a>\n          </td>\n        </tr>\n      </table>\n    </div>",
+    "preview": "Tech Explained uploaded: AI Agents in the Wild — watch now.",
+    "timestamp": "2022-10-14T11:24:26.439000+00:00",
+    "timeDisplay": "Oct 14",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 198,
+    "threadId": "#thread-f:1849236573412379046",
+    "legacyThreadId": "1990a2be9a3fd278",
+    "legacyLastMessageId": "1990a2be9a3fd278",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd278",
+    "from": {
+      "name": "Dribbble",
+      "email": "team@dribbble.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Weekly Inspiration — Monochrome dashboards",
+    "body": "<div style=\"font-family:Arial; max-width:640px; margin:auto;\">\n      <h2 style=\"margin:0 0 8px;\">Monochrome Dashboards</h2>\n      <p style=\"margin:0 0 12px; color:#555;\">Clean, minimal, and focused.</p>\n      <div style=\"display:grid; grid-template-columns:1fr 1fr; gap:10px;\">\n        <div style=\"background:#111; color:#fff; padding:12px; border-radius:8px;\">Dark UI • Cards</div>\n        <div style=\"background:#e5e7eb; color:#111; padding:12px; border-radius:8px;\">Light UI • Tables</div>\n      </div>\n      <p style=\"margin:14px 0 0;\">Explore more → <a href=\"#\">Dribbble</a></p>\n    </div>",
+    "preview": "Weekly Inspiration — monochrome dashboards and minimal UI patterns.",
+    "timestamp": "2023-11-13T13:36:40.892000+00:00",
+    "timeDisplay": "Nov 13",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 199,
+    "threadId": "#thread-f:1849236573412379047",
+    "legacyThreadId": "1990a2be9a3fd279",
+    "legacyLastMessageId": "1990a2be9a3fd279",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd279",
+    "from": {
+      "name": "Hulu",
+      "email": "deals@hulu.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "New this week: 3 shows you’ll binge",
+    "body": "<div style=\"font-family:Arial; max-width:640px; margin:auto;\">\n      <h2 style=\"margin:0 0 8px;\">Just added</h2>\n      <ul style=\"margin:0 0 0 18px;\">\n        <li>The Detective’s Case — S2</li>\n        <li>Rift • A Sci-Fi Anthology</li>\n        <li>Hidden Truth (Limited Series)</li>\n      </ul>\n      <p style=\"margin:12px 0;\">Start watching → <a href=\"#\">Open Hulu</a></p>\n    </div>",
+    "preview": "Just added: The Detective’s Case S2, Rift, Hidden Truth.",
+    "timestamp": "2022-06-19T00:47:34.713000+00:00",
+    "timeDisplay": "Jun 19",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+  {
+    "id": 200,
+    "threadId": "#thread-f:1849236573412379048",
+    "legacyThreadId": "1990a2be9a3fd280",
+    "legacyLastMessageId": "1990a2be9a3fd280",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd280",
+    "from": {
+      "name": "Slack",
+      "email": "no-reply@slack.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Weekly summary — #product, #design",
+    "body": "<div style=\"font-family:Arial; max-width:650px; margin:auto;\">\n      <h2 style=\"margin:0 0 8px;\">This week in your workspace</h2>\n      <div style=\"border:1px solid #eee; border-radius:8px; padding:10px;\">\n        <p style=\"margin:0 0 6px;\"><strong>#product</strong> — 183 messages</p>\n        <p style=\"margin:0;\"><strong>#design</strong> — 96 messages</p>\n      </div>\n      <p style=\"margin:12px 0;\">Catch up → <a href=\"#\">Open Slack</a></p>\n    </div>",
+    "preview": "Workspace summary — #product (183), #design (96).",
+    "timestamp": "2025-01-02T19:01:36.290000+00:00",
+    "timeDisplay": "Jan 2",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Updates"
+    ],
+    "labelColor": "#e1f7e1"
+  },
+  {
+    "id": 201,
+    "threadId": "#thread-f:1849236573412379049",
+    "legacyThreadId": "1990a2be9a3fd281",
+    "legacyLastMessageId": "1990a2be9a3fd281",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd281",
+    "from": {
+      "name": "Pinterest",
+      "email": "news@info.pinterest.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Ideas you might love — Minimal home office",
+    "body": "<div style=\"font-family:Arial; max-width:680px; margin:auto;\">\n      <h2 style=\"margin:0 0 10px;\">Minimal home office ideas</h2>\n      <table style=\"width:100%; border-collapse:separate; border-spacing:10px;\">\n        <tr>\n          <td style=\"background:#f3f4f6; padding:20px; border-radius:8px;\">Standing desks</td>\n          <td style=\"background:#f3f4f6; padding:20px; border-radius:8px;\">Cable management</td>\n          <td style=\"background:#f3f4f6; padding:20px; border-radius:8px;\">Wall grids</td>\n        </tr>\n      </table>\n      <p style=\"margin:12px 0;\">See the board → <a href=\"#\">Pinterest</a></p>\n    </div>",
+    "preview": "Minimal home office ideas — standing desks, cable management, wall grids.",
+    "timestamp": "2024-10-24T07:24:11.078000+00:00",
+    "timeDisplay": "Oct 24",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Promotions"
+    ],
+    "labelColor": "#ffe1e1"
+  },
+
+  {
+    "id": 202,
+    "threadId": "#thread-f:1849236573412379202",
+    "legacyThreadId": "1990a2be9a3fd202",
+    "legacyLastMessageId": "1990a2be9a3fd202",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd202",
+    "from": {
+      "name": "HR Team",
+      "email": "hr@oakwoodltd.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Reminder: Onboarding session tomorrow",
+    "body": "<div style=\"font-family: Arial; max-width:600px; margin:auto; line-height:1.5;\">\n<p>Hi John,</p>\n<p>This is a reminder that your onboarding session is scheduled for <strong>10:00 AM tomorrow</strong> in the main conference room.</p>\n<p>Regards,<br/>HR Team</p>\n</div>",
+    "preview": "This is a reminder that your onboarding session is scheduled for 10:00 AM tomorrow…",
+    "timestamp": "2025-01-22T08:30:00.000000+00:00",
+    "timeDisplay": "Jan 22",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 203,
+    "threadId": "#thread-f:1849236573412379203",
+    "legacyThreadId": "1990a2be9a3fd203",
+    "legacyLastMessageId": "1990a2be9a3fd203",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd203",
+    "from": {
+      "name": "Esther Okafor",
+      "email": "esther.okafor@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Meeting notes from today",
+    "body": "Hey John,\n\nI’ve summarised the key points from this morning’s meeting. Let’s review tomorrow before we send the final report.\n\nEsther",
+    "preview": "I’ve summarised the key points from this morning’s meeting.",
+    "timestamp": "2025-03-10T15:45:00.000000+00:00",
+    "timeDisplay": "Mar 10",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 204,
+    "threadId": "#thread-f:1849236573412379204",
+    "legacyThreadId": "1990a2be9a3fd204",
+    "legacyLastMessageId": "1990a2be9a3fd204",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd204",
+    "from": {
+      "name": "Accounts Department",
+      "email": "accounts@stellarbuild.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "March payroll slip",
+    "body": "<div style=\"font-family: Arial; max-width:600px; margin:auto;\">\n<p>Dear John,</p>\n<p>Your March payroll slip has been processed and is now available for review in your personnel file.</p>\n<p>Please reach out if there are any discrepancies.</p>\n</div>",
+    "preview": "Your March payroll slip has been processed and is now available for review…",
+    "timestamp": "2025-03-25T11:15:00.000000+00:00",
+    "timeDisplay": "Mar 25",
+    "read": false,
+    "starred": false,
+    "important": true,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 205,
+    "threadId": "#thread-f:1849236573412379205",
+    "legacyThreadId": "1990a2be9a3fd205",
+    "legacyLastMessageId": "1990a2be9a3fd205",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd205",
+    "from": {
+      "name": "Tunde Akinwale",
+      "email": "tundeakinwale@example.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Photos from the office event",
+    "body": "Hi John,\n\nI’ve sorted the photos from Friday’s event. I’ll bring the printed copies to the office tomorrow.\n\nTunde",
+    "preview": "I’ve sorted the photos from Friday’s event.",
+    "timestamp": "2025-06-14T19:10:00.000000+00:00",
+    "timeDisplay": "Jun 14",
+    "read": true,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  },
+  {
+    "id": 206,
+    "threadId": "#thread-f:1849236573412379206",
+    "legacyThreadId": "1990a2be9a3fd206",
+    "legacyLastMessageId": "1990a2be9a3fd206",
+    "legacyLastNonDraftMessageId": "1990a2be9a3fd206",
+    "from": {
+      "name": "Facility Manager",
+      "email": "facility@citysquare.com"
+    },
+    "to": [
+      "john.doe@example.com"
+    ],
+    "subject": "Scheduled maintenance notice",
+    "body": "<div style=\"font-family: Arial; max-width:600px; margin:auto;\">\n<p>Dear Occupant,</p>\n<p>This is to inform you that routine maintenance has been scheduled for <strong>October 20</strong> between <strong>2:00 PM</strong> and <strong>4:00 PM</strong>.</p>\n<p>Thank you for your cooperation.</p>\n</div>",
+    "preview": "Routine maintenance has been scheduled for October 20 between 2:00 PM and 4:00 PM.",
+    "timestamp": "2025-10-20T09:00:00.000000+00:00",
+    "timeDisplay": "Oct 20",
+    "read": false,
+    "starred": false,
+    "important": false,
+    "labels": [
+      "Inbox",
+      "Primary"
+    ],
+    "labelColor": "#e1e3e1"
+  }
 ];

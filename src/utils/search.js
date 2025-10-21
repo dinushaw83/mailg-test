@@ -8,6 +8,7 @@ let lastEmailHash = null; // Track when emails change to rebuild index
 // Search history management
 const SEARCH_HISTORY_KEY = "mailg_search_history";
 const MAX_SEARCH_HISTORY = 10;
+const ALL_SEARCH_QUERIES_KEY = "allSearchQueries";
 
 function getSearchHistory() {
   try {
@@ -44,10 +45,97 @@ export function addToSearchHistory(query) {
 }
 
 /**
+ * Remove a specific item from search history
+ */
+export function removeFromSearchHistory(query) {
+  if (!query) return;
+
+  let history = getSearchHistory();
+  history = history.filter((item) => item !== query);
+  saveSearchHistory(history);
+}
+
+/**
  * Get search history
  */
 export function getSearchHistoryItems() {
   return getSearchHistory();
+}
+
+/**
+ * Get all search queries from localStorage
+ */
+function getAllSearchQueries() {
+  try {
+    const queries = localStorage.getItem(ALL_SEARCH_QUERIES_KEY);
+    if (queries) {
+      return JSON.parse(queries);
+    }
+    return {
+      basic: [],
+      advanced: [],
+    };
+  } catch (error) {
+    console.warn("Failed to get all search queries:", error);
+    return {
+      basic: [],
+      advanced: [],
+    };
+  }
+}
+
+/**
+ * Save all search queries to localStorage
+ */
+function saveAllSearchQueries(queries) {
+  try {
+    localStorage.setItem(ALL_SEARCH_QUERIES_KEY, JSON.stringify(queries));
+  } catch (error) {
+    console.warn("Failed to save all search queries:", error);
+  }
+}
+
+/**
+ * Add a basic search query to the tracking system
+ */
+export function addBasicSearchQuery(query) {
+  if (!query || !query.trim()) return;
+
+  const trimmedQuery = query.trim();
+  const allQueries = getAllSearchQueries();
+
+  // Add to basic array if not already present
+  if (!allQueries.basic.includes(trimmedQuery)) {
+    allQueries.basic.unshift(trimmedQuery);
+  }
+
+  saveAllSearchQueries(allQueries);
+}
+
+/**
+ * Add an advanced search query to the tracking system
+ * @param {Object} formData - The advanced search form data
+ */
+export function addAdvancedSearchQuery(formData) {
+  if (!formData) return;
+
+  const allQueries = getAllSearchQueries();
+
+  // Add the complete formData object to the advanced array
+  allQueries.advanced.unshift(formData);
+
+  saveAllSearchQueries(allQueries);
+}
+
+/**
+ * Clear all tracked search queries (useful for testing/debugging)
+ */
+export function clearTrackedSearchQueries() {
+  try {
+    localStorage.removeItem(ALL_SEARCH_QUERIES_KEY);
+  } catch (error) {
+    console.warn("Failed to clear tracked search queries:", error);
+  }
 }
 
 /**
@@ -153,6 +241,7 @@ export function buildSearchIndex(emails) {
       fromName: email.from?.name || "",
       fromEmail: email.from?.email || "",
       timestamp: email.timestamp,
+      attachments: email.attachments || [],
       // Create searchable text
       searchableText: normalizeText(
         `${email.subject || ""} ${email.preview || ""} ${email.body || ""} ${email.from?.name || ""} ${
@@ -222,7 +311,8 @@ export function searchEmails(query, options = {}) {
           doc.preview?.toLowerCase().includes(trimmedQuery) ||
           doc.fromName?.toLowerCase().includes(trimmedQuery) ||
           doc.fromEmail?.toLowerCase().includes(trimmedQuery) ||
-          doc.searchableText?.includes(trimmedQuery)
+          doc.searchableText?.includes(trimmedQuery) ||
+          doc.attachments?.some((attachment) => attachment.name?.toLowerCase().includes(trimmedQuery))
         );
       });
 
@@ -356,7 +446,7 @@ function parseSizeToBytes(sizeString) {
 /**
  * Advanced search with full email data (including attachments)
  */
-export function advancedSearchWithFullData(searchCriteria, emails, options = {}) {
+export function advancedSearchWithFullData(searchCriteria, emails) {
   if (!emails || emails.length === 0) {
     return [];
   }

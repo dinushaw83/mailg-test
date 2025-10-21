@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 import useMailActions from "../../hooks/useMailActions";
@@ -9,38 +9,71 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
+import { CATEGORIES } from "../../utils/categories";
+import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
 
 const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, composeWindows, panelState, previewEmailId } = useGlobalContext();
+  const { selection, composeWindows, panelState,
+    previewEmailId, softRemovedLabels, setSoftRemovedLabels
+  } = useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
   const { folder, label } = useParams();
+  const { labels } = useLabels();
 
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
+  const { direction: internalDirection, showPanel } = panelState;
+  const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
+
+  const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
+
+  /**
+   * Format the given timestamp similar to Gmail:
+   * - If the timestamp is in the future, clamp it to the current time
+   * - Show time in 24-hour format (HH:mm) if it's today
+   * - Show "Mon DD" if it's earlier in the same year
+   * - Show "DD/MM/YYYY" if it's from a previous year
+   */
+  function formatDate(inputTimestamp) {
+    // Convert to Date object
+    let date = new Date(inputTimestamp);
     const now = new Date();
 
+    // Clamp future timestamps to "now"
+    if (date.getTime() > now.getTime()) {
+      date = now;
+    }
+
     // Check if it's the same day
-    const isToday = date.toDateString() === now.toDateString();
+    const isToday =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+
+    const isSameYear = date.getFullYear() === now.getFullYear();
 
     if (isToday) {
       // Return time in 24-hour format like "09:12", "21:23"
-      return date.toLocaleTimeString("en-US", {
+      return date.toLocaleTimeString("en-GB", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
       });
+    } else if (isSameYear) {
+      // Return date format like "Feb 27" for dates earlier in the same year
+      const day = date.toLocaleString("en-GB", { day: "2-digit" });
+      const month = date.toLocaleString("en-GB", { month: "short" });
+      return `${month} ${day}`;
     } else {
-      // Return date format like "21 Sept", "12 Aug"
-      return date.toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-      });
+      // Return date format like "13/05/2023" for previous years
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
     }
-  };
+  }
 
   const getRowClassName = (email, isActive) => {
     let className = `zA ${isActive ? "active" : ""}`;
@@ -102,18 +135,39 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
     }
   };
 
-  // Get the label badges
   const getLabelBadges = (email) => {
-    const path = location.pathname.replace("/", "");
+    const currentPath = (label || folder || "").toLowerCase();
+    const isAllMail = ["all"].includes(currentPath);
+    const softRemoved = softRemovedLabels[email.id] || [];
+    const curLabels = [...new Set([...email.labels, ...softRemoved])]
 
-    // If Inbox label is present in path other than inbox, return it
-    return email.labels.filter(
-      (label) => label.toLowerCase() !== path && ["inbox", "muted"].includes(label.toLowerCase())
-    );
+    return curLabels
+      .filter((labelKey) => {
+        const lower = labelKey.toLowerCase();
+        const isInbox = lower === "inbox";
+        const isCategory = categoryLabels.map(c => c.toLowerCase()).includes(lower);
+
+        // hide current folder label
+        if (lower === currentPath) return false;
+
+        // hide category labels except inbox in All Mail
+        if (isCategory && !(isInbox && isAllMail)) return false;
+
+        // hide system labels except inbox
+        if (labels[labelKey]?.system && !isInbox) return false;
+
+        return true;
+      })
+      .map((labelKey) => ({
+        key: labelKey,
+        displayName: getPathLabelFromKey(labels, labelKey),
+        color: labels[labelKey]?.color,
+      }));
   };
 
-  const { direction: internalDirection, showPanel } = panelState;
-  const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
+  useEffect(() => {
+    setSoftRemovedLabels({});
+  }, [location.pathname]);
 
   return (
     <div className="Nu tf aZ6" style={{ flex: 1, display: "flex", flexDirection: "column" }}>

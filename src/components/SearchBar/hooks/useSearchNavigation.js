@@ -5,23 +5,27 @@ import { useState, useEffect } from "react";
  * @param {Object} location - React Router location object
  * @param {string} searchValue - Current search value
  * @param {Function} setSearchValue - State setter for search value
+ * @param {Array} activeFilters - Current active filters
+ * @param {Function} setActiveFilters - State setter for active filters
  */
-export function useSearchNavigation(location, searchValue, setSearchValue) {
+export function useSearchNavigation(location, searchValue, setSearchValue, activeFilters, setActiveFilters) {
   const [previousLocation, setPreviousLocation] = useState(null);
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const isCurrentlyOnSearchResults = currentPath.startsWith("/search/");
-    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search/");
+    const isCurrentlyOnSearchResults = currentPath.startsWith("/search");
+    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search");
 
     // If we were on search results page and now we're not, clear the search input
     if (wasOnSearchResults && !isCurrentlyOnSearchResults && searchValue.trim()) {
       setSearchValue("");
     }
 
+    if (wasOnSearchResults && !isCurrentlyOnSearchResults) {
+      setActiveFilters([]);
+    }
+
     // Update previous location for next comparison
     setPreviousLocation(currentPath);
-  }, [location.pathname, previousLocation, searchValue, setSearchValue]);
-
-  return previousLocation;
+  }, [location.pathname, previousLocation, searchValue, setSearchValue, activeFilters, setActiveFilters]);
 }
