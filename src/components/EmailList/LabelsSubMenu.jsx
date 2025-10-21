@@ -41,7 +41,7 @@ export const LabelsSubMenu = ({
   const availableLabels = useMemo(() => {
     return (
       Object.entries(labels || {})
-        // .filter(([key, meta]) => !meta.system)
+        .filter(([key, meta]) => !meta.system)
         .map(([key, meta]) => ({
           key,
           name: meta.name || key,
@@ -57,8 +57,12 @@ export const LabelsSubMenu = ({
     const labelsToAdd = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "checked");
     const labelsToRemove = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "unchecked");
 
-    const addedMessage = labelsToAdd.length > 0 ? `added to ${labelsToAdd.join(", ")}` : "";
-    const removedMessage = labelsToRemove.length > 0 ? `removed from ${labelsToRemove.join(", ")}` : "";
+    const addedMessage = labelsToAdd.length > 0
+      ? `added to ${labelsToAdd.map(normalizeLabelName).join(", ")}`
+      : "";
+    const removedMessage = labelsToRemove.length > 0
+      ? `removed from ${labelsToRemove.map(normalizeLabelName).join(", ")}`
+      : "";
 
     let message = "";
 
