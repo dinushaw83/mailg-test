@@ -136,7 +136,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   const getLabelBadges = (email) => {
-    const currentPath = location.pathname.replace("/", "").toLowerCase();
+    const currentPath = (label || folder || "").toLowerCase();
     const isAllMail = ["all"].includes(currentPath);
     const softRemoved = softRemovedLabels[email.id] || [];
     const curLabels = [...new Set([...email.labels, ...softRemoved])]
