@@ -87,6 +87,13 @@ export const GlobalContextProvider = ({ children }) => {
     enabled: false
   });
 
+  // Accounts Settings Tab state
+  const [settingsAccounts, setSettingsAccounts] = usePersistedState("settingsAccounts", {
+    // Grant access settings
+    markAsRead: true, // true = mark as read when opened by others, false = leave unread
+    showAttribution: true, // true = show attribution ("sent by..."), false = hide
+  });
+
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -248,6 +255,8 @@ export const GlobalContextProvider = ({ children }) => {
     setSendAsSettings,
     notificationSettings,
     setNotificationSettings,
+    settingsAccounts,
+    setSettingsAccounts,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,
