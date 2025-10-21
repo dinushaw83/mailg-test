@@ -12,6 +12,71 @@ import { openDB } from "idb";
 
 export const GlobalContext = createContext();
 
+// Special key for storing verification initial config
+const VERIFICATION_INITIAL_CONFIG_KEY = "__verification_initial_config__";
+
+// List of all localStorage keys used in the app (for verification tracking)
+const LOCAL_STORAGE_KEYS = [
+  // Core user and data
+  "loggedInUser",
+  "emails",
+
+  // Contacts
+  "recipients",
+  "recipientLabels",
+  "deletedRecipients",
+  "hiddenRecipients",
+
+  // UI / view state
+  "currentView",
+  "selectedEmails",
+  "labels",
+  "sortOrder",
+  "currentPage",
+  "itemsPerPage",
+  "panelState",
+  "isLeftSidebarExpanded",
+  "showQuickSettings",
+  "density",
+  "threading",
+  "inboxType",
+  "mailg-notification-settings",
+
+  // Right sidebar
+  "rightSidebarExpanded",
+  "rightSidebarActiveTab",
+
+  // Settings
+  "vacationResponder",
+  "signatures",
+  "notificationSettings",
+
+  // Misc
+  "manualSyncCount",
+];
+
+/**
+ * Captures the current state of all tracked localStorage keys
+ * This is called once when the app first loads to establish the baseline
+ */
+const captureInitialConfig = () => {
+  const config = {};
+  LOCAL_STORAGE_KEYS.forEach((key) => {
+    const value = localStorage.getItem(key);
+    if (value !== null) {
+      try {
+        config[key] = JSON.parse(value);
+      } catch (e) {
+        // If it's not JSON, store as string
+        config[key] = value;
+      }
+    } else {
+      config[key] = null;
+    }
+  });
+  return config;
+};
+
 export const GlobalContextProvider = ({ children }) => {
   const [loggedInUser, setLoggedInUser] = usePersistedState("loggedInUser", initialUser);
   const [emails, setEmails] = usePersistedState("emails", initialEmails);
@@ -192,6 +257,34 @@ export const GlobalContextProvider = ({ children }) => {
       await embeddedImagesStore.clear();
     }
   }, [db]);
+
+  // Capture initial config AFTER all state has been initialized with default values
+  // This ensures we capture the actual default values, not nulls
+  useEffect(() => {
+    // Check if initial config already exists in localStorage
+    const existingInitialConfig = localStorage.getItem(VERIFICATION_INITIAL_CONFIG_KEY);
+    
+    if (existingInitialConfig) {
+      // Initial config already exists, load it to window for console access
+      try {
+        window.initialConfig = JSON.parse(existingInitialConfig);
+        console.log("📂 [GlobalContext] Loaded existing initial config:", window.initialConfig);
+      } catch (e) {
+        console.error("Failed to parse existing initial config:", e);
+      }
+    } else {
+      // This is the first time the app is loading
+      // Wait for next tick to ensure all usePersistedState hooks have written their defaults to localStorage
+      const timer = setTimeout(() => {
+        const initialConfig = captureInitialConfig();
+        localStorage.setItem(VERIFICATION_INITIAL_CONFIG_KEY, JSON.stringify(initialConfig));
+        window.initialConfig = initialConfig;
+        console.log("📸 [GlobalContext] Initial config captured on app load:", initialConfig);
+      }, 100); // Small delay to ensure all useEffect hooks from usePersistedState have run
+
+      return () => clearTimeout(timer);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const contextValue = {
     selection,

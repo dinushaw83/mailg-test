@@ -7,6 +7,10 @@ import "react-diff-view/style/index.css";
 import DiffView from "../components/DiffView/DiffView";
 import { sortObjectKeys, processJsonWithHtmlTags, stringifyReplacer } from "../utils/helperFunctions";
 
+// Special keys for storing verification configs (not part of the app's normal localStorage)
+const VERIFICATION_INITIAL_CONFIG_KEY = "__verification_initial_config__";
+const VERIFICATION_CURRENT_CONFIG_KEY = "__verification_current_config__";
+
 // List of all localStorage keys used in the app (from GlobalContext)
 const LOCAL_STORAGE_KEYS = [
   // Core user and data
@@ -32,6 +36,7 @@ const LOCAL_STORAGE_KEYS = [
   "density",
   "threading",
   "inboxType",
+  "mailg-notification-settings",
 
   // Right sidebar
   "rightSidebarExpanded",
@@ -101,20 +106,40 @@ const VerificationLocalStorage = () => {
 
   // Initialize both configs on first mount
   useEffect(() => {
-    // Capture initial config (only once, when component first mounts)
-    if (!window.initialConfig) {
-      const initialSnapshot = gatherLocalStorageConfig();
-      window.initialConfig = initialSnapshot;
-      console.log("📸 Initial config captured:", initialSnapshot);
+    // Load initial config from localStorage (should have been set by GlobalContext)
+    let initialConfig = null;
+    const storedInitialConfig = localStorage.getItem(VERIFICATION_INITIAL_CONFIG_KEY);
+    
+    if (storedInitialConfig) {
+      try {
+        initialConfig = JSON.parse(storedInitialConfig);
+        console.log("📂 [VerificationLocalStorage] Loaded initial config from localStorage:", initialConfig);
+      } catch (e) {
+        console.error("Failed to parse stored initial config:", e);
+      }
     }
 
-    // Set current config to match initial on first load
+    // If no stored initial config exists, this means GlobalContext hasn't initialized yet
+    // or something went wrong. Capture current state as fallback.
+    if (!initialConfig) {
+      initialConfig = gatherLocalStorageConfig();
+      localStorage.setItem(VERIFICATION_INITIAL_CONFIG_KEY, JSON.stringify(initialConfig));
+      console.warn("⚠️ [VerificationLocalStorage] No initial config found, capturing current state as baseline");
+    }
+
+    // Store in window for easy console access
+    window.initialConfig = initialConfig;
+
+    // Capture current config
     const currentSnapshot = gatherLocalStorageConfig();
     window.currentConfig = currentSnapshot;
     setCurrentConfig(currentSnapshot);
+    
+    // Save current config to localStorage
+    localStorage.setItem(VERIFICATION_CURRENT_CONFIG_KEY, JSON.stringify(currentSnapshot));
 
-    // Generate initial diff (should show no changes)
-    const diff = generateConfigDiff(window.initialConfig, currentSnapshot);
+    // Generate initial diff
+    const diff = generateConfigDiff(initialConfig, currentSnapshot);
     setDiffData(diff);
 
     document.title = "Verification Local Storage";
@@ -125,6 +150,9 @@ const VerificationLocalStorage = () => {
     const currentSnapshot = gatherLocalStorageConfig();
     window.currentConfig = currentSnapshot;
     setCurrentConfig(currentSnapshot);
+    
+    // Save current config to localStorage
+    localStorage.setItem(VERIFICATION_CURRENT_CONFIG_KEY, JSON.stringify(currentSnapshot));
 
     // Generate diff between initial and current
     const diff = generateConfigDiff(window.initialConfig, currentSnapshot);
@@ -187,7 +215,7 @@ const VerificationLocalStorage = () => {
 
           <Button
             onClick={() => {
-              if (window.confirm("This will clear all localStorage and reload the page. Continue?")) {
+              if (window.confirm("This will clear all localStorage (including verification configs) and reload the page. Continue?")) {
                 localStorage.clear();
                 delete window.initialConfig;
                 delete window.currentConfig;
@@ -282,16 +310,16 @@ const VerificationLocalStorage = () => {
           <strong>ℹ️ How it works:</strong>
           <ul style={{ margin: "8px 0 0 0", paddingLeft: "20px" }}>
             <li>
-              <strong>Initial Config</strong> is captured when you first load the app (stored in{" "}
-              <code>window.initialConfig</code>)
+              <strong>Initial Config</strong> is captured by GlobalContext when the app first loads (before any user actions) and persisted in localStorage (key: <code>{VERIFICATION_INITIAL_CONFIG_KEY}</code>)
             </li>
             <li>
-              <strong>Current Config</strong> reflects the current state of all localStorage keys (stored in{" "}
-              <code>window.currentConfig</code>)
+              <strong>Current Config</strong> reflects the current state of all localStorage keys and is updated every 2 seconds (key: <code>{VERIFICATION_CURRENT_CONFIG_KEY}</code>)
             </li>
             <li>The diff view below shows what has changed between initial and current state</li>
-            <li>Auto-refreshes every 2 seconds to detect changes</li>
+            <li>Initial config is captured at app startup, so navigating to this page won't affect the baseline</li>
+            <li>Both configs persist across page refreshes - initial config never changes after first capture</li>
             <li>You can access both configs via the browser console: <code>window.initialConfig</code> and <code>window.currentConfig</code></li>
+            <li>Click "Reset All" to clear everything and start fresh</li>
           </ul>
         </div>
       </div>
