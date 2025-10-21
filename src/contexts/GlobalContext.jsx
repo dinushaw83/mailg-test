@@ -91,6 +91,9 @@ export const GlobalContextProvider = ({ children }) => {
     hideClose: false,
   });
 
+  // Manual email sync counter
+  const [manualSyncCount, setManualSyncCount] = usePersistedState("manualSyncCount", 0);
+
   const [selected, setSelected] = useState(() => new Set());
 
   // Clear selection on navigation (folder/label changes)
@@ -253,6 +256,8 @@ export const GlobalContextProvider = ({ children }) => {
     setHiddenRecipients,
     softRemovedLabels,
     setSoftRemovedLabels,
+    manualSyncCount,
+    setManualSyncCount,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;
