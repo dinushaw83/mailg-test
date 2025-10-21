@@ -1,7 +1,6 @@
 // hooks/useMailActions.js
-import React, { useCallback, useContext, useMemo } from "react";
+import React, { useCallback, useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
-import { useParams } from "react-router-dom";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ID utilities (thread-aware)
@@ -106,7 +105,7 @@ const withUndo = (ids, setEmails, operation) => {
  * ────────────────────────────────────────────────────────────────────────── */
 
 export default function useMailActions() {
-  const { setEmails, labels } = useContext(GlobalContext);
+  const { setEmails, labels, setSoftRemovedLabels } = useContext(GlobalContext);
 
   const updateByIds = useCallback(
     (ids, transform) => {
@@ -143,14 +142,32 @@ export default function useMailActions() {
   );
 
   const moveToInbox = useCallback(
-    (ids) =>
-      withUndo(ids, setEmails, () => {
-        updateByIds(ids, (labelSet) => {
+    (ids) => {
+      const undo = withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labelSet, email) => {
+          if (labelSet.has("Muted")) {
+            setSoftRemovedLabels((prev) => ({
+              ...prev,
+              [email.id]: [...(prev[email.id] || []), "Muted"],
+            }));
+          }
+
           removeSystemLabels(labelSet, labels, ["Inbox"]);
+          labelSet.delete("Muted");
           labelSet.add("Inbox");
         });
-      }),
-    [updateByIds, setEmails, labels]
+      });
+
+      return () => {
+        undo();
+        setSoftRemovedLabels((prev) => {
+          const updated = { ...prev };
+          ids.forEach((id) => delete updated[id]);
+          return updated;
+        });
+      };
+    },
+    [updateByIds, setEmails, labels, setSoftRemovedLabels]
   );
 
   const archive = useCallback(
@@ -407,7 +424,7 @@ export default function useMailActions() {
       unsnooze,
       toggleMuted,
       setMuted,
-      deleteAllSpam,
+      deleteAllSpam
     }),
     [
       addLabels,
@@ -430,7 +447,7 @@ export default function useMailActions() {
       unsnooze,
       toggleMuted,
       setMuted,
-      deleteAllSpam,
+      deleteAllSpam
     ]
   );
 }
