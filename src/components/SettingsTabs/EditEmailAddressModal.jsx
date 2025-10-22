@@ -1,7 +1,14 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Dialog, DialogContent, Box } from "@mui/material";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
-export default function EditEmailAddressModal({ open, onClose, fullName = "John Doe", email = "john.doe@example.com" }) {
+export default function EditEmailAddressModal({
+  open,
+  onClose,
+  fullName = "John Doe",
+  email = "john.doe@example.com",
+}) {
+  const { sendAsSettings, setSendAsSettings } = useGlobalContext();
   const firstLast = useMemo(() => {
     const [first, ...rest] = fullName.split(" ");
     return { first: first || "John", last: rest.join(" ") || "Doe" };
@@ -10,9 +17,25 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
   const [useCustomName, setUseCustomName] = useState(false);
   const [customName, setCustomName] = useState("");
   const [showReplyTo, setShowReplyTo] = useState(false);
+  const [replyTo, setReplyTo] = useState("");
+
+  // Populate modal with saved values on open
+  useEffect(() => {
+    if (open && sendAsSettings) {
+      setUseCustomName(Boolean(sendAsSettings.displayName && sendAsSettings.displayName !== fullName));
+      setCustomName(
+        sendAsSettings.displayName && sendAsSettings.displayName !== fullName ? sendAsSettings.displayName : ""
+      );
+      setReplyTo(sendAsSettings.replyTo || "");
+    }
+  }, [open, sendAsSettings, fullName]);
 
   const handleCancel = () => onClose?.();
-  const handleSave = () => onClose?.();
+  const handleSave = () => {
+    const nextDisplayName = useCustomName && customName.trim() ? customName.trim() : fullName;
+    setSendAsSettings({ displayName: nextDisplayName, email, replyTo });
+    onClose?.();
+  };
 
   return (
     <Dialog
@@ -42,15 +65,19 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
       </Box>
 
       <DialogContent sx={{ p: 0, backgroundColor: "#FFF7D7" }}>
-        <table id="ipanel" width="97%" cellPadding="8" cellSpacing="0" style={{ fontFamily: "arial, sans-serif", margin: 8 }}>
+        <table
+          id="ipanel"
+          width="97%"
+          cellPadding="8"
+          cellSpacing="0"
+          style={{ fontFamily: "arial, sans-serif", margin: 8 }}
+        >
           <tbody>
             <tr style={{ fontSize: "80%" }}>
               <td style={{ fontFamily: "arial, sans-serif" }}>
                 <strong>{`Edit information for ${email}`}</strong>
                 <br />
-                <span style={{ fontSize: "80%" }}>
-                  (your name and email address will be shown on mail you send)
-                </span>
+                <span style={{ fontSize: "80%" }}>(your name and email address will be shown on mail you send)</span>
               </td>
             </tr>
             <tr style={{ fontSize: "80%" }}>
@@ -67,12 +94,27 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
             </tr>
             <tr>
               <td style={{ fontFamily: "arial, sans-serif" }}>
-                <form name="mainForm" method="POST" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-                  <input id="cfrp" name="cfrp" type="hidden" defaultValue="1" style={{ fontFamily: "arial, sans-serif" }} />
+                <form
+                  name="mainForm"
+                  method="POST"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSave();
+                  }}
+                >
+                  <input
+                    id="cfrp"
+                    name="cfrp"
+                    type="hidden"
+                    defaultValue="1"
+                    style={{ fontFamily: "arial, sans-serif" }}
+                  />
                   <table cellPadding="2" cellSpacing="0">
                     <tbody>
                       <tr style={{ fontSize: "80%" }}>
-                        <td width="120" style={{ fontFamily: "arial, sans-serif" }}>Name:&nbsp;</td>
+                        <td width="120" style={{ fontFamily: "arial, sans-serif" }}>
+                          Name:&nbsp;
+                        </td>
                         <td style={{ fontFamily: "arial, sans-serif" }}>
                           <table cellPadding="1" cellSpacing="0">
                             <tbody>
@@ -140,7 +182,12 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
                           <span
                             id="diff_reply_to"
                             className="lk in"
-                            style={{ textDecoration: "underline", whiteSpace: "nowrap", color: "rgb(0, 0, 204)", cursor: "pointer" }}
+                            style={{
+                              textDecoration: "underline",
+                              whiteSpace: "nowrap",
+                              color: "rgb(0, 0, 204)",
+                              cursor: "pointer",
+                            }}
                             onClick={() => setShowReplyTo((v) => !v)}
                           >
                             Specify a different "reply-to" address
@@ -153,11 +200,21 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
                           <label htmlFor="cfrt">Reply-to address:&nbsp;</label>
                         </td>
                         <td style={{ fontFamily: "arial, sans-serif" }}>
-                          <input id="cfrt" name="cfrt" size={30} style={{ fontFamily: "arial, sans-serif" }} />
+                          <input
+                            id="cfrt"
+                            name="cfrt"
+                            size={30}
+                            value={replyTo}
+                            onChange={(e) => setReplyTo(e.target.value)}
+                            style={{ fontFamily: "arial, sans-serif" }}
+                          />
                           <br />
                           <span style={{ fontSize: "80%" }}>
-                            (a reply to mail you send will go to this address. {" "}
-                            <a href="http://localhost:3000/settings/accounts" target="_blank" style={{ fontFamily: "arial, sans-serif" }}>Learn&nbsp;more</a>)
+                            (a reply to mail you send will go to this address.{" "}
+                            <a href="/settings/accounts" target="_blank" style={{ fontFamily: "arial, sans-serif" }}>
+                              Learn&nbsp;more
+                            </a>
+                            )
                           </span>
                         </td>
                       </tr>
@@ -166,23 +223,43 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
                         <td style={{ fontFamily: "arial, sans-serif" }}>&nbsp;</td>
                       </tr>
                       <tr>
-                        <td colSpan="2" style={{ fontFamily: "arial, sans-serif", textAlign: "right", paddingRight: 16 }}>
+                        <td
+                          colSpan="2"
+                          style={{ fontFamily: "arial, sans-serif", textAlign: "right", paddingRight: 16 }}
+                        >
                           <input
                             id="bttn_cancel"
                             className="in"
                             type="button"
                             defaultValue="Cancel"
                             onClick={handleCancel}
-                            style={{ fontFamily: "arial, sans-serif", fontWeight: "normal", fontSize: "0.8rem", padding: "3px 7px", marginRight: 5 }}
+                            style={{
+                              fontFamily: "arial, sans-serif",
+                              fontWeight: "normal",
+                              fontSize: "0.8rem",
+                              padding: "3px 7px",
+                              marginRight: 5,
+                            }}
                           />
-                          <input id="bttn_close" className="in" type="button" defaultValue="Close" style={{ fontFamily: "arial, sans-serif", fontWeight: "normal", display: "none" }} />
+                          <input
+                            id="bttn_close"
+                            className="in"
+                            type="button"
+                            defaultValue="Close"
+                            style={{ fontFamily: "arial, sans-serif", fontWeight: "normal", display: "none" }}
+                          />
                           &nbsp;
                           <input
                             id="bttn_sub"
                             className="in"
                             type="submit"
                             value="Save Changes"
-                            style={{ fontFamily: "arial, sans-serif", fontWeight: 600, fontSize: "0.8rem", padding: "3px 7px" }}
+                            style={{
+                              fontFamily: "arial, sans-serif",
+                              fontWeight: 600,
+                              fontSize: "0.8rem",
+                              padding: "3px 7px",
+                            }}
                           />
                         </td>
                       </tr>
@@ -197,5 +274,3 @@ export default function EditEmailAddressModal({ open, onClose, fullName = "John 
     </Dialog>
   );
 }
-
-

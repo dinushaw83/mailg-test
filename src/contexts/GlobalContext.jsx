@@ -59,6 +59,13 @@ export const GlobalContextProvider = ({ children }) => {
     activeTab: null,
   });
 
+  // Send mail as settings (display name and optional reply-to)
+  const [sendAsSettings, setSendAsSettings] = usePersistedState("sendAsSettings", {
+    displayName: "John Doe",
+    email: "john.doe@example.com",
+    replyTo: "",
+  });
+
   // Contact management states
   const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
   const [createLabelModal, setCreateLabelModal] = useState({
@@ -210,6 +217,13 @@ export const GlobalContextProvider = ({ children }) => {
     currentTheme: "default",
   });
 
+  // Accounts Settings Tab state
+  const [settingsAccounts, setSettingsAccounts] = usePersistedState("settingsAccounts", {
+    // Grant access settings
+    markAsRead: true, // true = mark as read when opened by others, false = leave unread
+    showAttribution: true, // true = show attribution ("sent by..."), false = hide
+  });
+
   // MailG Account - Personal Info state
   const [mailGAccountPersonalInfo, setMailGAccountPersonalInfo] = usePersistedState("mailGAccountPersonalInfo", {
     name: "John Doe",
@@ -342,7 +356,6 @@ export const GlobalContextProvider = ({ children }) => {
       lastAccessed: "2 months ago",
     },
   ]);
-
   // Global snackbar state
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -502,10 +515,14 @@ export const GlobalContextProvider = ({ children }) => {
     setDeletedRecipients,
     signaturesState,
     setSignaturesState,
+    sendAsSettings,
+    setSendAsSettings,
     notificationSettings,
     setNotificationSettings,
     privacySettings,
     setPrivacySettings,
+    settingsAccounts,
+    setSettingsAccounts,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,

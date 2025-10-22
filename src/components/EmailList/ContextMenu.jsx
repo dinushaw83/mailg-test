@@ -316,7 +316,7 @@ const ContextMenu = ({
         handleSnoozeAction(threadId);
         break;
       case "mute":
-        handleMuteAction(threadId);
+        handleMuteAction(threadId, muted);
         break;
       case "move_to_inbox":
         handleMoveToInbox(threadId);

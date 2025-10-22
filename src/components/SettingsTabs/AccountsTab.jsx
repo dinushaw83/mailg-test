@@ -1,15 +1,60 @@
 import React, { useState } from "react";
 import EditEmailAddressModal from "./EditEmailAddressModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { Box } from "@mui/material";
 
 const AccountsTab = () => {
   const [editOpen, setEditOpen] = useState(false);
+  const { sendAsSettings, setSnackbar, settingsAccounts, setSettingsAccounts } = useGlobalContext();
+
+  // Handle Mark as Read change
+  const handleMarkAsReadChange = (shouldMarkAsRead) => {
+    setSettingsAccounts((prev) => ({
+      ...prev,
+      markAsRead: shouldMarkAsRead,
+    }));
+    const message = shouldMarkAsRead
+      ? "Conversations are now marked as read when other users open them."
+      : "Conversations are now left unread when other users open them.";
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 5000,
+      severity: "success",
+      style: {
+        "& .MuiSnackbarContent-root": {
+          backgroundColor: "#323232",
+          color: "#ffffff",
+        },
+      },
+    });
+  };
+
+  // Handle Sender Attribution change
+  const handleAttributionChange = (shouldShowAttribution) => {
+    setSettingsAccounts((prev) => ({
+      ...prev,
+      showAttribution: shouldShowAttribution,
+    }));
+    const message = shouldShowAttribution
+      ? "Messages sent from delegates will include attribution from now."
+      : "Messages sent from delegates will not include attribution from now.";
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 5000,
+      severity: "success",
+      style: {
+        "& .MuiSnackbarContent-root": {
+          backgroundColor: "#323232",
+          color: "#ffffff",
+        },
+      },
+    });
+  };
   return (
-    <>
-      <div
-        id=":1"
-        className="aeF"
-        style={{ padding: "0px", verticalAlign: "bottom", minHeight: "513px" }}
-      >
+    <Box sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }}>
+      <div id=":1" className="aeF" style={{ padding: "0px", verticalAlign: "bottom", minHeight: "513px" }}>
         <div className="nH">
           <div className="nH v9" role="main" style={{ padding: "inherit" }}>
             <div className="nH">
@@ -70,8 +115,7 @@ const AccountsTab = () => {
                               className="r7"
                               style={{
                                 WebkitFontSmoothing: "antialiased",
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "0.875rem",
                                 letterSpacing: "normal",
                               }}
@@ -119,7 +163,7 @@ const AccountsTab = () => {
                                 <div>
                                   <a
                                     className="e"
-                                    href="http://localhost:3000/settings/accounts"
+                                    href="/settings/accounts"
                                     target="_blank"
                                     style={{
                                       whiteSpace: "nowrap",
@@ -134,7 +178,7 @@ const AccountsTab = () => {
                                 <div>
                                   <a
                                     className="e"
-                                    href="http://localhost:3000/settings/accounts"
+                                    href="/settings/accounts"
                                     target="_blank"
                                     style={{
                                       whiteSpace: "nowrap",
@@ -149,7 +193,7 @@ const AccountsTab = () => {
                                 <div>
                                   <a
                                     className="e"
-                                    href="http://localhost:3000/settings/accounts"
+                                    href="/settings/accounts"
                                     target="_blank"
                                     style={{
                                       whiteSpace: "nowrap",
@@ -167,8 +211,7 @@ const AccountsTab = () => {
                               className="r7"
                               style={{
                                 WebkitFontSmoothing: "antialiased",
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "0.875rem",
                                 letterSpacing: "normal",
                               }}
@@ -204,12 +247,10 @@ const AccountsTab = () => {
                                   paddingRight: "0px",
                                 }}
                               >
-                                Businesses get yourname@example.com email, more
-                                storage, and admin tools with Google Workspace.{" "}
+                                Businesses get yourname@example.com email, more storage, and admin tools with Google
+                                Workspace.{" "}
                                 <span>
-                                  <a href="http://localhost:3000/settings/accounts">
-                                    Try at no cost
-                                  </a>
+                                  <a href="/settings/accounts">Try at no cost</a>
                                 </span>
                               </td>
                             </tr>
@@ -217,8 +258,7 @@ const AccountsTab = () => {
                               className="r7"
                               style={{
                                 WebkitFontSmoothing: "antialiased",
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "0.875rem",
                                 letterSpacing: "normal",
                               }}
@@ -252,7 +292,7 @@ const AccountsTab = () => {
                                   <a
                                     className="e"
                                     aria-label="Learn more about importing mail and contacts"
-                                    href="http://localhost:3000/settings/accounts"
+                                    href="/settings/accounts"
                                     target="_blank"
                                     style={{
                                       whiteSpace: "nowrap",
@@ -291,14 +331,8 @@ const AccountsTab = () => {
                                     borderCollapse: "separate",
                                   }}
                                 />
-                                <div>
-                                  Import from Yahoo!, Hotmail, AOL, or other
-                                  webmail or POP3 accounts.
-                                </div>
-                                <div
-                                  className="qx"
-                                  style={{ padding: "0px", paddingTop: "0px" }}
-                                >
+                                <div>Import from Yahoo!, Hotmail, AOL, or other webmail or POP3 accounts.</div>
+                                <div className="qx" style={{ padding: "0px", paddingTop: "0px" }}>
                                   <span
                                     id=":2p"
                                     className="sA rc aXE"
@@ -322,8 +356,7 @@ const AccountsTab = () => {
                               className="r7"
                               style={{
                                 WebkitFontSmoothing: "antialiased",
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "0.875rem",
                                 letterSpacing: "normal",
                               }}
@@ -357,21 +390,19 @@ const AccountsTab = () => {
                                   className="ra"
                                   style={{
                                     WebkitFontSmoothing: "auto",
-                                    fontFamily:
-                                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                     fontSize: "0.75rem",
                                     letterSpacing: "normal",
                                   }}
                                 >
-                                  (Use MailG to send from your other email
-                                  addresses)
+                                  (Use MailG to send from your other email addresses)
                                 </span>
                                 <br />
                                 <span>
                                   <a
                                     className="e"
                                     aria-label="Learn more about sending email from a custom from address"
-                                    href="http://localhost:3000/settings/accounts"
+                                    href="/settings/accounts"
                                     target="_blank"
                                     style={{
                                       whiteSpace: "nowrap",
@@ -427,7 +458,7 @@ const AccountsTab = () => {
                                             overflowWrap: "break-word",
                                           }}
                                         >
-                                          {"John Doe <john.doe@example.com>"}
+                                          {`${sendAsSettings.displayName} <${sendAsSettings.email}>`}
                                         </div>
                                       </td>
                                       <td
@@ -511,6 +542,26 @@ const AccountsTab = () => {
                                         </span>
                                       </td>
                                     </tr>
+                                    {sendAsSettings.replyTo && (
+                                      <tr>
+                                        <td
+                                          className="CY"
+                                          style={{
+                                            margin: "0px",
+                                            paddingRight: "10px",
+                                            paddingBottom: "10px",
+                                            verticalAlign: "top",
+                                          }}
+                                        >
+                                          <div
+                                            className="rc"
+                                            style={{ fontWeight: "normal", overflowWrap: "break-word" }}
+                                          >
+                                            {`Reply-to address: ${sendAsSettings.replyTo}`}
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    )}
                                   </tbody>
                                 </table>
                               </td>
@@ -519,8 +570,7 @@ const AccountsTab = () => {
                               className="r7"
                               style={{
                                 WebkitFontSmoothing: "antialiased",
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "0.875rem",
                                 letterSpacing: "normal",
                               }}
@@ -554,7 +604,7 @@ const AccountsTab = () => {
                                   <a
                                     className="e"
                                     aria-label="Learn more about MailG's Mail Fetcher"
-                                    href="http://localhost:3000/settings/accounts"
+                                    href="/settings/accounts"
                                     target="_blank"
                                     style={{
                                       whiteSpace: "nowrap",
@@ -594,10 +644,7 @@ const AccountsTab = () => {
                                 >
                                   <tbody />
                                 </table>
-                                <div
-                                  className="qx"
-                                  style={{ padding: "0px", paddingTop: "0px" }}
-                                >
+                                <div className="qx" style={{ padding: "0px", paddingTop: "0px" }}>
                                   <span
                                     id=":2w"
                                     className="sA rc"
@@ -621,8 +668,7 @@ const AccountsTab = () => {
                               className="r7"
                               style={{
                                 WebkitFontSmoothing: "antialiased",
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "0.875rem",
                                 letterSpacing: "normal",
                               }}
@@ -656,21 +702,19 @@ const AccountsTab = () => {
                                   className="ra"
                                   style={{
                                     WebkitFontSmoothing: "auto",
-                                    fontFamily:
-                                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                     fontSize: "0.75rem",
                                     letterSpacing: "normal",
                                   }}
                                 >
-                                  (Allow others to read and send mail on your
-                                  behalf)
+                                  (Allow others to read and send mail on your behalf)
                                 </span>
                                 <br />
                                 <span>
                                   <a
                                     className="e"
                                     aria-label="Learn more about granting others access to your account"
-                                    href="http://localhost:3000/settings/accounts"
+                                    href="/settings/accounts"
                                     target="_blank"
                                     style={{
                                       whiteSpace: "nowrap",
@@ -769,10 +813,7 @@ const AccountsTab = () => {
                                   }}
                                 >
                                   <tbody>
-                                    <tr
-                                      className="C7"
-                                      style={{ verticalAlign: "top" }}
-                                    >
+                                    <tr className="C7" style={{ verticalAlign: "top" }}>
                                       <td
                                         className="C6"
                                         style={{
@@ -784,7 +825,8 @@ const AccountsTab = () => {
                                           id=":34"
                                           name="bx_amard"
                                           type="radio"
-                                          defaultChecked
+                                          checked={settingsAccounts.markAsRead}
+                                          onChange={() => handleMarkAsReadChange(true)}
                                           value="1"
                                           style={{
                                             fontFamily:
@@ -807,14 +849,8 @@ const AccountsTab = () => {
                                           paddingLeft: "8px",
                                         }}
                                       >
-                                        <span
-                                          className="rS"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          <label htmlFor=":34">
-                                            Mark conversation as read when
-                                            opened by others
-                                          </label>
+                                        <span className="rS" style={{ fontWeight: "bold" }}>
+                                          <label htmlFor=":34">Mark conversation as read when opened by others</label>
                                         </span>
                                       </td>
                                     </tr>
@@ -831,10 +867,7 @@ const AccountsTab = () => {
                                   }}
                                 >
                                   <tbody>
-                                    <tr
-                                      className="C7"
-                                      style={{ verticalAlign: "top" }}
-                                    >
+                                    <tr className="C7" style={{ verticalAlign: "top" }}>
                                       <td
                                         className="C6"
                                         style={{
@@ -846,6 +879,8 @@ const AccountsTab = () => {
                                           id=":35"
                                           name="bx_amard"
                                           type="radio"
+                                          checked={!settingsAccounts.markAsRead}
+                                          onChange={() => handleMarkAsReadChange(false)}
                                           value="0"
                                           style={{
                                             fontFamily:
@@ -868,14 +903,8 @@ const AccountsTab = () => {
                                           paddingLeft: "8px",
                                         }}
                                       >
-                                        <span
-                                          className="rS"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          <label htmlFor=":35">
-                                            Leave conversation unread when
-                                            opened by others
-                                          </label>
+                                        <span className="rS" style={{ fontWeight: "bold" }}>
+                                          <label htmlFor=":35">Leave conversation unread when opened by others</label>
                                         </span>
                                       </td>
                                     </tr>
@@ -902,10 +931,7 @@ const AccountsTab = () => {
                                   }}
                                 >
                                   <tbody>
-                                    <tr
-                                      className="C7"
-                                      style={{ verticalAlign: "top" }}
-                                    >
+                                    <tr className="C7" style={{ verticalAlign: "top" }}>
                                       <td
                                         className="C6"
                                         style={{
@@ -917,7 +943,8 @@ const AccountsTab = () => {
                                           id=":36"
                                           name="sender_attribution_setting"
                                           type="radio"
-                                          defaultChecked
+                                          checked={settingsAccounts.showAttribution}
+                                          onChange={() => handleAttributionChange(true)}
                                           value="1"
                                           style={{
                                             fontFamily:
@@ -940,13 +967,9 @@ const AccountsTab = () => {
                                           paddingLeft: "8px",
                                         }}
                                       >
-                                        <span
-                                          className="rS"
-                                          style={{ fontWeight: "bold" }}
-                                        >
+                                        <span className="rS" style={{ fontWeight: "bold" }}>
                                           <label htmlFor=":36">
-                                            Show this address and the person who
-                                            sent it ("sent by …")
+                                            Show this address and the person who sent it ("sent by …")
                                           </label>
                                         </span>
                                       </td>
@@ -964,10 +987,7 @@ const AccountsTab = () => {
                                   }}
                                 >
                                   <tbody>
-                                    <tr
-                                      className="C7"
-                                      style={{ verticalAlign: "top" }}
-                                    >
+                                    <tr className="C7" style={{ verticalAlign: "top" }}>
                                       <td
                                         className="C6"
                                         style={{
@@ -979,6 +999,8 @@ const AccountsTab = () => {
                                           id=":37"
                                           name="sender_attribution_setting"
                                           type="radio"
+                                          checked={!settingsAccounts.showAttribution}
+                                          onChange={() => handleAttributionChange(false)}
                                           value="0"
                                           style={{
                                             fontFamily:
@@ -1001,14 +1023,8 @@ const AccountsTab = () => {
                                           paddingLeft: "8px",
                                         }}
                                       >
-                                        <span
-                                          className="rS"
-                                          style={{ fontWeight: "bold" }}
-                                        >
-                                          <label htmlFor=":37">
-                                            Show this address only
-                                            (john.doe@example.com)
-                                          </label>
+                                        <span className="rS" style={{ fontWeight: "bold" }}>
+                                          <label htmlFor=":37">Show this address only (john.doe@example.com)</label>
                                         </span>
                                       </td>
                                     </tr>
@@ -1020,8 +1036,7 @@ const AccountsTab = () => {
                               className="r7"
                               style={{
                                 WebkitFontSmoothing: "antialiased",
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 fontSize: "0.875rem",
                                 letterSpacing: "normal",
                               }}
@@ -1068,10 +1083,7 @@ const AccountsTab = () => {
                                   paddingRight: "0px",
                                 }}
                               >
-                                <div
-                                  className="qx"
-                                  style={{ padding: "0px", paddingTop: "0px" }}
-                                >
+                                <div className="qx" style={{ padding: "0px", paddingTop: "0px" }}>
                                   <div
                                     className="rc"
                                     style={{
@@ -1085,7 +1097,7 @@ const AccountsTab = () => {
                                     Need more space?{" "}
                                     <a
                                       className="e"
-                                      href="http://localhost:3000/settings/accounts"
+                                      href="/settings/accounts"
                                       target="_blank"
                                       style={{
                                         whiteSpace: "nowrap",
@@ -1181,8 +1193,13 @@ const AccountsTab = () => {
           </div>
         </div>
       </div>
-      <EditEmailAddressModal open={editOpen} onClose={() => setEditOpen(false)} fullName="John Doe" email="john.doe@example.com" />
-    </>
+      <EditEmailAddressModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        fullName="John Doe"
+        email="john.doe@example.com"
+      />
+    </Box>
   );
 };
 

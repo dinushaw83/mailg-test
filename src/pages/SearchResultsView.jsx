@@ -328,9 +328,8 @@ const SearchResultsView = () => {
                             </p>
                             <Button
                               variant="text"
-                              href="https://support.google.com/mail/answer/6593?hl=en"
+                              href="#"
                               aria-label="Learn more about broadening your search"
-                              target="_blank"
                               sx={{
                                 color: "#1a73e8",
                                 fontSize: "14px",
