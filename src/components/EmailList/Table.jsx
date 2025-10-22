@@ -356,12 +356,12 @@ const Table = ({
   }, []);
 
   const handleMuteAction = useCallback(
-    (threadId) => {
+    (threadId, muted) => {
       toggleMuted(threadId);
 
       setSnackbar({
         open: true,
-        message: "Conversation muted.",
+        message: `Conversation ${muted ? "unmuted" : "muted"}.`,
         autoHideDuration: 3000,
         action: (
           <Button
