@@ -5,8 +5,13 @@ import RightSideBarTabs from "./RightSidebarTabs/RightSideBarTabs";
 import styles from "./RightSidebar.module.css";
 
 const RightSidebar = () => {
-  const { rightSidebarExpanded, setRightSidebarExpanded, rightSidebarActiveTab, setRightSidebarActiveTab, vacationResponder } =
-    useGlobalContext();
+  const {
+    rightSidebarExpanded,
+    setRightSidebarExpanded,
+    rightSidebarActiveTab,
+    setRightSidebarActiveTab,
+    vacationResponder,
+  } = useGlobalContext();
 
   useEffect(
     () => () => {
@@ -35,7 +40,7 @@ const RightSidebar = () => {
       className={`nH ${styles.rightSidebar}`}
       style={{
         width: rightSidebarExpanded ? (rightSidebarActiveTab.activeTab ? "376px" : "56px") : "16px",
-        height: `calc(100vh - ${vacationResponder.enabled ? '64px' : '98px'})`,
+        height: `calc(100vh - ${vacationResponder.enabled ? "64px" : "98px"})`,
       }}
     >
       {/* Tab Content Area - Left side */}
@@ -62,10 +67,10 @@ const RightSidebar = () => {
             <div className="brC-brG-a9i-Jz-Jw" />
           </div>
         </div>
-        <div 
-          className={`bAw bcf it ${styles.rightSidebarContent}`} 
+        <div
+          className={`bAw bcf it ${styles.rightSidebarContent}`}
           style={{
-            height: `calc(100vh - ${vacationResponder.enabled ? '45px' : '79px'})`,
+            height: `calc(100vh - ${vacationResponder.enabled ? "45px" : "79px"})`,
           }}
           jsaction="cZRHAe:.CLIENT"
         >
@@ -87,7 +92,7 @@ const RightSidebar = () => {
                   <div
                     className="aT5-aOt-I-JX-Jw"
                     style={{
-                      backgroundImage: 'url("https://www.gstatic.com/companion/icon_assets/calendar_2020q4_2x.png")',
+                      backgroundImage: 'url("/assets/images/calendar_2020q4_2x.png")',
                       userSelect: "none",
                     }}
                   />
@@ -108,7 +113,7 @@ const RightSidebar = () => {
                   <div
                     className="aT5-aOt-I-JX-Jw"
                     style={{
-                      backgroundImage: 'url("https://www.gstatic.com/companion/icon_assets/keep_2020q4v3_2x.png")',
+                      backgroundImage: 'url("/assets/images/keep_2020q4v3_2x.png")',
                       userSelect: "none",
                     }}
                   />
@@ -129,7 +134,7 @@ const RightSidebar = () => {
                   <div
                     className="aT5-aOt-I-JX-Jw"
                     style={{
-                      backgroundImage: 'url("https://www.gstatic.com/companion/icon_assets/tasks_2021_2x.png")',
+                      backgroundImage: 'url("/assets/images/tasks_2021_2x.png")',
                       userSelect: "none",
                     }}
                   />
@@ -190,8 +195,7 @@ const RightSidebar = () => {
                   <div
                     className="aT5-aOt-I-JX-Jw"
                     style={{
-                      backgroundImage:
-                        "url(https://fonts.gstatic.com/s/i/googlematerialicons/add/v21/black-24dp/1x/gm_add_black_24dp.png)",
+                      backgroundImage: "url(/assets/images/gm_add_black_24dp.png)",
                     }}
                   />
                   <div className="bse-bvF-JX-axQ-avS Gs-avS" style={{ backgroundColor: "#ffffff" }} />

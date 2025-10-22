@@ -59,6 +59,13 @@ export const GlobalContextProvider = ({ children }) => {
     activeTab: null,
   });
 
+  // Send mail as settings (display name and optional reply-to)
+  const [sendAsSettings, setSendAsSettings] = usePersistedState("sendAsSettings", {
+    displayName: "John Doe",
+    email: "john.doe@example.com",
+    replyTo: "",
+  });
+
   // Contact management states
   const [contactsLeftSidebarExpanded, setContactsLeftSidebarExpanded] = useState(true);
   const [createLabelModal, setCreateLabelModal] = useState({
@@ -80,6 +87,13 @@ export const GlobalContextProvider = ({ children }) => {
     type: "off", // "off", "new", "important"
     sound: "1",  // Sound ID
     enabled: false
+  });
+
+  // Accounts Settings Tab state
+  const [settingsAccounts, setSettingsAccounts] = usePersistedState("settingsAccounts", {
+    // Grant access settings
+    markAsRead: true, // true = mark as read when opened by others, false = leave unread
+    showAttribution: true, // true = show attribution ("sent by..."), false = hide
   });
 
   // Global snackbar state
@@ -241,8 +255,12 @@ export const GlobalContextProvider = ({ children }) => {
     setDeletedRecipients,
     signaturesState,
     setSignaturesState,
+    sendAsSettings,
+    setSendAsSettings,
     notificationSettings,
     setNotificationSettings,
+    settingsAccounts,
+    setSettingsAccounts,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,
