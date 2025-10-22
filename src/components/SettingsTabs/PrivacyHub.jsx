@@ -2392,7 +2392,7 @@ export default function PrivacyHub({ open, onClose, initialView = 'dataAndPrivac
           <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 2, p: 3, mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <img src="https://flagcdn.com/w40/us.png" alt="US flag" style={{ width: 24, height: 16 }} />
+                <img src="/assets/images/us.png" alt="US flag" style={{ width: 24, height: 16 }} />
                 <Typography sx={{ fontSize: '0.875rem' }}>{editFormData.phone}</Typography>
               </Box>
               <ChevronRightIcon sx={{ color: 'text.disabled' }} />
