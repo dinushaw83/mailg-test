@@ -14,6 +14,8 @@ import MoreActions from "../MailActions/MoreActions";
 import Popover from "@mui/material/Popover";
 import Box from "@mui/material/Box";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -21,10 +23,17 @@ const CheckboxContainer = styled.div`
   background-color: ${({ focused }) => (focused ? "rgba(239, 238, 237, 0.5)" : "transparent")};
 `;
 
-const CheckBox = ({ allSelected, partialSelected, toggle }) => {
+const MenuItemStyles = {
+  fontSize: "14px",
+  padding: "6px 48px",
+};
+
+const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) => {
   const [{ focused }, setState] = useState({
     focused: false,
   });
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
   const toggleFocus = () => {
     setState((prev) => ({
@@ -41,41 +50,142 @@ const CheckBox = ({ allSelected, partialSelected, toggle }) => {
     }));
   };
 
+  const handleMenuOpen = (e) => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
+    toggleFocus();
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSelectAll = () => {
+    const threadIds = threads.map((email) => email.threadId.split(":")[1]);
+    selection.setMany(threadIds);
+    handleMenuClose();
+  };
+
+  const handleSelectNone = () => {
+    selection.clear();
+    handleMenuClose();
+  };
+
+  const handleSelectRead = () => {
+    const readThreadIds = threads.filter((email) => email.read).map((email) => email.threadId.split(":")[1]);
+    selection.setMany(readThreadIds);
+    handleMenuClose();
+  };
+
+  const handleSelectUnread = () => {
+    const unreadThreadIds = threads.filter((email) => !email.read).map((email) => email.threadId.split(":")[1]);
+    selection.setMany(unreadThreadIds);
+    handleMenuClose();
+  };
+
+  const handleSelectStarred = () => {
+    const starredThreadIds = threads.filter((email) => email.starred).map((email) => email.threadId.split(":")[1]);
+    selection.setMany(starredThreadIds);
+    handleMenuClose();
+  };
+
+  const handleSelectUnstarred = () => {
+    const unstarredThreadIds = threads.filter((email) => !email.starred).map((email) => email.threadId.split(":")[1]);
+    selection.setMany(unstarredThreadIds);
+    handleMenuClose();
+  };
+
   return (
     <ClickAwayListener onClickAway={() => setState((prev) => ({ ...prev, focused: false }))}>
-      <CheckboxContainer focused={focused}>
-        <IconButton
-          onClick={toggleChecked}
-          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "3px", paddingRight: "3px", borderRadius: "5px" }}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 20,
-              color: "rgb(68, 68, 68)",
+      <Box>
+        <CheckboxContainer focused={focused}>
+          <IconButton
+            onClick={toggleChecked}
+            sx={{
+              paddingTop: "8px",
+              paddingBottom: "8px",
+              paddingLeft: "3px",
+              paddingRight: "3px",
+              borderRadius: "5px",
             }}
           >
-            {allSelected ? "check_box" : partialSelected ? "indeterminate_check_box" : "check_box_outline_blank"}
-          </span>
-        </IconButton>
-        <IconButton
-          sx={{ paddingTop: "8px", paddingBottom: "8px", paddingLeft: "1px", paddingRight: "1px", borderRadius: "5px" }}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 20,
-              color: "rgb(68, 68, 68)",
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFocus();
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20,
+                color: "rgb(68, 68, 68)",
+              }}
+            >
+              {allSelected ? "check_box" : partialSelected ? "indeterminate_check_box" : "check_box_outline_blank"}
+            </span>
+          </IconButton>
+          <IconButton
+            onClick={handleMenuOpen}
+            sx={{
+              paddingTop: "8px",
+              paddingBottom: "8px",
+              paddingLeft: "1px",
+              paddingRight: "1px",
+              borderRadius: "5px",
             }}
           >
-            arrow_drop_down
-          </span>
-        </IconButton>
-      </CheckboxContainer>
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 20,
+                color: "rgb(68, 68, 68)",
+              }}
+            >
+              arrow_drop_down
+            </span>
+          </IconButton>
+        </CheckboxContainer>
+        <Menu
+          dense
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "left",
+          }}
+          slotProps={{
+            paper: {
+              sx: {
+                minWidth: "150px",
+              },
+            },
+            list: {
+              sx: {
+                padding: "4px 0",
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={handleSelectAll} sx={MenuItemStyles}>
+            All
+          </MenuItem>
+          <MenuItem onClick={handleSelectNone} sx={MenuItemStyles}>
+            None
+          </MenuItem>
+          <MenuItem onClick={handleSelectRead} sx={MenuItemStyles}>
+            Read
+          </MenuItem>
+          <MenuItem onClick={handleSelectUnread} sx={MenuItemStyles}>
+            Unread
+          </MenuItem>
+          <MenuItem onClick={handleSelectStarred} sx={MenuItemStyles}>
+            Starred
+          </MenuItem>
+          <MenuItem onClick={handleSelectUnstarred} sx={MenuItemStyles}>
+            Unstarred
+          </MenuItem>
+        </Menu>
+      </Box>
     </ClickAwayListener>
   );
 };
@@ -272,8 +382,13 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
           document.body
         )}
       <LeftItemsContainer>
-        <CheckBox allSelected={allSelected} partialSelected={partialSelected} toggle={toggleAllSelected} />
-
+        <CheckBox
+          allSelected={allSelected}
+          partialSelected={partialSelected}
+          toggle={toggleAllSelected}
+          threads={threads}
+          selection={selection}
+        />
         {hasItemsSelected ? (
           <>
             {folder === "spam" || folder === "trash" ? (
@@ -294,7 +409,6 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
             />
           </>
         )}
-
         <MoreActions
           hasItemsSelected={hasItemsSelected}
           threads={threads}

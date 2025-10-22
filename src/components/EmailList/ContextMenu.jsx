@@ -28,12 +28,15 @@ const ContextMenu = ({
   const threadId = contextRow?.threadId.split(":")[1];
   const selectedIds = [threadId];
 
+  const isSpamFolder = folder === "spam";
   const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
   const muted = contextRow?.labels?.includes("Muted");
 
-  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, addLabels, removeLabels } =
+  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, addLabels, removeLabels, deleteForever } =
     useMailActions();
   const { setSnackbar } = useGlobalContext();
+
+  const [isMovingToLabel, setIsMovingToLabel] = useState(true);
 
   const [{ spamModalOpen, createOpen }, setState] = useState({
     spamModalOpen: false,
@@ -165,37 +168,66 @@ const ContextMenu = ({
     [moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels, selectedIds]
   );
 
-  const handleOnAfterCreate = (childName, parentKey) => {
+  const showUndoSnackbar = useCallback(
+    (selectedIds, fromKey, toKey, inCustomLabel, isMoving = true) => {
+      setSnackbar({
+        open: true,
+        message: `Conversation ${isMoving ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              if (isMoving) {
+                if (inCustomLabel) {
+                  moveToLabelFrom(selectedIds, toKey, fromKey);
+                } else {
+                  moveToLabel(selectedIds, fromKey || "Inbox");
+                }
+              } else {
+                removeLabels(selectedIds, [toKey]);
+              }
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels]
+  );
+
+  const handleOnAfterCreate = (childName, parentKey, isMoving = true) => {
+    const ids = [threadId];
+
+    if (!ids.length) return;
+
     try {
-      // Perform the move after creation
-      const newKey = makeKey(childName, parentKey); // build composite key
+      // Build the new composite label key
+      const newKey = makeKey(childName, parentKey);
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
       const inCustomLabel = curMeta && curMeta.system === false;
-      if (inCustomLabel) {
-        const undo = moveToLabelFrom(selectedIds, currentLabel, newKey);
-        setSnackbar({
-          open: true,
-          message: `Conversation moved to "${childName}".`,
-          autoHideDuration: 10000,
-          action: (
-            <Button size="small" onClick={undo}>
-              Undo
-            </Button>
-          ),
-        });
+
+      if (isMoving) {
+        if (inCustomLabel) {
+          moveToLabelFrom(ids, currentLabel, newKey);
+        } else {
+          moveToLabel(ids, newKey);
+        }
       } else {
-        const undo = moveToLabel(selectedIds, newKey);
-        setSnackbar({
-          open: true,
-          message: `Conversation moved to "${childName}".`,
-          autoHideDuration: 10000,
-          action: (
-            <Button size="small" onClick={undo}>
-              Undo
-            </Button>
-          ),
-        });
+        // Always additive when not moving
+        addLabels(ids, [newKey]);
       }
+
+      // Trigger the same undo snackbar as other actions
+      showUndoSnackbar(ids, currentLabel, newKey, inCustomLabel, isMoving);
     } catch (e) {
       setSnackbar({
         open: true,
@@ -204,6 +236,7 @@ const ContextMenu = ({
       });
     }
   };
+
 
   const handleMoveToInbox = useCallback(
     (threadId) => {
@@ -227,6 +260,45 @@ const ContextMenu = ({
     [moveToInbox, setSnackbar, contextRow]
   );
 
+  const handleNotSpam = useCallback(
+    (threadId) => {
+      const undo = moveToInbox([threadId]);
+
+      const handleUndo = () => {
+        undo();
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      };
+
+      setSnackbar({
+        open: true,
+        message:
+          "Conversation unmarked as spam and moved to the inbox. Future messages from this sender will be sent to the inbox.",
+        autoHideDuration: 3000,
+        action: (
+          <Button size="small" onClick={handleUndo}>
+            Undo
+          </Button>
+        ),
+        style: {
+          maxWidth: "600px",
+        },
+      });
+    },
+    [moveToInbox, setSnackbar, contextRow]
+  );
+
+  const handleDeleteForever = useCallback(
+    (threadId) => {
+      deleteForever(threadId);
+    },
+    [deleteForever]
+  );
+
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
@@ -244,10 +316,16 @@ const ContextMenu = ({
         handleSnoozeAction(threadId);
         break;
       case "mute":
-        handleMuteAction(threadId);
+        handleMuteAction(threadId, muted);
         break;
       case "move_to_inbox":
         handleMoveToInbox(threadId);
+        break;
+      case "not_spam":
+        handleNotSpam(threadId);
+        break;
+      case "delete_forever":
+        handleDeleteForever(threadId);
         break;
       //etc...
     }
@@ -284,18 +362,22 @@ const ContextMenu = ({
         ];
 
   const sectionTwoItems = [
-    isThreadNotInInbox
+    isSpamFolder
+      ? { id: "not_spam", label: "Not Spam", icon: "report_off" }
+      : isThreadNotInInbox
       ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
       : {
           id: "archive",
           label: "Archive",
           icon: "archive",
         },
-    {
-      id: "delete",
-      label: "Delete",
-      icon: "delete",
-    },
+    isSpamFolder
+      ? { id: "delete_forever", label: "Delete forever", icon: "delete" }
+      : {
+          id: "delete",
+          label: "Delete",
+          icon: "delete",
+        },
     ...(isRead
       ? [
           {
@@ -405,7 +487,10 @@ const ContextMenu = ({
         >
           <LabelsSubMenu
             selectedIds={selectedIds}
-            openCreateLabelDialog={openCreateLabelDialog}
+            openCreateLabelDialog={() => {
+              setIsMovingToLabel(false)
+              openCreateLabelDialog()
+            }}
             shouldFocus={hoveredSubmenu === "labelAs"}
           />
         </Submenu>
@@ -436,7 +521,15 @@ const ContextMenu = ({
         </Item>
       </Menu>
 
-      <CreateLabelDialog open={createOpen} onClose={() => toggleCreateOpen()} onAfterCreate={handleOnAfterCreate} />
+      <CreateLabelDialog
+        open={createOpen}
+        onClose={() => {
+          toggleCreateOpen()
+          setIsMovingToLabel(true) // reset back to default state
+        }}
+        onAfterCreate={handleOnAfterCreate}
+        isMoving={isMovingToLabel}
+      />
 
       <SpamOrUnsubModal
         open={spamModalOpen}

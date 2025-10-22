@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useEffect, useCallback, useState } from "react";
+import React, { useContext, useMemo, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import ActionBar from "./ActionBar";
@@ -10,25 +10,31 @@ import { getThread } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
 import { PanelFooter } from "../EmailList/Footer";
 import useMailActions from "../../hooks/useMailActions";
+import QuickSettings from "../QuickSettings";
 
 const InboxViewContainer = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
   width: 100%;
   height: ${(props) => (props.isPreview ? "100%" : "100vh")};
   overflow: hidden;
+  background-color: #fff;
+  border-radius: 16px;
 `;
 
 const ScrollableContent = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 24px 24px 120px 24px;
+  padding: 0px 24px 120px 2px;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(95, 99, 104, 0.6) transparent;
   will-change: scroll-position;
   transform: translateZ(0);
   -webkit-overflow-scrolling: touch;
+  margin-top: -6px;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -54,6 +60,26 @@ const InnerContainer = styled.div`
   padding-right: 10px;
 `;
 
+const DetailContainer = styled.div`
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  max-width: 100%;
+  border-radius: 16px;
+  background-color: #fff;
+`;
+
+const NotFoundContainer = styled.div`
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-y: auto;
+  border-radius: 0;
+  background-color: inherit;
+`;
+
 export const EmailContent = ({
   threadId,
   folder,
@@ -62,7 +88,7 @@ export const EmailContent = ({
   isPreview = false,
   markAsReadAfter = 3000,
 }) => {
-  const { emails, normalizedEmails, loggedInUser, setEmails } = useContext(GlobalContext);
+  const { emails, normalizedEmails } = useContext(GlobalContext);
   const responseViewRef = React.useRef();
   const { markRead } = useMailActions();
 
@@ -194,16 +220,24 @@ const InboxView = () => {
     const backText = label ? `Label: ${label}` : folder || "Inbox";
 
     return (
-      <div className="nH bkK" style={{ padding: 24 }}>
-        <h2 style={{ margin: 0 }}>Email not found</h2>
-        <p style={{ marginTop: 8 }}>
-          The message you're looking for doesn't exist. Go back to <Link to={backLink}>{backText}</Link>.
-        </p>
-      </div>
+      <DetailContainer>
+        <NotFoundContainer>
+          <h2 style={{ margin: 0 }}>Email not found</h2>
+          <p style={{ marginTop: 8 }}>
+            The message you're looking for doesn't exist. Go back to <Link to={backLink}>{backText}</Link>.
+          </p>
+        </NotFoundContainer>
+        <QuickSettings />
+      </DetailContainer>
     );
   }
 
-  return <EmailContent threadId={threadId} folder={folder} label={label} />;
+  return (
+    <DetailContainer>
+      <EmailContent threadId={threadId} folder={folder} label={label} />
+      <QuickSettings />
+    </DetailContainer>
+  );
 };
 
 export default InboxView;

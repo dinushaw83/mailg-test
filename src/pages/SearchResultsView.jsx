@@ -62,14 +62,107 @@ const SearchResultsView = () => {
       };
 
       // Use advanced search with full email data
-      return advancedSearchWithFullData(searchCriteria, emails, { limit: null });
-    } else {
-      // Handle regular text search
-      if (!isSearchIndexReady() || !searchQuery.trim()) {
-        return [];
+      let results = advancedSearchWithFullData(searchCriteria, emails, { limit: null });
+
+      // Apply "Has attachment" filter from filter chip (attach_or_drive param)
+      // Only apply if not already filtered by attachment in advanced search
+      if (searchParams.get("attach_or_drive") === "true" && !searchCriteria.attachment) {
+        results = results.filter((email) => {
+          const hasAttachments = email.attachments && email.attachments.length > 0;
+          return hasAttachments;
+        });
       }
-      // Remove limit for search results page - we want all results
-      return searchEmails(searchQuery, { limit: null });
+
+      // Apply "Is unread" filter from filter chip
+      if (searchParams.get("is_unread") === "true") {
+        results = results.filter((email) => !email.read);
+      }
+
+      // Apply date range filter from filter chips
+      if (searchParams.get("daterangetype") === "custom_range") {
+        // Filter by datestart (emails after this date)
+        if (searchParams.has("datestart")) {
+          const dateStart = new Date(searchParams.get("datestart"));
+          results = results.filter((email) => new Date(email.timestamp) >= dateStart);
+        }
+        // Filter by dateend (emails before this date)
+        if (searchParams.has("dateend")) {
+          const dateEnd = new Date(searchParams.get("dateend"));
+          results = results.filter((email) => new Date(email.timestamp) <= dateEnd);
+        }
+      }
+
+      return results;
+    } else {
+      // Handle regular text search or refinement search
+      const isRefinementSearch = searchParams.get("isrefinement") === "true";
+
+      let results = [];
+      if (searchQuery.trim() && isSearchIndexReady()) {
+        // Get search results for the query
+        results = searchEmails(searchQuery, { limit: null });
+      } else if (!searchQuery.trim() && !isRefinementSearch) {
+        // No query and not a refinement search
+        return [];
+      } else if (!searchQuery.trim() && isRefinementSearch) {
+        // No query but has filters - start with all emails
+        results = emails || [];
+      }
+
+      // Apply refinement filters if present
+      if (isRefinementSearch && results.length > 0) {
+        // Apply "From" contact filter
+        if (searchParams.get("from")) {
+          const fromEmails = searchParams
+            .get("from")
+            .split(",")
+            .map((email) => email.trim().toLowerCase());
+          results = results.filter((email) =>
+            fromEmails.some((fromEmail) => email.from?.email?.toLowerCase() === fromEmail)
+          );
+        }
+
+        // Apply "To" contact filter
+        if (searchParams.get("to")) {
+          const toEmails = searchParams
+            .get("to")
+            .split(",")
+            .map((email) => email.trim().toLowerCase());
+          results = results.filter((email) => {
+            const emailToList = email.to || [];
+            return emailToList.some((recipient) => toEmails.includes(recipient.email?.toLowerCase()));
+          });
+        }
+
+        // Apply "Has attachment" filter
+        if (searchParams.get("attach_or_drive") === "true") {
+          results = results.filter((email) => {
+            const hasAttachments = email.attachments && email.attachments.length > 0;
+            return hasAttachments;
+          });
+        }
+
+        // Apply date range filter
+        if (searchParams.get("daterangetype") === "custom_range") {
+          // Filter by datestart (emails after this date)
+          if (searchParams.has("datestart")) {
+            const dateStart = new Date(searchParams.get("datestart"));
+            results = results.filter((email) => new Date(email.timestamp) >= dateStart);
+          }
+          // Filter by dateend (emails before this date)
+          if (searchParams.has("dateend")) {
+            const dateEnd = new Date(searchParams.get("dateend"));
+            results = results.filter((email) => new Date(email.timestamp) <= dateEnd);
+          }
+        }
+
+        // Apply "Is unread" filter
+        if (searchParams.get("is_unread") === "true") {
+          results = results.filter((email) => !email.read);
+        }
+      }
+
+      return results;
     }
   }, [searchQuery, emails, isAdvancedSearch, searchParams]); // Add dependencies
 
@@ -104,6 +197,10 @@ const SearchResultsView = () => {
     return sortedEmails.slice(startIndex, endIndex);
   }, [filteredRows, currentPage, itemsPerPage]);
 
+  const showSearchFilters = useMemo(() => {
+    return rows.length > 0 || searchParams.get("isrefinement") === "true";
+  }, [rows, searchParams]);
+
   return (
     <div className="nH bkK">
       <div className="nH">
@@ -114,7 +211,7 @@ const SearchResultsView = () => {
               <div id=":3" className="Tm" style={{ height: 985 }}>
                 <div id=":1" className="aeF" style={{ minHeight: 795 }}>
                   <div className="nH">
-                    {rows.length > 0 && <SearchResultFilters />}
+                    {showSearchFilters && <SearchResultFilters />}
 
                     <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
                       <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
@@ -231,9 +328,8 @@ const SearchResultsView = () => {
                             </p>
                             <Button
                               variant="text"
-                              href="https://support.google.com/mail/answer/6593?hl=en"
+                              href="#"
                               aria-label="Learn more about broadening your search"
-                              target="_blank"
                               sx={{
                                 color: "#1a73e8",
                                 fontSize: "14px",

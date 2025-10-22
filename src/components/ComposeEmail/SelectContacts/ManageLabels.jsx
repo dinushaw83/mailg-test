@@ -144,6 +144,7 @@ export default function ManageLabels({ selectedContacts, recipients, recipientLa
           if (selectedContacts.has(`${recipient.email}-${recipient.id}`)) {
             return {
               ...recipient,
+              updatedAt: new Date().toISOString(),
               labels: [...recipient.labels, trimmedLabelName],
             };
           }
@@ -205,6 +206,7 @@ export default function ManageLabels({ selectedContacts, recipients, recipientLa
 
           return {
             ...recipient,
+            updatedAt: new Date().toISOString(),
             labels: newLabels,
           };
         }

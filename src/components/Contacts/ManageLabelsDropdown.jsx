@@ -100,7 +100,7 @@ const ManageLabelsDropdown = ({ anchorEl, open, onClose, selectedContacts, conta
   const handleApplyChanges = () => {
     // Close dropdown immediately
     onClose();
-    
+
     // Display working snackbar notification
     setSnackbar({
       open: true,
@@ -139,14 +139,27 @@ const ManageLabelsDropdown = ({ anchorEl, open, onClose, selectedContacts, conta
         }
       });
 
-      // Store original recipients for undo functionality (before making changes)
       setRecipients((prev) => {
         // Store the current state for undo
         originalRecipientsRef.current = [...prev];
 
-        return prev.map((recipient) => {
-          if (selectedContacts.has(recipient.id)) {
-            const currentLabels = new Set(recipient.labels || []);
+        // Get all contacts that need to be updated (including unsaved ones)
+        const contactsToUpdate = selectedContactObjects;
+        const currentTime = new Date().toISOString();
+
+        // Create a map of existing recipients for quick lookup
+        const existingRecipientsMap = new Map(prev.map((recipient) => [recipient.id, recipient]));
+
+        // Process each selected contact
+        const updatedRecipients = [...prev];
+        const newContacts = [];
+
+        contactsToUpdate.forEach((contact) => {
+          const existingRecipient = existingRecipientsMap.get(contact.id);
+
+          if (existingRecipient) {
+            // Update existing recipient
+            const currentLabels = new Set(existingRecipient.labels || []);
 
             // Add new labels
             labelsToAdd.forEach((label) => {
@@ -158,40 +171,95 @@ const ManageLabelsDropdown = ({ anchorEl, open, onClose, selectedContacts, conta
               currentLabels.delete(label);
             });
 
-            return {
-              ...recipient,
+            // Find and update the recipient in the array
+            const recipientIndex = updatedRecipients.findIndex((r) => r.id === contact.id);
+            if (recipientIndex !== -1) {
+              updatedRecipients[recipientIndex] = {
+                ...existingRecipient,
+                isSaved: true, // Ensure it's saved when labels are applied
+                savedAt: existingRecipient.savedAt || currentTime,
+                updatedAt: currentTime,
+                labels: Array.from(currentLabels),
+              };
+            }
+          } else {
+            // Contact doesn't exist in recipients, add it as a new saved contact
+            const currentLabels = new Set(contact.labels || []);
+
+            // Add new labels
+            labelsToAdd.forEach((label) => {
+              currentLabels.add(label);
+            });
+
+            // Remove labels
+            labelsToRemove.forEach((label) => {
+              currentLabels.delete(label);
+            });
+
+            newContacts.push({
+              ...contact,
+              name: contact.name || contact.email || "",
+              isSaved: true,
+              savedAt: currentTime,
+              updatedAt: currentTime,
+              createdAt: contact.createdAt || currentTime,
               labels: Array.from(currentLabels),
-            };
+            });
           }
-          return recipient;
         });
+
+        return [...updatedRecipients, ...newContacts];
       });
 
-      // Generate success message
-      const successMessage = generateSuccessMessage(labelsToAdd, labelsToRemove, selectedContacts);
+      // Check if any contacts were saved (added to recipients)
+      const savedContacts = selectedContactObjects.filter((contact) => !contact.isSaved);
+      if (savedContacts.length > 0) {
+        // Show notification for saved contacts
+        const contactName =
+          savedContacts.length === 1 ? savedContacts[0].name || savedContacts[0].email || "Contact" : "";
+        setSnackbar({
+          open: true,
+          message:
+            savedContacts.length > 1
+              ? `${savedContacts.length} contacts have been added`
+              : `Added ${contactName} to contacts`,
+          action: null,
+          autoHideDuration: 1000,
+          hideClose: true,
+          style: snackbarStyle,
+        });
+      }
 
-      // Show success message with undo button
-      setSnackbar({
-        open: true,
-        message: successMessage,
-        autoHideDuration: 5000,
-        hideClose: false,
-        style: snackbarStyle,
-        closeIconColor: "#fff",
-        action: (
-          <Button
-            variant="text"
-            size="medium"
-            onClick={handleUndoLabelChanges}
-            sx={{ textTransform: "capitalize", color: "#a8c7fa", fontWeight: 400 }}
-          >
-            Undo
-          </Button>
-        ),
-      });
+      timeoutsRef.current["showSuccessMessage"] = setTimeout(
+        () => {
+          // Generate success message
+          const successMessage = generateSuccessMessage(labelsToAdd, labelsToRemove, selectedContacts);
 
-      // Update initial labels to current selection
-      setInitialLabels(new Set(selectedLabels));
+          // Show success message with undo button
+          setSnackbar({
+            open: true,
+            message: successMessage,
+            autoHideDuration: 5000,
+            hideClose: false,
+            style: snackbarStyle,
+            closeIconColor: "#fff",
+            action: (
+              <Button
+                variant="text"
+                size="medium"
+                onClick={handleUndoLabelChanges}
+                sx={{ textTransform: "capitalize", color: "#a8c7fa", fontWeight: 400 }}
+              >
+                Undo
+              </Button>
+            ),
+          });
+
+          // Update initial labels to current selection
+          setInitialLabels(new Set(selectedLabels));
+        },
+        savedContacts.length > 0 ? 1000 : 0
+      );
     }, 500);
   };
 
@@ -233,7 +301,7 @@ const ManageLabelsDropdown = ({ anchorEl, open, onClose, selectedContacts, conta
     const addCount = labelsToAdd.size;
     const removeCount = labelsToRemove.size;
     const isMultipleContacts = selectedContacts.size > 1;
-    
+
     let contactName;
     if (isMultipleContacts) {
       contactName = `${selectedContacts.size} people`;
@@ -242,7 +310,7 @@ const ManageLabelsDropdown = ({ anchorEl, open, onClose, selectedContacts, conta
       const selectedContactObjects = contacts
         .flatMap((section) => section.data || [])
         .filter((contact) => selectedContacts.has(contact.id));
-      
+
       if (selectedContactObjects.length > 0) {
         const contact = selectedContactObjects[0];
         contactName = contact.name || contact.email || "Contact";

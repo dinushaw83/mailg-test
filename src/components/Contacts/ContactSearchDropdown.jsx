@@ -24,7 +24,7 @@ const ContactSearchDropdown = ({
   placeholder = "Search",
   initialQuery = "",
 }) => {
-  const { recipients } = useGlobalContext();
+  const { recipients, hiddenRecipients } = useGlobalContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
@@ -47,7 +47,7 @@ const ContactSearchDropdown = ({
   }, []);
 
   // Filter contacts that have both name and email
-  const validContacts = recipients.filter(
+  const validContacts = [...recipients, ...hiddenRecipients].filter(
     (contact) => contact && contact.name && contact.email && contact.name.trim() !== ""
   );
 

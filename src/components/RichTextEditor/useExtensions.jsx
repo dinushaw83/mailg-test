@@ -17,7 +17,6 @@ import { Link } from "@tiptap/extension-link";
 import { ListItem } from "@tiptap/extension-list-item";
 import { Mention } from "@tiptap/extension-mention";
 import { OrderedList } from "@tiptap/extension-ordered-list";
-import { Paragraph } from "@tiptap/extension-paragraph";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { Strike } from "@tiptap/extension-strike";
 import { Subscript } from "@tiptap/extension-subscript";
@@ -31,6 +30,7 @@ import { Text } from "@tiptap/extension-text";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { TextStyle } from "@tiptap/extension-text-style";
 import { Underline } from "@tiptap/extension-underline";
+import { Paragraph as BaseParagraph } from "@tiptap/extension-paragraph";
 import { useMemo } from "react";
 import {
   FontSize,
@@ -61,6 +61,23 @@ const CustomSuperscript = Superscript.extend({
 export default function useExtensions({
   placeholder,
 } = {}) {
+
+  const CustomParagraph = BaseParagraph.extend({
+    addAttributes() {
+      return {
+        ...this.parent?.(),
+        'data-signature': {
+          default: null,
+          parseHTML: element => element.getAttribute('data-signature'),
+          renderHTML: attributes => {
+            if (!attributes['data-signature']) return {};
+            return { 'data-signature': attributes['data-signature'] };
+          },
+        },
+      };
+    },
+  });
+
   return useMemo(() => {
     return [
       TableImproved.configure({
@@ -70,7 +87,7 @@ export default function useExtensions({
       TableHeader,
       TableCell,
 
-      Paragraph,
+      CustomParagraph,
       ListItem,
       BulletList,
       OrderedList,
