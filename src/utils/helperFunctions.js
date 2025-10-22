@@ -563,10 +563,10 @@ export function buildSearchBarFromUrl(urlOrLocation) {
     if (token) parts.push(token);
   }
 
-  const ignoreTerms = ["compose:new"];
+  const ignoreTerms = ["compose:"];
 
   return parts
-    .filter((part) => !ignoreTerms.includes(part))
+    .filter((part) => !ignoreTerms.some((term) => part.includes(term)))
     .join(" ")
     .trim();
 }

@@ -3,7 +3,6 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 import useMailActions from "../../hooks/useMailActions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useComposeModal } from "../../hooks/useComposeModal";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { EmailContent } from "../InboxView";
@@ -11,13 +10,13 @@ import Table from "./Table";
 import Footer from "./Footer";
 import { CATEGORIES } from "../../utils/categories";
 import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
+import { useComposeModal } from "../../hooks/useComposeModal";
 
 const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, composeWindows, panelState,
-    previewEmailId, softRemovedLabels, setSoftRemovedLabels
-  } = useGlobalContext();
+  const { selection, composeWindows, panelState, previewEmailId, softRemovedLabels, setSoftRemovedLabels } =
+    useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
@@ -107,31 +106,34 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   // Navigate to the email details page
   const navigateToEmailDetails = (email, threadId) => {
+    // If compose param is present in the url, include it while navigating
+    const urlParams = new URLSearchParams(location.search);
+    const composeParam = urlParams.get("compose");
+    const pathname = location.pathname;
+
+    const isComposeDraft = email.labels.includes("Drafts") && email.messageCount === 1;
+
     // If labels includes Drafts, then add new compose window with the draft id
-    if (email.labels.includes("Drafts")) {
+    if (isComposeDraft) {
       // Check if already a compose window with the draft id exists
       const composeWindow = composeWindows.find((window) => window?.draftId?.toString() === email.id.toString());
       // If compose window with the draft id doesn't exist, then add new compose window with the draft id
       if (!composeWindow) {
         addNewComposeWindow(email.id);
       }
+      return;
+    }
+
+    if (pathname.startsWith("/search")) {
+      const composeQuery = composeParam ? `?compose=${composeParam}` : "";
+      navigate(`/inbox/${threadId}${composeQuery}`);
+      return;
+    }
+
+    if (composeParam) {
+      navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
     } else {
-      // If compose param is present in the url, include it while navigating
-      const urlParams = new URLSearchParams(location.search);
-      const composeParam = urlParams.get("compose");
-      const pathname = location.pathname;
-
-      if (pathname.startsWith("/search")) {
-        const composeQuery = composeParam ? `?compose=${composeParam}` : "";
-        navigate(`/inbox/${threadId}${composeQuery}`);
-        return;
-      }
-
-      if (composeParam) {
-        navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
-      } else {
-        navigate(`${location.pathname}/${threadId}`);
-      }
+      navigate(`${location.pathname}/${threadId}`);
     }
   };
 
@@ -139,13 +141,13 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
     const currentPath = (label || folder || "").toLowerCase();
     const isAllMail = ["all"].includes(currentPath);
     const softRemoved = softRemovedLabels[email.id] || [];
-    const curLabels = [...new Set([...email.labels, ...softRemoved])]
+    const curLabels = [...new Set([...email.labels, ...softRemoved])];
 
     return curLabels
       .filter((labelKey) => {
         const lower = labelKey.toLowerCase();
         const isInbox = lower === "inbox";
-        const isCategory = categoryLabels.map(c => c.toLowerCase()).includes(lower);
+        const isCategory = categoryLabels.map((c) => c.toLowerCase()).includes(lower);
 
         // hide current folder label
         if (lower === currentPath) return false;
