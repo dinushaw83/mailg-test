@@ -20,6 +20,7 @@ import MergeAndFix from "./pages/Contacts/MergeAndFix";
 import CreateContactPage from "./pages/Contacts/CreateContactPage";
 
 import SearchResultsView from "./pages/SearchResultsView";
+import MailGAccount from "./pages/MailGAccount";
 import { initializeSearchIndex } from "./utils/search";
 
 // Component to handle contact details with edit parameter
@@ -53,6 +54,8 @@ function App() {
             <Route path="/verify" element={<VerificationDashboard />} />
             <Route path="/settings/:tab" element={<Settings />} />
             <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
+            <Route path="/mailg-account/:view?" element={<MailGAccount />} />
+            <Route path="/mailg-account" element={<MailGAccount />} />
 
             {/* Contacts paths */}
             <Route path="/contacts" element={<Contacts />} />

@@ -62,7 +62,14 @@ const Settings = () => {
 
   const handleTabChange = (event, newValue) => {
     const selectedTab = tabs[newValue];
-    navigate(`/settings/${selectedTab.id}`);
+    
+    // Only allow switching between "general" and "accounts" tabs
+    const allowedTabs = ["general", "accounts"];
+    
+    if (allowedTabs.includes(selectedTab.id)) {
+      navigate(`/settings/${selectedTab.id}`);
+    }
+    // If trying to switch to a disabled tab, do nothing (stay on current tab)
   };
 
   return (
