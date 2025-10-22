@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import EditEmailAddressModal from "./EditEmailAddressModal";
 import { useGlobalContext } from "../../contexts/GlobalContext";
+import { Box } from "@mui/material";
 
 const AccountsTab = () => {
   const [editOpen, setEditOpen] = useState(false);
@@ -52,7 +53,7 @@ const AccountsTab = () => {
     });
   };
   return (
-    <>
+    <Box sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }}>
       <div id=":1" className="aeF" style={{ padding: "0px", verticalAlign: "bottom", minHeight: "513px" }}>
         <div className="nH">
           <div className="nH v9" role="main" style={{ padding: "inherit" }}>
@@ -1198,7 +1199,7 @@ const AccountsTab = () => {
         fullName="John Doe"
         email="john.doe@example.com"
       />
-    </>
+    </Box>
   );
 };
 
