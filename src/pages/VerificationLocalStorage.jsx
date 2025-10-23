@@ -116,49 +116,65 @@ const generateConfigDiff = (initialConfig, currentConfig) => {
 
 const VerificationLocalStorage = () => {
   const [currentConfig, setCurrentConfig] = useState({});
+  const [initialConfigState, setInitialConfigState] = useState(null);
   const [diffData, setDiffData] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   // Initialize both configs on first mount
   useEffect(() => {
-    // Load initial config from localStorage (should have been set by GlobalContext)
-    let initialConfig = null;
-    const storedInitialConfig = localStorage.getItem(VERIFICATION_INITIAL_CONFIG_KEY);
-    
-    if (storedInitialConfig) {
+    document.title = "Verification Local Storage";
+
+    const loadInitialFromStorage = () => {
       try {
-        initialConfig = JSON.parse(storedInitialConfig);
-        console.log("📂 [VerificationLocalStorage] Loaded initial config from localStorage:", initialConfig);
+        const raw = localStorage.getItem(VERIFICATION_INITIAL_CONFIG_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed;
       } catch (e) {
         console.error("Failed to parse stored initial config:", e);
+        return null;
       }
-    }
+    };
 
-    // If no stored initial config exists, this means GlobalContext hasn't initialized yet
-    // or something went wrong. Capture current state as fallback.
-    if (!initialConfig) {
-      initialConfig = gatherLocalStorageConfig();
-      localStorage.setItem(VERIFICATION_INITIAL_CONFIG_KEY, JSON.stringify(initialConfig));
-      console.warn("⚠️ [VerificationLocalStorage] No initial config found, capturing current state as baseline");
-    }
-
-    // Store in window for easy console access
-    window.initialConfig = initialConfig;
-
-    // Capture current config
+    // Always capture current snapshot immediately
     const currentSnapshot = gatherLocalStorageConfig();
     window.currentConfig = currentSnapshot;
     setCurrentConfig(currentSnapshot);
-    
-    // Save current config to localStorage
     localStorage.setItem(VERIFICATION_CURRENT_CONFIG_KEY, JSON.stringify(currentSnapshot));
 
-    // Generate initial diff
-    const diff = generateConfigDiff(initialConfig, currentSnapshot);
-    setDiffData(diff);
+    // Try to get the persisted initial baseline
+    let initial = loadInitialFromStorage();
+    if (initial) {
+      window.initialConfig = initial;
+      setInitialConfigState(initial);
+      const diff = generateConfigDiff(initial, currentSnapshot);
+      setDiffData(diff);
+      return; // done
+    }
 
-    document.title = "Verification Local Storage";
+    // If not present yet (e.g., right after a reset), poll briefly until GlobalContext writes it
+    let attempts = 0;
+    const MAX_ATTEMPTS = 80; // ~8s
+    const timer = setInterval(() => {
+      attempts += 1;
+      initial = loadInitialFromStorage();
+      if (initial) {
+        clearInterval(timer);
+        window.initialConfig = initial;
+        setInitialConfigState(initial);
+        const diff = generateConfigDiff(initial, window.currentConfig || {});
+        setDiffData(diff);
+      } else if (attempts >= MAX_ATTEMPTS) {
+        clearInterval(timer);
+        console.warn("⚠️ Initial config not available yet after waiting. Will refresh diff when available.");
+      }
+    }, 100);
+
+    return () => {
+      // cleanup interval if still running
+      try { clearInterval(timer); } catch {}
+    };
   }, []);
 
   // Refresh current config and recalculate diff
@@ -171,12 +187,14 @@ const VerificationLocalStorage = () => {
     localStorage.setItem(VERIFICATION_CURRENT_CONFIG_KEY, JSON.stringify(currentSnapshot));
 
     // Generate diff between initial and current
-    const diff = generateConfigDiff(window.initialConfig, currentSnapshot);
-    setDiffData(diff);
+    if (window.initialConfig) {
+      const diff = generateConfigDiff(window.initialConfig, currentSnapshot);
+      setDiffData(diff);
+    }
     setLastUpdated(new Date());
 
     console.log("🔄 Config refreshed");
-    console.log("Initial:", window.initialConfig);
+    if (window.initialConfig) console.log("Initial:", window.initialConfig);
     console.log("Current:", window.currentConfig);
   }, []);
 
@@ -437,7 +455,7 @@ const VerificationLocalStorage = () => {
                 overflow: "auto",
               }}
             >
-              {JSON.stringify(window.initialConfig, null, 2)}
+              {JSON.stringify(initialConfigState ?? window.initialConfig, null, 2)}
             </pre>
           </div>
           <div style={{ flex: 1 }}>

@@ -551,30 +551,41 @@ export const GlobalContextProvider = ({ children }) => {
   // Capture initial config AFTER all state has been initialized with default values
   // This ensures we capture the actual default values, not nulls
   useEffect(() => {
-    // Check if initial config already exists in localStorage
     const existingInitialConfig = localStorage.getItem(VERIFICATION_INITIAL_CONFIG_KEY);
-    
+
     if (existingInitialConfig) {
-      // Initial config already exists, load it to window for console access
       try {
         window.initialConfig = JSON.parse(existingInitialConfig);
         console.log("📂 [GlobalContext] Loaded existing initial config:", window.initialConfig);
       } catch (e) {
         console.error("Failed to parse existing initial config:", e);
       }
-    } else {
-      // This is the first time the app is loading
-      // Wait for next tick to ensure all usePersistedState hooks have written their defaults to localStorage
-      const timer = setTimeout(() => {
+      return;
+    }
+
+    // Poll until all tracked keys are initialized in localStorage, then capture once
+    let attempts = 0;
+    const MAX_ATTEMPTS = 50; // ~5 seconds at 100ms interval
+    const interval = setInterval(() => {
+      attempts += 1;
+      const allReady = LOCAL_STORAGE_KEYS.every((key) => localStorage.getItem(key) !== null);
+
+      if (allReady || attempts >= MAX_ATTEMPTS) {
         const initialConfig = captureInitialConfig();
         localStorage.setItem(VERIFICATION_INITIAL_CONFIG_KEY, JSON.stringify(initialConfig));
         window.initialConfig = initialConfig;
-        console.log("📸 [GlobalContext] Initial config captured on app load:", initialConfig);
-      }, 100); // Small delay to ensure all useEffect hooks from usePersistedState have run
+        console.log(
+          allReady
+            ? "📸 [GlobalContext] Initial config captured when all keys initialized."
+            : "⏱️ [GlobalContext] Captured initial config after timeout (some keys may still be null).",
+          initialConfig
+        );
+        clearInterval(interval);
+      }
+    }, 100);
 
-      return () => clearTimeout(timer);
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
+    return () => clearInterval(interval);
+  }, []); // run once on mount
 
   const contextValue = {
     selection,
