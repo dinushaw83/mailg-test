@@ -330,15 +330,17 @@ const LeftItemsContainer = ({ children }) => {
 
 const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
   const { folder = "inbox" } = useParams();
-  const { selection, refreshEmails } = useGlobalContext();
+  const { selection, refreshEmails, manualSyncCount, setManualSyncCount } = useGlobalContext();
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
   // Show a Gmail-like top-center yellow loading banner for ~2.5s
   const manualEmailSync = useCallback(() => {
     setIsManualSyncing(true);
+    // Increment the manual sync counter
+    setManualSyncCount((prevCount) => prevCount + 1);
     // Keep visible for 2.5 seconds to simulate manual sync loading
     setTimeout(() => setIsManualSyncing(false), 2500);
-  }, []);
+  }, [setManualSyncCount]);
 
   const threadIds = threads.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
