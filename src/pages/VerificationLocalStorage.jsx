@@ -44,8 +44,24 @@ const LOCAL_STORAGE_KEYS = [
 
   // Settings
   "vacationResponder",
+  "sendAsSettings",
   "signatures",
   "notificationSettings",
+  "privacySettings",
+  "settingsGeneral",
+  "settingsAdvanced",
+  "settingsLabels",
+  "settingsInbox",
+  "settingsChat",
+  "settingsFilters",
+  "settingsForwarding",
+  "settingsOffline",
+  "settingsThemes",
+  "settingsAccounts",
+  "mailGAccountPersonalInfo",
+  "mailGAccountDataPrivacy",
+  "thirdPartyApps",
+  "signInSettings",
 
   // Misc
   "manualSyncCount",
