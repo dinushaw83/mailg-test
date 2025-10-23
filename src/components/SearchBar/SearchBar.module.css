@@ -181,15 +181,8 @@
 .allSearchResults > div {
   display: flex;
   align-items: center;
-  margin-left: 24px;
-}
-
-.searchValue {
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 280px;
+  gap: 8px;
+  margin-left: 32px;
 }
 
 /* Responsive adjustments */

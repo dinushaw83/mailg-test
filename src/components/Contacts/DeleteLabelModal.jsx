@@ -88,7 +88,6 @@ const DeleteLabelModal = ({ open, onClose, label, backdropStyle = {} }) => {
       setRecipients((prev) =>
         prev.map((recipient) => ({
           ...recipient,
-          updatedAt: new Date().toISOString(),
           labels: recipient.labels?.filter((l) => l !== label.label),
         }))
       );
@@ -122,14 +121,7 @@ const DeleteLabelModal = ({ open, onClose, label, backdropStyle = {} }) => {
         navigate("/contacts");
       }
 
-      // Add the contacts to the deleted recipients
-      setDeletedRecipients((prev) => [
-        ...prev,
-        ...recipients
-          .filter((recipient) => recipient.labels && recipient.labels.includes(label.label))
-          .map((contact) => ({ ...contact, updatedAt: new Date().toISOString() })),
-      ]);
-
+      // Delete all contacts and delete this label
       // Delete all recipients with this label
       setRecipients((prev) => prev.filter((recipient) => !recipient.labels?.includes(label.label)));
 

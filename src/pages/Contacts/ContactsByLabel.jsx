@@ -7,8 +7,10 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 const ContactsByLabel = () => {
   const { recipients, recipientLabels } = useGlobalContext();
   const { labelId } = useParams();
-  const label = recipientLabels.find((label) => label.id === parseInt(labelId));
-  const contacts = recipients.filter((recipient) => label?.label && recipient.labels?.includes(label.label));
+  // Try to find label by ID (support both string and numeric IDs)
+  const label = recipientLabels.find((label) => label.id === labelId || label.id === parseInt(labelId));
+  // Filter contacts with this label, excluding deleted ones
+  const contacts = recipients.filter((recipient) => label?.label && recipient.labels?.includes(label.label) && !recipient.isDeleted);
 
   useEffect(() => {
     // Update the document title

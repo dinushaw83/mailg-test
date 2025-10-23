@@ -31,13 +31,7 @@ import { isValidEmail, restructureRecipients } from "../../../utils/helperFuncti
 import styles from "./SelectContacts.module.css";
 
 export default function SelectContacts({ open, onClose, handleInsertContacts, addedRecipients = [] }) {
-  const {
-    recipients: globalRecipients,
-    recipientLabels,
-    setRecipients,
-    setRecipientLabels,
-    setDeletedRecipients,
-  } = useGlobalContext();
+  const { recipients: globalRecipients, recipientLabels, setRecipients, setRecipientLabels } = useGlobalContext();
 
   // Create restructured recipients array to display all email variants
   const recipients = useMemo(() => {
@@ -258,7 +252,6 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
     setRecipients((prev) =>
       prev.map((recipient) => ({
         ...recipient,
-        updatedAt: new Date().toISOString(),
         labels: recipient.labels ? recipient.labels.filter((recipientLabel) => recipientLabel !== label.option) : [],
       }))
     );
@@ -301,19 +294,7 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
       } else {
         // Delete all contacts and clear search results
         const searchResultIds = searchResults.map((result) => result.id);
-
-        // Get the contacts to delete
-        const contactsToDelete = recipients.filter((recipient) => searchResultIds.includes(recipient.id));
-
-        // Add the contacts to the deleted recipients
-        setDeletedRecipients((prev) => [
-          ...prev,
-          ...contactsToDelete.map((contact) => ({ ...contact, updatedAt: new Date().toISOString() })),
-        ]);
-
-        // Remove the contacts from the recipients
         setRecipients((prev) => prev.filter((recipient) => !searchResultIds.includes(recipient.id)));
-
         setIsSearching(false);
         setSearchResults([]);
         setSearchQuery("");
@@ -332,14 +313,6 @@ export default function SelectContacts({ open, onClose, handleInsertContacts, ad
       // Delete all contacts and delete this label
       // Remove label from recipientLabels
       setRecipientLabels((prev) => prev.filter((label) => label.label !== labelToDelete.option));
-
-      // Add the contacts to the deleted recipients
-      setDeletedRecipients((prev) => [
-        ...prev,
-        ...recipients
-          .filter((recipient) => recipient.labels && recipient.labels.includes(labelToDelete.option))
-          .map((contact) => ({ ...contact, updatedAt: new Date().toISOString() })),
-      ]);
 
       // Remove contacts that have this label
       setRecipients((prev) =>

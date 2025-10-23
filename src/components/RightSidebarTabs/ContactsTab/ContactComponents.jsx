@@ -16,17 +16,7 @@ import { generateAddressString } from "../../../utils/helperFunctions";
 import styles from "./CreateContact.module.css";
 
 // Text field component with custom styling
-export const CustomInput = ({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-  error,
-  sx,
-  fullWidth = true,
-  ...props
-}) => (
+export const CustomInput = ({ label, value, onChange, placeholder, type = "text", error, sx, fullWidth = true, ...props }) => (
   <TextField
     fullWidth={fullWidth}
     variant="outlined"
@@ -250,23 +240,7 @@ export const ActionIconButton = ({
   </Tooltip>
 );
 
-export const ContactDetailRow = ({
-  icon,
-  iconType = "outlined",
-  items,
-  emptyText,
-  onItemClick,
-  onAddClick,
-  onTextClick,
-  itemType = "email",
-  textStyle = {},
-  itemContainerStyle = {},
-  addressStringType = "single",
-  iconStyle = {},
-  disableCopy = false,
-  hideTextTooltip = false,
-  iconTooltip = null,
-}) => {
+export const ContactDetailRow = ({ icon, items, emptyText, onItemClick, onAddClick, itemType = "email" }) => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
 
@@ -320,72 +294,8 @@ export const ContactDetailRow = ({
     }
   };
 
-  // Handle text click
-  const handleTextClick = (item) => {
-    if (onTextClick) {
-      onTextClick(item);
-    }
-  };
-
   // If address and no details, don't show the row
   if (itemType === "address" && !filteredItems?.length > 0) return null;
-
-  // Icon tooltip component
-  const IconTooltip = ({ children }) => {
-    if (!iconTooltip) return children;
-
-    return (
-      <Tooltip
-        title={iconTooltip}
-        placement="top"
-        slotProps={{
-          popper: {
-            sx: {
-              "& .MuiTooltip-tooltip": {
-                fontSize: "12px",
-                fontWeight: 200,
-                backgroundColor: "rgba(0, 0, 0, 0.85)",
-              },
-            },
-          },
-        }}
-      >
-        {children}
-      </Tooltip>
-    );
-  };
-
-  // Text tooltip component
-  const TextTooltip = ({ children, item }) => {
-    if (hideTextTooltip) return children;
-
-    return (
-      <Tooltip
-        title={`${
-          itemType === "email"
-            ? item.value
-            : itemType === "address"
-            ? generateAddressString(item)
-            : `${item.dialCode}${item.value}`
-        } (from your MailG Contacts)`}
-        placement="top"
-        slotProps={{
-          popper: {
-            sx: {
-              "& .MuiTooltip-tooltip": {
-                maxWidth: "200px",
-                fontSize: "12px",
-                backgroundColor: "rgba(0, 0, 0, 0.8)",
-                fontWeight: 200,
-              },
-            },
-          },
-        }}
-      >
-        {children}
-      </Tooltip>
-    );
-  };
 
   return (
     <Box
@@ -397,148 +307,163 @@ export const ContactDetailRow = ({
     >
       {/* Icon */}
       <Box sx={{ display: "flex", alignItems: "center", mt: "-2px" }}>
-        <IconTooltip>
-          <span
-            className={`material-symbols-${iconType}`}
-            style={{
-              fontSize: "20px",
-              color: "#444746",
-              marginTop: "3px",
-              ...iconStyle,
-            }}
-          >
-            {icon}
-          </span>
-        </IconTooltip>
+        <span
+          className="material-symbols-outlined"
+          style={{
+            fontSize: "20px",
+            color: "#444746",
+            marginTop: "2px",
+          }}
+        >
+          {icon}
+        </span>
       </Box>
 
       {/* Content */}
       <Box sx={{ flex: 1, minWidth: 0 }}>
         {filteredItems && filteredItems.length > 0 ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-            {filteredItems.map((item, index) => {
-              const textValue =
-                itemType === "address"
-                  ? generateAddressString(item, addressStringType === "multi" ? "array" : "string")
-                  : itemType === "phone"
-                  ? `${item.dialCode}${item.value}`
-                  : item.value;
-
-              return (
-                <Box
-                  key={`${index}-${item.value}`}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    minHeight: "30px",
-                    height: "auto",
-                    borderRadius: "4px",
+            {filteredItems.map((item, index) => (
+              <Box
+                key={`${index}-${item.value}`}
+                sx={{
+                  display: "flex",
+                  alignItems: itemType === "address" ? "flex-start" : "center",
+                  justifyContent: "space-between",
+                  minHeight: itemType === "address" ? "auto" : "20px",
+                  height: itemType === "address" ? "auto" : "20px",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  "& .item-text": {
+                    color: "##1f1f1f",
+                    fontSize: "0.875rem",
+                  },
+                  "&:hover": {
                     "& .item-text": {
-                      color: "##1f1f1f",
-                      fontSize: "0.875rem",
+                      color: "#0b57d0",
                     },
-                    "&:hover": {
-                      cursor: "pointer",
-                      "& .item-text": {
-                        color: "#0b57d0",
+                  },
+                }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onClick={() => handleItemClick(item)}
+              >
+                <Tooltip
+                  title={`${
+                    itemType === "email"
+                      ? item.value
+                      : itemType === "address"
+                      ? generateAddressString(item)
+                      : `${item.dialCode}${item.value}`
+                  } (from your MailG Contacts)`}
+                  placement="top"
+                  slotProps={{
+                    popper: {
+                      sx: {
+                        "& .MuiTooltip-tooltip": {
+                          maxWidth: "200px",
+                          fontSize: "12px",
+                          backgroundColor: "rgba(0, 0, 0, 0.8)",
+                          fontWeight: 200,
+                        },
                       },
                     },
-                    ...itemContainerStyle,
                   }}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  onClick={() => handleItemClick(item)}
                 >
-                  <TextTooltip item={item}>
-                    <Typography
-                      className="item-text"
-                      sx={{
-                        fontSize: "14px",
-                        color: "#313233",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        wordWrap: "break-word",
-                      }}
-                    >
-                      {Array.isArray(textValue) ? (
-                        textValue.map((text, index) => (
-                          <span
-                            style={{
-                              whiteSpace: itemType === "address" ? "normal" : "nowrap",
-                              display: index === textValue.length - 1 ? "inline" : "block",
-                              ...textStyle,
-                            }}
-                            key={`multi-${index}`}
-                          >
-                            {text}
-                          </span>
-                        ))
-                      ) : (
-                        <span
-                          style={{ whiteSpace: itemType === "address" ? "normal" : "nowrap", ...textStyle }}
-                          onClick={() => handleTextClick(item)}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: itemType === "address" ? "flex-start" : "center",
+                      flex: 1,
+                      minWidth: 0,
+                      flexDirection: itemType === "address" ? "column" : "row",
+                    }}
+                  >
+                    {itemType === "address" ? (
+                      <>
+                        <Typography
+                          className="item-text"
+                          sx={{
+                            fontSize: "14px",
+                            color: "#313233",
+                            flex: 1,
+                            wordWrap: "break-word",
+                            whiteSpace: "normal",
+                          }}
                         >
-                          {textValue}
-                        </span>
-                      )}
-                      {item.label && (
-                        <span
-                          className="address-label"
-                          style={{ marginLeft: "4px", fontSize: "0.75rem", color: "#444746" }}
-                        >
-                          • {item.label}
-                        </span>
-                      )}
-                    </Typography>
-                  </TextTooltip>
+                          {generateAddressString(item)}
+                          {item.label && (
+                            <span
+                              className="address-label"
+                              style={{ marginLeft: "4px", fontSize: "0.75rem", color: "#444746" }}
+                            >
+                              • {item.label}
+                            </span>
+                          )}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Typography
+                        className="item-text"
+                        sx={{
+                          fontSize: "14px",
+                          color: "#313233",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          flex: 1,
+                        }}
+                      >
+                        {itemType === "email" ? item.value : `${item.dialCode}${item.value}`}
+                      </Typography>
+                    )}
+                  </Box>
+                </Tooltip>
 
-                  {hoveredIndex === index && !disableCopy && (
-                    <Tooltip
-                      open={copyTooltipOpen}
-                      title={`${
-                        itemType === "email" ? "Email" : itemType === "phone" ? "Phone number" : "Address"
-                      } copied`}
-                      placement="top"
-                      slotProps={{
-                        popper: {
-                          sx: {
-                            "& .MuiTooltip-tooltip": {
-                              borderRadius: 0,
-                              fontSize: "11px",
-                              fontWeight: 200,
-                            },
+                {hoveredIndex === index && (
+                  <Tooltip
+                    open={copyTooltipOpen}
+                    title={`${
+                      itemType === "email" ? "Email" : itemType === "phone" ? "Phone number" : "Address"
+                    } copied`}
+                    placement="top"
+                    slotProps={{
+                      popper: {
+                        sx: {
+                          "& .MuiTooltip-tooltip": {
+                            borderRadius: 0,
+                            fontSize: "11px",
+                            fontWeight: 200,
                           },
+                        },
+                      },
+                    }}
+                  >
+                    <IconButton
+                      className="copy-icon"
+                      size="medium"
+                      onClick={(e) => handleCopy(item, e)}
+                      sx={{
+                        transition: "opacity 0.2s",
+                        "&:hover": {
+                          backgroundColor: "transparent",
                         },
                       }}
                     >
-                      <IconButton
-                        className="copy-icon"
-                        size="medium"
-                        onClick={(e) => handleCopy(item, e)}
-                        sx={{
-                          transition: "opacity 0.2s",
-                          mt: "-5px",
-                          "&:hover": {
-                            backgroundColor: "transparent",
-                          },
+                      <span
+                        className="material-symbols-outlined"
+                        style={{
+                          fontSize: "20px",
+                          color: "#0b57d0",
                         }}
                       >
-                        <span
-                          className="material-symbols-outlined"
-                          style={{
-                            fontSize: "18px",
-                            color: "#0b57d0",
-                          }}
-                        >
-                          content_copy
-                        </span>
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </Box>
-              );
-            })}
+                        content_copy
+                      </span>
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </Box>
+            ))}
           </Box>
         ) : (
           <Box

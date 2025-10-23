@@ -34,7 +34,6 @@ export const GlobalContextProvider = ({ children }) => {
     showPanel: false,
     direction: "vertical",
   });
-  const [softRemovedLabels, setSoftRemovedLabels] = useState({});
   const [previewEmailId, setPreviewEmailId] = useState(null);
   const [showQuickSettings, setShowQuickSettings] = usePersistedState("showQuickSettings", false);
   const [density, setDensity] = usePersistedState("density", "default");
@@ -287,20 +286,6 @@ export const GlobalContextProvider = ({ children }) => {
     
     // Auto-delete
     autoDeleteActivity: "18m",
-    
-    // Profile Visibility Settings (Info you can share with others)
-    profileVisibility: {
-      nameVisibility: "anyone", // "onlyYou" or "anyone"
-      genderVisibility: "onlyYou", // "onlyYou" or "anyone"
-      birthdayVisibility: "onlyYou", // "onlyYou" or "anyone"
-      emailVisibility: "anyone", // "onlyYou" or "anyone"
-      phoneVisibility: "onlyYou", // "onlyYou" or "anyone"
-      addressVisibility: "onlyYou", // "onlyYou" or "anyone"
-      profilePictureVisibility: "anyone", // "onlyYou" or "anyone"
-      linksVisibility: "anyone", // "onlyYou" or "anyone"
-      workVisibility: "anyone", // "onlyYou" or "anyone"
-      educationVisibility: "anyone", // "onlyYou" or "anyone"
-    },
   });
 
   // Sign-in settings
@@ -486,8 +471,6 @@ export const GlobalContextProvider = ({ children }) => {
     setComposeWindows,
     currentPage,
     setCurrentPage,
-    sortOrder,
-    setSortOrder,
     itemsPerPage,
     setItemsPerPage,
     normalizedEmails,
@@ -513,6 +496,8 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    hiddenRecipients,
+    setHiddenRecipients,
     signaturesState,
     setSignaturesState,
     sendAsSettings,
@@ -521,18 +506,12 @@ export const GlobalContextProvider = ({ children }) => {
     setNotificationSettings,
     privacySettings,
     setPrivacySettings,
-    settingsAccounts,
-    setSettingsAccounts,
     contactsLeftSidebarExpanded,
     setContactsLeftSidebarExpanded,
     vacationResponder,
     setVacationResponder,
     createLabelModal,
     setCreateLabelModal,
-    hiddenRecipients,
-    setHiddenRecipients,
-    softRemovedLabels,
-    setSoftRemovedLabels,
     // Settings tabs state
     settingsGeneral,
     setSettingsGeneral,
@@ -557,10 +536,6 @@ export const GlobalContextProvider = ({ children }) => {
     setMailGAccountPersonalInfo,
     mailGAccountDataPrivacy,
     setMailGAccountDataPrivacy,
-    thirdPartyApps,
-    setThirdPartyApps,
-    signInSettings,
-    setSignInSettings,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

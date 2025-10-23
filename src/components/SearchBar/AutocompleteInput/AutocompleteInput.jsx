@@ -1,16 +1,9 @@
-import React, { useRef, useState, useImperativeHandle, forwardRef } from "react";
+import React, { useRef, useState } from "react";
 import styles from "./AutocompleteInput.module.css";
 
-const AutocompleteInput = forwardRef(({ value, onChange, suggestion, onAccept, onFocus, onKeyDown }, ref) => {
+export default function AutocompleteInput({ value, onChange, suggestion, onAccept, onFocus, onKeyDown }) {
   const inputRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
-
-  // Expose the focus method to parent component
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      inputRef.current?.focus();
-    },
-  }));
 
   // Calculate the suggestion remainder to display
   const getRemainder = () => {
@@ -92,8 +85,4 @@ const AutocompleteInput = forwardRef(({ value, onChange, suggestion, onAccept, o
       />
     </>
   );
-});
-
-AutocompleteInput.displayName = "AutocompleteInput";
-
-export default AutocompleteInput;
+}

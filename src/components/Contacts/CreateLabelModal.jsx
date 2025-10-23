@@ -95,7 +95,6 @@ const CreateLabelModal = ({ open, onClose, backdropStyle = {}, isEdit = false, e
       setRecipients((prev) =>
         prev.map((recipient) => ({
           ...recipient,
-          updatedAt: new Date().toISOString(),
           labels: recipient.labels?.map((label) => (label === editLabel.label ? trimmedName : label)),
         }))
       );

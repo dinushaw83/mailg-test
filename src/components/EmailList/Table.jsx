@@ -87,7 +87,9 @@ const OneColumnData = ({
   toggleStar,
   density,
   height = "60px",
+  getDisplayAddress,
 }) => {
+  const display = getDisplayAddress ? getDisplayAddress(email) : { name: email.from.name, email: email.from.email };
   return (
     <td className="xY" style={{ width: "90%", height }}>
       <Box sx={{ width: "100%", overflow: "hidden" }}>
@@ -108,12 +110,12 @@ const OneColumnData = ({
                 <span
                   translate="no"
                   className={getSenderClassName(email)}
-                  email={email.from.email}
-                  name={email.from.name}
-                  data-hovercard-id={email.from.email}
+                  email={display.email}
+                  name={display.name}
+                  data-hovercard-id={display.email}
                   style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                 >
-                  {email.labels.includes("Drafts") ? "Draft" : email.from.name}
+                  {email.labels.includes("Drafts") ? "Draft" : display.name}
                 </span>
               </span>
             </div>
@@ -422,6 +424,14 @@ const Table = ({
 
   const { folder, label } = useParams();
 
+  const getDisplayAddress = (email) => {
+    const isSentView = (folder || "").toLowerCase() === "sent" || (email.labels || []).includes("Sent");
+    if (isSentView && Array.isArray(email.to) && email.to.length > 0) {
+      return { name: email.to[0], email: email.to[0] };
+    }
+    return { name: email.from.name, email: email.from.email };
+  };
+
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -478,6 +488,7 @@ const Table = ({
                     formatDate={formatDate}
                     toggleStar={toggleStar}
                     density={density}
+                    getDisplayAddress={getDisplayAddress}
                   />
                 ) : (
                   <>
@@ -536,7 +547,7 @@ const Table = ({
                         <div className="bnj" />
                       </div>
                     </td>
-                    {/* Sender */}
+                    {/* Sender / Recipient (Sent) */}
                     <td className="yX xY" role="gridcell" tabIndex={-1}>
                       <div id={`:pj${index}`} className="afn sf-hidden">
                         {getAccessibilityText(email)}
@@ -546,23 +557,12 @@ const Table = ({
                           <span
                             translate="no"
                             className={getSenderClassName(email)}
-                            email={email.from.email}
-                            name={email.from.name}
-                            data-hovercard-id={email.from.email}
+                            email={getDisplayAddress(email).email}
+                            name={getDisplayAddress(email).name}
+                            data-hovercard-id={getDisplayAddress(email).email}
+                            style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                           >
-                            {email.label}
-                            {email.label && email.labels.includes("Drafts") && <span>, </span>}
-                            <>
-                              {email.labels.includes("Drafts") && (
-                                <span style={{ color: "#dd4b39", fontWeight: 400 }}> Draft</span>
-                              )}
-                            </>
-                            {email.messageCount > 1 && (
-                              <span style={{ color: "rgb(95, 99, 104)", fontSize: "0.75rem", marginLeft: "4px" }}>
-                                {" "}
-                                {email.messageCount}
-                              </span>
-                            )}
+                            {email.labels.includes("Drafts") ? "Draft" : getDisplayAddress(email).name}
                           </span>
                         </span>
                       </div>

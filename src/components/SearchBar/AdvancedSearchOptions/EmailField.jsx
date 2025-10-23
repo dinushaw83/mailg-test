@@ -21,7 +21,7 @@ const InputStyle = {
   },
 };
 
-const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
+const EmailField = React.forwardRef(({ label, value = "", onChange, placeholder }, ref) => {
   const { recipients: globalRecipients } = useContext(GlobalContext);
   const [inputValue, setInputValue] = useState("");
   const [confirmedEmails, setConfirmedEmails] = useState([]);

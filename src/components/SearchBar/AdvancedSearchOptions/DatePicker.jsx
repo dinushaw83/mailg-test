@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Button, InputAdornment, Portal, TextField } from "@mui/material";
+import { Box, Button, InputAdornment, Portal, TextField } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
@@ -7,9 +7,9 @@ import { CalendarToday as CalendarIcon } from "@mui/icons-material";
 import dayjs from "dayjs";
 import styles from "./DatePicker.module.css";
 
-const DatePicker = ({ value, onChange }) => {
+const DatePicker = ({ value, onChange, placeholder = "Select date" }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(value ? dayjs(value) : null);
+  const [selectedDate, setSelectedDate] = useState(value ? dayjs(value) : dayjs());
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const containerRef = useRef(null);
   const calendarRef = useRef(null);
@@ -85,6 +85,7 @@ const DatePicker = ({ value, onChange }) => {
           type="text"
           className={styles.input}
           value={formatDisplayDate(selectedDate)}
+          placeholder={placeholder}
           readOnly
           slotProps={{
             input: {
@@ -129,7 +130,7 @@ const DatePicker = ({ value, onChange }) => {
           >
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DateCalendar
-                value={selectedDate || dayjs()}
+                value={selectedDate}
                 onChange={handleDateChange}
                 views={["day"]}
                 maxDate={dayjs()}

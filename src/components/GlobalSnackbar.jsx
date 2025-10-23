@@ -27,6 +27,7 @@ export default function GlobalSnackbar() {
       autoHideDuration={snackbar.autoHideDuration}
       onClose={handleClose}
       message={snackbar.message}
+      anchorOrigin={snackbar.anchorOrigin || { vertical: 'bottom', horizontal: 'right' }}
       action={
         <React.Fragment>
           {snackbar.action}
@@ -50,8 +51,8 @@ export default function GlobalSnackbar() {
               <IconButton size="medium" aria-label="close" color="inherit" onClick={handleClose}>
                 <span
                   className="material-symbols-outlined"
-                  style={{ 
-                    fontSize: "22px", 
+                  style={{
+                    fontSize: "22px",
                     color: snackbar?.closeIconColor || (snackbar?.severity === "error" || snackbar?.severity === "success" ? "#ffffff" : "rgb(95,99,104)")
                   }}
                 >

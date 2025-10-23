@@ -1,7 +1,14 @@
 import React, { useEffect } from "react";
 import { Box, Typography } from "@mui/material";
+import ContactsTable from "../../components/Contacts/ContactsTable";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const ContactTrash = () => {
+  const { recipients } = useGlobalContext();
+  
+  // Filter deleted contacts
+  const deletedContacts = recipients.filter((recipient) => recipient.isDeleted === true);
+
   useEffect(() => {
     // Update the document title
     document.title = "Trash";
@@ -23,8 +30,44 @@ const ContactTrash = () => {
         <Typography variant="h6" sx={{ fontWeight: 400, fontSize: "1.5rem", color: "#444746" }}>
           Trash
         </Typography>
+        <span style={{ marginLeft: "8px", fontSize: "0.875rem", fontWeight: 500 }}>({deletedContacts.length})</span>
       </Box>
-      <h2 style={{ textAlign: "center" }}>Coming soon</h2>
+
+      {/* Deleted contacts list */}
+      {deletedContacts?.length > 0 ? (
+        <ContactsTable contacts={[{ heading: "", data: deletedContacts, title: "Trash" }]} showDeleted={true} />
+      ) : (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            width: "100%",
+          }}
+        >
+          <Box
+            sx={{
+              backgroundColor: "#e0e0e0",
+              borderRadius: "50%",
+              width: "150px",
+              height: "150px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              mb: 3.5,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "120px", color: "#9e9e9e" }}>
+              delete
+            </span>
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 400, fontSize: "1rem", color: "#1f1f1f" }}>
+            No contacts in trash
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };

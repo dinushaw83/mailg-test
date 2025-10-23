@@ -50,8 +50,8 @@ const ImportContactsModal = ({ open, onClose, onImport }) => {
         throw new Error("Unsupported file format");
       }
 
-      // Call the onImport callback with the parsed contacts
-      await onImport(contacts);
+      // Call the onImport callback with the parsed contacts and filename
+      await onImport(contacts, fileName);
 
       // Reset state and close modal
       setSelectedFile(null);

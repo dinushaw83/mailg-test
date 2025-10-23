@@ -22,15 +22,7 @@ const ContactPopup = ({ children, contact }) => {
   const [phoneCopyTooltipOpen, setPhoneCopyTooltipOpen] = useState(false);
   const [disableAddToContacts, setDisableAddToContacts] = useState(false);
   const { addNewComposeWindow } = useComposeModal();
-  const {
-    setSnackbar,
-    setRightSidebarActiveTab,
-    recipients,
-    setRecipients,
-    loggedInUser,
-    hiddenRecipients,
-    deletedRecipients,
-  } = useGlobalContext();
+  const { setSnackbar, setRightSidebarActiveTab, recipients, setRecipients, loggedInUser } = useGlobalContext();
 
   // Get the detailed contact object
   const detailedContact = useMemo(() => {
@@ -55,8 +47,7 @@ const ContactPopup = ({ children, contact }) => {
     return contact;
   }, [recipients, contact]);
 
-  const isCustomRecipient =
-    detailedContact.id && typeof detailedContact.id === "string" && detailedContact.id.startsWith("custom-");
+  const isCustomRecipient = detailedContact.id && typeof detailedContact.id === "string" && detailedContact.id.startsWith("custom-");
   const name = detailedContact.name || detailedContact.email || "";
   const email = detailedContact.email || "";
   const avatarColor = generateAvatarColor(name);
@@ -128,18 +119,14 @@ const ContactPopup = ({ children, contact }) => {
     const existingContact = recipients.find((recipient) => recipient.id === detailedContact.id);
     if (existingContact) {
       setRecipients((prev) =>
-        prev.map((recipient) =>
-          recipient.id === detailedContact.id
-            ? { ...recipient, isSaved: true, updatedAt: new Date().toISOString(), savedAt: new Date().toISOString() }
-            : recipient
-        )
+        prev.map((recipient) => (recipient.id === detailedContact.id ? { ...recipient, isSaved: true } : recipient))
       );
     } else {
       // Create a new contact object
       const newContact = {
         ...contact,
         isSaved: true,
-        id: generateNextIntegerId([...recipients, ...hiddenRecipients, ...deletedRecipients]),
+        id: generateNextIntegerId(recipients),
         emails: [
           {
             value: detailedContact.email,
@@ -152,9 +139,6 @@ const ContactPopup = ({ children, contact }) => {
         lastName: "",
         avatar: null,
         labels: [],
-        updatedAt: new Date().toISOString(),
-        savedAt: new Date().toISOString(),
-        createdAt: contact?.createdAt ?? new Date().toISOString(),
       };
       setRecipients((prev) => [...prev, newContact]);
     }
@@ -224,10 +208,7 @@ const ContactPopup = ({ children, contact }) => {
   const handleOpenDetailedView = (e) => {
     e.stopPropagation();
     // Navigate to the detailed view section of right sidebar
-    setRightSidebarActiveTab({
-      activeTab: "contact",
-      contact: { screen: "CONTACT_DETAILS", contactId: detailedContact.id },
-    });
+    setRightSidebarActiveTab({ activeTab: "contact", contact: { screen: "CONTACT_DETAILS", contactId: detailedContact.id } });
   };
 
   const tooltipContent = (

@@ -36,6 +36,8 @@ const snackbarStyle = {
 };
 
 const ContactDetailsPage = () => {
+  console.log("ContactDetailsPage component rendering...");
+  
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -49,6 +51,8 @@ const ContactDetailsPage = () => {
     setDeletedRecipients,
   } = useGlobalContext();
   const { contactId } = useParams();
+  
+  console.log("ContactDetailsPage - Got context and params");
   const [disableHeader, setDisableHeader] = useState(false);
   const [emailMenuAnchor, setEmailMenuAnchor] = useState(null);
   const [labelsMenuAnchor, setLabelsMenuAnchor] = useState(null);
@@ -77,8 +81,15 @@ const ContactDetailsPage = () => {
   const contact = [...recipients, ...hiddenRecipients].find(
     (recipient) => recipient.id?.toString() === contactId?.toString()
   );
+  
+  // Debug logging
+  console.log("ContactDetailsPage - contactId:", contactId);
+  console.log("ContactDetailsPage - recipients:", recipients);
+  console.log("ContactDetailsPage - hiddenRecipients:", hiddenRecipients);
+  console.log("ContactDetailsPage - contact found:", contact);
+  
   const isFavorite = contact?.isFavorite;
-  const isHiddenContact = hiddenRecipients.some((recipient) => recipient.id === contact.id);
+  const isHiddenContact = contact ? hiddenRecipients.some((recipient) => recipient.id === contact.id) : false;
 
   const [tempLabels, setTempLabels] = useState(contact?.labels || []);
   const [showAllEmails, setShowAllEmails] = useState(false);
@@ -93,7 +104,11 @@ const ContactDetailsPage = () => {
 
     // Clear timeouts on unmount
     return () => {
-      Object.keys(timeouts).forEach((timeout) => timeout.current && clearTimeout(timeout.current));
+      Object.keys(timeouts.current).forEach((key) => {
+        if (timeouts.current[key]) {
+          clearTimeout(timeouts.current[key]);
+        }
+      });
     };
   }, []);
 
@@ -718,7 +733,14 @@ const ContactDetailsPage = () => {
 
   // Format date for recent interactions
   const formatRecentDate = (timestamp) => {
+    if (!timestamp) return "";
+    
     const date = new Date(timestamp);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return "";
+    }
 
     // If it's current year, show "Sep 12" format
     if (isThisYear(date)) {
@@ -731,7 +753,14 @@ const ContactDetailsPage = () => {
 
   // Format date for history section
   const formatHistoryDate = (timestamp) => {
+    if (!timestamp) return "";
+    
     const date = new Date(timestamp);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return "";
+    }
 
     // If it's today, show "Today, 12:18 AM" format
     if (isToday(date)) {
@@ -2095,3 +2124,4 @@ const ContactDetailsPage = () => {
 };
 
 export default ContactDetailsPage;
+
