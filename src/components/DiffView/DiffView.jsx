@@ -13,7 +13,7 @@ const UnfoldCollapsed = ({ previousHunk, currentHunk, onClick }) => {
   return (
     <tbody onClick={() => onClick(start, end + 1)} className="expand-decoration">
       <tr>
-        <td colspan="4">
+        <td colSpan="4">
           Expand lines {start} - {end}
         </td>
       </tr>

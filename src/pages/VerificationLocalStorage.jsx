@@ -102,12 +102,13 @@ const generateConfigDiff = (initialConfig, currentConfig) => {
   );
 
   // Remove the first 2 lines from the generated patch, to ensure proper parsing
-  patch = patch.split("\n").slice(2).join("\n");
-  const diffFile = parseDiff(patch);
+  const normalizedPatch = patch.split("\n").slice(2).join("\n");
+  const diffFile = parseDiff(normalizedPatch);
   
   if (diffFile && diffFile[0]) {
     diffFile[0].key = "localStorage_config";
     diffFile[0].oldSource = JSON.stringify(sortObjectKeys(cleanedInitialJson), stringifyReplacer, 2);
+    diffFile[0].patch = normalizedPatch;
     return diffFile[0];
   }
   
@@ -189,7 +190,14 @@ const VerificationLocalStorage = () => {
     // Generate diff between initial and current
     if (window.initialConfig) {
       const diff = generateConfigDiff(window.initialConfig, currentSnapshot);
-      setDiffData(diff);
+      // Only update diffData if the actual patch changed to preserve expansion state
+      setDiffData((prev) => {
+        if (!diff && !prev) return prev;
+        if (!diff && prev) return diff; // became empty
+        if (diff && !prev) return diff; // first time
+        if (diff.patch !== prev.patch) return diff; // content changed
+        return prev; // no change → keep reference to preserve expansion
+      });
     }
     setLastUpdated(new Date());
 
@@ -404,7 +412,7 @@ const VerificationLocalStorage = () => {
         {!isCollapsed && (
           <div style={{ padding: "20px" }}>
             {diffData && diffData.hunks?.length > 0 ? (
-              <DiffView hunks={diffData.hunks} onExpandRange={() => {}} oldSource={diffData.oldSource} />
+              <DiffView hunks={diffData.hunks} oldSource={diffData.oldSource} />
             ) : (
               <div
                 style={{
