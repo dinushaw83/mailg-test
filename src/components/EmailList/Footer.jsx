@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import Box from "@mui/material/Box";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const StorageUsageContainer = styled.div`
   text-align: left;
@@ -67,7 +68,7 @@ const Dot = styled.div`
   border-radius: 50%;
 `;
 
-const TermsPrivacyProgramPolicies = ({ centerText = false }) => {
+const TermsPrivacyProgramPolicies = ({ centerText = false, onPrivacyClick }) => {
   return (
     <div
       className="aeU"
@@ -85,7 +86,14 @@ const TermsPrivacyProgramPolicies = ({ centerText = false }) => {
           Terms
         </a>
         <Dot />
-        <a href="#" className="l9">
+        <a 
+          href="#" 
+          className="l9"
+          onClick={(e) => {
+            e.preventDefault();
+            if (onPrivacyClick) onPrivacyClick();
+          }}
+        >
           Privacy
         </a>
         <Dot />
@@ -118,10 +126,12 @@ const FooterContainer = styled.div`
 `;
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   return (
     <FooterContainer>
       <StorageUsage />
-      <TermsPrivacyProgramPolicies />
+      <TermsPrivacyProgramPolicies onPrivacyClick={() => navigate("/mailg-account/data-privacy")} />
       <LastAccountActivity />
       <div style={{ clear: "both" }} />
     </FooterContainer>
@@ -129,6 +139,8 @@ const Footer = () => {
 };
 
 export const PanelFooter = () => {
+  const navigate = useNavigate();
+
   return (
     <Box
       role="contentinfo"
@@ -144,7 +156,7 @@ export const PanelFooter = () => {
     >
       <StorageUsage centerText />
       <LastAccountActivity centerText />
-      <TermsPrivacyProgramPolicies centerText />
+      <TermsPrivacyProgramPolicies centerText onPrivacyClick={() => navigate("/mailg-account/data-privacy")} />
     </Box>
   );
 };

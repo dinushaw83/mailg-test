@@ -21,6 +21,7 @@ import {
   OfflineTab,
   ThemesTab,
 } from "../components/SettingsTabs";
+import Footer from "../components/EmailList/Footer";
 
 const Settings = () => {
   const { tab } = useParams();
@@ -61,12 +62,27 @@ const Settings = () => {
 
   const handleTabChange = (event, newValue) => {
     const selectedTab = tabs[newValue];
-    navigate(`/settings/${selectedTab.id}`);
+    
+    // Only allow switching between "general" and "accounts" tabs
+    const allowedTabs = ["general", "accounts"];
+    
+    if (allowedTabs.includes(selectedTab.id)) {
+      navigate(`/settings/${selectedTab.id}`);
+    }
+    // If trying to switch to a disabled tab, do nothing (stay on current tab)
   };
 
   return (
     <Container maxWidth={false} sx={{ py: 3 }}>
-      <Paper elevation={0} sx={{ backgroundColor: "transparent" }}>
+      <Paper
+        elevation={0}
+        sx={{
+          backgroundColor: "transparent",
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "calc(100vh - 64px)",
+        }}
+      >
         {/* Settings Title */}
         <Typography
           variant="h4"
@@ -149,7 +165,14 @@ const Settings = () => {
                 id={`settings-tabpanel-${tabItem.id}`}
                 aria-labelledby={`settings-tab-${tabItem.id}`}
               >
-                {currentTabIndex === index && TabComponent && <TabComponent />}
+                {currentTabIndex === index && TabComponent && (
+                  <>
+                    <TabComponent />
+                    <Box sx={{ mt: 4 }}>
+                      <Footer />
+                    </Box>
+                  </>
+                )}
               </div>
             );
           })}

@@ -9,3 +9,4 @@ export { default as ChatTab } from './ChatTab';
 export { default as AdvancedTab } from './AdvancedTab';
 export { default as OfflineTab } from './OfflineTab';
 export { default as ThemesTab } from './ThemesTab';
+export { default as PrivacyTab } from './PrivacyTab';

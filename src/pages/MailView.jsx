@@ -31,8 +31,14 @@ import { CATEGORIES } from "../utils/categories";
 
 const Inbox = () => {
   const {
-    emails, sortOrder, setCurrentPage, currentPage,
-    itemsPerPage, loggedInUser, vacationResponder, setSortOrder
+    emails,
+    sortOrder,
+    setCurrentPage,
+    currentPage,
+    itemsPerPage,
+    loggedInUser,
+    vacationResponder,
+    setSortOrder,
   } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
@@ -71,9 +77,7 @@ const Inbox = () => {
   }
 
   // Sort and paginate the displayRows
-  const baseSource = !label && activeFolder.toLowerCase() === "inbox"
-    ? tabFilteredRows
-    : filteredRows;
+  const baseSource = !label && activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;
 
   const rows = useMemo(() => {
     const sortedThreads = [...baseSource].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -91,7 +95,7 @@ const Inbox = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-    setSortOrder("newest")
+    setSortOrder("newest");
   }, [activeInboxTab, activeFolder]);
 
   return (

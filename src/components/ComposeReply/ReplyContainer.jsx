@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from "react";
 import EmailRecipients from "../common/EmailRecipients";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import RichTextEditor from "../RichTextEditor/RichTextEditor";
@@ -13,8 +13,18 @@ import forwardIcon from "../../icons/forward.png";
 import dropdownArrow from "../../icons/dropdownarrow.png";
 import { Button } from "@mui/material";
 
-const ReplyContainer = ({ email, replyType, currentDraftId, onClose, onUndoDelete }) => {
+const ReplyContainer = forwardRef(({ email, replyType, currentDraftId, onClose, onUndoDelete }, ref) => {
   const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
+  
+  useImperativeHandle(ref, () => ({
+    focusEditor: () => {
+      // Find the ProseMirror editor element and focus it
+      const editorElement = document.querySelector('.ProseMirror');
+      if (editorElement) {
+        editorElement.focus();
+      }
+    }
+  }));
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
   const [subject, setSubject] = useState(`${replyType === "forward" ? "Fwd: " : "Re: "}${email.subject}`);
@@ -396,6 +406,7 @@ ${email.body}
               onDelete={handleDelete}
               onSchedule={handleSchedule}
               textEditorMinHeight="90px"
+              textEditorMaxHeight="400px"
               messageId={email.id}
             />
           </div>
@@ -435,6 +446,6 @@ ${email.body}
       />
     </>
   );
-};
+});
 
-export default ReplyContainer;
+export default React.memo(ReplyContainer);

@@ -1,16 +1,55 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
 
 const ThemesTab = () => {
+  const handleSetTheme = () => {
+    console.log("Set theme clicked");
+    // Add theme selection logic here
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h6" sx={{ marginBottom: 2, color: "#202124" }}>
-        Themes
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Themes settings content will be displayed here.
-      </Typography>
-    </Box>
+    <div
+      style={{
+        padding: "0px 24px 24px",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        minHeight: "350px",
+      }}
+    >
+      <div
+        className="Uu"
+        role="button"
+        onClick={handleSetTheme}
+        style={{
+          border: "none",
+          background: "none",
+          borderRadius: "4px",
+          outline: "none",
+          padding: "0px 16px",
+          textDecoration: "none",
+          WebkitBoxAlign: "center",
+          alignItems: "center",
+          display: "inline-flex",
+          WebkitBoxPack: "center",
+          justifyContent: "center",
+          position: "relative",
+          zIndex: 0,
+          WebkitFontSmoothing: "antialiased",
+          fontFamily:
+            '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+          fontSize: "0.875rem",
+          letterSpacing: "normal",
+          cursor: "pointer",
+          fontWeight: 500,
+          height: "36px",
+          minWidth: "80px",
+          boxShadow: "rgb(218, 220, 224) 0px 0px 0px 1px inset",
+          boxSizing: "border-box",
+          color: "rgb(26, 115, 232)",
+          marginTop: "8px",
+        }}
+      >
+        Set theme
+      </div>
+    </div>
   );
 };
 

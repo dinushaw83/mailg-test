@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { generateAvatarColor } from "../utils/helperFunctions";
 import ContactSearchDropdown from "./Contacts/ContactSearchDropdown";
+import ProfileMenu from "./ProfileMenu";
 import styles from "./ContactsHeader.module.css";
 
 const ContactsHeader = () => {
@@ -11,7 +12,8 @@ const ContactsHeader = () => {
   const location = useLocation();
   const { setContactsLeftSidebarExpanded, loggedInUser } = useGlobalContext();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const initials = loggedInUser.name ? loggedInUser.name.charAt(0).toUpperCase() : "";
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
+  const initials = loggedInUser.name.charAt(0).toUpperCase();
   const initialSearchQuery = location.pathname.startsWith("/contacts/search/")
     ? decodeURIComponent(location.pathname.split("/").pop() ?? "")
     : "";
@@ -162,58 +164,39 @@ const ContactsHeader = () => {
           </Tooltip>
 
           {/* Avatar */}
-          <Tooltip
-            title={
-              <Box>
-                <Typography sx={{ fontSize: "12px", fontWeight: 500 }}>MailG Account</Typography>
-                <Typography sx={{ fontSize: "12px", fontWeight: 400, color: "rgba(255, 255, 255, 0.7)" }}>
-                  {loggedInUser.name}
-                </Typography>
-                <Typography sx={{ fontSize: "12px", fontWeight: 400, color: "rgba(255, 255, 255, 0.7)" }}>
-                  {loggedInUser.email}
-                </Typography>
-              </Box>
-            }
-            placement="bottom"
-            slotProps={{
-              popper: {
-                sx: {
-                  "& .MuiTooltip-tooltip": {
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                    color: "white",
-                    fontSize: "13px",
-                    fontWeight: "400",
-                  },
-                },
+          <Avatar
+            onClick={(e) => setProfileMenuAnchor(e.currentTarget)}
+            sx={{
+              bgcolor: loggedInUser.avatar ? "transparent" : generateAvatarColor(loggedInUser.name),
+              color: loggedInUser.avatar ? "inherit" : "white",
+              width: 36,
+              height: 36,
+              fontSize: "15px",
+              transition: "opacity 0.2s ease",
+              "&:hover": {
+                cursor: "pointer",
               },
             }}
           >
-            <Avatar
-              sx={{
-                bgcolor: loggedInUser.avatar ? "transparent" : generateAvatarColor(loggedInUser.name),
-                color: loggedInUser.avatar ? "inherit" : "white",
-                width: 36,
-                height: 36,
-                fontSize: "15px",
-                transition: "opacity 0.2s ease",
-                "&:hover": {
-                  cursor: "pointer",
-                },
-              }}
-            >
-              {loggedInUser.avatar ? (
-                <img
-                  src={loggedInUser.avatar}
-                  alt={loggedInUser.name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
-                />
-              ) : (
-                initials
-              )}
-            </Avatar>
-          </Tooltip>
+            {loggedInUser.avatar ? (
+              <img
+                src={loggedInUser.avatar}
+                alt={loggedInUser.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+              />
+            ) : (
+              initials
+            )}
+          </Avatar>
         </Box>
       </Box>
+
+      {/* Profile Menu */}
+      <ProfileMenu
+        anchorEl={profileMenuAnchor}
+        open={Boolean(profileMenuAnchor)}
+        onClose={() => setProfileMenuAnchor(null)}
+      />
     </Box>
   );
 };

@@ -1,10 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import SearchBar from "./SearchBar";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { generateAvatarColor } from "../utils/helperFunctions";
+import ProfileMenu from "./ProfileMenu";
 
 const Header = () => {
   const { showQuickSettings, setShowQuickSettings, setIsLeftSidebarExpanded, loggedInUser } = useGlobalContext();
+  const [profileMenuAnchor, setProfileMenuAnchor] = useState(null);
+
+  const handleProfileClick = (event) => {
+    setProfileMenuAnchor(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchor(null);
+  };
+
+  const initials = loggedInUser.name.charAt(0).toUpperCase();
   return (
     <div className="nH" style={{ backgroundColor: "#f8fafd" }}>
       <div className="w-asV bbg aiw">
@@ -182,6 +194,7 @@ const Header = () => {
                           href="#"
                           tabIndex={0}
                           role="button"
+                          onClick={handleProfileClick}
                           style={{
                             backgroundColor: generateAvatarColor(loggedInUser.name),
                             display: "flex",
@@ -190,10 +203,11 @@ const Header = () => {
                             width: "36px",
                             height: "36px",
                             borderRadius: "50%",
+                            cursor: "pointer",
                           }}
                         >
                           <span className="gb_ae" style={{ fontSize: "15px", color: "white" }}>
-                            J
+                            {initials}
                           </span>
                           {/* <div className="gb_Q gb_R sf-hidden" aria-hidden="true">
                             <svg
@@ -243,6 +257,13 @@ const Header = () => {
         </div>
         <div id=":c" />
       </div>
+      
+      {/* Profile Menu */}
+      <ProfileMenu
+        anchorEl={profileMenuAnchor}
+        open={Boolean(profileMenuAnchor)}
+        onClose={handleProfileMenuClose}
+      />
     </div>
   );
 };

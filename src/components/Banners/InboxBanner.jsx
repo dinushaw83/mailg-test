@@ -44,7 +44,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                             aria-level={3}
                             style={{
                                 userSelect: "none",
-                                width: 253,
+                                flex: 1,
+                                minWidth: 0,
                             }}
                             onClick={() => setActiveInboxTab("Primary")}
                         >
@@ -59,7 +60,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                                 aria-label="Primary"
                                 style={{
                                     userSelect: "none",
-                                    width: 251,
+                                    flex: 1,
+                                    minWidth: 0,
                                     borderLeftWidth: 1,
                                 }}
                             >
@@ -101,7 +103,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                             aria-level={3}
                             style={{
                                 userSelect: "none",
-                                width: 253,
+                                flex: 1,
+                                minWidth: 0,
                             }}
                             onClick={() => setActiveInboxTab("Promotions")}
                         >
@@ -116,7 +119,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                                 aria-label="Promotions, one new message,"
                                 style={{
                                     userSelect: "none",
-                                    width: 252,
+                                    flex: 1,
+                                    minWidth: 0,
                                 }}
                             >
                                 <div className="aKu aKo aKq sf-hidden" style={{ userSelect: "none" }} />
@@ -154,7 +158,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                             aria-level={3}
                             style={{
                                 userSelect: "none",
-                                width: 253,
+                                flex: 1,
+                                minWidth: 0,
                             }}
                             onClick={() => setActiveInboxTab("Social")}
                         >
@@ -169,7 +174,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                                 aria-label="Social"
                                 style={{
                                     userSelect: "none",
-                                    width: 252,
+                                    flex: 1,
+                                    minWidth: 0,
                                 }}
                             >
                                 <div className="aKu aKo aKq sf-hidden" style={{ userSelect: "none" }} />
@@ -210,7 +216,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                             aria-level={3}
                             style={{
                                 userSelect: "none",
-                                width: 253,
+                                flex: 1,
+                                minWidth: 0,
                             }}
                             onClick={() => setActiveInboxTab("Updates")}
                         >
@@ -225,7 +232,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                                 aria-label="Updates, 2 new messages,"
                                 style={{
                                     userSelect: "none",
-                                    width: 252,
+                                    flex: 1,
+                                    minWidth: 0,
                                 }}
                             >
                                 <div className="aKu aKo aKq sf-hidden" style={{ userSelect: "none" }} />

@@ -356,12 +356,12 @@ const Table = ({
   }, []);
 
   const handleMuteAction = useCallback(
-    (threadId) => {
+    (threadId, muted) => {
       toggleMuted(threadId);
 
       setSnackbar({
         open: true,
-        message: "Conversation muted.",
+        message: `Conversation ${muted ? "unmuted" : "muted"}.`,
         autoHideDuration: 3000,
         action: (
           <Button
@@ -549,9 +549,20 @@ const Table = ({
                             email={email.from.email}
                             name={email.from.name}
                             data-hovercard-id={email.from.email}
-                            style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                           >
-                            {email.labels.includes("Drafts") ? "Draft" : email.from.name}
+                            {email.label}
+                            {email.label && email.labels.includes("Drafts") && <span>, </span>}
+                            <>
+                              {email.labels.includes("Drafts") && (
+                                <span style={{ color: "#dd4b39", fontWeight: 400 }}> Draft</span>
+                              )}
+                            </>
+                            {email.messageCount > 1 && (
+                              <span style={{ color: "rgb(95, 99, 104)", fontSize: "0.75rem", marginLeft: "4px" }}>
+                                {" "}
+                                {email.messageCount}
+                              </span>
+                            )}
                           </span>
                         </span>
                       </div>
@@ -587,25 +598,25 @@ const Table = ({
                               <div className="as sf-hidden">&nbsp;</div>
                             </div>
                             <div className="y6">
-                                <span id={`:pr${index}`} className="bog">
-                                  {getLabelBadges(email).map((badge) => (
-                                    <div
-                                      key={`Badge-${badge.key}`}
-                                      style={{
-                                        backgroundColor: badge?.color?.rgb ?? "#e1e3e1",
-                                        color: badge?.color?.text ?? "#444746",
-                                        fontSize: "0.75rem",
-                                        padding: "0 4px",
-                                        textDecoration: "none",
-                                        width: "fit-content",
-                                        borderRadius: "4px",
-                                        marginRight: "6px",
-                                        display: "inline-block",
-                                      }}
-                                    >
-                                      {badge.displayName}
-                                    </div>
-                                  ))}
+                              <span id={`:pr${index}`} className="bog">
+                                {getLabelBadges(email).map((badge) => (
+                                  <div
+                                    key={`Badge-${badge.key}`}
+                                    style={{
+                                      backgroundColor: badge?.color?.rgb ?? "#e1e3e1",
+                                      color: badge?.color?.text ?? "#444746",
+                                      fontSize: "0.75rem",
+                                      padding: "0 4px",
+                                      textDecoration: "none",
+                                      width: "fit-content",
+                                      borderRadius: "4px",
+                                      marginRight: "6px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    {badge.displayName}
+                                  </div>
+                                ))}
                                 <span
                                   className={email.read ? "" : "bqe"}
                                   data-thread-id={email.threadId}
