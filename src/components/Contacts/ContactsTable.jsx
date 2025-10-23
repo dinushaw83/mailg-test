@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState, useEffect, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -21,7 +21,7 @@ import {
   Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { generateAvatarColor } from "../../utils/helperFunctions";
+import { generateAvatarColor, generateNextIntegerId } from "../../utils/helperFunctions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import ManageLabelsDropdown from "./ManageLabelsDropdown";
 import ExportContactsModal from "./ExportContactsModal";
@@ -30,6 +30,8 @@ import styles from "./ContactsTable.module.css";
 
 // Snackbar style for this screen
 const snackbarStyle = {
+  left: "50% !important",
+  transform: "translateX(-50%) !important",
   "& .MuiSnackbarContent-root": {
     backgroundColor: "#303030",
     color: "#fff",
@@ -37,15 +39,20 @@ const snackbarStyle = {
   },
 };
 
-const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = null, showDeleted = false }) => {
-  const { setRecipients, setSnackbar, recipientLabels, recipients } = useGlobalContext();
-  
-  // Filter out deleted contacts from each section (unless showDeleted is true, like in trash view)
-  const filteredContacts = showDeleted ? contacts : contacts.map(section => ({
-    ...section,
-    data: section.data ? section.data.filter(contact => !contact.isDeleted) : []
-  }));
+const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = null }) => {
+  const {
+    recipients,
+    setRecipients,
+    setSnackbar,
+    recipientLabels,
+    setHiddenRecipients,
+    hiddenRecipients,
+    deletedRecipients,
+    setDeletedRecipients,
+  } = useGlobalContext();
   const navigate = useNavigate();
+  const timeoutsRef = useRef({});
+
   const [tableHeaders, setTableHeaders] = useState([
     "Name",
     "Email",
@@ -55,21 +62,31 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     "Actions",
   ]);
   const tableRef = useRef(null);
-  const timeoutsRef = useRef({
-    favorite: null,
-    labelToggle: null,
-  });
   const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
   const selectedContactRef = useRef(null);
+  const hiddenContactRef = useRef(null);
+  const originalContactRef = useRef(null);
   const [checkedContacts, setCheckedContacts] = useState(new Set());
   const [manageLabelsAnchor, setManageLabelsAnchor] = useState(null);
   const [bulkMoreMenuAnchor, setBulkMoreMenuAnchor] = useState(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteActionType, setDeleteActionType] = useState(null);
+  const [tempLabels, setTempLabels] = useState([]);
 
-  // Create set of all contact IDs from all sections (no duplicates, excluding deleted)
-  const allContactsSet = new Set(filteredContacts.flatMap((section) => section.data || []).map((contact) => contact.id));
+  // Create set of all contact IDs from all sections (no duplicates)
+  const allContactsSet = new Set(contacts.flatMap((section) => section.data || []).map((contact) => contact.id));
+
+  // Check if all selected contacts are non-saved (should show hide from contacts option)
+  const shouldShowHideFromContacts = useMemo(() => {
+    if (checkedContacts.size === 0) return false;
+
+    const selectedContacts = contacts
+      .flatMap((section) => section.data || [])
+      .filter((contact) => checkedContacts.has(contact.id));
+
+    return selectedContacts.length > 0 && selectedContacts.every((contact) => contact.isSaved);
+  }, [checkedContacts, contacts]);
 
   // All possible headers with their priority (lower number = higher priority)
   const allHeaders = [
@@ -80,6 +97,16 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     { name: "Labels", priority: 5, minWidth: 250 },
     { name: "Actions", priority: 1, minWidth: 120 }, // Always visible
   ];
+
+  // Clear timeouts on unmount
+  useEffect(
+    () => () => {
+      Object.keys(timeoutsRef.current).forEach((key) => {
+        clearTimeout(timeoutsRef.current[key]);
+      });
+    },
+    []
+  );
 
   // Update table headers based on width before the ui is rendered
   useLayoutEffect(() => {
@@ -129,11 +156,6 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       if (resizeObserver) {
         resizeObserver.disconnect();
       }
-
-      // Clear timeouts
-      Object.keys(timeoutsRef.current).forEach((key) => {
-        if (timeoutsRef.current[key]) clearTimeout(timeoutsRef.current[key]);
-      });
     };
   }, []);
 
@@ -149,7 +171,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       style: snackbarStyle,
     });
 
-    timeoutsRef.current.favorite = setTimeout(() => {
+    timeoutsRef.current["favorite"] = setTimeout(() => {
       const isFavorite = contact?.isFavorite;
 
       // Update the recipients array
@@ -161,6 +183,8 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                 ...recipient,
                 isFavorite: !isFavorite,
                 isSaved: !isFavorite ? true : recipient?.isSaved,
+                updatedAt: new Date().toISOString(),
+                savedAt: recipient?.savedAt ?? new Date().toISOString(),
               }
             : recipient
         )
@@ -170,13 +194,12 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       setSnackbar({
         open: true,
         message: isFavorite
-        ? `Removed ${contact?.name ?? contact?.email ?? "contact"} from favorites`
-        : `Added ${contact?.name ?? contact?.email ?? "contact"} to favorites`,
-      action: null,
-      autoHideDuration: 3000,
-      hideClose: true,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-      style: snackbarStyle,
+          ? `Removed ${contact?.name ?? contact?.email ?? "contact"} from favorites`
+          : `Added ${contact?.name ?? contact?.email ?? "contact"} to favorites`,
+        action: null,
+        autoHideDuration: 3000,
+        hideClose: true,
+        style: snackbarStyle,
       });
     }, 500);
   };
@@ -186,59 +209,6 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     navigate(`/contacts/person/${contact.id}?edit=1`);
   };
 
-  // Handle save contact (restore hidden contact)
-  const handleSaveContact = (contact) => {
-    // Store the previous state for undo
-    const previousContact = { ...contact };
-    
-    // Mark contact as saved (restore it)
-    setRecipients((prev) =>
-      prev.map((recipient) =>
-        recipient.id === contact.id
-          ? { ...recipient, isSaved: true }
-          : recipient
-      )
-    );
-    
-    // Show snackbar with undo
-    setSnackbar({
-      open: true,
-      message: `Added ${contact.name || contact.email || "contact"} to contacts`,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-      action: (
-        <Button
-          variant="text"
-          size="medium"
-          onClick={() => {
-            // Undo save
-            setRecipients((prev) =>
-              prev.map((recipient) =>
-                recipient.id === contact.id
-                  ? previousContact
-                  : recipient
-              )
-            );
-            setSnackbar({
-              open: true,
-              message: "Undone",
-              autoHideDuration: 2000,
-              hideClose: true,
-              anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-              style: snackbarStyle,
-            });
-          }}
-          sx={{ textTransform: "capitalize" }}
-        >
-          Undo
-        </Button>
-      ),
-      autoHideDuration: 5000,
-      hideClose: false,
-      style: snackbarStyle,
-      closeIconColor: "#fff",
-    });
-  };
-
   // Handle more actions dropdown
   const handleMoreActions = (contact, title, event) => {
     console.log("handleMoreActions", contact, title, event);
@@ -246,19 +216,40 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       contact,
       title,
     };
+    // Initialize temp labels with current contact labels
+    setTempLabels(contact.labels || []);
     setMoreMenuAnchor(event.currentTarget);
   };
 
   // Close more actions dropdown
   const handleCloseMoreMenu = () => {
+    // Check if there are any changes in temp labels
+    if (selectedContactRef.current?.contact) {
+      const originalLabels = selectedContactRef.current.contact.labels || [];
+      const hasChanges = JSON.stringify(originalLabels.sort()) !== JSON.stringify(tempLabels.sort());
+
+      if (hasChanges) {
+        // Apply the label changes
+        applyLabelChanges(tempLabels);
+      }
+    }
+
     setMoreMenuAnchor(null);
     selectedContactRef.current = null;
+    setTempLabels([]);
+  };
+
+  // Close more actions dropdown without applying label changes
+  const handleCloseMoreMenuWithoutChanges = () => {
+    setMoreMenuAnchor(null);
+    selectedContactRef.current = null;
+    setTempLabels([]);
   };
 
   // Handle print action
   const handlePrint = () => {
     console.log("Print contact:", selectedContactRef.current);
-    handleCloseMoreMenu();
+    handleCloseMoreMenuWithoutChanges();
     // TODO: Implement print functionality
   };
 
@@ -272,186 +263,12 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
   // Handle hide from contacts action
   const handleHideFromContacts = () => {
     if (!selectedContactRef.current || !selectedContactRef.current.contact) return;
-    
-    const contact = selectedContactRef.current.contact;
-    
-    // Store the contact for undo
-    const previousContact = { ...contact };
-    
-    // Mark contact as hidden (not saved)
-    setRecipients((prev) =>
-      prev.map((recipient) =>
-        recipient.id === contact.id
-          ? { ...recipient, isSaved: false }
-          : recipient
-      )
-    );
-    
-    handleCloseMoreMenu();
-    
-    // Show snackbar with undo
-    setSnackbar({
-      open: true,
-      message: `${contact.name || contact.email || "Contact"} has been hidden from your contacts list`,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-      action: (
-        <Button
-          variant="text"
-          size="medium"
-          onClick={() => {
-            // Undo hide
-            setRecipients((prev) =>
-              prev.map((recipient) =>
-                recipient.id === contact.id
-                  ? previousContact
-                  : recipient
-              )
-            );
-            setSnackbar({
-              open: true,
-              message: "Undone",
-              autoHideDuration: 2000,
-              hideClose: true,
-              anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-              style: snackbarStyle,
-            });
-          }}
-          sx={{ textTransform: "capitalize" }}
-        >
-          Undo
-        </Button>
-      ),
-      autoHideDuration: 5000,
-      hideClose: false,
-      style: snackbarStyle,
-      closeIconColor: "#fff",
-    });
-  };
 
-  // Handle delete action - moves contact to trash
-  const handleDelete = () => {
-    if (!selectedContactRef.current || !selectedContactRef.current.contact) return;
-    
     const contact = selectedContactRef.current.contact;
-    
-    // Store the contact for undo
-    const previousContact = { ...contact };
-    
-    // Mark contact as deleted (move to trash)
-    setRecipients((prev) =>
-      prev.map((recipient) =>
-        recipient.id === contact.id
-          ? { ...recipient, isDeleted: true }
-          : recipient
-      )
-    );
-    
-    setMoreMenuAnchor(null);
-    
-    // Show snackbar with undo
-    setSnackbar({
-      open: true,
-      message: `${contact.name || contact.email || "Contact"} moved to trash`,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-      action: (
-        <Button
-          variant="text"
-          size="medium"
-          onClick={() => {
-            // Undo delete
-            setRecipients((prev) =>
-              prev.map((recipient) =>
-                recipient.id === contact.id
-                  ? previousContact
-                  : recipient
-              )
-            );
-            setSnackbar({
-              open: true,
-              message: "Undone",
-              autoHideDuration: 2000,
-              hideClose: true,
-              anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-              style: snackbarStyle,
-            });
-          }}
-          sx={{ textTransform: "capitalize" }}
-        >
-          Undo
-        </Button>
-      ),
-      autoHideDuration: 5000,
-      hideClose: false,
-      style: snackbarStyle,
-      closeIconColor: "#fff",
-    });
-  };
-  
-  // Handle remove from label action
-  const handleRemoveFromLabel = () => {
-    if (!selectedContactRef.current || !selectedContactRef.current.contact || !currentLabel) return;
-    
-    const contact = selectedContactRef.current.contact;
-    const labelName = currentLabel.label;
-    
-    // Store the previous contact for undo
-    const previousContact = { ...contact };
-    
-    // Remove the label from the contact
-    setRecipients((prev) =>
-      prev.map((recipient) =>
-        recipient.id === contact.id
-          ? {
-              ...recipient,
-              labels: recipient.labels?.filter((label) => label !== labelName) || [],
-            }
-          : recipient
-      )
-    );
-    
-    handleCloseMoreMenu();
-    
-    // Show snackbar with undo
-    setSnackbar({
-      open: true,
-      message: `${contact.name} has been removed from ${labelName}`,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-      action: (
-        <Button
-          variant="text"
-          size="medium"
-          onClick={() => {
-            // Undo remove from label
-            setRecipients((prev) =>
-              prev.map((recipient) =>
-                recipient.id === contact.id
-                  ? previousContact
-                  : recipient
-              )
-            );
-            setSnackbar({
-              open: true,
-              message: "Undone",
-              autoHideDuration: 2000,
-              hideClose: true,
-              style: snackbarStyle,
-            });
-          }}
-          sx={{ textTransform: "capitalize" }}
-        >
-          Undo
-        </Button>
-      ),
-      autoHideDuration: 5000,
-      hideClose: false,
-      style: snackbarStyle,
-      closeIconColor: "#fff",
-    });
-  };
+    const contactName = contact.name ?? contact.email ?? "Contact";
 
-  // Handle undo label toggle
-  const handleUndoLabelToggle = (labelName) => {
-    if (!selectedContactRef.current || !selectedContactRef.current.contact) return;
+    // Store contact data for undo functionality
+    hiddenContactRef.current = { ...contact };
 
     // Display snackbar notification
     setSnackbar({
@@ -463,33 +280,108 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       style: snackbarStyle,
     });
 
-    timeoutsRef.current.labelToggle = setTimeout(() => {
-      // Undo the label toggle by updating the recipients array
-      setRecipients((prev) =>
-        prev.map((recipient) =>
-          recipient.id === selectedContactRef.current.contact.id
-            ? {
-                ...recipient,
-                labels: selectedContactRef.current.contact.labels?.includes(labelName)
-                  ? selectedContactRef.current.contact.labels.filter((label) => label !== labelName)
-                  : [...(selectedContactRef.current.contact.labels || []), labelName],
-              }
-            : recipient
-        )
-      );
+    // Use timeout to simulate processing
+    timeoutsRef.current["hideContact"] = setTimeout(() => {
+      // Check if contact has labels
+      const hasLabels = contact.labels && contact.labels.length > 0;
 
-      // Update the ref to reflect the change
-      if (selectedContactRef.current) {
-        selectedContactRef.current = {
-          ...selectedContactRef.current,
-          contact: {
-            ...selectedContactRef.current.contact,
-            labels: selectedContactRef.current.contact.labels?.includes(labelName)
-              ? selectedContactRef.current.contact.labels.filter((label) => label !== labelName)
-              : [...(selectedContactRef.current.contact.labels || []), labelName],
-          },
-        };
+      if (hasLabels) {
+        // If contact has labels, move to hiddenRecipients
+        setHiddenRecipients((prev) => [
+          ...prev,
+          { ...contact, updatedAt: new Date().toISOString(), isSaved: false, savedAt: null },
+        ]);
+
+        // Remove the contact from the recipients array
+        setRecipients((prev) => prev.filter((recipient) => recipient.id !== contact.id));
+      } else {
+        // If contact has no labels, just set isSaved to false in recipients
+        setRecipients((prev) =>
+          prev.map((recipient) =>
+            recipient.id === contact.id
+              ? {
+                  ...recipient,
+                  isSaved: false,
+                  updatedAt: new Date().toISOString(),
+                  savedAt: null,
+                }
+              : recipient
+          )
+        );
       }
+
+      // Display success snackbar notification with undo button
+      setSnackbar({
+        open: true,
+        message: `${contactName} has been hidden from your contacts list`,
+        action: (
+          <Button
+            variant="text"
+            size="medium"
+            onClick={handleUndoHideContact}
+            sx={{ textTransform: "capitalize", color: "#a8c7fa", fontWeight: 400 }}
+          >
+            Undo
+          </Button>
+        ),
+        autoHideDuration: 3000,
+        hideClose: false,
+        style: snackbarStyle,
+        closeIconColor: "#fff",
+      });
+    }, 500);
+
+    handleCloseMoreMenuWithoutChanges();
+  };
+
+  // Handle undo hide contact
+  const handleUndoHideContact = () => {
+    if (!hiddenContactRef.current) return;
+
+    const contact = hiddenContactRef.current;
+
+    // Display snackbar notification
+    setSnackbar({
+      open: true,
+      message: "Working...",
+      action: null,
+      autoHideDuration: 500,
+      hideClose: true,
+      style: snackbarStyle,
+    });
+
+    // Use timeout to simulate processing
+    timeoutsRef.current["undoHideContact"] = setTimeout(() => {
+      // Check if contact has labels
+      const hasLabels = contact.labels && contact.labels.length > 0;
+
+      if (hasLabels) {
+        // If contact has labels, move it back from hiddenRecipients to recipients
+        setRecipients((prev) => [
+          ...prev,
+          { ...contact, updatedAt: new Date().toISOString(), isSaved: true, savedAt: new Date().toISOString() },
+        ]);
+
+        // Remove the contact from the hidden recipients array
+        setHiddenRecipients((prev) => prev.filter((hiddenRecipient) => hiddenRecipient.id !== contact.id));
+      } else {
+        // If contact has no labels, just set isSaved back to true in recipients
+        setRecipients((prev) =>
+          prev.map((recipient) =>
+            recipient.id === contact.id
+              ? {
+                  ...recipient,
+                  isSaved: true,
+                  updatedAt: new Date().toISOString(),
+                  savedAt: recipient.savedAt || new Date().toISOString(),
+                }
+              : recipient
+          )
+        );
+      }
+
+      // Clear the hidden contact ref
+      hiddenContactRef.current = null;
 
       // Display success snackbar notification
       setSnackbar({
@@ -503,13 +395,11 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     }, 500);
   };
 
-  // Handle label toggle
-  const handleLabelToggle = (labelName) => {
-    if (!selectedContactRef.current || !selectedContactRef.current.contact) return;
+  // Handle undo bulk hide contacts
+  const handleUndoBulkHideContacts = () => {
+    if (!hiddenContactRef.current || !Array.isArray(hiddenContactRef.current)) return;
 
-    // Store original contact data before making changes
-    const originalContact = selectedContactRef.current.contact;
-    const contactName = originalContact.name ?? originalContact.email ?? "Contact";
+    const contacts = hiddenContactRef.current;
 
     // Display snackbar notification
     setSnackbar({
@@ -521,56 +411,267 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       style: snackbarStyle,
     });
 
-    timeoutsRef.current.labelToggle = setTimeout(() => {
-      const contact = selectedContactRef.current.contact;
-      const hasLabel = contact.labels?.includes(labelName);
+    // Use timeout to simulate processing
+    timeoutsRef.current["undoBulkHideContacts"] = setTimeout(() => {
+      const contactsToRestore = [];
+      const contactsToUpdate = [];
 
+      const dateString = new Date().toISOString();
+
+      // Process each contact
+      contacts.forEach((contact) => {
+        const hasLabels = contact.labels && contact.labels.length > 0;
+
+        if (hasLabels) {
+          // If contact has labels, move it back from hiddenRecipients to recipients
+          contactsToRestore.push({
+            ...contact,
+            updatedAt: dateString,
+            isSaved: true,
+            savedAt: dateString,
+          });
+        } else {
+          // If contact has no labels, just set isSaved back to true in recipients
+          contactsToUpdate.push({
+            ...contact,
+            isSaved: true,
+            updatedAt: dateString,
+            savedAt: contact.savedAt || dateString,
+          });
+        }
+      });
+
+      // Restore contacts with labels
+      if (contactsToRestore.length > 0) {
+        setRecipients((prev) => [...prev, ...contactsToRestore]);
+        setHiddenRecipients((prev) =>
+          prev.filter((hiddenRecipient) => !contactsToRestore.some((contact) => contact.id === hiddenRecipient.id))
+        );
+      }
+
+      // Update contacts without labels
+      if (contactsToUpdate.length > 0) {
+        setRecipients((prev) =>
+          prev.map((recipient) => {
+            const contactToUpdate = contactsToUpdate.find((contact) => contact.id === recipient.id);
+            if (contactToUpdate) {
+              return {
+                ...recipient,
+                isSaved: true,
+                updatedAt: dateString,
+                savedAt: contactToUpdate.savedAt,
+              };
+            }
+            return recipient;
+          })
+        );
+      }
+
+      // Clear the hidden contacts ref
+      hiddenContactRef.current = null;
+
+      // Display success snackbar notification
+      setSnackbar({
+        open: true,
+        message: "Undone",
+        action: null,
+        autoHideDuration: 3000,
+        hideClose: true,
+        style: snackbarStyle,
+      });
+    }, 500);
+  };
+
+  // Handle delete action
+  const handleDelete = () => {
+    console.log("Delete contact:", selectedContactRef.current);
+    setMoreMenuAnchor(null); // Close menu but keep selectedContactRef
+    setDeleteActionType("single");
+    setDeleteModalOpen(true);
+  };
+
+  // Handle undo label toggle
+  const handleUndoLabelToggle = () => {
+    if (!originalContactRef.current) return;
+
+    // Display snackbar notification
+    setSnackbar({
+      open: true,
+      message: "Working...",
+      action: null,
+      autoHideDuration: 500,
+      hideClose: true,
+      style: snackbarStyle,
+    });
+
+    timeoutsRef.current["undoLabelToggle"] = setTimeout(() => {
+      // Replace entire contact with original contact state
       setRecipients((prev) =>
         prev.map((recipient) =>
-          recipient.id === contact.id
+          recipient.id === originalContactRef.current.id
             ? {
-                ...recipient,
-                labels: hasLabel
-                  ? recipient.labels.filter((label) => label !== labelName)
-                  : [...(recipient.labels || []), labelName],
+                ...originalContactRef.current,
+                updatedAt: new Date().toISOString(),
               }
             : recipient
         )
       );
 
-      // Update the ref to reflect the change
-      if (selectedContactRef.current) {
-        selectedContactRef.current = {
-          ...selectedContactRef.current,
-          contact: {
-            ...contact,
-            labels: hasLabel
-              ? contact.labels.filter((label) => label !== labelName)
-              : [...(contact.labels || []), labelName],
-          },
-        };
-      }
+      // Clear the original contact ref
+      originalContactRef.current = null;
 
       // Display success snackbar notification
       setSnackbar({
         open: true,
-        message: hasLabel ? `${contactName} has been removed from ${labelName}` : `${contactName} labeled ${labelName}`,
-        // Display undo button
-        action: (
-          <Button
-            variant="text"
-            size="medium"
-            onClick={() => handleUndoLabelToggle(labelName)}
-            sx={{ textTransform: "capitalize", color: "#a8c7fa", fontWeight: 400 }}
-          >
-            Undo
-          </Button>
-        ),
+        message: "Undone",
+        action: null,
         autoHideDuration: 3000,
-        hideClose: false,
+        hideClose: true,
         style: snackbarStyle,
-        closeIconColor: "#fff",
       });
+    }, 500);
+  };
+
+  // Handle label toggle (now just updates temp labels)
+  const handleLabelToggle = (labelName) => {
+    if (!selectedContactRef.current?.contact) return;
+
+    // Toggle the label in temp labels
+    setTempLabels((prev) =>
+      prev.includes(labelName) ? prev.filter((label) => label !== labelName) : [...prev, labelName]
+    );
+  };
+
+  // Apply label changes when menu is closed
+  const applyLabelChanges = (newLabels) => {
+    if (!selectedContactRef.current?.contact) return;
+
+    const contact = selectedContactRef.current.contact;
+    const contactName = contact.name ?? contact.email ?? "Contact";
+
+    // Store original contact state for undo functionality
+    originalContactRef.current = { ...contact };
+
+    // Display snackbar notification
+    setSnackbar({
+      open: true,
+      message: "Working...",
+      action: null,
+      autoHideDuration: 500,
+      hideClose: true,
+      style: snackbarStyle,
+    });
+
+    timeoutsRef.current["labelToggle"] = setTimeout(() => {
+      // Check if contact is not saved
+      const isContactNotSaved = !contact.isSaved;
+
+      // Check if contact exists in recipients
+      const contactExistsInRecipients = recipients.some((recipient) => recipient.id === contact.id);
+
+      if (isContactNotSaved) {
+        // If contact doesn't exist in recipients, add it to recipients
+        const dateString = new Date().toISOString();
+        if (!contactExistsInRecipients) {
+          setRecipients((prev) => [
+            ...prev,
+            {
+              ...contact,
+              name: contactName,
+              id: generateNextIntegerId([...recipients, ...hiddenRecipients, ...deletedRecipients]),
+              isSaved: true,
+              savedAt: dateString,
+              updatedAt: dateString,
+              createdAt: dateString,
+              labels: newLabels,
+            },
+          ]);
+        } else {
+          // Update existing contact in recipients
+          setRecipients((prev) =>
+            prev.map((recipient) =>
+              recipient.id === contact.id
+                ? {
+                    ...recipient,
+                    isSaved: true,
+                    savedAt: dateString,
+                    updatedAt: dateString,
+                    labels: newLabels,
+                  }
+                : recipient
+            )
+          );
+        }
+
+        // Show notification that contact has been added to contacts
+        setSnackbar({
+          open: true,
+          message: `Added ${contactName} to contacts`,
+          action: null,
+          autoHideDuration: 500,
+          hideClose: true,
+          style: snackbarStyle,
+        });
+      } else {
+        // Contact is already saved, just update labels
+        setRecipients((prev) =>
+          prev.map((recipient) =>
+            recipient.id === contact.id
+              ? {
+                  ...recipient,
+                  labels: newLabels,
+                  updatedAt: new Date().toISOString(),
+                }
+              : recipient
+          )
+        );
+      }
+
+      timeoutsRef.current["showSuccessMessage"] = setTimeout(
+        () => {
+          // Generate success message based on changes
+          const originalLabels = contact.labels || [];
+          const addedLabels = newLabels.filter((label) => !originalLabels.includes(label));
+          const removedLabels = originalLabels.filter((label) => !newLabels.includes(label));
+
+          let message = "";
+          if (addedLabels.length === 1 && removedLabels.length === 0) {
+            message = `${contactName} labeled ${addedLabels[0]}`;
+          } else if (addedLabels.length === 0 && removedLabels.length === 1) {
+            message = `${contactName} has been removed from ${removedLabels[0]}`;
+          } else if (addedLabels.length > 0 && removedLabels.length > 0) {
+            message = `${contactName} labels updated`;
+          } else if (addedLabels.length > 1) {
+            message = `${contactName} has been added to ${addedLabels.length} labels`;
+          } else if (removedLabels.length > 1) {
+            message = `${contactName} has been removed from ${removedLabels.length} labels`;
+          } else {
+            message = `${contactName} labels updated`;
+          }
+
+          // Display success snackbar notification
+          setSnackbar({
+            open: true,
+            message: message,
+            // Display undo button
+            action: (
+              <Button
+                variant="text"
+                size="medium"
+                onClick={handleUndoLabelToggle}
+                sx={{ textTransform: "capitalize", color: "#a8c7fa", fontWeight: 400 }}
+              >
+                Undo
+              </Button>
+            ),
+            autoHideDuration: 3000,
+            hideClose: false,
+            style: snackbarStyle,
+            closeIconColor: "#fff",
+          });
+        },
+        isContactNotSaved ? 500 : 0
+      );
     }, 500);
   };
 
@@ -589,16 +690,11 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
   // Handle bulk actions for all contacts
   const handleBulkAction = (action) => {
-    console.log(`Bulk ${action} action clicked`);
     // TODO: Implement bulk action functionality based on action type
     switch (action) {
       case "print":
         // TODO: Implement bulk print functionality
         console.log("Printing all contacts...");
-        break;
-      case "export":
-        // TODO: Implement bulk export functionality
-        console.log("Exporting all contacts...");
         break;
       default:
         console.log(`Unknown bulk action: ${action}`);
@@ -672,6 +768,13 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       // Store the deleted contact for undo
       const deletedContact = contactToDelete;
 
+      // Add the contact to the deleted recipients
+      setDeletedRecipients((prev) => [
+        ...prev,
+        { ...contactToDelete, updatedAt: new Date().toISOString(), savedAt: null, isSaved: false },
+      ]);
+
+      // Remove the contact from the recipients
       setRecipients((prev) => prev.filter((recipient) => recipient.id !== contactToDelete.id));
 
       // Remove the deleted contact from checked contacts if it was selected
@@ -682,8 +785,16 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       });
 
       const undo = () => {
+        const dateString = new Date().toISOString();
+
         // Restore the contact
-        setRecipients((prev) => [...prev, deletedContact]);
+        setRecipients((prev) => [
+          ...prev,
+          { ...deletedContact, updatedAt: dateString, savedAt: dateString, isSaved: true },
+        ]);
+
+        // Remove the contact from the deleted recipients
+        setDeletedRecipients((prev) => prev.filter((recipient) => recipient.id !== contactToDelete.id));
 
         // Restore the contact to checked contacts if it was originally selected
         setCheckedContacts((prev) => {
@@ -721,11 +832,37 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       // Store the deleted contacts for undo
       const deletedContacts = recipients.filter((recipient) => contactsToDelete.includes(recipient.id));
 
+      // Add the contacts to the deleted recipients
+      setDeletedRecipients((prev) => [
+        ...prev,
+        ...deletedContacts.map((contact) => ({
+          ...contact,
+          updatedAt: new Date().toISOString(),
+          savedAt: null,
+          isSaved: false,
+        })),
+      ]);
+
+      // Remove the contacts from the recipients
       setRecipients((prev) => prev.filter((recipient) => !contactsToDelete.includes(recipient.id)));
 
       const undo = () => {
+        const dateString = new Date().toISOString();
+
         // Restore the contacts
-        setRecipients((prev) => [...prev, ...deletedContacts]);
+        setRecipients((prev) => [
+          ...prev,
+          ...deletedContacts.map((contact) => ({
+            ...contact,
+            updatedAt: dateString,
+            savedAt: dateString,
+            isSaved: true,
+          })),
+        ]);
+
+        // Remove the contacts from the deleted recipients
+        setDeletedRecipients((prev) => prev.filter((recipient) => !contactsToDelete.includes(recipient.id)));
+
         setSnackbar({
           open: true,
           message: "Undone",
@@ -756,13 +893,119 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
   // Handle bulk hide from contacts action
   const handleBulkHideFromContacts = () => {
-    if (checkedContacts.size > 0) {
-      console.log("Bulk hide from contacts action clicked for selected contacts:", Array.from(checkedContacts));
-    } else {
-      console.log("Hide from contacts action clicked for all contacts (list settings)");
-    }
+    if (checkedContacts.size === 0) return;
+
+    // Get selected contacts
+    const selectedContacts = contacts
+      .flatMap((section) => section.data || [])
+      .filter((contact) => checkedContacts.has(contact.id));
+
+    if (selectedContacts.length === 0) return;
+
+    // Store contacts data for undo functionality
+    hiddenContactRef.current = selectedContacts.map((contact) => ({ ...contact }));
+
+    // Display snackbar notification
+    setSnackbar({
+      open: true,
+      message: "Working...",
+      action: null,
+      autoHideDuration: 500,
+      hideClose: true,
+      style: snackbarStyle,
+    });
+
+    // Use timeout to simulate processing
+    timeoutsRef.current["bulkHideContacts"] = setTimeout(() => {
+      const contactsToHide = [];
+      const contactsToUpdate = [];
+
+      const dateString = new Date().toISOString();
+
+      // Process each selected contact
+      selectedContacts.forEach((contact) => {
+        const hasLabels = contact.labels && contact.labels.length > 0;
+
+        if (hasLabels) {
+          // If contact has labels, move to hiddenRecipients
+          contactsToHide.push({
+            ...contact,
+            updatedAt: dateString,
+            isSaved: false,
+            savedAt: null,
+          });
+        } else {
+          // If contact has no labels, just set isSaved to false in recipients
+          contactsToUpdate.push({
+            ...contact,
+            isSaved: false,
+            updatedAt: dateString,
+            savedAt: null,
+          });
+        }
+      });
+
+      // Update recipients array
+      if (contactsToHide.length > 0) {
+        // Add contacts with labels to hiddenRecipients
+        setHiddenRecipients((prev) => [...prev, ...contactsToHide]);
+
+        // Remove contacts with labels from recipients
+        setRecipients((prev) =>
+          prev.filter((recipient) => !contactsToHide.some((contact) => contact.id === recipient.id))
+        );
+      }
+
+      if (contactsToUpdate.length > 0) {
+        // Update contacts without labels in recipients
+        setRecipients((prev) =>
+          prev.map((recipient) => {
+            const contactToUpdate = contactsToUpdate.find((contact) => contact.id === recipient.id);
+            if (contactToUpdate) {
+              return {
+                ...recipient,
+                isSaved: false,
+                updatedAt: dateString,
+                savedAt: null,
+              };
+            }
+            return recipient;
+          })
+        );
+      }
+
+      // Clear selection
+      setCheckedContacts(new Set());
+
+      // Display success snackbar notification with undo button
+      const message =
+        selectedContacts.length === 1
+          ? `${
+              selectedContacts[0].name ?? selectedContacts[0].email ?? "Contact"
+            } has been hidden from your contacts list`
+          : `${selectedContacts.length} contacts have been hidden from your contacts list`;
+
+      setSnackbar({
+        open: true,
+        message,
+        action: (
+          <Button
+            variant="text"
+            size="medium"
+            onClick={handleUndoBulkHideContacts}
+            sx={{ textTransform: "capitalize", color: "#a8c7fa", fontWeight: 400 }}
+          >
+            Undo
+          </Button>
+        ),
+        autoHideDuration: 3000,
+        hideClose: false,
+        style: snackbarStyle,
+        closeIconColor: "#fff",
+      });
+    }, 500);
+
     handleCloseBulkMoreMenu();
-    // TODO: Implement bulk hide from contacts functionality
   };
 
   // Handle bulk delete action
@@ -794,6 +1037,59 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     console.log("Change column order clicked");
     handleCloseBulkMoreMenu();
     // TODO: Implement change column order functionality
+  };
+
+  // Handle save contacts
+  const handleSaveContacts = () => {
+    // Get all contact data from all sections
+    const allContacts = contacts.flatMap((section) => section.data || []);
+    const selectedContacts = allContacts.filter((contact) => checkedContacts.has(contact.id));
+    const unsavedContacts = selectedContacts.filter((contact) => !contact.isSaved);
+
+    if (unsavedContacts.length === 0) return;
+
+    // Display working notification
+    setSnackbar({
+      open: true,
+      message: "Working...",
+      action: null,
+      autoHideDuration: 500,
+      hideClose: true,
+      style: snackbarStyle,
+    });
+
+    // Get current date string
+    const dateString = new Date().toISOString();
+
+    // After 500ms timeout, update contacts
+    timeoutsRef.current["saveContacts"] = setTimeout(() => {
+      setRecipients((prev) =>
+        prev.map((contact) => {
+          if (checkedContacts.has(contact.id) && !contact.isSaved) {
+            return {
+              ...contact,
+              isSaved: true,
+              savedAt: dateString,
+              updatedAt: dateString,
+            };
+          }
+          return contact;
+        })
+      );
+
+      // Unselect all contacts
+      setCheckedContacts(new Set());
+
+      // Display success notification
+      setSnackbar({
+        open: true,
+        message: `${unsavedContacts.length} Contact${unsavedContacts.length > 1 ? "s" : ""} have been added`,
+        action: null,
+        autoHideDuration: 3000,
+        hideClose: true,
+        style: snackbarStyle,
+      });
+    }, 500);
   };
 
   // Handle checkbox change
@@ -955,7 +1251,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                       width: "100%",
                     }}
                   >
-                    {contact.name || "—"}
+                    {contact?.name || contact?.email || "—"}
                   </Typography>
                 </Box>
               )}
@@ -1040,68 +1336,36 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                     </IconButton>
                   </Tooltip>
 
-                  {/* Save contact button (for hidden contacts) OR Edit button */}
-                  {contact.isSaved === false ? (
-                    <Tooltip
-                      title="Save contact"
-                      placement="top"
-                      slotProps={{
-                        popper: {
-                          sx: {
-                            "& .MuiTooltip-tooltip": {
-                              backgroundColor: "rgba(0, 0, 0, 0.7)",
-                              color: "white",
-                              fontSize: "12px",
-                              fontWeight: 200,
-                            },
+                  {/* Edit button */}
+                  <Tooltip
+                    title="Edit contact"
+                    placement="top"
+                    slotProps={{
+                      popper: {
+                        sx: {
+                          "& .MuiTooltip-tooltip": {
+                            backgroundColor: "rgba(0, 0, 0, 0.7)",
+                            color: "white",
+                            fontSize: "12px",
+                            fontWeight: 200,
                           },
                         },
+                      },
+                    }}
+                  >
+                    <IconButton
+                      size="medium"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleEdit(contact);
                       }}
+                      sx={{ color: "#444746" }}
                     >
-                      <IconButton
-                        size="medium"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleSaveContact(contact);
-                        }}
-                        sx={{ color: "#444746" }}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: "21px" }}>
-                          person_add
-                        </span>
-                      </IconButton>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip
-                      title="Edit contact"
-                      placement="top"
-                      slotProps={{
-                        popper: {
-                          sx: {
-                            "& .MuiTooltip-tooltip": {
-                              backgroundColor: "rgba(0, 0, 0, 0.7)",
-                              color: "white",
-                              fontSize: "12px",
-                              fontWeight: 200,
-                            },
-                          },
-                        },
-                      }}
-                    >
-                      <IconButton
-                        size="medium"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleEdit(contact);
-                        }}
-                        sx={{ color: "#444746" }}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: "21px" }}>
-                          edit
-                        </span>
-                      </IconButton>
-                    </Tooltip>
-                  )}
+                      <span className="material-symbols-outlined" style={{ fontSize: "21px" }}>
+                        edit
+                      </span>
+                    </IconButton>
+                  </Tooltip>
 
                   {/* More actions button */}
                   <Tooltip
@@ -1315,11 +1579,13 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
                     {/* Right side - Action buttons */}
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      {/* Show Save contact icon if any selected contacts are hidden */}
+                      {/* Display save contact icon if all selected contacts are unsaved */}
                       {(() => {
-                        const selectedContacts = recipients.filter(contact => checkedContacts.has(contact.id));
-                        const hasHiddenContacts = selectedContacts.some(contact => contact.isSaved === false);
-                        return hasHiddenContacts;
+                        const allContacts = contacts.flatMap((section) => section.data || []);
+                        const selectedContacts = allContacts.filter((contact) => checkedContacts.has(contact.id));
+                        return (
+                          checkedContacts.size > 0 && selectedContacts.every((contact) => contact.isSaved === false)
+                        );
                       })() && (
                         <Tooltip
                           title="Save contact"
@@ -1337,43 +1603,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                             },
                           }}
                         >
-                          <IconButton 
-                            size="medium" 
-                            onClick={() => {
-                              // Save all selected hidden contacts
-                              const selectedContacts = recipients.filter(contact => checkedContacts.has(contact.id));
-                              const hiddenContacts = selectedContacts.filter(contact => contact.isSaved === false);
-                              
-                              if (hiddenContacts.length > 0) {
-                                setRecipients((prev) =>
-                                  prev.map((recipient) =>
-                                    hiddenContacts.some(c => c.id === recipient.id)
-                                      ? { ...recipient, isSaved: true }
-                                      : recipient
-                                  )
-                                );
-                                
-                                // Create message with contact names
-                                let message;
-                                if (hiddenContacts.length === 1) {
-                                  const contact = hiddenContacts[0];
-                                  message = `Added ${contact.name || contact.email || "contact"} to contacts`;
-                                } else {
-                                  message = `Added ${hiddenContacts.length} contacts to contacts`;
-                                }
-                                
-                                setSnackbar({
-                                  open: true,
-                                  message: message,
-                                  autoHideDuration: 3000,
-                                  hideClose: true,
-                                  anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-                                  style: snackbarStyle,
-                                });
-                              }
-                            }}
-                            sx={{ color: "#0b57d0" }}
-                          >
+                          <IconButton size="medium" onClick={handleSaveContacts} sx={{ color: "#0b57d0" }}>
                             <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>
                               person_add
                             </span>
@@ -1489,7 +1719,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
           {/* Table body with sections - scrollable */}
           <TableBody>
-            {filteredContacts.map((section, sectionIndex) => (
+            {contacts.map((section, sectionIndex) => (
               <React.Fragment key={`ContactsTable-section-${sectionIndex}`}>
                 {/* Section heading row */}
                 {section.heading && (
@@ -1540,7 +1770,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
             ))}
 
             {/* Empty state when no sections have data */}
-            {filteredContacts.length === 0 && (
+            {contacts.length === 0 && (
               <TableRow>
                 <TableCell
                   colSpan={tableHeaders.length}
@@ -1639,29 +1869,8 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
           </MenuItem>
         )}
 
-        {/* Show "Remove from label" if viewing a specific label */}
-        {currentLabel && (
-          <MenuItem onClick={handleRemoveFromLabel}>
-            <ListItemIcon>
-              <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
-                label_off
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={`Remove from ${currentLabel.label}`}
-              slotProps={{
-                primary: {
-                  color: "rgb(60,64,67)",
-                  fontSize: "14px",
-                  fontWeight: 400,
-                },
-              }}
-            />
-          </MenuItem>
-        )}
-
-        {/* Show "Hide from contacts" only if contact is not already hidden */}
-        {selectedContactRef.current?.contact?.isSaved !== false && (
+        {/* Hide from contacts - only show for saved contacts */}
+        {selectedContactRef.current?.contact?.isSaved === true && (
           <MenuItem onClick={handleHideFromContacts}>
             <ListItemIcon>
               <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
@@ -1709,7 +1918,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
               </Typography>
             </Box>
             {recipientLabels.map((label) => {
-              const hasLabel = selectedContactRef.current?.contact?.labels?.includes(label.label);
+              const hasLabel = tempLabels.includes(label.label);
               return (
                 <MenuItem key={label.id} onClick={() => handleLabelToggle(label.label)} sx={{ py: 0.5, pb: 1 }}>
                   <ListItemIcon>
@@ -1754,29 +1963,29 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
         }}
         sx={{
           "& .MuiPaper-root": {
-            width: "256px",
+            minWidth: "200px",
             mt: 1,
-            backgroundColor: "#fff",
+            backgroundColor: "#f0f4f9",
             boxShadow:
               "0px 8px 10px 1px rgba(0,0,0,.14),0px 3px 14px 2px rgba(0,0,0,.12),0px 5px 5px -3px rgba(0,0,0,.2)",
             borderRadius: "2px",
           },
           "& .MuiMenuItem-root": {
-            px: 3,
+            px: 1.5,
             py: 1.25,
             "&:hover": {
-              backgroundColor: "#eee",
+              backgroundColor: "#d3dbe5",
             },
           },
         }}
       >
         {checkedContacts.size === 0 ? (
           // Options when no contacts are selected
-          <>
+          <Box>
             {/* Display Density option */}
             <MenuItem onClick={handleDisplayDensity}>
               <ListItemIcon>
-                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#1f1f1f" }}>
                   format_list_bulleted
                 </span>
               </ListItemIcon>
@@ -1784,9 +1993,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                 primary="Display Density"
                 slotProps={{
                   primary: {
-                    color: "rgb(60,64,67)",
+                    color: "#1f1f1f",
                     fontSize: "14px",
-                    fontWeight: 400,
+                    fontWeight: 500,
                   },
                 }}
               />
@@ -1795,7 +2004,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
             {/* Change column order option */}
             <MenuItem onClick={handleChangeColumnOrder}>
               <ListItemIcon>
-                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#1f1f1f" }}>
                   table_chart
                 </span>
               </ListItemIcon>
@@ -1803,22 +2012,22 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                 primary="Change column order"
                 slotProps={{
                   primary: {
-                    color: "rgb(60,64,67)",
+                    color: "#1f1f1f",
                     fontSize: "14px",
-                    fontWeight: 400,
+                    fontWeight: 500,
                   },
                 }}
               />
             </MenuItem>
-          </>
+          </Box>
         ) : (
           // Options when contacts are selected
-          <>
+          <Box>
             {/* Print action */}
             {!hidePrintExport && (
               <MenuItem onClick={handleBulkPrint}>
                 <ListItemIcon>
-                  <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#1f1f1f" }}>
                     print
                   </span>
                 </ListItemIcon>
@@ -1826,9 +2035,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                   primary="Print"
                   slotProps={{
                     primary: {
-                      color: "rgb(60,64,67)",
+                      color: "#1f1f1f",
                       fontSize: "14px",
-                      fontWeight: 400,
+                      fontWeight: 500,
                     },
                   }}
                 />
@@ -1839,7 +2048,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
             {!hidePrintExport && (
               <MenuItem onClick={handleBulkExport}>
                 <ListItemIcon>
-                  <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#1f1f1f" }}>
                     upload
                   </span>
                 </ListItemIcon>
@@ -1847,24 +2056,20 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                   primary="Export"
                   slotProps={{
                     primary: {
-                      color: "rgb(60,64,67)",
+                      color: "#1f1f1f",
                       fontSize: "14px",
-                      fontWeight: 400,
+                      fontWeight: 500,
                     },
                   }}
                 />
               </MenuItem>
             )}
 
-            {/* Hide from contacts action - only show if there are visible contacts selected */}
-            {(() => {
-              const selectedContacts = recipients.filter(contact => checkedContacts.has(contact.id));
-              const hasVisibleContacts = selectedContacts.some(contact => contact.isSaved !== false);
-              return hasVisibleContacts;
-            })() && (
+            {/* Hide from contacts action - only show if all selected contacts are non-saved */}
+            {shouldShowHideFromContacts && (
               <MenuItem onClick={handleBulkHideFromContacts}>
                 <ListItemIcon>
-                  <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#1f1f1f" }}>
                     archive
                   </span>
                 </ListItemIcon>
@@ -1872,9 +2077,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                   primary="Hide from contacts"
                   slotProps={{
                     primary: {
-                      color: "rgb(60,64,67)",
+                      color: "#1f1f1f",
                       fontSize: "14px",
-                      fontWeight: 400,
+                      fontWeight: 500,
                     },
                   }}
                 />
@@ -1884,7 +2089,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
             {/* Delete action */}
             <MenuItem onClick={handleBulkDelete}>
               <ListItemIcon>
-                <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#616161" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#1f1f1f" }}>
                   delete
                 </span>
               </ListItemIcon>
@@ -1892,14 +2097,14 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                 primary="Delete"
                 slotProps={{
                   primary: {
-                    color: "rgb(60,64,67)",
+                    color: "#1f1f1f",
                     fontSize: "14px",
-                    fontWeight: 400,
+                    fontWeight: 500,
                   },
                 }}
               />
             </MenuItem>
-          </>
+          </Box>
         )}
       </Menu>
 

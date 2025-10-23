@@ -5,9 +5,8 @@ import ContactsTable from "../../components/Contacts/ContactsTable";
 
 const Contacts = () => {
   const { recipients } = useGlobalContext();
-  // Filter out deleted and hidden contacts
-  const myContacts = recipients.filter((recipient) => recipient?.isSaved && !recipient?.isDeleted);
-  const favoriteContacts = recipients.filter((recipient) => recipient?.isFavorite && !recipient?.isDeleted);
+  const myContacts = recipients.filter((recipient) => recipient?.isSaved);
+  const favoriteContacts = recipients.filter((recipient) => recipient?.isFavorite);
 
   useEffect(() => {
     // Set document title to MailG Contacts

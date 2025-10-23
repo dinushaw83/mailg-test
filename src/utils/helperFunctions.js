@@ -172,6 +172,87 @@ export const encodeForPath = (raw) => {
   return encodeURIComponent(raw).replace(/%20/g, "+");
 };
 
+/**
+ * Build search URL with refinement filters
+ * @param {string} searchQuery - The search query
+ * @param {Array} activeFilters - Array of active filter names
+ * @param {string} loggedInUserEmail - Optional logged-in user's email for "From me" filter
+ * @returns {string} - The constructed URL
+ */
+export const buildSearchUrlWithFilters = (searchQuery, activeFilters, loggedInUserEmail = null) => {
+  // Check if we have URL parameters from current location (for contact filters, etc.)
+  const currentParams = new URLSearchParams(window.location.search);
+  const hasUrlFilters =
+    currentParams.has("from") ||
+    currentParams.has("to") ||
+    currentParams.has("attach_or_drive") ||
+    currentParams.has("is_unread") ||
+    currentParams.has("datestart") ||
+    currentParams.has("dateend") ||
+    currentParams.has("daterangetype");
+
+  // If no filters and no URL filters, return regular search URL
+  if ((!activeFilters || activeFilters.length === 0) && !hasUrlFilters) {
+    return `/search/${encodeForPath(searchQuery)}`;
+  }
+
+  // Build URL with filters
+  const params = new URLSearchParams(currentParams);
+
+  // Always add isrefinement=true when filters are active
+  params.set("isrefinement", "true");
+
+  // Map filter names to URL parameters
+  if (activeFilters.includes("Has attachment")) {
+    params.set("attach_or_drive", "true");
+  } else if (!currentParams.has("attach_or_drive")) {
+    params.delete("attach_or_drive");
+  }
+
+  if (activeFilters.includes("Is unread")) {
+    params.set("is_unread", "true");
+  } else if (!currentParams.has("is_unread")) {
+    params.delete("is_unread");
+  }
+
+  if (activeFilters.includes("Last 7 days")) {
+    // Calculate last 7 days including today (today - 6 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    const dateString = sevenDaysAgo.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
+    params.set("datestart", dateString);
+    params.set("daterangetype", "custom_range");
+    // Remove dateend if it exists
+    params.delete("dateend");
+  } else if (!currentParams.has("datestart") && !currentParams.has("dateend") && !currentParams.has("daterangetype")) {
+    params.delete("datestart");
+    params.delete("dateend");
+    params.delete("daterangetype");
+  }
+
+  // Handle "From me" filter by setting "from" parameter to logged-in user's email
+  if (activeFilters.includes("From me") && loggedInUserEmail) {
+    params.set("from", loggedInUserEmail);
+  } else if (activeFilters.includes("From me") && !loggedInUserEmail) {
+    // If "From me" is active but no email provided, keep existing "from" param if any
+    // This handles the case where the filter was set elsewhere (like SearchResultFilters)
+  } else if (!activeFilters.includes("From me") && currentParams.has("from")) {
+    // Only delete "from" param if it matches the logged-in user (i.e., it was set by "From me")
+    // Keep it if it was set by contact filter
+    if (loggedInUserEmail && currentParams.get("from")?.toLowerCase() === loggedInUserEmail.toLowerCase()) {
+      params.delete("from");
+    }
+  }
+
+  // Build the URL - if no search query, use /search?params, otherwise /search/query?params
+  if (searchQuery && searchQuery.trim()) {
+    return `/search/${encodeForPath(searchQuery)}?${params.toString()}`;
+  } else {
+    return `/search?${params.toString()}`;
+  }
+};
+
 export const queryToSearchBarString = (queryString) => {
   const params = new URLSearchParams(queryString);
 
@@ -458,6 +539,10 @@ export function buildSearchBarFromUrl(urlOrLocation) {
   const pathSegments = urlObj.pathname.split("/").filter(Boolean); // ["search", "advanced"] or ["search", "John+Doe"]
   const parts = [];
 
+  // Check if this is a refinement search
+  const params = new URLSearchParams(urlObj.search);
+  const isRefinementSearch = params.get("isrefinement") === "true";
+
   // If path is /search/<term> and term is not 'advanced', decode it and add first
   if (pathSegments.length >= 2 && pathSegments[0].toLowerCase() === "search") {
     const maybeTerm = pathSegments[1];
@@ -467,14 +552,23 @@ export function buildSearchBarFromUrl(urlOrLocation) {
     }
   }
 
-  // Then process query params (skip "advanced")
-  const params = new URLSearchParams(urlObj.search);
+  // If it's a refinement search, only return the search query (skip filter params)
+  if (isRefinementSearch) {
+    return parts.join(" ").trim();
+  }
+
+  // Otherwise, process query params (skip "advanced")
   for (const [k, v] of params.entries()) {
     const token = paramToToken(k, v);
     if (token) parts.push(token);
   }
 
-  return parts.join(" ").trim();
+  const ignoreTerms = ["compose:"];
+
+  return parts
+    .filter((part) => !ignoreTerms.some((term) => part.includes(term)))
+    .join(" ")
+    .trim();
 }
 // Validate email format
 export const isValidEmail = (email) => {
@@ -521,7 +615,7 @@ export const restructureRecipients = (recipients) => {
 };
 
 // Generate address string
-export const generateAddressString = (address) => {
+export const generateAddressString = (address, returnType = "string") => {
   const parts = [];
   if (address.streetAddress) parts.push(address.streetAddress);
   if (address.poBox) parts.push(address.poBox);
@@ -532,7 +626,7 @@ export const generateAddressString = (address) => {
   if (address.zipCode) stateZip.push(address.zipCode);
   if (stateZip.length > 0) parts.push(stateZip.join(" "));
   if (address.countryCode) parts.push(address.countryCode);
-  return parts.join(" ");
+  return returnType === "array" ? parts : parts.join(" ");
 };
 
 // Get formatted website URL
@@ -544,3 +638,231 @@ export const getFormattedWebsiteURL = (website) => {
   }
   return url;
 };
+
+/**
+ * Check if a search string contains any search operators
+ * @param {string} str - The string to check
+ * @returns {boolean} - True if the string contains search operators
+ */
+export const containsSearchOperators = (str) => {
+  if (!str || typeof str !== "string") {
+    return false;
+  }
+
+  // Check for common search operators
+  const operatorPatterns = [
+    /\bin:/, // in:
+    /\bfrom:/, // from:
+    /\bto:/, // to:
+    /\bsubject:/, // subject:
+    /\bhas:/, // has:
+    /\blarger:/, // larger:
+    /\bsmaller:/, // smaller:
+    /\bafter:/, // after: (date operator)
+    /\bbefore:/, // before: (date operator)
+    /^-\w+/, // -word (negation)
+    /-\{/, // -{phrase}
+  ];
+
+  return operatorPatterns.some((pattern) => pattern.test(str));
+};
+
+/**
+ * Parse a search string (like "in:Inbox from:(jane@example.com) has:attachment smaller:12M after:2025/10/8 before:2025/10/11")
+ * and convert it to formData object for the advanced search form
+ *
+ * @param {string} searchString - The search query string to parse
+ * @returns {object} - Form data object with parsed values
+ */
+export const parseSearchStringToFormData = (searchString) => {
+  if (!searchString || typeof searchString !== "string") {
+    return null;
+  }
+
+  // Valid options for validation
+  const validSubsets = ["All Mail", "Inbox", "Sent", "Drafts", "Spam", "Trash"];
+
+  const formData = {
+    from: "",
+    to: "",
+    subject: "",
+    has: "",
+    hasnot: "",
+    sizeOperator: "less than",
+    size: "",
+    sizeUnit: "MB",
+    within: "1 day",
+    date: null,
+    subset: "All Mail",
+    attachment: false,
+    excludeChats: false,
+  };
+
+  // Tokenize the search string
+  // Handle patterns like: in:value, from:(email), subject:(multiple words), -word, -{multiple words}, etc.
+  const tokens = [];
+  let currentPos = 0;
+
+  while (currentPos < searchString.length) {
+    // Skip whitespace
+    if (/\s/.test(searchString[currentPos])) {
+      currentPos++;
+      continue;
+    }
+
+    // Check for operators: in:, from:, to:, subject:, has:, after:, before:, larger:, smaller:
+    const remaining = searchString.slice(currentPos);
+
+    // Match operator patterns like "operator:(value)" or "operator:value"
+    const operatorMatch = remaining.match(/^(-)?(\w+):((?:\([^)]*\)|[^\s]+))/);
+
+    if (operatorMatch) {
+      const [fullMatch, negation, operator, value] = operatorMatch;
+      tokens.push({
+        type: "operator",
+        negation: !!negation,
+        operator: operator.toLowerCase(),
+        value: value.replace(/^\(|\)$/g, ""), // Remove surrounding parentheses
+      });
+      currentPos += fullMatch.length;
+      continue;
+    }
+
+    // Match negated words or phrases like "-word" or "-{multiple words}"
+    const negatedMatch = remaining.match(/^-(?:\{([^}]*)\}|(\S+))/);
+    if (negatedMatch) {
+      const [fullMatch, bracedValue, simpleValue] = negatedMatch;
+      tokens.push({
+        type: "negated",
+        value: bracedValue || simpleValue,
+      });
+      currentPos += fullMatch.length;
+      continue;
+    }
+
+    // Match regular words
+    const wordMatch = remaining.match(/^(\S+)/);
+    if (wordMatch) {
+      tokens.push({
+        type: "word",
+        value: wordMatch[1],
+      });
+      currentPos += wordMatch[1].length;
+      continue;
+    }
+
+    // Safety break
+    currentPos++;
+  }
+
+  // Process tokens and populate formData
+  const hasWords = [];
+  const hasnotWords = [];
+
+  tokens.forEach((token) => {
+    if (token.type === "operator") {
+      const { operator, value, negation } = token;
+
+      switch (operator) {
+        case "in":
+          if (negation && value.toLowerCase() === "chats") {
+            // Handle -in:chats -> excludeChats
+            formData.excludeChats = true;
+          } else if (!negation) {
+            // Validate and set subset - capitalize first letter
+            const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
+            // Only set if it's a valid subset option, otherwise keep default "All Mail"
+            if (validSubsets.includes(capitalizedValue)) {
+              formData.subset = capitalizedValue;
+            }
+            // If invalid, formData.subset remains "All Mail" (default)
+          }
+          break;
+
+        case "from":
+          formData.from = value;
+          break;
+
+        case "to":
+          formData.to = value;
+          break;
+
+        case "subject":
+          formData.subject = value;
+          break;
+
+        case "has":
+          if (value === "attachment") {
+            formData.attachment = true;
+          } else {
+            hasWords.push(value);
+          }
+          break;
+
+        case "larger":
+          formData.sizeOperator = "greater than";
+          parseSizeValue(value, formData);
+          break;
+
+        case "smaller":
+          formData.sizeOperator = "less than";
+          parseSizeValue(value, formData);
+          break;
+
+        case "after":
+        case "before":
+          // Skip date operators - we don't parse them
+          break;
+
+        default:
+          // Unknown operator, treat value as a word
+          if (negation) {
+            hasnotWords.push(value);
+          } else {
+            hasWords.push(value);
+          }
+          break;
+      }
+    } else if (token.type === "negated") {
+      hasnotWords.push(token.value);
+    } else if (token.type === "word") {
+      // Regular words go to "has"
+      hasWords.push(token.value);
+    }
+  });
+
+  // Combine has words
+  if (hasWords.length > 0) {
+    formData.has = hasWords.join(" ");
+  }
+
+  // Combine hasnot words
+  if (hasnotWords.length > 0) {
+    formData.hasnot = hasnotWords.join(" ");
+  }
+
+  // Note: date range (after:/before:) parsing has been removed
+  // formData.date and formData.within will remain at their default values
+
+  return formData;
+};
+
+/**
+ * Parse size value like "12M", "500K", "1000" and populate formData
+ */
+function parseSizeValue(sizeStr, formData) {
+  const match = sizeStr.match(/^([\d.]+)([MKB]?)$/i);
+  if (match) {
+    formData.size = match[1];
+    const unit = match[2].toUpperCase();
+    // Validate and set size unit
+    if (unit === "M") {
+      formData.sizeUnit = "MB";
+    } else if (unit === "K") {
+      formData.sizeUnit = "KB";
+    } else if (unit === "B" || !unit) {
+      formData.sizeUnit = "Bytes";
+    }
+    // If unit doesn't match M, K, or B, sizeUnit remains at default "MB"
+  }
+}

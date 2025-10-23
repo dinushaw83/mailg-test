@@ -156,14 +156,12 @@ export const EmailContent = ({
                 timestamp={message.timestamp}
                 senderName={message.from.name}
                 senderEmail={message.from.email}
-                toList={message.to}
                 attachments={message.attachments}
                 embeddedImages={message.embeddedImages}
                 isScheduled={message.labels?.includes("Scheduled")}
                 scheduledDate={message.scheduledDate}
                 scheduledTime={message.scheduledTime}
                 emailId={message.id}
-                folder={folder}
               />
               {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
             </React.Fragment>

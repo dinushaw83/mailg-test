@@ -67,20 +67,10 @@ const RecipientName = styled.div`
   margin-right: 5px;
 `;
 
-const Recipient = ({ toList = [], folder }) => {
-  const { loggedInUser } = useGlobalContext();
-  const isSent = (folder || "").toLowerCase() === "sent";
-  let displayTo = "me";
-  if (isSent) {
-    displayTo = Array.isArray(toList) && toList.length > 0 ? toList.join(", ") : "";
-  } else if (Array.isArray(toList) && toList.includes(loggedInUser.email)) {
-    displayTo = "me";
-  } else if (Array.isArray(toList) && toList.length > 0) {
-    displayTo = toList[0];
-  }
+const Recipient = () => {
   return (
     <RecipientContainer>
-      <RecipientName>to {displayTo}</RecipientName>
+      <RecipientName>to me</RecipientName>
       <Icon
         name="arrow_drop_down"
         style={{
@@ -157,7 +147,7 @@ const Time = ({ timestamp }) => {
   );
 };
 
-const TopBar = ({ timestamp, senderName, senderEmail, toList = [], folder, onReply }) => {
+const TopBar = ({ timestamp, senderName, senderEmail, onReply }) => {
   const { recipients, loggedInUser } = useGlobalContext();
 
   const senderContact = useMemo(() => {
@@ -182,7 +172,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, toList = [], folder, onRep
         <ContactPopup contact={{ ...senderContact, email: senderEmail }}>
           <Sender name={senderName} email={senderEmail} />
         </ContactPopup>
-        <Recipient toList={toList} folder={folder} />
+        <Recipient />
       </div>
       <ActionsContainer>
         <Time timestamp={timestamp} />
@@ -394,14 +384,12 @@ export const Content = React.memo(
     timestamp,
     senderName,
     senderEmail,
-    toList = [],
     attachments = [],
     embeddedImages = [],
     isScheduled,
     scheduledDate,
     scheduledTime,
     emailId,
-    folder,
   }) => {
     return (
       <ContentContainer>
@@ -409,7 +397,7 @@ export const Content = React.memo(
           <Avatar>{senderName.charAt(0)}</Avatar>
         </ProfileImageContainer>
         <BodyContainer>
-          <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} toList={toList} folder={folder} />
+          <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
           {isScheduled && (
             <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />
           )}

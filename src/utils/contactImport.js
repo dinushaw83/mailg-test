@@ -24,16 +24,14 @@ export const parseCSV = (csvContent) => {
   if (isGoogleCSV) {
     // Google CSV export format
     fieldMap = {
-      firstName: findColumnIndex(headers, ["Given Name"]),
-      lastName: findColumnIndex(headers, ["Family Name"]),
-      name: findColumnIndex(headers, ["Name"]),
+      firstName: findColumnIndex(headers, ["First Name"]),
+      lastName: findColumnIndex(headers, ["Last Name"]),
+      name: findColumnIndex(headers, ["File As"]),
       email: findColumnIndex(headers, ["E-mail 1 - Value"]),
       phone: findColumnIndex(headers, ["Phone 1 - Value"]),
-      company: findColumnIndex(headers, ["Organization 1 - Name"]),
-      jobTitle: findColumnIndex(headers, ["Organization 1 - Title"]),
-      notes: findColumnIndex(headers, ["Notes"]),
-      address: findColumnIndex(headers, ["Address 1 - Formatted"]),
-      groupMembership: findColumnIndex(headers, ["Group Membership"]),
+      company: findColumnIndex(headers, ["Organization Name"]),
+      jobTitle: findColumnIndex(headers, ["Organization Title"]),
+      labels: findColumnIndex(headers, ["Labels"]),
     };
   } else if (isOutlookCSV) {
     // Outlook CSV export format
@@ -99,28 +97,11 @@ export const parseCSV = (csvContent) => {
     if (fieldMap.phone !== -1 && values[fieldMap.phone]) {
       const phoneValue = values[fieldMap.phone].trim();
       if (phoneValue) {
-        // Parse phone number with dial code
-        let dialCode = "+1";
-        let phoneNumber = phoneValue;
-        
-        // Check if phone starts with +
-        if (phoneValue.startsWith("+")) {
-          // Extract dial code
-          const match = phoneValue.match(/^\+(\d{1,4})/);
-          if (match) {
-            dialCode = "+" + match[1];
-            phoneNumber = phoneValue.substring(match[0].length).trim();
-          }
-        }
-        
-        // Remove all non-digit characters from phone number
-        phoneNumber = phoneNumber.replace(/\D/g, "");
-        
         contact.phones = [
           {
-            value: phoneNumber,
-            dialCode: dialCode,
-            label: "Mobile",
+            value: phoneValue.replace(/\D/g, ""), // Remove non-digits
+            dialCode: "+1", // Default dial code
+            label: "Work",
           },
         ];
       }
@@ -131,48 +112,21 @@ export const parseCSV = (csvContent) => {
     if (fieldMap.jobTitle !== -1 && values[fieldMap.jobTitle]) {
       contact.jobTitle = values[fieldMap.jobTitle].trim();
     }
-    if (fieldMap.notes !== -1 && values[fieldMap.notes]) {
-      contact.notes = values[fieldMap.notes].trim();
-    }
-    if (fieldMap.address !== -1 && values[fieldMap.address]) {
-      contact.address = values[fieldMap.address].trim();
-    }
 
-    // Handle Group Membership (Google Contacts format)
-    if (fieldMap.groupMembership !== -1 && values[fieldMap.groupMembership]) {
-      const groupString = values[fieldMap.groupMembership].trim();
-      if (groupString) {
-        // Extract label names from group membership strings
-        // Format is typically like "Imported Oct 20 2025" or "* myContacts ::: Imported Oct 20 2025"
-        const labels = groupString
-          .split(":::")
+    // Fix: Check if labels are at the next index due to extra empty element
+    const labelsIndex = fieldMap.labels !== -1 ? fieldMap.labels : -1;
+    const actualLabelsIndex =
+      labelsIndex !== -1 && values.length > labelsIndex + 1 && values[labelsIndex] === ""
+        ? labelsIndex + 1
+        : labelsIndex;
+
+    if (actualLabelsIndex !== -1 && values[actualLabelsIndex]) {
+      const labelsString = values[actualLabelsIndex].trim();
+      if (labelsString) {
+        contact.labels = labelsString
+          .split(",")
           .map((label) => label.trim())
-          .filter((label) => label && label !== "*" && !label.includes("myContacts"))
-          .map((label) => label.replace(/^\* /, "").trim())
           .filter((label) => label);
-        
-        if (labels.length > 0) {
-          contact.labels = labels;
-        }
-      }
-    }
-    
-    // Fallback: Check if labels field exists (for other CSV formats)
-    if (!contact.labels && fieldMap.labels !== -1) {
-      const labelsIndex = fieldMap.labels;
-      const actualLabelsIndex =
-        labelsIndex !== -1 && values.length > labelsIndex + 1 && values[labelsIndex] === ""
-          ? labelsIndex + 1
-          : labelsIndex;
-
-      if (actualLabelsIndex !== -1 && values[actualLabelsIndex]) {
-        const labelsString = values[actualLabelsIndex].trim();
-        if (labelsString) {
-          contact.labels = labelsString
-            .split(",")
-            .map((label) => label.trim())
-            .filter((label) => label);
-        }
       }
     }
 

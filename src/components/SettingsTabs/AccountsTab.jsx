@@ -5,7 +5,53 @@ import { Box } from "@mui/material";
 
 const AccountsTab = () => {
   const [editOpen, setEditOpen] = useState(false);
-  const { sendAsSettings } = useGlobalContext();
+  const { sendAsSettings, setSnackbar, settingsAccounts, setSettingsAccounts } = useGlobalContext();
+
+  // Handle Mark as Read change
+  const handleMarkAsReadChange = (shouldMarkAsRead) => {
+    setSettingsAccounts((prev) => ({
+      ...prev,
+      markAsRead: shouldMarkAsRead,
+    }));
+    const message = shouldMarkAsRead
+      ? "Conversations are now marked as read when other users open them."
+      : "Conversations are now left unread when other users open them.";
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 5000,
+      severity: "success",
+      style: {
+        "& .MuiSnackbarContent-root": {
+          backgroundColor: "#323232",
+          color: "#ffffff",
+        },
+      },
+    });
+  };
+
+  // Handle Sender Attribution change
+  const handleAttributionChange = (shouldShowAttribution) => {
+    setSettingsAccounts((prev) => ({
+      ...prev,
+      showAttribution: shouldShowAttribution,
+    }));
+    const message = shouldShowAttribution
+      ? "Messages sent from delegates will include attribution from now."
+      : "Messages sent from delegates will not include attribution from now.";
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 5000,
+      severity: "success",
+      style: {
+        "& .MuiSnackbarContent-root": {
+          backgroundColor: "#323232",
+          color: "#ffffff",
+        },
+      },
+    });
+  };
   return (
     <Box sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }}>
       <div id=":1" className="aeF" style={{ padding: "0px", verticalAlign: "bottom", minHeight: "513px" }}>
@@ -779,7 +825,8 @@ const AccountsTab = () => {
                                           id=":34"
                                           name="bx_amard"
                                           type="radio"
-                                          defaultChecked
+                                          checked={settingsAccounts.markAsRead}
+                                          onChange={() => handleMarkAsReadChange(true)}
                                           value="1"
                                           style={{
                                             fontFamily:
@@ -832,6 +879,8 @@ const AccountsTab = () => {
                                           id=":35"
                                           name="bx_amard"
                                           type="radio"
+                                          checked={!settingsAccounts.markAsRead}
+                                          onChange={() => handleMarkAsReadChange(false)}
                                           value="0"
                                           style={{
                                             fontFamily:
@@ -894,7 +943,8 @@ const AccountsTab = () => {
                                           id=":36"
                                           name="sender_attribution_setting"
                                           type="radio"
-                                          defaultChecked
+                                          checked={settingsAccounts.showAttribution}
+                                          onChange={() => handleAttributionChange(true)}
                                           value="1"
                                           style={{
                                             fontFamily:
@@ -949,6 +999,8 @@ const AccountsTab = () => {
                                           id=":37"
                                           name="sender_attribution_setting"
                                           type="radio"
+                                          checked={!settingsAccounts.showAttribution}
+                                          onChange={() => handleAttributionChange(false)}
                                           value="0"
                                           style={{
                                             fontFamily:

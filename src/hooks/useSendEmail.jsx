@@ -13,7 +13,17 @@ import { updateEmbeddedImagesEmailId, extractEmbeddedImageIds } from "../utils/e
 
 export const useSendEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
-  const { emails, setEmails, setSnackbar, loggedInUser, recipients, setRecipients, db } = useContext(GlobalContext);
+  const {
+    emails,
+    setEmails,
+    setSnackbar,
+    loggedInUser,
+    recipients,
+    setRecipients,
+    db,
+    hiddenRecipients,
+    deletedRecipients,
+  } = useContext(GlobalContext);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastSentEmailRef = useRef(null);
@@ -222,10 +232,13 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
               label: "",
             },
           ],
-          id: generateNextIntegerId(recipients) + index,
+          id: generateNextIntegerId([...recipients, ...hiddenRecipients, ...deletedRecipients]) + index,
           isSaved: false,
           isFavorite: false,
           labels: [],
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          savedAt: null,
         });
       });
       setRecipients(updatedRecipients);

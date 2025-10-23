@@ -16,14 +16,14 @@ const ContactsTab = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [activeTab, setActiveTab] = useState(1); // 0 for "In this thread", 1 for "Contacts"
   const [searchResults, setSearchResults] = useState(
-    recipients.filter((recipient) => recipient?.isSaved && !recipient?.isDeleted)
+    recipients.filter((recipient) => recipient?.isSaved)
   );
   const myContacts = useMemo(
-    () => searchResults.filter((recipient) => recipient?.isSaved && !recipient?.isDeleted),
+    () => searchResults.filter((recipient) => recipient?.isSaved),
     [searchResults]
   );
   const favoriteContacts = useMemo(
-    () => recipients.filter((recipient) => recipient?.isFavorite && !recipient?.isDeleted),
+    () => recipients.filter((recipient) => recipient?.isFavorite),
     [recipients]
   );
   // Contacts in search results that are not in my contacts
@@ -34,7 +34,7 @@ const ContactsTab = () => {
 
   // Update search results when recipients change
   useEffect(() => {
-    setSearchResults(recipients.filter((recipient) => recipient?.isSaved && !recipient?.isDeleted));
+    setSearchResults(recipients.filter((recipient) => recipient?.isSaved));
   }, [recipients]);
 
   // Handle search

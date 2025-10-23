@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 
 import useMailActions from "../../hooks/useMailActions";
@@ -15,11 +15,18 @@ import { useComposeModal } from "../../hooks/useComposeModal";
 const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, composeWindows, panelState, previewEmailId } = useGlobalContext();
+  const { selection, composeWindows, panelState, previewEmailId, softRemovedLabels, setSoftRemovedLabels } =
+    useGlobalContext();
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
   const { folder, label } = useParams();
+  const { labels } = useLabels();
+
+  const { direction: internalDirection, showPanel } = panelState;
+  const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
+
+  const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
 
   /**
    * Format the given timestamp similar to Gmail:
@@ -130,14 +137,13 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
     }
   };
 
-  const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
-  const { labels } = useLabels();
-
   const getLabelBadges = (email) => {
-    const currentPath = location.pathname.replace("/", "").toLowerCase();
+    const currentPath = (label || folder || "").toLowerCase();
     const isAllMail = ["all"].includes(currentPath);
+    const softRemoved = softRemovedLabels[email.id] || [];
+    const curLabels = [...new Set([...email.labels, ...softRemoved])];
 
-    return email.labels
+    return curLabels
       .filter((labelKey) => {
         const lower = labelKey.toLowerCase();
         const isInbox = lower === "inbox";
@@ -161,8 +167,9 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
       }));
   };
 
-  const { direction: internalDirection, showPanel } = panelState;
-  const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
+  useEffect(() => {
+    setSoftRemovedLabels({});
+  }, [location.pathname]);
 
   return (
     <div className="Nu tf aZ6" style={{ flex: 1, display: "flex", flexDirection: "column" }}>

@@ -3,58 +3,25 @@ import { Box, Checkbox, ClickAwayListener, MenuItem, Select, TextField } from "@
 import { useNavigate, useLocation } from "react-router-dom";
 import DatePicker from "./DatePicker";
 import EmailField from "./EmailField";
-import dayjs from "dayjs";
 import styles from "./AdvancedSearchOptions.module.css";
+import { addAdvancedSearchQuery } from "../../../utils/search";
+import {
+  parseSearchStringToFormData,
+  buildSearchBarFromUrl,
+  containsSearchOperators,
+} from "../../../utils/helperFunctions";
+import {
+  dateWithinOptions,
+  subsetOptions,
+  AdvancedSearchSelectHoverStyle,
+  AdvancedSearchTextFieldInputStyle,
+} from "./constants";
 
-const InputStyle = {
-  "& .MuiInput-root": {
-    fontSize: "14px",
-  },
-  "& .MuiInputBase-input": {
-    height: "20px !important",
-    padding: 0,
-  },
-  // override hover underline
-  "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
-    borderBottom: "1px solid rgba(0,0,0,0.42)",
-  },
-  // override the focused/active line color
-  "& .MuiInput-underline:after": {
-    borderBottom: "1px solid #4285f4",
-  },
-};
-
-const SelectHoverStyle = {
-  "&:hover:not(.Mui-disabled, .Mui-error):before": {
-    borderBottom: "1px solid rgba(0, 0, 0, 0.42)",
-  },
-};
-
-const dateWithinOptions = [
-  { value: "1 day", label: "1 day" },
-  { value: "3 days", label: "3 days" },
-  { value: "1 week", label: "1 week" },
-  { value: "2 weeks", label: "2 weeks" },
-  { value: "1 month", label: "1 month" },
-  { value: "2 months", label: "2 months" },
-  { value: "3 months", label: "3 months" },
-  { value: "6 months", label: "6 months" },
-  { value: "1 year", label: "1 year" },
-];
-
-const subsetOptions = [
-  { value: "All Mail", label: "All Mail" },
-  { value: "Inbox", label: "Inbox" },
-  { value: "Sent", label: "Sent" },
-  { value: "Drafts", label: "Drafts" },
-  { value: "Spam", label: "Spam" },
-  { value: "Trash", label: "Trash" },
-];
-
-const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
+const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const fromFieldRef = useRef(null);
+  const location = useLocation();
+  const [previousLocation, setPreviousLocation] = useState(null);
 
   const getDefaultFormData = () => ({
     from: "",
@@ -66,7 +33,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
     size: "",
     sizeUnit: "MB",
     within: "1 day",
-    date: dayjs().format("YYYY-MM-DD"),
+    date: "",
     subset: "All Mail",
     attachment: false,
     excludeChats: false,
@@ -81,36 +48,110 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
     },
   }));
 
-  // Sync formData with URL parameters when modal opens
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     const searchParams = new URLSearchParams(location.search);
-  //     const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const isCurrentlyOnSearchResults = currentPath.startsWith("/search/");
+    const wasOnSearchResults = previousLocation && previousLocation.startsWith("/search/");
 
-  //     if (isAdvancedSearch && searchParams.toString()) {
-  //       // Populate form data from URL parameters
-  //       const sizeOperator = searchParams.get("sizeOperator") || "less than";
-  //       setFormData({
-  //         from: searchParams.get("from") || "",
-  //         to: searchParams.get("to") || "",
-  //         subject: searchParams.get("subject") || "",
-  //         has: searchParams.get("has") || "",
-  //         hasnot: searchParams.get("hasnot") || "",
-  //         sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
-  //         size: searchParams.get("size") || "",
-  //         sizeUnit: searchParams.get("sizeUnit") || "MB",
-  //         within: searchParams.get("within") || "1 day",
-  //         date: searchParams.get("date") || dayjs().format("YYYY-MM-DD"),
-  //         subset: searchParams.get("subset") || "All Mail",
-  //         attachment: searchParams.get("attachment") === "true",
-  //         excludeChats: searchParams.get("excludeChats") === "true",
-  //       });
-  //     } else {
-  //       // Reset to default values when opening from non-advanced search
-  //       setFormData(getDefaultFormData());
-  //     }
-  //   }
-  // }, [isOpen, location.search, location.pathname]);
+    // If we were on search results page and now we're not, clear the search input
+    if (wasOnSearchResults && !isCurrentlyOnSearchResults) {
+      setFormData(getDefaultFormData());
+    }
+
+    // Update previous location for next comparison
+    setPreviousLocation(currentPath);
+  }, [location.pathname, previousLocation, formData, setFormData]);
+
+  // Sync formData with search string/URL parameters when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // If searchValue prop is explicitly empty (user cleared the search bar),
+      // prioritize that over URL to maintain sync with the visible search bar state
+      if (searchValue === "") {
+        setFormData(getDefaultFormData());
+        return;
+      }
+
+      // If searchValue prop exists, use it (user typed but hasn't searched yet)
+      if (searchValue && searchValue.trim()) {
+        const searchValueHasOperators = containsSearchOperators(searchValue);
+
+        // Parse URL params directly for within and date
+        const urlParams = new URLSearchParams(location.search);
+        const withinParam = urlParams.get("within");
+        const dateParam = urlParams.get("date");
+
+        if (searchValueHasOperators) {
+          // searchValue has operators, parse it
+          const parsedData = parseSearchStringToFormData(searchValue);
+          if (parsedData) {
+            setFormData({
+              ...parsedData,
+              // Override with URL params if they exist
+              within: withinParam || parsedData.within || "1 day",
+              date: dateParam || parsedData.date || "",
+            });
+          } else {
+            setFormData(getDefaultFormData());
+          }
+        } else {
+          // searchValue is plain text
+          setFormData({
+            ...getDefaultFormData(),
+            has: searchValue,
+            // Include URL params for within and date
+            within: withinParam || "1 day",
+            date: dateParam || "",
+          });
+        }
+        return;
+      }
+
+      // No searchValue prop, so check the URL (e.g., after page reload)
+      const searchString = buildSearchBarFromUrl(location);
+
+      // Check if the search string contains operators
+      const hasOperators = searchString && containsSearchOperators(searchString);
+
+      // Parse URL params directly for within and date
+      const urlParams = new URLSearchParams(location.search);
+      const withinParam = urlParams.get("within");
+      const dateParam = urlParams.get("date");
+
+      // If searchString has operators, parse it completely
+      if (hasOperators) {
+        const parsedData = parseSearchStringToFormData(searchString);
+
+        if (parsedData) {
+          setFormData({
+            ...parsedData,
+            // Override with URL params if they exist (more reliable than parsing from search string)
+            within: withinParam || parsedData.within || "1 day",
+            date: dateParam || parsedData.date || "",
+          });
+        } else {
+          // Parsing failed, use defaults
+          setFormData(getDefaultFormData());
+        }
+      } else if (searchString && searchString.trim()) {
+        // searchString exists but has no operators - treat as plain text for "has"
+        setFormData({
+          ...getDefaultFormData(),
+          has: searchString,
+          // Include URL params for within and date
+          within: withinParam || "1 day",
+          date: dateParam || "",
+        });
+      } else {
+        // No search string, use defaults but check for URL params
+        setFormData({
+          ...getDefaultFormData(),
+          within: withinParam || "1 day",
+          date: dateParam || "",
+        });
+      }
+    }
+  }, [isOpen, location.search, location.pathname, searchValue]);
 
   // Auto-focus the "from" field when modal opens
   useEffect(() => {
@@ -124,19 +165,17 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
 
   // Handle escape key to close modal
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscapeKey = (event) => {
       if (event.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscapeKey);
-    }
+    document.addEventListener("keydown", handleEscapeKey);
 
-    return () => {
-      document.removeEventListener("keydown", handleEscapeKey);
-    };
+    return () => document.removeEventListener("keydown", handleEscapeKey);
   }, [isOpen, onClose]);
 
   const handleInputChange = (field, value) => {
@@ -147,6 +186,9 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
   };
 
   const handleSearch = () => {
+    // Track advanced search query in localStorage
+    addAdvancedSearchQuery(formData);
+
     // Create search criteria object
     const searchCriteria = {
       from: formData.from,
@@ -244,7 +286,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
               id="subject"
               value={formData.subject}
               onChange={(e) => handleInputChange("subject", e.target.value)}
-              sx={InputStyle}
+              sx={AdvancedSearchTextFieldInputStyle}
             />
           </div>
 
@@ -259,7 +301,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
               id="has"
               value={formData.has}
               onChange={(e) => handleInputChange("has", e.target.value)}
-              sx={InputStyle}
+              sx={AdvancedSearchTextFieldInputStyle}
             />
           </div>
 
@@ -274,7 +316,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
               variant="standard"
               value={formData.hasnot}
               onChange={(e) => handleInputChange("hasnot", e.target.value)}
-              sx={InputStyle}
+              sx={AdvancedSearchTextFieldInputStyle}
             />
           </div>
 
@@ -293,7 +335,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
                   disablePortal: true,
                 }}
                 sx={{
-                  ...SelectHoverStyle,
+                  ...AdvancedSearchSelectHoverStyle,
                   fontSize: "14px",
                   width: "250px !important",
                   "& .MuiSelect-select": {
@@ -316,7 +358,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
                 variant="standard"
                 value={formData.size}
                 onChange={(e) => handleInputChange("size", e.target.value)}
-                sx={InputStyle}
+                sx={AdvancedSearchTextFieldInputStyle}
               />
 
               <Select
@@ -328,7 +370,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
                   disablePortal: true,
                 }}
                 sx={{
-                  ...SelectHoverStyle,
+                  ...AdvancedSearchSelectHoverStyle,
                   fontSize: "14px",
                   width: "118px !important",
                   "& .MuiSelect-select": {
@@ -366,7 +408,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
                   disablePortal: true,
                 }}
                 sx={{
-                  ...SelectHoverStyle,
+                  ...AdvancedSearchSelectHoverStyle,
                   fontSize: "14px",
                   flex: 1,
                   "& .MuiSelect-select": {
@@ -399,7 +441,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose }, ref) => {
                 disablePortal: true,
               }}
               sx={{
-                ...SelectHoverStyle,
+                ...AdvancedSearchSelectHoverStyle,
                 fontSize: "14px",
                 flex: 1,
                 "& .MuiSelect-select": {
