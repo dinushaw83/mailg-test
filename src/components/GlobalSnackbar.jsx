@@ -26,7 +26,7 @@ export default function GlobalSnackbar() {
       open={snackbar.open}
       autoHideDuration={snackbar.autoHideDuration}
       onClose={handleClose}
-      anchorOrigin={snackbar.anchorOrigin || { vertical: "bottom", horizontal: "right" }}
+      anchorOrigin={snackbar.anchorOrigin || { vertical: "bottom", horizontal: "left" }}
       message={snackbar.message}
       action={
         <React.Fragment>
