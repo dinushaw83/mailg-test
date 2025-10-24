@@ -141,16 +141,46 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
     return filteredOptions.slice(0, 8);
   };
 
+  // Validate email format
+  const isValidEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   // Handle selecting a contact from the dropdown
   const handleAutocompleteChange = (event, newValue) => {
     if (newValue) {
+      let contactToAdd;
+
+      // Check if newValue is a string (freeSolo input) or an object (selected option)
+      if (typeof newValue === "string") {
+        const trimmedValue = newValue.trim();
+
+        // Validate email format
+        if (!isValidEmail(trimmedValue)) {
+          // Invalid email, don't add it
+          setInputValue("");
+          return;
+        }
+
+        // Create a custom contact object from the string
+        contactToAdd = {
+          id: `custom-${trimmedValue}`,
+          name: trimmedValue,
+          email: trimmedValue,
+          avatar: null,
+        };
+      } else {
+        // newValue is already a contact object
+        contactToAdd = newValue;
+      }
+
       // Check if already selected
       const isAlreadySelected = selectedContacts.some(
-        (selected) => selected.email === newValue.email && selected.id === newValue.id
+        (selected) => selected.email === contactToAdd.email && selected.id === contactToAdd.id
       );
 
       if (!isAlreadySelected) {
-        const newSelected = [...selectedContacts, newValue];
+        const newSelected = [...selectedContacts, contactToAdd];
         setSelectedContacts(newSelected);
 
         // Notify parent component
@@ -207,9 +237,12 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
     if (selectedContacts.length === 0) {
       return label;
     } else if (selectedContacts.length === 1) {
-      return `${label} ${selectedContacts[0].name}`;
+      // Use name if available, otherwise use email
+      const displayName = selectedContacts[0].name || selectedContacts[0].email;
+      return `${label}: ${displayName}`;
     } else {
-      return `${label} ${selectedContacts[0].name} +${selectedContacts.length - 1}`;
+      const displayName = selectedContacts[0].name || selectedContacts[0].email;
+      return `${label}: ${displayName} +${selectedContacts.length - 1}`;
     }
   };
 
