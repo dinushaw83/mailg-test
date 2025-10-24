@@ -56,13 +56,6 @@ export function removeFromSearchHistory(query) {
 }
 
 /**
- * Get search history
- */
-export function getSearchHistoryItems() {
-  return getSearchHistory();
-}
-
-/**
  * Get all search queries from localStorage
  */
 function getAllSearchQueries() {
@@ -97,16 +90,38 @@ function saveAllSearchQueries(queries) {
 
 /**
  * Add a basic search query to the tracking system
+ * @param {string} query - The search term
+ * @param {Object} filters - Optional filter states
+ * @param {boolean} filters.hasAttachment - Has attachment filter
+ * @param {boolean} filters.fromMe - From me filter
+ * @param {boolean} filters.lastSevenDays - Last 7 days filter
  */
-export function addBasicSearchQuery(query) {
+export function addBasicSearchQuery(query, filters = {}) {
   if (!query || !query.trim()) return;
 
   const trimmedQuery = query.trim();
   const allQueries = getAllSearchQueries();
 
+  // Create the search entry object
+  const searchEntry = {
+    searchTerm: trimmedQuery,
+    hasAttachment: filters.hasAttachment || false,
+    fromMe: filters.fromMe || false,
+    lastSevenDays: filters.lastSevenDays || false,
+  };
+
+  // Check if this exact query with filters already exists
+  const isDuplicate = allQueries.basic.some(
+    (entry) =>
+      entry.searchTerm === searchEntry.searchTerm &&
+      entry.hasAttachment === searchEntry.hasAttachment &&
+      entry.fromMe === searchEntry.fromMe &&
+      entry.lastSevenDays === searchEntry.lastSevenDays
+  );
+
   // Add to basic array if not already present
-  if (!allQueries.basic.includes(trimmedQuery)) {
-    allQueries.basic.unshift(trimmedQuery);
+  if (!isDuplicate) {
+    allQueries.basic.unshift(searchEntry);
   }
 
   saveAllSearchQueries(allQueries);
