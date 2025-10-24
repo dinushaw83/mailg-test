@@ -129,14 +129,6 @@ For example, to verify the prompt `MAILG-COMPOSE-EMAIL-001`:
 
 You can verify actions performed in the browser correctly update the corresponding localStorage key(s) by visiting the `http://localhost:3000/verify-ls` route.
 
-The UI updates in near real time as you interact with the application. A “Refresh Now” button is available to manually refresh and sync the display, and a “Reset All” button allows you to clear localStorage and reload the page.
-
-<img width="1893" alt="MailG LocalStorage Verification" src="./public/assets/images/screenshots/mailg-verify-ls.png" />
-
-### LocalStorage Verification
-
-You can verify actions performed in the browser correctly update the corresponding localStorage key(s) by visiting the `http://localhost:3000/verify-ls` route.
-
 The UI should update in near real-time as you perform actions in the browser. The page also has a manual "Refresh Now" button to manually refresh the page and update the UI.
 
 Additionally, the page has a "Reset All" button to reset the localStorage and reload the page.
