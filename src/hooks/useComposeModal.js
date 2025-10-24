@@ -406,6 +406,7 @@ export const useComposeModal = () => {
   }, [getVisibleWindowCount]);
 
   return {
+    composeWindows,
     visibleWindowCount,
     getVisibleWindowCount,
     addNewComposeWindow,

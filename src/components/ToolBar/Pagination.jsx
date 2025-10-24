@@ -1,7 +1,21 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { Button, Box, MenuItem, Popper, Grow, Paper, ClickAwayListener, MenuList } from "@mui/material";
-import { GlobalContext } from "../../contexts/GlobalContext";
+import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
+import { useHotkeys } from "react-hotkeys-hook";
+import React from "react";
+
+const useCustomHotKeys = ({ handlePreviousPage, handleNextPage }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "g>n" : "", () => {
+    handleNextPage();
+  });
+  useHotkeys(shortcutsOn ? "g>p" : "", () => {
+    handlePreviousPage();
+  });
+};
 
 const Pagination = ({
   totalFilteredItems,
@@ -62,6 +76,8 @@ const Pagination = ({
   };
 
   const open = Boolean(anchorEl);
+
+  useCustomHotKeys({ handlePreviousPage, handleNextPage });
 
   return (
     <span className="Di">

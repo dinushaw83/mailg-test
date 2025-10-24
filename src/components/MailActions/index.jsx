@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import { Icon } from "../InboxView/ActionBar";
-import React, { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import Divider from "@mui/material/Divider";
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -19,8 +19,33 @@ import useLabels, {
   normalizeLabelName,
 } from "../../hooks/useLabels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import { useHotkeys } from "react-hotkeys-hook";
 
-const MailActions = ({ threads = [], showAdvancedMenu }) => {
+const useCustomHotKeys = ({ handleLabelAction, openMoveToMenu, handleReportSpam }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+  const lastGAt = useRef(0);
+
+  useHotkeys(shortcutsOn ? "g" : "", () => {
+    lastGAt.current = Date.now();
+  });
+
+  useHotkeys(shortcutsOn ? "v" : "", () => {
+    openMoveToMenu();
+  });
+
+  useHotkeys(shortcutsOn ? "l" : "", () => {
+    if (Date.now() - lastGAt.current > 1000) {
+      handleLabelAction();
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+1" : "", () => {
+    handleReportSpam();
+  });
+};
+
+const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   const {
     moveToSpam,
     moveToTrash,
@@ -37,7 +62,6 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     moveToMenuOpen: false,
     spamModalOpen: false,
     createOpen: false,
-
     isMovingToLabel: false,
   });
 
@@ -45,6 +69,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
 
+  const navigate = useNavigate();
   const location = useLocation();
 
   const anchorRef = useRef(null);
@@ -243,12 +268,28 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     }
   }, [selectedIds, archive, selection, setSnackbar]);
 
+  const showNoConversationsSelectedSnackbar = useCallback(() => {
+    setSnackbar({
+      open: true,
+      message: "No conversations selected.",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
   const toggleSpamModal = useCallback(() => {
     setState((prev) => ({
       ...prev,
       spamModalOpen: !prev.spamModalOpen,
     }));
   }, []);
+
+  const handleReportSpam = useCallback(() => {
+    if (!selectedIds.length) {
+      showNoConversationsSelectedSnackbar();
+      return;
+    }
+    toggleSpamModal();
+  }, [selectedIds, showNoConversationsSelectedSnackbar, toggleSpamModal]);
 
   const onMoveArchivedMailToInbox = () => {
     const ids = [...selection.ids];
@@ -552,6 +593,19 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     }));
   }, []);
 
+  const openMoveToMenu = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      moveToMenuOpen: true,
+    }));
+  }, []);
+
+  useCustomHotKeys({
+    handleLabelAction,
+    openMoveToMenu,
+    handleReportSpam,
+  });
+
   // Handle discard drafts
   const handleDiscardDrafts = () => {
     if (!selectedIds.length) return;
@@ -710,6 +764,8 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     },
     [setSnackbar]
   );
+
+  if (!visible) return null;
 
   return (
     <Box display="flex" alignItems="center">

@@ -3,8 +3,7 @@ import Pagination from "./Pagination";
 import styled from "@emotion/styled";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useCallback, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
@@ -14,6 +13,8 @@ import MoreActions from "../MailActions/MoreActions";
 import Popover from "@mui/material/Popover";
 import Box from "@mui/material/Box";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
+import { useHotkeys } from "react-hotkeys-hook";
+import { createPortal } from "react-dom";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -28,12 +29,14 @@ const MenuItemStyles = {
   padding: "6px 48px",
 };
 
-const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) => {
+const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, selection }) => {
   const [{ focused }, setState] = useState({
     focused: false,
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  const checkboxRef = useRef(null);
 
   const toggleFocus = () => {
     setState((prev) => ({
@@ -49,6 +52,18 @@ const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) 
       focused: true,
     }));
   };
+
+  const focusCheckbox = () => {
+    checkboxRef?.current?.focus();
+  };
+
+  useHotkeys(shortcutsOn ? "Comma" : "", () => {
+    setState((prev) => ({
+      ...prev,
+      focused: true,
+    }));
+    focusCheckbox();
+  });
 
   const handleMenuOpen = (e) => {
     e.stopPropagation();
@@ -100,6 +115,7 @@ const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) 
       <Box>
         <CheckboxContainer focused={focused}>
           <IconButton
+            ref={checkboxRef}
             onClick={toggleChecked}
             sx={{
               paddingTop: "8px",
@@ -336,7 +352,8 @@ const ToolBar = ({
   showPagination = true,
 }) => {
   const { folder = "inbox" } = useParams();
-  const { selection, refreshEmails, manualSyncCount, setManualSyncCount } = useGlobalContext();
+  const { selection, refreshEmails, keyboardShortcuts, manualSyncCount, setManualSyncCount } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
   // Show a Gmail-like top-center yellow loading banner for ~2.5s
@@ -362,6 +379,9 @@ const ToolBar = ({
   }, [allSelected, threadIds, selection]);
 
   const hasItemsSelected = allSelected || selection.hasSelection;
+
+  const showSpamActions = (folder === "spam" || folder === "trash") && hasItemsSelected;
+  const showMailActions = folder !== "spam" && folder !== "trash" && hasItemsSelected;
 
   return (
     <div className="G-atb">
@@ -394,18 +414,15 @@ const ToolBar = ({
           allSelected={allSelected}
           partialSelected={partialSelected}
           toggle={toggleAllSelected}
+          shortcutsOn={shortcutsOn}
           threads={threads}
           selection={selection}
         />
-        {hasItemsSelected ? (
-          <>
-            {folder === "spam" || folder === "trash" ? (
-              <SpamActions threads={threads} folder={folder} />
-            ) : (
-              <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} />
-            )}
-          </>
-        ) : (
+
+        <SpamActions threads={threads} folder={folder} visible={showSpamActions} />
+        <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} visible={showMailActions} />
+
+        {!hasItemsSelected && (
           <>
             <Icon
               name="refresh"

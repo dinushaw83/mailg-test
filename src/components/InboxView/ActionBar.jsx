@@ -15,6 +15,7 @@ import { Labels } from "../MailActions/Labels";
 import { getThreadRows } from "../../utils/emails";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export const Icon = ({
   id,
@@ -73,6 +74,10 @@ const reducer = (state, action) => {
       return { ...state, snoozeAnchorEl: null };
     case "toggleShowAdvancedMenu":
       return { ...state, showAdvancedMenu: !state.showAdvancedMenu };
+    case "showAdvancedMenu":
+      return { ...state, showAdvancedMenu: true };
+    case "hideAdvancedMenu":
+      return { ...state, showAdvancedMenu: false };
     case "setLabelAnchorEl":
       return { ...state, labelAnchorEl: action.labelAnchorEl };
     case "clearLabelAnchorEl":
@@ -101,6 +106,72 @@ const initialState = {
   searchQuery: "",
   selectedLabelKeys: new Set(),
   createOpen: false,
+};
+
+const useCustomHotKeys = ({
+  goToInbox,
+  toggleStar,
+  threadId,
+  handleArchive,
+  toggleSpamModal,
+  toggleMoveToMenu,
+  handleDelete,
+  handleMarkUnread,
+  handleSnoozeAction,
+  openAdvancedMenu,
+  handleMarkImportant,
+  handleMarkUnimportant,
+  handleLabelAction,
+}) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "u" : "", () => {
+    goToInbox();
+  });
+
+  useHotkeys(shortcutsOn ? "s" : "", () => {
+    toggleStar([threadId]);
+  });
+
+  useHotkeys(shortcutsOn ? "e" : "", () => {
+    handleArchive();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+1" : "", () => {
+    toggleSpamModal();
+  });
+
+  useHotkeys(shortcutsOn ? "v" : "", () => {
+    toggleMoveToMenu();
+  });
+
+  useHotkeys(shortcutsOn ? "l" : "", () => {
+    handleLabelAction();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+3" : "", () => {
+    handleDelete();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+u" : "", () => {
+    handleMarkUnread();
+  });
+
+  useHotkeys(shortcutsOn ? "b" : "", () => {
+    openAdvancedMenu();
+    setTimeout(() => {
+      handleSnoozeAction();
+    }, 100);
+  });
+
+  useHotkeys(shortcutsOn ? "Equal, Shift+Equal" : "", () => {
+    handleMarkImportant();
+  });
+
+  useHotkeys(shortcutsOn ? "Minus" : "", () => {
+    handleMarkUnimportant();
+  });
 };
 
 const MailActions = ({ thread }) => {
@@ -166,16 +237,38 @@ const MailActions = ({ thread }) => {
     snooze,
     addLabels,
     removeLabels,
+    toggleStar,
+    setImportant,
   } = useMailActions();
 
   const handleArchive = useCallback(() => {
-    archive([threadId]);
-    setSnackbar({
-      open: true,
-      message: "Conversation archived.",
-      autoHideDuration: 3000,
-      action: null,
-    });
+    try {
+      archive([threadId]);
+      setSnackbar({
+        open: true,
+        message: "Conversation archived.",
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              moveToInbox([threadId]);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      console.error("Archive failed:", e);
+    }
   }, [threadId, archive]);
 
   const showUndoSnackbar = useCallback(
@@ -353,6 +446,10 @@ const MailActions = ({ thread }) => {
     dispatch({ type: "toggleShowAdvancedMenu" });
   }, []);
 
+  const openAdvancedMenu = useCallback(() => {
+    dispatch({ type: "showAdvancedMenu" });
+  }, []);
+
   const setSearchQuery = useCallback((searchQuery) => {
     dispatch({ type: "setSearchQuery", searchQuery });
   }, []);
@@ -429,6 +526,40 @@ const MailActions = ({ thread }) => {
     }
   };
 
+  const handleMarkImportant = useCallback(() => {
+    setImportant([threadId], true);
+    setSnackbar({
+      open: true,
+      message: "Conversation marked as important.",
+      autoHideDuration: 3000,
+    });
+  }, [threadId, setImportant]);
+
+  const handleMarkUnimportant = useCallback(() => {
+    setImportant([threadId], false);
+    setSnackbar({
+      open: true,
+      message: "Conversation marked as not important.",
+      autoHideDuration: 3000,
+    });
+  }, [threadId, setImportant]);
+
+  useCustomHotKeys({
+    goToInbox: () => navigate(getBasePath()),
+    toggleStar,
+    threadId,
+    handleArchive,
+    toggleSpamModal,
+    toggleMoveToMenu,
+    handleDelete,
+    handleMarkUnread,
+    handleSnoozeAction,
+    openAdvancedMenu,
+    handleMarkImportant,
+    handleMarkUnimportant,
+    handleLabelAction,
+  });
+
   return (
     <div
       className="iH bzn"
@@ -463,7 +594,13 @@ const MailActions = ({ thread }) => {
           <Icon name="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />
           {showAdvancedMenu && (
             <>
-              <Icon name="schedule" label="Snooze" onClick={handleSnoozeAction} _ref={snoozeAnchorElRef} />
+              <Icon
+                name="schedule"
+                label="Snooze"
+                onClick={handleSnoozeAction}
+                _ref={snoozeAnchorElRef}
+                id="snooze-toolbar-icon"
+              />
               <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
             </>
           )}
@@ -562,11 +699,36 @@ const EmailPosition = ({ currentItem, totalItems }) => {
   );
 };
 
+const useNavigationHotKeys = ({ goBack, goForward, handleArchive }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "j" : "", () => {
+    goBack();
+  });
+
+  useHotkeys(shortcutsOn ? "k" : "", () => {
+    goForward();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+BracketRight" : "", () => {
+    handleArchive();
+    goForward();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+BracketLeft" : "", () => {
+    handleArchive();
+    goBack();
+  });
+};
+
 const NavigationActions = () => {
   const { threadId, folder, label: labelParam } = useParams();
   const { emails } = useContext(GlobalContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const { moveToInbox, archive } = useMailActions();
+  const { setSnackbar } = useGlobalContext();
 
   // Get the base path by removing the threadId from the current path
   const getBasePath = () => {
@@ -616,6 +778,49 @@ const NavigationActions = () => {
     return filteredThreadIds.length;
   }, [filteredThreadIds]);
 
+  const goBack = useCallback(() => {
+    if (!hasPreviousThread) return;
+    navigate(`${getBasePath()}/${previousThread}`);
+  }, [navigate, getBasePath, previousThread]);
+
+  const goForward = useCallback(() => {
+    if (!hasNextThread) return;
+    navigate(`${getBasePath()}/${nextThread}`);
+  }, [navigate, getBasePath, nextThread]);
+
+  const handleArchive = useCallback(() => {
+    try {
+      archive([threadId]);
+      const message = "Conversation archived.";
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              moveToInbox([threadId]);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    } catch (e) {
+      console.error("Archive failed:", e);
+    }
+  }, [archive, setSnackbar]);
+
+  useNavigationHotKeys({ goBack, goForward, handleArchive });
+
   return (
     <div
       style={{
@@ -625,18 +830,8 @@ const NavigationActions = () => {
     >
       <EmailPosition currentItem={currentItem} totalItems={totalItems} />
       <div style={{ display: "flex", marginLeft: 10 }}>
-        <Icon
-          name="chevron_left"
-          label="Newer"
-          disabled={!hasPreviousThread}
-          onClick={() => navigate(`${getBasePath()}/${previousThread}`)}
-        />
-        <Icon
-          name="chevron_right"
-          label="Older"
-          disabled={!hasNextThread}
-          onClick={() => navigate(`${getBasePath()}/${nextThread}`)}
-        />
+        <Icon name="chevron_left" label="Newer" disabled={!hasPreviousThread} onClick={goBack} />
+        <Icon name="chevron_right" label="Older" disabled={!hasNextThread} onClick={goForward} />
       </div>
     </div>
   );

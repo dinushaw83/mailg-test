@@ -10,7 +10,7 @@ import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { Box } from "@mui/material";
 
-export default function SpamActions({ threads = [], folder }) {
+export default function SpamActions({ threads = [], folder, visible }) {
   const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever, moveToLabel, moveToLabelFrom, moveToInbox } =
     useMailActions();
   const { selection, setSnackbar, emails } = useGlobalContext();
@@ -262,6 +262,8 @@ export default function SpamActions({ threads = [], folder }) {
 
   const showSpam = folder !== "spam";
   const showTrash = folder !== "trash";
+
+  if (!visible) return null;
 
   return (
     <div className="G-tF" style={{ display: "flex", alignItems: "center" }}>

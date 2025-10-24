@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } from "@mui/material";
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
@@ -14,6 +14,7 @@ import {
   removeFromSearchHistory,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useHotkeys } from "react-hotkeys-hook";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
 import { encodeForPath, buildSearchBarFromUrl, buildSearchUrlWithFilters } from "../../utils/helperFunctions";
 import AutocompleteInput from "./AutocompleteInput/AutocompleteInput";
@@ -22,8 +23,23 @@ import { useActiveFiltersSync } from "./hooks/useActiveFiltersSync";
 // Filter options for the search bar
 const filterOptions = ["Has attachment", "Last 7 days", "From me"];
 
+const useCustomHotKeys = ({ focusInput, goToLabel }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "Slash" : "", (event) => {
+    event.preventDefault();
+    focusInput();
+  });
+
+  useHotkeys(shortcutsOn ? "g>l" : "", (event) => {
+    event.preventDefault();
+    goToLabel();
+  });
+};
+
 const SearchBar = () => {
-  const { emails, loggedInUser } = useGlobalContext();
+  const { emails, keyboardShortcuts, loggedInUser } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -189,6 +205,21 @@ const SearchBar = () => {
     return parts.map((part, index) => (testRegex.test(part) ? <strong key={index}>{part}</strong> : part));
   };
 
+  const focusInput = () => {
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+      setIsFocused(true);
+    }, 0);
+  };
+
+  const goToLabel = () => {
+    // focus the label input
+    focusInput();
+
+    // set the search value to the label
+    setSearchValue("label:");
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Tab" && autoCompleteSuggestion) {
       // Auto-complete with Tab key
@@ -296,6 +327,8 @@ const SearchBar = () => {
     setShowAdvancedSearch(true);
     setIsFocused(false);
   };
+
+  useCustomHotKeys({ focusInput, goToLabel });
 
   const handleRemoveSuggestion = (item, e) => {
     e.stopPropagation();

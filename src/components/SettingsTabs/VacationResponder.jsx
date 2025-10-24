@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import { 
-  Box, 
-  Typography, 
-  FormControl, 
-  FormLabel, 
-  RadioGroup, 
-  FormControlLabel, 
-  Radio, 
-  TextField, 
-  Checkbox, 
-  Link
+import {
+  Box,
+  Typography,
+  FormControl,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  TextField,
+  Checkbox,
+  Link,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -20,7 +19,7 @@ import { SettingsCell, SettingsRow } from "./General/styles";
 
 const VacationResponder = ({ localSettings, setLocalSettings }) => {
   const { vacationResponder, setVacationResponder } = useGlobalContext();
-  
+
   // Use localSettings if provided, otherwise fall back to global context
   const currentSettings = localSettings || vacationResponder;
   const updateSettings = setLocalSettings || setVacationResponder;
@@ -30,11 +29,11 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
   const [lastDayEnabled, setLastDayEnabled] = useState(!!currentSettings.lastDay);
 
   const handleVacationChange = (field, value) => {
-    updateSettings(prev => ({
+    updateSettings((prev) => ({
       ...prev,
       [field]: value,
       // Auto-switch to "on" when any field is edited (except the enabled field itself)
-      ...(field !== 'enabled' && { enabled: true })
+      ...(field !== "enabled" && { enabled: true }),
     }));
   };
 
@@ -42,7 +41,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
   const stringToDate = (dateString) => {
     if (!dateString) return null;
     // Create date in local timezone to avoid timezone issues
-    const [year, month, day] = dateString.split('-').map(Number);
+    const [year, month, day] = dateString.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
 
@@ -51,8 +50,8 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
     if (!date) return "";
     // Format date in local timezone to avoid timezone issues
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -61,17 +60,24 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
       <SettingsRow>
         <SettingsCell side="left" width="20%">
           <Box>
-            <Typography variant="body1" sx={{ color: "#202124", fontSize: "14px", fontWeight: "bold", marginBottom: 1 }}>
+            <Typography
+              variant="body1"
+              sx={{ color: "#202124", fontSize: "14px", fontWeight: "bold", marginBottom: 1 }}
+            >
               Vacation responder:
             </Typography>
 
-            <Typography variant="body2" sx={{
-              marginBottom: 1,
-              fontSize: "13px",
-              color: "#5f6368",
-              lineHeight: 1.4
-            }}>
-              (sends an automated reply to incoming messages. If a contact sends you several messages, this automated reply will be sent at most once every 4 days)
+            <Typography
+              variant="body2"
+              sx={{
+                marginBottom: 1,
+                fontSize: "13px",
+                color: "#5f6368",
+                lineHeight: 1.4,
+              }}
+            >
+              (sends an automated reply to incoming messages. If a contact sends you several messages, this automated
+              reply will be sent at most once every 4 days)
             </Typography>
 
             <Link
@@ -80,7 +86,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                 color: "#1a73e8",
                 textDecoration: "none",
                 fontSize: "13px",
-                "&:hover": { textDecoration: "underline" }
+                "&:hover": { textDecoration: "underline" },
               }}
             >
               Learn more
@@ -103,7 +109,7 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                       Vacation responder off
                     </Typography>
                   }
-                  sx={{ margin: 0, }}
+                  sx={{ margin: 0 }}
                 />
                 <FormControlLabel
                   value="on"
@@ -122,12 +128,15 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
               {/* Date Range */}
               <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Typography variant="body2" sx={{
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                    color: "#202124",
-                    marginRight: "6px"
-                  }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      color: "#202124",
+                      marginRight: "6px",
+                    }}
+                  >
                     First day:
                   </Typography>
                   <DatePicker
@@ -153,43 +162,43 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                             paddingInline: "8px",
                           },
                           "& .MuiInputAdornment-root": {
-                            display: "none"
-                          }
-                        }
+                            display: "none",
+                          },
+                        },
                       },
                       actionBar: {
-                        actions: ['today'],
+                        actions: ["today"],
                         sx: {
-                          justifyContent: 'flex-start',
-                          '& .MuiButton-root': {
-                            color: '#424242',
+                          justifyContent: "flex-start",
+                          "& .MuiButton-root": {
+                            color: "#424242",
                             fontWeight: 500,
-                            paddingLeft: "20px"
-                          }
-                        }
+                            paddingLeft: "20px",
+                          },
+                        },
                       },
                       layout: {
                         sx: {
-                          '& .MuiDateCalendar-root': {
-                            minHeight: 'fit-content',
-                            height: 'fit-content',
+                          "& .MuiDateCalendar-root": {
+                            minHeight: "fit-content",
+                            height: "fit-content",
                           },
-                          '& .MuiPickersSlideTransition-root': {
-                            minHeight: '230px',
+                          "& .MuiPickersSlideTransition-root": {
+                            minHeight: "230px",
                           },
                           "& .MuiPickersCalendarHeader-switchViewButton": {
-                            display: 'none',
+                            display: "none",
                           },
                           "& .MuiPickersCalendarHeader-labelContainer": {
-                            pointerEvents: 'none',
-                            cursor: 'default',
+                            pointerEvents: "none",
+                            cursor: "default",
                           },
                           "& .MuiPickersCalendarHeader-label": {
-                            pointerEvents: 'none',
-                            cursor: 'default',
+                            pointerEvents: "none",
+                            cursor: "default",
                           },
-                        }
-                      }
+                        },
+                      },
                     }}
                   />
                 </Box>
@@ -211,12 +220,15 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                     size="small"
                     sx={{ marginRight: 0 }}
                   />
-                  <Typography variant="body2" sx={{
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                    color: "#202124",
-                    marginRight: "4px"
-                  }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      color: "#202124",
+                      marginRight: "4px",
+                    }}
+                  >
                     Last day:
                   </Typography>
                   <DatePicker
@@ -242,46 +254,46 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                           "& .MuiPickersInputBase-root": {
                             fontSize: "13px",
                             paddingInline: "8px",
-                            height: "23px"
+                            height: "23px",
                           },
                           "& .MuiInputAdornment-root": {
-                            display: "none"
-                          }
-                        }
+                            display: "none",
+                          },
+                        },
                       },
                       actionBar: {
-                        actions: ['today'],
+                        actions: ["today"],
                         sx: {
-                          justifyContent: 'flex-start',
-                          '& .MuiButton-root': {
-                            color: '#424242',
+                          justifyContent: "flex-start",
+                          "& .MuiButton-root": {
+                            color: "#424242",
                             fontWeight: 500,
-                            paddingLeft: "20px"
-                          }
-                        }
+                            paddingLeft: "20px",
+                          },
+                        },
                       },
                       layout: {
                         sx: {
-                          '& .MuiDateCalendar-root': {
-                            minHeight: 'fit-content',
-                            height: 'fit-content',
+                          "& .MuiDateCalendar-root": {
+                            minHeight: "fit-content",
+                            height: "fit-content",
                           },
-                          '& .MuiPickersSlideTransition-root': {
-                            minHeight: '200px',
+                          "& .MuiPickersSlideTransition-root": {
+                            minHeight: "200px",
                           },
                           "& .MuiPickersCalendarHeader-switchViewButton": {
-                            display: 'none',
+                            display: "none",
                           },
                           "& .MuiPickersCalendarHeader-labelContainer": {
-                            pointerEvents: 'none',
-                            cursor: 'default',
+                            pointerEvents: "none",
+                            cursor: "default",
                           },
                           "& .MuiPickersCalendarHeader-label": {
-                            pointerEvents: 'none',
-                            cursor: 'default',
+                            pointerEvents: "none",
+                            cursor: "default",
                           },
-                        }
-                      }
+                        },
+                      },
                     }}
                   />
                 </Box>
@@ -289,12 +301,15 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
 
               {/* Subject */}
               <Box sx={{ display: "flex", alignItems: "center", marginBottom: 1 }}>
-                <Typography variant="body2" sx={{
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  color: "#202124",
-                  marginRight: "20px"
-                }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#202124",
+                    marginRight: "20px",
+                  }}
+                >
                   Subject:
                 </Typography>
                 <TextField
@@ -311,20 +326,23 @@ const VacationResponder = ({ localSettings, setLocalSettings }) => {
                       height: "23px",
                     },
                     "& .MuiInputBase-input": {
-                      padding: "0px 8px"
-                    }
+                      padding: "0px 8px",
+                    },
                   }}
                 />
               </Box>
 
               {/* Message */}
               <Box sx={{ marginBottom: 2, display: "flex", flexDirection: "row", gap: "11px" }}>
-                <Typography variant="body2" sx={{
-                  marginBottom: 1,
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  color: "#202124"
-                }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    marginBottom: 1,
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    color: "#202124",
+                  }}
+                >
                   Message:
                 </Typography>
 

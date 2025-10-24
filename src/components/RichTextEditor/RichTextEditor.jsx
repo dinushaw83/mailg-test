@@ -82,7 +82,7 @@ export default function Editor({
   const [attachments, setAttachments] = useState([]);
   const [embeddedImages, setEmbeddedImages] = useState([]);
   const embeddedImagesRef = useRef([]);
-  const { db, setSnackbar, signaturesState } = useGlobalContext();
+  const { db, setSnackbar, signaturesState, keyboardShortcuts } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
@@ -90,6 +90,7 @@ export default function Editor({
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [largeFileModal, setLargeFileModal] = useState({ open: false, file: null });
 
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [signaturePopoverOpen, setSignaturePopoverOpen] = useState(false);
   const [signatureAnchorEl, setSignatureAnchorEl] = useState(null);
   const [selectedSignature, setSelectedSignature] = useState(null);
@@ -369,9 +370,7 @@ export default function Editor({
       return;
     }
 
-    const activeId = messageId
-      ? signaturesState?.useForRepliesAndForwards
-      : signaturesState?.useForNewEmails;
+    const activeId = messageId ? signaturesState?.useForRepliesAndForwards : signaturesState?.useForNewEmails;
 
     if (activeId === null || activeId === "" || activeId === undefined) {
       setSelectedSignature("No signature");
@@ -445,7 +444,6 @@ export default function Editor({
   };
 
   const handleSelectSchedule = (scheduleOption) => {
-    console.log("Schedule selected:", scheduleOption);
     if (onSchedule) {
       onSchedule({
         scheduledDate: scheduleOption.date.toLocaleDateString(),
@@ -469,7 +467,6 @@ export default function Editor({
   };
 
   const handleDateTimeSchedule = (scheduleOption) => {
-    console.log("Date/Time scheduled:", scheduleOption);
     if (onSchedule) {
       onSchedule({
         scheduledDate: scheduleOption.date.toLocaleDateString(),
@@ -707,6 +704,106 @@ export default function Editor({
     handleNewImageFiles(imageFiles, from);
   };
 
+  // Add keyboard event handler directly to the editor
+  const handleKeyDown = useCallback(
+    (view, event) => {
+      if (!shortcutsOn) return false;
+
+      const isMac = navigator.userAgent.includes("Mac");
+      const isCmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+
+      if (isCmdOrCtrl && event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        onSend({ attachments });
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "d") {
+        event.preventDefault();
+        event.stopPropagation();
+        onDelete();
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "c") {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Trigger CC field toggle by dispatching a custom event
+        const ccToggleEvent = new CustomEvent("toggleCcField");
+        window.dispatchEvent(ccToggleEvent);
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "b") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const bccToggleEvent = new CustomEvent("toggleBccField");
+        window.dispatchEvent(bccToggleEvent);
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.key === "\\") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Remove formatting from selected text
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().unsetAllMarks().run();
+        }
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "9") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().toggleBlockquote().run();
+        }
+        return true;
+      }
+
+      if (event.altKey && event.shiftKey && event.code === "Digit5") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Toggle strike through
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().toggleStrike().run();
+        }
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.key === "[") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().liftListItem("listItem").run();
+        }
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.key === "]") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().sinkListItem("listItem").run();
+        }
+        return true;
+      }
+
+      return false;
+    },
+    [shortcutsOn, onSend, onDelete, rteRef]
+  );
   const openSignaturePopover = (event) => {
     setSignatureAnchorEl(event.currentTarget);
     setSignaturePopoverOpen(true);
@@ -789,8 +886,9 @@ export default function Editor({
         onUpdate={handleEditorChange}
         editable={isEditable}
         editorProps={{
-          handleDrop: handleDrop,
-          handlePaste: handlePaste,
+          handleDrop,
+          handlePaste,
+          handleKeyDown, // Add this
         }}
         onClick={handleEditorClick}
         RichTextFieldProps={{

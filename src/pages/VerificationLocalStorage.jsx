@@ -62,6 +62,7 @@ const LOCAL_STORAGE_KEYS = [
   "mailGAccountDataPrivacy",
   "thirdPartyApps",
   "signInSettings",
+  "keyboardShortcuts",
 
   // Misc
   "manualSyncCount",

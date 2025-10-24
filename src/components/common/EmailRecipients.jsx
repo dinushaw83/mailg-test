@@ -1,61 +1,87 @@
-import React, { useState, useContext, useEffect } from 'react';
-import EmailInput from './EmailInput';
-import './EmailRecipients.css';
-import { GlobalContext } from '../../contexts/GlobalContext';
+import React, { useState, useContext, useEffect, useRef } from "react";
+import EmailInput from "./EmailInput";
+import "./EmailRecipients.css";
+import { GlobalContext } from "../../contexts/GlobalContext";
 
 const EmailRecipients = ({ recipients, setRecipients }) => {
   const { recipients: globalRecipients } = useContext(GlobalContext);
   const [isAnyInputFocused, setIsAnyInputFocused] = useState(false);
-  
+  const eventListenersAdded = useRef(false);
+
   const [visibleInputs, setVisibleInputs] = useState({
-    to: true,    // 'To' is always visible
+    to: true, // 'To' is always visible
     cc: recipients.cc?.length > 0,
-    bcc: recipients.bcc?.length > 0
+    bcc: recipients.bcc?.length > 0,
   });
 
   // Update visible inputs when recipients change
   useEffect(() => {
-    setVisibleInputs(prev => ({
+    setVisibleInputs((prev) => ({
       ...prev,
       cc: recipients.cc?.length > 0,
-      bcc: recipients.bcc?.length > 0
+      bcc: recipients.bcc?.length > 0,
     }));
   }, [recipients]);
 
+  // Handle keyboard shortcuts for CC and BCC
+  useEffect(() => {
+    if (eventListenersAdded.current) return;
+
+    const handleToggleCcField = (event) => {
+      setIsAnyInputFocused(true);
+      setVisibleInputs((prev) => ({ ...prev, cc: true }));
+    };
+
+    const handleToggleBccField = (event) => {
+      setIsAnyInputFocused(true);
+      setVisibleInputs((prev) => ({ ...prev, bcc: true }));
+    };
+
+    window.addEventListener("toggleCcField", handleToggleCcField);
+    window.addEventListener("toggleBccField", handleToggleBccField);
+    eventListenersAdded.current = true;
+
+    return () => {
+      window.removeEventListener("toggleCcField", handleToggleCcField);
+      window.removeEventListener("toggleBccField", handleToggleBccField);
+      eventListenersAdded.current = false;
+    };
+  }, []);
+
   // Handle adding email to a specific list
   const handleEmailAdded = (type) => (email) => {
-    setRecipients(prev => ({
+    setRecipients((prev) => ({
       ...prev,
-      [type]: [...prev[type], email]
+      [type]: [...prev[type], email],
     }));
   };
 
   // Handle removing email from a specific list
   const handleEmailRemoved = (type) => (email) => {
-    setRecipients(prev => ({
+    setRecipients((prev) => ({
       ...prev,
-      [type]: prev[type].filter(e => e !== email)
+      [type]: prev[type].filter((e) => e !== email),
     }));
   };
 
   // Handle showing a new input type
   const showInput = (type) => {
-    setVisibleInputs(prev => ({
+    setVisibleInputs((prev) => ({
       ...prev,
-      [type]: true
+      [type]: true,
     }));
   };
 
   // Handle focus changes from any input
   const handleInputFocus = (isFocused) => {
     setIsAnyInputFocused(isFocused);
-    
+
     // When losing focus, hide empty CC/BCC inputs
     if (!isFocused) {
-      setVisibleInputs(prev => ({
+      setVisibleInputs((prev) => ({
         ...prev,
         cc: prev.cc && recipients.cc.length > 0,
-        bcc: prev.bcc && recipients.bcc.length > 0
+        bcc: prev.bcc && recipients.bcc.length > 0,
       }));
     }
   };
@@ -63,9 +89,9 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
   // Get all recipients for collapsed view
   const getAllRecipients = () => {
     const allRecipients = [
-      ...recipients.to.map(email => ({ email, type: 'to' })),
-      ...recipients.cc.map(email => ({ email, type: 'cc' })),
-      ...recipients.bcc.map(email => ({ email, type: 'bcc' }))
+      ...recipients.to.map((email) => ({ email, type: "to" })),
+      ...recipients.cc.map((email) => ({ email, type: "cc" })),
+      ...recipients.bcc.map((email) => ({ email, type: "bcc" })),
     ];
     return allRecipients;
   };
@@ -81,8 +107,8 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
           <EmailInput
             label="To"
             emails={recipients.to}
-            onEmailAdded={handleEmailAdded('to')}
-            onEmailRemoved={handleEmailRemoved('to')}
+            onEmailAdded={handleEmailAdded("to")}
+            onEmailRemoved={handleEmailRemoved("to")}
             isParentFocused={isAnyInputFocused}
             onFocusChange={handleInputFocus}
           />
@@ -92,8 +118,8 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
             <EmailInput
               label="Cc"
               emails={recipients.cc}
-              onEmailAdded={handleEmailAdded('cc')}
-              onEmailRemoved={handleEmailRemoved('cc')}
+              onEmailAdded={handleEmailAdded("cc")}
+              onEmailRemoved={handleEmailRemoved("cc")}
               isParentFocused={isAnyInputFocused}
               onFocusChange={handleInputFocus}
             />
@@ -104,8 +130,8 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
             <EmailInput
               label="Bcc"
               emails={recipients.bcc}
-              onEmailAdded={handleEmailAdded('bcc')}
-              onEmailRemoved={handleEmailRemoved('bcc')}
+              onEmailAdded={handleEmailAdded("bcc")}
+              onEmailRemoved={handleEmailRemoved("bcc")}
               isParentFocused={isAnyInputFocused}
               onFocusChange={handleInputFocus}
             />
@@ -115,21 +141,18 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
           {(!visibleInputs.cc || !visibleInputs.bcc) && isAnyInputFocused && (
             <div className="email-recipients-options">
               {!visibleInputs.cc && (
-                <button 
+                <button
                   className="email-option"
                   onClick={() => {
                     setIsAnyInputFocused(true);
-                    showInput('cc');
+                    showInput("cc");
                   }}
                 >
                   Cc
                 </button>
               )}
               {!visibleInputs.bcc && (
-                <button 
-                  className="email-option"
-                  onClick={() => showInput('bcc')}
-                >
+                <button className="email-option" onClick={() => showInput("bcc")}>
                   Bcc
                 </button>
               )}
@@ -137,28 +160,21 @@ const EmailRecipients = ({ recipients, setRecipients }) => {
           )}
         </>
       ) : (
-        <div 
-          className="collapsed-container"
-          onClick={() => setIsAnyInputFocused(true)}
-        >
+        <div className="collapsed-container" onClick={() => setIsAnyInputFocused(true)}>
           {hasRecipients ? (
             <div className="collapsed-view">
               <span className="collapsed-emails">
                 {totalRecipients.slice(0, 2).map((r, i) => {
-                  const recipientDetails = globalRecipients.find(gr => gr.email === r.email);
+                  const recipientDetails = globalRecipients.find((gr) => gr.email === r.email);
                   return (
                     <span key={i}>
                       {recipientDetails?.name || r.email}
-                      {i === 0 && totalRecipients.length > 1 ? ', ' : ''}
+                      {i === 0 && totalRecipients.length > 1 ? ", " : ""}
                     </span>
                   );
                 })}
               </span>
-              {totalRecipients.length > 2 && (
-                <span className="more-count">
-                  {`${totalRecipients.length - 2} more`}
-                </span>
-              )}
+              {totalRecipients.length > 2 && <span className="more-count">{`${totalRecipients.length - 2} more`}</span>}
             </div>
           ) : (
             <input

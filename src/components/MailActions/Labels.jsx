@@ -24,7 +24,7 @@ export const Labels = ({
 }) => {
   const { labels, setSnackbar, selection } = useGlobalContext();
   const { addLabels, removeLabels } = useMailActions();
-  const { getSelectionLabels } = useLabels()
+  const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
   const inputRef = useRef(null);
 
@@ -40,18 +40,16 @@ export const Labels = ({
   const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds);
 
   const availableLabels = useMemo(() => {
-    return (
-      Object.entries(labels || {})
-        .filter(([key, meta]) => !meta.system)
-        .map(([key, meta]) => ({
-          key,
-          name: meta.name || key,
-          color: meta.color,
-          isCurrentlyApplied: currentLabels.has(key),
-        }))
-        .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    );
+    return Object.entries(labels || {})
+      .filter(([key, meta]) => !meta.system)
+      .map(([key, meta]) => ({
+        key,
+        name: meta.name || key,
+        color: meta.color,
+        isCurrentlyApplied: currentLabels.has(key),
+      }))
+      .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [labels, searchQuery, currentLabels]);
 
   const handleApplyLabels = useCallback(() => {
@@ -215,9 +213,21 @@ export const Labels = ({
                   <Checkbox
                     checked={checked}
                     indeterminate={indeterminate}
-                    icon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box_outline_blank</span>}
-                    checkedIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>check_box</span>}
-                    indeterminateIcon={<span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>indeterminate_check_box</span>}
+                    icon={
+                      <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>
+                        check_box_outline_blank
+                      </span>
+                    }
+                    checkedIcon={
+                      <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>
+                        check_box
+                      </span>
+                    }
+                    indeterminateIcon={
+                      <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#5f6368" }}>
+                        indeterminate_check_box
+                      </span>
+                    }
                     sx={{ padding: "4px", pointerEvents: "none" }}
                   />
                   <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>

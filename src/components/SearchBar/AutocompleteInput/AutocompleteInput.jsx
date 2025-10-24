@@ -41,12 +41,12 @@ const AutocompleteInput = forwardRef(({ value, onChange, suggestion, onAccept, o
       onAccept(suggestion.value);
       // Keep focus in input
       requestAnimationFrame(() => {
-        inputRef.current?.focus();
+        ref.current?.focus();
       });
       handled = true;
     } else if (e.key === "ArrowRight" && remainder) {
       // Accept suggestion with arrow right if cursor is at the end
-      const cursorPos = inputRef.current?.selectionStart ?? 0;
+      const cursorPos = ref?.current?.selectionStart ?? 0;
       if (cursorPos === value.length) {
         e.preventDefault();
         onAccept(suggestion.value);
@@ -73,7 +73,7 @@ const AutocompleteInput = forwardRef(({ value, onChange, suggestion, onAccept, o
 
       <input
         name="search"
-        ref={inputRef}
+        ref={ref}
         className={styles.realSearchInput}
         placeholder="Search mail"
         value={value}

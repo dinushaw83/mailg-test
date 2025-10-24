@@ -205,7 +205,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], onReply }
     }
 
     // Check if sender email is present in contacts emails array
-    const found = contacts.find((recipient) => recipient.emails.some((email) => email.value === senderEmail));
+    const found = contacts.find((recipient) => (recipient.emails || []).some((email) => email.value === senderEmail));
     if (found) {
       return found;
     }

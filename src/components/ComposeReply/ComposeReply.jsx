@@ -4,6 +4,25 @@ import replyImage from "../../icons/reply.png";
 import replyAllImage from "../../icons/replyall.png";
 import forwardImage from "../../icons/forward.png";
 import ReplyContainer from "./ReplyContainer";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useHotkeys } from "react-hotkeys-hook";
+
+const useCustomHotKeys = ({ handleReply, handleReplyAll, handleForward }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "r" : "", () => {
+    handleReply();
+  });
+
+  useHotkeys(shortcutsOn ? "a" : "", () => {
+    handleReplyAll();
+  });
+
+  useHotkeys(shortcutsOn ? "f" : "", () => {
+    handleForward();
+  });
+};
 
 const ComposeReply = React.forwardRef(({ email, draft }, ref) => {
   const replyContainerRef = useRef();
@@ -47,6 +66,8 @@ const ComposeReply = React.forwardRef(({ email, draft }, ref) => {
     setShowReplyContainer(true);
     setCurrentDraftId(null);
   };
+
+  useCustomHotKeys({ handleReply, handleReplyAll, handleForward });
 
   return (
     <div data-testid="email-response-view" style={{ marginTop: "4rem", marginBottom: "2rem" }}>

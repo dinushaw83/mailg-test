@@ -67,6 +67,7 @@ const LOCAL_STORAGE_KEYS = [
    "mailGAccountDataPrivacy",
    "thirdPartyApps",
    "signInSettings",
+   "keyboardShortcuts",
 
   // Misc
   "manualSyncCount",
@@ -140,6 +141,8 @@ export const GlobalContextProvider = ({ children }) => {
     contact: { screen: "CONTACTS" },
     activeTab: null,
   });
+  const [keyboardShortcuts, setKeyboardShortcuts] = usePersistedState("keyboardShortcuts", "shortcuts-off");
+  const [showShortCutsModal, setShowShortCutsModal] = useState(false);
 
   // Send mail as settings (display name and optional reply-to)
   const [sendAsSettings, setSendAsSettings] = usePersistedState("sendAsSettings", {
@@ -167,8 +170,8 @@ export const GlobalContextProvider = ({ children }) => {
   // Notification settings state
   const [notificationSettings, setNotificationSettings] = usePersistedState("notificationSettings", {
     type: "off", // "off", "new", "important"
-    sound: "1",  // Sound ID
-    enabled: false
+    sound: "1", // Sound ID
+    enabled: false,
   });
 
   // Privacy settings state
@@ -637,6 +640,10 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    keyboardShortcuts,
+    setKeyboardShortcuts,
+    showShortCutsModal,
+    setShowShortCutsModal,
     signaturesState,
     setSignaturesState,
     sendAsSettings,

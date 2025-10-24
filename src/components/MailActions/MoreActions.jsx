@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import Icon from "../ui/Icon";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
@@ -10,6 +10,16 @@ import { SnoozePopover } from "./Snooze";
 import { ActionMenuItem } from "./ActionMenuItem";
 import { Labels } from "./Labels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import { useHotkeys } from "react-hotkeys-hook";
+
+const useCustomHotKeys = ({ handlePeriodPress }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "Period" : "", () => {
+    handlePeriodPress();
+  });
+};
 
 const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
   const { markRead, setStar, setImportant, snooze, setMuted } = useMailActions();
@@ -25,16 +35,28 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     () => threads.filter((thread) => selectedIds.includes(thread.threadId.split(":")[1])),
     [threads, selectedIds]
   );
+  const moreVertRef = useRef(null);
 
   const [createOpen, setCreateOpen] = useState(false);
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleClose = () => {
+    setAnchorEl(null);
     setCurrentPopover("main");
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handlePeriodPress = useCallback(() => {
+    if (moreVertRef.current && !anchorEl) {
+      setAnchorEl(moreVertRef.current);
+      setCurrentPopover("main");
+    } else if (moreVertRef.current && anchorEl) {
+      handleClose();
+    }
+  }, [currentPopover, handleClose, moreVertRef]);
+
+  useCustomHotKeys({ handlePeriodPress });
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
     setCurrentPopover("main");
   };
 
@@ -170,17 +192,13 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   }, [selectedThreads]);
 
   const handleReadAction = useCallback(() => {
-    if (hasUnreadEmails) {
-      markRead(selectedIds, true); // Mark as read when there are unread emails
-    } else {
-      markRead(selectedIds, false); // Mark as unread when all are read
-    }
+    markRead(selectedIds, hasUnreadEmails); // Mark as read when there are unread emails
     handleClose();
   }, [hasUnreadEmails, selectedIds, markRead]);
 
   return (
     <Box>
-      <Icon name="more_vert" onClick={handleClick} label="" disabled={false} />
+      <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} _ref={moreVertRef} />
 
       {currentPopover === "main" && (
         <Popover

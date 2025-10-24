@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import Icon from "../ui/Icon";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
@@ -7,6 +7,17 @@ import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
 import { useNavigate } from "react-router-dom";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useHotkeys } from "react-hotkeys-hook";
+
+const useCustomHotKeys = ({ handlePeriodPress }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "Period" : "", () => {
+    handlePeriodPress();
+  });
+};
 
 const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
   const { markRead, setStar, setImportant, snooze, setMuted } = useMailActions();
@@ -16,10 +27,14 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
 
   const threadId = thread.threadId.split(":")[1];
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const moreVertRef = useRef(null);
+
+  const handleClick = () => {
+    setAnchorEl(moreVertRef.current);
     setCurrentPopover("main");
   };
+
+  useCustomHotKeys({ handlePeriodPress: handleClick });
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -70,7 +85,7 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
 
   return (
     <Box>
-      <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} />
+      <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} _ref={moreVertRef} />
 
       {currentPopover === "main" && (
         <Popover

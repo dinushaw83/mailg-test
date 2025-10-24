@@ -90,15 +90,10 @@ const withUndo = (ids, setEmails, operation) => {
 
   return () => {
     setEmails((prev) =>
-      prev.map((m) =>
-        match(m) && originalStates.has(m.id)
-          ? { ...m, labels: originalStates.get(m.id).labels }
-          : m
-      )
+      prev.map((m) => (match(m) && originalStates.has(m.id) ? { ...m, labels: originalStates.get(m.id).labels } : m))
     );
   };
 };
-
 
 /* ────────────────────────────────────────────────────────────────────────────
  * Hook
@@ -341,11 +336,24 @@ export default function useMailActions() {
   );
 
   const toggleMuted = useCallback(
-    (threadId) => {
-      setEmails((prev) =>
-        prev.map((m) => {
+    (threadIds) => {
+      let previousState = [];
+
+      setEmails((prev) => {
+        // Store the previous state for undo functionality
+        previousState = prev
+          .filter((m) => {
+            const emailThreadId = m.threadId.split(":")[1];
+            return threadIds.includes(emailThreadId);
+          })
+          .map((m) => ({
+            threadId: m.threadId,
+            labels: [...(m.labels || [])],
+          }));
+
+        return prev.map((m) => {
           const emailThreadId = m.threadId.split(":")[1];
-          if (emailThreadId === threadId) {
+          if (threadIds.includes(emailThreadId)) {
             const currentLabels = m.labels || [];
             const isCurrentlyMuted = currentLabels.includes("Muted");
 
@@ -361,8 +369,23 @@ export default function useMailActions() {
             return { ...m, labels: updatedLabels };
           }
           return m;
-        })
-      );
+        });
+      });
+
+      const undo = () => {
+        setEmails((prev) =>
+          prev.map((m) => {
+            const emailThreadId = m.threadId.split(":")[1];
+            const previousEmail = previousState.find((p) => p.threadId.split(":")[1] === emailThreadId);
+            if (previousEmail) {
+              return { ...m, labels: [...previousEmail.labels] };
+            }
+            return m;
+          })
+        );
+      };
+
+      return undo;
     },
     [setEmails]
   );
@@ -424,7 +447,7 @@ export default function useMailActions() {
       unsnooze,
       toggleMuted,
       setMuted,
-      deleteAllSpam
+      deleteAllSpam,
     }),
     [
       addLabels,
@@ -447,7 +470,7 @@ export default function useMailActions() {
       unsnooze,
       toggleMuted,
       setMuted,
-      deleteAllSpam
+      deleteAllSpam,
     ]
   );
 }

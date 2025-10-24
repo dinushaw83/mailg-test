@@ -320,20 +320,20 @@ const ContextMenu = ({
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
       case "archive":
-        handleArchive(threadId);
+        handleArchive([threadId]);
         break;
       case "delete":
-        handleDelete(threadId);
+        handleDelete([threadId]);
         break;
       case "mark_as_read":
       case "mark_as_unread":
         handleReadAction(props.thread);
         break;
       case "snooze":
-        handleSnoozeAction(threadId);
+        handleSnoozeAction([threadId]);
         break;
       case "mute":
-        handleMuteAction(threadId, muted);
+        handleMuteAction([threadId]);
         break;
       case "move_to_inbox":
         handleMoveToInbox(threadId);

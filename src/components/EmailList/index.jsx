@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import useMailActions from "../../hooks/useMailActions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -10,12 +11,69 @@ import { CATEGORIES } from "../../utils/categories";
 import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 
-const EmailList = ({
-  emails = [],
-  showCheckboxes = true,
-  setShowAdvancedMenu,
-  showFooter = true,
-}) => {
+const useCustomHotKeys = ({ emails }) => {
+  const { selection, keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+  const lastStarAt = useRef(0);
+
+  useHotkeys(shortcutsOn ? "shift+8" : "", () => {
+    lastStarAt.current = Date.now();
+  });
+
+  useHotkeys(shortcutsOn ? "a" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // treat as "*" then "a"
+      const ids = emails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "n" : "", () => {
+    // deselect all
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>n
+      selection.clear();
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "r" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>r
+      const readEmails = emails.filter((email) => email.read);
+      const ids = readEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "u" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>u
+      const unreadEmails = emails.filter((email) => !email.read);
+      const ids = unreadEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "s" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>u
+      const starredEmails = emails.filter((email) => email.starred);
+      const ids = starredEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "t" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>u
+      const unstarredEmails = emails.filter((email) => !email.starred);
+      const ids = unstarredEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+};
+
+const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -32,6 +90,8 @@ const EmailList = ({
   const { labels } = useLabels();
 
   const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
+
+  useCustomHotKeys({ emails });
 
   /**
    * Format the given timestamp similar to Gmail:

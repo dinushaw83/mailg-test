@@ -32,19 +32,13 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import { Underline } from "@tiptap/extension-underline";
 import { Paragraph as BaseParagraph } from "@tiptap/extension-paragraph";
 import { useMemo } from "react";
-import {
-  FontSize,
-  HeadingWithAnchor,
-  LinkBubbleMenuHandler,
-  ResizableImage,
-  TableImproved,
-} from "mui-tiptap";
+import { FontSize, HeadingWithAnchor, LinkBubbleMenuHandler, ResizableImage, TableImproved } from "mui-tiptap";
 import { mentionSuggestionOptions } from "./mentionSuggestionOptions";
+import { Mark, mergeAttributes } from "@tiptap/core";
 
 const CustomLinkExtension = Link.extend({
   inclusive: false,
 });
-
 
 const CustomSubscript = Subscript.extend({
   excludes: "superscript",
@@ -54,24 +48,61 @@ const CustomSuperscript = Superscript.extend({
   excludes: "subscript",
 });
 
+export const Indent = Mark.create({
+  name: "indent",
+
+  addAttributes() {
+    return {
+      level: { default: 0, parseHTML: (el) => parseInt(el.style.marginLeft, 10) / 24 || 0 },
+    };
+  },
+
+  parseHTML() {
+    return [{ tag: "span[data-indent]" }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    const level = HTMLAttributes.level || 0;
+    return ["span", mergeAttributes({ "data-indent": level, style: `margin-left:${level * 24}px` }), 0];
+  },
+
+  addCommands() {
+    return {
+      indentMore:
+        () =>
+        ({ commands }) => {
+          const current = this.editor.getAttributes("indent").level || 0;
+          return commands.updateMark(this.name, { level: Math.min(current + 1, 8) });
+        },
+
+      indentLess:
+        () =>
+        ({ commands }) => {
+          const current = this.editor.getAttributes("indent").level || 0;
+          if (current > 0) {
+            return commands.updateMark(this.name, { level: current - 1 });
+          }
+          return commands.unsetMark(this.name);
+        },
+    };
+  },
+});
+
 /**
  * A hook for providing a default set of useful extensions for the MUI-Tiptap
  * editor.
  */
-export default function useExtensions({
-  placeholder,
-} = {}) {
-
+export default function useExtensions({ placeholder } = {}) {
   const CustomParagraph = BaseParagraph.extend({
     addAttributes() {
       return {
         ...this.parent?.(),
-        'data-signature': {
+        "data-signature": {
           default: null,
-          parseHTML: element => element.getAttribute('data-signature'),
-          renderHTML: attributes => {
-            if (!attributes['data-signature']) return {};
-            return { 'data-signature': attributes['data-signature'] };
+          parseHTML: (element) => element.getAttribute("data-signature"),
+          renderHTML: (attributes) => {
+            if (!attributes["data-signature"]) return {};
+            return { "data-signature": attributes["data-signature"] };
           },
         },
       };
@@ -146,6 +177,8 @@ export default function useExtensions({
       // We use the regular `History` (undo/redo) extension when not using
       // collaborative editing
       History,
+
+      Indent,
     ];
   }, [placeholder]);
 }

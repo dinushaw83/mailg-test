@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useEffect, useCallback } from "react";
+import React, { useContext, useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import ActionBar from "./ActionBar";
@@ -183,6 +183,7 @@ const InboxView = () => {
   const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
   const { markRead } = useMailActions();
   const { messagesById } = normalizedEmails;
+  const [shouldMarkUnreadEmailsAsRead, setShouldMarkUnreadEmailsAsRead] = useState(true);
 
   // Mark unread emails as read
   const markUnreadEmailsAsRead = useCallback(
@@ -202,20 +203,22 @@ const InboxView = () => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
   }, [emails, threadId]);
 
+  const { messageIds } = thread;
+
   useEffect(() => {
+    if (!shouldMarkUnreadEmailsAsRead) return;
     // Calculate total unread emails count
     const unreadCount = emails.filter((email) => !email.read).length;
     const unreadText = unreadCount > 0 ? `(${unreadCount})` : "";
     document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
 
-    if (!thread) return;
-
-    const { messageIds } = thread;
+    if (messageIds.length === 0) return;
 
     // Mark unread emails in the email thread as read
     const messages = messageIds.map((id) => messagesById[id]);
     markUnreadEmailsAsRead(messages);
-  }, [thread, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email]);
+    setShouldMarkUnreadEmailsAsRead(false);
+  }, [messageIds.length, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email]);
 
   if (!thread) {
     // Determine the back link based on current context
