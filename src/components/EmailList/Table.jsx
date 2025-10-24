@@ -114,7 +114,7 @@ const OneColumnData = ({
                   data-hovercard-id={email.from.email}
                   style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                 >
-                   {email.labels.includes("Drafts") ? "Draft" : email.from.name}
+                  {email.labels.includes("Drafts") ? "Draft" : email.from.name}
                 </span>
               </span>
             </div>
@@ -137,7 +137,7 @@ const OneColumnData = ({
                 fontSize: "0.75rem",
               }}
             >
-              <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+              <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
             </span>
           </Box>
         </Box>
@@ -147,7 +147,7 @@ const OneColumnData = ({
               <div className="y6">
                 <span id={`:pr${index}`} className="bog">
                   <span
-                    className={email.read ? "" : "bqe"}
+                    className={email.isEmailRead ? "" : "bqe"}
                     data-thread-id={email.threadId}
                     data-legacy-thread-id={email.legacyThreadId}
                     data-legacy-last-message-id={email.legacyLastMessageId}
@@ -519,8 +519,8 @@ const Table = ({
 
   const handleReadAction = useCallback(
     (email) => {
-      const { read } = email;
-      const isMarkingAsRead = !read;
+      const { isEmailRead } = email;
+      const isMarkingAsRead = !isEmailRead;
 
       markRead([email.id], isMarkingAsRead);
 
@@ -533,7 +533,7 @@ const Table = ({
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              markRead([email.id], read);
+              markRead([email.id], isEmailRead);
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -726,7 +726,7 @@ const Table = ({
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
                 onClick={(e) => handleClickRow(email, threadId)}
-                data-read={email.read}
+                data-read={email.isEmailRead}
                 style={{
                   ...(density === "compact"
                     ? {
@@ -834,7 +834,7 @@ const Table = ({
                             data-name={email.from.name}
                             data-hovercard-id={email.from.email}
                           >
-                              {folder === "sent" && !email.labels.includes("Drafts") ? `To: ${email.label}` : email.label}
+                            {folder === "sent" && !email.labels.includes("Drafts") ? `To: ${email.label}` : email.label}
                             {email.label && email.labels.includes("Drafts") && <span>, </span>}
                             <>
                               {email.labels.includes("Drafts") && (
@@ -909,7 +909,7 @@ const Table = ({
                                   </div>
                                 ))}
                                 <span
-                                  className={email.read ? "" : "bqe"}
+                                  className={email.isEmailRead ? "" : "bqe"}
                                   data-thread-id={email.threadId}
                                   data-legacy-thread-id={email.legacyThreadId}
                                   data-legacy-last-message-id={email.legacyLastMessageId}
@@ -999,7 +999,7 @@ const Table = ({
                           id={`:pu${index}`}
                           aria-label={new Date(email.timestamp).toLocaleString()}
                         >
-                          <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                          <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
                         </span>
                       </TimestampBox>
                       <HoverDiv>
@@ -1029,7 +1029,7 @@ const Table = ({
                         />
                         <Icon
                           name="mark_email_unread"
-                          label={email.read ? `Mark as unread` : `Mark as read`}
+                          label={email.isEmailRead ? `Mark as unread` : `Mark as read`}
                           marginRight="3px"
                           onClick={(e) => {
                             e.stopPropagation();

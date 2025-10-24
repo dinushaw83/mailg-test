@@ -125,32 +125,13 @@ For example, to verify the prompt `MAILG-COMPOSE-EMAIL-001`:
 8. Click "▶ Run" next to `MAILG-COMPOSE-EMAIL-001`
 9. View the result: ✅ Passed (if done correctly) or ❌ Failed with diff details
 
-### Programmatic Verifiers
+### LocalStorage Verification
 
-#### 1. Local Browser Verification
+You can verify actions performed in the browser correctly update the corresponding localStorage key(s) by visiting the `http://localhost:3000/verify-ls` route.
 
-You can run a verification directly in the browser by calling the exposed global method:
+The UI updates in near real time as you interact with the application. A “Refresh Now” button is available to manually refresh and sync the display, and a “Reset All” button allows you to clear localStorage and reload the page.
 
-```javascript
-window.verify(promptId);
-```
-
-Replace `promptId` with the appropriate prompt identifier, such as `'MAILG-COMPOSE-EMAIL-001'`. This method is useful for quick checks while interacting with the UI during development or debugging.
-
-#### 2. API Verification (Future Enhancement)
-
-To verify tasks through an API, you would use a **`run_id`** — a unique string that you generate when starting the RL-Gym. This `run_id` would be included in the URL when launching the gym instance, for example:
-
-```text
-http://localhost:3000?run_id={your_unique_run_id}
-```
-
-Each `run_id` would identify a single execution run, allowing you to:
-
-* Run multiple tests **in parallel** against the same instance without conflicts
-* Check verification results asynchronously, even after execution is complete
-
-*Note: API verification endpoints are planned for future implementation.*
+<img width="1893" alt="MailG LocalStorage Verification" src="./public/assets/images/screenshots/mailg-verify-ls.png" />
 
 ### LocalStorage Verification
 

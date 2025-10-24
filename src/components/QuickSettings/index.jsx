@@ -113,7 +113,11 @@ const QuickSettings = () => {
   ];
 
   const handlePaneChange = (value) => {
-    setPanelState((prev) => ({ ...prev, direction: value }));
+    setPanelState((prev) => ({
+      ...prev,
+      direction: value,
+      showPanel: value !== "no-split",
+    }));
   };
 
   const handleSetInboxType = (value) => {

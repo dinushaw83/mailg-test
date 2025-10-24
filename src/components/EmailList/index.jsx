@@ -39,7 +39,7 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "r" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>r
-      const readEmails = emails.filter((email) => email.read);
+      const readEmails = emails.filter((email) => email.isEmailRead);
       const ids = readEmails.map((email) => email.threadId.split(":")[1]);
       selection.setMany(ids);
     }
@@ -48,7 +48,7 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "u" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
-      const unreadEmails = emails.filter((email) => !email.read);
+      const unreadEmails = emails.filter((email) => !email.isEmailRead);
       const ids = unreadEmails.map((email) => email.threadId.split(":")[1]);
       selection.setMany(ids);
     }
@@ -74,15 +74,17 @@ const useCustomHotKeys = ({ emails }) => {
 };
 
 const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
+  // Add isEmailRead property based on unreadCount
+  // A thread is considered read only if unreadCount is 0
+  const emailsWithReadStatus = emails.map((email) => ({
+    ...email,
+    isEmailRead: email.unreadCount === 0,
+  }));
+
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    selection,
-    composeWindows,
-    softRemovedLabels,
-    setSoftRemovedLabels
-  } = useGlobalContext();
-  
+  const { selection, composeWindows, softRemovedLabels, setSoftRemovedLabels } = useGlobalContext();
+
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
@@ -91,7 +93,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
 
-  useCustomHotKeys({ emails });
+  useCustomHotKeys({ emails: emailsWithReadStatus });
 
   /**
    * Format the given timestamp similar to Gmail:
@@ -141,12 +143,12 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   const getRowClassName = (email, isActive) => {
     let className = `zA ${isActive ? "active" : ""}`;
-    className += email.read ? " yO" : " zE";
+    className += email.isEmailRead ? " yO" : " zE";
     return className;
   };
 
   const getSenderClassName = (email) => {
-    return email.read ? "yP" : "zF";
+    return email.isEmailRead ? "yP" : "zF";
   };
 
   const getImportantAriaLabel = (email) => {
@@ -160,7 +162,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   const getAccessibilityText = (email) => {
     const status = [];
     if (email.starred) status.push("starred");
-    if (!email.read) status.push("unread");
+    if (!email.isEmailRead) status.push("unread");
     if (email.important) status.push("Important");
     status.push(email.from.name);
     status.push(email.subject);
@@ -250,7 +252,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
       >
         <Table
           {...{
-            emails,
+            emails: emailsWithReadStatus,
             getRowClassName,
             navigateToEmailDetails,
             selection,

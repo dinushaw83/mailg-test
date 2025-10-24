@@ -186,8 +186,8 @@ const LeftSidebar = () => {
   }, [customLabels, collapsed]);
 
   // Open a new compose window
-  const openComposeWindow = () => {
-    addNewComposeWindow();
+  const openComposeWindow = (autoFocus = true) => {
+    addNewComposeWindow(null, {}, autoFocus);
   };
 
   const handleCreateNewLabel = () => {
@@ -419,6 +419,7 @@ const LeftSidebar = () => {
           open={isCreateLabelModalOpen}
           onClose={() => setIsCreateLabelModalOpen(false)}
           defaultParentKey={defaultParentKey}
+          labelDefaultName=""
           onAfterCreate={(name) => {
             setSnackbar({
               open: true,

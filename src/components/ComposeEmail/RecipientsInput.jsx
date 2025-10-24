@@ -14,6 +14,7 @@ export default function RecipientsInput({
   onCcChange,
   onBccChange,
   placeholder = "Recipients",
+  autoFocus = true,
 }) {
   const { recipients: globalRecipients, loggedInUser } = useContext(GlobalContext);
 
@@ -229,6 +230,13 @@ export default function RecipientsInput({
       setShowBcc(true);
     }
   };
+
+  // Handle auto-focus when the component mounts
+  useEffect(() => {
+    if (autoFocus) {
+      setIsExpanded(true);
+    }
+  }, [autoFocus]);
 
   // Handle autocomplete selection
   const handleAutocompleteChange = (event, newValue, field) => {
@@ -668,7 +676,7 @@ export default function RecipientsInput({
                       },
                     }}
                     placeholder=""
-                    autoFocus
+                    autoFocus={autoFocus}
                   />
                 )}
                 sx={{
