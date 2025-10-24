@@ -640,6 +640,8 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    hiddenRecipients,
+    setHiddenRecipients,
     keyboardShortcuts,
     setKeyboardShortcuts,
     showShortCutsModal,
@@ -660,8 +662,6 @@ export const GlobalContextProvider = ({ children }) => {
     setVacationResponder,
     createLabelModal,
     setCreateLabelModal,
-    hiddenRecipients,
-    setHiddenRecipients,
     softRemovedLabels,
     setSoftRemovedLabels,
     // Settings tabs state

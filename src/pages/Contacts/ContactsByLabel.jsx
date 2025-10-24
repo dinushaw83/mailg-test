@@ -7,8 +7,18 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 const ContactsByLabel = () => {
   const { recipients, recipientLabels } = useGlobalContext();
   const { labelId } = useParams();
-  const label = recipientLabels.find((label) => label.id === parseInt(labelId));
+  const label = recipientLabels.find((label) => label.id === labelId || label.id === parseInt(labelId));
   const contacts = recipients.filter((recipient) => label?.label && recipient.labels?.includes(label.label));
+  
+  // Debug logging
+  console.log('ContactsByLabel Debug:', {
+    labelId,
+    label,
+    recipientLabelsCount: recipientLabels.length,
+    recipientsCount: recipients.length,
+    contactsCount: contacts.length,
+    recipients: recipients.slice(0, 3), // First 3 recipients for debugging
+  });
 
   useEffect(() => {
     // Update the document title
