@@ -26,7 +26,7 @@ export default function GlobalSnackbar() {
       open={snackbar.open}
       autoHideDuration={snackbar.autoHideDuration}
       onClose={handleClose}
-      anchorOrigin={snackbar.anchorOrigin || { vertical: "bottom", horizontal: "center" }}
+      anchorOrigin={snackbar.anchorOrigin || { vertical: "bottom", horizontal: "right" }}
       message={snackbar.message}
       action={
         <React.Fragment>
@@ -65,13 +65,20 @@ export default function GlobalSnackbar() {
       }
       sx={{
         "& .MuiSnackbarContent-root": {
-          backgroundColor: snackbar?.severity === "error" || snackbar?.severity === "success" ? "#323232" : "#fff",
-          color: snackbar?.severity === "error" || snackbar?.severity === "success" ? "#ffffff" : "rgb(95,99,104)",
-          boxShadow: "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)",
+          backgroundColor:
+            snackbar?.transparent ? "transparent" : snackbar?.severity === "error" || snackbar?.severity === "success" ? "#323232" : "#fff",
+          color: snackbar?.transparent
+            ? "inherit"
+            : snackbar?.severity === "error" || snackbar?.severity === "success"
+            ? "#ffffff"
+            : "rgb(95,99,104)",
+          boxShadow: snackbar?.transparent
+            ? "none"
+            : "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)",
           minWidth: "150px",
-          padding: "12px 16px",
+          padding: snackbar?.transparent ? 0 : "12px 16px",
           fontSize: "14px",
-          borderRadius: "4px",
+          borderRadius: snackbar?.transparent ? 0 : "4px",
           border: "none",
         },
         ...(snackbar?.style ? { ...snackbar.style } : {}),

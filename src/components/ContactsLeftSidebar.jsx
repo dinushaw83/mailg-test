@@ -19,6 +19,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateLabelModal from "./Contacts/CreateLabelModal";
 import DeleteLabelModal from "./Contacts/DeleteLabelModal";
 import ImportContactsModal from "./Contacts/ImportContactsModal";
+import ImportNotification from "./Contacts/ImportNotification";
 import CreateMultipleContactsModal from "./Contacts/CreateMultipleContactsModal";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import useDimensions from "../hooks/useDimensions";
@@ -249,6 +250,7 @@ const ContactsLeftSidebar = () => {
   });
   const [createContactAnchor, setCreateContactAnchor] = useState(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importPopup, setImportPopup] = useState({ open: false, fileName: "", undo: null });
   const [showCreateMultipleContactsModal, setShowCreateMultipleContactsModal] = useState(false);
 
   useEffect(() => {
@@ -316,7 +318,7 @@ const ContactsLeftSidebar = () => {
   };
 
   // Handle import contacts
-  const handleImportContacts = async (importedContacts) => {
+  const handleImportContacts = async (importedContacts, uploadedFileName = "contacts.csv") => {
     try {
       // Create import label with current date in DD/MM format
       const today = new Date();
@@ -392,22 +394,19 @@ const ContactsLeftSidebar = () => {
         
         // Navigate back to contacts list
         navigate('/contacts');
-        
-        // Close the popup
-        setImportPopup({ open: false, fileName: "", undo: null });
       };
 
-      // Show standalone popup instead of snackbar
-      setImportPopup({ open: true, fileName, undo: undoAction });
+      // Show custom import notification popup (bottom-right)
+      setImportPopup({ open: true, fileName: uploadedFileName, undo: undoAction });
     } catch (error) {
       console.error('Error importing contacts:', error);
       setSnackbar({
         open: true,
         message: 'Error importing contacts. Please try again.',
-        action: null,
         autoHideDuration: 3000,
         hideClose: true,
         style: snackbarStyle,
+        severity: 'error',
       });
     }
   };
@@ -799,6 +798,15 @@ const ContactsLeftSidebar = () => {
         onClose={handleCloseImportModal}
         onImport={handleImportContacts}
       />
+      {/* Import Notification Popup */}
+      {importPopup?.open && (
+        <ImportNotification
+          open={importPopup.open}
+          fileName={importPopup.fileName}
+          onUndo={() => importPopup.undo?.()}
+          onClose={() => setImportPopup({ open: false, fileName: "", undo: null })}
+        />
+      )}
 
       {/* Create Multiple Contacts Modal */}
       {showCreateMultipleContactsModal && (
