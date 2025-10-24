@@ -152,6 +152,16 @@ Each `run_id` would identify a single execution run, allowing you to:
 
 *Note: API verification endpoints are planned for future implementation.*
 
+### LocalStorage Verification
+
+You can verify actions performed in the browser correctly update the corresponding localStorage key(s) by visiting the `http://localhost:3000/verify-ls` route.
+
+The UI should update in near real-time as you perform actions in the browser. The page also has a manual "Refresh Now" button to manually refresh the page and update the UI.
+
+Additionally, the page has a "Reset All" button to reset the localStorage and reload the page.
+
+<img width="1893" alt="MailG LocalStorage Verification" src="./public/assets/images/screenshots/mailg-verify-ls.png" />
+
 ---
 
 ## Contacts Management
