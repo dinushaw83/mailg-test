@@ -173,6 +173,21 @@ const SearchBar = () => {
     return items;
   }, [matchingContacts, expandedContent, searchValue]);
 
+  const focusInput = (delay = 0) => {
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+      setIsFocused(true);
+    }, delay);
+  };
+
+  const goToLabel = () => {
+    // focus the label input
+    focusInput();
+
+    // set the search value to the label
+    setSearchValue("label:");
+  };
+
   // Handle filter pill clicks
   const handleFilterClick = (filter) => {
     setActiveFilters((prev) => {
@@ -185,10 +200,9 @@ const SearchBar = () => {
       }
     });
 
-    // Focus the search input after clicking a filter
-    setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 0);
+    // Focus the search input after clicking a filter with a slight delay
+    // to ensure the chip click event completes first
+    focusInput(10);
   };
 
   // Helper function to highlight search terms
@@ -203,21 +217,6 @@ const SearchBar = () => {
     const parts = text.split(splitRegex);
 
     return parts.map((part, index) => (testRegex.test(part) ? <strong key={index}>{part}</strong> : part));
-  };
-
-  const focusInput = () => {
-    setTimeout(() => {
-      searchInputRef.current?.focus();
-      setIsFocused(true);
-    }, 0);
-  };
-
-  const goToLabel = () => {
-    // focus the label input
-    focusInput();
-
-    // set the search value to the label
-    setSearchValue("label:");
   };
 
   const handleKeyDown = (e) => {
@@ -414,6 +413,7 @@ const SearchBar = () => {
                   className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
                   variant="outlined"
                   onClick={() => handleFilterClick(filter)}
+                  onMouseDown={(e) => e.preventDefault()}
                   icon={
                     isActive ? (
                       <span
