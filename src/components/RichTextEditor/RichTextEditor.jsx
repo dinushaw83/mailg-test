@@ -63,7 +63,6 @@ export default function Editor({
   textEditorMaxHeight,
   useCompactFormatting = false,
   messageId,
-  autoFocus = true,
 }) {
   const extensions = useExtensions({
     placeholder: "",
@@ -363,18 +362,6 @@ export default function Editor({
       }
     }
   }, [content, restoreEmbeddedImages]);
-
-  // Handle auto-focus when the editor is ready and autoFocus is true
-  useEffect(() => {
-    if (autoFocus && rteRef.current?.editor) {
-      // Use a small delay to ensure the editor is fully rendered
-      const timer = setTimeout(() => {
-        rteRef.current.editor.commands.focus();
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, [autoFocus]);
 
   useEffect(() => {
     // If no signatures exist at all
