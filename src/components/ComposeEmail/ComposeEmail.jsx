@@ -447,6 +447,7 @@ export default function ComposeEmail({ composeWindow }) {
                 composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "calc(100vh - 340px)"
               }
               useCompactFormatting={true}
+              autoFocus={composeWindow?.autoFocus}
             />
           </div>
         </div>

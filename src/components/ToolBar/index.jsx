@@ -3,7 +3,7 @@ import Pagination from "./Pagination";
 import styled from "@emotion/styled";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
@@ -213,6 +213,16 @@ const ToggleSplitPaneButton = () => {
     open: false,
   });
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [prevSplitPane, setPrevSplitPane] = useState(
+    panelState.direction === "no-split" ? "vertical" : panelState.direction
+  );
+
+  // Sync prevSplitPane with panelState.direction when it changes from quick settings
+  useEffect(() => {
+    if (panelState.direction !== "no-split") {
+      setPrevSplitPane(panelState.direction);
+    }
+  }, [panelState.direction]);
 
   const toggleOpen = (event) => {
     setAnchorEl(open ? null : event.currentTarget);
@@ -224,15 +234,28 @@ const ToggleSplitPaneButton = () => {
   };
 
   const toggleSplitPane = () => {
-    setPanelState((prev) => ({
-      ...prev,
-      showPanel: !prev.showPanel,
-    }));
+    const isSplit = panelState.direction === "horizontal" || panelState.direction === "vertical";
+
+    if (isSplit) {
+      // If currently split, remove the split
+      setPanelState((prev) => ({
+        ...prev,
+        showPanel: false,
+        direction: "no-split",
+      }));
+    } else {
+      // If no split, open with the previous split direction (defaults to vertical)
+      setPanelState((prev) => ({
+        ...prev,
+        showPanel: true,
+        direction: prevSplitPane,
+      }));
+    }
   };
 
   const icon = panelState.showPanel
     ? "reorder"
-    : panelState.direction === "horizontal"
+    : prevSplitPane === "horizontal"
     ? "horizontal_split"
     : "vertical_split";
 
@@ -242,6 +265,12 @@ const ToggleSplitPaneButton = () => {
       ...(direction !== undefined ? { direction } : {}),
       ...(showPanel !== undefined ? { showPanel } : {}),
     }));
+
+    // Update prevSplitPane when a split direction is selected
+    if (direction && direction !== "no-split") {
+      setPrevSplitPane(direction);
+    }
+
     setState((prev) => ({ ...prev, open: false }));
   };
 
@@ -299,7 +328,7 @@ const ToggleSplitPaneButton = () => {
           <ActionMenuItem
             label="No Split"
             onClick={() => {
-              handleSplitPane({ direction: "vertical", showPanel: false });
+              handleSplitPane({ direction: "no-split", showPanel: false });
             }}
           />
           <ActionMenuItem
@@ -344,13 +373,7 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({
-  totalFilteredItems,
-  threads,
-  showAdvancedMenu,
-  setShowAdvancedMenu,
-  showPagination = true,
-}) => {
+const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu, showPagination = true }) => {
   const { folder = "inbox" } = useParams();
   const { selection, refreshEmails, keyboardShortcuts, manualSyncCount, setManualSyncCount } = useGlobalContext();
   const shortcutsOn = keyboardShortcuts === "shortcuts-on";
@@ -441,7 +464,9 @@ const ToolBar = ({
           setShowAdvancedMenu={setShowAdvancedMenu}
         />
       </LeftItemsContainer>
-      {totalFilteredItems > 0 && <RightActions totalFilteredItems={totalFilteredItems} showPagination={showPagination} />}
+      {totalFilteredItems > 0 && (
+        <RightActions totalFilteredItems={totalFilteredItems} showPagination={showPagination} />
+      )}
     </div>
   );
 };
