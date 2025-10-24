@@ -156,8 +156,16 @@ const MailActions = ({ thread }) => {
   }, [dispatch]);
 
   const {
-    moveToSpam, moveToTrash, moveToLabel, moveToLabelFrom,
-    moveToInbox, archive, markRead, snooze, addLabels, removeLabels
+    moveToSpam,
+    moveToTrash,
+    moveToLabel,
+    moveToLabelFrom,
+    moveToInbox,
+    archive,
+    markRead,
+    snooze,
+    addLabels,
+    removeLabels,
   } = useMailActions();
 
   const handleArchive = useCallback(() => {
@@ -244,8 +252,30 @@ const MailActions = ({ thread }) => {
 
   const handleMarkUnread = useCallback(() => {
     markRead([threadId], false);
+    setSnackbar({
+      open: true,
+      message: "Conversation marked as unread.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            markRead([threadId], true);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 6000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
     navigate("/inbox");
-  }, []);
+  }, [threadId, markRead, setSnackbar, navigate]);
 
   const handleMenuItemClick = useCallback(
     async (item) => {
@@ -372,7 +402,7 @@ const MailActions = ({ thread }) => {
       const newKey = makeKey(childName, parentKey); // build composite key
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
       const inCustomLabel = curMeta && curMeta.system === false;
-      
+
       if (isMoving) {
         if (inCustomLabel) {
           moveToLabelFrom(ids, currentLabel, newKey);

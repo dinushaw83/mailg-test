@@ -12,7 +12,12 @@ import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { SnoozePopover } from "./Snooze";
 import { Labels } from "./Labels";
 
-import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey, normalizeLabelName } from "../../hooks/useLabels";
+import useLabels, {
+  flattenTreeForSelect,
+  getPathLabelFromKey,
+  makeKey,
+  normalizeLabelName,
+} from "../../hooks/useLabels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 
 const MailActions = ({ threads = [], showAdvancedMenu }) => {
@@ -39,8 +44,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
   const snoozeAnchorElRef = useRef(null);
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
-  
-  const navigate = useNavigate();
+
   const location = useLocation();
 
   const anchorRef = useRef(null);
@@ -122,7 +126,8 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     // Show global snackbar with Undo action
     setSnackbar({
       open: true,
-      message: "Conversation moved to Trash.",
+      message:
+        selectedIds.length > 1 ? `${selectedIds.length} conversations moved to Trash.` : "Conversation moved to Trash.",
       autoHideDuration: 10000,
       action: (
         <Button
@@ -170,9 +175,15 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
 
   const showUndoSnackbarForLabelMove = useCallback(
     (selectedIds, fromKey, toKey, inCustomLabel) => {
+      const action = isMovingToLabel ? "moved to" : "added to";
+      const message =
+        selectedIds.length > 1
+          ? `${selectedIds.length} conversations ${action} "${getPathLabelFromKey(labels, toKey)}".`
+          : `Conversation ${action} "${getPathLabelFromKey(labels, toKey)}".`;
+
       setSnackbar({
         open: true,
-        message: `Conversation ${isMovingToLabel ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
+        message,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -197,7 +208,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
         ),
       });
     },
-    [moveToLabel, moveToLabelFrom, setSnackbar, labels]
+    [moveToLabel, moveToLabelFrom, setSnackbar, labels, isMovingToLabel]
   );
 
   const handleArchiveEmails = useCallback(() => {
@@ -206,7 +217,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       archive(selectedIds);
       setSnackbar({
         open: true,
-        message: "Conversation archived.",
+        message: selectedIds.length > 1 ? `${selectedIds.length} conversations archived.` : "Conversation archived.",
         autoHideDuration: 3000,
         action: (
           <Button
@@ -246,7 +257,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       moveToInbox(ids);
       setSnackbar({
         open: true,
-        message: "Conversation moved to Inbox.",
+        message: ids.length > 1 ? `${ids.length} conversations moved to Inbox.` : "Conversation moved to Inbox.",
         autoHideDuration: 3000,
         action: null,
       });
@@ -277,7 +288,10 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           // Show global snackbar with Undo action
           setSnackbar({
             open: true,
-            message: "Conversation moved to Trash.",
+            message:
+              selectedIds.length > 1
+                ? `${selectedIds.length} conversations moved to Trash.`
+                : "Conversation moved to Trash.",
             autoHideDuration: 10000,
             action: (
               <Button
@@ -322,7 +336,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     },
     [selectedIds, moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
   );
-  
+
   const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
@@ -352,17 +366,15 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
         moveToLabel(ids, newKey);
       }
 
-      // if (isMovingToLabel) {
-      //   // Navigate back to list view
-      //   navigate(getBasePath());
-      // }
-
       selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
         open: true,
-        message: `Conversation moved to "${normalizeLabelName(newKey)}".`,
+        message:
+          ids.length > 1
+            ? `${ids.length} conversations moved to "${normalizeLabelName(newKey)}".`
+            : `Conversation moved to "${normalizeLabelName(newKey)}".`,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -424,7 +436,10 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       // --- UNDO action ---
       setSnackbar({
         open: true,
-        message: `Conversation added to "${normalizeLabelName(newKey)}".`,
+        message:
+          ids.length > 1
+            ? `${ids.length} conversations added to "${normalizeLabelName(newKey)}".`
+            : `Conversation added to "${normalizeLabelName(newKey)}".`,
         autoHideDuration: 4000,
         action: (
           <Button
@@ -474,12 +489,45 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
   }, [selectedThreads]);
 
   const handleReadAction = useCallback(() => {
-    if (hasUnreadEmails) {
+    const isMarkingAsRead = hasUnreadEmails;
+
+    if (isMarkingAsRead) {
       markRead(selectedIds, true); // Mark as read when there are unread emails
     } else {
       markRead(selectedIds, false); // Mark as unread when all are read
     }
-  }, [hasUnreadEmails, selectedIds, markRead]);
+
+    // Show snackbar with undo action
+    setSnackbar({
+      open: true,
+      message: isMarkingAsRead
+        ? selectedIds.length > 1
+          ? `${selectedIds.length} conversations marked as read.`
+          : "Conversation marked as read."
+        : selectedIds.length > 1
+        ? `${selectedIds.length} conversations marked as unread.`
+        : "Conversation marked as unread.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            // Undo: toggle back to previous state
+            markRead(selectedIds, !isMarkingAsRead);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 6000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [hasUnreadEmails, selectedIds, markRead, setSnackbar]);
 
   const handleSnoozeAction = useCallback(() => {
     setSnoozeAnchorEl(snoozeAnchorElRef.current);
@@ -548,7 +596,7 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     // Show success snackbar
     setSnackbar({
       open: true,
-      message: "Drafts deleted",
+      message: deletedEmails.length > 1 ? `${deletedEmails.length} drafts deleted` : "Draft deleted",
       autoHideDuration: 2000,
       action: null,
     });
@@ -597,7 +645,10 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
       // Display snackbar conversation moved to inbox and return
       setSnackbar({
         open: true,
-        message: "Conversation moved to inbox.",
+        message:
+          selectedIds.length > 1
+            ? `${selectedIds.length} conversations moved to inbox.`
+            : "Conversation moved to inbox.",
         action: null,
         autoHideDuration: 3000,
       });
@@ -621,7 +672,8 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     // Display snackbar with undo action
     setSnackbar({
       open: true,
-      message: "Convervation moved to inbox.",
+      message:
+        selectedIds.length > 1 ? `${selectedIds.length} conversations moved to inbox.` : "Conversation moved to inbox.",
       action: (
         <Button sx={{ textTransform: "none" }} size="medium" onClick={handleUndoMoveDraftsToInbox}>
           Undo
@@ -631,30 +683,33 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
     });
   };
 
-  const showUndoSnackbar = useCallback((message, undoFn) => {
-    setSnackbar({
-      open: true,
-      message,
-      autoHideDuration: 10000,
-      action: (
-        <Button
-          sx={{ textTransform: "none" }}
-          size="small"
-          onClick={() => {
-            undoFn();
-            setSnackbar({
-              open: true,
-              message: "Action undone.",
-              autoHideDuration: 3000,
-              action: null,
-            });
-          }}
-        >
-          Undo
-        </Button>
-      ),
-    });
-  }, [setSnackbar]);
+  const showUndoSnackbar = useCallback(
+    (message, undoFn) => {
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              undoFn();
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [setSnackbar]
+  );
 
   return (
     <Box display="flex" alignItems="center">
@@ -740,7 +795,9 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
           const undo = moveToSpam(selectedIds);
           toggleSpamModal();
           showUndoSnackbar(
-            selectedIds.length > 1 ? `${selectedIds.length} conversations marked as spam.` : "Conversation marked as spam.",
+            selectedIds.length > 1
+              ? `${selectedIds.length} conversations marked as spam.`
+              : "Conversation marked as spam.",
             undo
           );
         }}
@@ -781,7 +838,15 @@ const MailActions = ({ threads = [], showAdvancedMenu }) => {
         }}
       />
 
-      <CreateLabelDialog open={createOpen} onClose={() => { setCreateOpen(false); setIsMovingToLabel(null) }} onAfterCreate={handleOnAfterCreate} isMoving={isMovingToLabel} />
+      <CreateLabelDialog
+        open={createOpen}
+        onClose={() => {
+          setCreateOpen(false);
+          setIsMovingToLabel(null);
+        }}
+        onAfterCreate={handleOnAfterCreate}
+        isMoving={isMovingToLabel}
+      />
     </Box>
   );
 };

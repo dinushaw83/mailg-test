@@ -42,17 +42,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     setCurrentPopover("snooze");
   };
 
-  const handleSnoozeBack = () => {
-    setCurrentPopover("main");
-  };
-
-  const handleLabelClick = (event) => {
-    event.stopPropagation();
-    setLabelAnchorEl(event.currentTarget);
-    setSearchQuery("");
-    setSelectedLabelKeys(new Set());
-  };
-
   const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
@@ -82,7 +71,10 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       // --- UNDO action ---
       setSnackbar({
         open: true,
-        message: `Conversation moved to "${childName}".`,
+        message:
+          ids.length > 1
+            ? `${ids.length} conversations moved to "${childName}".`
+            : `Conversation moved to "${childName}".`,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -90,17 +82,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
             size="small"
             onClick={() => {
               try {
-                // Restore original labels for each email
-                setEmails((prevEmails) =>
-                  prevEmails.map((email) => {
-                    const emailThreadId = email.threadId.split(":")[1];
-                    if (ids.includes(emailThreadId) && originalLabels[emailThreadId]) {
-                      return { ...email, labels: originalLabels[emailThreadId] };
-                    }
-                    return email;
-                  })
-                );
-
                 setSnackbar({
                   open: true,
                   message: "Action undone.",
@@ -199,7 +180,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
   return (
     <Box>
-      <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} />
+      <Icon name="more_vert" onClick={handleClick} label="" disabled={false} />
 
       {currentPopover === "main" && (
         <Popover

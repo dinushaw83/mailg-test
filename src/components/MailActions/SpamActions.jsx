@@ -11,11 +11,8 @@ import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { Box } from "@mui/material";
 
 export default function SpamActions({ threads = [], folder }) {
-  const {
-    moveToSpam, moveToTrash, notSpam,
-    markRead, deleteForever, moveToLabel,
-    moveToLabelFrom, moveToInbox
-  } = useMailActions();
+  const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever, moveToLabel, moveToLabelFrom, moveToInbox } =
+    useMailActions();
   const { selection, setSnackbar, emails } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
@@ -76,7 +73,10 @@ export default function SpamActions({ threads = [], folder }) {
           // Show global snackbar with Undo action
           setSnackbar({
             open: true,
-            message: "Conversation moved to Trash.",
+            message:
+              selectedIds.length > 1
+                ? `${selectedIds.length} conversations moved to Trash.`
+                : "Conversation moved to Trash.",
             autoHideDuration: 10000,
             action: (
               <Button
@@ -125,7 +125,7 @@ export default function SpamActions({ threads = [], folder }) {
       deleteForever(ids);
       setSnackbar({
         open: true,
-        message: "Conversation deleted forever.",
+        message: ids.length > 1 ? `${ids.length} conversations deleted forever.` : "Conversation deleted forever.",
         autoHideDuration: 3000,
         action: null,
       });
@@ -140,12 +140,45 @@ export default function SpamActions({ threads = [], folder }) {
   }, [selectedThreads]);
 
   const handleReadAction = useCallback(() => {
-    if (hasUnreadEmails) {
+    const isMarkingAsRead = hasUnreadEmails;
+
+    if (isMarkingAsRead) {
       markRead(selectedIds, true); // Mark as read when there are unread emails
     } else {
       markRead(selectedIds, false); // Mark as unread when all are read
     }
-  }, [hasUnreadEmails, selectedIds, markRead]);
+
+    // Show snackbar with undo action
+    setSnackbar({
+      open: true,
+      message: isMarkingAsRead
+        ? selectedIds.length > 1
+          ? `${selectedIds.length} conversations marked as read.`
+          : "Conversation marked as read."
+        : selectedIds.length > 1
+        ? `${selectedIds.length} conversations marked as unread.`
+        : "Conversation marked as unread.",
+      autoHideDuration: 3000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            // Undo: toggle back to previous state
+            markRead(selectedIds, !isMarkingAsRead);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [hasUnreadEmails, selectedIds, markRead, setSnackbar]);
 
   const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
@@ -176,7 +209,10 @@ export default function SpamActions({ threads = [], folder }) {
       // --- UNDO action ---
       setSnackbar({
         open: true,
-        message: `Conversation moved to "${childName}".`,
+        message:
+          ids.length > 1
+            ? `${ids.length} conversations moved to "${childName}".`
+            : `Conversation moved to "${childName}".`,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -255,22 +291,23 @@ export default function SpamActions({ threads = [], folder }) {
           onClick={() => {
             const ids = [...selection.ids];
             moveToInbox(ids);
-            selection.clear()
+            selection.clear();
             setSnackbar({
               open: true,
-              message: <Box>
-                Conversation unmarked as spam and moved to the inbox. Future messages from this <br />
-                sender will be sent to the inbox.
-              </Box>,
+              message: (
+                <Box>
+                  {ids.length > 1
+                    ? `${ids.length} conversations unmarked as spam and moved to the inbox. Future messages from these`
+                    : "Conversation unmarked as spam and moved to the inbox. Future messages from this"}{" "}
+                  <br />
+                  {ids.length > 1 ? "senders" : "sender"} will be sent to the inbox.
+                </Box>
+              ),
               autoHideDuration: 10000,
               action: (
                 <Box>
-                  <Button
-                  sx={{ textTransform: "none" }}
-                  size="small"
-                  onClick={() => {}}
-                >
-                  Learn more
+                  <Button sx={{ textTransform: "none" }} size="small" onClick={() => {}}>
+                    Learn more
                   </Button>
                   <Button
                     sx={{ textTransform: "none" }}

@@ -90,7 +90,10 @@ const ContextMenu = ({
           const undo = moveToLabel(selectedIds, "Inbox");
           setSnackbar({
             open: true,
-            message: "Conversation moved to inbox.",
+            message:
+              selectedIds.length > 1
+                ? `${selectedIds.length} conversations moved to inbox.`
+                : "Conversation moved to inbox.",
             autoHideDuration: 3000,
             action: (
               <Button size="small" onClick={undo}>
@@ -109,7 +112,10 @@ const ContextMenu = ({
           // Show global snackbar with Undo action
           setSnackbar({
             open: true,
-            message: "Conversation moved to Trash.",
+            message:
+              selectedIds.length > 1
+                ? `${selectedIds.length} conversations moved to Trash.`
+                : "Conversation moved to Trash.",
             autoHideDuration: 10000,
             action: (
               <Button
@@ -139,7 +145,10 @@ const ContextMenu = ({
             const undo = moveToLabelFrom(selectedIds, currentLabel, targetKey);
             setSnackbar({
               open: true,
-              message: `Conversation moved to ${item.name}.`,
+              message:
+                selectedIds.length > 1
+                  ? `${selectedIds.length} conversations moved to ${item.name}.`
+                  : `Conversation moved to ${item.name}.`,
               autoHideDuration: 3000,
               action: (
                 <Button size="small" onClick={undo}>
@@ -151,7 +160,10 @@ const ContextMenu = ({
             const undo = moveToLabel(selectedIds, targetKey); // pass key
             setSnackbar({
               open: true,
-              message: `Conversation moved to ${item.name}.`,
+              message:
+                selectedIds.length > 1
+                  ? `${selectedIds.length} conversations moved to ${item.name}.`
+                  : `Conversation moved to ${item.name}.`,
               autoHideDuration: 3000,
               action: (
                 <Button size="small" onClick={undo}>
@@ -170,9 +182,15 @@ const ContextMenu = ({
 
   const showUndoSnackbar = useCallback(
     (selectedIds, fromKey, toKey, inCustomLabel, isMoving = true) => {
+      const action = isMoving ? "moved to" : "added to";
+      const message =
+        selectedIds.length > 1
+          ? `${selectedIds.length} conversations ${action} "${getPathLabelFromKey(labels, toKey)}".`
+          : `Conversation ${action} "${getPathLabelFromKey(labels, toKey)}".`;
+
       setSnackbar({
         open: true,
-        message: `Conversation ${isMoving ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
+        message,
         autoHideDuration: 10000,
         action: (
           <Button
@@ -236,7 +254,6 @@ const ContextMenu = ({
       });
     }
   };
-
 
   const handleMoveToInbox = useCallback(
     (threadId) => {
@@ -488,8 +505,8 @@ const ContextMenu = ({
           <LabelsSubMenu
             selectedIds={selectedIds}
             openCreateLabelDialog={() => {
-              setIsMovingToLabel(false)
-              openCreateLabelDialog()
+              setIsMovingToLabel(false);
+              openCreateLabelDialog();
             }}
             shouldFocus={hoveredSubmenu === "labelAs"}
           />
@@ -524,8 +541,8 @@ const ContextMenu = ({
       <CreateLabelDialog
         open={createOpen}
         onClose={() => {
-          toggleCreateOpen()
-          setIsMovingToLabel(true) // reset back to default state
+          toggleCreateOpen();
+          setIsMovingToLabel(true); // reset back to default state
         }}
         onAfterCreate={handleOnAfterCreate}
         isMoving={isMovingToLabel}

@@ -305,18 +305,26 @@ const Table = ({
   const handleReadAction = useCallback(
     (email) => {
       const { read } = email;
+      const isMarkingAsRead = !read;
 
-      markRead([email.id], !read);
+      markRead([email.id], isMarkingAsRead);
 
       setSnackbar({
         open: true,
-        message: "Conversation marked as read.",
-        autoHideDuration: 3000,
+        message: isMarkingAsRead ? "Conversation marked as read." : "Conversation marked as unread.",
+        autoHideDuration: 10000,
         action: (
           <Button
+            sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
               markRead([email.id], read);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 6000,
+                action: null,
+              });
             }}
           >
             Undo
@@ -324,7 +332,7 @@ const Table = ({
         ),
       });
     },
-    [markRead]
+    [markRead, setSnackbar]
   );
 
   const { show } = useContextMenu({
