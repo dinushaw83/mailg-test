@@ -47,6 +47,9 @@ function App() {
             {/* Standalone verification page without Layout */}
             <Route path="/verification-local-storage" element={<VerificationLocalStorage />} />
 
+            {/* Standalone verification page without Layout */}
+            <Route path="/verify" element={<VerificationDashboard />} />
+
             {/* All other routes wrapped in Layout */}
             <Route
               path="/*"
@@ -60,11 +63,10 @@ function App() {
                     <Route path="/label/:label" element={<MailView />} />
                     <Route path="/search/:query" element={<SearchResultsView />} />
                     <Route path="/search" element={<SearchResultsView />} />
-                    <Route path="/verify" element={<VerificationDashboard />} />
                     <Route path="/settings/:tab" element={<Settings />} />
                     <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
-            <Route path="/mailg-account/:view?" element={<MailGAccount />} />
-            <Route path="/mailg-account" element={<MailGAccount />} />
+                    <Route path="/mailg-account/:view?" element={<MailGAccount />} />
+                    <Route path="/mailg-account" element={<MailGAccount />} />
 
                     {/* Contacts paths */}
                     <Route path="/contacts" element={<Contacts />} />
