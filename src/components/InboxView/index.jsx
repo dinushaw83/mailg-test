@@ -22,6 +22,8 @@ const InboxViewContainer = styled.div`
   overflow: hidden;
   background-color: #fff;
   border-radius: 16px;
+  min-height: 0;  
+  min-height: 0; 
 `;
 
 const ScrollableContent = styled.div`
@@ -169,7 +171,7 @@ export const EmailContent = ({
           {/* <Actions /> */}
           {!isLastScheduled && <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />}
         </InnerContainer>
-        {isPreview && <PanelFooter />}
+        {/* {isPreview && <PanelFooter />} */}
       </ScrollableContent>
     </InboxViewContainer>
   );

@@ -4,27 +4,32 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import useMailActions from "../../hooks/useMailActions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
 import { CATEGORIES } from "../../utils/categories";
 import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 
-const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
+const EmailList = ({
+  emails = [],
+  showCheckboxes = true,
+  setShowAdvancedMenu,
+  showFooter = true,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, composeWindows, panelState, previewEmailId, softRemovedLabels, setSoftRemovedLabels } =
-    useGlobalContext();
+  const {
+    selection,
+    composeWindows,
+    softRemovedLabels,
+    setSoftRemovedLabels
+  } = useGlobalContext();
+  
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
   const { folder, label } = useParams();
   const { labels } = useLabels();
-
-  const { direction: internalDirection, showPanel } = panelState;
-  const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
 
   const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
 
@@ -173,44 +178,35 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   return (
     <div className="Nu tf aZ6" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ height: "100%", minWidth: "518px", overflowY: "hidden" }}>
-        <PanelGroup direction={direction} id="email-list-panel-group">
-          <Panel defaultSize={40} minSize={25} id="email-list-panel">
-            <Table
-              {...{
-                emails,
-                getRowClassName,
-                navigateToEmailDetails,
-                selection,
-                toggleStar,
-                toggleImportant,
-                getImportantAriaLabel,
-                getImportantClassName,
-                getAccessibilityText,
-                getSenderClassName,
-                getLabelBadges,
-                formatDate,
-                setShowAdvancedMenu,
-              }}
-            />
-          </Panel>
-          {showPanel && (
-            <>
-              <PanelResizeHandle
-                style={{
-                  [direction === "horizontal" ? "width" : "height"]: "4px",
-                  backgroundColor: "#e0e0e0",
-                  cursor: "col-resize",
-                }}
-              />
-              <Panel defaultSize={60} id="email-content-panel" style={{ height: "100%", overflow: "hidden" }}>
-                <EmailContent threadId={previewEmailId} folder={folder} label={label} showActionBar={false} isPreview />
-              </Panel>
-            </>
-          )}
-        </PanelGroup>
+      <div
+        style={{
+          height: "100%",
+          minWidth: "518px",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+        }}
+      >
+        <Table
+          {...{
+            emails,
+            getRowClassName,
+            navigateToEmailDetails,
+            selection,
+            toggleStar,
+            toggleImportant,
+            getImportantAriaLabel,
+            getImportantClassName,
+            getAccessibilityText,
+            getSenderClassName,
+            getLabelBadges,
+            formatDate,
+            setShowAdvancedMenu,
+          }}
+        />
       </div>
-      {!showPanel && showFooter && <Footer />}
+      {showFooter && <Footer />}
     </div>
   );
 };

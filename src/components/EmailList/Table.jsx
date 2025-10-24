@@ -231,8 +231,10 @@ const Table = ({
 
   const renderOneColumn = dimensions.width < 525;
 
+  const showSplit = panelState.direction !== "no-split";
+
   const handleClickRow = (email, threadId) => {
-    if (panelState.showPanel) {
+    if (showSplit) {
       setPreviewEmailId(threadId);
     } else {
       navigateToEmailDetails(email, threadId);
@@ -456,7 +458,9 @@ const Table = ({
                 role="row"
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
-                onClick={(e) => handleClickRow(email, threadId)}
+                onClick={(e) => {
+                  handleClickRow(email, threadId);
+                }}
                 read={email.read}
                 style={{
                   ...(density === "compact"
@@ -580,6 +584,13 @@ const Table = ({
                       <div className="a4X">
                         <Link
                           to={`${location.pathname}/${threadId}`}
+                          onClick={(e) => {
+                            if (showSplit) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleClickRow(email, threadId);
+                            }
+                          }}
                           className="xS"
                           role="link"
                           style={{ textDecoration: "none" }}

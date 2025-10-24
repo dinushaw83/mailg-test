@@ -2,13 +2,18 @@ import { useContext, useState, useRef, useEffect } from "react";
 import { Button, Box, MenuItem, Popper, Grow, Paper, ClickAwayListener, MenuList } from "@mui/material";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
-const Pagination = ({ totalFilteredItems }) => {
+
+const Pagination = ({
+  totalFilteredItems,
+  overwriteItemsPerPage = null,
+  showNavigationButtons = true,
+}) => {
   const { currentPage, setCurrentPage, itemsPerPage, setSortOrder } = useContext(GlobalContext);
   const anchorRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
 
   const totalItems = totalFilteredItems;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.ceil(totalItems / (overwriteItemsPerPage || itemsPerPage));
 
   useEffect(() => {
     if (totalPages > 0 && currentPage > totalPages) {
@@ -17,11 +22,12 @@ const Pagination = ({ totalFilteredItems }) => {
   }, [totalPages, currentPage, setCurrentPage]);
 
   const startIndex = (currentPage - 1) * itemsPerPage + 1;
-  const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
+  const endIndex = Math.min(currentPage * (overwriteItemsPerPage || itemsPerPage), totalItems);
   const hasNextPage = currentPage < totalPages;
   const hasPreviousPage = currentPage > 1;
 
   const handleOpenMenu = (event) => {
+    if (!showNavigationButtons) return;
     setAnchorEl(event.currentTarget);
   };
 
@@ -152,8 +158,12 @@ const Pagination = ({ totalFilteredItems }) => {
         </Popper>
       </Box>
 
-      <Icon name="chevron_left" label="Newer" disabled={!hasPreviousPage} onClick={handlePreviousPage} />
-      <Icon name="chevron_right" label="Older" disabled={!hasNextPage} onClick={handleNextPage} />
+      {showNavigationButtons && (
+        <>
+          <Icon name="chevron_left" label="Newer" disabled={!hasPreviousPage} onClick={handlePreviousPage} />
+          <Icon name="chevron_right" label="Older" disabled={!hasNextPage} onClick={handleNextPage} />
+        </>
+      )}
     </span>
   );
 };

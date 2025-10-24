@@ -9,6 +9,7 @@ import { recipientLabels as initialRecipientLabels } from "./fixtures/recipientL
 import { initialLabels } from "./fixtures/labels";
 import { normalizeEmails } from "../utils/emails";
 import { openDB } from "idb";
+import { INBOX_TYPE } from "../components/QuickSettings";
 
 export const GlobalContext = createContext();
 
@@ -113,14 +114,14 @@ export const GlobalContextProvider = ({ children }) => {
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
   const [panelState, setPanelState] = usePersistedState("panelState", {
     showPanel: false,
-    direction: "vertical",
+    direction: "no-split", // "vertical" | "horizontal" | "no-split"
   });
   const [softRemovedLabels, setSoftRemovedLabels] = useState({});
   const [previewEmailId, setPreviewEmailId] = useState(null);
   const [showQuickSettings, setShowQuickSettings] = usePersistedState("showQuickSettings", false);
   const [density, setDensity] = usePersistedState("density", "default");
   const [threading, setThreading] = usePersistedState("threading", true);
-  const [inboxType, setInboxType] = usePersistedState("inboxType", "default");
+  const [inboxType, setInboxType] = usePersistedState("inboxType", INBOX_TYPE.DEFAULT);
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
 
   // Vacation responder state

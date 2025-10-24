@@ -309,10 +309,10 @@ const RightActionsContainer = styled.div`
   align-items: center;
 `;
 
-const RightActions = ({ totalFilteredItems }) => {
+const RightActions = ({ totalFilteredItems, showPagination = true }) => {
   return (
     <RightActionsContainer>
-      <Pagination totalFilteredItems={totalFilteredItems} />
+      {showPagination && <Pagination totalFilteredItems={totalFilteredItems} />}
       <ToggleSplitPaneButton />
     </RightActionsContainer>
   );
@@ -328,7 +328,13 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
+const ToolBar = ({
+  totalFilteredItems,
+  threads,
+  showAdvancedMenu,
+  setShowAdvancedMenu,
+  showPagination = true,
+}) => {
   const { folder = "inbox" } = useParams();
   const { selection, refreshEmails, manualSyncCount, setManualSyncCount } = useGlobalContext();
   const [isManualSyncing, setIsManualSyncing] = useState(false);
@@ -418,7 +424,7 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
           setShowAdvancedMenu={setShowAdvancedMenu}
         />
       </LeftItemsContainer>
-      {totalFilteredItems > 0 && <RightActions totalFilteredItems={totalFilteredItems} />}
+      {totalFilteredItems > 0 && <RightActions totalFilteredItems={totalFilteredItems} showPagination={showPagination} />}
     </div>
   );
 };
