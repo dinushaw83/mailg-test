@@ -51,23 +51,33 @@ npm run dev
 
 ---
 
-## Docker Setup
+## Optional Docker Setup
 
-To run the app using Docker, follow these steps:
+If you prefer Docker, add the following `Dockerfile` to the project root, then build and run.
 
-1. **Build the Docker image:**
+```Dockerfile
+FROM node:18-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=build /app .
+EXPOSE 3000
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
+```
+
+Build and run:
 
 ```sh
 docker build -t mailg .
+docker run -p 3000:3000 mailg
 ```
 
-2. **Run the Docker container:**
-
-```sh
-docker run -d -p 3003:80 mailg
-```
-
-3. Open your browser and navigate to localhost:3003 to see the app running.
+Open `http://localhost:3000`.
 
 ---
 
@@ -1442,3 +1452,70 @@ Object.keys(localStorage);
 ```
 
 ---
+
+## Deployment
+
+### Production Build
+
+```bash
+npm run build
+```
+
+This creates an optimized production build in the `dist/` directory.
+
+### Preview Production Build Locally
+
+```bash
+npm run preview
+```
+
+Opens the built app at `http://localhost:4173` (or another port if 4173 is in use).
+
+### Deploy to Vercel
+
+The project includes a `vercel.json` configuration file for easy deployment:
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy
+vercel
+```
+
+Or connect your GitHub repository to Vercel for automatic deployments on push.
+
+### Deploy to Netlify
+
+```bash
+# Build command: npm run build
+# Publish directory: dist
+
+# Or use Netlify CLI
+npm install -g netlify-cli
+netlify deploy --prod
+```
+
+### Deploy to GitHub Pages
+
+1. Update `vite.config.js` to set the base path:
+```javascript
+export default defineConfig({
+  base: '/your-repo-name/',
+  // ... rest of config
+})
+```
+
+2. Build and deploy:
+```bash
+npm run build
+npx gh-pages -d dist
+```
+
+### Environment Variables
+
+The app runs entirely client-side and doesn't require environment variables. All configuration is done through:
+- `src/contexts/fixtures/` - Seed data
+- `src/data/tasks.json` - Verification tasks
+- localStorage - Runtime state
+
