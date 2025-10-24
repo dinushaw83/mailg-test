@@ -158,6 +158,7 @@ export const EmailContent = ({
                 timestamp={message.timestamp}
                 senderName={message.from.name}
                 senderEmail={message.from.email}
+                recipients={message.to}
                 attachments={message.attachments}
                 embeddedImages={message.embeddedImages}
                 isScheduled={message.labels?.includes("Scheduled")}

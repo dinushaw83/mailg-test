@@ -420,6 +420,43 @@ export const getLabel = (participants, { includePersonal = true } = {}) => {
 export function getThreadRows(messages, { label = null, folder = "inbox" } = {}) {
   const { messagesById, threadsById, threadIds } = normalizeEmails(messages);
 
+  // Build a label for the Sent folder that lists only recipient first names
+  // - Excludes the sender (john.doe@example.com)
+  // - If the email is sent only to self, show "me"
+  const toFirstName = (address) => {
+    const email = (address || "").toLowerCase();
+    if (!email) return "";
+    if (email === PERSONAL_EMAIL) return "me";
+
+    const mapped = emailToUsernameMap[email] || emailToUsernameMap[address] || null;
+    if (mapped && mapped.trim()) {
+      return mapped.trim().split(/\s+/u)[0];
+    }
+
+    const local = (address.split("@")[0] || "").split(/[.\-+_]/u)[0] || "";
+    if (!local) return address;
+    return local.charAt(0).toUpperCase() + local.slice(1);
+  };
+
+  const buildSentToLabel = (thread) => {
+    // Find the last non-draft message sent by PERSONAL_EMAIL
+    for (let i = thread.messageIds.length - 1; i >= 0; i -= 1) {
+      const msg = messagesById[thread.messageIds[i]];
+      const isDraft = (msg.labels || []).some((l) => l.toLowerCase() === "drafts");
+      const fromPersonal = ((msg.from?.email || "").toLowerCase() === PERSONAL_EMAIL);
+      if (!isDraft && fromPersonal) {
+        const toList = Array.isArray(msg.to) ? msg.to : [];
+        if (!toList.length) return "";
+
+        const recipientsExcludingSelf = toList.filter((addr) => (addr || "").toLowerCase() !== PERSONAL_EMAIL);
+        const useList = recipientsExcludingSelf.length ? recipientsExcludingSelf : [PERSONAL_EMAIL];
+        const names = useList.map(toFirstName).filter(Boolean);
+        return names.join(", ");
+      }
+    }
+    return "";
+  };
+
   const rows = threadIds.map((tid) => {
     const t = threadsById[tid];
     const firstId = t.messageIds[0];
@@ -427,7 +464,9 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     const first = messagesById[firstId];
     const last = messagesById[lastId];
 
-    const label = getLabel(t.participants, { includePersonal: t.personalEmailSent });
+    const defaultLabel = getLabel(t.participants, { includePersonal: t.personalEmailSent });
+    const sentToLabel = folder === "sent" ? buildSentToLabel(t) : null;
+    const label = sentToLabel || defaultLabel;
 
     return {
       // Keep navigation compatible with message details by using last message id

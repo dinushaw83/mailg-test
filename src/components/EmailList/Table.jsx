@@ -113,7 +113,7 @@ const OneColumnData = ({
                   data-hovercard-id={email.from.email}
                   style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                 >
-                  {email.labels.includes("Drafts") ? "Draft" : email.from.name}
+                   {email.labels.includes("Drafts") ? "Draft" : email.from.name}
                 </span>
               </span>
             </div>
@@ -562,7 +562,7 @@ const Table = ({
                             name={email.from.name}
                             data-hovercard-id={email.from.email}
                           >
-                            {email.label}
+                              {folder === "sent" && !email.labels.includes("Drafts") ? `To: ${email.label}` : email.label}
                             {email.label && email.labels.includes("Drafts") && <span>, </span>}
                             <>
                               {email.labels.includes("Drafts") && (
