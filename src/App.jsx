@@ -45,7 +45,7 @@ function App() {
         <NotificationProvider>
           <Routes>
             {/* Standalone verification page without Layout */}
-            <Route path="/verification-local-storage" element={<VerificationLocalStorage />} />
+            <Route path="/verify-ls" element={<VerificationLocalStorage />} />
 
             {/* Standalone verification page without Layout */}
             <Route path="/verify" element={<VerificationDashboard />} />
