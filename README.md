@@ -392,7 +392,9 @@ Here are the main localStorage keys used during execution and their default/empt
 | **recipients**        | Known contacts/recipients for autocomplete | `[]` (populated from fixtures on first load)              |
 | **recipientLabels**   | Recipient labels taxonomy                  | `{}` (populated from fixtures on first load)              |
 | **deletedRecipients** | Deleted contacts stash                     | `[]`                                                      |
+| **hiddenRecipients**  | Hidden/archived contacts (not shown in UI) | `[]`                                                      |
 | **labels**            | Label metadata (name, color, system flag)  | `{}` (populated from fixtures on first load)              |
+| **searchIndex**       | Full-text search index for email content   | `null` (built dynamically from emails)                    |
 
 #### UI State & Navigation
 
@@ -649,6 +651,19 @@ Comprehensive general preferences stored as a single object:
 **Key fields:**
 - `currentTheme`: Active theme name (`"default"`, `"dark"`, `"light"`, custom theme IDs)
 
+##### Accounts Settings (`settingsAccounts`)
+
+```json
+{
+  "markAsRead": true,
+  "showAttribution": true
+}
+```
+
+**Key fields:**
+- `markAsRead`: Whether conversations are marked as read when opened by others (`true` = mark as read, `false` = leave unread)
+- `showAttribution`: Whether to show sender attribution in delegated emails (`true` = show "sent by...", `false` = show address only)
+
 #### MailG Account Settings
 
 ##### Personal Info (`mailGAccountPersonalInfo`)
@@ -720,6 +735,95 @@ Comprehensive general preferences stored as a single object:
 - `searchPersonalizationEnabled`: Personalize search results
 - `autoDeleteActivity`: Global auto-delete setting for all activity
 
+##### Sign-in Settings (`signInSettings`)
+
+```json
+{
+  "signInPromptsEnabled": true
+}
+```
+
+**Key fields:**
+- `signInPromptsEnabled`: Whether to allow MailG to display sign-in prompts on Android (`true` = enabled, `false` = disabled)
+
+##### Third-party Apps (`thirdPartyApps`)
+
+```json
+[
+  {
+    "id": "cursor-ai",
+    "name": "Cursor",
+    "icon": "cursor",
+    "access": "Sign in with Google",
+    "accessCount": 12,
+    "description": "Access to Any account access",
+    "lastAccessed": "2 days ago"
+  },
+  {
+    "id": "evernote",
+    "name": "Evernote",
+    "icon": "evernote",
+    "access": "Sign in with Google",
+    "accessCount": 12,
+    "description": "Access to Any account access",
+    "lastAccessed": "1 week ago"
+  }
+]
+```
+
+**Key fields:**
+- `id`: Unique identifier for the third-party app
+- `name`: Display name of the application
+- `icon`: Icon identifier for the app
+- `access`: Type of access granted (e.g., "Sign in with Google")
+- `accessCount`: Number of access permissions granted
+- `description`: Description of the access level
+- `lastAccessed`: Human-readable timestamp of last access
+
+#### Miscellaneous
+
+##### Manual Sync Counter (`manualSyncCount`)
+
+```json
+0
+```
+
+**Purpose:**
+- Tracks the number of times the user has manually synced their emails
+- Incremented each time the refresh/sync button is clicked in the toolbar
+- Used to simulate Gmail-like manual sync behavior with loading indicators
+
+##### Verification Keys
+
+These are special localStorage keys used exclusively for testing and verification purposes:
+
+**`__verification_initial_config__`**
+```json
+{
+  "loggedInUser": { "name": "John Doe", "email": "john.doe@example.com" },
+  "emails": [],
+  "recipients": [],
+  // ... complete snapshot of all localStorage keys at app startup
+}
+```
+
+**`__verification_current_config__`**
+```json
+{
+  "loggedInUser": { "name": "John Doe", "email": "john.doe@example.com" },
+  "emails": [/* current email data */],
+  "recipients": [/* current recipient data */],
+  // ... current snapshot of all localStorage keys
+}
+```
+
+**Purpose:**
+- **Initial Config**: Captured by GlobalContext when the app first loads (before any user actions) and never changes
+- **Current Config**: Reflects the current state of all localStorage keys, updated every 2 seconds
+- Used by the verification system to compare initial vs current state and detect changes
+- Enables automated testing by tracking what localStorage changes occur during user interactions
+- Accessible via browser console: `window.initialConfig` and `window.currentConfig`
+
 #### IndexedDB Stores
 
 In addition to localStorage, MailG uses IndexedDB for large binary assets:
@@ -737,8 +841,8 @@ In addition to localStorage, MailG uses IndexedDB for large binary assets:
 
 For quick reference, here's the complete list of all localStorage keys used by MailG:
 
-**Core Data (6 keys):**
-- `loggedInUser`, `emails`, `recipients`, `recipientLabels`, `deletedRecipients`, `labels`
+**Core Data (8 keys):**
+- `loggedInUser`, `emails`, `recipients`, `recipientLabels`, `deletedRecipients`, `hiddenRecipients`, `labels`, `searchIndex`
 
 **UI State (11 keys):**
 - `currentView`, `selectedEmails`, `sortOrder`, `currentPage`, `itemsPerPage`, `panelState`, `showQuickSettings`, `density`, `threading`, `inboxType`, `isLeftSidebarExpanded`, `rightSidebarExpanded`, `rightSidebarActiveTab`
@@ -749,13 +853,16 @@ For quick reference, here's the complete list of all localStorage keys used by M
 **Notifications & Privacy (3 keys):**
 - `notificationSettings`, `mailg-notification-settings`, `privacySettings`
 
-**Settings Tabs (9 keys):**
-- `settingsGeneral`, `settingsAdvanced`, `settingsLabels`, `settingsInbox`, `settingsChat`, `settingsFilters`, `settingsForwarding`, `settingsOffline`, `settingsThemes`
+**Settings Tabs (10 keys):**
+- `settingsGeneral`, `settingsAdvanced`, `settingsLabels`, `settingsInbox`, `settingsChat`, `settingsFilters`, `settingsForwarding`, `settingsOffline`, `settingsThemes`, `settingsAccounts`
 
-**Account Settings (2 keys):**
-- `mailGAccountPersonalInfo`, `mailGAccountDataPrivacy`
+**Account Settings (4 keys):**
+- `mailGAccountPersonalInfo`, `mailGAccountDataPrivacy`, `signInSettings`, `thirdPartyApps`
 
-**Total: 34 localStorage keys** + 2 IndexedDB stores
+**Miscellaneous (3 keys):**
+- `manualSyncCount`, `__verification_initial_config__`, `__verification_current_config__`
+
+**Total: 42 localStorage keys** + 2 IndexedDB stores
 
 ---
 
