@@ -28,6 +28,10 @@ const LOCAL_STORAGE_KEYS = [
   "deletedRecipients",
   "hiddenRecipients",
 
+  //search
+  "allSearchQueries",
+  "mailg_search_history",
+
   // UI / view state
   "currentView",
   "selectedEmails",
@@ -48,26 +52,26 @@ const LOCAL_STORAGE_KEYS = [
   "rightSidebarActiveTab",
 
   // Settings
-   "vacationResponder",
-   "sendAsSettings",
-   "signatures",
-   "notificationSettings",
-   "privacySettings",
-   "settingsGeneral",
-   "settingsAdvanced",
-   "settingsLabels",
-   "settingsInbox",
-   "settingsChat",
-   "settingsFilters",
-   "settingsForwarding",
-   "settingsOffline",
-   "settingsThemes",
-   "settingsAccounts",
-   "mailGAccountPersonalInfo",
-   "mailGAccountDataPrivacy",
-   "thirdPartyApps",
-   "signInSettings",
-   "keyboardShortcuts",
+  "vacationResponder",
+  "sendAsSettings",
+  "signatures",
+  "notificationSettings",
+  "privacySettings",
+  "settingsGeneral",
+  "settingsAdvanced",
+  "settingsLabels",
+  "settingsInbox",
+  "settingsChat",
+  "settingsFilters",
+  "settingsForwarding",
+  "settingsOffline",
+  "settingsThemes",
+  "settingsAccounts",
+  "mailGAccountPersonalInfo",
+  "mailGAccountDataPrivacy",
+  "thirdPartyApps",
+  "signInSettings",
+  "keyboardShortcuts",
 
   // Misc
   "manualSyncCount",
@@ -354,25 +358,25 @@ export const GlobalContextProvider = ({ children }) => {
       includeVisualSearch: false,
     },
     webActivityAutoDelete: "18m",
-    
+
     // Location History / Timeline
     locationHistoryEnabled: false,
     locationHistorySubsettings: {
       shareEdits: true,
     },
-    
+
     // YouTube History
     youtubeHistoryEnabled: true,
-    
+
     // Ad Personalization
     adPersonalizationEnabled: true,
-    
+
     // Search Personalization
     searchPersonalizationEnabled: true,
-    
+
     // Auto-delete
     autoDeleteActivity: "18m",
-    
+
     // Profile Visibility Settings (Info you can share with others)
     profileVisibility: {
       nameVisibility: "anyone", // "onlyYou" or "anyone"
