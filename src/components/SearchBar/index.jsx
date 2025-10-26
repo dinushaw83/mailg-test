@@ -188,6 +188,15 @@ const SearchBar = () => {
     setSearchValue("label:");
   };
 
+  // Helper function to convert activeFilters array to filter object
+  const getFilterObject = () => {
+    return {
+      hasAttachment: activeFilters.includes("Has attachment"),
+      fromMe: activeFilters.includes("From me"),
+      lastSevenDays: activeFilters.includes("Last 7 days"),
+    };
+  };
+
   // Handle filter pill clicks
   const handleFilterClick = (filter) => {
     setActiveFilters((prev) => {
@@ -264,8 +273,7 @@ const SearchBar = () => {
         // Add search query to history when submitted
         if (searchValue.trim()) {
           addToSearchHistory(searchValue);
-          // Track in allSearchQueries
-          addBasicSearchQuery(searchValue);
+          addBasicSearchQuery(searchValue, getFilterObject());
         } else if (!hasAnyFilters) {
           // Don't navigate if no search value and no filters
           return;
@@ -295,7 +303,7 @@ const SearchBar = () => {
       // Add search query to history when clicked from suggestions
       if (item && item.trim() && typeof item === "string") {
         addToSearchHistory(item);
-        addBasicSearchQuery(item);
+        addBasicSearchQuery(item, getFilterObject());
       }
       navigate(`/search/${encodeForPath(item)}`);
     }
