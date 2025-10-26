@@ -125,32 +125,13 @@ For example, to verify the prompt `MAILG-COMPOSE-EMAIL-001`:
 8. Click "▶ Run" next to `MAILG-COMPOSE-EMAIL-001`
 9. View the result: ✅ Passed (if done correctly) or ❌ Failed with diff details
 
-### Programmatic Verifiers
+### LocalStorage Verification
 
-#### 1. Local Browser Verification
+You can verify actions performed in the browser correctly update the corresponding localStorage key(s) by visiting the `http://localhost:3000/verify-ls` route.
 
-You can run a verification directly in the browser by calling the exposed global method:
+The UI updates in near real time as you interact with the application. A “Refresh Now” button is available to manually refresh and sync the display, and a “Reset All” button allows you to clear localStorage and reload the page.
 
-```javascript
-window.verify(promptId);
-```
-
-Replace `promptId` with the appropriate prompt identifier, such as `'MAILG-COMPOSE-EMAIL-001'`. This method is useful for quick checks while interacting with the UI during development or debugging.
-
-#### 2. API Verification (Future Enhancement)
-
-To verify tasks through an API, you would use a **`run_id`** — a unique string that you generate when starting the RL-Gym. This `run_id` would be included in the URL when launching the gym instance, for example:
-
-```text
-http://localhost:3000?run_id={your_unique_run_id}
-```
-
-Each `run_id` would identify a single execution run, allowing you to:
-
-* Run multiple tests **in parallel** against the same instance without conflicts
-* Check verification results asynchronously, even after execution is complete
-
-*Note: API verification endpoints are planned for future implementation.*
+<img width="1893" alt="MailG LocalStorage Verification" src="./public/assets/images/screenshots/mailg-verify-ls.png" />
 
 ---
 
@@ -404,48 +385,50 @@ Here are the main localStorage keys used during execution and their default/empt
 
 #### Core Email & User Data
 
-| Key | Description | Default Value |
-| --- | --- | --- |
-| **loggedInUser** | Current signed-in user (name, email) | `{ "name": "John Doe", "email": "john.doe@example.com" }` |
-| **emails** | All email messages in the system | `[]` (populated from fixtures on first load) |
-| **recipients** | Known contacts/recipients for autocomplete | `[]` (populated from fixtures on first load) |
-| **recipientLabels** | Recipient labels taxonomy | `{}` (populated from fixtures on first load) |
-| **deletedRecipients** | Deleted contacts stash | `[]` |
-| **labels** | Label metadata (name, color, system flag) | `{}` (populated from fixtures on first load) |
+| Key                   | Description                                | Default Value                                             |
+| --------------------- | ------------------------------------------ | --------------------------------------------------------- |
+| **loggedInUser**      | Current signed-in user (name, email)       | `{ "name": "John Doe", "email": "john.doe@example.com" }` |
+| **emails**            | All email messages in the system           | `[]` (populated from fixtures on first load)              |
+| **recipients**        | Known contacts/recipients for autocomplete | `[]` (populated from fixtures on first load)              |
+| **recipientLabels**   | Recipient labels taxonomy                  | `{}` (populated from fixtures on first load)              |
+| **deletedRecipients** | Deleted contacts stash                     | `[]`                                                      |
+| **hiddenRecipients**  | Hidden/archived contacts (not shown in UI) | `[]`                                                      |
+| **labels**            | Label metadata (name, color, system flag)  | `{}` (populated from fixtures on first load)              |
+| **searchIndex**       | Full-text search index for email content   | `null` (built dynamically from emails)                    |
 
 #### UI State & Navigation
 
-| Key | Description | Default Value |
-| --- | --- | --- |
-| **currentView** | Last active view (e.g. `inbox`, `sent`) | `"inbox"` |
-| **selectedEmails** | Selected message IDs | `[]` |
-| **sortOrder** | Sort preference for email list | `"newest"` |
-| **currentPage** | Pagination – current page number | `1` |
-| **itemsPerPage** | Pagination – items per page | `25` |
-| **panelState** | Split-pane preview state | `{ "showPanel": false, "direction": "vertical" }` |
-| **showQuickSettings** | Quick settings drawer state | `false` |
-| **density** | Row density in email list | `"default"` (options: `default`, `compact`, `comfortable`) |
-| **threading** | Conversation view on/off | `true` |
-| **inboxType** | Inbox type preference | `"default"` (options: `default`, `important`, `unread`, `starred`, `priority`) |
-| **isLeftSidebarExpanded** | Left sidebar expanded/collapsed | `true` |
-| **rightSidebarExpanded** | Right sidebar open/closed | `true` |
-| **rightSidebarActiveTab** | Right sidebar active tab state | `{ "contact": { "screen": "CONTACTS" }, "activeTab": null }` |
+| Key                       | Description                             | Default Value                                                                  |
+| ------------------------- | --------------------------------------- | ------------------------------------------------------------------------------ |
+| **currentView**           | Last active view (e.g. `inbox`, `sent`) | `"inbox"`                                                                      |
+| **selectedEmails**        | Selected message IDs                    | `[]`                                                                           |
+| **sortOrder**             | Sort preference for email list          | `"newest"`                                                                     |
+| **currentPage**           | Pagination – current page number        | `1`                                                                            |
+| **itemsPerPage**          | Pagination – items per page             | `25`                                                                           |
+| **panelState**            | Split-pane preview state                | `{ "showPanel": false, "direction": "vertical" }`                              |
+| **showQuickSettings**     | Quick settings drawer state             | `false`                                                                        |
+| **density**               | Row density in email list               | `"default"` (options: `default`, `compact`, `comfortable`)                     |
+| **threading**             | Conversation view on/off                | `true`                                                                         |
+| **inboxType**             | Inbox type preference                   | `"default"` (options: `default`, `important`, `unread`, `starred`, `priority`) |
+| **isLeftSidebarExpanded** | Left sidebar expanded/collapsed         | `true`                                                                         |
+| **rightSidebarExpanded**  | Right sidebar open/closed               | `true`                                                                         |
+| **rightSidebarActiveTab** | Right sidebar active tab state          | `{ "contact": { "screen": "CONTACTS" }, "activeTab": null }`                   |
 
 #### Email Features
 
-| Key | Description | Default Value |
-| --- | --- | --- |
-| **sendAsSettings** | "Send mail as" display name and reply-to | `{ "displayName": "John Doe", "email": "john.doe@example.com", "replyTo": "" }` |
-| **signatures** | Email signatures configuration | `{ "list": [], "useForNewEmails": "", "useForRepliesAndForwards": "", "insertSignatureBeforeQuotedText": false }` |
-| **vacationResponder** | Vacation autoresponder settings | `{ "enabled": false, "firstDay": "", "lastDay": "", "subject": "", "message": "", "onlyContacts": false }` |
+| Key                   | Description                              | Default Value                                                                                                     |
+| --------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **sendAsSettings**    | "Send mail as" display name and reply-to | `{ "displayName": "John Doe", "email": "john.doe@example.com", "replyTo": "" }`                                   |
+| **signatures**        | Email signatures configuration           | `{ "list": [], "useForNewEmails": "", "useForRepliesAndForwards": "", "insertSignatureBeforeQuotedText": false }` |
+| **vacationResponder** | Vacation autoresponder settings          | `{ "enabled": false, "firstDay": "", "lastDay": "", "subject": "", "message": "", "onlyContacts": false }`        |
 
 #### Notifications & Privacy
 
-| Key | Description | Default Value |
-| --- | --- | --- |
-| **notificationSettings** | Notification preferences (GlobalContext) | `{ "type": "off", "sound": "1", "enabled": false }` |
-| **mailg-notification-settings** | Notification preferences (NotificationContext) | `{ "type": "off", "sound": "1", "enabled": false }` |
-| **privacySettings** | Privacy and data collection settings | `{ "analyticsEnabled": false, "crashReportsEnabled": false, "personalizationEnabled": false, "adsPersonalizationEnabled": true }` |
+| Key                             | Description                                    | Default Value                                                                                                                     |
+| ------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **notificationSettings**        | Notification preferences (GlobalContext)       | `{ "type": "off", "sound": "1", "enabled": false }`                                                                               |
+| **mailg-notification-settings** | Notification preferences (NotificationContext) | `{ "type": "off", "sound": "1", "enabled": false }`                                                                               |
+| **privacySettings**             | Privacy and data collection settings           | `{ "analyticsEnabled": false, "crashReportsEnabled": false, "personalizationEnabled": false, "adsPersonalizationEnabled": true }` |
 
 #### Settings Tabs State
 
@@ -668,6 +651,19 @@ Comprehensive general preferences stored as a single object:
 **Key fields:**
 - `currentTheme`: Active theme name (`"default"`, `"dark"`, `"light"`, custom theme IDs)
 
+##### Accounts Settings (`settingsAccounts`)
+
+```json
+{
+  "markAsRead": true,
+  "showAttribution": true
+}
+```
+
+**Key fields:**
+- `markAsRead`: Whether conversations are marked as read when opened by others (`true` = mark as read, `false` = leave unread)
+- `showAttribution`: Whether to show sender attribution in delegated emails (`true` = show "sent by...", `false` = show address only)
+
 #### MailG Account Settings
 
 ##### Personal Info (`mailGAccountPersonalInfo`)
@@ -739,14 +735,103 @@ Comprehensive general preferences stored as a single object:
 - `searchPersonalizationEnabled`: Personalize search results
 - `autoDeleteActivity`: Global auto-delete setting for all activity
 
+##### Sign-in Settings (`signInSettings`)
+
+```json
+{
+  "signInPromptsEnabled": true
+}
+```
+
+**Key fields:**
+- `signInPromptsEnabled`: Whether to allow MailG to display sign-in prompts on Android (`true` = enabled, `false` = disabled)
+
+##### Third-party Apps (`thirdPartyApps`)
+
+```json
+[
+  {
+    "id": "cursor-ai",
+    "name": "Cursor",
+    "icon": "cursor",
+    "access": "Sign in with Google",
+    "accessCount": 12,
+    "description": "Access to Any account access",
+    "lastAccessed": "2 days ago"
+  },
+  {
+    "id": "evernote",
+    "name": "Evernote",
+    "icon": "evernote",
+    "access": "Sign in with Google",
+    "accessCount": 12,
+    "description": "Access to Any account access",
+    "lastAccessed": "1 week ago"
+  }
+]
+```
+
+**Key fields:**
+- `id`: Unique identifier for the third-party app
+- `name`: Display name of the application
+- `icon`: Icon identifier for the app
+- `access`: Type of access granted (e.g., "Sign in with Google")
+- `accessCount`: Number of access permissions granted
+- `description`: Description of the access level
+- `lastAccessed`: Human-readable timestamp of last access
+
+#### Miscellaneous
+
+##### Manual Sync Counter (`manualSyncCount`)
+
+```json
+0
+```
+
+**Purpose:**
+- Tracks the number of times the user has manually synced their emails
+- Incremented each time the refresh/sync button is clicked in the toolbar
+- Used to simulate Gmail-like manual sync behavior with loading indicators
+
+##### Verification Keys
+
+These are special localStorage keys used exclusively for testing and verification purposes:
+
+**`__verification_initial_config__`**
+```json
+{
+  "loggedInUser": { "name": "John Doe", "email": "john.doe@example.com" },
+  "emails": [],
+  "recipients": [],
+  // ... complete snapshot of all localStorage keys at app startup
+}
+```
+
+**`__verification_current_config__`**
+```json
+{
+  "loggedInUser": { "name": "John Doe", "email": "john.doe@example.com" },
+  "emails": [/* current email data */],
+  "recipients": [/* current recipient data */],
+  // ... current snapshot of all localStorage keys
+}
+```
+
+**Purpose:**
+- **Initial Config**: Captured by GlobalContext when the app first loads (before any user actions) and never changes
+- **Current Config**: Reflects the current state of all localStorage keys, updated every 2 seconds
+- Used by the verification system to compare initial vs current state and detect changes
+- Enables automated testing by tracking what localStorage changes occur during user interactions
+- Accessible via browser console: `window.initialConfig` and `window.currentConfig`
+
 #### IndexedDB Stores
 
 In addition to localStorage, MailG uses IndexedDB for large binary assets:
 
-| Store Name | Description | Key Path | Indexes |
-| --- | --- | --- | --- |
-| **attachments** | File attachments (blobs, metadata) | `id` | `name` |
-| **embeddedImages** | Inline images in email bodies | `id` | `emailId` |
+| Store Name         | Description                        | Key Path | Indexes   |
+| ------------------ | ---------------------------------- | -------- | --------- |
+| **attachments**    | File attachments (blobs, metadata) | `id`     | `name`    |
+| **embeddedImages** | Inline images in email bodies      | `id`     | `emailId` |
 
 **Usage:**
 - `attachments`: Stores file attachments with their binary data, name, size, and type
@@ -756,8 +841,8 @@ In addition to localStorage, MailG uses IndexedDB for large binary assets:
 
 For quick reference, here's the complete list of all localStorage keys used by MailG:
 
-**Core Data (6 keys):**
-- `loggedInUser`, `emails`, `recipients`, `recipientLabels`, `deletedRecipients`, `labels`
+**Core Data (8 keys):**
+- `loggedInUser`, `emails`, `recipients`, `recipientLabels`, `deletedRecipients`, `hiddenRecipients`, `labels`, `searchIndex`
 
 **UI State (11 keys):**
 - `currentView`, `selectedEmails`, `sortOrder`, `currentPage`, `itemsPerPage`, `panelState`, `showQuickSettings`, `density`, `threading`, `inboxType`, `isLeftSidebarExpanded`, `rightSidebarExpanded`, `rightSidebarActiveTab`
@@ -768,13 +853,16 @@ For quick reference, here's the complete list of all localStorage keys used by M
 **Notifications & Privacy (3 keys):**
 - `notificationSettings`, `mailg-notification-settings`, `privacySettings`
 
-**Settings Tabs (9 keys):**
-- `settingsGeneral`, `settingsAdvanced`, `settingsLabels`, `settingsInbox`, `settingsChat`, `settingsFilters`, `settingsForwarding`, `settingsOffline`, `settingsThemes`
+**Settings Tabs (10 keys):**
+- `settingsGeneral`, `settingsAdvanced`, `settingsLabels`, `settingsInbox`, `settingsChat`, `settingsFilters`, `settingsForwarding`, `settingsOffline`, `settingsThemes`, `settingsAccounts`
 
-**Account Settings (2 keys):**
-- `mailGAccountPersonalInfo`, `mailGAccountDataPrivacy`
+**Account Settings (4 keys):**
+- `mailGAccountPersonalInfo`, `mailGAccountDataPrivacy`, `signInSettings`, `thirdPartyApps`
 
-**Total: 34 localStorage keys** + 2 IndexedDB stores
+**Miscellaneous (3 keys):**
+- `manualSyncCount`, `__verification_initial_config__`, `__verification_current_config__`
+
+**Total: 42 localStorage keys** + 2 IndexedDB stores
 
 ---
 
@@ -878,177 +966,140 @@ MailG runs entirely client-side. Email data is seeded from fixtures and updated 
 
 ---
 
-## Key Features (by area)
+## Key Features
 
-### Inbox and Threads
-- **Threaded conversations**: Emails grouped by subject and thread ID, with expandable/collapsible views
-- **Status indicators**: Unread (bold), starred (⭐), important (yellow marker)
-- **Inline attachments**: Preview buttons for files, with download and view options
-- **Embedded images**: Inline image rendering from IndexedDB storage
-- **Hover actions**: Quick access to archive, delete, mark read/unread, snooze
-- **Preview pane**: Resizable split-view with horizontal/vertical layouts
-- **Bulk actions**: Select multiple emails for batch operations (delete, archive, label, mark as read/unread)
-- **Context menu**: Right-click for quick actions on individual emails
+<details>
 
-### Compose & Drafts
-- **Multiple compose windows**: Open multiple compose dialogs simultaneously, minimizable to bottom bar
-- **Rich text editing**: TipTap-powered editor with formatting toolbar
-  - Bold, italic, underline, strikethrough
-  - Headings, lists (ordered/unordered)
-  - Links, code blocks, blockquotes
-  - Tables with resizable columns
-  - Text alignment and indentation
-- **Recipient management**: 
-  - Autocomplete from contacts
-  - To, Cc, Bcc fields with chip-based UI
-  - Contact picker modal with search and filtering
-- **Attachments**: 
-  - Drag-and-drop or file picker
-  - Blocked file type detection (executables, scripts)
-  - Size validation with warnings for large files
-  - Attachment preview and removal
-- **Embedded images**: Inline image insertion with IndexedDB persistence
-- **Draft autosave**: Automatic saving every few seconds while composing
-- **Scheduled send**: 
-  - Pick date and time for delayed sending
-  - View scheduled emails in dedicated folder
-  - Cancel scheduled sends before they go out
-- **Undo send**: Quick undo within 5 seconds after sending
-- **Reply/Forward**: Context-aware composition with quoted text and threading
+<summary><b>Email Management</b></summary>
 
-### Search
-- **Full-text search**: Powered by lunr.js for fast client-side indexing
-- **Advanced filters**:
-  - From/To/Subject/Body fields
-  - Date ranges (before/after/between)
-  - Has attachment, starred, unread
-  - Label/folder filtering
-- **Search suggestions**: Recent searches and quick filters
-- **Category tabs**: Primary, Social, Promotions, Updates (simulated categorization)
-- **Search results view**: Dedicated page with filter chips and result highlighting
+- **Compose Email:** Create and send new email messages
+- **Reply to Email:** Respond to received emails
+- **Reply All:** Reply to all recipients of an email
+- **Forward Email:** Forward emails to other recipients
+- **Delete Email:** Move emails to trash
+- **Permanently Delete:** Remove emails from trash permanently
+- **Move to Folder:** Organize emails into different folders/labels
+- **Mark as Read:** Mark emails as read/unread
+- **Star/Unstar Email:** Add or remove star markers from emails
+- **Archive Email:** Remove emails from inbox while keeping them accessible
+- **Restore Archived:** Move archived emails back to inbox
+- **Undo Send:** Cancel email sending within time window
+- **Schedule Send:** Schedule emails to be sent at specific times
+- **Draft Management:** Save, edit, and manage email drafts
+- **Email Threading:** Group related emails into conversation threads
+</details>
 
-### Labels & Folders
-- **System labels**: Inbox, Starred, Sent, Drafts, Spam, Trash, All Mail, Important
-- **Custom labels**: User-created labels with customizable colors
-- **Nested labels**: Hierarchical label structure (e.g., `Projects/Phoenix`)
-- **Label management**:
-  - Create, edit, rename, delete labels
-  - Change label colors
-  - Reorder labels in sidebar
-- **Multi-label support**: Apply multiple labels to a single email
-- **Label counts**: Real-time unread counts per label in sidebar
+<details>
 
-### Settings
-Comprehensive settings interface with multiple tabs:
+<summary><b>Email Composition</b></summary>
 
-#### General
-- Language and input tools
-- Maximum page size (pagination)
-- Undo send delay
-- Default text style
-- Keyboard shortcuts toggle
-- Button labels vs icons
-- Snippets (quick text)
-- Signature management
-- Personal level indicators
-- Vacation responder
+- **Rich Text Editor:** Format emails with fonts, colors, styles
+- **Plain Text Mode:** Compose emails in plain text format
+- **Insert Links:** Add hyperlinks to email content
+- **Auto-Save Drafts:** Automatically save email drafts while composing
+- **Recipients Management:** Add, remove, edit To, CC, BCC recipients
+- **Add Attachments:** Attach files to emails
+- **Remove Attachments:** Delete attached files before sending
+- **Attachment Preview:** Preview attached files before sending
+- **Insert Images:** Embed images directly in email body
+- **Signature Management:** Add and manage email signatures
+</details>
 
-#### Labels
-- Create, edit, and delete custom labels
-- Show/hide labels in sidebar
-- Reorder label list
+<details>
 
-#### Inbox
-- Inbox type (Default, Important first, Unread first, Starred first, Priority Inbox)
-- Reading pane location (No split, Right of inbox, Below inbox)
-- Filtered mail settings
-- Categories (Primary, Social, Promotions, Updates, Forums)
+<summary><b>Inbox Management</b></summary>
 
-#### Accounts and Import
-- **Send mail as**: Configure display name and reply-to address
-  - Stored in `sendAsSettings` localStorage key
-  - Editable via modal dialog
-  - Persists across sessions
-- Import mail and contacts (UI placeholder)
-- Check mail from other accounts (UI placeholder)
-- Grant access to your account (UI placeholder)
+- **Inbox View:** Display received emails in organized layout
+- **Email List:** Show emails in list format with key information
+- **Bulk Actions:** Perform actions on multiple emails simultaneously
+- **Email Sorting:** Sort emails by date, sender, subject, importance
+- **Refresh Inbox (Manual Version):** Manual and automatic email synchronization
+- **Email Preview:** Quick preview of email content without opening
+- **Conversation View:** Group related emails in threaded conversations
+- **Density Settings:** Adjust email list spacing (comfortable, cozy, compact)
+- **Reading Pane:** Side or bottom pane for reading emails
+- **Multiple Selection:** Select multiple emails for batch operations
+</details>
 
-#### Filters and Blocked Addresses
-- Create email filters with conditions and actions
-- Block specific senders
+<details>
 
-#### Forwarding and POP/IMAP
-- Auto-forwarding configuration
-- POP/IMAP access settings
+<summary><b>Search & Filters</b></summary>
 
-#### Add-ons
-- Manage third-party integrations (UI placeholder)
+- **Basic Search:** Search emails by keywords in subject/content
+- **Search by Sender:** Find emails from specific senders
+- **Search by Date:** Filter emails by date ranges
+- **Advanced Search:** Search with multiple criteria and operators
+- **Search Attachments:** Find emails with or without attachments
+- **Search History:** Access previous search queries
+- **Saved Searches:** Store frequently used search queries
+- **Search Suggestions:** Auto-complete search terms and suggestions
+</details>
 
-#### Chat and Meet
-- Chat settings and integrations (UI placeholder)
+<details>
 
-#### Advanced
-- Auto-advance (next conversation after action)
-- Send and Archive button
-- Default reply behavior
-- Conversation view toggle
-- External images policy
-- Keyboard shortcuts reference
+<summary><b>User Interface</b></summary>
 
-#### Offline
-- Offline mail sync settings (UI placeholder)
+- **Navigation Menu:** Left sidebar with folders, labels, and features
+- **Toolbar Actions:** Top toolbar with common email actions  
+- **Error Messages:** User-friendly error handling and recovery
+- **Keyboard Shortcuts:** Hotkeys for quick email operations
+- **Responsive Design:** Optimize interface for different screen sizes
+- **Context Menus:** Right-click menus for quick actions
 
-#### Themes
-- Theme selection (Light, Dark, Custom)
-- Background images
+</details>
 
-### Contacts
-- **Contact list**: Searchable table view with all contacts
-- **Contact details**: Name, email, phone, notes, labels
-- **Contact labels**: Organize contacts into groups (Family, Work, Friends, etc.)
-- **Create/Edit/Delete**: Full CRUD operations for contacts
-- **Import/Export**: Bulk contact management (UI placeholder)
-- **Merge duplicates**: Find and merge duplicate contact entries
-- **Right sidebar integration**: Quick contact lookup while viewing emails
+<details>
 
-### Notifications
-- **Desktop notifications**: Browser notification API integration
-- **Notification types**: 
-  - Off (no notifications)
-  - New mail (all new messages)
-  - Important mail only
-- **Sound alerts**: Multiple sound options with preview
-- **Permission management**: Request and manage browser notification permissions
-- **Persistent preferences**: Settings saved to localStorage
+<summary><b>Organization & Labels</b></summary>
 
-### Right Sidebar
-- **Collapsible tabs**: Calendar, Keep, Tasks, Contacts, Add-ons
-- **Contacts tab**: 
-  - Quick contact search
-  - Recent contacts
-  - Contact details popup
-  - Add to email composition
-- **Tasks tab**: Task list integration (UI placeholder)
-- **Resizable**: Adjustable width
+- **Create Labels:** Set up custom labels for email organization
+- **Apply Labels:** Tag emails with relevant labels
+- **Remove Labels:** Untag emails from labels
+- **Label Colors:** Assign colors to labels for visual organization
+- **Nested Labels:** Create hierarchical label structures
+- **Label Management:** Edit, rename, delete labels
+- **Smart Labels:** System-generated labels (Important, Social, etc.)
+- **Label Filters:** View emails by specific labels
+</details>
 
-### Keyboard Shortcuts
-- `c` - Compose new email
-- `r` - Reply
-- `a` - Reply all
-- `f` - Forward
-- `e` - Archive
-- `#` - Delete
-- `s` - Star/unstar
-- `u` - Mark as unread
-- `Shift + u` - Mark as read
-- `j` / `k` - Navigate up/down in list
-- `o` or `Enter` - Open email
-- `Escape` - Close email/dialog
-- `gi` - Go to Inbox
-- `gs` - Go to Starred
-- `gt` - Go to Sent
-- `gd` - Go to Drafts
-- `/` - Focus search box
+<details>
+
+<summary><b>Contact Management</b></summary>
+
+- **Add Contacts:** Save email addresses to contact list
+- **Edit Contacts:** Update contact information and details
+- **Contact Groups:** Create and manage contact groups
+- **Auto-Complete:** Suggest contacts while typing email addresses
+- **Contact Import:** Import contacts from external sources
+- **Contact Export:** Export contact lists
+- **Contact Search:** Find contacts by name or email
+</details>
+
+<details>
+
+<summary><b>Settings & Preferences</b></summary>
+
+- **Account Settings:** Configure email account parameters
+- **Display Settings:** Customize email display preferences
+- **Signature Settings:** Create and manage multiple email signatures
+- **Auto-Reply Settings:** Set up automatic reply messages
+- **Privacy Settings:** Control privacy and data sharing options
+- **Notification Settings:** Configure email notification preferences
+</details>
+
+<details>
+
+<summary><b>Security & Privacy</b></summary>
+
+- **Spam Folder:** Quarantine suspected spam messages
+</details>
+
+<details>
+
+<summary><b>Data Management</b></summary>
+
+- **Email Recovery:** Restore accidentally deleted emails
+</details>
 
 ---
 

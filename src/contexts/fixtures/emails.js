@@ -330,7 +330,7 @@ export const initialEmails = [
     read: true,
     starred: false,
     important: true,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Personal"],
     labelColor: "#e1f7e1",
   },
   {
@@ -739,7 +739,7 @@ export const initialEmails = [
     read: false,
     starred: false,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Personal::Receipts"],
     labelColor: "#ffe1e1",
   },
   {
@@ -981,7 +981,7 @@ export const initialEmails = [
     read: true,
     starred: false,
     important: false,
-    labels: ["Inbox"],
+    labels: ["Inbox", "Work"],
     labelColor: "#ffe1e1",
   },
   {
@@ -1157,7 +1157,7 @@ export const initialEmails = [
     read: true,
     starred: true,
     important: true,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Work::Clients"],
     labelColor: "#e1e3e1",
   },
   {
@@ -2257,7 +2257,7 @@ export const initialEmails = [
     read: false,
     starred: true,
     important: true,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Work", "Work::Clients"],
     labelColor: "#e1e3e1",
   },
   {
@@ -2389,7 +2389,7 @@ export const initialEmails = [
     read: true,
     starred: true,
     important: true,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Projects"],
     labelColor: "#e1e3e1",
   },
   {
@@ -2499,7 +2499,7 @@ export const initialEmails = [
     read: false,
     starred: true,
     important: false,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Personal::Travel", "Personal"],
     labelColor: "#e1e3e1",
   },
   {
@@ -3577,7 +3577,7 @@ export const initialEmails = [
     read: false,
     starred: true,
     important: true,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Work::Clients", "Work::Reports"],
     labelColor: "#e1e3e1",
   },
   {
@@ -4480,7 +4480,7 @@ export const initialEmails = [
     read: true,
     starred: false,
     important: false,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Personal", "Work::Clients"],
     labelColor: "#e1e3e1",
   },
   {
@@ -4502,7 +4502,7 @@ export const initialEmails = [
     read: false,
     starred: false,
     important: true,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Work::Reports"],
     labelColor: "#e1e3e1",
   },
   {
@@ -4546,7 +4546,7 @@ export const initialEmails = [
     read: false,
     starred: false,
     important: false,
-    labels: ["Inbox", "Primary"],
+    labels: ["Inbox", "Primary", "Work"],
     labelColor: "#e1e3e1",
   },
 ];

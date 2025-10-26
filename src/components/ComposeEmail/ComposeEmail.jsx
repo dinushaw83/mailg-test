@@ -82,10 +82,8 @@ export default function ComposeEmail({ composeWindow }) {
     const isNewCompose = !currentDraftId && !composeWindow?.fields?.replyingTo && !content.html?.trim();
 
     // Sanitize signature so it doesn't bring its own <p> tags
-    const sanitizedSignature = (defaultSignatureHTML || '')
-      .replace(/^<p[^>]*>/i, '')
-      .replace(/<\/p>$/i, '');
-    
+    const sanitizedSignature = (defaultSignatureHTML || "").replace(/^<p[^>]*>/i, "").replace(/<\/p>$/i, "");
+
     if (isNewCompose && defaultSignatureHTML) {
       if (signaturesState?.insertSignatureBeforeQuotedText) {
         setContent({
@@ -420,6 +418,7 @@ export default function ComposeEmail({ composeWindow }) {
               setRawInputText((prev) => ({ ...prev, bcc: rawText || "" }));
             }}
             placeholder="Recipients"
+            autoFocus={composeWindow?.autoFocus}
           />
 
           {/* Subject Field */}
@@ -447,7 +446,6 @@ export default function ComposeEmail({ composeWindow }) {
                 composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "calc(100vh - 340px)"
               }
               useCompactFormatting={true}
-              autoFocus={composeWindow?.autoFocus}
             />
           </div>
         </div>
