@@ -11,6 +11,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ActionMenuItem } from "./ActionMenuItem";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import useMailActions from "../../hooks/useMailActions";
 
 const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateTime, onConfirm }) => {
   const [dateError, setDateError] = useState("");
@@ -209,6 +211,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
 };
 
 export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) => {
+  const { setSnackbar, selection } = useGlobalContext();
+  const { unsnooze } = useMailActions();
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [selectedDateTime, setSelectedDateTime] = useState(new Date());
   const today = new Date();
@@ -251,6 +255,37 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     return `${weekday}, ${time}`;
   };
 
+  // Helper function to show snackbar with undo action
+  const handleSnoozeWithUndo = (ids, snoozeUntil) => {
+    snooze(ids, snoozeUntil);
+    selection.clear();
+
+    const message = ids.length > 1 ? `${ids.length} conversations snoozed.` : "Conversation snoozed.";
+
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            unsnooze(ids);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  };
+
   const handleCalendarOpen = () => {
     setCalendarModalOpen(true);
   };
@@ -261,7 +296,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
   };
 
   const handleDateTimeConfirm = () => {
-    snooze(selectedIds, selectedDateTime);
+    handleSnoozeWithUndo(selectedIds, selectedDateTime);
     setCalendarModalOpen(false);
     onClose();
   };
@@ -296,7 +331,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
             label="Later today"
             rightText={formatTime(laterToday)}
             onClick={() => {
-              snooze(selectedIds, laterToday);
+              handleSnoozeWithUndo(selectedIds, laterToday);
               onClose();
             }}
           />
@@ -304,7 +339,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
             label="Tomorrow"
             rightText={formatTime(tomorrow)}
             onClick={() => {
-              snooze(selectedIds, tomorrow);
+              handleSnoozeWithUndo(selectedIds, tomorrow);
               onClose();
             }}
           />
@@ -312,7 +347,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
             label="Later this week"
             rightText={formatTime(laterThisWeek)}
             onClick={() => {
-              snooze(selectedIds, laterThisWeek);
+              handleSnoozeWithUndo(selectedIds, laterThisWeek);
               onClose();
             }}
           />
@@ -320,7 +355,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
             label="This weekend"
             rightText={formatTime(thisWeekend)}
             onClick={() => {
-              snooze(selectedIds, thisWeekend);
+              handleSnoozeWithUndo(selectedIds, thisWeekend);
               onClose();
             }}
           />
@@ -328,7 +363,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
             label="Next week"
             rightText={formatTime(nextWeek)}
             onClick={() => {
-              snooze(selectedIds, nextWeek);
+              handleSnoozeWithUndo(selectedIds, nextWeek);
               onClose();
             }}
           />

@@ -1,11 +1,11 @@
 import Box from "@mui/material/Box";
 import { Icon } from "../InboxView/ActionBar";
-import React, { useCallback, useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import Divider from "@mui/material/Divider";
 import MoveToMenu from "./MoveToMenu";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 
@@ -69,7 +69,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   const [snoozeAnchorEl, setSnoozeAnchorEl] = useState(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
 
-  const navigate = useNavigate();
   const location = useLocation();
 
   const anchorRef = useRef(null);

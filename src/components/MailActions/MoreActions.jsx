@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
+import Button from "@mui/material/Button";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "./Snooze";
@@ -163,28 +164,113 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const handleStar = useCallback(
     (value) => {
       setStar(selectedIds, value);
+      selection.clear();
       handleClose();
+
+      const message = value
+        ? selectedIds.length > 1
+          ? `${selectedIds.length} conversations starred.`
+          : "Conversation starred."
+        : selectedIds.length > 1
+        ? `${selectedIds.length} conversations unstarred.`
+        : "Conversation unstarred.";
+
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              setStar(selectedIds, !value);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
     },
-    [selectedIds, setStar]
+    [selectedIds, setStar, selection, setSnackbar]
   );
 
   const handleImportant = useCallback(
     (value) => {
       setImportant(selectedIds, value);
+      selection.clear();
       handleClose();
+
+      const message = value
+        ? selectedIds.length > 1
+          ? `${selectedIds.length} conversations marked as important.`
+          : "Conversation marked as important."
+        : selectedIds.length > 1
+        ? `${selectedIds.length} conversations marked as not important.`
+        : "Conversation marked as not important.";
+
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              setImportant(selectedIds, !value);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
     },
-    [selectedIds, setImportant]
+    [selectedIds, setImportant, selection, setSnackbar]
   );
 
-  const handleNotImportant = useCallback(() => {
-    setImportant(selectedIds, false);
-    handleClose();
-  }, [selectedIds, setImportant]);
-
   const handleMute = useCallback(() => {
-    setMuted(selectedIds, !allMuted);
+    setMuted(selectedIds, true);
+    selection.clear();
     handleClose();
-  }, [selectedIds, setMuted, allMuted]);
+
+    const message = selectedIds.length > 1 ? `${selectedIds.length} conversations muted.` : "Conversation muted.";
+
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            setMuted(selectedIds, false);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [selectedIds, setMuted, selection, setSnackbar]);
 
   const hasUnreadEmails = useMemo(() => {
     // to reconsider this
