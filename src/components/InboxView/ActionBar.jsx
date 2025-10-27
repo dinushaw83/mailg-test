@@ -17,6 +17,26 @@ import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 import { useHotkeys } from "react-hotkeys-hook";
 
+const buildMatchKeysForEmail = (email = {}) => {
+  const keys = [];
+  const add = (value) => {
+    const v = String(value ?? "").trim();
+    if (v) keys.push(v);
+  };
+
+  add(email.id);
+  add(email.messageId);
+  add(email.threadId);
+  if (email.threadId) {
+    add(String(email.threadId).replace("#thread-f:", ""));
+  }
+  add(email.legacyThreadId);
+  add(email.legacyLastMessageId);
+  add(email.legacyLastNonDraftMessageId);
+
+  return keys;
+};
+
 export const Icon = ({
   id,
   name,
@@ -110,8 +130,7 @@ const initialState = {
 
 const useCustomHotKeys = ({
   goToInbox,
-  toggleStar,
-  threadId,
+  handleStar,
   handleArchive,
   toggleSpamModal,
   toggleMoveToMenu,
@@ -131,7 +150,7 @@ const useCustomHotKeys = ({
   });
 
   useHotkeys(shortcutsOn ? "s" : "", () => {
-    toggleStar([threadId]);
+    handleStar();
   });
 
   useHotkeys(shortcutsOn ? "e" : "", () => {
@@ -189,17 +208,57 @@ const MailActions = ({ thread }) => {
   const { labels, labelTree } = useLabels();
   const [isMovingToLabel, setIsMovingToLabel] = useState(true);
 
+  const location = useLocation();
+  const hasRunOnceRef = useRef(false);
+
+  // Get the base path by removing the threadId from the current path
+  const getBasePath = useCallback(() => {
+    const pathParts = location.pathname.split("/");
+    return pathParts.slice(0, -1).join("/") || "/inbox";
+  }, [location.pathname]);
+
+  const threadEmails = useMemo(
+    () => emails.filter((email) => email.threadId === thread.threadId),
+    [emails, thread.threadId]
+  );
+  useEffect(() => {
+    hasRunOnceRef.current = false;
+  }, [thread.threadId]);
+
+  const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
+  const conversationMatchKeys = useMemo(() => {
+    const keys = new Set();
+    const add = (value) => {
+      const v = String(value ?? "").trim();
+      if (v) keys.add(v);
+    };
+
+    add(thread.threadId);
+    add(threadId);
+    add(thread.legacyThreadId);
+    add(thread.legacyLastMessageId);
+    add(thread.legacyLastNonDraftMessageId);
+
+    threadEmails.forEach((email) => {
+      buildMatchKeysForEmail(email).forEach((key) => keys.add(key));
+    });
+
+    return [...keys];
+  }, [thread, threadEmails, threadId]);
+  const conversationLabelSnapshot = useCallback(
+    () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
+    [threadEmails]
+  );
+
   // Check if the current thread is not in inbox
   const isThreadNotInInbox = useMemo(() => {
-    const email = emails.find((email) => email.threadId.split(":")[1] === threadId);
-    return email && (!email.labels || !email.labels.includes("Inbox"));
-  }, [emails, threadId]);
+    return threadEmails.every((email) => !(email.labels || []).includes("Inbox"));
+  }, [threadEmails]);
 
   // Check if the current thread is already deleted (in trash)
   const isThreadDeleted = useMemo(() => {
-    const email = emails.find((email) => email.threadId.split(":")[1] === threadId);
-    return email && email.labels && email.labels.includes("Trash");
-  }, [emails, threadId]);
+    return threadEmails.every((email) => (email.labels || []).includes("Trash"));
+  }, [threadEmails]);
 
   // Check if any selected emails are not in the inbox
   const menuItems = useMemo(() => {
@@ -226,6 +285,10 @@ const MailActions = ({ thread }) => {
     dispatch({ type: "toggleMoveToMenu" });
   }, [dispatch]);
 
+  const toggleCreateOpen = useCallback(() => {
+    dispatch({ type: "toggleCreateOpen" });
+  }, []);
+
   const {
     moveToSpam,
     moveToTrash,
@@ -235,15 +298,32 @@ const MailActions = ({ thread }) => {
     archive,
     markRead,
     snooze,
+    unsnooze,
     addLabels,
     removeLabels,
-    toggleStar,
+    setStar,
     setImportant,
   } = useMailActions();
 
   const handleArchive = useCallback(() => {
+    if (!threadEmails.length) return;
+
+    const hasInboxLabel = threadEmails.some((email) => (email.labels || []).includes("Inbox"));
+    if (!hasInboxLabel) {
+      setSnackbar({
+        open: true,
+        message: "Conversation already archived.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      return;
+    }
+
+    const snapshot = conversationLabelSnapshot();
+    const idsToArchive = threadEmails.map((email) => email.id);
+
     try {
-      archive([threadId]);
+      archive(idsToArchive);
       setSnackbar({
         open: true,
         message: "Conversation archived.",
@@ -253,7 +333,12 @@ const MailActions = ({ thread }) => {
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              moveToInbox([threadId]);
+              setEmails((prev) =>
+                prev.map((email) => {
+                  const key = String(email.id ?? "");
+                  return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
+                })
+              );
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -269,62 +354,43 @@ const MailActions = ({ thread }) => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [threadId, archive]);
+  }, [threadEmails, archive, setSnackbar, conversationLabelSnapshot, setEmails]);
 
-  const showUndoSnackbar = useCallback(
-    (selectedIds, fromKey, toKey, inCustomLabel, isMoving = true) => {
+  const handleStar = useCallback(() => {
+    if (!threadEmails.length) return;
+
+    const nextValue = !thread.starred;
+    const previousStates = threadEmails.map((email) => ({
+      id: email.id,
+      starred: !!email.starred,
+    }));
+    const idsToUpdate = previousStates.filter((state) => state.starred !== nextValue).map((state) => state.id);
+
+    if (!idsToUpdate.length) {
       setSnackbar({
         open: true,
-        message: `Conversation ${isMoving ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
-        autoHideDuration: 10000,
-        action: (
-          <Button
-            sx={{ textTransform: "none" }}
-            size="small"
-            onClick={() => {
-              if (isMoving) {
-                if (inCustomLabel) {
-                  moveToLabelFrom(selectedIds, toKey, fromKey);
-                } else {
-                  moveToLabel(selectedIds, fromKey || "Inbox");
-                }
-              } else {
-                removeLabels(selectedIds, [toKey]);
-              }
-              setSnackbar({
-                open: true,
-                message: "Action undone.",
-                autoHideDuration: 3000,
-                action: null,
-              });
-            }}
-          >
-            Undo
-          </Button>
-        ),
+        message: nextValue ? "Conversation already starred." : "Conversation already unstarred.",
+        autoHideDuration: 3000,
+        action: null,
       });
+      return;
+    }
 
-      if (isMoving) {
-        navigate(getBasePath());
-      }
-    },
-    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels]
-  );
+    setStar(idsToUpdate, nextValue);
 
-  const handleDelete = useCallback(() => {
-    moveToTrash([threadId]);
-    // Show global snackbar with Undo action
     setSnackbar({
       open: true,
-      message: "Conversation moved to Trash.",
-      autoHideDuration: 10000,
+      message: nextValue ? "Conversation starred." : "Conversation unstarred.",
+      autoHideDuration: 3000,
       action: (
         <Button
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            moveToInbox([threadId]);
-            // Follow-up confirmation snackbar
+            const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
+            const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
+            if (toStar.length) setStar(toStar, true);
+            if (toUnstar.length) setStar(toUnstar, false);
             setSnackbar({
               open: true,
               message: "Action undone.",
@@ -337,14 +403,128 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [threadId, moveToTrash, setSnackbar]);
+  }, [threadEmails, thread.starred, setStar, setSnackbar]);
+
+  const showUndoSnackbar = useCallback(
+    (matchKeys, fromKey, toKey, inCustomLabel, isMoving = true, snapshot = null) => {
+      setSnackbar({
+        open: true,
+        message: `Conversation ${isMoving ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              try {
+                if (snapshot && snapshot.size) {
+                  setEmails((prev) =>
+                    prev.map((email) => {
+                      const key = String(email.id ?? "");
+                      return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
+                    })
+                  );
+                } else if (isMoving) {
+                  if (inCustomLabel) {
+                    moveToLabelFrom(matchKeys, toKey, fromKey);
+                  } else {
+                    moveToLabel(matchKeys, fromKey || "Inbox");
+                  }
+                } else {
+                  removeLabels(matchKeys, [toKey]);
+                }
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              } catch {
+                setSnackbar({
+                  open: true,
+                  message: "Could not undo.",
+                  autoHideDuration: 4000,
+                  action: null,
+                });
+              }
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+
+      if (isMoving) {
+        navigate(getBasePath());
+      }
+    },
+    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels, setEmails, navigate, getBasePath]
+  );
+
+  const handleDelete = useCallback(() => {
+    if (!conversationMatchKeys.length) return;
+
+    const undo = moveToTrash(conversationMatchKeys);
+
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Trash.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            if (typeof undo === "function") {
+              undo();
+            } else {
+              moveToInbox(conversationMatchKeys);
+            }
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [conversationMatchKeys, moveToTrash, moveToInbox, setSnackbar]);
 
   useEffect(() => {
-    markRead([threadId], true);
-  }, [markRead, threadId]);
+    if (hasRunOnceRef.current) return;
+
+    const unreadIds = threadEmails.filter((email) => !email.read).map((email) => email.id);
+    if (unreadIds.length) {
+      markRead(unreadIds, true);
+    }
+    hasRunOnceRef.current = true;
+  }, [threadEmails, markRead]);
 
   const handleMarkUnread = useCallback(() => {
-    markRead([threadId], false);
+    if (!threadEmails.length) return;
+
+    const previousStates = threadEmails.map((email) => ({
+      id: email.id,
+      read: !!email.read,
+    }));
+    const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
+
+    if (!idsToUpdate.length) {
+      setSnackbar({
+        open: true,
+        message: "Conversation is already unread.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      return;
+    }
+
+    markRead(idsToUpdate, false);
+
     setSnackbar({
       open: true,
       message: "Conversation marked as unread.",
@@ -354,7 +534,10 @@ const MailActions = ({ thread }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            markRead([threadId], true);
+            const idsToRestore = previousStates.filter((state) => state.read).map((state) => state.id);
+            if (idsToRestore.length) {
+              markRead(idsToRestore, true);
+            }
             setSnackbar({
               open: true,
               message: "Action undone.",
@@ -368,27 +551,36 @@ const MailActions = ({ thread }) => {
       ),
     });
     navigate("/inbox");
-  }, [threadId, markRead, setSnackbar, navigate]);
+  }, [threadEmails, markRead, setSnackbar, navigate]);
 
   const handleMenuItemClick = useCallback(
     async (item) => {
-      const selectedIds = [threadId];
       if (item.id === "__create_label__") {
         toggleCreateOpen();
         return;
       }
 
-      if (!selectedIds.length) return;
+      if (!conversationMatchKeys.length) {
+        setSnackbar({
+          open: true,
+          message: "Conversation not available.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+        return;
+      }
 
       try {
+        const snapshot = conversationLabelSnapshot();
+
         if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel(selectedIds, "Inbox");
+          moveToLabel(conversationMatchKeys, "Inbox");
+          showUndoSnackbar(conversationMatchKeys, currentLabel, "Inbox", false, true, snapshot);
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
           return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          moveToTrash(selectedIds);
-          // Show global snackbar with Undo action
+          const undo = moveToTrash(conversationMatchKeys);
           setSnackbar({
             open: true,
             message: "Conversation moved to Trash.",
@@ -398,8 +590,11 @@ const MailActions = ({ thread }) => {
                 sx={{ textTransform: "none" }}
                 size="small"
                 onClick={() => {
-                  moveToInbox(selectedIds);
-                  // Follow-up confirmation snackbar
+                  if (typeof undo === "function") {
+                    undo();
+                  } else {
+                    moveToInbox(conversationMatchKeys);
+                  }
                   setSnackbar({
                     open: true,
                     message: "Action undone.",
@@ -417,21 +612,41 @@ const MailActions = ({ thread }) => {
           const targetKey = item.id;
           const curMeta = currentLabel ? labels?.[currentLabel] : null;
           const inCustomLabel = curMeta && curMeta.system === false;
+
           if (inCustomLabel) {
-            moveToLabelFrom(selectedIds, currentLabel, targetKey);
+            moveToLabelFrom(conversationMatchKeys, currentLabel, targetKey);
           } else {
-            moveToLabel(selectedIds, targetKey); // pass key
+            moveToLabel(conversationMatchKeys, targetKey);
           }
 
-          showUndoSnackbar(selectedIds, currentLabel, targetKey, inCustomLabel, isMovingToLabel);
+          showUndoSnackbar(conversationMatchKeys, currentLabel, targetKey, inCustomLabel, isMovingToLabel, snapshot);
 
-          navigate(getBasePath());
+          if (isMovingToLabel) {
+            navigate(getBasePath());
+          }
         }
       } catch (e) {
         console.error("Move failed:", e);
       }
     },
-    [moveToLabel, moveToLabelFrom, addLabels, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
+    [
+      conversationMatchKeys,
+      conversationLabelSnapshot,
+      moveToLabel,
+      currentLabel,
+      setSnackbar,
+      toggleSpamModal,
+      moveToTrash,
+      moveToInbox,
+      labels,
+      moveToLabelFrom,
+      isMovingToLabel,
+      showUndoSnackbar,
+      navigate,
+      getBasePath,
+      toggleCreateOpen,
+      addLabels,
+    ]
   );
 
   const handleSnoozeAction = useCallback(() => {
@@ -469,49 +684,28 @@ const MailActions = ({ thread }) => {
   const handleLabelAction = useCallback(() => {
     dispatch({ type: "setLabelAnchorEl", labelAnchorEl: labelAnchorElRef.current });
   }, []);
-  const location = useLocation();
-
-  // Get the base path by removing the threadId from the current path
-  const getBasePath = () => {
-    const pathParts = location.pathname.split("/");
-    // Remove the last part (threadId) to get the base path
-    return pathParts.slice(0, -1).join("/") || "/inbox";
-  };
-
-  const toggleCreateOpen = useCallback(() => {
-    dispatch({ type: "toggleCreateOpen" });
-  }, []);
 
   const handleOnAfterCreate = (childName, parentKey, isMoving = true) => {
-    const ids = [threadId];
+    if (!conversationMatchKeys.length) return;
 
     try {
-      // Store original labels before the move
-      const originalLabels = {};
-      ids.forEach((id) => {
-        const email = emails.find((email) => email.threadId.split(":")[1] === id);
-        if (email) {
-          originalLabels[id] = [...(email.labels || [])];
-        }
-      });
-
-      // Perform the move after creation
+      const snapshot = conversationLabelSnapshot();
       const newKey = makeKey(childName, parentKey); // build composite key
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
       const inCustomLabel = curMeta && curMeta.system === false;
 
       if (isMoving) {
         if (inCustomLabel) {
-          moveToLabelFrom(ids, currentLabel, newKey);
+          moveToLabelFrom(conversationMatchKeys, currentLabel, newKey);
         } else {
-          moveToLabel(ids, newKey);
+          moveToLabel(conversationMatchKeys, newKey);
         }
       } else {
         // Always additive when not moving
-        addLabels(ids, [newKey]);
+        addLabels(conversationMatchKeys, [newKey]);
       }
 
-      showUndoSnackbar(ids, currentLabel, newKey, inCustomLabel, isMoving);
+      showUndoSnackbar(conversationMatchKeys, currentLabel, newKey, inCustomLabel, isMoving, snapshot);
 
       if (isMoving) {
         // Navigate back to list view
@@ -527,27 +721,102 @@ const MailActions = ({ thread }) => {
   };
 
   const handleMarkImportant = useCallback(() => {
-    setImportant([threadId], true);
+    if (!threadEmails.length) return;
+
+    const previousStates = threadEmails.map((email) => ({
+      id: email.id,
+      important: !!email.important,
+    }));
+    const idsToUpdate = previousStates.filter((state) => !state.important).map((state) => state.id);
+
+    if (!idsToUpdate.length) {
+      setSnackbar({
+        open: true,
+        message: "Conversation already marked as important.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      return;
+    }
+
+    setImportant(idsToUpdate, true);
     setSnackbar({
       open: true,
       message: "Conversation marked as important.",
       autoHideDuration: 3000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
+            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            if (toImportant.length) setImportant(toImportant, true);
+            if (toNotImportant.length) setImportant(toNotImportant, false);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
     });
-  }, [threadId, setImportant]);
+  }, [threadEmails, setImportant, setSnackbar]);
 
   const handleMarkUnimportant = useCallback(() => {
-    setImportant([threadId], false);
+    if (!threadEmails.length) return;
+
+    const previousStates = threadEmails.map((email) => ({
+      id: email.id,
+      important: !!email.important,
+    }));
+    const idsToUpdate = previousStates.filter((state) => state.important).map((state) => state.id);
+
+    if (!idsToUpdate.length) {
+      setSnackbar({
+        open: true,
+        message: "Conversation already marked as not important.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      return;
+    }
+
+    setImportant(idsToUpdate, false);
     setSnackbar({
       open: true,
       message: "Conversation marked as not important.",
       autoHideDuration: 3000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
+            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            if (toImportant.length) setImportant(toImportant, true);
+            if (toNotImportant.length) setImportant(toNotImportant, false);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
     });
-  }, [threadId, setImportant]);
+  }, [threadEmails, setImportant, setSnackbar]);
 
   useCustomHotKeys({
     goToInbox: () => navigate(getBasePath()),
-    toggleStar,
-    threadId,
+    handleStar,
     handleArchive,
     toggleSpamModal,
     toggleMoveToMenu,
@@ -559,6 +828,59 @@ const MailActions = ({ thread }) => {
     handleMarkUnimportant,
     handleLabelAction,
   });
+
+  const handleReportSpam = useCallback(() => {
+    const undo = moveToSpam(conversationMatchKeys);
+    toggleSpamModal();
+    setSnackbar({
+      open: true,
+      message: "Conversation marked as spam.",
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            undo();
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [conversationMatchKeys, moveToSpam, toggleSpamModal, showUndoSnackbar]);
+
+  const handleSnooze = useCallback(
+    (ids, snoozeUntil) => {
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      const undo = () => {
+        unsnooze(ids, { removedInboxIds });
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      };
+      setSnackbar({
+        open: true,
+        message: "Conversation snoozed.",
+        autoHideDuration: 10000,
+        action: (
+          <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [snooze, unsnooze, setSnackbar]
+  );
 
   return (
     <div
@@ -620,14 +942,8 @@ const MailActions = ({ thread }) => {
         onClose={() => {
           toggleSpamModal();
         }}
-        onReportSpam={() => {
-          moveToSpam([threadId]);
-          toggleSpamModal();
-        }}
-        onUnsubscribe={() => {
-          moveToSpam([threadId]);
-          toggleSpamModal();
-        }}
+        onReportSpam={handleReportSpam}
+        onUnsubscribe={handleReportSpam}
       />
       {moveToMenuOpen && (
         <MoveToMenu
@@ -644,8 +960,8 @@ const MailActions = ({ thread }) => {
         anchorEl={snoozeAnchorEl}
         open={showSnoozePopover}
         onClose={handleSnoozeClose}
-        selectedIds={[threadId]}
-        snooze={snooze}
+        selectedIds={threadMessageIds}
+        snooze={handleSnooze}
       />
       <Labels
         {...{
@@ -655,7 +971,7 @@ const MailActions = ({ thread }) => {
           setSelectedLabelKeys,
           selectedLabelKeys,
           labelAnchorEl,
-          selectedIds: [threadId],
+          selectedIds: threadMessageIds,
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },
@@ -727,8 +1043,15 @@ const NavigationActions = () => {
   const { emails } = useContext(GlobalContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const { moveToInbox, archive } = useMailActions();
-  const { setSnackbar } = useGlobalContext();
+  const { archive } = useMailActions();
+  const { setSnackbar, setEmails } = useGlobalContext();
+
+  const threadKey = useMemo(() => `#thread-f:${threadId}`, [threadId]);
+  const threadEmails = useMemo(() => emails.filter((email) => email.threadId === threadKey), [emails, threadKey]);
+  const conversationLabelSnapshot = useCallback(
+    () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
+    [threadEmails]
+  );
 
   // Get the base path by removing the threadId from the current path
   const getBasePath = () => {
@@ -789,19 +1112,31 @@ const NavigationActions = () => {
   }, [navigate, getBasePath, nextThread]);
 
   const handleArchive = useCallback(() => {
+    if (!threadEmails.length) return;
+
+    const hasInbox = threadEmails.some((email) => (email.labels || []).includes("Inbox"));
+    if (!hasInbox) return;
+
+    const snapshot = conversationLabelSnapshot();
+    const idsToArchive = threadEmails.map((email) => email.id);
+
     try {
-      archive([threadId]);
-      const message = "Conversation archived.";
+      archive(idsToArchive);
       setSnackbar({
         open: true,
-        message,
+        message: "Conversation archived.",
         autoHideDuration: 3000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              moveToInbox([threadId]);
+              setEmails((prev) =>
+                prev.map((email) => {
+                  const key = String(email.id ?? "");
+                  return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
+                })
+              );
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -817,7 +1152,7 @@ const NavigationActions = () => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [archive, setSnackbar]);
+  }, [threadEmails, archive, setSnackbar, conversationLabelSnapshot, setEmails]);
 
   useNavigationHotKeys({ goBack, goForward, handleArchive });
 

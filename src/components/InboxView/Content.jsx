@@ -78,18 +78,16 @@ const Recipient = ({ recipients = [] }) => {
     }
 
     // Check if email is present in contacts
-    const found = contacts.find((contact) => 
-      contact.emails.some((contactEmail) => contactEmail.value === email)
-    );
-    
+    const found = contacts.find((contact) => contact.emails.some((contactEmail) => contactEmail.value === email));
+
     if (found) {
       // Return only the first name
-      return found.name.split(' ')[0];
+      return found.name.split(" ")[0];
     }
 
     // If not found, extract first name from email
-    const emailName = email.split('@')[0];
-    const namePart = emailName.split('.')[0];
+    const emailName = email.split("@")[0];
+    const namePart = emailName.split(".")[0];
     return namePart.charAt(0).toUpperCase() + namePart.slice(1);
   };
 
@@ -107,12 +105,12 @@ const Recipient = ({ recipients = [] }) => {
     // Multiple recipients
     const firstRecipientName = getRecipientDisplayName(recipients[0]);
     const remainingCount = recipients.length - 1;
-    
+
     if (remainingCount === 1) {
       const secondRecipientName = getRecipientDisplayName(recipients[1]);
       return `to ${firstRecipientName}, ${secondRecipientName}`;
     }
-    
+
     return `to ${firstRecipientName} + ${remainingCount} more`;
   };
 
@@ -234,7 +232,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], onReply }
 };
 
 const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
-  const { emails, setEmails, setSnackbar } = useContext(GlobalContext);
+  const { setEmails, setSnackbar } = useContext(GlobalContext);
 
   // Format the scheduled date and time
   const formatScheduledDateTime = (dateStr, timeStr) => {

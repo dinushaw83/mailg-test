@@ -10,26 +10,77 @@ import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
 import { Box } from "@mui/material";
 
-export default function SpamActions({ threads = [], folder, visible }) {
+const buildMatchKeysForEmail = (email = {}) => {
+  const keys = [];
+  const add = (value) => {
+    const v = String(value ?? "").trim();
+    if (v) keys.push(v);
+  };
+
+  add(email.id);
+  add(email.messageId);
+  add(email.threadId);
+  if (email.threadId) {
+    add(String(email.threadId).replace("#thread-f:", ""));
+  }
+  add(email.legacyThreadId);
+  add(email.legacyLastMessageId);
+  add(email.legacyLastNonDraftMessageId);
+
+  return keys;
+};
+
+export default function SpamActions({ threads: _threads = [], folder, visible }) {
   const { moveToSpam, moveToTrash, notSpam, markRead, deleteForever, moveToLabel, moveToLabelFrom, moveToInbox } =
     useMailActions();
-  const { selection, setSnackbar, emails } = useGlobalContext();
+  const { selection, setSnackbar, emails, setEmails } = useGlobalContext();
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
-  const selectedThreads = useMemo(
-    () => threads.filter((thread) => selectedIds.includes(thread.threadId.split(":")[1])),
-    [threads, selectedIds]
+  const selectedEmails = useMemo(() => {
+    if (!selectedIds.length) return [];
+    const idSet = new Set(selectedIds.map(String));
+    return emails.filter((email) => idSet.has(email.threadId.split(":")[1]));
+  }, [emails, selectedIds]);
+  const selectionMatchKeys = useMemo(() => {
+    const keys = new Set();
+    selectedIds.forEach((id) => {
+      const value = String(id ?? "").trim();
+      if (value) keys.add(value);
+    });
+    selectedEmails.forEach((email) => {
+      buildMatchKeysForEmail(email).forEach((key) => keys.add(key));
+    });
+    return [...keys];
+  }, [selectedIds, selectedEmails]);
+  const selectedConversationCount = useMemo(() => {
+    const threadIds = new Set(selectedEmails.map((email) => email.threadId));
+    return threadIds.size || selectedIds.length;
+  }, [selectedEmails, selectedIds]);
+
+  const collectLabelSnapshot = useCallback(
+    (matchKeys) => {
+      if (!matchKeys?.length) return new Map();
+      const targets = new Set(
+        matchKeys.map((key) => String(key ?? "").trim()).filter((value) => value.length > 0)
+      );
+      if (!targets.size) return new Map();
+
+      const snapshot = new Map();
+      emails.forEach((email) => {
+        const keys = buildMatchKeysForEmail(email);
+        if (keys.some((key) => targets.has(key))) {
+          snapshot.set(email.id, [...(email.labels || [])]);
+        }
+      });
+      return snapshot;
+    },
+    [emails]
   );
 
-  // Check if any selected emails are not in inbox
   const hasEmailsNotInInbox = useMemo(() => {
-    if (!selectedIds.length) return false;
-
-    return selectedIds.some((id) => {
-      const email = emails.find((email) => email.threadId.split(":")[1] === id);
-      return email && (!email.labels || !email.labels.includes("Inbox"));
-    });
-  }, [selectedIds, emails]);
+    if (!selectedEmails.length) return false;
+    return selectedEmails.some((email) => !(email.labels || []).includes("Inbox"));
+  }, [selectedEmails]);
 
   const [open, setOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
@@ -53,6 +104,70 @@ export default function SpamActions({ threads = [], folder, visible }) {
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
 
+  const showNoConversationsSelectedSnackbar = useCallback(() => {
+    setSnackbar({
+      open: true,
+      message: "No conversations selected.",
+      autoHideDuration: 3000,
+    });
+  }, [setSnackbar]);
+
+  const showUndoSnackbarForLabelMove = useCallback(
+    (matchKeys, fromKey, toKey, inCustomLabel, conversationCount, originalLabelsSnapshot) => {
+      const count = conversationCount ?? matchKeys.length;
+      const message =
+        count > 1
+          ? `${count} conversations moved to "${getPathLabelFromKey(labels, toKey)}".`
+          : `Conversation moved to "${getPathLabelFromKey(labels, toKey)}".`;
+
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              try {
+                if (originalLabelsSnapshot && originalLabelsSnapshot.size) {
+                  setEmails((prev) =>
+                    prev.map((email) =>
+                      originalLabelsSnapshot.has(email.id)
+                        ? { ...email, labels: originalLabelsSnapshot.get(email.id) }
+                        : email
+                    )
+                  );
+                } else if (inCustomLabel) {
+                  moveToLabelFrom(matchKeys, toKey, fromKey);
+                } else {
+                  moveToLabel(matchKeys, fromKey || "Inbox");
+                }
+
+                setSnackbar({
+                  open: true,
+                  message: "Action undone.",
+                  autoHideDuration: 3000,
+                  action: null,
+                });
+              } catch {
+                setSnackbar({
+                  open: true,
+                  message: "Could not undo.",
+                  autoHideDuration: 4000,
+                  action: null,
+                });
+              }
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [labels, moveToLabelFrom, moveToLabel, setEmails, setSnackbar]
+  );
+
   const handleMenuItemClick = useCallback(
     async (item) => {
       if (item.id === "__create_label__") {
@@ -60,22 +175,34 @@ export default function SpamActions({ threads = [], folder, visible }) {
         return;
       }
 
-      if (!selectedIds.length) return;
+      if (!selectionMatchKeys.length) {
+        showNoConversationsSelectedSnackbar();
+        return;
+      }
 
       try {
+        const labelSnapshot = collectLabelSnapshot(selectionMatchKeys);
+
         if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel(selectedIds, "Inbox");
+          moveToLabel(selectionMatchKeys, "Inbox");
+          showUndoSnackbarForLabelMove(
+            selectionMatchKeys,
+            currentLabel,
+            "Inbox",
+            false,
+            selectedConversationCount,
+            labelSnapshot
+          );
         } else if (item.id === "__spam__" || item.id === "spam") {
           setSpamModalOpen(true);
           return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          moveToTrash(selectedIds);
-          // Show global snackbar with Undo action
+          const undo = moveToTrash(selectionMatchKeys);
           setSnackbar({
             open: true,
             message:
-              selectedIds.length > 1
-                ? `${selectedIds.length} conversations moved to Trash.`
+              selectedConversationCount > 1
+                ? `${selectedConversationCount} conversations moved to Trash.`
                 : "Conversation moved to Trash.",
             autoHideDuration: 10000,
             action: (
@@ -83,8 +210,11 @@ export default function SpamActions({ threads = [], folder, visible }) {
                 sx={{ textTransform: "none" }}
                 size="small"
                 onClick={() => {
-                  moveToInbox(selectedIds);
-                  // Follow-up confirmation snackbar
+                  if (typeof undo === "function") {
+                    undo();
+                  } else {
+                    moveToInbox(selectionMatchKeys);
+                  }
                   setSnackbar({
                     open: true,
                     message: "Action undone.",
@@ -102,11 +232,21 @@ export default function SpamActions({ threads = [], folder, visible }) {
           const targetKey = item.id;
           const curMeta = currentLabel ? labels?.[currentLabel] : null;
           const inCustomLabel = curMeta && curMeta.system === false;
+
           if (inCustomLabel) {
-            moveToLabelFrom(selectedIds, currentLabel, targetKey);
+            moveToLabelFrom(selectionMatchKeys, currentLabel, targetKey);
           } else {
-            moveToLabel(selectedIds, targetKey); // pass key
+            moveToLabel(selectionMatchKeys, targetKey); // pass key
           }
+
+          showUndoSnackbarForLabelMove(
+            selectionMatchKeys,
+            currentLabel,
+            targetKey,
+            inCustomLabel,
+            selectedConversationCount,
+            labelSnapshot
+          );
         }
         setOpen(false);
         selection.clear();
@@ -114,18 +254,36 @@ export default function SpamActions({ threads = [], folder, visible }) {
         console.error("Move failed:", e);
       }
     },
-    [selectedIds, moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels]
+    [
+      selectionMatchKeys,
+      showNoConversationsSelectedSnackbar,
+      collectLabelSnapshot,
+      moveToLabel,
+      currentLabel,
+      selectedConversationCount,
+      showUndoSnackbarForLabelMove,
+      setSnackbar,
+      moveToTrash,
+      moveToInbox,
+      moveToLabelFrom,
+      labels,
+    ]
   );
 
-  const onDeleteForever = () => {
-    const ids = [...selection.ids];
-    if (!ids.length) return;
+  const onDeleteForever = useCallback(() => {
+    if (!selectionMatchKeys.length) {
+      showNoConversationsSelectedSnackbar();
+      return;
+    }
 
     try {
-      deleteForever(ids);
+      deleteForever(selectionMatchKeys);
       setSnackbar({
         open: true,
-        message: ids.length > 1 ? `${ids.length} conversations deleted forever.` : "Conversation deleted forever.",
+        message:
+          selectedConversationCount > 1
+            ? `${selectedConversationCount} conversations deleted forever.`
+            : "Conversation deleted forever.",
         autoHideDuration: 3000,
         action: null,
       });
@@ -133,30 +291,61 @@ export default function SpamActions({ threads = [], folder, visible }) {
     } catch (e) {
       console.error("Delete forever failed:", e);
     }
-  };
+  }, [
+    selectionMatchKeys,
+    showNoConversationsSelectedSnackbar,
+    deleteForever,
+    selectedConversationCount,
+    setSnackbar,
+    selection,
+  ]);
 
   const hasUnreadEmails = useMemo(() => {
-    return selectedThreads.some((thread) => !thread.read);
-  }, [selectedThreads]);
+    return selectedEmails.some((email) => !email.read);
+  }, [selectedEmails]);
 
   const handleReadAction = useCallback(() => {
-    const isMarkingAsRead = hasUnreadEmails;
-
-    if (isMarkingAsRead) {
-      markRead(selectedIds, true); // Mark as read when there are unread emails
-    } else {
-      markRead(selectedIds, false); // Mark as unread when all are read
+    if (!selectedEmails.length) {
+      showNoConversationsSelectedSnackbar();
+      return;
     }
 
-    // Show snackbar with undo action
+    const previousStates = selectedEmails.map((email) => ({
+      id: email.id,
+      threadId: email.threadId,
+      read: !!email.read,
+    }));
+
+    const unread = previousStates.filter((state) => !state.read);
+    const read = previousStates.filter((state) => state.read);
+    const isMarkingAsRead = unread.length > 0;
+    const targetStates = isMarkingAsRead ? unread : read;
+    const idsToUpdate = targetStates.map((state) => state.id);
+
+    if (!idsToUpdate.length) {
+      setSnackbar({
+        open: true,
+        message: isMarkingAsRead ? "Everything is already read." : "Everything is already unread.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      return;
+    }
+
+    markRead(idsToUpdate, isMarkingAsRead);
+    selection.clear();
+
+    const affectedConversations =
+      new Set(targetStates.map((state) => state.threadId)).size || selectedConversationCount || 1;
+
     setSnackbar({
       open: true,
       message: isMarkingAsRead
-        ? selectedIds.length > 1
-          ? `${selectedIds.length} conversations marked as read.`
+        ? affectedConversations > 1
+          ? `${affectedConversations} conversations marked as read.`
           : "Conversation marked as read."
-        : selectedIds.length > 1
-        ? `${selectedIds.length} conversations marked as unread.`
+        : affectedConversations > 1
+        ? `${affectedConversations} conversations marked as unread.`
         : "Conversation marked as unread.",
       autoHideDuration: 3000,
       action: (
@@ -164,8 +353,16 @@ export default function SpamActions({ threads = [], folder, visible }) {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            // Undo: toggle back to previous state
-            markRead(selectedIds, !isMarkingAsRead);
+            const toRead = previousStates.filter((state) => state.read).map((state) => state.id);
+            const toUnread = previousStates.filter((state) => !state.read).map((state) => state.id);
+
+            if (toRead.length) {
+              markRead(toRead, true);
+            }
+            if (toUnread.length) {
+              markRead(toUnread, false);
+            }
+
             setSnackbar({
               open: true,
               message: "Action undone.",
@@ -178,7 +375,14 @@ export default function SpamActions({ threads = [], folder, visible }) {
         </Button>
       ),
     });
-  }, [hasUnreadEmails, selectedIds, markRead, setSnackbar]);
+  }, [
+    selectedEmails,
+    showNoConversationsSelectedSnackbar,
+    markRead,
+    selection,
+    selectedConversationCount,
+    setSnackbar,
+  ]);
 
   const handleOnAfterCreate = (childName, parentKey) => {
     const ids = [...selection.ids];
@@ -291,18 +495,23 @@ export default function SpamActions({ threads = [], folder, visible }) {
             marginRight: "8px",
           }}
           onClick={() => {
-            const ids = [...selection.ids];
-            moveToInbox(ids);
+            if (!selectionMatchKeys.length) {
+              showNoConversationsSelectedSnackbar();
+              return;
+            }
+
+            moveToInbox(selectionMatchKeys);
             selection.clear();
+            const conversationCount = selectedConversationCount || selectionMatchKeys.length || 1;
             setSnackbar({
               open: true,
               message: (
                 <Box>
-                  {ids.length > 1
-                    ? `${ids.length} conversations unmarked as spam and moved to the inbox. Future messages from these`
+                  {conversationCount > 1
+                    ? `${conversationCount} conversations unmarked as spam and moved to the inbox. Future messages from these`
                     : "Conversation unmarked as spam and moved to the inbox. Future messages from this"}{" "}
                   <br />
-                  {ids.length > 1 ? "senders" : "sender"} will be sent to the inbox.
+                  {conversationCount > 1 ? "senders" : "sender"} will be sent to the inbox.
                 </Box>
               ),
               autoHideDuration: 10000,
@@ -315,7 +524,7 @@ export default function SpamActions({ threads = [], folder, visible }) {
                     sx={{ textTransform: "none" }}
                     size="small"
                     onClick={() => {
-                      moveToSpam(ids);
+                      moveToSpam(selectionMatchKeys);
                       setSnackbar({
                         open: true,
                         message: "Action undone.",
@@ -361,11 +570,13 @@ export default function SpamActions({ threads = [], folder, visible }) {
           setSpamModalOpen(false);
         }}
         onReportSpam={() => {
-          moveToSpam(selectedIds);
+          moveToSpam(selectionMatchKeys);
+          selection.clear();
           setSpamModalOpen(false);
         }}
         onUnsubscribe={() => {
-          moveToSpam(selectedIds);
+          moveToSpam(selectionMatchKeys);
+          selection.clear();
           setSpamModalOpen(false);
         }}
       />

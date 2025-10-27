@@ -621,7 +621,7 @@ const Table = ({
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
-      snooze(ids, snoozeUntil);
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
       selection.clear();
       const message = ids.size > 1 ? `${ids.size} Conversations snoozed` : "Conversation snoozed.";
       setSnackbar({
@@ -633,7 +633,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              unsnooze(ids);
+              unsnooze(ids, { removedInboxIds });
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -647,7 +647,7 @@ const Table = ({
         ),
       });
     },
-    [snooze, selection]
+    [snooze, selection, unsnooze, setSnackbar]
   );
 
   const openInNewTab = async (e, attachment, db) => {

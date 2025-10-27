@@ -8,6 +8,7 @@ import Checkbox from "@mui/material/Checkbox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
+import Button from "@mui/material/Button";
 
 export const Labels = ({
   searchQuery,
@@ -53,17 +54,64 @@ export const Labels = ({
   }, [labels, searchQuery, currentLabels]);
 
   const handleApplyLabels = useCallback(() => {
+    const ids = [...selectedIds]; // Capture IDs before any action
+
+    const labelsToAdd = [];
+    const labelsToRemove = [];
     for (const [labelKey, finalState] of Object.entries(overrides)) {
       if (finalState === "checked" && !currentLabels.has(labelKey)) {
-        addLabels(selectedIds, [labelKey]);
+        labelsToAdd.push(labelKey);
       }
       if (finalState === "unchecked" && currentLabels.has(labelKey)) {
-        removeLabels(selectedIds, [labelKey]);
+        labelsToRemove.push(labelKey);
       }
       // "indeterminate" means leave it as-is
     }
 
-    setSnackbar({ message: "Labels updated", severity: "success" });
+    addLabels(ids, labelsToAdd);
+    removeLabels(ids, labelsToRemove);
+
+    const undo = () => {
+      addLabels(ids, labelsToRemove);
+      removeLabels(ids, labelsToAdd);
+      setSnackbar({
+        open: true,
+        message: "Action undone.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+    };
+
+    // Generate the message based on what actions were taken
+    let message = "";
+    const normalizedAdd = labelsToAdd.map(normalizeLabelName);
+    const normalizedRemove = labelsToRemove.map(normalizeLabelName);
+
+    if (labelsToRemove.length > 0 && labelsToAdd.length > 0) {
+      // Both add and remove
+      message = `Conversation removed from '${normalizedRemove.join("', '")}', and added to '${normalizedAdd.join(
+        "', '"
+      )}'.`;
+    } else if (labelsToRemove.length > 0) {
+      // Only remove
+      message = `Conversation removed from '${normalizedRemove.join("', '")}'.`;
+    } else if (labelsToAdd.length > 0) {
+      // Only add
+      message = `Conversation added to '${normalizedAdd.join("', '")}'.`;
+    }
+
+    setSnackbar((prev) => ({
+      ...prev,
+      open: true,
+      message,
+      autoHideDuration: 3000,
+      action: (
+        <Button size="small" onClick={undo}>
+          Undo
+        </Button>
+      ),
+    }));
+
     selection.clear();
     setOverrides({}); // reset
 

@@ -22,8 +22,8 @@ const InboxViewContainer = styled.div`
   overflow: hidden;
   background-color: #fff;
   border-radius: 16px;
-  min-height: 0;  
-  min-height: 0; 
+  min-height: 0;
+  min-height: 0;
 `;
 
 const ScrollableContent = styled.div`
@@ -101,18 +101,16 @@ export const EmailContent = ({
   }, [emails, threadId]);
 
   useEffect(() => {
-    let timeoutId = null;
-    if (markAsReadAfter) {
-      timeoutId = setTimeout(() => {
-        markRead([threadId], true);
-      }, markAsReadAfter);
-    }
+    if (!markAsReadAfter) return undefined;
+
+    const timeoutId = setTimeout(() => {
+      markRead([threadId], true);
+    }, markAsReadAfter);
+
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      clearTimeout(timeoutId);
     };
-  }, [markAsReadAfter, threadId]);
+  }, [markAsReadAfter, threadId, markRead]);
 
   if (!thread) {
     return (

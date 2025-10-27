@@ -100,7 +100,7 @@ const withUndo = (ids, setEmails, operation) => {
  * ────────────────────────────────────────────────────────────────────────── */
 
 export default function useMailActions() {
-  const { setEmails, labels, setSoftRemovedLabels } = useContext(GlobalContext);
+  const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useContext(GlobalContext);
 
   const updateByIds = useCallback(
     (ids, transform) => {
@@ -298,41 +298,90 @@ export default function useMailActions() {
   const snooze = useCallback(
     (ids, snoozeUntil) => {
       const match = makeMatch(ids);
+      const removedInboxIds = new Set();
+
       setEmails((prev) =>
         prev.map((m) => {
-          if (match(m)) {
-            const currentLabels = m.labels || [];
-            const updatedLabels = currentLabels.includes("Snoozed") ? currentLabels : [...currentLabels, "Snoozed"];
-            // Remove from inbox when snoozed
-            const labelsWithoutInbox = updatedLabels.filter((label) => label !== "Inbox");
-            return { ...m, labels: labelsWithoutInbox, snoozeUntil: snoozeUntil.toISOString() };
+          if (!match(m)) return m;
+
+          const currentLabels = m.labels || [];
+          const hadInbox = currentLabels.includes("Inbox");
+          const withSnoozed = currentLabels.includes("Snoozed") ? currentLabels : [...currentLabels, "Snoozed"];
+          const labelsWithoutInbox = withSnoozed.filter((label) => label !== "Inbox");
+
+          if (hadInbox) {
+            removedInboxIds.add(String(m.id));
           }
-          return m;
+
+          return { ...m, labels: labelsWithoutInbox, snoozeUntil: snoozeUntil.toISOString() };
         })
       );
+
+      if (removedInboxIds.size) {
+        setSoftRemovedLabels((prev) => {
+          const updated = { ...prev };
+          removedInboxIds.forEach((id) => {
+            const existing = new Set(prev[id] || []);
+            existing.add("Inbox");
+            updated[id] = [...existing];
+          });
+          return updated;
+        });
+      }
+
+      return { removedInboxIds: [...removedInboxIds] };
     },
-    [setEmails]
+    [setEmails, setSoftRemovedLabels]
   );
 
   const unsnooze = useCallback(
-    (ids) => {
+    (ids, options = {}) => {
       const match = makeMatch(ids);
+      const overrideIds = new Set((options.removedInboxIds || []).map((id) => String(id)));
+      const restoredInboxIds = new Set();
+
       setEmails((prev) =>
         prev.map((m) => {
-          if (match(m)) {
-            const currentLabels = m.labels || [];
-            // Remove "Snoozed" label and add "Inbox" label
-            const updatedLabels = currentLabels.filter((label) => label !== "Snoozed");
-            if (!updatedLabels.includes("Inbox")) {
-              updatedLabels.push("Inbox");
-            }
-            return { ...m, labels: updatedLabels, snoozeUntil: undefined };
+          if (!match(m)) return m;
+
+          const currentLabels = m.labels || [];
+          const labelsWithoutSnoozed = currentLabels.filter((label) => label !== "Snoozed");
+
+          const key = String(m.id);
+          const softRemoved = softRemovedLabels[key] || [];
+          const shouldRestoreFromSoftRemoved = softRemoved.includes("Inbox");
+          const shouldRestoreFromOverride = overrideIds.has(key);
+          const shouldRestoreInbox = shouldRestoreFromSoftRemoved || shouldRestoreFromOverride;
+
+          const nextLabels =
+            shouldRestoreInbox && !labelsWithoutSnoozed.includes("Inbox")
+              ? [...labelsWithoutSnoozed, "Inbox"]
+              : labelsWithoutSnoozed;
+
+          if (shouldRestoreInbox) {
+            restoredInboxIds.add(key);
           }
-          return m;
+
+          return { ...m, labels: nextLabels, snoozeUntil: undefined };
         })
       );
+
+      if (restoredInboxIds.size) {
+        setSoftRemovedLabels((prev) => {
+          const updated = { ...prev };
+          restoredInboxIds.forEach((id) => {
+            const remaining = (updated[id] || []).filter((label) => label !== "Inbox");
+            if (remaining.length) {
+              updated[id] = remaining;
+            } else {
+              delete updated[id];
+            }
+          });
+          return updated;
+        });
+      }
     },
-    [setEmails]
+    [setEmails, softRemovedLabels, setSoftRemovedLabels]
   );
 
   const toggleMuted = useCallback(

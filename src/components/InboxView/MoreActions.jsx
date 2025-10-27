@@ -9,6 +9,7 @@ import { ActionMenuItem } from "../MailActions/ActionMenuItem";
 import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
+import Button from "@mui/material/Button";
 
 const useCustomHotKeys = ({ handlePeriodPress }) => {
   const { keyboardShortcuts } = useGlobalContext();
@@ -20,14 +21,23 @@ const useCustomHotKeys = ({ handlePeriodPress }) => {
 };
 
 const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
-  const { markRead, setStar, setImportant, snooze, setMuted } = useMailActions();
+  const { markRead, setStar, setImportant, snooze, unsnooze, setMuted } = useMailActions();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [currentPopover, setCurrentPopover] = React.useState("main");
 
-  const threadId = thread.threadId.split(":")[1];
-
   const moreVertRef = useRef(null);
+  const { setSnackbar, emails, setEmails } = useGlobalContext();
+
+  const threadEmails = useMemo(
+    () => emails.filter((email) => email.threadId === thread.threadId),
+    [emails, thread.threadId]
+  );
+  const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
+  const conversationLabelSnapshot = useCallback(
+    () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
+    [threadEmails]
+  );
 
   const handleClick = () => {
     setAnchorEl(moreVertRef.current);
@@ -56,32 +66,222 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
     return thread.important;
   }, [thread]);
 
-  const muted = useMemo(() => {
-    return thread.labels.includes("Muted");
-  }, [thread]);
-
   const handleStar = useCallback(() => {
-    setStar([threadId], !starred);
+    if (!threadEmails.length) {
+      handleClose();
+      return;
+    }
+
+    const nextValue = !starred;
+    const previousStates = threadEmails.map((email) => ({
+      id: email.id,
+      starred: !!email.starred,
+    }));
+    const idsToUpdate = previousStates.filter((state) => state.starred !== nextValue).map((state) => state.id);
+
+    if (idsToUpdate.length) {
+      setStar(idsToUpdate, nextValue);
+    }
+
+    const undo = () => {
+      const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
+      const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
+      if (toStar.length) setStar(toStar, true);
+      if (toUnstar.length) setStar(toUnstar, false);
+      setSnackbar({
+        open: true,
+        message: "Action undone.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+    };
+
+    setSnackbar({
+      open: true,
+      message: nextValue ? "Conversation starred." : "Conversation unstarred.",
+      autoHideDuration: 3000,
+      action: (
+        <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+          Undo
+        </Button>
+      ),
+    });
+
     handleClose();
-  }, [threadId, setStar, starred]);
+  }, [threadEmails, starred, setStar, setSnackbar, handleClose]);
 
   const toggleImportant = useCallback(
     (value) => {
-      setImportant([threadId], value);
+      if (!threadEmails.length) {
+        handleClose();
+        return;
+      }
+
+      const previousStates = threadEmails.map((email) => ({
+        id: email.id,
+        important: !!email.important,
+      }));
+      const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
+
+      if (idsToUpdate.length) {
+        setImportant(idsToUpdate, value);
+      }
+
+      const undo = () => {
+        const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
+        const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+        if (toImportant.length) setImportant(toImportant, true);
+        if (toNotImportant.length) setImportant(toNotImportant, false);
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      };
+
+      setSnackbar({
+        open: true,
+        message: value ? "Conversation marked as important." : "Conversation marked as not important.",
+        autoHideDuration: 3000,
+        action: (
+          <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+            Undo
+          </Button>
+        ),
+      });
+
       handleClose();
     },
-    [threadId, setImportant, important]
+    [threadEmails, setImportant, setSnackbar, handleClose]
   );
 
   const handleMute = useCallback(() => {
-    setMuted([threadId], !muted);
+    if (!threadEmails.length) {
+      handleClose();
+      return;
+    }
+
+    const snapshot = conversationLabelSnapshot();
+    const wasMuted = threadEmails.every((email) => (email.labels || []).includes("Muted"));
+    const nextValue = !wasMuted;
+    const idsToUpdate = threadEmails
+      .filter((email) => {
+        const isMuted = (email.labels || []).includes("Muted");
+        return isMuted !== nextValue;
+      })
+      .map((email) => email.id);
+
+    if (idsToUpdate.length) {
+      setMuted(idsToUpdate, nextValue);
+    }
+
+    const undo = () => {
+      setEmails((prev) =>
+        prev.map((email) => {
+          const key = String(email.id ?? "");
+          return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
+        })
+      );
+      setSnackbar({
+        open: true,
+        message: "Action undone.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+    };
+
+    setSnackbar({
+      open: true,
+      message: nextValue ? "Conversation muted." : "Conversation unmuted.",
+      autoHideDuration: 3000,
+      action: (
+        <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+          Undo
+        </Button>
+      ),
+    });
+
     handleClose();
-  }, [threadId, setMuted, muted]);
+  }, [threadEmails, setMuted, handleClose, conversationLabelSnapshot, setEmails, setSnackbar]);
 
   const handleMarkUnread = useCallback(() => {
-    markRead([threadId], false);
+    if (!threadEmails.length) {
+      handleClose();
+      return;
+    }
+
+    const previousStates = threadEmails.map((email) => ({
+      id: email.id,
+      read: !!email.read,
+    }));
+    const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
+
+    if (!idsToUpdate.length) {
+      setSnackbar({
+        open: true,
+        message: "Conversation is already unread.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+      return;
+    }
+
+    markRead(idsToUpdate, false);
+
+    const undo = () => {
+      const idsToRestore = previousStates.filter((state) => state.read).map((state) => state.id);
+      if (idsToRestore.length) {
+        markRead(idsToRestore, true);
+      }
+      setSnackbar({
+        open: true,
+        message: "Action undone.",
+        autoHideDuration: 3000,
+        action: null,
+      });
+    };
+
+    setSnackbar({
+      open: true,
+      message: "Conversation marked as unread.",
+      autoHideDuration: 3000,
+      action: (
+        <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+          Undo
+        </Button>
+      ),
+    });
+
     navigate("/inbox");
-  }, []);
+    handleClose();
+  }, [threadEmails, markRead, setSnackbar, navigate, handleClose]);
+
+  const handleSnooze = useCallback(
+    (ids, snoozeUntil) => {
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      const undo = () => {
+        unsnooze(ids, { removedInboxIds });
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      };
+      setSnackbar({
+        open: true,
+        message: "Conversation snoozed.",
+        autoHideDuration: 10000,
+        action: (
+          <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [snooze, unsnooze, setSnackbar]
+  );
 
   return (
     <Box>
@@ -142,8 +342,8 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
           anchorEl={anchorEl}
           open={open}
           onClose={handleClose}
-          selectedIds={[thread.threadId.split(":")[1]]}
-          snooze={snooze}
+          selectedIds={threadMessageIds}
+          snooze={handleSnooze}
         />
       )}
     </Box>

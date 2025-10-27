@@ -373,7 +373,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
 
       setSnackbar({
         open: true,
-        message: "Sending undone",
+        message: "Sending undone.",
         action: null,
         autoHideDuration: 5000,
       });
