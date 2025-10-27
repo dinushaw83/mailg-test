@@ -14,6 +14,7 @@ export default function RecipientsInput({
   onCcChange,
   onBccChange,
   placeholder = "Recipients",
+  autoFocus = true,
 }) {
   const { recipients: globalRecipients, loggedInUser } = useContext(GlobalContext);
 
@@ -46,6 +47,7 @@ export default function RecipientsInput({
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const containerRef = useRef(null);
   const [selectedContactsModal, setSelectedContactsModal] = useState({ field: null, open: false });
+  const eventListenersAdded = useRef(false);
   const [invalids, setInvalids] = useState({ to: new Set(), cc: new Set(), bcc: new Set() });
 
   const emailRegex = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/i, []);
@@ -177,6 +179,45 @@ export default function RecipientsInput({
     };
   }, [selectedRecipients, inputValues, onToChange, onCcChange, onBccChange]);
 
+  // Handle keyboard shortcuts for CC and BCC
+  useEffect(() => {
+    if (eventListenersAdded.current) return;
+
+    const handleToggleCcField = (event) => {
+      setIsExpanded(true);
+      setShowCc(true);
+      // Focus the CC input field after a short delay to ensure it's rendered
+      setTimeout(() => {
+        const ccInput = document.querySelector('[data-field="cc"] input');
+        if (ccInput && ccInput.focus) {
+          ccInput.focus();
+        }
+      }, 100);
+    };
+
+    const handleToggleBccField = (event) => {
+      setIsExpanded(true);
+      setShowBcc(true);
+      // Focus the BCC input field after a short delay to ensure it's rendered
+      setTimeout(() => {
+        const bccInput = document.querySelector('[data-field="bcc"] input');
+        if (bccInput && bccInput.focus) {
+          bccInput.focus();
+        }
+      }, 100);
+    };
+
+    window.addEventListener("toggleCcField", handleToggleCcField);
+    window.addEventListener("toggleBccField", handleToggleBccField);
+    eventListenersAdded.current = true;
+
+    return () => {
+      window.removeEventListener("toggleCcField", handleToggleCcField);
+      window.removeEventListener("toggleBccField", handleToggleBccField);
+      eventListenersAdded.current = false;
+    };
+  }, []);
+
   // Handle clicking on recipients display to expand and auto-toggle inputs with values
   const handleRecipientsClick = () => {
     setIsExpanded(true);
@@ -189,6 +230,13 @@ export default function RecipientsInput({
       setShowBcc(true);
     }
   };
+
+  // Handle auto-focus when the component mounts
+  useEffect(() => {
+    if (autoFocus) {
+      setIsExpanded(true);
+    }
+  }, [autoFocus]);
 
   // Handle autocomplete selection
   const handleAutocompleteChange = (event, newValue, field) => {
@@ -428,7 +476,7 @@ export default function RecipientsInput({
   // Handle inserting a recipient from select contacts
   const handleInsertSelectedContacts = (contacts) => {
     const fieldName = selectedContactsModal.field;
-    if (contacts.length > 0) {
+    if (contacts.length > 0 && fieldName) {
       const newSelectedRecipients = { ...selectedRecipients };
 
       // Replace the selectedRecipients of respective field with the new contacts
@@ -437,9 +485,9 @@ export default function RecipientsInput({
       setSelectedRecipients(newSelectedRecipients);
 
       // Update the parent component
-      if (selectedContactsModal.field === "to") onToChange(newSelectedRecipients[selectedContactsModal.field]);
-      if (selectedContactsModal.field === "cc") onCcChange(newSelectedRecipients[selectedContactsModal.field]);
-      if (selectedContactsModal.field === "bcc") onBccChange(newSelectedRecipients[selectedContactsModal.field]);
+      if (fieldName === "to") onToChange(newSelectedRecipients[fieldName]);
+      if (fieldName === "cc") onCcChange(newSelectedRecipients[fieldName]);
+      if (fieldName === "bcc") onBccChange(newSelectedRecipients[fieldName]);
     }
 
     // Reset modal state
@@ -628,7 +676,7 @@ export default function RecipientsInput({
                       },
                     }}
                     placeholder=""
-                    autoFocus
+                    autoFocus={autoFocus}
                   />
                 )}
                 sx={{
@@ -646,7 +694,7 @@ export default function RecipientsInput({
 
           {/* Cc Field */}
           {showCc && (
-            <div className={styles.recipientRow}>
+            <div className={styles.recipientRow} data-field="cc">
               <Tooltip
                 title={<span style={{ fontSize: "12px", fontWeight: "400" }}>Select contacts</span>}
                 placement="bottom"
@@ -674,13 +722,13 @@ export default function RecipientsInput({
                   minHeight: selectedRecipients.cc.length > 0 ? "40px" : "20px",
                 }}
               >
-              {selectedRecipients.cc.map((recipient) => (
-                <RecipientChip
-                  key={`${recipient.email}-${recipient.id}`}
-                  recipient={recipient}
-                  onDelete={() => handleChipDelete(recipient, "cc")}
-                />
-              ))}
+                {selectedRecipients.cc.map((recipient) => (
+                  <RecipientChip
+                    key={`${recipient.email}-${recipient.id}`}
+                    recipient={recipient}
+                    onDelete={() => handleChipDelete(recipient, "cc")}
+                  />
+                ))}
                 <Autocomplete
                   options={recipients || []}
                   getOptionLabel={(option) => option.email}
@@ -750,7 +798,7 @@ export default function RecipientsInput({
 
           {/* Bcc Field */}
           {showBcc && (
-            <div className={styles.recipientRow}>
+            <div className={styles.recipientRow} data-field="bcc">
               <Tooltip
                 title={<span style={{ fontSize: "12px", fontWeight: "400" }}>Select contacts</span>}
                 placement="bottom"
@@ -778,13 +826,13 @@ export default function RecipientsInput({
                   minHeight: selectedRecipients.bcc.length > 0 ? "40px" : "20px",
                 }}
               >
-              {selectedRecipients.bcc.map((recipient) => (
-                <RecipientChip
-                  key={`${recipient.email}-${recipient.id}`}
-                  recipient={recipient}
-                  onDelete={() => handleChipDelete(recipient, "bcc")}
-                />
-              ))}
+                {selectedRecipients.bcc.map((recipient) => (
+                  <RecipientChip
+                    key={`${recipient.email}-${recipient.id}`}
+                    recipient={recipient}
+                    onDelete={() => handleChipDelete(recipient, "bcc")}
+                  />
+                ))}
                 <Autocomplete
                   options={recipients || []}
                   getOptionLabel={(option) => option.email}
@@ -859,7 +907,7 @@ export default function RecipientsInput({
           handleInsertContacts={handleInsertSelectedContacts}
           open={selectedContactsModal.open}
           onClose={() => setSelectedContactsModal((prev) => ({ ...prev, open: false }))}
-          addedRecipients={selectedContactsModal.field ? selectedRecipients[selectedContactsModal.field] : []}
+          addedRecipients={selectedContactsModal.field ? selectedRecipients[selectedContactsModal.field] || [] : []}
         />
       )}
     </div>

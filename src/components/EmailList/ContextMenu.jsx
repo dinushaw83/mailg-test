@@ -1,11 +1,10 @@
 import Box from "@mui/material/Box";
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Menu, Item, Separator, Submenu, useContextMenu } from "react-contexify";
+import React, { useCallback, useMemo, useState } from "react";
+import { Menu, Item, Separator, Submenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
 import MoveToSubMenu from "./MoveToSubMenu";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
-import { useParams } from "react-router-dom";
 import useMailActions from "../../hooks/useMailActions";
 import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
@@ -25,7 +24,8 @@ const ContextMenu = ({
 }) => {
   const isRead = contextRow?.read;
   const senderName = contextRow?.from?.name;
-  const threadId = contextRow?.threadId.split(":")[1];
+  const threadKey = contextRow?.threadId || "";
+  const threadId = threadKey.split(":")[1];
   const selectedIds = [threadId];
 
   const isSpamFolder = folder === "spam";
@@ -34,7 +34,7 @@ const ContextMenu = ({
 
   const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, addLabels, removeLabels, deleteForever } =
     useMailActions();
-  const { setSnackbar } = useGlobalContext();
+  const { setSnackbar, emails, setEmails } = useGlobalContext();
 
   const [isMovingToLabel, setIsMovingToLabel] = useState(true);
 
@@ -76,6 +76,15 @@ const ContextMenu = ({
     }));
   }, []);
 
+  const threadEmails = useMemo(() => emails.filter((email) => email.threadId === threadKey), [emails, threadKey]);
+
+  const selectedMessageIds = useMemo(() => threadEmails.map((email) => String(email.id ?? "")), [threadEmails]);
+
+  const conversationLabelSnapshot = useCallback(
+    () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
+    [threadEmails]
+  );
+
   const handleMenuItemClick = useCallback(
     async (item) => {
       if (item.id === "__create_label__") {
@@ -83,21 +92,14 @@ const ContextMenu = ({
         return;
       }
 
-      if (!selectedIds.length) return;
+      if (!selectedMessageIds.length) return;
 
       try {
+        const snapshot = conversationLabelSnapshot();
+
         if (item.id === "__inbox__" || item.id === "inbox") {
-          const undo = moveToLabel(selectedIds, "Inbox");
-          setSnackbar({
-            open: true,
-            message: "Conversation moved to inbox.",
-            autoHideDuration: 3000,
-            action: (
-              <Button size="small" onClick={undo}>
-                Undo
-              </Button>
-            ),
-          });
+          moveToLabel(selectedMessageIds, "Inbox");
+          showUndoSnackbar(selectedMessageIds, currentLabel, "Inbox", false, true, snapshot, null, 1);
         } else if (item.id === "__spam__" || item.id === "spam") {
           setState((prev) => ({
             ...prev,
@@ -105,8 +107,7 @@ const ContextMenu = ({
           }));
           return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          moveToTrash(selectedIds);
-          // Show global snackbar with Undo action
+          const undo = moveToTrash(selectedMessageIds);
           setSnackbar({
             open: true,
             message: "Conversation moved to Trash.",
@@ -116,8 +117,11 @@ const ContextMenu = ({
                 sx={{ textTransform: "none" }}
                 size="small"
                 onClick={() => {
-                  moveToInbox(selectedIds);
-                  // Follow-up confirmation snackbar
+                  if (typeof undo === "function") {
+                    undo();
+                  } else {
+                    moveToInbox(selectedMessageIds);
+                  }
                   setSnackbar({
                     open: true,
                     message: "Action undone.",
@@ -136,57 +140,75 @@ const ContextMenu = ({
           const curMeta = currentLabel ? labels?.[currentLabel] : null;
           const inCustomLabel = curMeta && curMeta.system === false;
           if (inCustomLabel) {
-            const undo = moveToLabelFrom(selectedIds, currentLabel, targetKey);
-            setSnackbar({
-              open: true,
-              message: `Conversation moved to ${item.name}.`,
-              autoHideDuration: 3000,
-              action: (
-                <Button size="small" onClick={undo}>
-                  Undo
-                </Button>
-              ),
-            });
+            moveToLabelFrom(selectedMessageIds, currentLabel, targetKey);
           } else {
-            const undo = moveToLabel(selectedIds, targetKey); // pass key
-            setSnackbar({
-              open: true,
-              message: `Conversation moved to ${item.name}.`,
-              autoHideDuration: 3000,
-              action: (
-                <Button size="small" onClick={undo}>
-                  Undo
-                </Button>
-              ),
-            });
+            moveToLabel(selectedMessageIds, targetKey);
           }
+          showUndoSnackbar(selectedMessageIds, currentLabel, targetKey, inCustomLabel, true, snapshot, item.name, 1);
         }
       } catch (e) {
         console.error("Move failed:", e);
       }
     },
-    [moveToLabel, moveToLabelFrom, moveToTrash, moveToInbox, setSnackbar, currentLabel, labels, selectedIds]
+    [
+      moveToLabel,
+      moveToLabelFrom,
+      moveToTrash,
+      moveToInbox,
+      setSnackbar,
+      currentLabel,
+      labels,
+      selectedMessageIds,
+      conversationLabelSnapshot,
+    ]
   );
 
   const showUndoSnackbar = useCallback(
-    (selectedIds, fromKey, toKey, inCustomLabel, isMoving = true) => {
+    (
+      matchKeys,
+      fromKey,
+      toKey,
+      inCustomLabel,
+      isMoving = true,
+      snapshot = null,
+      labelName = null,
+      conversationCount = 1
+    ) => {
+      const action = isMoving ? "moved to" : "added to";
+      const resolvedLabel = labelName || getPathLabelFromKey(labels, toKey);
+      const message =
+        conversationCount > 1
+          ? `${conversationCount} conversations ${action} "${resolvedLabel}".`
+          : `Conversation ${action} "${resolvedLabel}".`;
+
       setSnackbar({
         open: true,
-        message: `Conversation ${isMoving ? "moved to" : "added to"} “${getPathLabelFromKey(labels, toKey)}”.`,
+        message,
         autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              if (isMoving) {
-                if (inCustomLabel) {
-                  moveToLabelFrom(selectedIds, toKey, fromKey);
+              try {
+                if (snapshot && snapshot.size) {
+                  setEmails((prev) =>
+                    prev.map((email) => {
+                      const key = String(email.id ?? "");
+                      return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
+                    })
+                  );
+                } else if (isMoving) {
+                  if (inCustomLabel) {
+                    moveToLabelFrom(matchKeys, toKey, fromKey);
+                  } else {
+                    moveToLabel(matchKeys, fromKey || "Inbox");
+                  }
                 } else {
-                  moveToLabel(selectedIds, fromKey || "Inbox");
+                  removeLabels(matchKeys, [toKey]);
                 }
-              } else {
-                removeLabels(selectedIds, [toKey]);
+              } catch (error) {
+                console.error("Undo failed:", error);
               }
               setSnackbar({
                 open: true,
@@ -201,33 +223,32 @@ const ContextMenu = ({
         ),
       });
     },
-    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels]
+    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels, setEmails]
   );
 
   const handleOnAfterCreate = (childName, parentKey, isMoving = true) => {
-    const ids = [threadId];
-
-    if (!ids.length) return;
+    if (!selectedMessageIds.length) return;
 
     try {
       // Build the new composite label key
       const newKey = makeKey(childName, parentKey);
       const curMeta = currentLabel ? labels?.[currentLabel] : null;
       const inCustomLabel = curMeta && curMeta.system === false;
+      const snapshot = conversationLabelSnapshot();
 
       if (isMoving) {
         if (inCustomLabel) {
-          moveToLabelFrom(ids, currentLabel, newKey);
+          moveToLabelFrom(selectedMessageIds, currentLabel, newKey);
         } else {
-          moveToLabel(ids, newKey);
+          moveToLabel(selectedMessageIds, newKey);
         }
       } else {
         // Always additive when not moving
-        addLabels(ids, [newKey]);
+        addLabels(selectedMessageIds, [newKey]);
       }
 
       // Trigger the same undo snackbar as other actions
-      showUndoSnackbar(ids, currentLabel, newKey, inCustomLabel, isMoving);
+      showUndoSnackbar(selectedMessageIds, currentLabel, newKey, inCustomLabel, isMoving, snapshot, null, 1);
     } catch (e) {
       setSnackbar({
         open: true,
@@ -237,95 +258,84 @@ const ContextMenu = ({
     }
   };
 
+  const handleMoveToInbox = useCallback(() => {
+    const currentLabels = contextRow?.labels || [];
+    const isInInbox = currentLabels.includes("Inbox");
+    if (isInInbox) return;
 
-  const handleMoveToInbox = useCallback(
-    (threadId) => {
-      const thread = contextRow;
-      const currentLabels = thread.labels || [];
-      const isInInbox = currentLabels.includes("Inbox");
-      if (isInInbox) return;
+    const undo = moveToInbox(selectedMessageIds);
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to inbox.",
+      autoHideDuration: 3000,
+      action: (
+        <Button size="small" onClick={undo}>
+          Undo
+        </Button>
+      ),
+    });
+  }, [moveToInbox, setSnackbar, contextRow, selectedMessageIds]);
 
-      const undo = moveToInbox([threadId]);
+  const handleNotSpam = useCallback(() => {
+    const undo = moveToInbox(selectedMessageIds);
+
+    const handleUndo = () => {
+      undo();
       setSnackbar({
         open: true,
-        message: "Conversation moved to inbox.",
+        message: "Action undone.",
         autoHideDuration: 3000,
-        action: (
-          <Button size="small" onClick={undo}>
-            Undo
-          </Button>
-        ),
+        action: null,
       });
-    },
-    [moveToInbox, setSnackbar, contextRow]
-  );
+    };
 
-  const handleNotSpam = useCallback(
-    (threadId) => {
-      const undo = moveToInbox([threadId]);
+    setSnackbar({
+      open: true,
+      message:
+        "Conversation unmarked as spam and moved to the inbox. Future messages from this sender will be sent to the inbox.",
+      autoHideDuration: 3000,
+      action: (
+        <Button size="small" onClick={handleUndo}>
+          Undo
+        </Button>
+      ),
+      style: {
+        maxWidth: "600px",
+      },
+    });
+  }, [moveToInbox, setSnackbar, selectedMessageIds]);
 
-      const handleUndo = () => {
-        undo();
-        setSnackbar({
-          open: true,
-          message: "Action undone.",
-          autoHideDuration: 3000,
-          action: null,
-        });
-      };
-
-      setSnackbar({
-        open: true,
-        message:
-          "Conversation unmarked as spam and moved to the inbox. Future messages from this sender will be sent to the inbox.",
-        autoHideDuration: 3000,
-        action: (
-          <Button size="small" onClick={handleUndo}>
-            Undo
-          </Button>
-        ),
-        style: {
-          maxWidth: "600px",
-        },
-      });
-    },
-    [moveToInbox, setSnackbar, contextRow]
-  );
-
-  const handleDeleteForever = useCallback(
-    (threadId) => {
-      deleteForever(threadId);
-    },
-    [deleteForever]
-  );
+  const handleDeleteForever = useCallback(() => {
+    deleteForever(selectedMessageIds);
+  }, [deleteForever, selectedMessageIds]);
 
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
       case "archive":
-        handleArchive(threadId);
+        handleArchive([threadId]);
         break;
       case "delete":
-        handleDelete(threadId);
+        handleDelete([threadId]);
         break;
       case "mark_as_read":
       case "mark_as_unread":
         handleReadAction(props.thread);
         break;
       case "snooze":
-        handleSnoozeAction(threadId);
+        handleSnoozeAction([threadId]);
         break;
       case "mute":
-        handleMuteAction(threadId, muted);
+        handleMuteAction([threadId]);
         break;
       case "move_to_inbox":
-        handleMoveToInbox(threadId);
+        handleMoveToInbox();
         break;
       case "not_spam":
-        handleNotSpam(threadId);
+        handleNotSpam();
         break;
       case "delete_forever":
-        handleDeleteForever(threadId);
+        handleDeleteForever();
         break;
       //etc...
     }
@@ -488,8 +498,8 @@ const ContextMenu = ({
           <LabelsSubMenu
             selectedIds={selectedIds}
             openCreateLabelDialog={() => {
-              setIsMovingToLabel(false)
-              openCreateLabelDialog()
+              setIsMovingToLabel(false);
+              openCreateLabelDialog();
             }}
             shouldFocus={hoveredSubmenu === "labelAs"}
           />
@@ -524,8 +534,8 @@ const ContextMenu = ({
       <CreateLabelDialog
         open={createOpen}
         onClose={() => {
-          toggleCreateOpen()
-          setIsMovingToLabel(true) // reset back to default state
+          toggleCreateOpen();
+          setIsMovingToLabel(true); // reset back to default state
         }}
         onAfterCreate={handleOnAfterCreate}
         isMoving={isMovingToLabel}

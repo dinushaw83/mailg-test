@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Box, Typography } from "@mui/material";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import ContactsTable from "../../components/Contacts/ContactsTable";
+import { useJumpToHotKeys } from "../../components/LeftSidebar";
 
 const Contacts = () => {
   const { recipients } = useGlobalContext();
@@ -12,6 +13,8 @@ const Contacts = () => {
     // Set document title to MailG Contacts
     document.title = "MailG Contacts";
   }, []);
+
+  useJumpToHotKeys();
 
   return (
     <Box
@@ -52,9 +55,7 @@ const Contacts = () => {
             data: favoriteContacts,
           },
           {
-            heading: (
-              <p style={{ fontSize: "0.75rem", fontWeight: 500, color: "#444746" }}>Contacts</p>
-            ),
+            heading: <p style={{ fontSize: "0.75rem", fontWeight: 500, color: "#444746" }}>Contacts</p>,
             title: "Contacts",
             data: myContacts,
           },

@@ -127,11 +127,9 @@ export default function DateFilterChip({ label }) {
       newSearchParams.has("is_unread");
     const hasDateFilter = newSearchParams.has("datestart") || newSearchParams.has("dateend");
 
-    // Always keep isrefinement=true when on search results page, even with no filters
-    // This allows showing all emails when "Any time" is selected
-    if (location.pathname.startsWith("/search")) {
-      newSearchParams.set("isrefinement", "true");
-    } else if (hasDateFilter || hasOtherFilters) {
+    // Set isrefinement=true if any filters are active (prevents filter params from appearing in searchbar)
+    // Delete it if no filters remain
+    if (hasDateFilter || hasOtherFilters) {
       newSearchParams.set("isrefinement", "true");
     } else {
       newSearchParams.delete("isrefinement");
@@ -166,10 +164,9 @@ export default function DateFilterChip({ label }) {
     newSearchParams.set("dateend", endDate);
     newSearchParams.set("daterangetype", "custom_range");
 
-    // Always keep isrefinement=true when on search results page
-    if (location.pathname.startsWith("/search")) {
-      newSearchParams.set("isrefinement", "true");
-    }
+    // Always set isrefinement=true when applying date filters
+    // This prevents date parameters from appearing in the search bar
+    newSearchParams.set("isrefinement", "true");
 
     // Update URL
     navigate(

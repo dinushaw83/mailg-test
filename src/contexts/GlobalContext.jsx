@@ -9,8 +9,95 @@ import { recipientLabels as initialRecipientLabels } from "./fixtures/recipientL
 import { initialLabels } from "./fixtures/labels";
 import { normalizeEmails } from "../utils/emails";
 import { openDB } from "idb";
+import { INBOX_TYPE } from "../components/QuickSettings";
 
 export const GlobalContext = createContext();
+
+// Special key for storing verification initial config
+const VERIFICATION_INITIAL_CONFIG_KEY = "__verification_initial_config__";
+
+// List of all localStorage keys used in the app (for verification tracking)
+const LOCAL_STORAGE_KEYS = [
+  // Core user and data
+  "loggedInUser",
+  "emails",
+
+  // Contacts
+  "recipients",
+  "recipientLabels",
+  "deletedRecipients",
+  "hiddenRecipients",
+
+  //search
+  "allSearchQueries",
+  "mailg_search_history",
+
+  // UI / view state
+  "currentView",
+  "selectedEmails",
+  "labels",
+  "sortOrder",
+  "currentPage",
+  "itemsPerPage",
+  "panelState",
+  "isLeftSidebarExpanded",
+  "showQuickSettings",
+  "density",
+  "threading",
+  "inboxType",
+  "mailg-notification-settings",
+
+  // Right sidebar
+  "rightSidebarExpanded",
+  "rightSidebarActiveTab",
+
+  // Settings
+  "vacationResponder",
+  "sendAsSettings",
+  "signatures",
+  "notificationSettings",
+  "privacySettings",
+  "settingsGeneral",
+  "settingsAdvanced",
+  "settingsLabels",
+  "settingsInbox",
+  "settingsChat",
+  "settingsFilters",
+  "settingsForwarding",
+  "settingsOffline",
+  "settingsThemes",
+  "settingsAccounts",
+  "mailGAccountPersonalInfo",
+  "mailGAccountDataPrivacy",
+  "thirdPartyApps",
+  "signInSettings",
+  "keyboardShortcuts",
+
+  // Misc
+  "manualSyncCount",
+];
+
+/**
+ * Captures the current state of all tracked localStorage keys
+ * This is called once when the app first loads to establish the baseline
+ */
+const captureInitialConfig = () => {
+  const config = {};
+  LOCAL_STORAGE_KEYS.forEach((key) => {
+    const value = localStorage.getItem(key);
+    if (value !== null) {
+      try {
+        config[key] = JSON.parse(value);
+      } catch (e) {
+        // If it's not JSON, store as string
+        config[key] = value;
+      }
+    } else {
+      config[key] = null;
+    }
+  });
+  return config;
+};
 
 export const GlobalContextProvider = ({ children }) => {
   const [loggedInUser, setLoggedInUser] = usePersistedState("loggedInUser", initialUser);
@@ -32,14 +119,14 @@ export const GlobalContextProvider = ({ children }) => {
   const [itemsPerPage, setItemsPerPage] = usePersistedState("itemsPerPage", 25);
   const [panelState, setPanelState] = usePersistedState("panelState", {
     showPanel: false,
-    direction: "vertical",
+    direction: "no-split", // "vertical" | "horizontal" | "no-split"
   });
   const [softRemovedLabels, setSoftRemovedLabels] = useState({});
   const [previewEmailId, setPreviewEmailId] = useState(null);
   const [showQuickSettings, setShowQuickSettings] = usePersistedState("showQuickSettings", false);
   const [density, setDensity] = usePersistedState("density", "default");
   const [threading, setThreading] = usePersistedState("threading", true);
-  const [inboxType, setInboxType] = usePersistedState("inboxType", "default");
+  const [inboxType, setInboxType] = usePersistedState("inboxType", INBOX_TYPE.DEFAULT);
   const [isLeftSidebarExpanded, setIsLeftSidebarExpanded] = usePersistedState("isLeftSidebarExpanded", true);
 
   // Vacation responder state
@@ -58,6 +145,8 @@ export const GlobalContextProvider = ({ children }) => {
     contact: { screen: "CONTACTS" },
     activeTab: null,
   });
+  const [keyboardShortcuts, setKeyboardShortcuts] = usePersistedState("keyboardShortcuts", "shortcuts-off");
+  const [showShortCutsModal, setShowShortCutsModal] = useState(false);
 
   // Send mail as settings (display name and optional reply-to)
   const [sendAsSettings, setSendAsSettings] = usePersistedState("sendAsSettings", {
@@ -85,8 +174,8 @@ export const GlobalContextProvider = ({ children }) => {
   // Notification settings state
   const [notificationSettings, setNotificationSettings] = usePersistedState("notificationSettings", {
     type: "off", // "off", "new", "important"
-    sound: "1",  // Sound ID
-    enabled: false
+    sound: "1", // Sound ID
+    enabled: false,
   });
 
   // Privacy settings state
@@ -269,25 +358,25 @@ export const GlobalContextProvider = ({ children }) => {
       includeVisualSearch: false,
     },
     webActivityAutoDelete: "18m",
-    
+
     // Location History / Timeline
     locationHistoryEnabled: false,
     locationHistorySubsettings: {
       shareEdits: true,
     },
-    
+
     // YouTube History
     youtubeHistoryEnabled: true,
-    
+
     // Ad Personalization
     adPersonalizationEnabled: true,
-    
+
     // Search Personalization
     searchPersonalizationEnabled: true,
-    
+
     // Auto-delete
     autoDeleteActivity: "18m",
-    
+
     // Profile Visibility Settings (Info you can share with others)
     profileVisibility: {
       nameVisibility: "anyone", // "onlyYou" or "anyone"
@@ -364,6 +453,9 @@ export const GlobalContextProvider = ({ children }) => {
     autoHideDuration: null,
     hideClose: false,
   });
+
+  // Manual email sync counter
+  const [manualSyncCount, setManualSyncCount] = usePersistedState("manualSyncCount", 0);
 
   const [selected, setSelected] = useState(() => new Set());
 
@@ -464,6 +556,45 @@ export const GlobalContextProvider = ({ children }) => {
     }
   }, [db]);
 
+  // Capture initial config AFTER all state has been initialized with default values
+  // This ensures we capture the actual default values, not nulls
+  useEffect(() => {
+    const existingInitialConfig = localStorage.getItem(VERIFICATION_INITIAL_CONFIG_KEY);
+
+    if (existingInitialConfig) {
+      try {
+        window.initialConfig = JSON.parse(existingInitialConfig);
+        console.log("📂 [GlobalContext] Loaded existing initial config:", window.initialConfig);
+      } catch (e) {
+        console.error("Failed to parse existing initial config:", e);
+      }
+      return;
+    }
+
+    // Poll until all tracked keys are initialized in localStorage, then capture once
+    let attempts = 0;
+    const MAX_ATTEMPTS = 50; // ~5 seconds at 100ms interval
+    const interval = setInterval(() => {
+      attempts += 1;
+      const allReady = LOCAL_STORAGE_KEYS.every((key) => localStorage.getItem(key) !== null);
+
+      if (allReady || attempts >= MAX_ATTEMPTS) {
+        const initialConfig = captureInitialConfig();
+        localStorage.setItem(VERIFICATION_INITIAL_CONFIG_KEY, JSON.stringify(initialConfig));
+        window.initialConfig = initialConfig;
+        console.log(
+          allReady
+            ? "📸 [GlobalContext] Initial config captured when all keys initialized."
+            : "⏱️ [GlobalContext] Captured initial config after timeout (some keys may still be null).",
+          initialConfig
+        );
+        clearInterval(interval);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []); // run once on mount
+
   const contextValue = {
     selection,
     loggedInUser,
@@ -513,6 +644,12 @@ export const GlobalContextProvider = ({ children }) => {
     setRightSidebarActiveTab,
     deletedRecipients,
     setDeletedRecipients,
+    hiddenRecipients,
+    setHiddenRecipients,
+    keyboardShortcuts,
+    setKeyboardShortcuts,
+    showShortCutsModal,
+    setShowShortCutsModal,
     signaturesState,
     setSignaturesState,
     sendAsSettings,
@@ -529,8 +666,6 @@ export const GlobalContextProvider = ({ children }) => {
     setVacationResponder,
     createLabelModal,
     setCreateLabelModal,
-    hiddenRecipients,
-    setHiddenRecipients,
     softRemovedLabels,
     setSoftRemovedLabels,
     // Settings tabs state
@@ -561,6 +696,8 @@ export const GlobalContextProvider = ({ children }) => {
     setThirdPartyApps,
     signInSettings,
     setSignInSettings,
+    manualSyncCount,
+    setManualSyncCount,
   };
 
   return <GlobalContext.Provider value={contextValue}>{children}</GlobalContext.Provider>;

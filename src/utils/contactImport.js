@@ -75,10 +75,14 @@ export const parseCSV = (csvContent) => {
       continue;
     }
 
+    const dateString = new Date().toISOString();
     const contact = {
       id: generateContactId(),
       isSaved: true,
       isFavorite: false,
+      createdAt: dateString,
+      updatedAt: dateString,
+      savedAt: dateString,
     };
 
     // Map CSV fields to contact object
@@ -91,8 +95,43 @@ export const parseCSV = (csvContent) => {
     if (fieldMap.name !== -1 && values[fieldMap.name]) {
       contact.name = values[fieldMap.name].trim();
     }
+    // Map email early so name fallback can use it
     if (fieldMap.email !== -1 && values[fieldMap.email]) {
       contact.email = values[fieldMap.email].trim();
+    }
+
+    // If no name field but we have firstName/lastName, construct the full name
+    if (!contact.name && (contact.firstName || contact.lastName)) {
+      const nameParts = [];
+      if (contact.firstName) nameParts.push(contact.firstName);
+      if (contact.lastName) nameParts.push(contact.lastName);
+      contact.name = nameParts.join(' ');
+    }
+
+    // If still no name but we have email, use email prefix as fallback
+    if (!contact.name && contact.email) {
+      contact.name = contact.email.split('@')[0];
+    }
+    
+    // Debug log for first few contacts
+    if (contacts.length < 3) {
+      console.log('Contact Import Debug:', {
+        contactIndex: contacts.length,
+        fieldMap,
+        values,
+        contact,
+      });
+    }
+    
+    // If first/last are missing but we now have a name, try to derive them
+    if ((!contact.firstName || !contact.lastName) && contact.name) {
+      const parts = contact.name.trim().split(/\s+/);
+      if (parts.length === 1) {
+        if (!contact.firstName) contact.firstName = parts[0];
+      } else if (parts.length >= 2) {
+        if (!contact.firstName) contact.firstName = parts[0];
+        if (!contact.lastName) contact.lastName = parts.slice(1).join(' ');
+      }
     }
     if (fieldMap.phone !== -1 && values[fieldMap.phone]) {
       const phoneValue = values[fieldMap.phone].trim();

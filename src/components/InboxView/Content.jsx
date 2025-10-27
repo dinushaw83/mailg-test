@@ -67,10 +67,56 @@ const RecipientName = styled.div`
   margin-right: 5px;
 `;
 
-const Recipient = () => {
+const Recipient = ({ recipients = [] }) => {
+  const { recipients: contacts, loggedInUser } = useGlobalContext();
+
+  // Helper function to get recipient display name from email
+  const getRecipientDisplayName = (email) => {
+    // Check if it's the logged-in user - show "me"
+    if (email === loggedInUser.email) {
+      return "me";
+    }
+
+    // Check if email is present in contacts
+    const found = contacts.find((contact) => contact.emails.some((contactEmail) => contactEmail.value === email));
+
+    if (found) {
+      // Return only the first name
+      return found.name.split(" ")[0];
+    }
+
+    // If not found, extract first name from email
+    const emailName = email.split("@")[0];
+    const namePart = emailName.split(".")[0];
+    return namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  };
+
+  // Build recipient display text
+  const buildRecipientText = () => {
+    if (recipients.length === 0) {
+      return "to me"; // fallback for empty recipients
+    }
+
+    if (recipients.length === 1) {
+      const recipientName = getRecipientDisplayName(recipients[0]);
+      return `to ${recipientName}`;
+    }
+
+    // Multiple recipients
+    const firstRecipientName = getRecipientDisplayName(recipients[0]);
+    const remainingCount = recipients.length - 1;
+
+    if (remainingCount === 1) {
+      const secondRecipientName = getRecipientDisplayName(recipients[1]);
+      return `to ${firstRecipientName}, ${secondRecipientName}`;
+    }
+
+    return `to ${firstRecipientName} + ${remainingCount} more`;
+  };
+
   return (
     <RecipientContainer>
-      <RecipientName>to me</RecipientName>
+      <RecipientName>{buildRecipientText()}</RecipientName>
       <Icon
         name="arrow_drop_down"
         style={{
@@ -147,8 +193,8 @@ const Time = ({ timestamp }) => {
   );
 };
 
-const TopBar = ({ timestamp, senderName, senderEmail, onReply }) => {
-  const { recipients, loggedInUser } = useGlobalContext();
+const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], onReply }) => {
+  const { recipients: contacts, loggedInUser } = useGlobalContext();
 
   const senderContact = useMemo(() => {
     // Check if sender email is of logged in user
@@ -156,15 +202,15 @@ const TopBar = ({ timestamp, senderName, senderEmail, onReply }) => {
       return loggedInUser;
     }
 
-    // Check if sender email is present in recipients emails array
-    const found = recipients.find((recipient) => recipient.emails.some((email) => email.value === senderEmail));
+    // Check if sender email is present in contacts emails array
+    const found = contacts.find((recipient) => (recipient.emails || []).some((email) => email.value === senderEmail));
     if (found) {
       return found;
     }
 
     // If not found, then return a custom contact object
     return { name: senderName, email: senderEmail, id: `custom-${senderEmail}` };
-  }, [recipients, senderName, senderEmail]);
+  }, [contacts, senderName, senderEmail]);
 
   return (
     <TopBarContainer>
@@ -172,7 +218,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, onReply }) => {
         <ContactPopup contact={{ ...senderContact, email: senderEmail }}>
           <Sender name={senderName} email={senderEmail} />
         </ContactPopup>
-        <Recipient />
+        <Recipient recipients={recipients} />
       </div>
       <ActionsContainer>
         <Time timestamp={timestamp} />
@@ -186,7 +232,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, onReply }) => {
 };
 
 const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
-  const { emails, setEmails, setSnackbar } = useContext(GlobalContext);
+  const { setEmails, setSnackbar } = useContext(GlobalContext);
 
   // Format the scheduled date and time
   const formatScheduledDateTime = (dateStr, timeStr) => {
@@ -384,6 +430,7 @@ export const Content = React.memo(
     timestamp,
     senderName,
     senderEmail,
+    recipients = [],
     attachments = [],
     embeddedImages = [],
     isScheduled,
@@ -397,7 +444,7 @@ export const Content = React.memo(
           <Avatar>{senderName.charAt(0)}</Avatar>
         </ProfileImageContainer>
         <BodyContainer>
-          <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} />
+          <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} recipients={recipients} />
           {isScheduled && (
             <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />
           )}

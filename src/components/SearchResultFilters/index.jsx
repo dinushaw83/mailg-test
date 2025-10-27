@@ -4,14 +4,27 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ContactFilterChip from "./ContactFilterChip";
 import DateFilterChip from "./DateFilterChip";
 
-const filterOptions = ["From", "Has attachment", "Any time", "To", "Is unread"];
-const filterOptionsWithDropdown = ["From", "Any time", "To"];
-
-const SearchResultFilters = () => {
+const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
   const [activeFilters, setActiveFilters] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
+
+  // Determine which filters to show based on active folder
+  const getAvailableFilters = () => {
+    const excludeFromFilters = ["sent", "drafts"];
+    const baseFilters = ["From", "Has attachment", "Any time", "To", "Is unread"];
+
+    // If in Sent or Drafts folder, exclude "From" filter
+    if (activeFolder && excludeFromFilters.includes(activeFolder.toLowerCase())) {
+      return baseFilters.filter((f) => f !== "From");
+    }
+
+    return baseFilters;
+  };
+
+  const filterOptions = getAvailableFilters();
+  const filterOptionsWithDropdown = ["From", "Any time", "To"].filter((f) => filterOptions.includes(f));
 
   // Determine which filter chips should be visible based on URL parameters
   const shouldShowFilterChip = (filter) => {
@@ -114,15 +127,14 @@ const SearchResultFilters = () => {
       }
     }
 
-    // Mark as refinement search if any filters are active or we're on search results page
+    // Mark as refinement search if any filters are active (prevents filter params from appearing in searchbar)
     const hasAnyFilter =
       currentActiveFilters.length > 0 ||
       newSearchParams.has("from") ||
       newSearchParams.has("to") ||
       newSearchParams.has("datestart") ||
       newSearchParams.has("dateend") ||
-      newSearchParams.has("is_unread") ||
-      location.pathname.startsWith("/search");
+      newSearchParams.has("is_unread");
 
     if (hasAnyFilter) {
       newSearchParams.set("isrefinement", "true");
@@ -155,7 +167,7 @@ const SearchResultFilters = () => {
       // Remove filter if no contacts selected
       newSearchParams.delete(filterType.toLowerCase());
 
-      // Keep isrefinement=true if we're on search results page or have other filters
+      // Keep isrefinement=true if other filters remain active (prevents filter params from appearing in searchbar)
       const hasOtherFilters =
         newSearchParams.has("from") ||
         newSearchParams.has("to") ||
@@ -164,7 +176,7 @@ const SearchResultFilters = () => {
         newSearchParams.has("datestart") ||
         newSearchParams.has("dateend");
 
-      if (location.pathname.startsWith("/search") || hasOtherFilters) {
+      if (hasOtherFilters) {
         newSearchParams.set("isrefinement", "true");
       } else {
         newSearchParams.delete("isrefinement");
@@ -182,7 +194,7 @@ const SearchResultFilters = () => {
   };
 
   return (
-    <Stack direction="row" spacing={1} p={2}>
+    <Stack direction="row" spacing={1} px={2} pt={pt} pb={pb}>
       {sortedFilterOptions
         .filter((filter) => shouldShowFilterChip(filter))
         .map((filter) => {

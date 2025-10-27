@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Box,
-  Divider
-} from "@mui/material";
+import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 import GeneralSettings from "./General";
@@ -12,11 +9,11 @@ const isEmptySignature = (content) => {
   if (!content) return true;
 
   const cleaned = content
-    .replace(/<p><\/p>/gi, "")       // remove <p></p>
-    .replace(/<p><br><\/p>/gi, "")   // remove <p><br></p>
-    .replace(/<br\s*\/?>/gi, "")     // remove <br> tags
-    .replace(/&nbsp;/gi, "")         // remove non-breaking spaces
-    .replace(/<[^>]+>/g, "")         // remove all other HTML tags
+    .replace(/<p><\/p>/gi, "") // remove <p></p>
+    .replace(/<p><br><\/p>/gi, "") // remove <p><br></p>
+    .replace(/<br\s*\/?>/gi, "") // remove <br> tags
+    .replace(/&nbsp;/gi, "") // remove non-breaking spaces
+    .replace(/<[^>]+>/g, "") // remove all other HTML tags
     .trim();
 
   return cleaned === "";
@@ -31,54 +28,73 @@ const GeneralTab = () => {
     notificationSettings: globalNotificationSettings,
     setNotificationSettings: setGlobalNotificationSettings,
     setShowQuickSettings,
+    keyboardShortcuts,
+    setKeyboardShortcuts,
   } = useGlobalContext();
 
   const [localVacationResponder, setLocalVacationResponder] = useState(vacationResponder);
   const [localSignatures, setLocalSignatures] = useState(globalSignatures);
+  const [localShortcuts, setLocalShortcuts] = useState(keyboardShortcuts);
+  const navigate = useNavigate();
   const [localNotificationSettings, setLocalNotificationSettings] = useState(globalNotificationSettings);
 
   const [hasChanges, setHasChanges] = useState(false);
-  const navigate = useNavigate();
 
   // Initialize local settings from global context (which is already persisted)
   useEffect(() => {
     setLocalVacationResponder(vacationResponder);
     setLocalSignatures(globalSignatures);
+    setLocalShortcuts(keyboardShortcuts);
     setLocalNotificationSettings(globalNotificationSettings);
-  }, [vacationResponder, globalSignatures, globalNotificationSettings]);
+  }, [vacationResponder, globalSignatures, keyboardShortcuts, globalNotificationSettings]);
 
   useEffect(() => {
     const hasLocalChanges =
       JSON.stringify(localVacationResponder) !== JSON.stringify(vacationResponder) ||
       JSON.stringify(localSignatures) !== JSON.stringify(globalSignatures) ||
+      JSON.stringify(localShortcuts) !== JSON.stringify(keyboardShortcuts) ||
       JSON.stringify(localNotificationSettings) !== JSON.stringify(globalNotificationSettings);
 
     setHasChanges(hasLocalChanges);
-  }, [localVacationResponder, vacationResponder, localSignatures, globalSignatures, localNotificationSettings, globalNotificationSettings]);
+  }, [
+    localVacationResponder,
+    vacationResponder,
+    localSignatures,
+    globalSignatures,
+    localShortcuts,
+    keyboardShortcuts,
+    localNotificationSettings,
+    globalNotificationSettings,
+  ]);
 
   const handleSave = useCallback(() => {
     setVacationResponder(localVacationResponder);
 
     const filteredSignatures = {
       ...localSignatures,
-      list: (localSignatures?.list || []).filter(
-        (sig) => !isEmptySignature(sig.content)
-      ),
+      list: (localSignatures?.list || []).filter((sig) => !isEmptySignature(sig.content)),
     };
     setGlobalSignatures(filteredSignatures);
+    setKeyboardShortcuts(localShortcuts);
     setGlobalNotificationSettings(localNotificationSettings);
 
     setHasChanges(false);
     setShowQuickSettings(false);
     navigate("/inbox");
-  }, [localVacationResponder, localSignatures, localNotificationSettings, setVacationResponder, setGlobalSignatures, setGlobalNotificationSettings]);
+  }, [
+    localVacationResponder,
+    localSignatures,
+    localShortcuts,
+    setVacationResponder,
+    setGlobalSignatures,
+    setKeyboardShortcuts,
+    setGlobalNotificationSettings,
+  ]);
 
-  const handleCancelChanges = () => {
-    // Close the settings sidebar
+  const handleCancel = useCallback(() => {
     setShowQuickSettings(false);
-    // Navigate back to inbox
-    navigate('/inbox');
-  };
+    navigate("/inbox");
+  }, [navigate, setShowQuickSettings]);
 
   return (
     <Box sx={{ height: "calc(100vh - 200px)", overflowY: "auto" }}>
@@ -87,23 +103,18 @@ const GeneralTab = () => {
         setLocalVacationResponder={setLocalVacationResponder}
         localSignatures={localSignatures}
         setLocalSignatures={setLocalSignatures}
+        localShortcuts={localShortcuts}
+        setLocalShortcuts={setLocalShortcuts}
         localNotificationSettings={localNotificationSettings}
         setLocalNotificationSettings={setLocalNotificationSettings}
       />
-            
+
       {/* Action Buttons */}
-      <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-        <button
-          onClick={handleSave}
-          disabled={!hasChanges}
-          style={{ fontSize: "14px" }}
-        >
+      <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+        <button onClick={handleSave} disabled={!hasChanges} style={{ fontSize: "14px" }}>
           Save changes
         </button>
-        <button
-          onClick={handleCancelChanges}
-          style={{ fontSize: "14px" }}
-        >
+        <button onClick={handleCancel} style={{ fontSize: "14px" }}>
           Cancel
         </button>
       </Box>

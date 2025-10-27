@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useMemo, useEffect } from "react";
 import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } from "@mui/material";
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
@@ -14,6 +14,7 @@ import {
   removeFromSearchHistory,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useHotkeys } from "react-hotkeys-hook";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
 import { encodeForPath, buildSearchBarFromUrl, buildSearchUrlWithFilters } from "../../utils/helperFunctions";
 import AutocompleteInput from "./AutocompleteInput/AutocompleteInput";
@@ -21,6 +22,21 @@ import { useActiveFiltersSync } from "./hooks/useActiveFiltersSync";
 
 // Filter options for the search bar
 const filterOptions = ["Has attachment", "Last 7 days", "From me"];
+
+const useCustomHotKeys = ({ focusInput, goToLabel }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "Slash" : "", (event) => {
+    event.preventDefault();
+    focusInput();
+  });
+
+  useHotkeys(shortcutsOn ? "g>l" : "", (event) => {
+    event.preventDefault();
+    goToLabel();
+  });
+};
 
 const SearchBar = () => {
   const { emails, loggedInUser } = useGlobalContext();
@@ -157,6 +173,30 @@ const SearchBar = () => {
     return items;
   }, [matchingContacts, expandedContent, searchValue]);
 
+  const focusInput = (delay = 0) => {
+    setTimeout(() => {
+      searchInputRef.current?.focus();
+      setIsFocused(true);
+    }, delay);
+  };
+
+  const goToLabel = () => {
+    // focus the label input
+    focusInput();
+
+    // set the search value to the label
+    setSearchValue("label:");
+  };
+
+  // Helper function to convert activeFilters array to filter object
+  const getFilterObject = () => {
+    return {
+      hasAttachment: activeFilters.includes("Has attachment"),
+      fromMe: activeFilters.includes("From me"),
+      lastSevenDays: activeFilters.includes("Last 7 days"),
+    };
+  };
+
   // Handle filter pill clicks
   const handleFilterClick = (filter) => {
     setActiveFilters((prev) => {
@@ -169,10 +209,9 @@ const SearchBar = () => {
       }
     });
 
-    // Focus the search input after clicking a filter
-    setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 0);
+    // Focus the search input after clicking a filter with a slight delay
+    // to ensure the chip click event completes first
+    focusInput(10);
   };
 
   // Helper function to highlight search terms
@@ -234,8 +273,7 @@ const SearchBar = () => {
         // Add search query to history when submitted
         if (searchValue.trim()) {
           addToSearchHistory(searchValue);
-          // Track in allSearchQueries
-          addBasicSearchQuery(searchValue);
+          addBasicSearchQuery(searchValue, getFilterObject());
         } else if (!hasAnyFilters) {
           // Don't navigate if no search value and no filters
           return;
@@ -265,7 +303,7 @@ const SearchBar = () => {
       // Add search query to history when clicked from suggestions
       if (item && item.trim() && typeof item === "string") {
         addToSearchHistory(item);
-        addBasicSearchQuery(item);
+        addBasicSearchQuery(item, getFilterObject());
       }
       navigate(`/search/${encodeForPath(item)}`);
     }
@@ -296,6 +334,8 @@ const SearchBar = () => {
     setShowAdvancedSearch(true);
     setIsFocused(false);
   };
+
+  useCustomHotKeys({ focusInput, goToLabel });
 
   const handleRemoveSuggestion = (item, e) => {
     e.stopPropagation();
@@ -381,6 +421,7 @@ const SearchBar = () => {
                   className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
                   variant="outlined"
                   onClick={() => handleFilterClick(filter)}
+                  onMouseDown={(e) => e.preventDefault()}
                   icon={
                     isActive ? (
                       <span

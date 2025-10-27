@@ -13,7 +13,7 @@ const UnfoldCollapsed = ({ previousHunk, currentHunk, onClick }) => {
   return (
     <tbody onClick={() => onClick(start, end + 1)} className="expand-decoration">
       <tr>
-        <td colspan="4">
+        <td colSpan="4">
           Expand lines {start} - {end}
         </td>
       </tr>
@@ -21,7 +21,7 @@ const UnfoldCollapsed = ({ previousHunk, currentHunk, onClick }) => {
   );
 };
 
-const DiffView = ({ hunks, onExpandRange }) => {
+const DiffView = ({ hunks, onExpandRange, oldSource }) => {
   const renderHunk = (children, hunk) => {
     const previousElement = children[children.length - 1];
     const decorationElement = (
@@ -41,10 +41,10 @@ const DiffView = ({ hunks, onExpandRange }) => {
   };
 
   return (
-    <Diff hunks={hunks} diffType="modify" viewType="split">
+    <Diff hunks={hunks} diffType="modify" viewType="split" oldSource={oldSource}>
       {(hunks) => hunks.reduce(renderHunk, [])}
     </Diff>
   );
 };
 
-export default withSourceExpansion()(DiffView);
+export default withSourceExpansion({ language: "json" })(DiffView);

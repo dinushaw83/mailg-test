@@ -100,7 +100,7 @@ export const useComposeModal = () => {
 
   // Add new compose window with proper minimized state management
   const addNewComposeWindow = useCallback(
-    (draftId = null, fields = {}) => {
+    (draftId = null, fields = {}, autoFocus = true) => {
       const windowWidth = window.innerWidth;
       const availableSpace = windowWidth - TOTAL_MARGINS - TOTAL_GAPS;
 
@@ -124,6 +124,7 @@ export const useComposeModal = () => {
         isMinimized: false,
         isMaximized: false,
         fields: fields || {},
+        autoFocus,
       };
 
       // Check if we need to minimize any existing windows
@@ -406,6 +407,7 @@ export const useComposeModal = () => {
   }, [getVisibleWindowCount]);
 
   return {
+    composeWindows,
     visibleWindowCount,
     getVisibleWindowCount,
     addNewComposeWindow,

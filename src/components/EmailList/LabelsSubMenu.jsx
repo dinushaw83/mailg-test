@@ -9,11 +9,7 @@ import useMailActions from "../../hooks/useMailActions";
 import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
 import Button from "@mui/material/Button";
 
-export const LabelsSubMenu = ({
-  selectedIds,
-  openCreateLabelDialog,
-  shouldFocus = false,
-}) => {
+export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { labels, setSnackbar, selection } = useGlobalContext();
   const { addLabels, removeLabels } = useMailActions();
@@ -39,30 +35,25 @@ export const LabelsSubMenu = ({
   const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds);
 
   const availableLabels = useMemo(() => {
-    return (
-      Object.entries(labels || {})
-        .filter(([key, meta]) => !meta.system)
-        .map(([key, meta]) => ({
-          key,
-          name: meta.name || key,
-          color: meta.color,
-          isCurrentlyApplied: currentLabels.has(key),
-        }))
-        .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    );
+    return Object.entries(labels || {})
+      .filter(([key, meta]) => !meta.system)
+      .map(([key, meta]) => ({
+        key,
+        name: meta.name || key,
+        color: meta.color,
+        isCurrentlyApplied: currentLabels.has(key),
+      }))
+      .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [labels, searchQuery, currentLabels]);
 
   const handleApplyLabels = useCallback(() => {
     const labelsToAdd = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "checked");
     const labelsToRemove = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "unchecked");
 
-    const addedMessage = labelsToAdd.length > 0
-      ? `added to ${labelsToAdd.map(normalizeLabelName).join(", ")}`
-      : "";
-    const removedMessage = labelsToRemove.length > 0
-      ? `removed from ${labelsToRemove.map(normalizeLabelName).join(", ")}`
-      : "";
+    const addedMessage = labelsToAdd.length > 0 ? `added to ${labelsToAdd.map(normalizeLabelName).join(", ")}` : "";
+    const removedMessage =
+      labelsToRemove.length > 0 ? `removed from ${labelsToRemove.map(normalizeLabelName).join(", ")}` : "";
 
     let message = "";
 
@@ -81,6 +72,12 @@ export const LabelsSubMenu = ({
       const undo = () => {
         addLabels(selectedIds, labelsToRemove);
         removeLabels(selectedIds, labelsToAdd);
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
       };
 
       setSnackbar({

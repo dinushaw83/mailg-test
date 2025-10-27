@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { useContextMenu } from "react-contexify";
@@ -16,6 +16,7 @@ import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import ContextMenu from "./ContextMenu";
 import { isDocument, isSpreadsheet, isPresentation } from "../InboxView/Attachments";
+import { useHotkeys } from "react-hotkeys-hook";
 import { getEmbeddedImage } from "../../utils/embeddedImages";
 
 // Show by default, hide when .zA is hovered
@@ -108,8 +109,8 @@ const OneColumnData = ({
                 <span
                   translate="no"
                   className={getSenderClassName(email)}
-                  email={email.from.email}
-                  name={email.from.name}
+                  data-email={email.from.email}
+                  data-name={email.from.name}
                   data-hovercard-id={email.from.email}
                   style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                 >
@@ -136,7 +137,7 @@ const OneColumnData = ({
                 fontSize: "0.75rem",
               }}
             >
-              <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+              <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
             </span>
           </Box>
         </Box>
@@ -146,7 +147,7 @@ const OneColumnData = ({
               <div className="y6">
                 <span id={`:pr${index}`} className="bog">
                   <span
-                    className={email.read ? "" : "bqe"}
+                    className={email.isEmailRead ? "" : "bqe"}
                     data-thread-id={email.threadId}
                     data-legacy-thread-id={email.legacyThreadId}
                     data-legacy-last-message-id={email.legacyLastMessageId}
@@ -194,6 +195,117 @@ const OneColumnData = ({
 
 const MENU_ID = "row-item-menu";
 
+const useCustomHotKeys = ({
+  focusedRowIndex,
+  shortcutsOn,
+  setFocusedRowIndex,
+  emails,
+  handleClickRow,
+  selection,
+  toggleStar,
+  handleArchive,
+  handleMuteAction,
+  handleDelete,
+  bulkMarkRead,
+  handleSnoozeAction,
+  bulkMarkImportant,
+}) => {
+  const lastStarAt = useRef(0);
+  const lastGAt = useRef(0);
+
+  useHotkeys(shortcutsOn ? "shift+8" : "", () => {
+    lastStarAt.current = Date.now();
+  });
+
+  useHotkeys(shortcutsOn ? "g" : "", () => {
+    lastGAt.current = Date.now();
+  });
+
+  useHotkeys(shortcutsOn ? "ArrowDown" : "", () => {
+    setFocusedRowIndex((prev) => {
+      const nextIndex = prev === -1 ? 0 : Math.min(prev + +1, emails.length - 1);
+      return nextIndex;
+    });
+  });
+
+  useHotkeys(shortcutsOn ? "ArrowUp" : "", () => {
+    setFocusedRowIndex((prev) => {
+      const nextIndex = prev === -1 ? 0 : Math.max(prev - 1, 0);
+      return nextIndex;
+    });
+  });
+
+  useHotkeys(shortcutsOn ? "Enter" : "", () => {
+    if (focusedRowIndex >= 0) {
+      const threadId = emails[focusedRowIndex].threadId.split(":")[1];
+      handleClickRow(emails[focusedRowIndex], threadId);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "x" : "", () => {
+    if (focusedRowIndex >= 0) {
+      const threadId = emails[focusedRowIndex].threadId.split(":")[1];
+      selection.toggle(threadId);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "s" : "", () => {
+    if (focusedRowIndex >= 0 && Date.now() - lastStarAt.current > 1000 && Date.now() - lastGAt.current > 1000) {
+      const threadId = emails[focusedRowIndex].threadId.split(":")[1];
+      toggleStar([threadId]);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "e" : "", () => {
+    const selectedIds = [...selection.ids];
+    handleArchive(selectedIds);
+    selection.clear();
+  });
+
+  useHotkeys(shortcutsOn ? "m" : "", () => {
+    const selectedIds = selection.ids;
+    handleMuteAction([...selectedIds]);
+    selection.clear();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+3" : "", () => {
+    const selectedIds = selection.ids;
+    handleDelete([...selectedIds]);
+    selection.clear();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+i" : "", () => {
+    const selectedIds = [...selection.ids];
+    bulkMarkRead(selectedIds, true);
+    selection.clear();
+  });
+
+  useHotkeys(shortcutsOn ? "Equal, Shift+Equal" : "", () => {
+    const selectedIds = selection.ids;
+    bulkMarkImportant([...selectedIds], true);
+    selection.clear();
+  });
+
+  useHotkeys(shortcutsOn ? "Minus" : "", () => {
+    const selectedIds = [...selection.ids];
+    bulkMarkImportant([...selectedIds], false);
+    selection.clear();
+  });
+
+  useHotkeys(shortcutsOn ? "Shift+u" : "", () => {
+    const selectedIds = [...selection.ids];
+    bulkMarkRead(selectedIds, false);
+    selection.clear();
+  });
+
+  useHotkeys(shortcutsOn ? "b" : "", () => {
+    if (Date.now() - lastGAt.current > 1000) {
+      const selectedIds = [...selection.ids];
+      handleSnoozeAction(selectedIds);
+    }
+  });
+};
+
 const Table = ({
   emails,
   getRowClassName,
@@ -209,11 +321,12 @@ const Table = ({
   formatDate,
   setShowAdvancedMenu,
 }) => {
-  const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db } = useGlobalContext();
+  const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db, keyboardShortcuts } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
-  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted, unsnooze } = useMailActions();
+  const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted, unsnooze, setImportant } = useMailActions();
   const snoozeAnchorElRef = useRef(null);
   const [contextRow, setContextRow] = useState(null);
+  const [focusedRowIndex, setFocusedRowIndex] = useState(0);
 
   const [{ snoozeId, snoozeAnchorEl }, setState] = useState({
     snoozeId: null,
@@ -229,30 +342,46 @@ const Table = ({
     }));
   }, []);
 
-  const renderOneColumn = dimensions.width < 525;
+  const renderOneColumn =
+    dimensions && typeof dimensions === "object" && "width" in dimensions && dimensions.width < 525;
+
+  const showSplit = panelState.direction !== "no-split";
 
   const handleClickRow = (email, threadId) => {
-    if (panelState.showPanel) {
+    if (showSplit) {
       setPreviewEmailId(threadId);
     } else {
       navigateToEmailDetails(email, threadId);
     }
   };
 
+  const showNoConversationsSelectedSnackbar = useCallback(() => {
+    setSnackbar({
+      open: true,
+      message: "No conversations selected.",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
   const handleArchive = useCallback(
-    (threadId) => {
+    (threadIds) => {
+      if (!threadIds.length) {
+        showNoConversationsSelectedSnackbar();
+        return;
+      }
       try {
-        archive([threadId]);
+        archive(threadIds);
+        const message = threadIds.length > 1 ? `${threadIds.length} Conversations archived` : "Conversation archived.";
         setSnackbar({
           open: true,
-          message: "Conversation archived.",
+          message,
           autoHideDuration: 3000,
           action: (
             <Button
               sx={{ textTransform: "none" }}
               size="small"
               onClick={() => {
-                moveToInbox([threadId]);
+                moveToInbox(threadIds);
                 setSnackbar({
                   open: true,
                   message: "Action undone.",
@@ -273,18 +402,23 @@ const Table = ({
   );
 
   const handleDelete = useCallback(
-    (threadId) => {
-      moveToTrash([threadId]);
+    (threadIds) => {
+      if (!threadIds.length) {
+        showNoConversationsSelectedSnackbar();
+        return;
+      }
+
+      moveToTrash(threadIds);
       setSnackbar({
         open: true,
-        message: "Conversation moved to Trash.",
+        message: threadIds.size > 1 ? `${threadIds.size} Conversations moved to Trash` : "Conversation moved to Trash.",
         autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              moveToInbox([threadId]);
+              moveToInbox(threadIds);
               // Follow-up confirmation snackbar
               setSnackbar({
                 open: true,
@@ -302,21 +436,36 @@ const Table = ({
     [moveToTrash, setSnackbar]
   );
 
-  const handleReadAction = useCallback(
-    (email) => {
-      const { read } = email;
+  const bulkMarkRead = useCallback(
+    (threadIds, read = true) => {
+      if (!threadIds.length) {
+        showNoConversationsSelectedSnackbar();
+        return;
+      }
+      markRead(threadIds, read);
 
-      markRead([email.id], !read);
+      const markedAs = read ? "read" : "unread";
+
+      const message =
+        threadIds.size > 1
+          ? `${threadIds.length} Conversations marked as ${markedAs}`
+          : `Conversation marked as ${markedAs}.`;
 
       setSnackbar({
         open: true,
-        message: "Conversation marked as read.",
+        message,
         autoHideDuration: 3000,
         action: (
           <Button
             size="small"
             onClick={() => {
-              markRead([email.id], read);
+              markRead(threadIds, !read);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
             }}
           >
             Undo
@@ -325,6 +474,80 @@ const Table = ({
       });
     },
     [markRead]
+  );
+
+  const bulkMarkImportant = useCallback(
+    (threadIds, important = true) => {
+      if (!threadIds.length) {
+        showNoConversationsSelectedSnackbar();
+        return;
+      }
+
+      setImportant(threadIds, important);
+
+      const markedAs = important ? "important" : "not important";
+
+      const message =
+        threadIds.length > 1
+          ? `${threadIds.length} Conversations marked as ${markedAs}`
+          : `Conversation marked as ${markedAs}.`;
+
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 3000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              setImportant(threadIds, !important);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [markRead]
+  );
+
+  const handleReadAction = useCallback(
+    (email) => {
+      const { isEmailRead } = email;
+      const isMarkingAsRead = !isEmailRead;
+
+      markRead([email.id], isMarkingAsRead);
+
+      setSnackbar({
+        open: true,
+        message: isMarkingAsRead ? "Conversation marked as read." : "Conversation marked as unread.",
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              markRead([email.id], isEmailRead);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 6000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [markRead, setSnackbar]
   );
 
   const { show } = useContextMenu({
@@ -343,7 +566,12 @@ const Table = ({
     });
   }
 
-  const handleSnoozeAction = useCallback((threadId) => {
+  const handleSnoozeAction = useCallback((threadIds) => {
+    if (!threadIds.length) {
+      showNoConversationsSelectedSnackbar();
+      return;
+    }
+
     setShowAdvancedMenu(true);
 
     setTimeout(() => {
@@ -356,18 +584,31 @@ const Table = ({
   }, []);
 
   const handleMuteAction = useCallback(
-    (threadId, muted) => {
-      toggleMuted(threadId);
+    (threadIds) => {
+      if (!threadIds.length) {
+        showNoConversationsSelectedSnackbar();
+        return;
+      }
+
+      const undo = toggleMuted(threadIds);
+
+      const message = threadIds.length > 1 ? `${threadIds.length} Conversations muted` : "Conversation muted.";
 
       setSnackbar({
         open: true,
-        message: `Conversation ${muted ? "unmuted" : "muted"}.`,
+        message,
         autoHideDuration: 3000,
         action: (
           <Button
             size="small"
             onClick={() => {
-              toggleMuted(threadId);
+              undo();
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
             }}
           >
             Undo
@@ -380,17 +621,25 @@ const Table = ({
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
-      snooze(ids, snoozeUntil);
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      selection.clear();
+      const message = ids.size > 1 ? `${ids.size} Conversations snoozed` : "Conversation snoozed.";
       setSnackbar({
         open: true,
-        message: "Conversation snoozed.",
+        message,
         autoHideDuration: 3000,
         // undo action
         action: (
           <Button
             size="small"
             onClick={() => {
-              unsnooze(ids);
+              unsnooze(ids, { removedInboxIds });
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
             }}
           >
             Undo
@@ -398,7 +647,7 @@ const Table = ({
         ),
       });
     },
-    [snooze]
+    [snooze, selection, unsnooze, setSnackbar]
   );
 
   const openInNewTab = async (e, attachment, db) => {
@@ -422,6 +671,23 @@ const Table = ({
 
   const { folder, label } = useParams();
 
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+  useCustomHotKeys({
+    focusedRowIndex,
+    shortcutsOn,
+    setFocusedRowIndex,
+    emails,
+    handleClickRow,
+    selection,
+    toggleStar,
+    handleArchive,
+    handleMuteAction,
+    handleDelete,
+    bulkMarkRead,
+    handleSnoozeAction,
+    bulkMarkImportant,
+  });
+
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -431,7 +697,16 @@ const Table = ({
         role="grid"
         aria-readonly="true"
         style={{ width: "100%", height: "100%" }}
-        ref={ref}
+        ref={(element) => {
+          if (ref) {
+            if (typeof ref === "function") {
+              ref(element);
+            } else if (ref && typeof ref === "object" && "current" in ref) {
+              ref.current = element;
+            }
+          }
+        }}
+        tabIndex={0}
       >
         <tbody>
           {emails.map((email, index) => {
@@ -439,17 +714,19 @@ const Table = ({
             const isActive = showSnoozePopover && snoozeId === email.id;
             const selected = selection.isSelected(threadId);
 
+            const isFocused = focusedRowIndex === index;
+
             return (
               <tr
                 key={threadId}
                 className={getRowClassName(email, isActive)}
                 id={`:pi${index}`}
-                tabIndex={-1}
+                tabIndex={isFocused ? 0 : -1}
                 role="row"
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
                 onClick={(e) => handleClickRow(email, threadId)}
-                read={email.read}
+                data-read={email.isEmailRead}
                 style={{
                   ...(density === "compact"
                     ? {
@@ -457,6 +734,13 @@ const Table = ({
                       }
                     : {}),
                   ...(selected ? { backgroundColor: "#c2dbff" } : {}),
+                  ...(isFocused
+                    ? {
+                        boxShadow:
+                          "inset 1px 0 0 rgb(218, 220, 224), inset -1px 0 0 rgb(218, 220, 224), 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15)",
+                        zIndex: 2,
+                      }
+                    : {}),
                 }}
                 onContextMenu={(e) => handleContextMenu(e, email)}
               >
@@ -546,12 +830,23 @@ const Table = ({
                           <span
                             translate="no"
                             className={getSenderClassName(email)}
-                            email={email.from.email}
-                            name={email.from.name}
+                            data-email={email.from.email}
+                            data-name={email.from.name}
                             data-hovercard-id={email.from.email}
-                            style={email.labels.includes("Drafts") ? { color: "#dd4b39", fontWeight: 400 } : {}}
                           >
-                            {email.labels.includes("Drafts") ? "Draft" : email.from.name}
+                            {folder === "sent" && !email.labels.includes("Drafts") ? `To: ${email.label}` : email.label}
+                            {email.label && email.labels.includes("Drafts") && <span>, </span>}
+                            <>
+                              {email.labels.includes("Drafts") && (
+                                <span style={{ color: "#dd4b39", fontWeight: 400 }}> Draft</span>
+                              )}
+                            </>
+                            {email.messageCount > 1 && (
+                              <span style={{ color: "rgb(95, 99, 104)", fontSize: "0.75rem", marginLeft: "4px" }}>
+                                {" "}
+                                {email.messageCount}
+                              </span>
+                            )}
                           </span>
                         </span>
                       </div>
@@ -561,6 +856,13 @@ const Table = ({
                       <div className="a4X">
                         <Link
                           to={`${location.pathname}/${threadId}`}
+                          onClick={(e) => {
+                            if (showSplit) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleClickRow(email, threadId);
+                            }
+                          }}
                           className="xS"
                           role="link"
                           style={{ textDecoration: "none" }}
@@ -587,27 +889,27 @@ const Table = ({
                               <div className="as sf-hidden">&nbsp;</div>
                             </div>
                             <div className="y6">
-                                <span id={`:pr${index}`} className="bog">
-                                  {getLabelBadges(email).map((badge) => (
-                                    <div
-                                      key={`Badge-${badge.key}`}
-                                      style={{
-                                        backgroundColor: badge?.color?.rgb ?? "#e1e3e1",
-                                        color: badge?.color?.text ?? "#444746",
-                                        fontSize: "0.75rem",
-                                        padding: "0 4px",
-                                        textDecoration: "none",
-                                        width: "fit-content",
-                                        borderRadius: "4px",
-                                        marginRight: "6px",
-                                        display: "inline-block",
-                                      }}
-                                    >
-                                      {badge.displayName}
-                                    </div>
-                                  ))}
+                              <span id={`:pr${index}`} className="bog">
+                                {getLabelBadges(email).map((badge) => (
+                                  <div
+                                    key={`Badge-${badge.key}`}
+                                    style={{
+                                      backgroundColor: badge?.color?.rgb ?? "#e1e3e1",
+                                      color: badge?.color?.text ?? "#444746",
+                                      fontSize: "0.75rem",
+                                      padding: "0 4px",
+                                      textDecoration: "none",
+                                      width: "fit-content",
+                                      borderRadius: "4px",
+                                      marginRight: "6px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    {badge.displayName}
+                                  </div>
+                                ))}
                                 <span
-                                  className={email.read ? "" : "bqe"}
+                                  className={email.isEmailRead ? "" : "bqe"}
                                   data-thread-id={email.threadId}
                                   data-legacy-thread-id={email.legacyThreadId}
                                   data-legacy-last-message-id={email.legacyLastMessageId}
@@ -697,7 +999,7 @@ const Table = ({
                           id={`:pu${index}`}
                           aria-label={new Date(email.timestamp).toLocaleString()}
                         >
-                          <span className={email.read ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                          <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
                         </span>
                       </TimestampBox>
                       <HoverDiv>
@@ -707,8 +1009,11 @@ const Table = ({
                           marginRight="3px"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleArchive(email.threadId);
+                            handleArchive([email.threadId]);
                           }}
+                          style={{}}
+                          disabled={false}
+                          _ref={null}
                         />
                         <Icon
                           name="delete"
@@ -716,17 +1021,23 @@ const Table = ({
                           marginRight="3px"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDelete(email.threadId);
+                            handleDelete([email.threadId]);
                           }}
+                          style={{}}
+                          disabled={false}
+                          _ref={null}
                         />
                         <Icon
                           name="mark_email_unread"
-                          label={email.read ? `Mark as unread` : `Mark as read`}
+                          label={email.isEmailRead ? `Mark as unread` : `Mark as read`}
                           marginRight="3px"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleReadAction(email);
                           }}
+                          style={{}}
+                          disabled={false}
+                          _ref={null}
                         />
                         <Icon
                           name="schedule"
@@ -740,6 +1051,8 @@ const Table = ({
                               snoozeAnchorEl: e.currentTarget,
                             }));
                           }}
+                          style={{}}
+                          disabled={false}
                           _ref={snoozeAnchorElRef}
                         />
                       </HoverDiv>

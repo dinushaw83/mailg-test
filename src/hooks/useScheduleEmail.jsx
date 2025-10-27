@@ -327,7 +327,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
 
       setSnackbar({
         open: true,
-        message: "Scheduling undone",
+        message: "Scheduled send cancelled and message reverted to draft.",
         action: null,
         autoHideDuration: 5000,
       });

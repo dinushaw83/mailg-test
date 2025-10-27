@@ -33,70 +33,69 @@ import SettingsFooterRow from "./SettingsFooterRow";
 import OutOfOfficeAutoReply from "./OutOfOfficeAutoReply";
 import { Container, MainContainer, StyledTable, MainBody } from "./styles";
 
-export default function GeneralSettings({ 
-    localVacationResponder,
-    setLocalVacationResponder,
-    localSignatures,
-    setLocalSignatures,
-    localNotificationSettings,
-    setLocalNotificationSettings
- }) {
-    return (
-        <Container>
-            <MainContainer>
-                <MainBody>
-                    <StyledTable>
-                        <tbody>
-                            <LanguageSettingsRow />
-                            <PageSizeRow />
-                            <UndoSendRow />
-                            <DefaultReplyBehaviourRow />
-                            <HoverActionsRow />
-                            <SendAndArchiveRow />
-                            <DefaultTextStyleRow />
-                            <ImagesRow />
-                            <DynamicEmailRow />
-                            <GrammarRow />
-                            <SpellingRow />
-                            <AutoCorrectRow />
-                            <SmartComposeRow />
+export default function GeneralSettings({
+  localVacationResponder,
+  setLocalVacationResponder,
+  localSignatures,
+  setLocalSignatures,
+  localShortcuts,
+  setLocalShortcuts,
+  localNotificationSettings,
+  setLocalNotificationSettings,
+}) {
+  return (
+    <Container>
+      <MainContainer>
+        <MainBody>
+          <StyledTable>
+            <tbody>
+              <LanguageSettingsRow />
+              <PageSizeRow />
+              <UndoSendRow />
+              <DefaultReplyBehaviourRow />
+              <HoverActionsRow />
+              <SendAndArchiveRow />
+              <DefaultTextStyleRow />
+              <ImagesRow />
+              <DynamicEmailRow />
+              <GrammarRow />
+              <SpellingRow />
+              <AutoCorrectRow />
+              <SmartComposeRow />
 
-                            <SmartComposePersonalisationRow />
-                            <ConversationViewRow />
-                            <NudgesRow />
+              <SmartComposePersonalisationRow />
+              <ConversationViewRow />
+              <NudgesRow />
 
-                            <SmartReplyRow />
-                            <SmartFeaturesRow />
-                            <WorkspaceSmartFeaturesRow />
+              <SmartReplyRow />
+              <SmartFeaturesRow />
+              <WorkspaceSmartFeaturesRow />
 
-                            <PackageTrackingRow />
-                            <DesktopNotificationsRow 
-                                localNotificationSettings={localNotificationSettings}
-                                setLocalNotificationSettings={setLocalNotificationSettings}
-                            />
-                            <StarsRow />
-                            <KeyboardShortcutsRow />
+              <PackageTrackingRow />
+              <DesktopNotificationsRow
+                localNotificationSettings={localNotificationSettings}
+                setLocalNotificationSettings={setLocalNotificationSettings}
+              />
+              <StarsRow />
+              <KeyboardShortcutsRow localShortcuts={localShortcuts} setLocalShortcuts={setLocalShortcuts} />
 
-                            <ButtonLabelsRow />
-                            <MyPictureRow />
-                            <AutoCompleteContactsRow />
-                            <AdsImportanceSignalsRow />
-                            <SignatureRow
-                                localSignatures={localSignatures}
-                                setLocalSignatures={setLocalSignatures}
-                            />
-                            <PersonalLevelIndicatorsRow />
-                            <SnippetsRow />
+              <ButtonLabelsRow />
+              <MyPictureRow />
+              <AutoCompleteContactsRow />
+              <AdsImportanceSignalsRow />
+              <SignatureRow localSignatures={localSignatures} setLocalSignatures={setLocalSignatures} />
+              <PersonalLevelIndicatorsRow />
+              <SnippetsRow />
 
-                            <OutOfOfficeAutoReply
-                                localSettings={localVacationResponder}
-                                setLocalSettings={setLocalVacationResponder}
-                            />
-                            {/* <SettingsFooterRow /> */}
-                        </tbody>
-                    </StyledTable>
-                </MainBody>
-            </MainContainer>
-        </Container>
-    )
+              <OutOfOfficeAutoReply
+                localSettings={localVacationResponder}
+                setLocalSettings={setLocalVacationResponder}
+              />
+              {/* <SettingsFooterRow /> */}
+            </tbody>
+          </StyledTable>
+        </MainBody>
+      </MainContainer>
+    </Container>
+  );
 }

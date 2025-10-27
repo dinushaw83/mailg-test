@@ -1,33 +1,99 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import useMailActions from "../../hooks/useMailActions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useComposeModal } from "../../hooks/useComposeModal";
 
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { EmailContent } from "../InboxView";
 import Table from "./Table";
 import Footer from "./Footer";
 import { CATEGORIES } from "../../utils/categories";
 import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
+import { useComposeModal } from "../../hooks/useComposeModal";
+
+const useCustomHotKeys = ({ emails }) => {
+  const { selection, keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+  const lastStarAt = useRef(0);
+
+  useHotkeys(shortcutsOn ? "shift+8" : "", () => {
+    lastStarAt.current = Date.now();
+  });
+
+  useHotkeys(shortcutsOn ? "a" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // treat as "*" then "a"
+      const ids = emails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "n" : "", () => {
+    // deselect all
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>n
+      selection.clear();
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "r" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>r
+      const readEmails = emails.filter((email) => email.isEmailRead);
+      const ids = readEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "u" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>u
+      const unreadEmails = emails.filter((email) => !email.isEmailRead);
+      const ids = unreadEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "s" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>u
+      const starredEmails = emails.filter((email) => email.starred);
+      const ids = starredEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "t" : "", () => {
+    if (Date.now() - lastStarAt.current < 1000) {
+      // *>u
+      const unstarredEmails = emails.filter((email) => !email.starred);
+      const ids = unstarredEmails.map((email) => email.threadId.split(":")[1]);
+      selection.setMany(ids);
+    }
+  });
+};
 
 const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
+  // Add isEmailRead property based on unreadCount
+  // A thread is considered read only if unreadCount is 0
+  const emailsWithReadStatus = emails.map((email) => ({
+    ...email,
+    isEmailRead: email.unreadCount === 0,
+  }));
+
   const navigate = useNavigate();
   const location = useLocation();
-  const { selection, composeWindows, panelState,
-    previewEmailId, softRemovedLabels, setSoftRemovedLabels
-  } = useGlobalContext();
+  const { selection, composeWindows, softRemovedLabels, setSoftRemovedLabels } = useGlobalContext();
+
   const { toggleImportant, toggleStar } = useMailActions();
   const { addNewComposeWindow } = useComposeModal();
 
   const { folder, label } = useParams();
   const { labels } = useLabels();
 
-  const { direction: internalDirection, showPanel } = panelState;
-  const direction = internalDirection === "vertical" ? "horizontal" : "vertical";
-
   const categoryLabels = Object.values(CATEGORIES).map((c) => c.toLowerCase());
+
+  useCustomHotKeys({ emails: emailsWithReadStatus });
 
   /**
    * Format the given timestamp similar to Gmail:
@@ -77,12 +143,12 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   const getRowClassName = (email, isActive) => {
     let className = `zA ${isActive ? "active" : ""}`;
-    className += email.read ? " yO" : " zE";
+    className += email.isEmailRead ? " yO" : " zE";
     return className;
   };
 
   const getSenderClassName = (email) => {
-    return email.read ? "yP" : "zF";
+    return email.isEmailRead ? "yP" : "zF";
   };
 
   const getImportantAriaLabel = (email) => {
@@ -96,7 +162,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   const getAccessibilityText = (email) => {
     const status = [];
     if (email.starred) status.push("starred");
-    if (!email.read) status.push("unread");
+    if (!email.isEmailRead) status.push("unread");
     if (email.important) status.push("Important");
     status.push(email.from.name);
     status.push(email.subject);
@@ -107,31 +173,34 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   // Navigate to the email details page
   const navigateToEmailDetails = (email, threadId) => {
+    // If compose param is present in the url, include it while navigating
+    const urlParams = new URLSearchParams(location.search);
+    const composeParam = urlParams.get("compose");
+    const pathname = location.pathname;
+
+    const isComposeDraft = email.labels.includes("Drafts") && email.messageCount === 1;
+
     // If labels includes Drafts, then add new compose window with the draft id
-    if (email.labels.includes("Drafts")) {
+    if (isComposeDraft) {
       // Check if already a compose window with the draft id exists
       const composeWindow = composeWindows.find((window) => window?.draftId?.toString() === email.id.toString());
       // If compose window with the draft id doesn't exist, then add new compose window with the draft id
       if (!composeWindow) {
         addNewComposeWindow(email.id);
       }
+      return;
+    }
+
+    if (pathname.startsWith("/search")) {
+      const composeQuery = composeParam ? `?compose=${composeParam}` : "";
+      navigate(`/inbox/${threadId}${composeQuery}`);
+      return;
+    }
+
+    if (composeParam) {
+      navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
     } else {
-      // If compose param is present in the url, include it while navigating
-      const urlParams = new URLSearchParams(location.search);
-      const composeParam = urlParams.get("compose");
-      const pathname = location.pathname;
-
-      if (pathname.startsWith("/search")) {
-        const composeQuery = composeParam ? `?compose=${composeParam}` : "";
-        navigate(`/inbox/${threadId}${composeQuery}`);
-        return;
-      }
-
-      if (composeParam) {
-        navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
-      } else {
-        navigate(`${location.pathname}/${threadId}`);
-      }
+      navigate(`${location.pathname}/${threadId}`);
     }
   };
 
@@ -139,13 +208,13 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
     const currentPath = (label || folder || "").toLowerCase();
     const isAllMail = ["all"].includes(currentPath);
     const softRemoved = softRemovedLabels[email.id] || [];
-    const curLabels = [...new Set([...email.labels, ...softRemoved])]
+    const curLabels = [...new Set([...email.labels, ...softRemoved])];
 
     return curLabels
       .filter((labelKey) => {
         const lower = labelKey.toLowerCase();
         const isInbox = lower === "inbox";
-        const isCategory = categoryLabels.map(c => c.toLowerCase()).includes(lower);
+        const isCategory = categoryLabels.map((c) => c.toLowerCase()).includes(lower);
 
         // hide current folder label
         if (lower === currentPath) return false;
@@ -171,44 +240,35 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
   return (
     <div className="Nu tf aZ6" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ height: "100%", minWidth: "518px", overflowY: "hidden" }}>
-        <PanelGroup direction={direction} id="email-list-panel-group">
-          <Panel defaultSize={40} minSize={25} id="email-list-panel">
-            <Table
-              {...{
-                emails,
-                getRowClassName,
-                navigateToEmailDetails,
-                selection,
-                toggleStar,
-                toggleImportant,
-                getImportantAriaLabel,
-                getImportantClassName,
-                getAccessibilityText,
-                getSenderClassName,
-                getLabelBadges,
-                formatDate,
-                setShowAdvancedMenu,
-              }}
-            />
-          </Panel>
-          {showPanel && (
-            <>
-              <PanelResizeHandle
-                style={{
-                  [direction === "horizontal" ? "width" : "height"]: "4px",
-                  backgroundColor: "#e0e0e0",
-                  cursor: "col-resize",
-                }}
-              />
-              <Panel defaultSize={60} id="email-content-panel" style={{ height: "100%", overflow: "hidden" }}>
-                <EmailContent threadId={previewEmailId} folder={folder} label={label} showActionBar={false} isPreview />
-              </Panel>
-            </>
-          )}
-        </PanelGroup>
+      <div
+        style={{
+          height: "100%",
+          minWidth: "518px",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+        }}
+      >
+        <Table
+          {...{
+            emails: emailsWithReadStatus,
+            getRowClassName,
+            navigateToEmailDetails,
+            selection,
+            toggleStar,
+            toggleImportant,
+            getImportantAriaLabel,
+            getImportantClassName,
+            getAccessibilityText,
+            getSenderClassName,
+            getLabelBadges,
+            formatDate,
+            setShowAdvancedMenu,
+          }}
+        />
       </div>
-      {!showPanel && showFooter && <Footer />}
+      {showFooter && <Footer />}
     </div>
   );
 };

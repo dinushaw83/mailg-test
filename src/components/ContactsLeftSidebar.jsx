@@ -19,6 +19,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import CreateLabelModal from "./Contacts/CreateLabelModal";
 import DeleteLabelModal from "./Contacts/DeleteLabelModal";
 import ImportContactsModal from "./Contacts/ImportContactsModal";
+import ImportNotification from "./Contacts/ImportNotification";
 import CreateMultipleContactsModal from "./Contacts/CreateMultipleContactsModal";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import useDimensions from "../hooks/useDimensions";
@@ -242,13 +243,14 @@ const ContactsLeftSidebar = () => {
   const { width } = useDimensions();
   const navigate = useNavigate();
   const activeItem = location.pathname.split("/").pop();
-  const myContacts = recipients.filter((recipient) => recipient?.isSaved);
+  const myContacts = recipients.filter((recipient) => recipient?.isSaved && !recipient?.isDeleted);
   const [deleteLabelModal, setDeleteLabelModal] = useState({
     show: false,
     label: null,
   });
   const [createContactAnchor, setCreateContactAnchor] = useState(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importPopup, setImportPopup] = useState({ open: false, fileName: "", undo: null });
   const [showCreateMultipleContactsModal, setShowCreateMultipleContactsModal] = useState(false);
 
   useEffect(() => {
@@ -262,7 +264,7 @@ const ContactsLeftSidebar = () => {
 
   // Get contacts count by label
   const getContactsCountByLabel = (label) => {
-    return recipients.filter((recipient) => recipient?.labels?.includes(label)).length;
+    return recipients.filter((recipient) => recipient?.labels?.includes(label) && !recipient?.isDeleted).length;
   };
 
   // Handle create contact dropdown menu item selection
@@ -316,29 +318,95 @@ const ContactsLeftSidebar = () => {
   };
 
   // Handle import contacts
-  const handleImportContacts = async (importedContacts) => {
+  const handleImportContacts = async (importedContacts, uploadedFileName = "contacts.csv") => {
     try {
-      // Add imported contacts to recipients
-      setRecipients((prev) => [...prev, ...importedContacts]);
+      // Create import label with current date in DD/MM format
+      const today = new Date();
+      const day = String(today.getDate()).padStart(2, '0');
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const baseImportLabelName = `Imported on ${day}/${month}`;
       
-      // Show success message
-      setSnackbar({
-        open: true,
-        message: `Successfully imported ${importedContacts.length} contacts`,
-        action: null,
-        autoHideDuration: 3000,
-        hideClose: true,
-        style: snackbarStyle,
+      // Find the next available counter for this date
+      let counter = 1;
+      let importLabelName = baseImportLabelName;
+      
+      // Check if any labels with this base name exist and find the highest counter
+      const existingLabels = recipientLabels.filter(label => {
+        // Match "Imported on 22/10" or "Imported on 22/10 1", "Imported on 22/10 2", etc.
+        const regex = new RegExp(`^${baseImportLabelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s+(\\d+))?$`);
+        return regex.test(label.label);
       });
+      
+      if (existingLabels.length > 0) {
+        // Find the highest counter
+        const counters = existingLabels.map(label => {
+          const match = label.label.match(/\s+(\d+)$/);
+          return match ? parseInt(match[1]) : 0; // Return 0 for labels without counter
+        });
+        counter = Math.max(...counters) + 1;
+      }
+      
+      // Always append counter if there are existing labels with this date
+      if (existingLabels.length > 0) {
+        importLabelName = `${baseImportLabelName} ${counter}`;
+      }
+      
+      // Create the new label
+      const importLabel = {
+        id: `label_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        label: importLabelName,
+        color: '#039be5', // Blue color for import labels
+      };
+      setRecipientLabels((prev) => [...prev, importLabel]);
+      
+      // Add the import label to all imported contacts
+      const contactsWithLabel = importedContacts.map(contact => ({
+        ...contact,
+        labels: contact.labels ? [...contact.labels, importLabelName] : [importLabelName],
+      }));
+      
+      console.log('Import Debug:', {
+        importLabelName,
+        importLabel,
+        importedContactsCount: importedContacts.length,
+        contactsWithLabelCount: contactsWithLabel.length,
+        firstContact: contactsWithLabel[0],
+      });
+      
+      // Store the previous recipients for undo functionality
+      const previousRecipients = [...recipients];
+      const previousLabels = [...recipientLabels];
+      
+      // Add imported contacts to recipients
+      setRecipients((prev) => [...prev, ...contactsWithLabel]);
+      
+      // Use setTimeout to ensure state updates before navigation
+      setTimeout(() => {
+        // Navigate to the imported label view
+        navigate(`/contacts/label/${importLabel.id}`);
+      }, 100);
+      
+      // Prepare undo action
+      const undoAction = () => {
+        // Restore previous recipients and labels
+        setRecipients(previousRecipients);
+        setRecipientLabels(previousLabels);
+        
+        // Navigate back to contacts list
+        navigate('/contacts');
+      };
+
+      // Show custom import notification popup (bottom-right)
+      setImportPopup({ open: true, fileName: uploadedFileName, undo: undoAction });
     } catch (error) {
       console.error('Error importing contacts:', error);
       setSnackbar({
         open: true,
         message: 'Error importing contacts. Please try again.',
-        action: null,
         autoHideDuration: 3000,
         hideClose: true,
         style: snackbarStyle,
+        severity: 'error',
       });
     }
   };
@@ -634,7 +702,10 @@ const ContactsLeftSidebar = () => {
               selected={activeItem === "trash"} 
               icon="delete" 
               text="Trash"
-              chip=""
+              chip={(() => {
+                const deletedCount = recipients.filter(r => r.isDeleted === true).length;
+                return deletedCount === 0 ? "" : deletedCount;
+              })()}
               infoIcon={false}
               onInfoClick={() => {}}
               onClick={() => {}}
@@ -727,6 +798,15 @@ const ContactsLeftSidebar = () => {
         onClose={handleCloseImportModal}
         onImport={handleImportContacts}
       />
+      {/* Import Notification Popup */}
+      {importPopup?.open && (
+        <ImportNotification
+          open={importPopup.open}
+          fileName={importPopup.fileName}
+          onUndo={() => importPopup.undo?.()}
+          onClose={() => setImportPopup({ open: false, fileName: "", undo: null })}
+        />
+      )}
 
       {/* Create Multiple Contacts Modal */}
       {showCreateMultipleContactsModal && (

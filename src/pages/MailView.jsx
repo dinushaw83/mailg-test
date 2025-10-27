@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 import EmailList from "../components/EmailList";
 import { GlobalContext } from "../contexts/GlobalContext";
@@ -7,7 +7,14 @@ import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
 import styled from "@emotion/styled";
-import QuickSettings from "../components/QuickSettings";
+import SearchResultFilters from "../components/SearchResultFilters";
+import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
+import Banner from "../components/Banners";
+import { CATEGORIES } from "../utils/categories";
+import InboxSection from "./InboxSection";
+
+import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
+import { EmailContent } from "../components/InboxView";
 
 const Container = styled.div`
   overflow: hidden;
@@ -16,6 +23,7 @@ const Container = styled.div`
   max-width: 100%;
   border-radius: 16px;
   background-color: #fff;
+  flex-direction: row;
 `;
 
 const EmailListContainer = styled.div`
@@ -26,26 +34,97 @@ const EmailListContainer = styled.div`
   min-width: 0; /* Allows flex item to shrink below content size */
 `;
 
-import Banner from "../components/Banners";
-import { CATEGORIES } from "../utils/categories";
-
 const Inbox = () => {
   const {
-    emails, sortOrder, setCurrentPage, currentPage,
-    itemsPerPage, loggedInUser, vacationResponder, setSortOrder
+    emails,
+    setCurrentPage,
+    currentPage,
+    inboxType,
+    itemsPerPage,
+    loggedInUser,
+    vacationResponder,
+    setSortOrder,
+    previewEmailId,
+    panelState,
+    setPreviewEmailId,
   } = useContext(GlobalContext);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
   const activeFolder = folder || "inbox";
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
 
   const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
   const [activeInboxTab, setActiveInboxTab] = useState(CATEGORIES.Primary);
 
+  const direction = panelState.direction;
+  const showSplit = direction !== "no-split";
+  const panelDirection = direction === "vertical" ? "horizontal" : "vertical";
+
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
-    return getThreadRows(emails, { label, folder: activeFolder });
-  }, [emails, label, activeFolder]);
+    let rows = getThreadRows(emails, { label, folder: activeFolder });
+
+    // Apply URL filter parameters (from SearchResultFilters)
+    // Only apply if filters are present
+    if (
+      searchParams.has("from") ||
+      searchParams.has("to") ||
+      searchParams.has("attach_or_drive") ||
+      searchParams.has("is_unread") ||
+      searchParams.has("datestart") ||
+      searchParams.has("dateend")
+    ) {
+      // Apply "From" filter
+      if (searchParams.has("from")) {
+        const fromEmails = searchParams
+          .get("from")
+          .split(",")
+          .map((email) => email.trim().toLowerCase());
+        rows = rows.filter((thread) => fromEmails.some((fromEmail) => thread.from?.email?.toLowerCase() === fromEmail));
+      }
+
+      // Apply "To" filter
+      if (searchParams.has("to")) {
+        const toEmails = searchParams
+          .get("to")
+          .split(",")
+          .map((email) => email.trim().toLowerCase());
+        rows = rows.filter((thread) => {
+          const threadToList = thread.to || [];
+          return threadToList.some((recipient) => toEmails.includes(recipient.email?.toLowerCase()));
+        });
+      }
+
+      // Apply "Has attachment" filter
+      if (searchParams.get("attach_or_drive") === "true") {
+        rows = rows.filter((thread) => {
+          const hasAttachments = thread.attachments && thread.attachments.length > 0;
+          return hasAttachments;
+        });
+      }
+
+      // Apply "Is unread" filter
+      if (searchParams.get("is_unread") === "true") {
+        rows = rows.filter((thread) => thread.unreadCount > 0);
+      }
+
+      // Apply date range filters
+      if (searchParams.get("daterangetype") === "custom_range") {
+        if (searchParams.has("datestart")) {
+          const dateStart = new Date(searchParams.get("datestart"));
+          rows = rows.filter((thread) => new Date(thread.timestamp) >= dateStart);
+        }
+        if (searchParams.has("dateend")) {
+          const dateEnd = new Date(searchParams.get("dateend"));
+          rows = rows.filter((thread) => new Date(thread.timestamp) <= dateEnd);
+        }
+      }
+    }
+
+    return rows;
+  }, [emails, label, activeFolder, searchParams]);
 
   // Filter again by activeInboxTab (Primary, Promotions, Social, Updates)
   const tabFilteredRows = useMemo(() => {
@@ -62,50 +141,232 @@ const Inbox = () => {
     return filteredRows.filter((r) => isInbox(r) && has(r, activeInboxTab));
   }, [filteredRows, activeInboxTab]);
 
-  // Determine what rows to display based on active folder
-  let displayRows;
-  if (activeFolder.toLowerCase() === "inbox") {
-    displayRows = tabFilteredRows;
-  } else {
-    displayRows = filteredRows;
-  }
-
   // Sort and paginate the displayRows
-  const baseSource = !label && activeFolder.toLowerCase() === "inbox"
-    ? tabFilteredRows
-    : filteredRows;
+  const baseSource = !label && activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;
 
-  const rows = useMemo(() => {
-    const sortedThreads = [...baseSource].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  // ────────── Helper to sort threads
+  const sortRows = (arr) => [...arr].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  const sortedBase = useMemo(() => sortRows(baseSource), [baseSource]);
+
+  // ────────── Split rows based on inboxType
+  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.important), [sortedBase]);
+
+  const sortedUnread = useMemo(() => sortedBase.filter((r) => r.unreadCount > 0), [sortedBase]);
+
+  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.starred), [sortedBase]);
+
+  const everythingElse = useMemo(() => {
+    switch (inboxType) {
+      case INBOX_TYPE.IMPORTANT_FIRST:
+        return sortedBase.filter((r) => !r.important);
+      case INBOX_TYPE.UNREAD_FIRST:
+        return sortedBase.filter((r) => r.unreadCount === 0);
+      case INBOX_TYPE.STARRED_FIRST:
+        return sortedBase.filter((r) => !r.starred);
+      default:
+        return sortedBase;
+    }
+  }, [sortedBase, inboxType]);
+
+  // ────────── Paginate only the "everything else" section
+  const paginatedOthers = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return sortedThreads.slice(startIndex, endIndex);
-  }, [baseSource, currentPage, itemsPerPage]);
+    return everythingElse.slice(startIndex, endIndex);
+  }, [everythingElse, currentPage, itemsPerPage]);
+
+  const rows = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return sortedBase.slice(startIndex, endIndex);
+  }, [sortedBase, currentPage, itemsPerPage]);
+
+  const showMailBanner = useMemo(() => {
+    return inboxType === INBOX_TYPE.DEFAULT;
+  }, [inboxType]);
 
   useEffect(() => {
-    // Calculate total unread emails count
-    const unreadCount = emails.filter((email) => !email.read).length;
-    const unreadText = unreadCount > 0 ? `(${unreadCount})` : "";
-    document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
-  }, [emails, loggedInUser.email]);
+    const folderLower = activeFolder.toLowerCase();
+    let count = 0;
+
+    // Map folder names to their display labels (for title)
+    const displayNames = {
+      sent: "Sent Mail",
+      drafts: "Drafts",
+      scheduled: "Scheduled",
+      inbox: "Inbox",
+      spam: "Spam",
+      trash: "Trash",
+    };
+
+    // Count logic
+    if (folderLower === "inbox" || folderLower === "spam") {
+      count = filteredRows.filter((thread) => thread.unreadCount > 0).length;
+    } else if (folderLower === "drafts" || folderLower === "scheduled") {
+      count = filteredRows.length;
+    }
+
+    const countText = count > 0 ? `(${count}) ` : "";
+    const displayFolderName =
+      displayNames[folderLower] ||
+      activeFolder.charAt(0).toUpperCase() + activeFolder.slice(1);
+
+    document.title = `${displayFolderName} ${countText}- ${loggedInUser.email} - MailG`;
+  }, [filteredRows, loggedInUser.email, activeFolder]);
 
   useEffect(() => {
     setCurrentPage(1);
-    setSortOrder("newest")
+    setSortOrder("newest");
   }, [activeInboxTab, activeFolder]);
+
+  // Show filters for all folders except inbox and categories
+  // Keep showing filters if they're active (even with 0 results) or if there are emails
+  const showFilters = useMemo(() => {
+    const excludedFolders = ["inbox", "categories"];
+    if (excludedFolders.includes(activeFolder.toLowerCase())) {
+      return false;
+    }
+
+    // Check if any filters are active
+    const hasActiveFilters =
+      searchParams.has("from") ||
+      searchParams.has("to") ||
+      searchParams.has("attach_or_drive") ||
+      searchParams.has("is_unread") ||
+      searchParams.has("datestart") ||
+      searchParams.has("dateend") ||
+      searchParams.has("daterangetype");
+
+    // Show filters if there are emails OR if filters are active
+    const hasEmails = filteredRows.length > 0;
+    return hasEmails || hasActiveFilters;
+  }, [activeFolder, filteredRows, searchParams]);
+  useEffect(() => {
+    setPreviewEmailId(null);
+  }, [activeFolder, label]);
+
+  const renderEmailListPanel = () => (
+    <>
+      {inboxType !== INBOX_TYPE.DEFAULT && activeFolder.toLowerCase() === "inbox" && (
+        <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
+          {inboxType === INBOX_TYPE.IMPORTANT_FIRST && (
+            <InboxSection title="Important" emails={sortedImportant} setShowAdvancedMenu={setShowAdvancedMenu}>
+              <EmailList
+                emails={sortedImportant.slice(0, 25)}
+                setShowAdvancedMenu={setShowAdvancedMenu}
+                showFooter={false}
+              />
+            </InboxSection>
+          )}
+
+          {inboxType === INBOX_TYPE.UNREAD_FIRST && (
+            <InboxSection title="Unread" emails={sortedUnread} setShowAdvancedMenu={setShowAdvancedMenu}>
+              <EmailList
+                emails={sortedUnread.slice(0, 25)}
+                setShowAdvancedMenu={setShowAdvancedMenu}
+                showFooter={false}
+              />
+            </InboxSection>
+          )}
+
+          {inboxType === INBOX_TYPE.STARRED_FIRST && (
+            <InboxSection title="Starred" emails={sortedStarred} setShowAdvancedMenu={setShowAdvancedMenu}>
+              <EmailList
+                emails={sortedStarred.slice(0, 25)}
+                setShowAdvancedMenu={setShowAdvancedMenu}
+                showFooter={false}
+              />
+            </InboxSection>
+          )}
+
+          <InboxSection
+            title="Everything else"
+            emails={paginatedOthers}
+            setShowAdvancedMenu={setShowAdvancedMenu}
+            overwriteItemsPerPage={10}
+            sectionStyle={{ marginTop: "16px", padding: "8px" }}
+          >
+            <EmailList
+              emails={paginatedOthers.slice(0, 10)}
+              setShowAdvancedMenu={setShowAdvancedMenu}
+              showFooter={false}
+            />
+          </InboxSection>
+        </div>
+      )}
+
+      {(inboxType === INBOX_TYPE.DEFAULT || activeFolder.toLowerCase() !== "inbox") && (
+        <EmailList emails={rows} setShowAdvancedMenu={setShowAdvancedMenu} showFooter={!showSplit} />
+      )}
+    </>
+  );
 
   return (
     <Container id="cont-123">
       <EmailListContainer role="main" vacationResponderEnabled={vacationResponder.enabled}>
+        {showFilters && <SearchResultFilters pt={2} pb={1} activeFolder={activeFolder} />}
         <ToolBar
           totalFilteredItems={baseSource.length}
           threads={rows}
           showAdvancedMenu={showAdvancedMenu}
           setShowAdvancedMenu={setShowAdvancedMenu}
+          showPagination={inboxType === INBOX_TYPE.DEFAULT}
         />
-        <Banner rows={filteredRows} activeInboxTab={activeInboxTab} setActiveInboxTab={setActiveInboxTab} />
-        <EmailList emails={rows} setShowAdvancedMenu={setShowAdvancedMenu} /> {/* TODO: some stuff */}
+
+        {showMailBanner && (
+          <Banner rows={filteredRows} activeInboxTab={activeInboxTab} setActiveInboxTab={setActiveInboxTab} />
+        )}
+
+        {showSplit ? (
+          <PanelGroup direction={panelDirection} id="inbox-root-panel-group">
+            <Panel
+              defaultSize={50}
+              minSize={25}
+              style={{
+                minWidth: 0,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
+                overflowY: "auto",
+              }}
+            >
+              {renderEmailListPanel()}
+            </Panel>
+
+            <PanelResizeHandle
+              style={{
+                width: panelDirection === "horizontal" ? "4px" : "100%",
+                backgroundColor: "#e0e0e0",
+                cursor: panelDirection === "horizontal" ? "col-resize" : "row-resize",
+              }}
+            />
+
+            <Panel
+              defaultSize={50}
+              id="email-content-panel"
+              style={{
+                height: "calc(100vh - 64px)",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                minHeight: 0,
+              }}
+            >
+              <EmailContent
+                threadId={previewEmailId}
+                folder={activeFolder}
+                label={label}
+                showActionBar={false}
+                isPreview
+              />
+            </Panel>
+          </PanelGroup>
+        ) : (
+          renderEmailListPanel()
+        )}
       </EmailListContainer>
+
       <QuickSettings />
     </Container>
   );

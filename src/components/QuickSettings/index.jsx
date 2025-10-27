@@ -12,6 +12,15 @@ import Apps from "./Apps";
 import Themes from "./Themes";
 import Threading from "./Threading";
 
+export const INBOX_TYPE = Object.freeze({
+  DEFAULT: "default",
+  IMPORTANT_FIRST: "important-first",
+  UNREAD_FIRST: "unread-first",
+  STARRED_FIRST: "starred-first",
+  PRIORITY_INBOX: "priority-inbox",
+  MULTIPLE_INBOXES: "multiple-inboxes",
+});
+
 const Container = styled.div`
   width: 300px; /* Fixed width for the right panel */
   min-width: 200px; /* Minimum width */
@@ -61,7 +70,7 @@ const QuickSettings = () => {
 
   const inboxTypes = [
     {
-      value: "default",
+      value: INBOX_TYPE.DEFAULT,
       label: "Default",
       imgSrc: "/assets/images/Classic.png",
       handleCustomize: () => {
@@ -69,41 +78,51 @@ const QuickSettings = () => {
       },
     },
     {
-      value: "important-first",
+      value: INBOX_TYPE.IMPORTANT_FIRST,
       label: "Important first",
       imgSrc: "/assets/images/Importantfirst.png",
     },
     {
-      value: "unread-first",
+      value: INBOX_TYPE.UNREAD_FIRST,
       label: "Unread first",
       imgSrc: "/assets/images/Unreadfirst.png",
     },
     {
-      value: "starred-first",
+      value: INBOX_TYPE.STARRED_FIRST,
       label: "Starred first",
       imgSrc: "/assets/images/Starredfirst.png",
     },
     {
-      value: "priority-inbox",
+      value: INBOX_TYPE.PRIORITY_INBOX,
       label: "Priority Inbox",
       imgSrc: "/assets/images/Priorityinbox.png",
       handleCustomize: () => {
         console.log("priority inbox");
       },
+      ignore: true,
     },
     {
-      value: "multiple-inboxes",
+      value: INBOX_TYPE.MULTIPLE_INBOXES,
       label: "Multiple Inboxes",
       imgSrc: "/assets/images/MultipleInboxes.png",
       handleCustomize: () => {
         console.log("multiple inboxes");
       },
+      ignore: true,
     },
   ];
 
   const handlePaneChange = (value) => {
-    const showPanel = value === "no-split" ? false : true;
-    setPanelState({ ...panelState, direction: value, showPanel });
+    setPanelState((prev) => ({
+      ...prev,
+      direction: value,
+      showPanel: value !== "no-split",
+    }));
+  };
+
+  const handleSetInboxType = (value) => {
+    if (inboxTypes.find((type) => type.value === value)?.ignore) return;
+    setInboxType(value);
   };
 
   const readingPanes = [
@@ -165,7 +184,7 @@ const QuickSettings = () => {
         <Apps />
         <RadioSection title="Density" value={density} items={densities} setValue={setDensity} />
         <Themes />
-        <RadioSection title="Inbox type" value={inboxType} items={inboxTypes} setValue={setInboxType} />
+        <RadioSection title="Inbox type" value={inboxType} items={inboxTypes} setValue={handleSetInboxType} />
         <RadioSection
           title="Reading pane"
           value={panelState.direction}

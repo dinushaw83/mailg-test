@@ -22,6 +22,7 @@ import CreateContactPage from "./pages/Contacts/CreateContactPage";
 import SearchResultsView from "./pages/SearchResultsView";
 import MailGAccount from "./pages/MailGAccount";
 import { initializeSearchIndex } from "./utils/search";
+import VerificationLocalStorage from "./pages/VerificationLocalStorage";
 
 // Component to handle contact details with edit parameter
 const ContactDetailsWithEdit = () => {
@@ -42,41 +43,54 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <GlobalContextProvider>
         <NotificationProvider>
-          <Layout>
           <Routes>
-            <Route path="/" element={<Navigate to="/inbox" replace />} />
-            <Route path="/:folder/:threadId" element={<EmailDetails />} />
-            <Route path="/label/:label/:threadId" element={<EmailDetails />} />
-            <Route path="/:folder" element={<MailView />} />
-            <Route path="/label/:label" element={<MailView />} />
-            <Route path="/search/:query" element={<SearchResultsView />} />
-            <Route path="/search" element={<SearchResultsView />} />
+            {/* Standalone verification page without Layout */}
+            <Route path="/verify-ls" element={<VerificationLocalStorage />} />
+
+            {/* Standalone verification page without Layout */}
             <Route path="/verify" element={<VerificationDashboard />} />
-            <Route path="/settings/:tab" element={<Settings />} />
-            <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
-            <Route path="/mailg-account/:view?" element={<MailGAccount />} />
-            <Route path="/mailg-account" element={<MailGAccount />} />
 
-            {/* Contacts paths */}
-            <Route path="/contacts" element={<Contacts />} />
-            <Route path="/contacts/frequent" element={<Frequent />} />
-            <Route path="/contacts/other" element={<OtherContacts />} />
-            <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
-            <Route path="/contacts/person/:contactId" element={<ContactDetailsWithEdit />} />
-            <Route path="/contacts/trash" element={<ContactTrash />} />
-            <Route path="/contacts/search/:query" element={<ContactsSearch />} />
-            <Route path="/contacts/suggestions" element={<MergeAndFix />} />
-            <Route path="/contacts/new" element={<CreateContactPage />} />
+            {/* All other routes wrapped in Layout */}
+            <Route
+              path="/*"
+              element={
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/inbox" replace />} />
+                    <Route path="/:folder/:threadId" element={<EmailDetails />} />
+                    <Route path="/label/:label/:threadId" element={<EmailDetails />} />
+                    <Route path="/:folder" element={<MailView />} />
+                    <Route path="/label/:label" element={<MailView />} />
+                    <Route path="/search/:query" element={<SearchResultsView />} />
+                    <Route path="/search" element={<SearchResultsView />} />
+                    <Route path="/settings/:tab" element={<Settings />} />
+                    <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
+                    <Route path="/mailg-account/:view?" element={<MailGAccount />} />
+                    <Route path="/mailg-account" element={<MailGAccount />} />
 
-            <Route path="*" element={<Navigate to="/inbox" replace />} />
+                    {/* Contacts paths */}
+                    <Route path="/contacts" element={<Contacts />} />
+                    <Route path="/contacts/frequent" element={<Frequent />} />
+                    <Route path="/contacts/other" element={<OtherContacts />} />
+                    <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
+                    <Route path="/contacts/person/:contactId" element={<ContactDetailsWithEdit />} />
+                    <Route path="/contacts/trash" element={<ContactTrash />} />
+                    <Route path="/contacts/search/:query" element={<ContactsSearch />} />
+                    <Route path="/contacts/suggestions" element={<MergeAndFix />} />
+                    <Route path="/contacts/new" element={<CreateContactPage />} />
+
+                    <Route path="*" element={<Navigate to="/inbox" replace />} />
+                  </Routes>
+
+                  {/* Compose Email Wrapper (only for Layout pages) */}
+                  <ComposeEmailWrapper />
+                </Layout>
+              }
+            />
           </Routes>
 
-          {/* Compose Email Wrapper */}
-          <ComposeEmailWrapper />
-        </Layout>
-
-        {/* Global Snackbar */}
-        <GlobalSnackbar />
+          {/* Global Snackbar */}
+          <GlobalSnackbar />
         </NotificationProvider>
       </GlobalContextProvider>
     </Router>

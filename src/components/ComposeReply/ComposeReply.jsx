@@ -1,58 +1,91 @@
-import React, { useEffect, useState } from 'react';
-import ActionButton from '../common/ActionButton';
+import React, { useEffect, useState, useRef } from "react";
+import ActionButton from "../common/ActionButton";
 import replyImage from "../../icons/reply.png";
 import replyAllImage from "../../icons/replyall.png";
 import forwardImage from "../../icons/forward.png";
-import ReplyContainer from './ReplyContainer';
+import ReplyContainer from "./ReplyContainer";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useHotkeys } from "react-hotkeys-hook";
+
+const useCustomHotKeys = ({ handleReply, handleReplyAll, handleForward }) => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "r" : "", () => {
+    handleReply();
+  });
+
+  useHotkeys(shortcutsOn ? "a" : "", () => {
+    handleReplyAll();
+  });
+
+  useHotkeys(shortcutsOn ? "f" : "", () => {
+    handleForward();
+  });
+};
 
 const ComposeReply = React.forwardRef(({ email, draft }, ref) => {
+  const replyContainerRef = useRef();
+
   React.useImperativeHandle(ref, () => ({
-    handleReply
+    handleReply,
   }));
   const [showReplyContainer, setShowReplyContainer] = useState(Boolean(draft));
   const [replyType, setReplyType] = useState(null);
   const [currentDraftId, setCurrentDraftId] = useState(draft ? draft.id : null);
 
   useEffect(() => {
-    setShowReplyContainer(Boolean(draft))
+    setShowReplyContainer(Boolean(draft));
     setCurrentDraftId(draft ? draft.id : null);
   }, [draft]);
 
+  // Focus the editor when a draft is loaded
+  useEffect(() => {
+    if (draft && replyContainerRef.current) {
+      // Small delay to ensure the editor is fully rendered
+      setTimeout(() => {
+        replyContainerRef.current?.focusEditor?.();
+      }, 100);
+    }
+  }, [draft]);
+
   const handleReply = () => {
-    setReplyType('reply');
+    setReplyType("reply");
     setShowReplyContainer(true);
     setCurrentDraftId(null);
   };
 
   const handleReplyAll = () => {
-    setReplyType('replyAll');
+    setReplyType("replyAll");
     setShowReplyContainer(true);
     setCurrentDraftId(null);
   };
 
   const handleForward = () => {
-    setReplyType('forward');
+    setReplyType("forward");
     setShowReplyContainer(true);
     setCurrentDraftId(null);
   };
 
+  useCustomHotKeys({ handleReply, handleReplyAll, handleForward });
+
   return (
-    <div data-testid="email-response-view" style={{ marginTop: '4rem', marginBottom: '2rem' }}>
-      {
-        !showReplyContainer && !draft &&
-        <div style={{ marginLeft: '78px' }}>
+    <div data-testid="email-response-view" style={{ marginTop: "4rem", marginBottom: "2rem" }}>
+      {!showReplyContainer && !draft && (
+        <div style={{ marginLeft: "78px" }}>
           <ActionButton text="Reply" onClick={handleReply} icon={<img src={replyImage} alt="Reply" />} />
           <ActionButton text="Reply all" onClick={handleReplyAll} icon={<img src={replyAllImage} alt="Reply all" />} />
           <ActionButton text="Forward" onClick={handleForward} icon={<img src={forwardImage} alt="Forward" />} />
         </div>
-      }
+      )}
       {(showReplyContainer || !!draft) && (
-        <ReplyContainer 
+        <ReplyContainer
+          ref={replyContainerRef}
           email={email}
           draft={draft}
-          replyType={draft ? (draft.replyType || 'reply') : replyType}
+          replyType={draft ? draft.replyType || "reply" : replyType}
           currentDraftId={draft ? draft.id : currentDraftId}
-          onClose={() => setShowReplyContainer(false)} 
+          onClose={() => setShowReplyContainer(false)}
           onUndoDelete={(restoredId) => {
             setCurrentDraftId(restoredId);
             setShowReplyContainer(true);

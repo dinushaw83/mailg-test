@@ -1,8 +1,16 @@
 import React, { useCallback, useRef, useState, useEffect, useMemo } from "react";
 import {
-  Stack, Popper, Paper, ClickAwayListener,
-  MenuItem, ListItemIcon, ListItemText, Menu, Typography,
-  IconButton, Divider
+  Stack,
+  Popper,
+  Paper,
+  ClickAwayListener,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  Typography,
+  IconButton,
+  Divider,
 } from "@mui/material";
 import { LinkBubbleMenu, MenuButton, RichTextEditor, TableBubbleMenu, insertImages } from "mui-tiptap";
 import FormatColorText from "@mui/icons-material/FormatColorText";
@@ -74,7 +82,7 @@ export default function Editor({
   const [attachments, setAttachments] = useState([]);
   const [embeddedImages, setEmbeddedImages] = useState([]);
   const embeddedImagesRef = useRef([]);
-  const { db, setSnackbar, signaturesState } = useGlobalContext();
+  const { db, setSnackbar, signaturesState, keyboardShortcuts } = useGlobalContext();
   const attachmentsContainerRef = useRef(null);
   const [attachmentsHeight, setAttachmentsHeight] = useState(0);
   const isRestoringImages = useRef(false);
@@ -82,6 +90,7 @@ export default function Editor({
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [largeFileModal, setLargeFileModal] = useState({ open: false, file: null });
 
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [signaturePopoverOpen, setSignaturePopoverOpen] = useState(false);
   const [signatureAnchorEl, setSignatureAnchorEl] = useState(null);
   const [selectedSignature, setSelectedSignature] = useState(null);
@@ -91,7 +100,7 @@ export default function Editor({
     return ["No signature", ...signatures];
   }, []);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -361,9 +370,7 @@ export default function Editor({
       return;
     }
 
-    const activeId = messageId
-      ? signaturesState?.useForRepliesAndForwards
-      : signaturesState?.useForNewEmails;
+    const activeId = messageId ? signaturesState?.useForRepliesAndForwards : signaturesState?.useForNewEmails;
 
     if (activeId === null || activeId === "" || activeId === undefined) {
       setSelectedSignature("No signature");
@@ -437,7 +444,6 @@ export default function Editor({
   };
 
   const handleSelectSchedule = (scheduleOption) => {
-    console.log("Schedule selected:", scheduleOption);
     if (onSchedule) {
       onSchedule({
         scheduledDate: scheduleOption.date.toLocaleDateString(),
@@ -461,7 +467,6 @@ export default function Editor({
   };
 
   const handleDateTimeSchedule = (scheduleOption) => {
-    console.log("Date/Time scheduled:", scheduleOption);
     if (onSchedule) {
       onSchedule({
         scheduledDate: scheduleOption.date.toLocaleDateString(),
@@ -483,28 +488,56 @@ export default function Editor({
 
   // Block only these dangerous file extensions, everything else is allowed
   const BLOCKED_EXTENSIONS = new Set([
-    'ade', 'adp',
-    'apk',
-    'appx', 'appxbundle',
-    'bat',
-    'cab', 'chm',
-    'cmd', 'com', 'cpl',
-    'diagcab', 'diagcfg', 'diagpkg',
-    'dll', 'dmg', 'exe',
-    'hta', 'img', 'ins', 'iso', 'isp',
-    'jar', 'jnlp',
-    'js', 'jse', 'lib', 'lnk',
-    'mde', 'mjs', 'msc', 'msi', 'msix', 'msixbundle', 'msp', 'mst',
-    'nsh',
-    'pif', 'ps1',
-    'scr', 'sct', 'shb',
-    'sys',
-    'vb', 'vbe',
+    "ade",
+    "adp",
+    "apk",
+    "appx",
+    "appxbundle",
+    "bat",
+    "cab",
+    "chm",
+    "cmd",
+    "com",
+    "cpl",
+    "diagcab",
+    "diagcfg",
+    "diagpkg",
+    "dll",
+    "dmg",
+    "exe",
+    "hta",
+    "img",
+    "ins",
+    "iso",
+    "isp",
+    "jar",
+    "jnlp",
+    "js",
+    "jse",
+    "lib",
+    "lnk",
+    "mde",
+    "mjs",
+    "msc",
+    "msi",
+    "msix",
+    "msixbundle",
+    "msp",
+    "mst",
+    "nsh",
+    "pif",
+    "ps1",
+    "scr",
+    "sct",
+    "shb",
+    "sys",
+    "vb",
+    "vbe",
   ]);
 
   const getFileExtension = (filename) => {
-    const lastDot = filename.lastIndexOf('.');
-    if (lastDot === -1) return '';
+    const lastDot = filename.lastIndexOf(".");
+    if (lastDot === -1) return "";
     return filename.substring(lastDot + 1).toLowerCase();
   };
 
@@ -512,18 +545,18 @@ export default function Editor({
     const { files = [] } = e.target;
 
     const newFiles = [];
-    
+
     for (const file of files) {
       // Size validation - show modal for large files instead of blocking
       if (file.size > MAX_ATTACHMENT_BYTES) {
         setLargeFileModal({ open: true, file });
         // Clear the file input after setting the modal
         if (e.target) {
-          e.target.value = '';
+          e.target.value = "";
         }
         return; // Exit early for large files
       }
-      
+
       // Check if file already exists to prevent duplicates
       const fileExists = attachments.some((attachment) => attachment.name === file.name);
       if (fileExists) {
@@ -534,7 +567,7 @@ export default function Editor({
         });
         continue;
       }
-      
+
       const id = generateRandomId();
       const url = URL.createObjectURL(file);
 
@@ -569,10 +602,10 @@ export default function Editor({
     if (newFiles.length > 0) {
       setAttachments((prevAttachments) => [...prevAttachments, ...newFiles]);
     }
-    
+
     // Clear the file input at the end
     if (e.target) {
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -580,11 +613,11 @@ export default function Editor({
     if (largeFileModal.file) {
       // Check if file already exists to prevent duplicates
       const fileExists = attachments.some((attachment) => attachment.name === largeFileModal.file.name);
-      
+
       if (!fileExists) {
         // Create Drive link instead of regular attachment
         const driveLink = `drive.mailg.com/file/d/${encodeURIComponent(largeFileModal.file.name)}`;
-        
+
         // Add as attachment with Drive link metadata
         const id = generateRandomId();
         const url = URL.createObjectURL(largeFileModal.file);
@@ -597,13 +630,13 @@ export default function Editor({
           isDriveFile: true, // Special flag to indicate it's a "Drive" file
           driveLink: `https://${driveLink}`, // Store the Drive link
         };
-        
+
         // Add to attachments array
         setAttachments((prevAttachments) => [...prevAttachments, metadata]);
-        
+
         // Also store in IndexedDB
         db.put("attachments", { id, file: largeFileModal.file });
-        
+
         setSnackbar({
           open: true,
           message: "File uploaded to MailG Drive. Download link will be included in your email.",
@@ -639,7 +672,7 @@ export default function Editor({
   const handleEditorClick = (event) => {
     // Check if clicked element is a Drive link
     const target = event.target;
-    if (target.tagName === 'A' && target.getAttribute('data-drive-link') === 'true') {
+    if (target.tagName === "A" && target.getAttribute("data-drive-link") === "true") {
       event.preventDefault();
       event.stopPropagation();
       // Show a message that this is a Drive link
@@ -671,6 +704,106 @@ export default function Editor({
     handleNewImageFiles(imageFiles, from);
   };
 
+  // Add keyboard event handler directly to the editor
+  const handleKeyDown = useCallback(
+    (view, event) => {
+      if (!shortcutsOn) return false;
+
+      const isMac = navigator.userAgent.includes("Mac");
+      const isCmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
+
+      if (isCmdOrCtrl && event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        onSend({ attachments });
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "d") {
+        event.preventDefault();
+        event.stopPropagation();
+        onDelete();
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "c") {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Trigger CC field toggle by dispatching a custom event
+        const ccToggleEvent = new CustomEvent("toggleCcField");
+        window.dispatchEvent(ccToggleEvent);
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "b") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const bccToggleEvent = new CustomEvent("toggleBccField");
+        window.dispatchEvent(bccToggleEvent);
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.key === "\\") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Remove formatting from selected text
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().unsetAllMarks().run();
+        }
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.shiftKey && event.key === "9") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().toggleBlockquote().run();
+        }
+        return true;
+      }
+
+      if (event.altKey && event.shiftKey && event.code === "Digit5") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Toggle strike through
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().toggleStrike().run();
+        }
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.key === "[") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().liftListItem("listItem").run();
+        }
+        return true;
+      }
+
+      if (isCmdOrCtrl && event.key === "]") {
+        event.preventDefault();
+        event.stopPropagation();
+        // Trigger BCC field toggle by dispatching a custom event
+        const editor = rteRef.current?.editor;
+        if (editor) {
+          editor.chain().focus().sinkListItem("listItem").run();
+        }
+        return true;
+      }
+
+      return false;
+    },
+    [shortcutsOn, onSend, onDelete, rteRef]
+  );
   const openSignaturePopover = (event) => {
     setSignatureAnchorEl(event.currentTarget);
     setSignaturePopoverOpen(true);
@@ -703,7 +836,11 @@ export default function Editor({
 
     // Delete them all safely
     toDelete.forEach(({ pos, size }) => {
-      editor.chain().focus().deleteRange({ from: pos, to: pos + size }).run();
+      editor
+        .chain()
+        .focus()
+        .deleteRange({ from: pos, to: pos + size })
+        .run();
     });
 
     // If no new signature, stop here
@@ -749,8 +886,9 @@ export default function Editor({
         onUpdate={handleEditorChange}
         editable={isEditable}
         editorProps={{
-          handleDrop: handleDrop,
-          handlePaste: handlePaste,
+          handleDrop,
+          handlePaste,
+          handleKeyDown, // Add this
         }}
         onClick={handleEditorClick}
         RichTextFieldProps={{
@@ -913,11 +1051,7 @@ export default function Editor({
                   />
 
                   <IconButton onClick={openSignaturePopover}>
-                    <img
-                      src="/assets/images/ink_pen.png"
-                      alt="Insert Signature"
-                      style={{ width: 20, height: 20 }}
-                    />
+                    <img src="/assets/images/ink_pen.png" alt="Insert Signature" style={{ width: 20, height: 20 }} />
                   </IconButton>
 
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
@@ -1113,7 +1247,9 @@ export default function Editor({
                       }}
                       sx={{ py: 0.8 }}
                     >
-                      <Typography fontSize={14} style={{marginLeft: "20%"}}>Manage signatures</Typography>
+                      <Typography fontSize={14} style={{ marginLeft: "20%" }}>
+                        Manage signatures
+                      </Typography>
                     </MenuItem>
                     <Divider />
 
@@ -1128,7 +1264,7 @@ export default function Editor({
                             return;
                           }
 
-                          const sig = signaturesState.list.find(sig => sig.name === name);
+                          const sig = signaturesState.list.find((sig) => sig.name === name);
                           replaceSignature(rteRef.current?.editor, sig.content);
                           setSelectedSignature(name);
                           closeSignaturePopover();
@@ -1139,10 +1275,7 @@ export default function Editor({
                         <span style={{ width: "20%" }}>
                           {selectedSignature === name && (
                             <ListItemIcon sx={{ minWidth: 24 }}>
-                              <span
-                                className="material-symbols-outlined"
-                                style={{ fontSize: 18 }}
-                              >
+                              <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
                                 check
                               </span>
                             </ListItemIcon>
@@ -1153,8 +1286,7 @@ export default function Editor({
                             <Typography
                               fontSize={14}
                               sx={{
-                                color:
-                                  selectedSignature === name ? "text.primary" : "text.secondary",
+                                color: selectedSignature === name ? "text.primary" : "text.secondary",
                               }}
                             >
                               {name}

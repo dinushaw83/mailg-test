@@ -3,8 +3,7 @@ import Pagination from "./Pagination";
 import styled from "@emotion/styled";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useState } from "react";
-import { createPortal } from "react-dom";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
@@ -14,6 +13,8 @@ import MoreActions from "../MailActions/MoreActions";
 import Popover from "@mui/material/Popover";
 import Box from "@mui/material/Box";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
+import { useHotkeys } from "react-hotkeys-hook";
+import { createPortal } from "react-dom";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -28,12 +29,14 @@ const MenuItemStyles = {
   padding: "6px 48px",
 };
 
-const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) => {
+const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, selection }) => {
   const [{ focused }, setState] = useState({
     focused: false,
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  const checkboxRef = useRef(null);
 
   const toggleFocus = () => {
     setState((prev) => ({
@@ -49,6 +52,18 @@ const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) 
       focused: true,
     }));
   };
+
+  const focusCheckbox = () => {
+    checkboxRef?.current?.focus();
+  };
+
+  useHotkeys(shortcutsOn ? "Comma" : "", () => {
+    setState((prev) => ({
+      ...prev,
+      focused: true,
+    }));
+    focusCheckbox();
+  });
 
   const handleMenuOpen = (e) => {
     e.stopPropagation();
@@ -72,13 +87,17 @@ const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) 
   };
 
   const handleSelectRead = () => {
-    const readThreadIds = threads.filter((email) => email.read).map((email) => email.threadId.split(":")[1]);
+    const readThreadIds = threads
+      .filter((email) => email.unreadCount === 0)
+      .map((email) => email.threadId.split(":")[1]);
     selection.setMany(readThreadIds);
     handleMenuClose();
   };
 
   const handleSelectUnread = () => {
-    const unreadThreadIds = threads.filter((email) => !email.read).map((email) => email.threadId.split(":")[1]);
+    const unreadThreadIds = threads
+      .filter((email) => email.unreadCount > 0)
+      .map((email) => email.threadId.split(":")[1]);
     selection.setMany(unreadThreadIds);
     handleMenuClose();
   };
@@ -100,6 +119,7 @@ const CheckBox = ({ allSelected, partialSelected, toggle, threads, selection }) 
       <Box>
         <CheckboxContainer focused={focused}>
           <IconButton
+            ref={checkboxRef}
             onClick={toggleChecked}
             sx={{
               paddingTop: "8px",
@@ -197,6 +217,16 @@ const ToggleSplitPaneButton = () => {
     open: false,
   });
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [prevSplitPane, setPrevSplitPane] = useState(
+    panelState.direction === "no-split" ? "vertical" : panelState.direction
+  );
+
+  // Sync prevSplitPane with panelState.direction when it changes from quick settings
+  useEffect(() => {
+    if (panelState.direction !== "no-split") {
+      setPrevSplitPane(panelState.direction);
+    }
+  }, [panelState.direction]);
 
   const toggleOpen = (event) => {
     setAnchorEl(open ? null : event.currentTarget);
@@ -208,15 +238,28 @@ const ToggleSplitPaneButton = () => {
   };
 
   const toggleSplitPane = () => {
-    setPanelState((prev) => ({
-      ...prev,
-      showPanel: !prev.showPanel,
-    }));
+    const isSplit = panelState.direction === "horizontal" || panelState.direction === "vertical";
+
+    if (isSplit) {
+      // If currently split, remove the split
+      setPanelState((prev) => ({
+        ...prev,
+        showPanel: false,
+        direction: "no-split",
+      }));
+    } else {
+      // If no split, open with the previous split direction (defaults to vertical)
+      setPanelState((prev) => ({
+        ...prev,
+        showPanel: true,
+        direction: prevSplitPane,
+      }));
+    }
   };
 
   const icon = panelState.showPanel
     ? "reorder"
-    : panelState.direction === "horizontal"
+    : prevSplitPane === "horizontal"
     ? "horizontal_split"
     : "vertical_split";
 
@@ -226,6 +269,12 @@ const ToggleSplitPaneButton = () => {
       ...(direction !== undefined ? { direction } : {}),
       ...(showPanel !== undefined ? { showPanel } : {}),
     }));
+
+    // Update prevSplitPane when a split direction is selected
+    if (direction && direction !== "no-split") {
+      setPrevSplitPane(direction);
+    }
+
     setState((prev) => ({ ...prev, open: false }));
   };
 
@@ -283,7 +332,7 @@ const ToggleSplitPaneButton = () => {
           <ActionMenuItem
             label="No Split"
             onClick={() => {
-              handleSplitPane({ direction: "vertical", showPanel: false });
+              handleSplitPane({ direction: "no-split", showPanel: false });
             }}
           />
           <ActionMenuItem
@@ -309,10 +358,10 @@ const RightActionsContainer = styled.div`
   align-items: center;
 `;
 
-const RightActions = ({ totalFilteredItems }) => {
+const RightActions = ({ totalFilteredItems, showPagination = true }) => {
   return (
     <RightActionsContainer>
-      <Pagination totalFilteredItems={totalFilteredItems} />
+      {showPagination && <Pagination totalFilteredItems={totalFilteredItems} />}
       <ToggleSplitPaneButton />
     </RightActionsContainer>
   );
@@ -328,17 +377,20 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
+const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu, showPagination = true }) => {
   const { folder = "inbox" } = useParams();
-  const { selection, refreshEmails } = useGlobalContext();
+  const { selection, refreshEmails, keyboardShortcuts, manualSyncCount, setManualSyncCount } = useGlobalContext();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
   // Show a Gmail-like top-center yellow loading banner for ~2.5s
   const manualEmailSync = useCallback(() => {
     setIsManualSyncing(true);
+    // Increment the manual sync counter
+    setManualSyncCount((prevCount) => prevCount + 1);
     // Keep visible for 2.5 seconds to simulate manual sync loading
     setTimeout(() => setIsManualSyncing(false), 2500);
-  }, []);
+  }, [setManualSyncCount]);
 
   const threadIds = threads.map((email) => email.threadId.split(":")[1]);
   const { ids } = selection;
@@ -354,6 +406,9 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
   }, [allSelected, threadIds, selection]);
 
   const hasItemsSelected = allSelected || selection.hasSelection;
+
+  const showSpamActions = (folder === "spam" || folder === "trash") && hasItemsSelected;
+  const showMailActions = folder !== "spam" && folder !== "trash" && hasItemsSelected;
 
   return (
     <div className="G-atb">
@@ -386,18 +441,15 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
           allSelected={allSelected}
           partialSelected={partialSelected}
           toggle={toggleAllSelected}
+          shortcutsOn={shortcutsOn}
           threads={threads}
           selection={selection}
         />
-        {hasItemsSelected ? (
-          <>
-            {folder === "spam" || folder === "trash" ? (
-              <SpamActions threads={threads} folder={folder} />
-            ) : (
-              <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} />
-            )}
-          </>
-        ) : (
+
+        <SpamActions threads={threads} folder={folder} visible={showSpamActions} />
+        <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} visible={showMailActions} />
+
+        {!hasItemsSelected && (
           <>
             <Icon
               name="refresh"
@@ -416,7 +468,9 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
           setShowAdvancedMenu={setShowAdvancedMenu}
         />
       </LeftItemsContainer>
-      {totalFilteredItems > 0 && <RightActions totalFilteredItems={totalFilteredItems} />}
+      {totalFilteredItems > 0 && (
+        <RightActions totalFilteredItems={totalFilteredItems} showPagination={showPagination} />
+      )}
     </div>
   );
 };

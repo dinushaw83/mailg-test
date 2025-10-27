@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useEffect, useCallback } from "react";
+import React, { useContext, useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import ActionBar from "./ActionBar";
@@ -6,7 +6,7 @@ import styled from "@emotion/styled";
 import { Content } from "./Content";
 import { Subject } from "./Subject";
 import { Box, Divider } from "@mui/material";
-import { getThread } from "../../utils/emails";
+import { getThread, getThreadRows } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
 import { PanelFooter } from "../EmailList/Footer";
 import useMailActions from "../../hooks/useMailActions";
@@ -22,6 +22,8 @@ const InboxViewContainer = styled.div`
   overflow: hidden;
   background-color: #fff;
   border-radius: 16px;
+  min-height: 0;
+  min-height: 0;
 `;
 
 const ScrollableContent = styled.div`
@@ -99,18 +101,16 @@ export const EmailContent = ({
   }, [emails, threadId]);
 
   useEffect(() => {
-    let timeoutId = null;
-    if (markAsReadAfter) {
-      timeoutId = setTimeout(() => {
-        markRead([threadId], true);
-      }, markAsReadAfter);
-    }
+    if (!markAsReadAfter) return undefined;
+
+    const timeoutId = setTimeout(() => {
+      markRead([threadId], true);
+    }, markAsReadAfter);
+
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      clearTimeout(timeoutId);
     };
-  }, [markAsReadAfter, threadId]);
+  }, [markAsReadAfter, threadId, markRead]);
 
   if (!thread) {
     return (
@@ -156,6 +156,7 @@ export const EmailContent = ({
                 timestamp={message.timestamp}
                 senderName={message.from.name}
                 senderEmail={message.from.email}
+                recipients={message.to}
                 attachments={message.attachments}
                 embeddedImages={message.embeddedImages}
                 isScheduled={message.labels?.includes("Scheduled")}
@@ -169,7 +170,7 @@ export const EmailContent = ({
           {/* <Actions /> */}
           {!isLastScheduled && <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />}
         </InnerContainer>
-        {isPreview && <PanelFooter />}
+        {/* {isPreview && <PanelFooter />} */}
       </ScrollableContent>
     </InboxViewContainer>
   );
@@ -180,6 +181,7 @@ const InboxView = () => {
   const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
   const { markRead } = useMailActions();
   const { messagesById } = normalizedEmails;
+  const [shouldMarkUnreadEmailsAsRead, setShouldMarkUnreadEmailsAsRead] = useState(true);
 
   // Mark unread emails as read
   const markUnreadEmailsAsRead = useCallback(
@@ -199,20 +201,24 @@ const InboxView = () => {
     return getThread(emails, { threadId: `#thread-f:${threadId}` });
   }, [emails, threadId]);
 
+  const { messageIds } = thread;
+
   useEffect(() => {
-    // Calculate total unread emails count
-    const unreadCount = emails.filter((email) => !email.read).length;
+    if (!shouldMarkUnreadEmailsAsRead) return;
+    // Calculate total unread emails count based on unreadCount property from thread rows
+    const threads = getThreadRows(emails, { folder: "inbox" });
+    const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
     const unreadText = unreadCount > 0 ? `(${unreadCount})` : "";
+
     document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
 
-    if (!thread) return;
-
-    const { messageIds } = thread;
+    if (messageIds.length === 0) return;
 
     // Mark unread emails in the email thread as read
     const messages = messageIds.map((id) => messagesById[id]);
     markUnreadEmailsAsRead(messages);
-  }, [thread, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email]);
+    setShouldMarkUnreadEmailsAsRead(false);
+  }, [messageIds.length, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email]);
 
   if (!thread) {
     // Determine the back link based on current context

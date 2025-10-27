@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import LabelItem from "./LabelItem";
@@ -6,6 +6,9 @@ import SidebarItem from "./SidebarItem";
 import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import ShortcutsModal from "./ShortcutsModal";
+import { useHotkeys } from "react-hotkeys-hook";
+import { useNavigate } from "react-router-dom";
 
 function findNode(tree, key) {
   for (const node of tree) {
@@ -42,12 +45,87 @@ const DEFAULT_FOLDERS = [
   { key: "drafts", label: "Drafts", icon: "draft", count: 0 },
 ];
 
+export const useJumpToHotKeys = () => {
+  const { keyboardShortcuts } = useGlobalContext();
+  const navigate = useNavigate();
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+
+  useHotkeys(shortcutsOn ? "g>i" : "", () => {
+    navigate("/inbox");
+  });
+
+  useHotkeys(shortcutsOn ? "g>s" : "", () => {
+    navigate("/starred");
+  });
+
+  useHotkeys(shortcutsOn ? "g>b" : "", () => {
+    navigate("/snoozed");
+  });
+
+  useHotkeys(shortcutsOn ? "g>t" : "", () => {
+    navigate("/sent");
+  });
+
+  useHotkeys(shortcutsOn ? "g>d" : "", () => {
+    navigate("/drafts");
+  });
+
+  useHotkeys(shortcutsOn ? "g>a" : "", () => {
+    navigate("/all");
+  });
+
+  useHotkeys(shortcutsOn ? "g>c" : "", () => {
+    navigate("/contacts");
+  });
+
+  useHotkeys(shortcutsOn ? "g>f" : "", () => {
+    navigate("/search");
+  });
+};
+
+const useCustomHotKeys = ({
+  keyboardShortcuts,
+  openComposeWindow,
+  removeComposeWindow,
+  composeWindows,
+  setShowShortCutsModal,
+}) => {
+  const shortcutsOn = keyboardShortcuts === "shortcuts-on";
+  const lastGAt = useRef(0);
+  useHotkeys(shortcutsOn ? "g" : "", () => {
+    lastGAt.current = Date.now();
+  });
+
+  useHotkeys(shortcutsOn ? "c" : "", () => {
+    if (Date.now() - lastGAt.current > 1000) {
+      openComposeWindow();
+    }
+  });
+
+  useHotkeys(shortcutsOn ? "esc" : "", () => {
+    const openComposeWindowId = composeWindows[composeWindows.length - 1].id;
+    removeComposeWindow(openComposeWindowId);
+  });
+
+  useHotkeys("Shift+Slash", () => {
+    setShowShortCutsModal(true);
+  });
+};
+
 const LeftSidebar = () => {
   const [showLess, setShowLess] = useState(true);
-  const { emails, setSnackbar, isLeftSidebarExpanded, vacationResponder } = useGlobalContext();
+  const {
+    emails,
+    setSnackbar,
+    isLeftSidebarExpanded,
+    vacationResponder,
+    keyboardShortcuts,
+    showShortCutsModal,
+    setShowShortCutsModal,
+  } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labels, labelTree, labelIndex } = useLabels();
-  const { addNewComposeWindow } = useComposeModal();
+  const { addNewComposeWindow, composeWindows, removeComposeWindow } = useComposeModal();
   const [isCreateLabelModalOpen, setIsCreateLabelModalOpen] = useState(false);
   const [isLeftSidebarHovered, setIsLeftSidebarHovered] = useState(false);
   // Sidebar is expanded if it is expanded or hovered
@@ -108,8 +186,8 @@ const LeftSidebar = () => {
   }, [customLabels, collapsed]);
 
   // Open a new compose window
-  const openComposeWindow = () => {
-    addNewComposeWindow();
+  const openComposeWindow = (autoFocus = true) => {
+    addNewComposeWindow(null, {}, autoFocus);
   };
 
   const handleCreateNewLabel = () => {
@@ -124,6 +202,15 @@ const LeftSidebar = () => {
   const manageSubscriptions = () => {
     return null;
   };
+
+  useJumpToHotKeys();
+  useCustomHotKeys({
+    openComposeWindow,
+    removeComposeWindow,
+    composeWindows,
+    keyboardShortcuts,
+    setShowShortCutsModal,
+  });
 
   const HIDDEN_FOLDERS = [
     { key: "important", label: "Important", icon: "label_important" },
@@ -145,7 +232,7 @@ const LeftSidebar = () => {
       jslog="88024; u014N:xr6bB;"
       style={{
         width: 187,
-        height: `calc(100vh - ${vacationResponder.enabled ? '98px' : '64px'})`,
+        height: `calc(100vh - ${vacationResponder.enabled ? "98px" : "64px"})`,
         ...(sidebarExpanded
           ? {}
           : {
@@ -204,7 +291,7 @@ const LeftSidebar = () => {
                                     // For inbox the count should be the number of unread emails
                                     count:
                                       item.key === "inbox"
-                                        ? folders[item.key]?.filter((email) => !email.read).length || 0
+                                        ? folders[item.key]?.filter((email) => email.unreadCount > 0).length || 0
                                         : folders[item.key]?.length || 0,
                                   }}
                                   expanded={sidebarExpanded}
@@ -332,6 +419,7 @@ const LeftSidebar = () => {
           open={isCreateLabelModalOpen}
           onClose={() => setIsCreateLabelModalOpen(false)}
           defaultParentKey={defaultParentKey}
+          labelDefaultName=""
           onAfterCreate={(name) => {
             setSnackbar({
               open: true,
@@ -340,6 +428,7 @@ const LeftSidebar = () => {
             });
           }}
         />
+        <ShortcutsModal open={showShortCutsModal} onClose={() => setShowShortCutsModal(false)} />
       </div>
       <span className="I6agWe">
         <div className="Od0X9">

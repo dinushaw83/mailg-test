@@ -17,7 +17,7 @@ const snackbarStyle = {
 const DeleteLabelModal = ({ open, onClose, label, backdropStyle = {} }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { setRecipientLabels, recipients, setRecipients, setSnackbar } = useGlobalContext();
+  const { setRecipientLabels, recipients, setRecipients, setSnackbar, setDeletedRecipients } = useGlobalContext();
   const [deleteOption, setDeleteOption] = useState("keep");
   const recipientsWithLabelRef = useRef([]);
   const labelRef = useRef(null);
