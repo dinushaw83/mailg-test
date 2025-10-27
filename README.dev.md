@@ -2,20 +2,9 @@
 
 MailG is an RL‑Gym designed to test and train AI models on mail and messaging workflows. It provides a controlled environment with end‑to‑end scenarios: composing, sending, replying/forwarding, threading, search, labels, settings, notifications, and attachments/embedded images. The UI, state, and data model simulate a modern email client while remaining fully local and deterministic.
 
-### Highlights
-- Clean, production‑quality UI with sidebars, thread preview, and split panels
-- Multiple compose windows, drafts, scheduled send, attachments, inline images
-- Search with filters, categories, and quick actions
-- Full Settings area (General, Labels, Inbox, Accounts and Import, etc.)
-- Contact management with labels, import/export, and organization features
-- Local persistence of user/session/app state for accurate verification
-- IndexedDB for large binaries (attachments and embedded images)
-
 ---
 
 ## Getting Started
-
-<img width="1893" alt="MailG Inbox View" src="./public/assets/images/screenshots/mailg-inbox-view.png" />
 
 ### Prerequisites
 
@@ -50,25 +39,6 @@ npm run dev
 - `npm run lint` – run ESLint on `src/`
 
 ---
-
-## Optional Docker Setup
-
-If you prefer Docker, add the following `Dockerfile` to the project root, then build and run.
-
-```Dockerfile
-FROM node:18-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM node:18-alpine
-WORKDIR /app
-COPY --from=build /app .
-EXPOSE 3000
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
-```
 
 Build and run:
 
