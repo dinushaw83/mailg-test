@@ -107,6 +107,11 @@ const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
       lastEmittedValue.current = emittedValue;
       onChange(emittedValue);
       setInputValue("");
+
+      // Stop propagation to prevent form submission when selecting from dropdown
+      if (event) {
+        event.stopPropagation();
+      }
     }
   };
 
@@ -185,16 +190,30 @@ const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
   };
 
   const handleKeyDown = (event) => {
-    // Handle Enter key to add current input as email
-    if (event.key === "Enter" && inputValue.trim()) {
-      event.preventDefault();
-      if (isValidEmail(inputValue.trim())) {
-        const newEmailArray = [...confirmedEmails, inputValue.trim()];
-        setConfirmedEmails(newEmailArray);
-        const emittedValue = newEmailArray.join(", ");
-        lastEmittedValue.current = emittedValue;
-        onChange(emittedValue);
-        setInputValue("");
+    // Check if dropdown is open
+    const isDropdownOpen = isFocused && inputValue && inputValue.trim() !== "";
+
+    // Handle Enter key
+    if (event.key === "Enter") {
+      // If dropdown is open, let Autocomplete handle the selection
+      if (isDropdownOpen) {
+        return;
+      }
+
+      // Dropdown is not open - stop propagation to prevent form submission
+      event.stopPropagation();
+
+      // If there's input, manually add the email
+      if (inputValue.trim()) {
+        event.preventDefault();
+        if (isValidEmail(inputValue.trim())) {
+          const newEmailArray = [...confirmedEmails, inputValue.trim()];
+          setConfirmedEmails(newEmailArray);
+          const emittedValue = newEmailArray.join(", ");
+          lastEmittedValue.current = emittedValue;
+          onChange(emittedValue);
+          setInputValue("");
+        }
       }
     }
 
@@ -209,7 +228,7 @@ const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
   };
 
   return (
-    <Stack direction="row" alignItems="baseline" gap="16px" height="20px" width="100%">
+    <Stack direction="row" alignItems="baseline" gap="16px" height="20px" width="100%" data-email-field="true">
       <label
         style={{
           minWidth: "100px",

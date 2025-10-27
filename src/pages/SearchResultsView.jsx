@@ -186,10 +186,16 @@ const SearchResultsView = () => {
       : searchResults.map((result) => emails.find((email) => email.id === result.id)).filter(Boolean);
 
     // Pass folder: null to prevent getThreadRows from filtering by folder
-    const threadRows = getThreadRows(searchResultEmails, { folder: null });
+    let threadRows = getThreadRows(searchResultEmails, { folder: null });
+
+    // If filtering by "is unread", ensure thread has unread messages
+    // (thread.read is based on last message, but we want threads with ANY unread messages)
+    if (searchParams.get("is_unread") === "true") {
+      threadRows = threadRows.filter((thread) => thread.unreadCount > 0);
+    }
 
     return threadRows;
-  }, [searchResults, emails, isAdvancedSearch]);
+  }, [searchResults, emails, isAdvancedSearch, searchParams]);
 
   const rows = useMemo(() => {
     const sortedEmails = [...filteredRows].sort((a, b) => {
@@ -207,7 +213,7 @@ const SearchResultsView = () => {
   const showSearchFilters = useMemo(() => {
     return rows.length > 0 || searchParams.get("isrefinement") === "true";
   }, [rows, searchParams]);
-
+  console.log(rows, "rows");
   return (
     <div className="nH bkK">
       <div className="nH">

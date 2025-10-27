@@ -14,6 +14,15 @@ const DatePicker = ({ value, onChange }) => {
   const containerRef = useRef(null);
   const calendarRef = useRef(null);
 
+  // Sync internal state with value prop changes
+  useEffect(() => {
+    if (value) {
+      setSelectedDate(dayjs(value));
+    } else {
+      setSelectedDate(null);
+    }
+  }, [value]);
+
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
