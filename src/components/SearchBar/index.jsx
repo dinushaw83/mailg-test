@@ -39,7 +39,7 @@ const useCustomHotKeys = ({ focusInput, goToLabel }) => {
 };
 
 const SearchBar = () => {
-  const { emails, keyboardShortcuts, loggedInUser } = useGlobalContext();
+  const { emails, loggedInUser } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);

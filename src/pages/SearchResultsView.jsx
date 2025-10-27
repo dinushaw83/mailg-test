@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Stack, Button } from "@mui/material";
 import EmailList from "../components/EmailList";
 import { GlobalContext } from "../contexts/GlobalContext";
@@ -20,7 +20,7 @@ import SearchResultFilters from "../components/SearchResultFilters";
 const SearchResultsView = () => {
   const { emails, currentPage, itemsPerPage } = useContext(GlobalContext);
   const location = useLocation();
-
+  const navigate = useNavigate();
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
 
   // Check if this is an advanced search
@@ -39,6 +39,13 @@ const SearchResultsView = () => {
       buildSearchIndex(emails);
     }
   }, [emails]);
+
+  //reroute user to /inbox if no query or params are present
+  useEffect(() => {
+    if (!searchQuery && !searchParams.size) {
+      navigate("/inbox", { replace: true });
+    }
+  }, [searchQuery, searchParams]);
 
   // Get search results based on query type
   const searchResults = useMemo(() => {
