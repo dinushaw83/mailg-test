@@ -15,6 +15,7 @@ import InboxSection from "./InboxSection";
 
 import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
 import { EmailContent } from "../components/InboxView";
+import { normalizeLabelName } from "../hooks/useLabels";
 
 const Container = styled.div`
   overflow: hidden;
@@ -33,6 +34,24 @@ const EmailListContainer = styled.div`
   flex: 1;
   min-width: 0; /* Allows flex item to shrink below content size */
 `;
+
+// Mapping of folder keys to display names for document title
+const FOLDER_DISPLAY_NAMES = {
+  inbox: "Inbox",
+  starred: "Starred",
+  snoozed: "Snoozed",
+  sent: "Sent",
+  drafts: "Drafts",
+  important: "Important",
+  chats: "Chats",
+  scheduled: "Scheduled",
+  all: "All Mail",
+  spam: "Spam",
+  trash: "Trash",
+};
+
+// Folders that should display unread count in document title
+const FOLDERS_WITH_UNREAD_COUNT = new Set(["inbox", "starred", "snoozed", "important", "chats", "all"]);
 
 const Inbox = () => {
   const {
@@ -187,33 +206,29 @@ const Inbox = () => {
   }, [inboxType]);
 
   useEffect(() => {
-    const folderLower = activeFolder.toLowerCase();
-    let count = 0;
+    let titleText;
 
-    // Map folder names to their display labels (for title)
-    const displayNames = {
-      sent: "Sent Mail",
-      drafts: "Drafts",
-      scheduled: "Scheduled",
-      inbox: "Inbox",
-      spam: "Spam",
-      trash: "Trash",
-    };
+    // Handle label routes
+    if (label) {
+      const unreadCount = filteredRows.filter((thread) => thread.unreadCount > 0).length;
+      const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
+      titleText = `"${normalizeLabelName(label)}"${unreadText}`;
+    } else {
+      // Handle folder routes
+      const folderDisplayName = FOLDER_DISPLAY_NAMES[activeFolder] || activeFolder;
 
-    // Count logic
-    if (folderLower === "inbox" || folderLower === "spam") {
-      count = filteredRows.filter((thread) => thread.unreadCount > 0).length;
-    } else if (folderLower === "drafts" || folderLower === "scheduled") {
-      count = filteredRows.length;
+      // Calculate unread count only for folders that should show it
+      if (FOLDERS_WITH_UNREAD_COUNT.has(activeFolder)) {
+        const unreadCount = filteredRows.filter((thread) => thread.unreadCount > 0).length;
+        const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
+        titleText = `${folderDisplayName}${unreadText}`;
+      } else {
+        titleText = folderDisplayName;
+      }
     }
 
-    const countText = count > 0 ? `(${count}) ` : "";
-    const displayFolderName =
-      displayNames[folderLower] ||
-      activeFolder.charAt(0).toUpperCase() + activeFolder.slice(1);
-
-    document.title = `${displayFolderName} ${countText}- ${loggedInUser.email} - MailG`;
-  }, [filteredRows, loggedInUser.email, activeFolder]);
+    document.title = `${titleText} - ${loggedInUser.email} - MailG`;
+  }, [filteredRows, loggedInUser.email, activeFolder, label]);
 
   useEffect(() => {
     setCurrentPage(1);
