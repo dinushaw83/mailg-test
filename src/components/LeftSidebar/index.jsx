@@ -291,7 +291,7 @@ const LeftSidebar = () => {
                                     // For inbox the count should be the number of unread emails
                                     count:
                                       item.key === "inbox"
-                                        ? folders[item.key]?.filter((email) => !email.read).length || 0
+                                        ? folders[item.key]?.filter((email) => email.unreadCount > 0).length || 0
                                         : folders[item.key]?.length || 0,
                                   }}
                                   expanded={sidebarExpanded}

@@ -145,33 +145,23 @@ const Inbox = () => {
   const baseSource = !label && activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;
 
   // ────────── Helper to sort threads
-  const sortRows = (arr) =>
-    [...arr].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const sortRows = (arr) => [...arr].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   const sortedBase = useMemo(() => sortRows(baseSource), [baseSource]);
 
   // ────────── Split rows based on inboxType
-  const sortedImportant = useMemo(
-    () => sortedBase.filter((r) => r.important),
-    [sortedBase]
-  );
+  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.important), [sortedBase]);
 
-  const sortedUnread = useMemo(
-    () => sortedBase.filter((r) => !r.read),
-    [sortedBase]
-  );
+  const sortedUnread = useMemo(() => sortedBase.filter((r) => r.unreadCount > 0), [sortedBase]);
 
-  const sortedStarred = useMemo(
-    () => sortedBase.filter((r) => r.starred),
-    [sortedBase]
-  );
+  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.starred), [sortedBase]);
 
   const everythingElse = useMemo(() => {
     switch (inboxType) {
       case INBOX_TYPE.IMPORTANT_FIRST:
         return sortedBase.filter((r) => !r.important);
       case INBOX_TYPE.UNREAD_FIRST:
-        return sortedBase.filter((r) => r.read);
+        return sortedBase.filter((r) => r.unreadCount === 0);
       case INBOX_TYPE.STARRED_FIRST:
         return sortedBase.filter((r) => !r.starred);
       default:
@@ -193,15 +183,37 @@ const Inbox = () => {
   }, [sortedBase, currentPage, itemsPerPage]);
 
   const showMailBanner = useMemo(() => {
-    return inboxType === INBOX_TYPE.DEFAULT
+    return inboxType === INBOX_TYPE.DEFAULT;
   }, [inboxType]);
 
   useEffect(() => {
-    // Calculate total unread emails count
-    const unreadCount = emails.filter((email) => !email.read).length;
-    const unreadText = unreadCount > 0 ? `(${unreadCount})` : "";
-    document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
-  }, [emails, loggedInUser.email]);
+    const folderLower = activeFolder.toLowerCase();
+    let count = 0;
+
+    // Map folder names to their display labels (for title)
+    const displayNames = {
+      sent: "Sent Mail",
+      drafts: "Drafts",
+      scheduled: "Scheduled",
+      inbox: "Inbox",
+      spam: "Spam",
+      trash: "Trash",
+    };
+
+    // Count logic
+    if (folderLower === "inbox" || folderLower === "spam") {
+      count = filteredRows.filter((thread) => thread.unreadCount > 0).length;
+    } else if (folderLower === "drafts" || folderLower === "scheduled") {
+      count = filteredRows.length;
+    }
+
+    const countText = count > 0 ? `(${count}) ` : "";
+    const displayFolderName =
+      displayNames[folderLower] ||
+      activeFolder.charAt(0).toUpperCase() + activeFolder.slice(1);
+
+    document.title = `${displayFolderName} ${countText}- ${loggedInUser.email} - MailG`;
+  }, [filteredRows, loggedInUser.email, activeFolder]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -236,66 +248,53 @@ const Inbox = () => {
 
   const renderEmailListPanel = () => (
     <>
-      {(inboxType !== INBOX_TYPE.DEFAULT &&
-        activeFolder.toLowerCase() === "inbox") && (
-          <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
-            {inboxType === INBOX_TYPE.IMPORTANT_FIRST && (
-              <InboxSection
-                title="Important"
-                emails={sortedImportant}
-                setShowAdvancedMenu={setShowAdvancedMenu}
-              >
-                <EmailList
-                  emails={sortedImportant.slice(0, 25)}
-                  setShowAdvancedMenu={setShowAdvancedMenu}
-                  showFooter={false}
-                />
-              </InboxSection>
-            )}
-
-            {inboxType === INBOX_TYPE.UNREAD_FIRST && (
-              <InboxSection
-                title="Unread"
-                emails={sortedUnread}
-                setShowAdvancedMenu={setShowAdvancedMenu}
-              >
-                <EmailList
-                  emails={sortedUnread.slice(0, 25)}
-                  setShowAdvancedMenu={setShowAdvancedMenu}
-                  showFooter={false}
-                />
-              </InboxSection>
-            )}
-
-            {inboxType === INBOX_TYPE.STARRED_FIRST && (
-              <InboxSection
-                title="Starred"
-                emails={sortedStarred}
-                setShowAdvancedMenu={setShowAdvancedMenu}
-              >
-                <EmailList
-                  emails={sortedStarred.slice(0, 25)}
-                  setShowAdvancedMenu={setShowAdvancedMenu}
-                  showFooter={false}
-                />
-              </InboxSection>
-            )}
-
-            <InboxSection
-              title="Everything else"
-              emails={paginatedOthers}
-              setShowAdvancedMenu={setShowAdvancedMenu}
-              overwriteItemsPerPage={10}
-              sectionStyle={{ marginTop: "16px", padding: "8px" }}
-            >
+      {inboxType !== INBOX_TYPE.DEFAULT && activeFolder.toLowerCase() === "inbox" && (
+        <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
+          {inboxType === INBOX_TYPE.IMPORTANT_FIRST && (
+            <InboxSection title="Important" emails={sortedImportant} setShowAdvancedMenu={setShowAdvancedMenu}>
               <EmailList
-                emails={paginatedOthers.slice(0, 10)}
+                emails={sortedImportant.slice(0, 25)}
                 setShowAdvancedMenu={setShowAdvancedMenu}
                 showFooter={false}
               />
             </InboxSection>
-          </div>
-        )}
+          )}
+
+          {inboxType === INBOX_TYPE.UNREAD_FIRST && (
+            <InboxSection title="Unread" emails={sortedUnread} setShowAdvancedMenu={setShowAdvancedMenu}>
+              <EmailList
+                emails={sortedUnread.slice(0, 25)}
+                setShowAdvancedMenu={setShowAdvancedMenu}
+                showFooter={false}
+              />
+            </InboxSection>
+          )}
+
+          {inboxType === INBOX_TYPE.STARRED_FIRST && (
+            <InboxSection title="Starred" emails={sortedStarred} setShowAdvancedMenu={setShowAdvancedMenu}>
+              <EmailList
+                emails={sortedStarred.slice(0, 25)}
+                setShowAdvancedMenu={setShowAdvancedMenu}
+                showFooter={false}
+              />
+            </InboxSection>
+          )}
+
+          <InboxSection
+            title="Everything else"
+            emails={paginatedOthers}
+            setShowAdvancedMenu={setShowAdvancedMenu}
+            overwriteItemsPerPage={10}
+            sectionStyle={{ marginTop: "16px", padding: "8px" }}
+          >
+            <EmailList
+              emails={paginatedOthers.slice(0, 10)}
+              setShowAdvancedMenu={setShowAdvancedMenu}
+              showFooter={false}
+            />
+          </InboxSection>
+        </div>
+      )}
 
       {(inboxType === INBOX_TYPE.DEFAULT || activeFolder.toLowerCase() !== "inbox") && (
         <EmailList emails={rows} setShowAdvancedMenu={setShowAdvancedMenu} showFooter={!showSplit} />
@@ -316,56 +315,56 @@ const Inbox = () => {
         />
 
         {showMailBanner && (
-          <Banner
-            rows={filteredRows}
-            activeInboxTab={activeInboxTab}
-            setActiveInboxTab={setActiveInboxTab}
-          />
+          <Banner rows={filteredRows} activeInboxTab={activeInboxTab} setActiveInboxTab={setActiveInboxTab} />
         )}
 
-      {showSplit ? (
-        <PanelGroup direction={panelDirection} id="inbox-root-panel-group">
-            <Panel defaultSize={50} minSize={25} style={{
-              minWidth: 0,
-              minHeight: 0,
-              display: "flex",
-              flexDirection: "column",
-              overflowY: "auto",
-            }}>
-            {renderEmailListPanel()}
-          </Panel>
+        {showSplit ? (
+          <PanelGroup direction={panelDirection} id="inbox-root-panel-group">
+            <Panel
+              defaultSize={50}
+              minSize={25}
+              style={{
+                minWidth: 0,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
+                overflowY: "auto",
+              }}
+            >
+              {renderEmailListPanel()}
+            </Panel>
 
-          <PanelResizeHandle
-            style={{
-              width: panelDirection === "horizontal" ? "4px" : "100%",
-              backgroundColor: "#e0e0e0",
-              cursor: panelDirection === "horizontal" ? "col-resize" : "row-resize",
-            }}
-          />
-
-          <Panel
-            defaultSize={50}
-            id="email-content-panel"
-            style={{
-              height: "calc(100vh - 64px)",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              minHeight: 0
-            }}
-          >
-            <EmailContent
-              threadId={previewEmailId}
-              folder={activeFolder}
-              label={label}
-              showActionBar={false}
-              isPreview
+            <PanelResizeHandle
+              style={{
+                width: panelDirection === "horizontal" ? "4px" : "100%",
+                backgroundColor: "#e0e0e0",
+                cursor: panelDirection === "horizontal" ? "col-resize" : "row-resize",
+              }}
             />
-          </Panel>
-        </PanelGroup>
-      ) : (
-        renderEmailListPanel()
-      )}
+
+            <Panel
+              defaultSize={50}
+              id="email-content-panel"
+              style={{
+                height: "calc(100vh - 64px)",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                minHeight: 0,
+              }}
+            >
+              <EmailContent
+                threadId={previewEmailId}
+                folder={activeFolder}
+                label={label}
+                showActionBar={false}
+                isPreview
+              />
+            </Panel>
+          </PanelGroup>
+        ) : (
+          renderEmailListPanel()
+        )}
       </EmailListContainer>
 
       <QuickSettings />

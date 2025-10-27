@@ -6,7 +6,7 @@ import styled from "@emotion/styled";
 import { Content } from "./Content";
 import { Subject } from "./Subject";
 import { Box, Divider } from "@mui/material";
-import { getThread } from "../../utils/emails";
+import { getThread, getThreadRows } from "../../utils/emails";
 import ComposeReply from "../ComposeReply/ComposeReply";
 import { PanelFooter } from "../EmailList/Footer";
 import useMailActions from "../../hooks/useMailActions";
@@ -205,9 +205,11 @@ const InboxView = () => {
 
   useEffect(() => {
     if (!shouldMarkUnreadEmailsAsRead) return;
-    // Calculate total unread emails count
-    const unreadCount = emails.filter((email) => !email.read).length;
+    // Calculate total unread emails count based on unreadCount property from thread rows
+    const threads = getThreadRows(emails, { folder: "inbox" });
+    const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
     const unreadText = unreadCount > 0 ? `(${unreadCount})` : "";
+
     document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
 
     if (messageIds.length === 0) return;
