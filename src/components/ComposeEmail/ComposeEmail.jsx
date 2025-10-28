@@ -50,6 +50,17 @@ export default function ComposeEmail({ composeWindow }) {
     bcc: "",
   });
 
+  const replyingToEmail = composeWindow?.fields?.replyingTo || null;
+  const forwardingEmail = composeWindow?.fields?.forwardingTo || null;
+  const presetCcRecipients = composeWindow?.fields?.cc;
+  const composeReplyType = forwardingEmail
+    ? "forward"
+    : replyingToEmail
+    ? composeWindow?.fields?.replyType ||
+      (Array.isArray(presetCcRecipients) && presetCcRecipients.length > 0 ? "replyAll" : "reply")
+    : null;
+  const originalEmail = forwardingEmail || replyingToEmail || null;
+
   const currentDraftId = composeWindow?.draftId;
 
   // Draft management hook
@@ -60,6 +71,8 @@ export default function ComposeEmail({ composeWindow }) {
     subject,
     content,
     currentDraftId,
+    parentEmail: originalEmail,
+    replyType: composeReplyType,
   });
 
   // Determine which signature to use
@@ -191,6 +204,36 @@ export default function ComposeEmail({ composeWindow }) {
     }
   }, [emails, currentDraftId]);
 
+  // Focus the body editor if this is a reply (has replyingTo field) and autoFocus is enabled
+  // For forwards (forwardingTo), the To input is auto-focused via RecipientsInput
+  useEffect(() => {
+    if (composeWindow?.fields?.replyingTo && composeWindow?.autoFocus && !composeWindow?.fields?.forwardingTo) {
+      // Delay to ensure the editor is rendered
+      const timeoutId = setTimeout(() => {
+        // Find the compose modal container for this window
+        const composeModal = document.querySelector(`[data-compose-id="${composeWindow.id}"]`);
+        if (composeModal) {
+          const editorElement = composeModal.querySelector(".ProseMirror");
+          if (editorElement) {
+            // Focus the editor using the focus method
+            try {
+              editorElement.focus();
+            } catch (e) {
+              console.error("Failed to focus editor:", e);
+            }
+          }
+        }
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [
+    composeWindow?.fields?.replyingTo,
+    composeWindow?.fields?.forwardingTo,
+    composeWindow?.autoFocus,
+    composeWindow?.id,
+  ]);
+
   // Whenever the draft id is available update it in compose window
   useEffect(() => {
     if (draftId) {
@@ -255,13 +298,13 @@ export default function ComposeEmail({ composeWindow }) {
     handleErrorModalClose,
     handleSnackbarUndoDelete,
     lastDeletedDraftRef,
-  } = useSendEmail(null);
+  } = useSendEmail(composeReplyType, originalEmail);
   const {
     handleSchedule: handleScheduleEmail,
     showErrorModal: showScheduleErrorModal,
     errorMessage: scheduleErrorMessage,
     handleErrorModalClose: handleScheduleErrorModalClose,
-  } = useScheduleEmail(null);
+  } = useScheduleEmail(composeReplyType, originalEmail);
 
   const handleSend = ({ attachments = [], embeddedImages = [], processedHtml } = {}) => {
     // Use processed HTML if available, otherwise use the current content
@@ -314,6 +357,7 @@ export default function ComposeEmail({ composeWindow }) {
         content,
         rawInputText,
         composeWindowId: composeWindow.id,
+        replyType: composeReplyType,
       };
 
       deleteDraft();
@@ -354,10 +398,19 @@ export default function ComposeEmail({ composeWindow }) {
         }}
         onFocus={handleWindowFocus}
         tabIndex={-1}
+        data-compose-id={composeWindow.id}
       >
         {/* Title Bar */}
         <div className={styles.composeTitleBar} onClick={handleToggleMinimize}>
-          <span className={styles.composeTitle}>{draftSaved ? "Draft saved" : "New Message"}</span>
+          <span className={styles.composeTitle}>
+            {draftSaved
+              ? "Draft saved"
+              : composeWindow?.fields?.replyingTo
+              ? `Re: ${composeWindow?.fields?.replyingTo?.subject || subject}`
+              : composeWindow?.fields?.forwardingTo
+              ? `Fwd: ${composeWindow?.fields?.forwardingTo?.subject || subject}`
+              : "New Message"}
+          </span>
           <div className={styles.composeWindowControls}>
             <button
               className={`${styles.windowControl} ${styles.minimize} ${
@@ -418,19 +471,21 @@ export default function ComposeEmail({ composeWindow }) {
               setRawInputText((prev) => ({ ...prev, bcc: rawText || "" }));
             }}
             placeholder="Recipients"
-            autoFocus={composeWindow?.autoFocus}
+            autoFocus={composeWindow?.autoFocus && !composeWindow?.fields?.replyingTo}
           />
 
-          {/* Subject Field */}
-          <div className={styles.composeField}>
-            <input
-              type="text"
-              placeholder="Subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className={styles.composeInput}
-            />
-          </div>
+          {/* Subject Field - Hide for replies and forwards */}
+          {!composeWindow?.fields?.replyingTo && !composeWindow?.fields?.forwardingTo && (
+            <div className={styles.composeField}>
+              <input
+                type="text"
+                placeholder="Subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className={styles.composeInput}
+              />
+            </div>
+          )}
 
           {/* Email Body */}
           <div className={styles.composeBody}>

@@ -136,8 +136,11 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
-    const threadId = replyType && originalEmail ? originalEmail.threadId : generateThreadId();
-    const legacyThreadId = replyType && originalEmail ? originalEmail.legacyThreadId : generateLegacyThreadId();
+    const isReplyMode = replyType === "reply" || replyType === "replyAll";
+    const shouldReuseThread =
+      originalEmail && (isReplyMode || replyType === "forward");
+    const threadId = shouldReuseThread ? originalEmail.threadId : generateThreadId();
+    const legacyThreadId = shouldReuseThread ? originalEmail.legacyThreadId : generateLegacyThreadId();
     const timestamp = new Date().toISOString();
     const timeDisplay = new Date().toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -177,7 +180,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     };
 
     // Add reply/forward reference if applicable
-    if (replyType === "reply" && originalEmail) {
+    if (isReplyMode && originalEmail) {
       newEmail.replyToEmailId = originalEmail.id;
     }
     if (replyType === "forward" && originalEmail) {
