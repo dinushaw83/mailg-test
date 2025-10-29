@@ -321,12 +321,17 @@ const Table = ({
   formatDate,
   setShowAdvancedMenu,
 }) => {
-  const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db, keyboardShortcuts } = useGlobalContext();
+  const { setPreviewEmailId, panelState, density, setSnackbar, db, keyboardShortcuts } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
   const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted, unsnooze, setImportant } = useMailActions();
   const snoozeAnchorElRef = useRef(null);
   const [contextRow, setContextRow] = useState(null);
-  const [focusedRowIndex, setFocusedRowIndex] = useState(0);
+  const [focusedRowIndex, setFocusedRowIndex] = useState(() => {
+    if (keyboardShortcuts === "shortcuts-on") {
+      return 0;
+    }
+    return -1;
+  });
 
   const [{ snoozeId, snoozeAnchorEl }, setState] = useState({
     snoozeId: null,
