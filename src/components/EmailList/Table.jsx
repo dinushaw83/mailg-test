@@ -169,7 +169,7 @@ const OneColumnData = ({
             aria-pressed={email.starred}
             onClick={(e) => {
               e.stopPropagation();
-              toggleStar([email.id]);
+              handleStar([email.id], email.starred);
             }}
             sx={{
               color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
@@ -202,7 +202,7 @@ const useCustomHotKeys = ({
   emails,
   handleClickRow,
   selection,
-  toggleStar,
+  handleStar,
   handleArchive,
   handleMuteAction,
   handleDelete,
@@ -252,7 +252,7 @@ const useCustomHotKeys = ({
   useHotkeys(shortcutsOn ? "s" : "", () => {
     if (focusedRowIndex >= 0 && Date.now() - lastStarAt.current > 1000 && Date.now() - lastGAt.current > 1000) {
       const threadId = emails[focusedRowIndex].threadId.split(":")[1];
-      toggleStar([threadId]);
+      handleStar([threadId], emails[focusedRowIndex].starred);
     }
   });
 
@@ -476,6 +476,36 @@ const Table = ({
     [markRead]
   );
 
+  const handleImportant = useCallback((ids, currentlyImportant) => {
+    toggleImportant(ids);
+
+    const message = currentlyImportant
+      ? "Conversation marked as not important."
+      : "Conversation marked as important.";
+
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          size="small"
+          onClick={() => {
+            toggleImportant(ids);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [toggleImportant, setSnackbar]);
+
   const bulkMarkImportant = useCallback(
     (threadIds, important = true) => {
       if (!threadIds.length) {
@@ -495,7 +525,7 @@ const Table = ({
       setSnackbar({
         open: true,
         message,
-        autoHideDuration: 3000,
+        autoHideDuration: 10000,
         action: (
           <Button
             size="small"
@@ -650,6 +680,33 @@ const Table = ({
     [snooze, selection, unsnooze, setSnackbar]
   );
 
+  const handleStar = useCallback((ids, isStarred) => {
+    toggleStar(ids);
+
+    const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
+    setSnackbar({
+      open: true,
+      message,
+      autoHideDuration: 10000,
+      action: (
+        <Button
+          size="small"
+          onClick={() => {
+            toggleStar(ids);
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  }, [toggleStar, setSnackbar]);
+
   const openInNewTab = async (e, attachment, db) => {
     e.stopPropagation();
     if (attachment.url.startsWith("/")) {
@@ -679,7 +736,7 @@ const Table = ({
     emails,
     handleClickRow,
     selection,
-    toggleStar,
+    handleStar,
     handleArchive,
     handleMuteAction,
     handleDelete,
@@ -760,7 +817,7 @@ const Table = ({
                     getSenderClassName={getSenderClassName}
                     index={index}
                     formatDate={formatDate}
-                    toggleStar={toggleStar}
+                    toggleStar={() => handleStar([email.id], email.starred)}
                     density={density}
                   />
                 ) : (
@@ -774,7 +831,7 @@ const Table = ({
                         className="T-Jo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleStar([email.id]);
+                          handleStar([email.id], email.starred);
                         }}
                         style={{
                           background: "transparent",
@@ -810,7 +867,7 @@ const Table = ({
                         data-is-important={email.important.toString()}
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleImportant && toggleImportant([email.id]);
+                          handleImportant && handleImportant([email.id], email.important);
                         }}
                       >
                         <div className="T-ays-a45 sf-hidden">
