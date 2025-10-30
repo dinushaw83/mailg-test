@@ -413,17 +413,22 @@ const Table = ({
         return;
       }
 
-      moveToTrash(threadIds);
+      const undo = moveToTrash(threadIds);
       setSnackbar({
         open: true,
-        message: threadIds.size > 1 ? `${threadIds.size} Conversations moved to Trash` : "Conversation moved to Trash.",
+        message:
+          threadIds.length > 1 ? `${threadIds.length} Conversations moved to Trash` : "Conversation moved to Trash.",
         autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              moveToInbox(threadIds);
+              if (typeof undo === "function") {
+                undo();
+              } else {
+                moveToInbox(threadIds);
+              }
               // Follow-up confirmation snackbar
               setSnackbar({
                 open: true,
@@ -438,7 +443,7 @@ const Table = ({
         ),
       });
     },
-    [moveToTrash, setSnackbar]
+    [moveToTrash, setSnackbar, moveToInbox, showNoConversationsSelectedSnackbar]
   );
 
   const bulkMarkRead = useCallback(
@@ -481,35 +486,38 @@ const Table = ({
     [markRead]
   );
 
-  const handleImportant = useCallback((ids, currentlyImportant) => {
-    toggleImportant(ids);
+  const handleImportant = useCallback(
+    (ids, currentlyImportant) => {
+      toggleImportant(ids);
 
-    const message = currentlyImportant
-      ? "Conversation marked as not important."
-      : "Conversation marked as important.";
+      const message = currentlyImportant
+        ? "Conversation marked as not important."
+        : "Conversation marked as important.";
 
-    setSnackbar({
-      open: true,
-      message,
-      autoHideDuration: 10000,
-      action: (
-        <Button
-          size="small"
-          onClick={() => {
-            toggleImportant(ids);
-            setSnackbar({
-              open: true,
-              message: "Action undone.",
-              autoHideDuration: 3000,
-              action: null,
-            });
-          }}
-        >
-          Undo
-        </Button>
-      ),
-    });
-  }, [toggleImportant, setSnackbar]);
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              toggleImportant(ids);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [toggleImportant, setSnackbar]
+  );
 
   const bulkMarkImportant = useCallback(
     (threadIds, important = true) => {
@@ -685,32 +693,35 @@ const Table = ({
     [snooze, selection, unsnooze, setSnackbar]
   );
 
-  const handleStar = useCallback((ids, isStarred) => {
-    toggleStar(ids);
+  const handleStar = useCallback(
+    (ids, isStarred) => {
+      toggleStar(ids);
 
-    const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
-    setSnackbar({
-      open: true,
-      message,
-      autoHideDuration: 10000,
-      action: (
-        <Button
-          size="small"
-          onClick={() => {
-            toggleStar(ids);
-            setSnackbar({
-              open: true,
-              message: "Action undone.",
-              autoHideDuration: 3000,
-              action: null,
-            });
-          }}
-        >
-          Undo
-        </Button>
-      ),
-    });
-  }, [toggleStar, setSnackbar]);
+      const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              toggleStar(ids);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [toggleStar, setSnackbar]
+  );
 
   const openInNewTab = async (e, attachment, db) => {
     e.stopPropagation();
