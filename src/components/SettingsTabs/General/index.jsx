@@ -42,6 +42,9 @@ export default function GeneralSettings({
   setLocalShortcuts,
   localNotificationSettings,
   setLocalNotificationSettings,
+  handleSave,
+  handleCancel,
+  hasChanges,
 }) {
   return (
     <Container>
@@ -91,7 +94,7 @@ export default function GeneralSettings({
                 localSettings={localVacationResponder}
                 setLocalSettings={setLocalVacationResponder}
               />
-              {/* <SettingsFooterRow /> */}
+              <SettingsFooterRow onSave={handleSave} onCancel={handleCancel} hasChanges={hasChanges} />
             </tbody>
           </StyledTable>
         </MainBody>

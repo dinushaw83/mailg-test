@@ -107,17 +107,10 @@ const GeneralTab = () => {
         setLocalShortcuts={setLocalShortcuts}
         localNotificationSettings={localNotificationSettings}
         setLocalNotificationSettings={setLocalNotificationSettings}
+        handleSave={handleSave}
+        handleCancel={handleCancel}
+        hasChanges={hasChanges}
       />
-
-      {/* Action Buttons */}
-      <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
-        <button onClick={handleSave} disabled={!hasChanges} style={{ fontSize: "14px" }}>
-          Save changes
-        </button>
-        <button onClick={handleCancel} style={{ fontSize: "14px" }}>
-          Cancel
-        </button>
-      </Box>
     </Box>
   );
 };
