@@ -16,9 +16,9 @@ const AdvancedTab = () => {
   }, [localSettings, settingsAdvanced]);
 
   const handleRadioChange = (field, value) => {
-    setLocalSettings(prev => ({
+    setLocalSettings((prev) => ({
       ...prev,
-      [field]: value === "1" || value === true
+      [field]: value === "1" || value === true,
     }));
   };
 
@@ -54,8 +54,7 @@ const AdvancedTab = () => {
           className="Jy"
           style={{
             WebkitFontSmoothing: "antialiased",
-            fontFamily:
-              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
             fontSize: "0.875rem",
             letterSpacing: "normal",
             lineHeight: "20px",
@@ -67,28 +66,20 @@ const AdvancedTab = () => {
             Auto-advance
           </span>
           <br />
-          Show the next conversation instead of your inbox after you delete,
-          archive or mute a conversation. You can select whether to advance to
-          the next or previous conversation in the "General" Settings page.
+          Show the next conversation instead of your inbox after you delete, archive or mute a conversation. You can
+          select whether to advance to the next or previous conversation in the "General" Settings page.
         </div>
-        <div
-          className="Ju"
-          style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}
-        >
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
-                      <input
-                        id="auto_advance_enable"
-                        name="auto_advance"
-                        type="radio"
-                        value="1"
-                        checked={localSettings.autoAdvance === true}
-                        onChange={() => handleRadioChange("autoAdvance", true)}
-                        style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+        <div className="Ju" style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}>
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
+            <input
+              id="auto_advance_enable"
+              name="auto_advance"
+              type="radio"
+              value="1"
+              checked={localSettings.autoAdvance === true}
+              onChange={() => handleRadioChange("autoAdvance", true)}
+              style={{
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -99,8 +90,7 @@ const AdvancedTab = () => {
               htmlFor="auto_advance_enable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -110,20 +100,16 @@ const AdvancedTab = () => {
               Enable
             </label>
           </div>
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
-                      <input
-                        id="auto_advance_disable"
-                        name="auto_advance"
-                        type="radio"
-                        value="0"
-                        checked={localSettings.autoAdvance === false}
-                        onChange={() => handleRadioChange("autoAdvance", false)}
-                        style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
+            <input
+              id="auto_advance_disable"
+              name="auto_advance"
+              type="radio"
+              value="0"
+              checked={localSettings.autoAdvance === false}
+              onChange={() => handleRadioChange("autoAdvance", false)}
+              style={{
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -134,8 +120,7 @@ const AdvancedTab = () => {
               htmlFor="auto_advance_disable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -161,8 +146,7 @@ const AdvancedTab = () => {
           className="Jy"
           style={{
             WebkitFontSmoothing: "antialiased",
-            fontFamily:
-              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
             fontSize: "0.875rem",
             letterSpacing: "normal",
             lineHeight: "20px",
@@ -174,19 +158,12 @@ const AdvancedTab = () => {
             Templates
           </span>
           <br />
-          Turn frequent messages into templates to save time. Templates can be
-          created and inserted through the "More options" menu in the compose
-          toolbar. You can also create automatic replies using templates and
-          filters together.
+          Turn frequent messages into templates to save time. Templates can be created and inserted through the "More
+          options" menu in the compose toolbar. You can also create automatic replies using templates and filters
+          together.
         </div>
-        <div
-          className="Ju"
-          style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}
-        >
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
+        <div className="Ju" style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}>
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
             <input
               id="templates_enable"
               name="templates"
@@ -195,8 +172,7 @@ const AdvancedTab = () => {
               checked={localSettings.templates === true}
               onChange={() => handleRadioChange("templates", true)}
               style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -207,8 +183,7 @@ const AdvancedTab = () => {
               htmlFor="templates_enable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -218,10 +193,7 @@ const AdvancedTab = () => {
               Enable
             </label>
           </div>
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
             <input
               id="templates_disable"
               name="templates"
@@ -230,8 +202,7 @@ const AdvancedTab = () => {
               checked={localSettings.templates === false}
               onChange={() => handleRadioChange("templates", false)}
               style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -242,8 +213,7 @@ const AdvancedTab = () => {
               htmlFor="templates_disable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -269,8 +239,7 @@ const AdvancedTab = () => {
           className="Jy"
           style={{
             WebkitFontSmoothing: "antialiased",
-            fontFamily:
-              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
             fontSize: "0.875rem",
             letterSpacing: "normal",
             lineHeight: "20px",
@@ -282,17 +251,11 @@ const AdvancedTab = () => {
             Custom keyboard shortcuts
           </span>
           <br />
-          Enable the ability to customize your keyboard shortcuts via a new
-          settings tab from which you can remap keys to various actions.
+          Enable the ability to customize your keyboard shortcuts via a new settings tab from which you can remap keys
+          to various actions.
         </div>
-        <div
-          className="Ju"
-          style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}
-        >
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
+        <div className="Ju" style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}>
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
             <input
               id="keyboard_shortcuts_enable"
               name="keyboard_shortcuts"
@@ -301,8 +264,7 @@ const AdvancedTab = () => {
               checked={localSettings.customKeyboardShortcuts === true}
               onChange={() => handleRadioChange("customKeyboardShortcuts", true)}
               style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -313,8 +275,7 @@ const AdvancedTab = () => {
               htmlFor="keyboard_shortcuts_enable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -324,10 +285,7 @@ const AdvancedTab = () => {
               Enable
             </label>
           </div>
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
             <input
               id="keyboard_shortcuts_disable"
               name="keyboard_shortcuts"
@@ -336,8 +294,7 @@ const AdvancedTab = () => {
               checked={localSettings.customKeyboardShortcuts === false}
               onChange={() => handleRadioChange("customKeyboardShortcuts", false)}
               style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -348,8 +305,7 @@ const AdvancedTab = () => {
               htmlFor="keyboard_shortcuts_disable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -368,8 +324,7 @@ const AdvancedTab = () => {
           className="Jy"
           style={{
             WebkitFontSmoothing: "antialiased",
-            fontFamily:
-              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
             fontSize: "0.875rem",
             letterSpacing: "normal",
             lineHeight: "20px",
@@ -381,17 +336,10 @@ const AdvancedTab = () => {
             Unread message icon
           </span>
           <br />
-          See how many unread messages are in your inbox with a quick glance at
-          the Gmail icon on the tab header.
+          See how many unread messages are in your inbox with a quick glance at the MailG icon on the tab header.
         </div>
-        <div
-          className="Ju"
-          style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}
-        >
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
+        <div className="Ju" style={{ alignContent: "center", display: "flex", flexWrap: "wrap" }}>
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
             <input
               id="unread_icon_enable"
               name="unread_icon"
@@ -400,8 +348,7 @@ const AdvancedTab = () => {
               checked={localSettings.unreadMessageIcon === true}
               onChange={() => handleRadioChange("unreadMessageIcon", true)}
               style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -412,8 +359,7 @@ const AdvancedTab = () => {
               htmlFor="unread_icon_enable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -423,10 +369,7 @@ const AdvancedTab = () => {
               Enable
             </label>
           </div>
-          <div
-            className="Jj"
-            style={{ whiteSpace: "nowrap", marginRight: "32px" }}
-          >
+          <div className="Jj" style={{ whiteSpace: "nowrap", marginRight: "32px" }}>
             <input
               id="unread_icon_disable"
               name="unread_icon"
@@ -435,8 +378,7 @@ const AdvancedTab = () => {
               checked={localSettings.unreadMessageIcon === false}
               onChange={() => handleRadioChange("unreadMessageIcon", false)}
               style={{
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 margin: "0px",
                 fontSize: "100%",
                 fontWeight: "normal",
@@ -447,8 +389,7 @@ const AdvancedTab = () => {
               htmlFor="unread_icon_disable"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
                 fontWeight: "bold",
@@ -478,8 +419,7 @@ const AdvancedTab = () => {
             WebkitFontSmoothing: "antialiased",
             fontSize: "0.875rem",
             letterSpacing: "normal",
-            fontFamily:
-              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
           }}
         >
           Save Changes
@@ -493,8 +433,7 @@ const AdvancedTab = () => {
             WebkitFontSmoothing: "antialiased",
             fontSize: "0.875rem",
             letterSpacing: "normal",
-            fontFamily:
-              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
           }}
         >
           Cancel

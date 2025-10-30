@@ -224,7 +224,7 @@ export const Labels = ({
 
               const cycleState = (prev, baseline) => {
                 if (baseline === "indeterminate") {
-                  // Gmail 3-state cycle
+                  // 3-state cycle
                   if (prev === "indeterminate") return "checked";
                   if (prev === "checked") return "unchecked";
                   return baseline;

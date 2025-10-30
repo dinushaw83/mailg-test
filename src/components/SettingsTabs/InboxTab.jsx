@@ -6,17 +6,11 @@ export default function InboxTab() {
   // Track changes in form inputs
   useEffect(() => {
     const handleInputChange = () => setHasChanges(true);
-    const inputs = document.querySelectorAll(
-      '#inbox-tab input, #inbox-tab select'
-    );
-    inputs.forEach((input) =>
-      input.addEventListener('change', handleInputChange)
-    );
+    const inputs = document.querySelectorAll("#inbox-tab input, #inbox-tab select");
+    inputs.forEach((input) => input.addEventListener("change", handleInputChange));
 
     return () => {
-      inputs.forEach((input) =>
-        input.removeEventListener('change', handleInputChange)
-      );
+      inputs.forEach((input) => input.removeEventListener("change", handleInputChange));
     };
   }, []);
 
@@ -56,8 +50,7 @@ export default function InboxTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -106,8 +99,7 @@ export default function InboxTab() {
                   className="rtiTxf"
                   name="inbox-type"
                   style={{
-                    fontFamily:
-                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     margin: "0px",
                     fontSize: "100%",
                   }}
@@ -117,9 +109,7 @@ export default function InboxTab() {
                   <option value="Cfa|Afa">Unread first</option>
                   <option value="Efa|Afa">Starred first</option>
                   <option value="Dfa|Efa|Afa">Priority Inbox</option>
-                  <option value="rxa|is:starred|is:drafts">
-                    Multiple Inboxes
-                  </option>
+                  <option value="rxa|is:starred|is:drafts">Multiple Inboxes</option>
                 </select>
               </td>
             </tr>
@@ -128,8 +118,7 @@ export default function InboxTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -694,8 +683,7 @@ export default function InboxTab() {
                                                     htmlFor="starred-in-primary"
                                                     style={{
                                                       fontWeight: "bold",
-                                                      overflowWrap:
-                                                        "break-word",
+                                                      overflowWrap: "break-word",
                                                     }}
                                                   >
                                                     Include starred in Primary
@@ -806,12 +794,10 @@ export default function InboxTab() {
                                                     htmlFor="bundling-promotions"
                                                     style={{
                                                       fontWeight: "bold",
-                                                      overflowWrap:
-                                                        "break-word",
+                                                      overflowWrap: "break-word",
                                                     }}
                                                   >
-                                                    Enable bundling of top promo
-                                                    emails in Promotions
+                                                    Enable bundling of top promo emails in Promotions
                                                   </label>
                                                 </td>
                                               </tr>
@@ -865,13 +851,11 @@ export default function InboxTab() {
                               </div>
                             </div>
                             <div className="aI7">
-                              Choose which message categories to show as inbox
-                              tabs. Other messages will appear in the Primary
-                              tab.
+                              Choose which message categories to show as inbox tabs. Other messages will appear in the
+                              Primary tab.
                               <br />
                               <br />
-                              Deselect all categories to go back to your old
-                              inbox.{" "}
+                              Deselect all categories to go back to your old inbox.{" "}
                             </div>
                           </div>
                         </div>
@@ -885,8 +869,7 @@ export default function InboxTab() {
               className="r7 v8lvYb XY"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -942,10 +925,7 @@ export default function InboxTab() {
                       }}
                     >
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="aIZ C6"
                             style={{
@@ -960,8 +940,7 @@ export default function InboxTab() {
                               name="bx_spe"
                               type="checkbox"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 bottom: "1px",
@@ -990,14 +969,9 @@ export default function InboxTab() {
                                 overflowWrap: "break-word",
                               }}
                             >
-                              <div
-                                className="Xk"
-                                style={{ fontWeight: "normal" }}
-                              >
-                                <b>Enable reading pane</b> - provides a way to
-                                read mail right next to your list of
-                                conversations, making mail reading and writing
-                                mail faster and adding more context.
+                              <div className="Xk" style={{ fontWeight: "normal" }}>
+                                <b>Enable reading pane</b> - provides a way to read mail right next to your list of
+                                conversations, making mail reading and writing mail faster and adding more context.
                               </div>
                             </label>
                           </td>
@@ -1009,17 +983,9 @@ export default function InboxTab() {
                     <div className="Xm" style={{ marginTop: "16px" }}>
                       <b>Reading pane position</b>
                     </div>
-                    <table
-                      className="cf"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -1036,8 +1002,7 @@ export default function InboxTab() {
                               value="0"
                               disabled
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 bottom: "1px",
@@ -1066,17 +1031,9 @@ export default function InboxTab() {
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -1092,8 +1049,7 @@ export default function InboxTab() {
                               value="1"
                               disabled
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 bottom: "1px",
@@ -1122,17 +1078,9 @@ export default function InboxTab() {
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -1148,8 +1096,7 @@ export default function InboxTab() {
                               value="2"
                               disabled
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 bottom: "1px",
@@ -1186,8 +1133,7 @@ export default function InboxTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -1257,8 +1203,7 @@ export default function InboxTab() {
                           type="radio"
                           value="0"
                           style={{
-                            fontFamily:
-                              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                             margin: "0px",
                             fontSize: "100%",
                             bottom: "1px",
@@ -1280,8 +1225,7 @@ export default function InboxTab() {
                         }}
                       >
                         <label htmlFor="importance-show">
-                          <b>Show markers</b> - Show a marker (►) by messages
-                          marked as important.
+                          <b>Show markers</b> - Show a marker (►) by messages marked as important.
                         </label>
                       </td>
                     </tr>
@@ -1314,8 +1258,7 @@ export default function InboxTab() {
                           defaultChecked
                           value="1"
                           style={{
-                            fontFamily:
-                              '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                            fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                             margin: "0px",
                             fontSize: "100%",
                             bottom: "1px",
@@ -1344,10 +1287,9 @@ export default function InboxTab() {
                   </tbody>
                 </table>
                 <div className="alG" style={{ marginTop: "15px" }}>
-                  Gmail analyzes your new incoming messages to predict what's
-                  important, considering things like how you've treated similar
-                  messages in the past, how directly the message is addressed
-                  to you, and many other factors.{" "}
+                  MailG analyzes your new incoming messages to predict what's important, considering things like how
+                  you've treated similar messages in the past, how directly the message is addressed to you, and many
+                  other factors.{" "}
                   <a
                     className="e"
                     aria-label="Learn more about Priority Inbox"
@@ -1372,12 +1314,7 @@ export default function InboxTab() {
                       padding: "0px",
                     }}
                   >
-                    <table
-                      className="cf"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
                         <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
@@ -1395,8 +1332,7 @@ export default function InboxTab() {
                               defaultChecked
                               value="0"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 bottom: "1px",
@@ -1418,19 +1354,13 @@ export default function InboxTab() {
                             }}
                           >
                             <label htmlFor="importance-use-past">
-                              Use my past actions to predict which messages are
-                              important to me.
+                              Use my past actions to predict which messages are important to me.
                             </label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
                         <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
@@ -1447,8 +1377,7 @@ export default function InboxTab() {
                               type="radio"
                               value="1"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 bottom: "1px",
@@ -1470,11 +1399,9 @@ export default function InboxTab() {
                             }}
                           >
                             <label htmlFor="importance-dont-use-past">
-                              Don't use my past actions to predict which
-                              messages are important.
-                              <br /> Note: this will erase action history and
-                              will likely reduce the accuracy of importance
-                              predictions.
+                              Don't use my past actions to predict which messages are important.
+                              <br /> Note: this will erase action history and will likely reduce the accuracy of
+                              importance predictions.
                             </label>
                           </td>
                         </tr>
@@ -1488,8 +1415,7 @@ export default function InboxTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -1541,12 +1467,7 @@ export default function InboxTab() {
                     padding: "0px",
                   }}
                 >
-                  <table
-                    className="cf"
-                    cellPadding="0"
-                    cellSpacing="0"
-                    style={{ borderCollapse: "collapse" }}
-                  >
+                  <table className="cf" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                     <tbody>
                       <tr className="C7" style={{ verticalAlign: "top" }}>
                         <td
@@ -1563,8 +1484,7 @@ export default function InboxTab() {
                             type="radio"
                             value="1"
                             style={{
-                              fontFamily:
-                                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                               margin: "0px",
                               fontSize: "100%",
                               bottom: "1px",
@@ -1586,19 +1506,14 @@ export default function InboxTab() {
                           }}
                         >
                           <label htmlFor="filtered-override">
-                            <b>Override filters</b> - Include important messages
-                            in the inbox that may have been filtered out.
+                            <b>Override filters</b> - Include important messages in the inbox that may have been
+                            filtered out.
                           </label>
                         </td>
                       </tr>
                     </tbody>
                   </table>
-                  <table
-                    className="cf"
-                    cellPadding="0"
-                    cellSpacing="0"
-                    style={{ borderCollapse: "collapse" }}
-                  >
+                  <table className="cf" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                     <tbody>
                       <tr className="C7" style={{ verticalAlign: "top" }}>
                         <td
@@ -1616,8 +1531,7 @@ export default function InboxTab() {
                             defaultChecked
                             value="0"
                             style={{
-                              fontFamily:
-                                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                               margin: "0px",
                               fontSize: "100%",
                               bottom: "1px",
@@ -1652,8 +1566,7 @@ export default function InboxTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -1675,8 +1588,7 @@ export default function InboxTab() {
                       WebkitFontSmoothing: "antialiased",
                       fontSize: "0.875rem",
                       letterSpacing: "normal",
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     }}
                   >
                     Save Changes
@@ -1690,8 +1602,7 @@ export default function InboxTab() {
                       WebkitFontSmoothing: "antialiased",
                       fontSize: "0.875rem",
                       letterSpacing: "normal",
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     }}
                   >
                     Cancel

@@ -202,7 +202,7 @@ export const SignatureEditableBox = styled("div")({
   direction: "ltr",
 
   // Accessibility consistency
-  outline: "none", // usually Gmail removes outline on focus
+  outline: "none", // usually removes outline on focus
 });
 
 export const SignatureToolbarContainer = styled("div")({

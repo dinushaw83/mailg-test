@@ -133,7 +133,7 @@ const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
         lastEmittedValue.current = emittedValue;
         onChange(emittedValue);
 
-        // Handle comma-separated input (like Gmail)
+        // Handle comma-separated input
         if (newInput.includes(",")) {
           const emails = newInput
             .split(",")
@@ -170,7 +170,7 @@ const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
       lastEmittedValue.current = newInputValue;
       onChange(newInputValue);
 
-      // Handle comma-separated input (like Gmail)
+      // Handle comma-separated input
       if (newInputValue.includes(",")) {
         const emails = newInputValue
           .split(",")

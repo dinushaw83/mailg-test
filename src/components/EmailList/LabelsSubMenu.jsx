@@ -185,7 +185,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
 
             const cycleState = (prev, baseline) => {
               if (baseline === "indeterminate") {
-                // Gmail 3-state cycle
+                // 3-state toggle cycle like MailG
                 if (prev === "indeterminate") return "checked";
                 if (prev === "checked") return "unchecked";
                 return baseline;
