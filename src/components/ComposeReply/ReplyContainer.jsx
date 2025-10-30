@@ -269,6 +269,7 @@ ${email.body}
       isDraft: isDraft,
       scheduledDate: scheduleData.scheduledDate,
       scheduledTime: scheduleData.scheduledTime,
+      scheduleOption: scheduleData,
     });
   };
 

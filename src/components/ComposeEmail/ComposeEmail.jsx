@@ -341,6 +341,7 @@ export default function ComposeEmail({ composeWindow }) {
       isDraft: isDraft,
       scheduledDate: scheduleData.scheduledDate,
       scheduledTime: scheduleData.scheduledTime,
+      scheduleOption: scheduleData,
     });
   };
 

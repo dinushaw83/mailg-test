@@ -446,6 +446,7 @@ export default function Editor({
   const handleSelectSchedule = (scheduleOption) => {
     if (onSchedule) {
       onSchedule({
+        scheduleOption: scheduleOption,
         scheduledDate: scheduleOption.date.toLocaleDateString(),
         scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
           hour: "numeric",
@@ -469,6 +470,7 @@ export default function Editor({
   const handleDateTimeSchedule = (scheduleOption) => {
     if (onSchedule) {
       onSchedule({
+        scheduleOption: scheduleOption,
         scheduledDate: scheduleOption.date.toLocaleDateString(),
         scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
           hour: "numeric",
@@ -1214,9 +1216,13 @@ export default function Editor({
                         >
                           <span
                             className="material-symbols-outlined"
-                            style={{ fontSize: "20px", color: "rgb(95, 99, 104)" }}
+                            style={{
+                              fontSize: "20px",
+                              color: "#1a73e8",
+                              verticalAlign: "middle",
+                            }}
                           >
-                            schedule
+                            cancel_schedule_send
                           </span>
                           Schedule send
                         </div>
