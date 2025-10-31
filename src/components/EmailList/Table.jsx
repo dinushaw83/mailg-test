@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useId } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { useContextMenu } from "react-contexify";
@@ -193,8 +193,6 @@ const OneColumnData = ({
   );
 };
 
-const MENU_ID = "row-item-menu";
-
 const useCustomHotKeys = ({
   focusedRowIndex,
   shortcutsOn,
@@ -321,6 +319,9 @@ const Table = ({
   formatDate,
   setShowAdvancedMenu,
 }) => {
+  const uniqueMenuId = useId();
+  const MENU_ID = `row-item-menu-${uniqueMenuId}`;
+
   const { setPreviewEmailId, panelState, density, setSnackbar, db, keyboardShortcuts } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
   const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted, unsnooze, setImportant } = useMailActions();

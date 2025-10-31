@@ -574,7 +574,7 @@ ${email.body || email.preview || ""}
         }}
       >
         {sectionOneItems.map((item) => (
-          <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
+          <Item key={item.id} id={item.id} onClick={handleItemClick} disabled={item.disabled}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
               {item.icon}
             </span>
@@ -585,7 +585,7 @@ ${email.body || email.preview || ""}
         {sectionOneItems.length > 0 && <Separator />}
 
         {sectionTwoItems.map((item) => (
-          <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
+          <Item key={item.id} id={item.id} onClick={handleItemClick} disabled={item.disabled}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
               {item.icon}
             </span>
