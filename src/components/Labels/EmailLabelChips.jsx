@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
+import useLabels, { normalizeLabelName, getPathLabelFromKey } from "../../hooks/useLabels";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 import { styled } from "@mui/material/styles"
 import { useGlobalContext } from "../../contexts/GlobalContext";
@@ -132,7 +132,7 @@ export default function EmailLabelChips({ message }) {
         <LabelContainer>
             {filteredLabels.map((label) => (
                 <LabelWrapper key={label} bg={allLabels[label]?.color?.rgb} text={allLabels[label]?.color?.text}>
-                    <GTooltip title={`Search for all messages with label ${normalizeLabelName(label)}`} placement="top" PopperProps={{
+                    <GTooltip title={`Search for all messages with label ${getPathLabelFromKey(allLabels, label)}`} placement="top" PopperProps={{
                         modifiers: [
                             {
                                 name: "offset",
@@ -140,10 +140,10 @@ export default function EmailLabelChips({ message }) {
                             },
                         ],
                     }}>
-                        <LabelText onClick={() => handleNavigateToLabel(label)}>{normalizeLabelName(label)}</LabelText>
+                        <LabelText onClick={() => handleNavigateToLabel(label)}>{getPathLabelFromKey(allLabels, label)}</LabelText>
                     </GTooltip>
                     <CloseButton role="button" tabIndex={0} onClick={() => handleRemoveLabel(label)}>
-                        <GTooltip title={`Remove label ${normalizeLabelName(label)} from this conversation`} placement="top" PopperProps={{
+                        <GTooltip title={`Remove label ${getPathLabelFromKey(allLabels, label)} from this conversation`} placement="top" PopperProps={{
                             modifiers: [
                                 {
                                     name: "offset",
