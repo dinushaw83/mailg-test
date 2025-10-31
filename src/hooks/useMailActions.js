@@ -46,7 +46,7 @@ const collectKeysFromMessage = (m) => {
   return out;
 };
 
-const makeMatch = (selection) => {
+export const makeMatch = (selection) => {
   const index = buildIdIndex(selection);
   return (m) => collectKeysFromMessage(m).some((k) => index.has(k));
 };
