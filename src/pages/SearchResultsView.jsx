@@ -213,7 +213,7 @@ const SearchResultsView = () => {
   const showSearchFilters = useMemo(() => {
     return rows.length > 0 || searchParams.get("isrefinement") === "true";
   }, [rows, searchParams]);
-  console.log(rows, "rows");
+
   return (
     <div className="nH bkK">
       <div className="nH">

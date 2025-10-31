@@ -16,12 +16,14 @@ import {
   AdvancedSearchSelectHoverStyle,
   AdvancedSearchTextFieldInputStyle,
 } from "./constants";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
 
-const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref) => {
+const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigger }, ref) => {
   const navigate = useNavigate();
   const fromFieldRef = useRef(null);
   const location = useLocation();
   const [previousLocation, setPreviousLocation] = useState(null);
+  const { setSnackbar } = useGlobalContext();
 
   const getDefaultFormData = () => ({
     from: "",
@@ -180,6 +182,27 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
 
         // Only submit if in a regular text field (EmailField stops propagation)
         if (isInTextField) {
+          // Check if form has any values (excluding default values)
+          const hasSearchCriteria =
+            formData.from.trim() ||
+            formData.to.trim() ||
+            formData.subject.trim() ||
+            formData.has.trim() ||
+            formData.hasnot.trim() ||
+            formData.size.trim() ||
+            formData.attachment ||
+            formData.excludeChats ||
+            formData.subset !== "All Mail";
+
+          // If no search criteria provided, show snackbar and return
+          if (!hasSearchCriteria) {
+            setSnackbar({
+              open: true,
+              message: "Invalid search query - returning all mail.",
+              autoHideDuration: 4000,
+            });
+          }
+
           // Trigger search by calling the search handler
           // Track advanced search query in localStorage
           addAdvancedSearchQuery(formData);
@@ -246,7 +269,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
     document.addEventListener("keydown", handleKeyPress);
 
     return () => document.removeEventListener("keydown", handleKeyPress);
-  }, [isOpen, onClose, formData, navigate]);
+  }, [isOpen, onClose, formData, navigate, setSnackbar]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => {
@@ -267,6 +290,27 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
   };
 
   const handleSearch = () => {
+    // Check if form has any values (excluding default values)
+    const hasSearchCriteria =
+      formData.from.trim() ||
+      formData.to.trim() ||
+      formData.subject.trim() ||
+      formData.has.trim() ||
+      formData.hasnot.trim() ||
+      formData.size.trim() ||
+      formData.attachment ||
+      formData.excludeChats ||
+      formData.subset !== "All Mail";
+
+    // If no search criteria provided, show snackbar and return
+    if (!hasSearchCriteria) {
+      setSnackbar({
+        open: true,
+        message: "Invalid search query - returning all mail.",
+        autoHideDuration: 4000,
+      });
+    }
+
     // Track advanced search query in localStorage
     addAdvancedSearchQuery(formData);
 
@@ -335,7 +379,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
 
   return (
     <ClickAwayListener onClickAway={onClose}>
-      <div className={styles.modal}>
+      <div className={`${styles.modal} ${trigger === "filter-chips" ? styles.filterChips : ""}`}>
         <div className={styles.modalContent}>
           {/* From */}
           <div className={styles.formRow}>
@@ -404,7 +448,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
           </div>
 
           {/* Size */}
-          <div className={styles.formRow}>
+          <div className={styles.formRow} style={{ width: "100%" }}>
             <label htmlFor="size" className={styles.label}>
               Size:
             </label>

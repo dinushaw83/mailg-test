@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button, Chip, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import ContactFilterChip from "./ContactFilterChip";
 import DateFilterChip from "./DateFilterChip";
+import AdvancedSearchOptions from "../SearchBar/AdvancedSearchOptions/AdvancedSearchOptions";
+import { buildSearchBarFromUrl } from "../../utils/helperFunctions";
 
 const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
   const [activeFilters, setActiveFilters] = useState([]);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const advancedSearchRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
+
+  // Extract search value from URL to pass to AdvancedSearchOptions
+  const searchValue = buildSearchBarFromUrl(location);
 
   // Determine which filters to show based on active folder
   const getAvailableFilters = () => {
@@ -193,6 +200,10 @@ const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
     );
   };
 
+  const handleAdvancedSearchClick = () => {
+    setShowAdvancedSearch(true);
+  };
+
   return (
     <Stack direction="row" spacing={1} px={2} pt={pt} pb={pb}>
       {sortedFilterOptions
@@ -260,9 +271,22 @@ const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
           );
         })}
 
-      <Button variant="text" size="small" sx={{ textTransform: "none", px: 1.5, borderRadius: "16px" }}>
+      <Button
+        variant="text"
+        size="small"
+        sx={{ textTransform: "none", px: 1.5, borderRadius: "16px" }}
+        onClick={handleAdvancedSearchClick}
+      >
         Advanced search
       </Button>
+
+      <AdvancedSearchOptions
+        ref={advancedSearchRef}
+        isOpen={showAdvancedSearch}
+        searchValue={searchValue}
+        trigger="filter-chips"
+        onClose={() => setShowAdvancedSearch(false)}
+      />
     </Stack>
   );
 };

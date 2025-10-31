@@ -33,6 +33,7 @@ const EmailListContainer = styled.div`
   height: ${(props) => `calc(100vh - ${props.vacationResponderEnabled ? "98px" : "64px"})`};
   flex: 1;
   min-width: 0; /* Allows flex item to shrink below content size */
+  position: relative;
 `;
 
 // Mapping of folder keys to display names for document title
