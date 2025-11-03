@@ -72,13 +72,25 @@ const LOCAL_STORAGE_KEYS = [
   "manualSyncCount",
 ];
 
+function safeParseLocalStorage(key) {
+  const raw = localStorage.getItem(key);
+  if (raw === null) return null;
+  if (raw.trim() === "") return {}; // Empty string → return an empty object
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.warn(`⚠️ Invalid JSON for "${key}", keeping raw string instead.`);
+    return raw; // fallback to string so diff doesn’t break
+  }
+}
+
 /**
  * Gathers all localStorage keys into a single consolidated object
  */
 const gatherLocalStorageConfig = () => {
   const config = {};
   LOCAL_STORAGE_KEYS.forEach((key) => {
-    const value = localStorage.getItem(key);
+    const value = safeParseLocalStorage(key);
     if (value !== null) {
       try {
         config[key] = JSON.parse(value);

@@ -10,6 +10,28 @@ const SEARCH_HISTORY_KEY = "mailg_search_history";
 const MAX_SEARCH_HISTORY = 10;
 const ALL_SEARCH_QUERIES_KEY = "allSearchQueries";
 
+// --- Ensure search-related keys always exist with valid JSON ---
+(function ensureSearchKeysExist() {
+  try {
+    // mailg_search_history should always be an array
+    const history = localStorage.getItem(SEARCH_HISTORY_KEY);
+    if (!history || history.trim() === "") {
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify([]));
+    }
+
+    // allSearchQueries should always be an object with basic + advanced arrays
+    const allQueries = localStorage.getItem(ALL_SEARCH_QUERIES_KEY);
+    if (!allQueries || allQueries.trim() === "") {
+      localStorage.setItem(
+        ALL_SEARCH_QUERIES_KEY,
+        JSON.stringify({ basic: [], advanced: [] })
+      );
+    }
+  } catch (err) {
+    console.warn("⚠️ Failed to validate search keys:", err);
+  }
+})();
+
 function getSearchHistory() {
   try {
     const history = localStorage.getItem(SEARCH_HISTORY_KEY);
