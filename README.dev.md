@@ -1,10 +1,6 @@
 # MailG
 
-MailG is an RL‑Gym designed to test and train AI models on mail and messaging workflows. It provides a controlled environment with end‑to‑end scenarios: composing, sending, replying/forwarding, threading, search, labels, settings, notifications, and attachments/embedded images. The UI, state, and data model simulate a modern email client while remaining fully local and deterministic.
-
----
-
-## Getting Started
+MailG is an RL‑Gym designed to test and train AI models on mail and messaging workflows.
 
 ### Prerequisites
 
@@ -411,21 +407,6 @@ Here are the main localStorage keys used during execution and their default/empt
 | **rightSidebarExpanded** | Right sidebar open/closed | `true` |
 | **rightSidebarActiveTab** | Right sidebar active tab state | `{ "contact": { "screen": "CONTACTS" }, "activeTab": null }` |
 
-#### Email Features
-
-| Key | Description | Default Value |
-| --- | --- | --- |
-| **sendAsSettings** | "Send mail as" display name and reply-to | `{ "displayName": "John Doe", "email": "john.doe@example.com", "replyTo": "" }` |
-| **signatures** | Email signatures configuration | `{ "list": [], "useForNewEmails": "", "useForRepliesAndForwards": "", "insertSignatureBeforeQuotedText": false }` |
-| **vacationResponder** | Vacation autoresponder settings | `{ "enabled": false, "firstDay": "", "lastDay": "", "subject": "", "message": "", "onlyContacts": false }` |
-
-#### Notifications & Privacy
-
-| Key | Description | Default Value |
-| --- | --- | --- |
-| **notificationSettings** | Notification preferences (GlobalContext) | `{ "type": "off", "sound": "1", "enabled": false }` |
-| **mailg-notification-settings** | Notification preferences (NotificationContext) | `{ "type": "off", "sound": "1", "enabled": false }` |
-| **privacySettings** | Privacy and data collection settings | `{ "analyticsEnabled": false, "crashReportsEnabled": false, "personalizationEnabled": false, "adsPersonalizationEnabled": true }` |
 
 #### Settings Tabs State
 
