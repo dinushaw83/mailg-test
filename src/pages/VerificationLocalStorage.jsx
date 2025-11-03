@@ -206,6 +206,12 @@ const VerificationLocalStorage = () => {
 
   // Refresh current config and recalculate diff
   const refreshConfig = useCallback(() => {
+    // ⛔ Skip until baseline is definitely ready
+    if (!window.initialConfig) {
+      console.log("⏸️ Skipping refresh — baseline not ready yet");
+      return;
+    }
+    
     const currentSnapshot = gatherLocalStorageConfig();
     window.currentConfig = currentSnapshot;
     setCurrentConfig(currentSnapshot);
