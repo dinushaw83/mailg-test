@@ -9,8 +9,15 @@
   position: absolute;
   display: flex;
   flex-direction: column;
+  z-index: 5;
+  border: 1px solid #dadce0a1;
 }
 
+.filterChips {
+  margin-left: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+}
 /* Modal Content */
 .modalContent {
   padding: 20px 24px 0;

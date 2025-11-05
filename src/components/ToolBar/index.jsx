@@ -383,7 +383,7 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
   const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
-  // Show a Gmail-like top-center yellow loading banner for ~2.5s
+  // Show top-center yellow loading banner for ~2.5s
   const manualEmailSync = useCallback(() => {
     setIsManualSyncing(true);
     // Increment the manual sync counter
@@ -420,7 +420,7 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
               top: 0,
               left: "50%",
               transform: "translateX(-50%)",
-              background: "#FEF7E0", // soft yellow similar to Gmail
+              background: "#FEF7E0", // soft yellow
               color: "#202124", // near-black text
               border: "1px solid #F1DE9A",
               borderRadius: 1,

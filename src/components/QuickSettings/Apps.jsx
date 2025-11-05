@@ -17,7 +17,7 @@ const Apps = () => {
             marginBottom: "1rem",
           }}
         >
-          Apps in Gmail
+          Apps in MailG
         </Typography>
         <Box
           sx={{

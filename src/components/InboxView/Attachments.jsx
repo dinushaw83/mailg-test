@@ -177,7 +177,7 @@ export const isCompressed = (attachment) => {
   );
 };
 
-const ScannedByGmail = () => {
+const ScannedByMailG = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
 
   const handlePopoverOpen = (event) => {
@@ -337,7 +337,7 @@ export const Attachments = ({ attachments = [] }) => {
         <AttachmentsScannedOuterContainer>
           <AttachmentsCountContainer>{count}</AttachmentsCountContainer>
           <Dot />
-          <ScannedByGmail />
+          <ScannedByMailG />
         </AttachmentsScannedOuterContainer>
         <AttachmentsHeaderActions />
       </AttachmentsHeaderContainer>

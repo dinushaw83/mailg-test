@@ -117,91 +117,99 @@ export default function useLabels() {
     [setLabels]
   );
 
-  // Rekey an entire subtree when a node is renamed
-  const renameLabel = useCallback(
-    (key, newName, newParentKey = undefined) => {
-      const nm = String(newName || "").trim();
-      if (!nm) return;
+  const renameLabel = useCallback((key, newName, newParentKey = undefined) => {
+    console.log("renameLabel", key, newName, newParentKey);
 
-      setLabels(prev => {
-        const cur = { ...(prev || {}) };
-        const lbl = cur[key];
-        if (!lbl) return prev;
+    const nm = String(newName || "").trim();
+    if (!nm) return;
 
-        const targetParent = newParentKey ?? lbl.parentKey;
-        const newKey = makeKey(nm, targetParent);
+    let oldToNew = new Map();
 
-        // prevent parent loops
-        if (newKey.startsWith(key + "::")) return prev;
+    setLabels(prev => {
+      const cur = { ...(prev || {}) };
+      const lbl = cur[key];
+      if (!lbl) return prev;
 
-        const dup = Object.entries(cur).some(([k, v]) =>
-          (v.parentKey ?? ROOT) === targetParent &&
-          (v.name || "").toLowerCase() === nm.toLowerCase() &&
-          k !== key
-        );
-        if (dup) return prev;
+      // Determine target parent (explicit override or existing)
+      const targetParent =
+        newParentKey === undefined ? lbl.parentKey ?? null : newParentKey;
 
-        if (newKey === key) {
-          cur[key] = { ...lbl, name: nm, parentKey: targetParent };
-          return cur;
+      // Prevent circular nesting (self or descendant)
+      if (targetParent === key || (targetParent && targetParent.startsWith(key + "::"))) {
+        console.warn("Invalid move: cannot nest label under its own descendant");
+        return prev;
+      }
+
+      // New key for renamed/moved label
+      const newKey = targetParent ? `${targetParent}::${nm}` : nm;
+      if (newKey === key) return prev;
+
+      // --- Build children index ---
+      const childrenByParent = {};
+      for (const [k, v] of Object.entries(cur)) {
+        const parsed = splitKey(k);
+        const p = (v.parentKey ?? parsed.parentKey ?? ROOT);
+        (childrenByParent[p] ||= []).push(k);
+      }
+
+      // --- BFS collect subtree ---
+      oldToNew = new Map();
+      const queue = [key];
+      oldToNew.set(key, newKey);
+
+      while (queue.length) {
+        const oldK = queue.shift();
+        const mappedParent = oldToNew.get(oldK);
+        const childKeys = childrenByParent[oldK] || [];
+        for (const ck of childKeys) {
+          const child = cur[ck];
+          const childName = (child?.name ?? splitKey(ck).name);
+          const childNewKey = `${mappedParent}::${childName}`;
+          oldToNew.set(ck, childNewKey);
+          queue.push(ck);
         }
+      }
 
-        // Build parent→children index
-        const childrenByParent = {};
-        for (const [k, v] of Object.entries(cur)) {
-          const p = v.parentKey ?? ROOT;
-          (childrenByParent[p] ||= []).push(k);
+      // --- Prevent collisions with existing labels outside the moved subtree ---
+      for (const [, newK] of oldToNew.entries()) {
+        if (cur[newK] && !oldToNew.has(newK)) {
+          console.warn("Invalid move: target path collides with an existing label", newK);
+          return prev;
         }
+      }
 
-        // Collect subtree
-        const oldToNew = new Map();
-        const queue = [key];
-        oldToNew.set(key, newKey);
+      // --- Rebuild map with corrected parent references ---
+      const next = { ...cur };
+      for (const [oldK, newK] of oldToNew.entries()) {
+        const node = cur[oldK];
+        if (!node) continue;
+        const oldParent = node.parentKey;
+        const newParent =
+          oldK === key
+            ? targetParent || null
+            : oldToNew.get(oldParent) || node.parentKey || null;
 
-        while (queue.length) {
-          const oldK = queue.shift();
-          const mappedParent = oldToNew.get(oldK);
-          const childKeys = childrenByParent[oldK] || [];
-          for (const ck of childKeys) {
-            const child = cur[ck];
-            const childNewKey = makeKey(child.name, mappedParent);
-            oldToNew.set(ck, childNewKey);
-            queue.push(ck);
-          }
-        }
+        next[newK] = {
+          ...node,
+          name: oldK === key ? nm : node.name,
+          parentKey: newParent,
+        };
+      }
 
-        // Apply changes
-        const next = { ...cur };
-        for (const [oldK, newK] of oldToNew.entries()) {
-          const v = next[oldK];
-          if (!v) continue;
-          const isRoot = oldK === key;
-          const newParent = isRoot ? targetParent : oldToNew.get(v.parentKey) || v.parentKey;
-          next[newK] = { ...v, name: isRoot ? nm : v.name, parentKey: newParent };
-        }
-        for (const oldK of oldToNew.keys()) {
-          delete next[oldK];
-        }
+      // Clean out the old keys
+      for (const oldK of oldToNew.keys()) delete next[oldK];
 
-        // Update emails
-        const renamedOldKey = key;
-        const renamedNewKey = newKey;
-        if (renamedOldKey !== renamedNewKey) {
-          setEmails(prevEmails =>
-            (prevEmails || []).map(m => ({
-              ...m,
-              labels: (m.labels || []).map(l =>
-                oldToNew.get(l) || l
-              ),
-            }))
-          );
-        }
+      return next;
+    });
 
-        return next;
-      });
-    },
-    [setLabels, setEmails]
-  );
+    // --- Sync email labels ---
+    setEmails(prevEmails =>
+      (prevEmails || []).map(m => ({
+        ...m,
+        labels: (m.labels || []).map(l => oldToNew.get(l) || l),
+      }))
+    );
+  }, [setLabels, setEmails]);
 
   const deleteLabel = useCallback(
     (key) => {
@@ -347,7 +355,7 @@ export default function useLabels() {
 
 
   return {
-    labels, 
+    labels,
     createLabel,
     renameLabel,
     deleteLabel,

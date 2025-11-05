@@ -7,7 +7,7 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
+import useLabels, { normalizeLabelName, getPathLabelFromKey } from "../../hooks/useLabels";
 import Button from "@mui/material/Button";
 
 export const Labels = ({
@@ -84,8 +84,8 @@ export const Labels = ({
 
     // Generate the message based on what actions were taken
     let message = "";
-    const normalizedAdd = labelsToAdd.map(normalizeLabelName);
-    const normalizedRemove = labelsToRemove.map(normalizeLabelName);
+    const normalizedAdd = labelsToAdd.map((key) => getPathLabelFromKey(labels, key));
+    const normalizedRemove = labelsToRemove.map((key) => getPathLabelFromKey(labels, key));
 
     if (labelsToRemove.length > 0 && labelsToAdd.length > 0) {
       // Both add and remove
@@ -224,7 +224,7 @@ export const Labels = ({
 
               const cycleState = (prev, baseline) => {
                 if (baseline === "indeterminate") {
-                  // Gmail 3-state cycle
+                  // 3-state cycle
                   if (prev === "indeterminate") return "checked";
                   if (prev === "checked") return "unchecked";
                   return baseline;
@@ -279,7 +279,7 @@ export const Labels = ({
                     sx={{ padding: "4px", pointerEvents: "none" }}
                   />
                   <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>
-                    {normalizeLabelName(label.key)}
+                    {getPathLabelFromKey(labels, label.key)}
                   </Typography>
                 </Box>
               );

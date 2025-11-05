@@ -29,6 +29,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
   const lastScheduledEmailRef = useRef(null);
 
   const handleSchedule = async ({
+    scheduleOption,
     to,
     cc,
     bcc,
@@ -104,6 +105,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
 
     // If all validations pass, schedule the email
     await scheduleEmail({
+      scheduleOption,
       to,
       cc,
       bcc,
@@ -130,14 +132,18 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     isDraft,
     scheduledDate,
     scheduledTime,
+    scheduleOption,
     attachments,
     embeddedImages,
   }) => {
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
-    const threadId = replyType && originalEmail ? originalEmail.threadId : generateThreadId();
-    const legacyThreadId = replyType && originalEmail ? originalEmail.legacyThreadId : generateLegacyThreadId();
+    const isReplyMode = replyType === "reply" || replyType === "replyAll";
+    const shouldReuseThread =
+      originalEmail && (isReplyMode || replyType === "forward");
+    const threadId = shouldReuseThread ? originalEmail.threadId : generateThreadId();
+    const legacyThreadId = shouldReuseThread ? originalEmail.legacyThreadId : generateLegacyThreadId();
     const timestamp = new Date().toISOString();
     const timeDisplay = new Date().toLocaleTimeString("en-US", {
       hour: "numeric",
@@ -177,7 +183,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     };
 
     // Add reply/forward reference if applicable
-    if (replyType === "reply" && originalEmail) {
+    if (isReplyMode && originalEmail) {
       newEmail.replyToEmailId = originalEmail.id;
     }
     if (replyType === "forward" && originalEmail) {
@@ -246,24 +252,68 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     // Show "Message scheduled" snackbar with specific date and time
     setTimeout(() => {
       // Format the scheduled date and time
-      const formatScheduledDateTime = (dateStr, timeStr) => {
-        const date = new Date(dateStr);
+      const formatScheduledDateTime = (dateStr, timeStr, scheduleOptionPayload) => {
+        const scheduleOption = scheduleOptionPayload.scheduleOption;
 
-        // Format date as "Mon, Sep 29"
-        const dateOptions = {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-        };
-        const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+        // Prefer ISO date from scheduleOption for accuracy
+        let date;
+        if (scheduleOption?.date) {
+          date = new Date(scheduleOption.date);
+        } else if (dateStr.includes("/")) {
+          const [day, month, year] = dateStr.split("/");
+          date = new Date(`${year}-${month}-${day} ${timeStr}`);
+        } else {
+          date = new Date(dateStr);
+        }
 
-        // Simply use the time string as-is
-        const formattedTime = timeStr;
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
 
-        return `${formattedDate}, ${formattedTime}`;
+        const isToday =
+          date.getDate() === today.getDate() &&
+          date.getMonth() === today.getMonth() &&
+          date.getFullYear() === today.getFullYear();
+
+        const isTomorrow =
+          date.getDate() === tomorrow.getDate() &&
+          date.getMonth() === tomorrow.getMonth() &&
+          date.getFullYear() === tomorrow.getFullYear();
+
+        // Preset logic (Tomorrow morning → "Tomorrow, 1:00 PM")
+        const isPreset =
+          !scheduleOption?.isCustom &&
+          scheduleOption?.label &&
+          (scheduleOption.label.toLowerCase().includes("tomorrow") ||
+            scheduleOption.label.toLowerCase().includes("morning") ||
+            scheduleOption.label.toLowerCase().includes("afternoon") ||
+            scheduleOption.label.toLowerCase().includes("evening"));
+
+        if (isPreset && isTomorrow) {
+          return `Tomorrow, ${timeStr}`;
+        }
+
+        // Custom schedule for today → only show time
+        if (scheduleOption?.isCustom && isToday) {
+          return timeStr;
+        }
+
+        // Custom or future date → show full formatted date + time
+        if (scheduleOption?.isCustom || !isToday) {
+          return date.toLocaleString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        }
+
+        return timeStr;
       };
 
-      const scheduledDateTime = formatScheduledDateTime(scheduledDate, scheduledTime);
+      const scheduledDateTime = formatScheduledDateTime(scheduledDate, scheduledTime, scheduleOption);
 
       setSnackbar({
         open: true,

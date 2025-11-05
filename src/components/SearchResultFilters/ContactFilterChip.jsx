@@ -29,7 +29,10 @@ export default function ContactFilterChip({ label, isActive, onFilterChange }) {
 
   // Process recipients - restructure and remove duplicates
   const recipients = useMemo(() => {
-    const restructured = restructureRecipients(globalRecipients.filter((recipient) => recipient.email));
+    const restructured = restructureRecipients([
+      ...globalRecipients.filter((recipient) => recipient.email),
+      loggedInUser,
+    ]);
     const seenEmails = new Set();
     return restructured.filter((recipient) => {
       const emailLower = recipient.email.toLowerCase();

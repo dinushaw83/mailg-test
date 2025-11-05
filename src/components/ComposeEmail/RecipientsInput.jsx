@@ -85,6 +85,18 @@ export default function RecipientsInput({
     };
     setSelectedRecipients(nextSelected);
 
+    // Auto-show CC field if there are CC recipients
+    if (cc && cc.length > 0) {
+      setShowCc(true);
+      setIsExpanded(true);
+    }
+
+    // Auto-show BCC field if there are BCC recipients
+    if (bcc && bcc.length > 0) {
+      setShowBcc(true);
+      setIsExpanded(true);
+    }
+
     // Only reset input values if all props are empty (form reset)
     const allPropsEmpty = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
     if (allPropsEmpty) {

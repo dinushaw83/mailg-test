@@ -96,7 +96,6 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   useCustomHotKeys({ emails: emailsWithReadStatus });
 
   /**
-   * Format the given timestamp similar to Gmail:
    * - If the timestamp is in the future, clamp it to the current time
    * - Show time in 24-hour format (HH:mm) if it's today
    * - Show "Mon DD" if it's earlier in the same year

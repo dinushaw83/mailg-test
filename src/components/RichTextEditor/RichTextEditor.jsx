@@ -137,7 +137,7 @@ export default function Editor({
 
           return new Promise((resolve) => {
             img.onload = () => {
-              // Scale down large images to max 562px (Gmail's behavior)
+              // Scale down large images to max 562px
               const maxSize = 562;
               let { width, height } = img;
 
@@ -446,6 +446,7 @@ export default function Editor({
   const handleSelectSchedule = (scheduleOption) => {
     if (onSchedule) {
       onSchedule({
+        scheduleOption: scheduleOption,
         scheduledDate: scheduleOption.date.toLocaleDateString(),
         scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
           hour: "numeric",
@@ -469,6 +470,7 @@ export default function Editor({
   const handleDateTimeSchedule = (scheduleOption) => {
     if (onSchedule) {
       onSchedule({
+        scheduleOption: scheduleOption,
         scheduledDate: scheduleOption.date.toLocaleDateString(),
         scheduledTime: scheduleOption.date.toLocaleTimeString("en-US", {
           hour: "numeric",
@@ -587,7 +589,7 @@ export default function Editor({
 
       db.put("attachments", { id, file });
 
-      // Show Gmail-style dark snackbar when any file is blocked
+      // Show dark snackbar when any file is blocked
       if (isBlocked) {
         setSnackbar({
           open: true,
@@ -1214,9 +1216,13 @@ export default function Editor({
                         >
                           <span
                             className="material-symbols-outlined"
-                            style={{ fontSize: "20px", color: "rgb(95, 99, 104)" }}
+                            style={{
+                              fontSize: "20px",
+                              color: "#1a73e8",
+                              verticalAlign: "middle",
+                            }}
                           >
-                            schedule
+                            cancel_schedule_send
                           </span>
                           Schedule send
                         </div>

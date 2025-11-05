@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useId } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { useContextMenu } from "react-contexify";
@@ -169,7 +169,7 @@ const OneColumnData = ({
             aria-pressed={email.starred}
             onClick={(e) => {
               e.stopPropagation();
-              toggleStar([email.id]);
+              handleStar([email.id], email.starred);
             }}
             sx={{
               color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
@@ -193,8 +193,6 @@ const OneColumnData = ({
   );
 };
 
-const MENU_ID = "row-item-menu";
-
 const useCustomHotKeys = ({
   focusedRowIndex,
   shortcutsOn,
@@ -202,7 +200,7 @@ const useCustomHotKeys = ({
   emails,
   handleClickRow,
   selection,
-  toggleStar,
+  handleStar,
   handleArchive,
   handleMuteAction,
   handleDelete,
@@ -252,7 +250,7 @@ const useCustomHotKeys = ({
   useHotkeys(shortcutsOn ? "s" : "", () => {
     if (focusedRowIndex >= 0 && Date.now() - lastStarAt.current > 1000 && Date.now() - lastGAt.current > 1000) {
       const threadId = emails[focusedRowIndex].threadId.split(":")[1];
-      toggleStar([threadId]);
+      handleStar([threadId], emails[focusedRowIndex].starred);
     }
   });
 
@@ -321,12 +319,20 @@ const Table = ({
   formatDate,
   setShowAdvancedMenu,
 }) => {
-  const { setPreviewEmailId, panelState, density, setSnackbar, setEmails, db, keyboardShortcuts } = useGlobalContext();
+  const uniqueMenuId = useId();
+  const MENU_ID = `row-item-menu-${uniqueMenuId}`;
+
+  const { setPreviewEmailId, panelState, density, setSnackbar, db, keyboardShortcuts } = useGlobalContext();
   const [ref, dimensions] = useElementDimensions();
   const { archive, moveToInbox, moveToTrash, markRead, snooze, toggleMuted, unsnooze, setImportant } = useMailActions();
   const snoozeAnchorElRef = useRef(null);
   const [contextRow, setContextRow] = useState(null);
-  const [focusedRowIndex, setFocusedRowIndex] = useState(0);
+  const [focusedRowIndex, setFocusedRowIndex] = useState(() => {
+    if (keyboardShortcuts === "shortcuts-on") {
+      return 0;
+    }
+    return -1;
+  });
 
   const [{ snoozeId, snoozeAnchorEl }, setState] = useState({
     snoozeId: null,
@@ -408,17 +414,22 @@ const Table = ({
         return;
       }
 
-      moveToTrash(threadIds);
+      const undo = moveToTrash(threadIds);
       setSnackbar({
         open: true,
-        message: threadIds.size > 1 ? `${threadIds.size} Conversations moved to Trash` : "Conversation moved to Trash.",
+        message:
+          threadIds.length > 1 ? `${threadIds.length} Conversations moved to Trash` : "Conversation moved to Trash.",
         autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              moveToInbox(threadIds);
+              if (typeof undo === "function") {
+                undo();
+              } else {
+                moveToInbox(threadIds);
+              }
               // Follow-up confirmation snackbar
               setSnackbar({
                 open: true,
@@ -433,7 +444,7 @@ const Table = ({
         ),
       });
     },
-    [moveToTrash, setSnackbar]
+    [moveToTrash, setSnackbar, moveToInbox, showNoConversationsSelectedSnackbar]
   );
 
   const bulkMarkRead = useCallback(
@@ -476,6 +487,39 @@ const Table = ({
     [markRead]
   );
 
+  const handleImportant = useCallback(
+    (ids, currentlyImportant) => {
+      toggleImportant(ids);
+
+      const message = currentlyImportant
+        ? "Conversation marked as not important."
+        : "Conversation marked as important.";
+
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              toggleImportant(ids);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [toggleImportant, setSnackbar]
+  );
+
   const bulkMarkImportant = useCallback(
     (threadIds, important = true) => {
       if (!threadIds.length) {
@@ -495,7 +539,7 @@ const Table = ({
       setSnackbar({
         open: true,
         message,
-        autoHideDuration: 3000,
+        autoHideDuration: 10000,
         action: (
           <Button
             size="small"
@@ -650,6 +694,36 @@ const Table = ({
     [snooze, selection, unsnooze, setSnackbar]
   );
 
+  const handleStar = useCallback(
+    (ids, isStarred) => {
+      toggleStar(ids);
+
+      const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
+      setSnackbar({
+        open: true,
+        message,
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            size="small"
+            onClick={() => {
+              toggleStar(ids);
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
+      });
+    },
+    [toggleStar, setSnackbar]
+  );
+
   const openInNewTab = async (e, attachment, db) => {
     e.stopPropagation();
     if (attachment.url.startsWith("/")) {
@@ -679,7 +753,7 @@ const Table = ({
     emails,
     handleClickRow,
     selection,
-    toggleStar,
+    handleStar,
     handleArchive,
     handleMuteAction,
     handleDelete,
@@ -760,7 +834,7 @@ const Table = ({
                     getSenderClassName={getSenderClassName}
                     index={index}
                     formatDate={formatDate}
-                    toggleStar={toggleStar}
+                    toggleStar={() => handleStar([email.id], email.starred)}
                     density={density}
                   />
                 ) : (
@@ -774,7 +848,7 @@ const Table = ({
                         className="T-Jo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleStar([email.id]);
+                          handleStar([email.id], email.starred);
                         }}
                         style={{
                           background: "transparent",
@@ -810,7 +884,7 @@ const Table = ({
                         data-is-important={email.important.toString()}
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleImportant && toggleImportant([email.id]);
+                          handleImportant && handleImportant([email.id], email.important);
                         }}
                       >
                         <div className="T-ays-a45 sf-hidden">

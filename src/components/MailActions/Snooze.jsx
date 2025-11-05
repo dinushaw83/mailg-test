@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, useMemo, Fragment } from "react";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
@@ -12,7 +12,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ActionMenuItem } from "./ActionMenuItem";
 import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import useMailActions from "../../hooks/useMailActions";
+import useMailActions, { makeMatch } from "../../hooks/useMailActions";
 
 const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateTime, onConfirm }) => {
   const [dateError, setDateError] = useState("");
@@ -211,7 +211,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
 };
 
 export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) => {
-  const { setSnackbar, selection } = useGlobalContext();
+  const { setSnackbar, selection, emails } = useGlobalContext();
   const { unsnooze } = useMailActions();
   const [calendarModalOpen, setCalendarModalOpen] = useState(false);
   const [selectedDateTime, setSelectedDateTime] = useState(new Date());
@@ -301,6 +301,52 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     onClose();
   };
 
+  // Check if any selected emails are snoozed
+  const hasSnoozedEmails = useMemo(() => {
+    if (!selectedIds?.length) return false;
+    const match = makeMatch(selectedIds);
+    return (emails || []).some((m) => match(m) && (m.snoozeUntil || (m.labels || []).includes("Snoozed")));
+  }, [selectedIds, emails]);
+
+  const handleUnsnooze = () => {
+    // Capture previous snooze times per email before unsnoozing
+    const prevSnoozeById = {};
+    const match = makeMatch(selectedIds);
+
+    (emails || []).forEach((m) => {
+      if (match(m) && m.snoozeUntil) {
+        prevSnoozeById[String(m.id)] = m.snoozeUntil;
+      }
+    });
+
+    unsnooze(selectedIds);
+    selection.clear();
+    setSnackbar({
+      open: true,
+      message: selectedIds.length > 1 ? `${selectedIds.length} conversations unsnoozed.` : "Conversation unsnoozed.",
+      autoHideDuration: 8000,
+      action: (
+        <Button
+          sx={{ textTransform: "none" }}
+          size="small"
+          onClick={() => {
+            // Re-apply previous snooze times per message
+            Object.entries(prevSnoozeById).forEach(([id, iso]) => {
+              const when = new Date(iso);
+              if (!isNaN(when.getTime())) {
+                snooze([id], when);
+              }
+            });
+            setSnackbar({ open: true, message: "Action undone.", autoHideDuration: 3000, action: null });
+          }}
+        >
+          Undo
+        </Button>
+      ),
+    });
+    onClose();
+  };
+
   return (
     <>
       <Popover
@@ -369,6 +415,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
           />
           <Divider sx={{ marginY: "6px" }} />
           <ActionMenuItem icon="calendar_month" label="Select date & time" onClick={handleCalendarOpen} />
+          {hasSnoozedEmails && <ActionMenuItem icon="cancel" label="Unsnooze" onClick={handleUnsnooze} />}
         </Box>
       </Popover>
 

@@ -78,8 +78,14 @@ const Recipient = ({ recipients = [] }) => {
     }
 
     // Check if email is present in contacts
-    const found = contacts.find((contact) => contact.emails.some((contactEmail) => contactEmail.value === email));
-
+    const found = contacts.find((contact) => {
+      const emailList = Array.isArray(contact.emails)
+        ? contact.emails
+        : contact.email
+          ? [{ value: contact.email }]
+          : [];
+      return emailList.some((contactEmail) => contactEmail.value === email);
+    });
     if (found) {
       // Return only the first name
       return found.name.split(" ")[0];
@@ -203,7 +209,14 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], onReply }
     }
 
     // Check if sender email is present in contacts emails array
-    const found = contacts.find((recipient) => (recipient.emails || []).some((email) => email.value === senderEmail));
+    const found = contacts.find((contact) => {
+      const emailList = Array.isArray(contact.emails)
+        ? contact.emails
+        : contact.email
+          ? [{ value: contact.email }]
+          : [];
+      return emailList.some((c) => c.value === senderEmail);
+    });
     if (found) {
       return found;
     }

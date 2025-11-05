@@ -10,6 +10,8 @@ import Button from "@mui/material/Button";
 import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { LabelsSubMenu } from "./LabelsSubMenu";
+import { useComposeModal } from "../../hooks/useComposeModal";
+import { restructureRecipients } from "../../utils/helperFunctions";
 
 const ContextMenu = ({
   menuId,
@@ -34,7 +36,8 @@ const ContextMenu = ({
 
   const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, addLabels, removeLabels, deleteForever } =
     useMailActions();
-  const { setSnackbar, emails, setEmails } = useGlobalContext();
+  const { setSnackbar, recipients, loggedInUser, emails, setEmails } = useGlobalContext();
+  const { addNewComposeWindow } = useComposeModal();
 
   const [isMovingToLabel, setIsMovingToLabel] = useState(true);
 
@@ -309,6 +312,155 @@ const ContextMenu = ({
     deleteForever(selectedMessageIds);
   }, [deleteForever, selectedMessageIds]);
 
+  // Helper function to create a custom recipient object
+  const createCustomRecipient = useCallback(
+    (name, email) => {
+      // If the email is the logged in user's email, then return the logged in user object
+      if (email === loggedInUser.email || loggedInUser.emails.some((emailObj) => emailObj.value === email)) {
+        return {
+          ...loggedInUser,
+          id: loggedInUser.email,
+        };
+      }
+
+      // Check if we can find the recipient in the global recipients list
+      const restructured = restructureRecipients(recipients.filter((recipient) => recipient.email));
+      const foundRecipient = restructured.find((r) => r.email === email);
+
+      if (foundRecipient) {
+        return foundRecipient;
+      }
+
+      // Create a custom recipient object
+      return {
+        id: `custom-${email}`,
+        name: name || email,
+        email: email,
+        avatar: null,
+        labels: [],
+      };
+    },
+    [loggedInUser, recipients]
+  );
+
+  const handleReply = useCallback(
+    (threadId) => {
+      if (!contextRow) return;
+
+      const sender = contextRow.from;
+      const recipientObj = createCustomRecipient(sender.name, sender.email);
+      const replySubject = contextRow.subject.startsWith("Re: ") ? contextRow.subject : `Re: ${contextRow.subject}`;
+
+      // Open compose window with reply fields
+      addNewComposeWindow(
+        null,
+        {
+          to: [recipientObj],
+          subject: replySubject,
+          replyingTo: contextRow,
+        },
+        true
+      );
+    },
+    [contextRow, createCustomRecipient, addNewComposeWindow]
+  );
+
+  const handleReplyAll = useCallback(
+    (threadId) => {
+      if (!contextRow) return;
+
+      const sender = contextRow.from;
+      const senderObj = createCustomRecipient(sender.name, sender.email);
+
+      // For reply all, put sender in TO
+      const toRecipients = [senderObj];
+
+      // Combine original to and cc lists, filter out the current user and the original sender
+      // Note: contextRow.to and contextRow.cc are arrays of email address strings
+      const allParticipants = [...(contextRow.to || []), ...(contextRow.cc || [])];
+
+      const ccRecipients = allParticipants
+        .filter((email) => {
+          // Filter out both the logged-in user and the original sender (already in TO)
+          return email !== loggedInUser.email && email !== sender.email;
+        })
+        .map((email) => createCustomRecipient(email, email));
+
+      const replySubject = contextRow.subject.startsWith("Re: ") ? contextRow.subject : `Re: ${contextRow.subject}`;
+
+      // Open compose window with reply all fields
+      addNewComposeWindow(
+        null,
+        {
+          to: toRecipients,
+          cc: ccRecipients,
+          subject: replySubject,
+          replyingTo: contextRow,
+        },
+        true
+      );
+    },
+    [contextRow, createCustomRecipient, addNewComposeWindow, loggedInUser]
+  );
+
+  const buildForwardedHeader = useCallback((email) => {
+    const recipientsList = (email.to || [])
+      .map((recipient) => {
+        if (typeof recipient === "string") {
+          return recipient;
+        }
+        return `${recipient.name || ""} <${recipient.email || ""}>`;
+      })
+      .join(", ");
+
+    const formattedDate = new Date(email.timestamp).toLocaleString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+
+    return `
+<p>
+<br /><br />
+---------- Forwarded message ---------<br />
+From: ${email.from.name} <${email.from.email}><br />
+Date: ${formattedDate}<br />
+Subject: ${email.subject}<br />
+To: ${recipientsList}<br />
+Cc: ${(email.cc || []).join(", ")}<br />
+<br /><br />
+${email.body || email.preview || ""}
+</p>`;
+  }, []);
+
+  const handleForward = useCallback(
+    (threadId) => {
+      if (!contextRow) return;
+
+      const forwardSubject = contextRow.subject.startsWith("Fwd: ") ? contextRow.subject : `Fwd: ${contextRow.subject}`;
+
+      // Build the forwarded header HTML
+      const forwardedHeader = buildForwardedHeader(contextRow);
+
+      // Open compose window with forward fields
+      addNewComposeWindow(
+        null,
+        {
+          to: [],
+          subject: forwardSubject,
+          content: forwardedHeader,
+          forwardingTo: contextRow,
+        },
+        true
+      );
+    },
+    [contextRow, buildForwardedHeader, addNewComposeWindow]
+  );
+
   const handleItemClick = ({ id, event, props }) => {
     const threadId = props.thread.threadId.split(":")[1];
     switch (id) {
@@ -337,6 +489,15 @@ const ContextMenu = ({
       case "delete_forever":
         handleDeleteForever();
         break;
+      case "reply":
+        handleReply(threadId);
+        break;
+      case "reply_all":
+        handleReplyAll(threadId);
+        break;
+      case "forward":
+        handleForward(threadId);
+        break;
       //etc...
     }
   };
@@ -349,25 +510,16 @@ const ContextMenu = ({
             id: "reply",
             label: "Reply",
             icon: "reply",
-            disabled: true,
           },
           {
             id: "reply_all",
             label: "Reply all",
             icon: "reply_all",
-            disabled: true,
           },
           {
             id: "forward",
             label: "Forward",
             icon: "forward",
-            disabled: true,
-          },
-          {
-            id: "forward_as_attachment",
-            label: "Forward as attachment",
-            icon: "attachment",
-            disabled: true,
           },
         ];
 
@@ -408,12 +560,6 @@ const ContextMenu = ({
       label: "Snooze",
       icon: "schedule",
     },
-    {
-      id: "add_to_tasks",
-      label: "Add to tasks",
-      icon: "task_alt",
-      disabled: true,
-    },
   ];
 
   return (
@@ -428,7 +574,7 @@ const ContextMenu = ({
         }}
       >
         {sectionOneItems.map((item) => (
-          <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
+          <Item key={item.id} id={item.id} onClick={handleItemClick} disabled={item.disabled}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
               {item.icon}
             </span>
@@ -439,7 +585,7 @@ const ContextMenu = ({
         {sectionOneItems.length > 0 && <Separator />}
 
         {sectionTwoItems.map((item) => (
-          <Item id={item.id} onClick={handleItemClick} disabled={item.disabled}>
+          <Item key={item.id} id={item.id} onClick={handleItemClick} disabled={item.disabled}>
             <span className="material-symbols-outlined" style={{ fontSize: "18px", marginRight: "8px" }}>
               {item.icon}
             </span>

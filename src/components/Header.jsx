@@ -190,7 +190,7 @@ const Header = () => {
                         <a
                           className="gb_B gb_Za gb_0"
                           aria-expanded="false"
-                          aria-label="Google Account: "
+                          aria-label="MailG Account: "
                           href="#"
                           tabIndex={0}
                           role="button"

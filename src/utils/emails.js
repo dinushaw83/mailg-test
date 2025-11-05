@@ -443,7 +443,7 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     for (let i = thread.messageIds.length - 1; i >= 0; i -= 1) {
       const msg = messagesById[thread.messageIds[i]];
       const isDraft = (msg.labels || []).some((l) => l.toLowerCase() === "drafts");
-      const fromPersonal = ((msg.from?.email || "").toLowerCase() === PERSONAL_EMAIL);
+      const fromPersonal = (msg.from?.email || "").toLowerCase() === PERSONAL_EMAIL;
       if (!isDraft && fromPersonal) {
         const toList = Array.isArray(msg.to) ? msg.to : [];
         if (!toList.length) return "";
@@ -506,11 +506,19 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
   });
 
   // Filter by label or folder semantics
-  const has = (row, name) => (row.labels || []).includes(name);
+  const has = (row, name) => {
+    // Handle both Sets and Arrays
+    const labels = row.labels;
+    if (labels instanceof Set) {
+      return labels.has(name);
+    }
+    return (labels || []).includes(name);
+  };
 
   let filtered = rows;
   if (label) {
-    filtered = filtered.filter((r) => has(r, label));
+    // Filter by label, but exclude Spam and Trash
+    filtered = filtered.filter((r) => has(r, label) && !has(r, "Spam") && !has(r, "Trash"));
   } else if (folder) {
     switch (folder) {
       case "inbox":

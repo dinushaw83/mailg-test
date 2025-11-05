@@ -32,7 +32,7 @@ const Swatch = styled("div")(({ theme, rgb, text }) => ({
   },
 }));
 
-function ColorCell({ rgb, text, check, onClick = () => { } }) {
+function ColorCell({ rgb, text, check, onClick = () => {} }) {
   return (
     <td role="gridcell" style={{ padding: 2, textAlign: "center" }} onClick={onClick}>
       <Swatch rgb={rgb} text={text} style={{ position: "relative" }}>
@@ -50,7 +50,9 @@ function ColorCell({ rgb, text, check, onClick = () => { } }) {
           >
             check
           </span>
-        ) : "a"}
+        ) : (
+          "a"
+        )}
       </Swatch>
     </td>
   );
@@ -69,11 +71,11 @@ export default function LabelItem({
   multipleLabels = [],
   setIsCreateLabelModalOpen = () => {},
   setDefaultParentKey = () => {},
-  setLabelDefaultName = () => { },
+  setLabelDefaultName = () => {},
   setLabelDefaultKey = () => {},
 }) {
   const { setLabelColor, labels, deleteLabel } = useLabels();
-  const { setLabels, setSnackbar } = useGlobalContext()
+  const { setLabels, setSnackbar } = useGlobalContext();
   const label = labels[labelKey];
   const selectedColor = label?.color;
 
@@ -129,7 +131,7 @@ export default function LabelItem({
   const closeColorMenuWithDelay = () => {
     timerRef.current = setTimeout(() => {
       setColorAnchorEl(null);
-    }, 500); // 250ms feels Gmail-like
+    }, 500);
   };
 
   const cancelClose = () => {
@@ -205,12 +207,12 @@ export default function LabelItem({
             expanded
               ? {}
               : {
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                overflowX: "hidden",
-                marginLeft: "20px",
-              }
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  overflowX: "hidden",
+                  marginLeft: "20px",
+                }
           }
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -232,21 +234,31 @@ export default function LabelItem({
                   aria-label={isOpen ? "Collapse" : "Expand"}
                   role="button"
                 >
-                  {!isOpen
-                    ? <Icon name="arrow_right" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
-                    : <Icon name="arrow_drop_down" style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }} />
-                  }
+                  {!isOpen ? (
+                    <Icon
+                      name="arrow_right"
+                      style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }}
+                    />
+                  ) : (
+                    <Icon
+                      name="arrow_drop_down"
+                      style={{ width: 12, height: 12, marginRight: "2px", marginLeft: "-16px", shape: "square" }}
+                    />
+                  )}
                 </span>
               )}
 
-              <div className="qj aEe qr" style={{ backgroundColor: selectedColor?.rgb, opacity: selectedColor?.rgb ? 1 : 0.5 }} />
+              <div
+                className="qj aEe qr"
+                style={{ backgroundColor: selectedColor?.rgb, opacity: selectedColor?.rgb ? 1 : 0.5 }}
+              />
 
               <div className="aio aip">
                 <span className="nU">{display}</span>
                 {count > 0 && !isHovered && <div className="bsU">{count}</div>}
               </div>
 
-              <div 
+              <div
                 className="nL aig group"
                 style={{
                   position: "absolute",
@@ -328,12 +340,12 @@ export default function LabelItem({
               <MenuItem
                 key={opt.key}
                 onClick={() => {
-                  setLabels(prev => {
+                  setLabels((prev) => {
                     const next = { ...prev };
                     next[labelKey] = { ...next[labelKey], inLabelList: opt.key };
                     return next;
                   });
-                  handleMenuClose()
+                  handleMenuClose();
                 }}
                 // selected={selected}
                 role="menuitemradio"
@@ -341,7 +353,9 @@ export default function LabelItem({
               >
                 <ListItemIcon sx={{ minWidth: 28 }}>
                   {selected && (
-                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
+                      check
+                    </span>
                   )}
                 </ListItemIcon>
                 <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
@@ -349,24 +363,22 @@ export default function LabelItem({
             );
           }),
 
-          <Divider key="label-list-divider" />
+          <Divider key="label-list-divider" />,
         ]}
 
-        <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
-          In message list
-        </Typography>
+        <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>In message list</Typography>
         {IN_MESSAGE_LIST.map((opt) => {
           const selected = inMessageList === opt.key;
           return (
             <MenuItem
               key={opt.key}
               onClick={() => {
-                setLabels(prev => {
+                setLabels((prev) => {
                   const next = { ...prev };
                   next[labelKey] = { ...next[labelKey], inMessageList: opt.key };
                   return next;
                 });
-                handleMenuClose()
+                handleMenuClose();
               }}
               // selected={selected}
               role="menuitemradio"
@@ -374,7 +386,9 @@ export default function LabelItem({
             >
               <ListItemIcon sx={{ minWidth: 28 }}>
                 {selected && (
-                  <span className="material-symbols-outlined" style={{ fontSize: 24 }}>check</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
+                    check
+                  </span>
                 )}
               </ListItemIcon>
               <ListItemText primary={<Typography fontSize={14}>{opt.label}</Typography>} />
@@ -385,25 +399,33 @@ export default function LabelItem({
         <Divider />
 
         <MenuItem>
-          <ListItemText primary={<Typography fontSize={14}>Edit</Typography>} sx={{ ml: 5 }} onClick={() => {
-            handleMenuClose()
-            setEditLabelModalOpen(true)
-          }} />
+          <ListItemText
+            primary={<Typography fontSize={14}>Edit</Typography>}
+            sx={{ ml: 5 }}
+            onClick={() => {
+              handleMenuClose();
+              setEditLabelModalOpen(true);
+            }}
+          />
         </MenuItem>
         <MenuItem>
-          <ListItemText primary={<Typography fontSize={14}>Remove label</Typography>} sx={{ ml: 5 }} onClick={() => {
-            handleMenuClose()
-            setRemoveModalOpen(true)
-          }} />
+          <ListItemText
+            primary={<Typography fontSize={14}>Remove label</Typography>}
+            sx={{ ml: 5 }}
+            onClick={() => {
+              handleMenuClose();
+              setRemoveModalOpen(true);
+            }}
+          />
         </MenuItem>
         <MenuItem>
           <ListItemText
             primary={<Typography fontSize={14}>Add sublabel</Typography>}
             sx={{ ml: 5 }}
             onClick={() => {
-              handleMenuClose()
-              setIsCreateLabelModalOpen(true)
-              setDefaultParentKey(labelKey)
+              handleMenuClose();
+              setIsCreateLabelModalOpen(true);
+              setDefaultParentKey(labelKey);
             }}
           />
         </MenuItem>
@@ -438,7 +460,7 @@ export default function LabelItem({
                         e.preventDefault();
                         setPendingColor(cell);
                         handleColorMenuClose();
-                        handleMenuClose()
+                        handleMenuClose();
                         if (hasChildren) {
                           setColorModalOpen(true);
                         } else {
@@ -486,31 +508,33 @@ export default function LabelItem({
 
           setSnackbar({
             open: true,
-            message: `${multipleLabels.length > 1
-              ? `${multipleLabels.length} labels were removed`
-              : `The label ${multipleLabels[0].fullPath} was removed.`}`,
-            action: (
-              null
-            ),
+            message: `${
+              multipleLabels.length > 1
+                ? `${multipleLabels.length} labels were removed`
+                : `The label ${multipleLabels[0].fullPath} was removed.`
+            }`,
+            action: null,
             autoHideDuration: 4000,
           });
         }}
       />
 
-      {editLabelModalOpen && <EditLabelDialog
-        open={editLabelModalOpen}
-        onClose={() => setEditLabelModalOpen(false)}
-        defaultParentKey={parentKey}
-        labelDefaultName={display}
-        labelDefaultKey={labelKey}
-        onAfterCreate={(name) => {
-          setSnackbar({
-            open: true,
-            message: `The label "${name}" was saved.`,
-            autoHideDuration: 4000,
-          });
-        }}
-      />}
+      {editLabelModalOpen && (
+        <EditLabelDialog
+          open={editLabelModalOpen}
+          onClose={() => setEditLabelModalOpen(false)}
+          defaultParentKey={parentKey}
+          labelDefaultName={display}
+          labelDefaultKey={labelKey}
+          onAfterCreate={(name) => {
+            setSnackbar({
+              open: true,
+              message: `The label "${name}" was saved.`,
+              autoHideDuration: 4000,
+            });
+          }}
+        />
+      )}
     </>
   );
 }

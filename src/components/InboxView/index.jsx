@@ -7,10 +7,29 @@ import { Content } from "./Content";
 import { Subject } from "./Subject";
 import { Box, Divider } from "@mui/material";
 import { getThread, getThreadRows } from "../../utils/emails";
+
+// Mapping of folder keys to display names for document title
+const FOLDER_DISPLAY_NAMES = {
+  inbox: "Inbox",
+  starred: "Starred",
+  snoozed: "Snoozed",
+  sent: "Sent",
+  drafts: "Drafts",
+  important: "Important",
+  chats: "Chats",
+  scheduled: "Scheduled",
+  all: "All Mail",
+  spam: "Spam",
+  trash: "Trash",
+};
+
+// Folders that should display unread count in document title
+const FOLDERS_WITH_UNREAD_COUNT = new Set(["inbox", "starred", "snoozed", "important", "chats", "all"]);
 import ComposeReply from "../ComposeReply/ComposeReply";
 import { PanelFooter } from "../EmailList/Footer";
 import useMailActions from "../../hooks/useMailActions";
 import QuickSettings from "../QuickSettings";
+import { normalizeLabelName } from "../../hooks/useLabels";
 
 const InboxViewContainer = styled.div`
   display: flex;
@@ -205,20 +224,43 @@ const InboxView = () => {
 
   useEffect(() => {
     if (!shouldMarkUnreadEmailsAsRead) return;
-    // Calculate total unread emails count based on unreadCount property from thread rows
-    const threads = getThreadRows(emails, { folder: "inbox" });
-    const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
-    const unreadText = unreadCount > 0 ? `(${unreadCount})` : "";
 
-    document.title = `Inbox ${unreadText} - ${loggedInUser.email} - MailG`;
+    // Build document title with email subject and folder/label context
+    if (thread && messageIds.length > 0) {
+      const messages = messageIds.map((id) => messagesById[id]);
+      const subject = messages[0]?.subject || "No Subject";
 
-    if (messageIds.length === 0) return;
+      // Get folder or label display name with unread count
+      let context = "";
+      if (label) {
+        // Handle label routes
+        const threads = getThreadRows(emails, { label });
+        const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
+        const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
+        context = ` - "${normalizeLabelName(label)}"${unreadText}`;
+      } else if (folder) {
+        // Handle folder routes
+        const folderDisplayName = FOLDER_DISPLAY_NAMES[folder] || folder;
 
-    // Mark unread emails in the email thread as read
-    const messages = messageIds.map((id) => messagesById[id]);
-    markUnreadEmailsAsRead(messages);
+        // Add unread count if applicable
+        if (FOLDERS_WITH_UNREAD_COUNT.has(folder)) {
+          const threads = getThreadRows(emails, { folder });
+          const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
+          const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
+          context = ` - ${folderDisplayName}${unreadText}`;
+        } else {
+          context = ` - ${folderDisplayName}`;
+        }
+      }
+
+      document.title = `${subject}${context} - ${loggedInUser.email} - MailG`;
+
+      // Mark unread emails in the email thread as read
+      markUnreadEmailsAsRead(messages);
+    }
+
     setShouldMarkUnreadEmailsAsRead(false);
-  }, [messageIds.length, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email]);
+  }, [messageIds.length, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email, folder, label, thread]);
 
   if (!thread) {
     // Determine the back link based on current context

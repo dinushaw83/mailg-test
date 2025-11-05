@@ -72,13 +72,25 @@ const LOCAL_STORAGE_KEYS = [
   "manualSyncCount",
 ];
 
+function safeParseLocalStorage(key) {
+  const raw = localStorage.getItem(key);
+  if (raw === null) return null;
+  if (raw.trim() === "") return {}; // Empty string → return an empty object
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.warn(`⚠️ Invalid JSON for "${key}", keeping raw string instead.`);
+    return raw; // fallback to string so diff doesn’t break
+  }
+}
+
 /**
  * Gathers all localStorage keys into a single consolidated object
  */
 const gatherLocalStorageConfig = () => {
   const config = {};
   LOCAL_STORAGE_KEYS.forEach((key) => {
-    const value = localStorage.getItem(key);
+    const value = safeParseLocalStorage(key);
     if (value !== null) {
       try {
         config[key] = JSON.parse(value);
@@ -126,6 +138,7 @@ const VerificationLocalStorage = () => {
   const [diffData, setDiffData] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize both configs on first mount
   useEffect(() => {
@@ -185,8 +198,32 @@ const VerificationLocalStorage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleBaselineReady = (e) => {
+      if (e.key === "__verification_baseline_ready__") {
+        const baseline = JSON.parse(localStorage.getItem("__verification_initial_config__"));
+        if (baseline) {
+          window.initialConfig = baseline;
+          setInitialConfigState(baseline);
+          const diff = generateConfigDiff(baseline, gatherLocalStorageConfig());
+          setDiffData(diff);
+          console.log("✅ Baseline ready signal received — verification dashboard synced.");
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleBaselineReady);
+    return () => window.removeEventListener("storage", handleBaselineReady);
+  }, []);
+
   // Refresh current config and recalculate diff
   const refreshConfig = useCallback(() => {
+    // ⛔ Skip until baseline is definitely ready
+    if (!window.initialConfig) {
+      console.log("⏸️ Skipping refresh — baseline not ready yet");
+      return;
+    }
+    
     const currentSnapshot = gatherLocalStorageConfig();
     window.currentConfig = currentSnapshot;
     setCurrentConfig(currentSnapshot);
@@ -222,7 +259,69 @@ const VerificationLocalStorage = () => {
     return () => clearInterval(interval);
   }, [refreshConfig]);
 
+  useEffect(() => {
+    const loadInitialFromStorage = () => {
+      try {
+        const raw = localStorage.getItem(VERIFICATION_INITIAL_CONFIG_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    };
+
+    const currentSnapshot = gatherLocalStorageConfig();
+    setCurrentConfig(currentSnapshot);
+    localStorage.setItem(VERIFICATION_CURRENT_CONFIG_KEY, JSON.stringify(currentSnapshot));
+
+    const initial = loadInitialFromStorage();
+    if (initial) {
+      setInitialConfigState(initial);
+      const diff = generateConfigDiff(initial, currentSnapshot);
+      setDiffData(diff);
+      setIsLoading(false); // ✅ Ready to show UI
+      return;
+    }
+
+    // Poll until baseline is ready
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts++;
+      const found = loadInitialFromStorage();
+      if (found) {
+        clearInterval(timer);
+        setInitialConfigState(found);
+        const diff = generateConfigDiff(found, gatherLocalStorageConfig());
+        setDiffData(diff);
+        setIsLoading(false); // ✅ Ready
+      } else if (attempts >= 80) {
+        console.warn("Still waiting for baseline...");
+      }
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  
   const hasDifferences = diffData?.hunks?.length > 0;
+
+  if (isLoading) {
+    return (
+      <div style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#1E40AF"
+      }}>
+        <h2>⏳ Waiting for baseline configuration...</h2>
+        <p style={{ color: "#6B7280" }}>
+          Please ensure the MailG web app is running — the verification dashboard will load automatically once the baseline is ready.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ flex: 1, overflowY: "auto", height: "calc(100vh - 64px)" }}>

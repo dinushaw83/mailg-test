@@ -269,6 +269,7 @@ ${email.body}
       isDraft: isDraft,
       scheduledDate: scheduleData.scheduledDate,
       scheduledTime: scheduleData.scheduledTime,
+      scheduleOption: scheduleData,
     });
   };
 
@@ -314,6 +315,25 @@ ${email.body}
       }
     }
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const dropdown = document.getElementById("reply-options");
+      const selectedOption = document.querySelector(".selected-option");
+
+      // If the dropdown is open and click is outside both the dropdown and trigger
+      if (
+        dropdown?.classList.contains("show") &&
+        !dropdown.contains(event.target) &&
+        !selectedOption.contains(event.target)
+      ) {
+        dropdown.classList.remove("show");
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   return (
     <>

@@ -6,7 +6,7 @@ import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import useLabels, { normalizeLabelName } from "../../hooks/useLabels";
+import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
 import Button from "@mui/material/Button";
 
 export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
@@ -51,10 +51,16 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     const labelsToAdd = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "checked");
     const labelsToRemove = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "unchecked");
 
-    const addedMessage = labelsToAdd.length > 0 ? `added to ${labelsToAdd.map(normalizeLabelName).join(", ")}` : "";
-    const removedMessage =
-      labelsToRemove.length > 0 ? `removed from ${labelsToRemove.map(normalizeLabelName).join(", ")}` : "";
+    const addedMessage =
+      labelsToAdd.length > 0
+        ? `added to ${labelsToAdd.map((key) => getPathLabelFromKey(labels, key)).join(", ")}`
+        : "";
 
+    const removedMessage =
+      labelsToRemove.length > 0
+        ? `removed from ${labelsToRemove.map((key) => getPathLabelFromKey(labels, key)).join(", ")}`
+        : "";
+    
     let message = "";
 
     if (labelsToAdd.length > 0 && labelsToRemove.length > 0) {
@@ -185,7 +191,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
 
             const cycleState = (prev, baseline) => {
               if (baseline === "indeterminate") {
-                // Gmail 3-state cycle
+                // 3-state toggle cycle like MailG
                 if (prev === "indeterminate") return "checked";
                 if (prev === "checked") return "unchecked";
                 return baseline;
@@ -241,7 +247,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
                   sx={{ padding: "4px", pointerEvents: "none" }}
                 />
                 <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>
-                  {normalizeLabelName(label.key)}
+                  {getPathLabelFromKey(labels, label.key)}
                 </Typography>
               </Box>
             );

@@ -582,6 +582,10 @@ export const GlobalContextProvider = ({ children }) => {
         const initialConfig = captureInitialConfig();
         localStorage.setItem(VERIFICATION_INITIAL_CONFIG_KEY, JSON.stringify(initialConfig));
         window.initialConfig = initialConfig;
+
+        // 🔔 NEW: signal to verification dashboard that baseline is ready
+        localStorage.setItem("__verification_baseline_ready__", Date.now().toString());
+
         console.log(
           allReady
             ? "📸 [GlobalContext] Initial config captured when all keys initialized."
@@ -594,6 +598,18 @@ export const GlobalContextProvider = ({ children }) => {
 
     return () => clearInterval(interval);
   }, []); // run once on mount
+  
+  // Once the local storage is wiped, then we need to reload out app
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === null) {
+        // localStorage.clear() happened elsewhere — go back to homepage
+        window.location.href = "/";
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const contextValue = {
     selection,

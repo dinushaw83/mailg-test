@@ -16,12 +16,14 @@ import {
   AdvancedSearchSelectHoverStyle,
   AdvancedSearchTextFieldInputStyle,
 } from "./constants";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
 
-const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref) => {
+const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigger }, ref) => {
   const navigate = useNavigate();
   const fromFieldRef = useRef(null);
   const location = useLocation();
   const [previousLocation, setPreviousLocation] = useState(null);
+  const { setSnackbar } = useGlobalContext();
 
   const getDefaultFormData = () => ({
     from: "",
@@ -163,31 +165,158 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
     }
   }, [isOpen]);
 
-  // Handle escape key to close modal
+  // Handle escape key to close modal and Enter key to submit
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleEscapeKey = (event) => {
+    const handleKeyPress = (event) => {
       if (event.key === "Escape" && isOpen) {
         onClose();
       }
+
+      // Handle Enter key to submit the form
+      if (event.key === "Enter" && isOpen) {
+        // Check if we're in a text field (not in EmailField which handles its own Enter)
+        const target = event.target;
+        const isInTextField = target.tagName === "INPUT" && target.type === "text";
+
+        // Only submit if in a regular text field (EmailField stops propagation)
+        if (isInTextField) {
+          // Check if form has any values (excluding default values)
+          const hasSearchCriteria =
+            formData.from.trim() ||
+            formData.to.trim() ||
+            formData.subject.trim() ||
+            formData.has.trim() ||
+            formData.hasnot.trim() ||
+            formData.size.trim() ||
+            formData.attachment ||
+            formData.excludeChats ||
+            formData.subset !== "All Mail";
+
+          // If no search criteria provided, show snackbar and return
+          if (!hasSearchCriteria) {
+            setSnackbar({
+              open: true,
+              message: "Invalid search query - returning all mail.",
+              autoHideDuration: 4000,
+            });
+          }
+
+          // Trigger search by calling the search handler
+          // Track advanced search query in localStorage
+          addAdvancedSearchQuery(formData);
+
+          // Set date to current date only if within field is changed and no date was chosen
+          const shouldDefaultDate = formData.within !== "1 day" && !formData.date;
+          const finalDate = shouldDefaultDate ? new Date().toISOString().split("T")[0] : formData.date;
+
+          // Create search criteria object
+          const searchCriteria = {
+            from: formData.from,
+            to: formData.to,
+            subject: formData.subject,
+            has: formData.has,
+            hasnot: formData.hasnot,
+            size: formData.size,
+            sizeOperator: formData.sizeOperator,
+            sizeUnit: formData.sizeUnit,
+            within: formData.within,
+            date: finalDate,
+            subset: formData.subset,
+            attachment: formData.attachment,
+            excludeChats: formData.excludeChats,
+          };
+
+          // Create a query string from the criteria
+          const queryParams = new URLSearchParams();
+
+          // Add non-empty criteria to query params (excluding default values)
+          const hasSize = searchCriteria.size && searchCriteria.size.trim();
+
+          Object.entries(searchCriteria).forEach(([key, value]) => {
+            // Skip default values that shouldn't be included in URL
+            // BUT include sizeOperator and sizeUnit if size is provided
+            const isDefaultValue =
+              (key === "subset" && value === "All Mail") ||
+              (key === "sizeOperator" && value === "less than" && !hasSize) ||
+              (key === "sizeUnit" && value === "MB" && !hasSize);
+
+            // Include boolean true values, non-empty strings, and other truthy values (but not default values)
+            if (!isDefaultValue && (value === true || (value && value !== ""))) {
+              // Convert sizeOperator spaces to underscores for URL
+              if (key === "sizeOperator") {
+                queryParams.append(key, value.replace(/ /g, "_"));
+              } else {
+                queryParams.append(key, value);
+              }
+            }
+          });
+
+          // Navigate to search results with advanced criteria
+          const queryString = queryParams.toString();
+          if (queryString) {
+            navigate(`/search/advanced?${queryString}`);
+          } else {
+            navigate(`/search/advanced`);
+          }
+
+          onClose();
+        }
+      }
     };
 
-    document.addEventListener("keydown", handleEscapeKey);
+    document.addEventListener("keydown", handleKeyPress);
 
-    return () => document.removeEventListener("keydown", handleEscapeKey);
-  }, [isOpen, onClose]);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [isOpen, onClose, formData, navigate, setSnackbar]);
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      // If changing the "within" field and no date is set, auto-populate with current date
+      if (field === "within" && value !== "1 day" && !prev.date) {
+        return {
+          ...prev,
+          [field]: value,
+          date: new Date().toISOString().split("T")[0],
+        };
+      }
+
+      return {
+        ...prev,
+        [field]: value,
+      };
+    });
   };
 
   const handleSearch = () => {
+    // Check if form has any values (excluding default values)
+    const hasSearchCriteria =
+      formData.from.trim() ||
+      formData.to.trim() ||
+      formData.subject.trim() ||
+      formData.has.trim() ||
+      formData.hasnot.trim() ||
+      formData.size.trim() ||
+      formData.attachment ||
+      formData.excludeChats ||
+      formData.subset !== "All Mail";
+
+    // If no search criteria provided, show snackbar and return
+    if (!hasSearchCriteria) {
+      setSnackbar({
+        open: true,
+        message: "Invalid search query - returning all mail.",
+        autoHideDuration: 4000,
+      });
+    }
+
     // Track advanced search query in localStorage
     addAdvancedSearchQuery(formData);
+
+    // Set date to current date only if within field is changed and no date was chosen
+    const shouldDefaultDate = formData.within !== "1 day" && !formData.date;
+    const finalDate = shouldDefaultDate ? new Date().toISOString().split("T")[0] : formData.date;
 
     // Create search criteria object
     const searchCriteria = {
@@ -200,7 +329,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
       sizeOperator: formData.sizeOperator,
       sizeUnit: formData.sizeUnit,
       within: formData.within,
-      date: formData.date,
+      date: finalDate,
       subset: formData.subset,
       attachment: formData.attachment,
       excludeChats: formData.excludeChats,
@@ -243,8 +372,6 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
   };
 
   const handleCreateFilter = () => {
-    // TODO: Implement create filter functionality
-    console.log("Create filter with:", formData);
     onClose();
   };
 
@@ -252,7 +379,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
 
   return (
     <ClickAwayListener onClickAway={onClose}>
-      <div className={styles.modal}>
+      <div className={`${styles.modal} ${trigger === "filter-chips" ? styles.filterChips : ""}`}>
         <div className={styles.modalContent}>
           {/* From */}
           <div className={styles.formRow}>
@@ -321,7 +448,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue }, ref)
           </div>
 
           {/* Size */}
-          <div className={styles.formRow}>
+          <div className={styles.formRow} style={{ width: "100%" }}>
             <label htmlFor="size" className={styles.label}>
               Size:
             </label>
