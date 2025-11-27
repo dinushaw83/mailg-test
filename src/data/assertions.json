@@ -1,0 +1,370 @@
+{
+  "MAILG-COMPOSE-SEND-001": {
+    "prompt": "Compose a new email addressed to david.kim@acelogistics.com, cc: sarah.johnson@northwindretail.com, bcc: compliance@company.com. Subject should be 'Q3 Financial Forecast Submission'. The message body: 'Hi David, please find attached the updated Q3 financial forecast. We've incorporated the recent adjustments in marketing spend and logistics costs. Kindly review and confirm if these align with your records. Best, Laura'. Send it immediately.",
+    "assertions": [
+      {
+        "title": "Email count increased after sending",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails",
+        "expected": 1,
+        "options": {
+          "op": ">="
+        }
+      },
+      {
+        "title": "New email exists with correct recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [
+          {
+            "to": ["david.kim@acelogistics.com"]
+          }
+        ],
+        "options": {
+          "mode": "some",
+          "matchBy": "key",
+          "key": "to"
+        }
+      },
+      {
+        "title": "Email has correct CC recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [
+          {
+            "cc": ["sarah.johnson@northwindretail.com"]
+          }
+        ],
+        "options": {
+          "mode": "some",
+          "matchBy": "key",
+          "key": "cc"
+        }
+      },
+      {
+        "title": "Email has correct BCC recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [
+          {
+            "bcc": ["compliance@company.com"]
+          }
+        ],
+        "options": {
+          "mode": "some",
+          "matchBy": "key",
+          "key": "bcc"
+        }
+      },
+      {
+        "title": "Email subject matches exactly",
+        "operator": "STRING_MATCH",
+        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].subject",
+        "expected": "Q3 Financial Forecast Submission",
+        "options": {
+          "caseInsensitive": false,
+          "trim": true
+        }
+      },
+      {
+        "title": "Email body contains key content",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].body",
+        "expected": "Q3 financial forecast",
+        "options": {
+          "caseInsensitive": true
+        }
+      },
+      {
+        "title": "Email has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].labels",
+        "expected": ["Sent"],
+        "options": {
+          "mode": "some"
+        }
+      },
+      {
+        "title": "Email has timestamp",
+        "operator": "EXISTS",
+        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].timestamp"
+      },
+      {
+        "title": "Email is from logged in user",
+        "operator": "STRING_MATCH",
+        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].from.email",
+        "expected": "john.doe@example.com",
+        "options": {
+          "caseInsensitive": true
+        }
+      }
+    ]
+  },
+  "MAILG-REPLY-FORWARD-002": {
+    "prompt": "Reply to the email thread from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT' with message: 'Hi Emma, thank you for flagging this. Our finance team has identified the issue and a corrected invoice has been generated. You should receive it today by 5 PM UTC. Apologies for the inconvenience.' Then forward the original email to finance@company.com with note: 'Please review the corrected invoice details.'",
+    "assertions": [
+      {
+        "title": "Reply email exists in thread",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [
+          {
+            "subject": "Re: Invoice mismatch - URGENT"
+          }
+        ],
+        "options": {
+          "mode": "some",
+          "matchBy": "key",
+          "key": "subject"
+        }
+      },
+      {
+        "title": "Reply body contains key message",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
+        "expected": "corrected invoice has been generated",
+        "options": {
+          "caseInsensitive": true
+        }
+      },
+      {
+        "title": "Reply is to correct recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].to",
+        "expected": ["emma.brown@techstream.com"],
+        "options": {
+          "mode": "some"
+        }
+      },
+      {
+        "title": "Forwarded email exists",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [
+          {
+            "to": ["finance@company.com"],
+            "subject": "Fwd: Invoice mismatch - URGENT"
+          }
+        ],
+        "options": {
+          "mode": "some",
+          "matchBy": "deep"
+        }
+      },
+      {
+        "title": "Forward body contains note",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.to[0]=='finance@company.com' && @.subject=='Fwd: Invoice mismatch - URGENT')].body",
+        "expected": "Please review the corrected invoice details",
+        "options": {
+          "caseInsensitive": true
+        }
+      },
+      {
+        "title": "Thread has multiple messages",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails[?(@.subject=~/Invoice mismatch - URGENT/ || @.subject=~/Re: Invoice mismatch - URGENT/ || @.subject=~/Fwd: Invoice mismatch - URGENT/)].*",
+        "expected": 2,
+        "options": {
+          "op": ">="
+        }
+      }
+    ]
+  },
+  "MAILG-ORGANIZE-LABELS-003": {
+    "prompt": "Archive the email from alex.green@northwindretail.com with subject 'Project Phoenix Kickoff Notes'. Add the label 'Projects/Phoenix' to it. Star the email from logistics.manager@acelogistics.com with subject 'Tracking update for Order #56789'. Remove the star from the thread 'Weekly HR Digest - September Week 2'.",
+    "assertions": [
+      {
+        "title": "Project Phoenix email has correct label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
+        "expected": ["Projects/Phoenix"],
+        "options": {
+          "mode": "some"
+        }
+      },
+      {
+        "title": "Project Phoenix email is not in Inbox",
+        "operator": "NOT_EXISTS",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes' && @.labels[?(@=='Inbox')])]"
+      },
+      {
+        "title": "Tracking email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Tracking update for Order #56789')].starred",
+        "expected": true
+      },
+      {
+        "title": "HR Digest is not starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Weekly HR Digest - September Week 2')].starred",
+        "expected": false
+      },
+      {
+        "title": "Project Phoenix email still exists in All Mail",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')]"
+      },
+      {
+        "title": "Tracking email has correct sender",
+        "operator": "STRING_MATCH",
+        "path": "emails[?(@.subject=='Tracking update for Order #56789')].from.email",
+        "expected": "logistics.manager@acelogistics.com",
+        "options": {
+          "caseInsensitive": true
+        }
+      }
+    ]
+  },
+  "MAILG-DRAFT-SCHEDULE-004": {
+    "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline' and body 'Hi Jane, here are the sections I plan to include in the proposal: 1) Market Overview, 2) Budget Estimates, 3) Implementation Plan. Please add your thoughts.' Save it as a draft. Then edit the draft to add cc: sarah.connor@company.com. Do not send.",
+    "assertions": [
+      {
+        "title": "Draft email exists",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [
+          {
+            "subject": "Draft: Proposal Outline"
+          }
+        ],
+        "options": {
+          "mode": "some",
+          "matchBy": "key",
+          "key": "subject"
+        }
+      },
+      {
+        "title": "Draft has correct recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].to",
+        "expected": ["jane.doe@northwindretail.com"],
+        "options": {
+          "mode": "some"
+        }
+      },
+      {
+        "title": "Draft has CC recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].cc",
+        "expected": ["sarah.connor@company.com"],
+        "options": {
+          "mode": "some"
+        }
+      },
+      {
+        "title": "Draft body contains key content",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].body",
+        "expected": "Market Overview",
+        "options": {
+          "caseInsensitive": true
+        }
+      },
+      {
+        "title": "Draft has Drafts label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].labels",
+        "expected": ["Drafts"],
+        "options": {
+          "mode": "some"
+        }
+      },
+      {
+        "title": "Draft is not in Sent",
+        "operator": "NOT_EXISTS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline' && @.labels[?(@=='Sent')])]"
+      },
+      {
+        "title": "Draft has timestamp",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].timestamp"
+      },
+      {
+        "title": "Draft body contains all sections",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].body",
+        "expected": "Implementation Plan",
+        "options": {
+          "caseInsensitive": true
+        }
+      }
+    ]
+  },
+  "MAILG-EMAIL-ANALYSIS-RDT-005": {
+    "prompt": "Analyze the current inbox and provide a summary that includes: 1) Total number of unread emails, 2) The sender who has sent the most emails, 3) The most recent email received, 4) Any emails marked as important, and 5) A brief analysis of email patterns (e.g., most active time period, common senders, etc.).",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of inbox statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "The model response should accurately report inbox statistics including unread count, most active sender, recent email details, and important email status.",
+        "expected_facts": [
+          {
+            "fact": "The total number of unread emails in the inbox",
+            "weight": 1
+          },
+          {
+            "fact": "The sender email address who has sent the most emails",
+            "weight": 1
+          },
+          {
+            "fact": "The subject line of the most recent email received",
+            "weight": 1
+          },
+          {
+            "fact": "Whether there are any emails marked as important (true/false)",
+            "weight": 1
+          },
+          {
+            "fact": "The timestamp or date of the most recent email",
+            "weight": 1
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality of email pattern analysis",
+        "operator": "REASONING_QUALITY",
+        "description": "The model should demonstrate logical reasoning when analyzing email patterns, identifying trends, and drawing valid conclusions about inbox activity.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies patterns in email activity (e.g., time periods, frequency)",
+            "weight": 1
+          },
+          {
+            "aspect": "Draws valid conclusions from the email data",
+            "weight": 1
+          },
+          {
+            "aspect": "Provides clear logical reasoning for identified patterns",
+            "weight": 1
+          },
+          {
+            "aspect": "Connects different pieces of information meaningfully",
+            "weight": 1
+          }
+        ],
+        "pass_threshold_percent": 75
+      },
+      {
+        "title": "Assess information precision of the analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "The model response should be precise, accurate, and focused on the task requirements without including irrelevant information or hallucinations.",
+        "expected_facts": [
+          "Unread email count is accurately reported",
+          "Most active sender is correctly identified",
+          "Most recent email details are precise",
+          "Important email status is accurately stated",
+          "Email pattern analysis is based on actual data"
+        ],
+        "expected_reasonings": [
+          "Analysis of email activity patterns",
+          "Identification of trends or commonalities",
+          "Logical connections between different email characteristics"
+        ],
+        "pass_threshold_percent": 75
+      }
+    ]
+  }
+}
+

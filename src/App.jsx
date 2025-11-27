@@ -8,6 +8,7 @@ import MailView from "./pages/MailView";
 import ComposeEmailWrapper from "./components/ComposeEmail/ComposeEmailWrapper";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import VerificationDashboard from "./pages/VerificationDashboard";
+import VerifyRawPage from "./pages/VerifyRawPage";
 import Settings from "./pages/Settings";
 import Contacts from "./pages/Contacts/Contacts";
 import Frequent from "./pages/Contacts/Frequent";
@@ -49,6 +50,9 @@ function App() {
 
             {/* Standalone verification page without Layout */}
             <Route path="/verify" element={<VerificationDashboard />} />
+
+            {/* Standalone verify_raw page without Layout */}
+            <Route path="/verify_raw" element={<VerifyRawPage />} />
 
             {/* All other routes wrapped in Layout */}
             <Route
