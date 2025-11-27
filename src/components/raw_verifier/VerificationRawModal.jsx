@@ -57,6 +57,7 @@ const VerificationRawModal = ({
   };
 
   useEffect(() => {
+    console.log("initialAssertions -> ", initialAssertions);
     if (isOpen && initialAssertions) {
       setAssertions(
         initialAssertions.map(assertion => ({
@@ -166,12 +167,42 @@ const VerificationRawModal = ({
       }
 
       // Call client-side API
-      const result = await getActualState(
-        promptId,
-        localStorageData,
-        JSON.stringify(assertion),
-        modelResponses[assertionIndex] || null
-      );
+      // const result = await getActualState(
+      //   promptId,
+      //   localStorageData,
+      //   JSON.stringify(assertion),
+      //   modelResponses[assertionIndex] || null
+      // );
+      // Convert localStorage data to a File object
+      const dataStr = JSON.stringify(localStorageData, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      const localStorageFile = new File([dataBlob], 'localStorage.json', {
+        type: 'application/json',
+      })
+
+      // Create form data for the API call
+      const formData = new FormData()
+      console.log("Prompt ID:", promptId)
+      formData.append('taskId', promptId)
+      formData.append('localStorageDump', localStorageFile)
+      formData.append('assertion', JSON.stringify(assertion))
+
+      // RDT-specific: Add model response only for RDT operators
+      if (requiresModelResponse(assertion.operator) && modelResponses[assertionIndex]) {
+        formData.append('modelResponse', modelResponses[assertionIndex])
+      }
+
+      // Call the get_actual_state endpoint
+      const response = await fetch('http://localhost:3004/api/v1/get_actual_state', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
 
       // Update assertion with the result
       setAssertions(prev =>
@@ -243,6 +274,7 @@ const VerificationRawModal = ({
   };
 
   const runAllAssertions = async () => {
+    console.log('Running all assertions');
     setIsRunning(true);
     setCompletedCount(0);
     addLogEntry(`Starting execution of ${assertions.length} assertions`);
@@ -265,6 +297,7 @@ const VerificationRawModal = ({
 
     addLogEntry(`Execution completed. All assertions have been processed.`);
     setIsRunning(false);
+    console.log('All assertions have been run -> ', assertions)
   };
 
   const clearResults = () => {
