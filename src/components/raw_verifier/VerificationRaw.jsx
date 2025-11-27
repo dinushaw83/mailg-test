@@ -11,20 +11,46 @@ const VerificationRaw = () => {
   const [assertions, setAssertions] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // useEffect(() => {
+  //   const fetchAssertions = async () => {
+  //     try {
+  //       const data = await getExpectedState();
+  //       setAssertions(data.verifiers || {});
+  //     } catch (error) {
+  //       console.error('Error fetching assertions:', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchAssertions();
+  // }, []);
   useEffect(() => {
     const fetchAssertions = async () => {
       try {
-        const data = await getExpectedState();
-        setAssertions(data.verifiers || {});
+        const response = await fetch('http://localhost:3004/api/v1/get_expected_state', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}) // No taskId = get all tasks
+        })
+        
+        console.log('Fetched assertions:', response, response.ok)
+        if (response.ok) {
+          const data = await response.json()
+          console.log('Fetched assertions:', data)
+          setAssertions(data.verifiers || {})
+        } else {
+          console.error('Failed to fetch assertions:', response.statusText)
+        }
       } catch (error) {
-        console.error('Error fetching assertions:', error);
+        console.error('Error fetching assertions:', error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchAssertions();
-  }, []);
+    fetchAssertions()
+  }, [])
 
   useEffect(() => {
     document.title = "Raw Verifier - Mailg";
@@ -35,6 +61,7 @@ const VerificationRaw = () => {
   const currentIndex = selectedPrompt ? promptIds.indexOf(selectedPrompt.promptId) : -1;
 
   const handleOpenVerifier = (promptId) => {
+    console.log('Opening verifier for promptId:', promptId, assertions[promptId]);
     if (assertions[promptId]) {
       setSelectedPrompt({
         promptId,
@@ -98,6 +125,8 @@ const VerificationRaw = () => {
     window.location.reload();
   };
 
+  console.log('Assertions loaded:', assertions);
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
       {/* Header Component */}
@@ -112,7 +141,7 @@ const VerificationRaw = () => {
       />
 
       {/* Content Area */}
-      <Box sx={{ pt: 12, pb: 4 }}>
+      <Box sx={{ pt: 20, pb: 4 }}>
         <Box sx={{ maxWidth: '1200px', mx: 'auto', px: 3 }}>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>

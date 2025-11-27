@@ -1,13 +1,20 @@
-const fs = require('fs');
-const path = require('path');
-const { deepParseJson, resolvePath } = require('../../lib/utils/path-resolver');
+// const fs = require('fs');
+import { readFileSync } from 'fs';
+// const path = require('path');
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Recreate __dirname and __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+import { deepParseJson, resolvePath } from '../../lib/utils/path-resolver.js';
 
 // Load tasks.json
-const tasksPath = path.join(__dirname, '../../data/tasks.json');
+const tasksPath = path.join(__dirname, '../../data/assertions.json');
 let tasksData = {};
 
 try {
-  const rawData = fs.readFileSync(tasksPath, 'utf8');
+  const rawData = readFileSync(tasksPath, 'utf8');
   tasksData = JSON.parse(rawData);
 } catch (error) {
   console.error('Error loading tasks.json:', error);
@@ -18,7 +25,7 @@ const judgesPath = path.join(__dirname, '../../data/judges.json');
 let judgesData = {};
 
 try {
-  const rawData = fs.readFileSync(judgesPath, 'utf8');
+  const rawData = readFileSync(judgesPath, 'utf8');
   judgesData = JSON.parse(rawData);
 } catch (error) {
   console.error('Error loading judges.json:', error);
@@ -33,7 +40,6 @@ try {
 } catch (error) {
   // Expected: TypeScript files can't be loaded directly by Node.js
   // Falling back to JavaScript implementations of basic operators
-  console.log('ℹ️  Using JavaScript fallback operators (TypeScript files not compiled)');
   assertionOperators = createBasicOperators();
 }
 
@@ -390,4 +396,4 @@ async function getActualState(req, res) {
   }
 }
 
-module.exports = getActualState;
+export default getActualState;
