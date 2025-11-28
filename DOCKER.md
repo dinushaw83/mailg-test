@@ -57,6 +57,7 @@ Once running, access:
 The Docker container runs **TWO processes** using PM2:
 
 1. **Frontend (Vite Preview)** - Port 3000
+
    - Serves the built static files
    - Production-optimized build
 
@@ -154,12 +155,14 @@ curl http://localhost:3001/api/health
 ## Key Changes from Original Dockerfile
 
 ### ❌ OLD (Not Working)
+
 - Used nginx
 - Exposed port 80
 - Only served static files
 - No API server
 
 ### ✅ NEW (Working)
+
 - Uses Node.js directly
 - Exposes ports 3000 & 3001
 - Runs both frontend AND API
@@ -171,15 +174,19 @@ curl http://localhost:3001/api/health
 ## Development vs Production
 
 ### Development (Local)
+
 ```bash
 npm run dev
 ```
+
 Runs Vite dev server + API with hot reload
 
 ### Production (Docker)
+
 ```bash
 docker-compose up
 ```
+
 Runs built static files + API server
 
 ---
@@ -235,3 +242,4 @@ docker rmi mailg
 - Health check monitors API server availability
 - Frontend is built during image creation for faster startup
 - No nginx means simpler architecture and easier debugging
+- Use Docker Compose if necessary

@@ -1,20 +1,29 @@
+import { readFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Recreate __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // RDT operators that require model response input
 export const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
 
-// Import judges statically
-import judgesData from '../../data/judges.json' with { type: 'json' };
+// Load judges.json
+const judgesPath = path.join(__dirname, '../../data/judges.json');
+const judgesData = JSON.parse(readFileSync(judgesPath, 'utf8'));
 
 // Handle new RDT framework assertions
 const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   const judges = judgesData;
-  
-  const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
-  const OPENROUTER_URL = import.meta.env.VITE_OPENROUTER_URL;
-  const OPENROUTER_MODEL = import.meta.env.VITE_OPENROUTER_MODEL;
+
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+  const OPENROUTER_URL = process.env.OPENROUTER_URL;
+  const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL;
 
   if (!OPENROUTER_URL || !OPENROUTER_API_KEY || !OPENROUTER_MODEL) {
     throw new Error(
-      'Missing required environment variables: VITE_OPENROUTER_URL, VITE_OPENROUTER_API_KEY, or VITE_OPENROUTER_MODEL'
+      'Missing required environment variables: OPENROUTER_URL, OPENROUTER_API_KEY, or OPENROUTER_MODEL'
     );
   }
 
