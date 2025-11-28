@@ -115,40 +115,14 @@ export default function ComposeEmail({ composeWindow }) {
     }
   }, [defaultSignatureHTML, currentDraftId, signaturesState?.insertSignatureBeforeQuotedText]);
 
-  // Handle window focus to update URL
+  // Handle window focus - DISABLED navigate() calls to prevent focus-stealing re-renders
   const handleWindowFocus = (e) => {
-    // Skip if window is already focused (internal click)
-    if (isWindowFocusedRef.current) {
-      return;
-    }
-    isWindowFocusedRef.current = true;
-
-    const urlParams = new URLSearchParams(location.search);
-    const currentComposeParam = urlParams.get("compose");
-
-    // Only update if the URL doesn't already match this window
-    if (currentDraftId && currentComposeParam !== currentDraftId.toString()) {
-      urlParams.set("compose", currentDraftId.toString());
-      navigate(`${location.pathname}?${urlParams.toString()}`, { replace: true });
-    } else if (!currentDraftId && currentComposeParam !== "new") {
-      urlParams.set("compose", "new");
-      navigate(`${location.pathname}?${urlParams.toString()}`, { replace: true });
-    }
+    // Do nothing - navigate() was causing flicker by triggering re-renders
   };
 
-  // Handle window blur to reset focus tracking
-  // Only reset if focus is moving OUTSIDE the compose modal
+  // Handle window blur - DISABLED to prevent focus issues
   const handleWindowBlur = (e) => {
-    // Check if the new focus target is still inside this compose modal
-    const composeModa = e.currentTarget;
-    const newFocusTarget = e.relatedTarget;
-    
-    // If focus is moving to an element inside this modal, don't reset
-    if (newFocusTarget && composeModa.contains(newFocusTarget)) {
-      return;
-    }
-    
-    isWindowFocusedRef.current = false;
+    // Do nothing
   };
 
   // Create custom recipient for valid email
