@@ -1,8 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const path = require('path');
-require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const multer = require('multer');
+// const path = require('path');
+// require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import dotenv from 'dotenv';
+import getActualStateRoute from './src/api/v1/get_actual_state.js';
+import getExpectedStateRoute from './src/api/v1/get_expected_state.js';
+dotenv.config();
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -13,8 +20,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Import API routes
-const getExpectedStateRoute = require('./src/api/v1/get_expected_state');
-const getActualStateRoute = require('./src/api/v1/get_actual_state');
+// const getExpectedStateRoute = require('./src/api/v1/get_expected_state');
+// const getActualStateRoute = require('./src/api/v1/get_actual_state');
 
 // API Routes
 app.post('/api/v1/get_expected_state', getExpectedStateRoute);
@@ -35,4 +42,4 @@ app.listen(PORT, () => {
   console.log(`   POST http://localhost:${PORT}/api/v1/get_actual_state`);
 });
 
-module.exports = app;
+export default app;
