@@ -1,6 +1,7 @@
 {
   "MAILG-COMPOSE-SEND-001": {
     "prompt": "Compose a new email addressed to david.kim@acelogistics.com, cc: sarah.johnson@northwindretail.com, bcc: compliance@company.com. Subject should be 'Q3 Financial Forecast Submission'. The message body: 'Hi David, please find attached the updated Q3 financial forecast. We've incorporated the recent adjustments in marketing spend and logistics costs. Kindly review and confirm if these align with your records. Best, Laura'. Send it immediately.",
+    "isPrimary": true,
     "assertions": [
       {
         "title": "Email count increased after sending",
@@ -102,6 +103,7 @@
   },
   "MAILG-REPLY-FORWARD-002": {
     "prompt": "Reply to the email thread from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT' with message: 'Hi Emma, thank you for flagging this. Our finance team has identified the issue and a corrected invoice has been generated. You should receive it today by 5 PM UTC. Apologies for the inconvenience.' Then forward the original email to finance@company.com with note: 'Please review the corrected invoice details.'",
+    "isPrimary": true,
     "assertions": [
       {
         "title": "Reply email exists in thread",
@@ -173,6 +175,7 @@
   },
   "MAILG-ORGANIZE-LABELS-003": {
     "prompt": "Archive the email from alex.green@northwindretail.com with subject 'Project Phoenix Kickoff Notes'. Add the label 'Projects/Phoenix' to it. Star the email from logistics.manager@acelogistics.com with subject 'Tracking update for Order #56789'. Remove the star from the thread 'Weekly HR Digest - September Week 2'.",
+    "isPrimary": true,
     "assertions": [
       {
         "title": "Project Phoenix email has correct label",
@@ -218,6 +221,7 @@
   },
   "MAILG-DRAFT-SCHEDULE-004": {
     "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline' and body 'Hi Jane, here are the sections I plan to include in the proposal: 1) Market Overview, 2) Budget Estimates, 3) Implementation Plan. Please add your thoughts.' Save it as a draft. Then edit the draft to add cc: sarah.connor@company.com. Do not send.",
+    "isPrimary": true,
     "assertions": [
       {
         "title": "Draft email exists",
@@ -291,78 +295,42 @@
       }
     ]
   },
-  "MAILG-EMAIL-ANALYSIS-RDT-005": {
-    "prompt": "Analyze the current inbox and provide a summary that includes: 1) Total number of unread emails, 2) The sender who has sent the most emails, 3) The most recent email received, 4) Any emails marked as important, and 5) A brief analysis of email patterns (e.g., most active time period, common senders, etc.).",
+  "MAILG-DELETE-TRASH-005": {
+    "prompt": "Delete the email from newsletters@techdigest.com with subject 'Weekly Tech Roundup - Issue #42'. Move it to Trash. Then permanently delete the email from spam@promotions.net with subject 'You Won a Prize!' from the Trash folder.",
+    "isPrimary": true,
     "assertions": [
       {
-        "title": "Verify factual accuracy of inbox statistics",
-        "operator": "FACTUAL_VERIFICATION",
-        "description": "The model response should accurately report inbox statistics including unread count, most active sender, recent email details, and important email status.",
-        "expected_facts": [
-          {
-            "fact": "The total number of unread emails in the inbox",
-            "weight": 1
-          },
-          {
-            "fact": "The sender email address who has sent the most emails",
-            "weight": 1
-          },
-          {
-            "fact": "The subject line of the most recent email received",
-            "weight": 1
-          },
-          {
-            "fact": "Whether there are any emails marked as important (true/false)",
-            "weight": 1
-          },
-          {
-            "fact": "The timestamp or date of the most recent email",
-            "weight": 1
-          }
-        ],
-        "pass_threshold_percent": 80
+        "title": "Tech Roundup email moved to Trash",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].labels",
+        "expected": ["Trash"],
+        "options": {
+          "mode": "some"
+        }
       },
       {
-        "title": "Evaluate reasoning quality of email pattern analysis",
-        "operator": "REASONING_QUALITY",
-        "description": "The model should demonstrate logical reasoning when analyzing email patterns, identifying trends, and drawing valid conclusions about inbox activity.",
-        "aspects": [
-          {
-            "aspect": "Correctly identifies patterns in email activity (e.g., time periods, frequency)",
-            "weight": 1
-          },
-          {
-            "aspect": "Draws valid conclusions from the email data",
-            "weight": 1
-          },
-          {
-            "aspect": "Provides clear logical reasoning for identified patterns",
-            "weight": 1
-          },
-          {
-            "aspect": "Connects different pieces of information meaningfully",
-            "weight": 1
-          }
-        ],
-        "pass_threshold_percent": 75
+        "title": "Tech Roundup email not in Inbox",
+        "operator": "NOT_EXISTS",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42' && @.labels[?(@=='Inbox')])]"
       },
       {
-        "title": "Assess information precision of the analysis",
-        "operator": "INFORMATION_PRECISION",
-        "description": "The model response should be precise, accurate, and focused on the task requirements without including irrelevant information or hallucinations.",
-        "expected_facts": [
-          "Unread email count is accurately reported",
-          "Most active sender is correctly identified",
-          "Most recent email details are precise",
-          "Important email status is accurately stated",
-          "Email pattern analysis is based on actual data"
-        ],
-        "expected_reasonings": [
-          "Analysis of email activity patterns",
-          "Identification of trends or commonalities",
-          "Logical connections between different email characteristics"
-        ],
-        "pass_threshold_percent": 75
+        "title": "Spam email permanently deleted",
+        "operator": "NOT_EXISTS",
+        "path": "emails[?(@.subject=='You Won a Prize!')]"
+      },
+      {
+        "title": "Tech Roundup email still exists in system",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')]"
+      },
+      {
+        "title": "Trash folder contains at least one email",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails[?(@.labels[?(@=='Trash')])]",
+        "expected": 1,
+        "options": {
+          "op": ">="
+        }
       }
     ]
   }

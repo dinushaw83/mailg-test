@@ -161,20 +161,35 @@ export default function RecipientsInput({
         const bccWithInput = [...selectedRecipients.bcc];
 
         // Add input text as custom recipients only if they are valid emails
+        // Track which fields had valid emails added so we can clear their input values
+        let clearedTo = false;
+        let clearedCc = false;
+        let clearedBcc = false;
+
         if (inputValues.to.trim() && isValidEmail(inputValues.to.trim())) {
           toWithInput.push(createCustomRecipient(inputValues.to.trim()));
+          clearedTo = true;
         }
         if (inputValues.cc.trim() && isValidEmail(inputValues.cc.trim())) {
           ccWithInput.push(createCustomRecipient(inputValues.cc.trim()));
+          clearedCc = true;
         }
         if (inputValues.bcc.trim() && isValidEmail(inputValues.bcc.trim())) {
           bccWithInput.push(createCustomRecipient(inputValues.bcc.trim()));
+          clearedBcc = true;
         }
 
-        // Pass both chips and raw input text for validation
-        onToChange(toWithInput, inputValues.to.trim());
-        onCcChange(ccWithInput, inputValues.cc.trim());
-        onBccChange(bccWithInput, inputValues.bcc.trim());
+        // Clear input values that were converted to chips to prevent duplication
+        setInputValues((prev) => ({
+          to: clearedTo ? "" : prev.to,
+          cc: clearedCc ? "" : prev.cc,
+          bcc: clearedBcc ? "" : prev.bcc,
+        }));
+
+        // Pass both chips and raw input text for validation (empty string if converted to chip)
+        onToChange(toWithInput, clearedTo ? "" : inputValues.to.trim());
+        onCcChange(ccWithInput, clearedCc ? "" : inputValues.cc.trim());
+        onBccChange(bccWithInput, clearedBcc ? "" : inputValues.bcc.trim());
 
         validateRecipients({ to: toWithInput, cc: ccWithInput, bcc: bccWithInput }, inputValues);
 
