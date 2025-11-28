@@ -161,51 +161,30 @@
       }
     ]
   },
-  "MAILG-DELETE-TRASH-005": {
-    "prompt": "Move the email with subject 'Weekly Tech Roundup - Issue #42' to Trash.",
+  "MAILG-FORWARD-EMAIL-005": {
+    "prompt": "Forward the email with subject 'Invoice mismatch - URGENT' to manager@company.com with note 'Please review this invoice discrepancy'.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Email exists",
+        "title": "Forwarded email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Weekly Tech Roundup - Issue #42"}],
+        "expected": [{"subject": "Fwd: Invoice mismatch - URGENT"}],
         "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Trash label exists",
+        "title": "Email to manager@company.com exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"labels": ["Trash"]}],
-        "options": {"mode": "some", "matchBy": "key", "key": "labels"}
+        "expected": [{"to": ["manager@company.com"]}],
+        "options": {"mode": "some", "matchBy": "key", "key": "to"}
       },
       {
-        "title": "At least one email exists",
+        "title": "Total emails count valid",
         "operator": "ARRAY_LENGTH",
         "path": "emails",
         "expected": 1,
         "options": {"op": ">="}
-      },
-      {
-        "title": "Email is marked as read",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"read": true}],
-        "options": {"mode": "some", "matchBy": "key", "key": "read"}
-      },
-      {
-        "title": "Email is not starred",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"starred": false}],
-        "options": {"mode": "some", "matchBy": "key", "key": "starred"}
-      },
-      {
-        "title": "Email is not important",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"important": false}],
-        "options": {"mode": "some", "matchBy": "key", "key": "important"}
       }
     ]
   }

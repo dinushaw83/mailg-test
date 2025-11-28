@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:api\"",
+    "dev": "concurrently --kill-others-on-fail --kill-others --raw \"npm run dev:vite\" \"npm run dev:api\"",
     "dev:vite": "vite",
     "dev:api": "node server.js",
     "build": "vite build",
