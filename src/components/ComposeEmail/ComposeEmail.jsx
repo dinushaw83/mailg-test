@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useContext, useLayoutEffect } from "react";
+import React, { useState, useEffect, useMemo, useContext, useLayoutEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@mui/material";
 import RichTextEditor from "../RichTextEditor/RichTextEditor";
@@ -49,6 +49,9 @@ export default function ComposeEmail({ composeWindow }) {
     cc: "",
     bcc: "",
   });
+
+  // Track if window is already focused to prevent unnecessary navigation
+  const isWindowFocusedRef = useRef(false);
 
   const replyingToEmail = composeWindow?.fields?.replyingTo || null;
   const forwardingEmail = composeWindow?.fields?.forwardingTo || null;
@@ -112,19 +115,14 @@ export default function ComposeEmail({ composeWindow }) {
     }
   }, [defaultSignatureHTML, currentDraftId, signaturesState?.insertSignatureBeforeQuotedText]);
 
-  // Handle window focus to update URL
-  const handleWindowFocus = () => {
-    const urlParams = new URLSearchParams(location.search);
-    const currentComposeParam = urlParams.get("compose");
+  // Handle window focus - DISABLED navigate() calls to prevent focus-stealing re-renders
+  const handleWindowFocus = (e) => {
+    // Do nothing - navigate() was causing flicker by triggering re-renders
+  };
 
-    // Only update if the URL doesn't already match this window
-    if (currentDraftId && currentComposeParam !== currentDraftId.toString()) {
-      urlParams.set("compose", currentDraftId.toString());
-      navigate(`${location.pathname}?${urlParams.toString()}`);
-    } else if (!currentDraftId && currentComposeParam !== "new") {
-      urlParams.set("compose", "new");
-      navigate(`${location.pathname}?${urlParams.toString()}`);
-    }
+  // Handle window blur - DISABLED to prevent focus issues
+  const handleWindowBlur = (e) => {
+    // Do nothing
   };
 
   // Create custom recipient for valid email
@@ -398,6 +396,7 @@ export default function ComposeEmail({ composeWindow }) {
           right: `${composeModalRightPosition}px`,
         }}
         onFocus={handleWindowFocus}
+        onBlur={handleWindowBlur}
         tabIndex={-1}
         data-compose-id={composeWindow.id}
       >

@@ -1,12 +1,19 @@
-const fs = require('fs');
-const path = require('path');
+// const fs = require('fs');
+import { readFileSync } from 'fs';
+// const path = require('path');
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Recreate __dirname and __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load tasks.json (equivalent to assertions.json in Mira)
-const tasksPath = path.join(__dirname, '../../data/tasks.json');
+const tasksPath = path.join(__dirname, '../../data/assertions.json');
 let tasksData = {};
 
 try {
-  const rawData = fs.readFileSync(tasksPath, 'utf8');
+  const rawData = readFileSync(tasksPath, 'utf8');
   tasksData = JSON.parse(rawData);
 } catch (error) {
   console.error('Error loading tasks.json:', error);
@@ -100,4 +107,4 @@ async function getExpectedState(req, res) {
   }
 }
 
-module.exports = getExpectedState;
+export default getExpectedState;

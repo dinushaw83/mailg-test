@@ -1,36 +1,45 @@
-# -------- Build Stage --------
-FROM node:18-alpine AS build
+# Use Node.js LTS version
+FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-# Or if using yarn:
-# COPY package.json yarn.lock ./
 
-# Install dependencies
+# Install ALL dependencies (including devDependencies for build)
 RUN npm install
-# Or: RUN yarn install
 
-# Copy the rest of the app
+# Copy application files
 COPY . .
 
-# Build the app
+# Build the Vite frontend
 RUN npm run build
-# Or: RUN yarn build
 
-# -------- Production Stage --------
-FROM nginx:alpine
+# Expose ports
+# 3000 - Frontend (Vite preview)
+# 3001 - API server
+EXPOSE 3000 3001
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Install PM2 to run multiple processes
+RUN npm install -g pm2
 
-# Copy the build output to nginx html directory
-COPY --from=build /app/dist /usr/share/nginx/html
+# Create PM2 ecosystem config
+RUN echo "module.exports = { \
+  apps: [ \
+    { \
+      name: 'frontend', \
+      script: 'npx', \
+      args: 'vite preview --host 0.0.0.0 --port 3000', \
+      cwd: '/app' \
+    }, \
+    { \
+      name: 'api', \
+      script: 'server.js', \
+      cwd: '/app' \
+    } \
+  ] \
+}" > ecosystem.config.js
 
-# Expose port 80
-EXPOSE 80
-
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+# Start both servers using PM2
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]

@@ -60,4 +60,3 @@ const convertPathToBracketNotation = (path) => {
 
   return result;
 };
-

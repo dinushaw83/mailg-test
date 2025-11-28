@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mailg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mailg-app
+    ports:
+      - "3000:3000"  # Frontend
+      - "3001:3001"  # API
+    environment:
+      - NODE_ENV=production
+      - API_PORT=3001
+      - VITE_RUN_MODE=localstorage
+      # Add your OpenRouter credentials here or use .env file
+      # - OPENROUTER_API_KEY=your_key_here
+      # - OPENROUTER_URL=https://openrouter.ai/api/v1/chat/completions
+      # - OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
