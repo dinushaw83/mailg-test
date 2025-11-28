@@ -1,25 +1,22 @@
-import { readFileSync } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Recreate __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 // RDT operators that require model response input
 export const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
 
-// Load judges.json
-const judgesPath = path.join(__dirname, '../../data/judges.json');
-const judgesData = JSON.parse(readFileSync(judgesPath, 'utf8'));
+// Import judges.json - Node.js v22+ requires 'with { type: "json" }'
+// Vite should handle this syntax, but if it doesn't, we may need a fallback
+// Note: Server-side code (get_actual_state.js) loads judges.json separately using readFileSync
+import judgesDataRaw from '../../data/judges.json' with { type: 'json' };
+
+// Handle both default export and named export formats
+const judgesData = judgesDataRaw.default || judgesDataRaw;
 
 // Handle new RDT framework assertions
 const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   const judges = judgesData;
 
-  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-  const OPENROUTER_URL = process.env.OPENROUTER_URL;
-  const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL;
+  // Use import.meta.env for client-side (Vite), fallback to process.env for server-side
+  const OPENROUTER_API_KEY = import.meta.env?.VITE_OPENROUTER_API_KEY || process.env?.OPENROUTER_API_KEY;
+  const OPENROUTER_URL = import.meta.env?.VITE_OPENROUTER_URL || process.env?.OPENROUTER_URL;
+  const OPENROUTER_MODEL = import.meta.env?.VITE_OPENROUTER_MODEL || process.env?.OPENROUTER_MODEL;
 
   if (!OPENROUTER_URL || !OPENROUTER_API_KEY || !OPENROUTER_MODEL) {
     throw new Error(

@@ -25,8 +25,17 @@ export const deepParseJson = (jsonString) => {
 export const resolvePath = (data, path) => {
   if (!path || !data) return undefined;
   try {
-    const convertedPath = convertPathToBracketNotation(path);
-    const result = JSONPath({ path: `$.${convertedPath}`, json: data });
+    // If path contains JSONPath filter expressions, use as-is
+    // Otherwise, convert to bracket notation for paths with hyphens
+    let jsonPath;
+    if (path.includes('[?') || path.includes('(@')) {
+      // Path contains filter expression - use as-is with $ prefix
+      jsonPath = path.startsWith('$') ? path : `$.${path}`;
+    } else {
+      const convertedPath = convertPathToBracketNotation(path);
+      jsonPath = `$.${convertedPath}`;
+    }
+    const result = JSONPath({ path: jsonPath, json: data });
     return result[0];
   } catch (e) {
     console.error('Invalid path:', e);
