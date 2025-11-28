@@ -2,7 +2,7 @@
 export const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
 
 // Import judges statically
-import judgesData from '../../data/judges.json';
+import judgesData from '../../data/judges.json' with { type: 'json' };
 
 // Handle new RDT framework assertions
 const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
@@ -163,7 +163,8 @@ export const matchingOperators = {
     const compareItems = (actualItem, expectedItem) => {
       if (matchBy === 'key' && key) {
         if (typeof actualItem === 'object' && actualItem !== null) {
-          return actualItem[key] === expectedItem[key];
+          // Use JSON.stringify for proper comparison of arrays/objects
+          return JSON.stringify(actualItem[key]) === JSON.stringify(expectedItem[key]);
         }
         return false;
       } else {

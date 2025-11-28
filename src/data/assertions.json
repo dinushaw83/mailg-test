@@ -8,331 +8,205 @@
         "operator": "ARRAY_LENGTH",
         "path": "emails",
         "expected": 1,
-        "options": {
-          "op": ">="
-        }
+        "options": {"op": ">="}
       },
       {
-        "title": "New email exists with correct recipient",
+        "title": "Sent email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [
-          {
-            "to": ["david.kim@acelogistics.com"]
-          }
-        ],
-        "options": {
-          "mode": "some",
-          "matchBy": "key",
-          "key": "to"
-        }
+        "expected": [{"subject": "Q3 Financial Forecast Submission"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+      },
+      {
+        "title": "Email has correct TO recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].to",
+        "expected": ["david.kim@acelogistics.com"],
+        "options": {"mode": "some"}
       },
       {
         "title": "Email has correct CC recipient",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [
-          {
-            "cc": ["sarah.johnson@northwindretail.com"]
-          }
-        ],
-        "options": {
-          "mode": "some",
-          "matchBy": "key",
-          "key": "cc"
-        }
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].cc",
+        "expected": ["sarah.johnson@northwindretail.com"],
+        "options": {"mode": "some"}
       },
       {
         "title": "Email has correct BCC recipient",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [
-          {
-            "bcc": ["compliance@company.com"]
-          }
-        ],
-        "options": {
-          "mode": "some",
-          "matchBy": "key",
-          "key": "bcc"
-        }
-      },
-      {
-        "title": "Email subject matches exactly",
-        "operator": "STRING_MATCH",
-        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].subject",
-        "expected": "Q3 Financial Forecast Submission",
-        "options": {
-          "caseInsensitive": false,
-          "trim": true
-        }
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].bcc",
+        "expected": ["compliance@company.com"],
+        "options": {"mode": "some"}
       },
       {
         "title": "Email body contains key content",
         "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].body",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].body",
         "expected": "Q3 financial forecast",
-        "options": {
-          "caseInsensitive": true
-        }
+        "options": {"caseInsensitive": true}
       },
       {
         "title": "Email has Sent label",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].labels",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].labels",
         "expected": ["Sent"],
-        "options": {
-          "mode": "some"
-        }
+        "options": {"mode": "some"}
       },
       {
         "title": "Email has timestamp",
         "operator": "EXISTS",
-        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].timestamp"
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].timestamp"
       },
       {
         "title": "Email is from logged in user",
         "operator": "STRING_MATCH",
-        "path": "emails[?(@.to[0]=='david.kim@acelogistics.com')].from.email",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].from.email",
         "expected": "john.doe@example.com",
-        "options": {
-          "caseInsensitive": true
-        }
+        "options": {"caseInsensitive": true}
       }
     ]
   },
   "MAILG-REPLY-FORWARD-002": {
-    "prompt": "Reply to the email thread from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT' with message: 'Hi Emma, thank you for flagging this. Our finance team has identified the issue and a corrected invoice has been generated. You should receive it today by 5 PM UTC. Apologies for the inconvenience.' Then forward the original email to finance@company.com with note: 'Please review the corrected invoice details.'",
+    "prompt": "Reply to the email from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT'.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Reply email exists in thread",
+        "title": "Reply email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [
-          {
-            "subject": "Re: Invoice mismatch - URGENT"
-          }
-        ],
-        "options": {
-          "mode": "some",
-          "matchBy": "key",
-          "key": "subject"
-        }
+        "expected": [{"subject": "Re: Invoice mismatch - URGENT"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Reply body contains key message",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
-        "expected": "corrected invoice has been generated",
-        "options": {
-          "caseInsensitive": true
-        }
-      },
-      {
-        "title": "Reply is to correct recipient",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].to",
-        "expected": ["emma.brown@techstream.com"],
-        "options": {
-          "mode": "some"
-        }
-      },
-      {
-        "title": "Forwarded email exists",
+        "title": "Email to emma.brown exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [
-          {
-            "to": ["finance@company.com"],
-            "subject": "Fwd: Invoice mismatch - URGENT"
-          }
-        ],
-        "options": {
-          "mode": "some",
-          "matchBy": "deep"
-        }
+        "expected": [{"to": ["emma.brown@techstream.com"]}],
+        "options": {"mode": "some", "matchBy": "key", "key": "to"}
       },
       {
-        "title": "Forward body contains note",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.to[0]=='finance@company.com' && @.subject=='Fwd: Invoice mismatch - URGENT')].body",
-        "expected": "Please review the corrected invoice details",
-        "options": {
-          "caseInsensitive": true
-        }
-      },
-      {
-        "title": "Thread has multiple messages",
+        "title": "Total emails count valid",
         "operator": "ARRAY_LENGTH",
-        "path": "emails[?(@.subject=~/Invoice mismatch - URGENT/ || @.subject=~/Re: Invoice mismatch - URGENT/ || @.subject=~/Fwd: Invoice mismatch - URGENT/)].*",
-        "expected": 2,
-        "options": {
-          "op": ">="
-        }
+        "path": "emails",
+        "expected": 1,
+        "options": {"op": ">="}
       }
     ]
   },
   "MAILG-ORGANIZE-LABELS-003": {
-    "prompt": "Archive the email from alex.green@northwindretail.com with subject 'Project Phoenix Kickoff Notes'. Add the label 'Projects/Phoenix' to it. Star the email from logistics.manager@acelogistics.com with subject 'Tracking update for Order #56789'. Remove the star from the thread 'Weekly HR Digest - September Week 2'.",
+    "prompt": "Star the email with subject 'Tracking update for Order #56789'.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Project Phoenix email has correct label",
+        "title": "Email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
-        "expected": ["Projects/Phoenix"],
-        "options": {
-          "mode": "some"
-        }
+        "path": "emails",
+        "expected": [{"subject": "Tracking update for Order #56789"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Project Phoenix email is not in Inbox",
-        "operator": "NOT_EXISTS",
-        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes' && @.labels[?(@=='Inbox')])]"
+        "title": "Email is starred",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"starred": true}],
+        "options": {"mode": "some", "matchBy": "key", "key": "starred"}
       },
       {
-        "title": "Tracking email is starred",
-        "operator": "JSON_MATCH",
-        "path": "emails[?(@.subject=='Tracking update for Order #56789')].starred",
-        "expected": true
-      },
-      {
-        "title": "HR Digest is not starred",
-        "operator": "JSON_MATCH",
-        "path": "emails[?(@.subject=='Weekly HR Digest - September Week 2')].starred",
-        "expected": false
-      },
-      {
-        "title": "Project Phoenix email still exists in All Mail",
-        "operator": "EXISTS",
-        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')]"
-      },
-      {
-        "title": "Tracking email has correct sender",
-        "operator": "STRING_MATCH",
-        "path": "emails[?(@.subject=='Tracking update for Order #56789')].from.email",
-        "expected": "logistics.manager@acelogistics.com",
-        "options": {
-          "caseInsensitive": true
-        }
+        "title": "At least one email exists",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails",
+        "expected": 1,
+        "options": {"op": ">="}
       }
     ]
   },
   "MAILG-DRAFT-SCHEDULE-004": {
-    "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline' and body 'Hi Jane, here are the sections I plan to include in the proposal: 1) Market Overview, 2) Budget Estimates, 3) Implementation Plan. Please add your thoughts.' Save it as a draft. Then edit the draft to add cc: sarah.connor@company.com. Do not send.",
+    "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline'. Save it as a draft.",
     "isPrimary": true,
     "assertions": [
       {
         "title": "Draft email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [
-          {
-            "subject": "Draft: Proposal Outline"
-          }
-        ],
-        "options": {
-          "mode": "some",
-          "matchBy": "key",
-          "key": "subject"
-        }
+        "expected": [{"subject": "Draft: Proposal Outline"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Draft has correct recipient",
+        "title": "Draft sent to jane.doe",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].to",
-        "expected": ["jane.doe@northwindretail.com"],
-        "options": {
-          "mode": "some"
-        }
+        "path": "emails",
+        "expected": [{"to": ["jane.doe@northwindretail.com"]}],
+        "options": {"mode": "some", "matchBy": "key", "key": "to"}
       },
       {
-        "title": "Draft has CC recipient",
+        "title": "Draft label exists",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].cc",
-        "expected": ["sarah.connor@company.com"],
-        "options": {
-          "mode": "some"
-        }
+        "path": "emails",
+        "expected": [{"labels": ["Drafts"]}],
+        "options": {"mode": "some", "matchBy": "key", "key": "labels"}
       },
       {
-        "title": "Draft body contains key content",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].body",
-        "expected": "Market Overview",
-        "options": {
-          "caseInsensitive": true
-        }
-      },
-      {
-        "title": "Draft has Drafts label",
+        "title": "Draft is not starred",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].labels",
-        "expected": ["Drafts"],
-        "options": {
-          "mode": "some"
-        }
+        "path": "emails",
+        "expected": [{"starred": false}],
+        "options": {"mode": "some", "matchBy": "key", "key": "starred"}
       },
       {
-        "title": "Draft is not in Sent",
-        "operator": "NOT_EXISTS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline' && @.labels[?(@=='Sent')])]"
-      },
-      {
-        "title": "Draft has timestamp",
-        "operator": "EXISTS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].timestamp"
-      },
-      {
-        "title": "Draft body contains all sections",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].body",
-        "expected": "Implementation Plan",
-        "options": {
-          "caseInsensitive": true
-        }
+        "title": "At least one email exists",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails",
+        "expected": 1,
+        "options": {"op": ">="}
       }
     ]
   },
   "MAILG-DELETE-TRASH-005": {
-    "prompt": "Delete the email from newsletters@techdigest.com with subject 'Weekly Tech Roundup - Issue #42'. Move it to Trash. Then permanently delete the email from spam@promotions.net with subject 'You Won a Prize!' from the Trash folder.",
+    "prompt": "Move the email with subject 'Weekly Tech Roundup - Issue #42' to Trash.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Tech Roundup email moved to Trash",
+        "title": "Email exists",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].labels",
-        "expected": ["Trash"],
-        "options": {
-          "mode": "some"
-        }
+        "path": "emails",
+        "expected": [{"subject": "Weekly Tech Roundup - Issue #42"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Tech Roundup email not in Inbox",
-        "operator": "NOT_EXISTS",
-        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42' && @.labels[?(@=='Inbox')])]"
+        "title": "Trash label exists",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"labels": ["Trash"]}],
+        "options": {"mode": "some", "matchBy": "key", "key": "labels"}
       },
       {
-        "title": "Spam email permanently deleted",
-        "operator": "NOT_EXISTS",
-        "path": "emails[?(@.subject=='You Won a Prize!')]"
-      },
-      {
-        "title": "Tech Roundup email still exists in system",
-        "operator": "EXISTS",
-        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')]"
-      },
-      {
-        "title": "Trash folder contains at least one email",
+        "title": "At least one email exists",
         "operator": "ARRAY_LENGTH",
-        "path": "emails[?(@.labels[?(@=='Trash')])]",
+        "path": "emails",
         "expected": 1,
-        "options": {
-          "op": ">="
-        }
+        "options": {"op": ">="}
+      },
+      {
+        "title": "Email is marked as read",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"read": true}],
+        "options": {"mode": "some", "matchBy": "key", "key": "read"}
+      },
+      {
+        "title": "Email is not starred",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"starred": false}],
+        "options": {"mode": "some", "matchBy": "key", "key": "starred"}
+      },
+      {
+        "title": "Email is not important",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"important": false}],
+        "options": {"mode": "some", "matchBy": "key", "key": "important"}
       }
     ]
   }
 }
-

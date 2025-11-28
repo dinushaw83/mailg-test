@@ -34,12 +34,26 @@ app.get('/api/health', (req, res) => {
 
 const PORT = process.env.API_PORT || 3001;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`✅ Mailg API server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🔍 Endpoints:`);
   console.log(`   POST http://localhost:${PORT}/api/v1/get_expected_state`);
   console.log(`   POST http://localhost:${PORT}/api/v1/get_actual_state`);
+  console.log(`\n🔄 Server is listening... (press Ctrl+C to stop)`);
+});
+
+// Handle errors
+server.on('error', (err) => {
+  console.error('Server error:', err);
+});
+
+// Keep process alive
+process.on('SIGINT', () => {
+  console.log('\n👋 Shutting down server...');
+  server.close(() => {
+    process.exit(0);
+  });
 });
 
 export default app;
