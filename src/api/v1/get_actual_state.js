@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { deepParseJson, resolvePath } from '../../lib/utils/path-resolver.js';
+import { existenceOperators, matchingOperators } from '../../lib/utils/assertion-operators.js';
 
 // Load tasks.json
 const tasksPath = path.join(__dirname, '../../data/assertions.json');
@@ -31,72 +32,14 @@ try {
   console.error('Error loading judges.json:', error);
 }
 
-// Import assertion operators
-// We'll use require with a try-catch since these might be TypeScript files
-let assertionOperators;
-try {
-  // Try to load the JavaScript operators if they exist
-  assertionOperators = require('../../lib/utils/assertion-operators');
-} catch (error) {
-  // Expected: TypeScript files can't be loaded directly by Node.js
-  // Falling back to JavaScript implementations of basic operators
-  assertionOperators = createBasicOperators();
-}
+// Import assertion operators using ES Module syntax
+const assertionOperators = {
+  existenceOperators,
+  matchingOperators,
+};
 
 // RDT operators that require model response
 const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
-
-/**
- * Create basic assertion operators as fallback
- */
-function createBasicOperators() {
-  return {
-    existenceOperators: {
-      EXISTS: (actual) => actual !== undefined && actual !== null,
-      NOT_EXISTS: (actual) => actual === undefined || actual === null,
-    },
-    matchingOperators: {
-      JSON_MATCH: (actual, expected) => JSON.stringify(actual) === JSON.stringify(expected),
-      STRING_MATCH: (actual, expected, options = {}) => {
-        if (typeof actual !== 'string' || typeof expected !== 'string') return false;
-        let actualStr = actual;
-        let expectedStr = expected;
-        if (options.trim) {
-          actualStr = actualStr.trim();
-          expectedStr = expectedStr.trim();
-        }
-        if (options.caseInsensitive) {
-          actualStr = actualStr.toLowerCase();
-          expectedStr = expectedStr.toLowerCase();
-        }
-        return actualStr === expectedStr;
-      },
-      STRING_CONTAINS: (actual, expected, options = {}) => {
-        if (typeof actual !== 'string' || typeof expected !== 'string') return false;
-        let actualStr = actual;
-        let expectedStr = expected;
-        if (options.caseInsensitive) {
-          actualStr = actualStr.toLowerCase();
-          expectedStr = expectedStr.toLowerCase();
-        }
-        return actualStr.includes(expectedStr);
-      },
-      ARRAY_LENGTH: (actual, expected, options = {}) => {
-        if (!Array.isArray(actual)) return false;
-        const op = options.op || '==';
-        const actualLength = actual.length;
-        switch (op) {
-          case '==': return actualLength === expected;
-          case '>': return actualLength > expected;
-          case '>=': return actualLength >= expected;
-          case '<': return actualLength < expected;
-          case '<=': return actualLength <= expected;
-          default: return false;
-        }
-      },
-    },
-  };
-}
 
 /**
  * Handle LLM-based assertions
