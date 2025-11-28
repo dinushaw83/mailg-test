@@ -4,13 +4,6 @@
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Email count increased after sending",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 1,
-        "options": {"op": ">="}
-      },
-      {
         "title": "Sent email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
@@ -66,7 +59,7 @@
       }
     ]
   },
-  "MAILG-REPLY-FORWARD-002": {
+  "MAILG-REPLY-EMAIL-002": {
     "prompt": "Reply to the email from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT'.",
     "isPrimary": true,
     "assertions": [
@@ -78,50 +71,53 @@
         "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Email to emma.brown exists",
+        "title": "Reply sent to emma.brown",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
         "expected": [{"to": ["emma.brown@techstream.com"]}],
         "options": {"mode": "some", "matchBy": "key", "key": "to"}
       },
       {
-        "title": "Total emails count valid",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 1,
-        "options": {"op": ">="}
+        "title": "Reply has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply is from logged in user",
+        "operator": "STRING_MATCH",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].from.email",
+        "expected": "john.doe@example.com",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Reply has timestamp",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].timestamp"
       }
     ]
   },
   "MAILG-ORGANIZE-LABELS-003": {
-    "prompt": "Star the email with subject 'Tracking update for Order #56789'.",
+    "prompt": "Star the email with subject 'Tracking update for Order #56789' and mark it as important.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Email exists with correct subject",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"subject": "Tracking update for Order #56789"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "title": "Tracking email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Tracking update for Order #56789')].starred",
+        "expected": true
       },
       {
-        "title": "Email is starred",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"starred": true}],
-        "options": {"mode": "some", "matchBy": "key", "key": "starred"}
-      },
-      {
-        "title": "At least one email exists",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 1,
-        "options": {"op": ">="}
+        "title": "Tracking email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Tracking update for Order #56789')].important",
+        "expected": true
       }
     ]
   },
   "MAILG-DRAFT-SCHEDULE-004": {
-    "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline'. Save it as a draft.",
+    "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline' and body 'Dear Jane, I wanted to outline the key points for our upcoming proposal meeting.'. Save it as a draft.",
     "isPrimary": true,
     "assertions": [
       {
@@ -132,32 +128,30 @@
         "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Draft sent to jane.doe",
+        "title": "Draft addressed to jane.doe",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
         "expected": [{"to": ["jane.doe@northwindretail.com"]}],
         "options": {"mode": "some", "matchBy": "key", "key": "to"}
       },
       {
-        "title": "Draft label exists",
+        "title": "Draft has Drafts label",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"labels": ["Drafts"]}],
-        "options": {"mode": "some", "matchBy": "key", "key": "labels"}
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].labels",
+        "expected": ["Drafts"],
+        "options": {"mode": "some"}
       },
       {
-        "title": "Draft is not starred",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"starred": false}],
-        "options": {"mode": "some", "matchBy": "key", "key": "starred"}
+        "title": "Draft body contains key content",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].body",
+        "expected": "proposal",
+        "options": {"caseInsensitive": true}
       },
       {
-        "title": "At least one email exists",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 1,
-        "options": {"op": ">="}
+        "title": "Draft has timestamp",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Draft: Proposal Outline')].timestamp"
       }
     ]
   },
@@ -173,18 +167,32 @@
         "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Email to manager@company.com exists",
+        "title": "Forward sent to manager",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
         "expected": [{"to": ["manager@company.com"]}],
         "options": {"mode": "some", "matchBy": "key", "key": "to"}
       },
       {
-        "title": "Total emails count valid",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 1,
-        "options": {"op": ">="}
+        "title": "Forward has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Forward body contains note",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].body",
+        "expected": "invoice",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Forward is from logged in user",
+        "operator": "STRING_MATCH",
+        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].from.email",
+        "expected": "john.doe@example.com",
+        "options": {"caseInsensitive": true}
       }
     ]
   }
