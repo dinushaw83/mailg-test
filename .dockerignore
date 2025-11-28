@@ -1,5 +1,17 @@
 node_modules
 dist
 .git
+.env
+.env.local
 Dockerfile
 .dockerignore
+docker-compose.yml
+README.md
+README.dev.md
+API_DOCUMENTATION.md
+IMPLEMENTATION_SUMMARY.md
+npm-debug.log
+.DS_Store
+.vscode
+.idea
+*.log

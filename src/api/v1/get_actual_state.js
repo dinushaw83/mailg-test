@@ -1,13 +1,21 @@
-const fs = require('fs');
-const path = require('path');
-const { deepParseJson, resolvePath } = require('../../lib/utils/path-resolver');
+// const fs = require('fs');
+import { readFileSync } from 'fs';
+// const path = require('path');
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Recreate __dirname and __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+import { deepParseJson, resolvePath } from '../../lib/utils/path-resolver.js';
+import { existenceOperators, matchingOperators } from '../../lib/utils/assertion-operators.js';
 
 // Load tasks.json
-const tasksPath = path.join(__dirname, '../../data/tasks.json');
+const tasksPath = path.join(__dirname, '../../data/assertions.json');
 let tasksData = {};
 
 try {
-  const rawData = fs.readFileSync(tasksPath, 'utf8');
+  const rawData = readFileSync(tasksPath, 'utf8');
   tasksData = JSON.parse(rawData);
 } catch (error) {
   console.error('Error loading tasks.json:', error);
@@ -18,79 +26,20 @@ const judgesPath = path.join(__dirname, '../../data/judges.json');
 let judgesData = {};
 
 try {
-  const rawData = fs.readFileSync(judgesPath, 'utf8');
+  const rawData = readFileSync(judgesPath, 'utf8');
   judgesData = JSON.parse(rawData);
 } catch (error) {
   console.error('Error loading judges.json:', error);
 }
 
-// Import assertion operators
-// We'll use require with a try-catch since these might be TypeScript files
-let assertionOperators;
-try {
-  // Try to load the JavaScript operators if they exist
-  assertionOperators = require('../../lib/utils/assertion-operators');
-} catch (error) {
-  // Expected: TypeScript files can't be loaded directly by Node.js
-  // Falling back to JavaScript implementations of basic operators
-  console.log('ℹ️  Using JavaScript fallback operators (TypeScript files not compiled)');
-  assertionOperators = createBasicOperators();
-}
+// Import assertion operators using ES Module syntax
+const assertionOperators = {
+  existenceOperators,
+  matchingOperators,
+};
 
 // RDT operators that require model response
 const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
-
-/**
- * Create basic assertion operators as fallback
- */
-function createBasicOperators() {
-  return {
-    existenceOperators: {
-      EXISTS: (actual) => actual !== undefined && actual !== null,
-      NOT_EXISTS: (actual) => actual === undefined || actual === null,
-    },
-    matchingOperators: {
-      JSON_MATCH: (actual, expected) => JSON.stringify(actual) === JSON.stringify(expected),
-      STRING_MATCH: (actual, expected, options = {}) => {
-        if (typeof actual !== 'string' || typeof expected !== 'string') return false;
-        let actualStr = actual;
-        let expectedStr = expected;
-        if (options.trim) {
-          actualStr = actualStr.trim();
-          expectedStr = expectedStr.trim();
-        }
-        if (options.caseInsensitive) {
-          actualStr = actualStr.toLowerCase();
-          expectedStr = expectedStr.toLowerCase();
-        }
-        return actualStr === expectedStr;
-      },
-      STRING_CONTAINS: (actual, expected, options = {}) => {
-        if (typeof actual !== 'string' || typeof expected !== 'string') return false;
-        let actualStr = actual;
-        let expectedStr = expected;
-        if (options.caseInsensitive) {
-          actualStr = actualStr.toLowerCase();
-          expectedStr = expectedStr.toLowerCase();
-        }
-        return actualStr.includes(expectedStr);
-      },
-      ARRAY_LENGTH: (actual, expected, options = {}) => {
-        if (!Array.isArray(actual)) return false;
-        const op = options.op || '==';
-        const actualLength = actual.length;
-        switch (op) {
-          case '==': return actualLength === expected;
-          case '>': return actualLength > expected;
-          case '>=': return actualLength >= expected;
-          case '<': return actualLength < expected;
-          case '<=': return actualLength <= expected;
-          default: return false;
-        }
-      },
-    },
-  };
-}
 
 /**
  * Handle LLM-based assertions
@@ -390,4 +339,4 @@ async function getActualState(req, res) {
   }
 }
 
-module.exports = getActualState;
+export default getActualState;

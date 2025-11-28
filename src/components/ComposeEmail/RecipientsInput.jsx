@@ -155,30 +155,43 @@ export default function RecipientsInput({
       }
 
       if (containerRef.current && !containerRef.current.contains(event.target)) {
-        // Include input text as potential recipients for validation
-        const toWithInput = [...selectedRecipients.to];
-        const ccWithInput = [...selectedRecipients.cc];
-        const bccWithInput = [...selectedRecipients.bcc];
+        // Check if there's any pending input text to convert to recipients
+        const hasToInput = inputValues.to.trim() && isValidEmail(inputValues.to.trim());
+        const hasCcInput = inputValues.cc.trim() && isValidEmail(inputValues.cc.trim());
+        const hasBccInput = inputValues.bcc.trim() && isValidEmail(inputValues.bcc.trim());
+        
+        // Only update state if there's actually pending input to convert
+        if (hasToInput || hasCcInput || hasBccInput) {
+          const toWithInput = [...selectedRecipients.to];
+          const ccWithInput = [...selectedRecipients.cc];
+          const bccWithInput = [...selectedRecipients.bcc];
 
-        // Add input text as custom recipients only if they are valid emails
-        if (inputValues.to.trim() && isValidEmail(inputValues.to.trim())) {
-          toWithInput.push(createCustomRecipient(inputValues.to.trim()));
+          if (hasToInput) {
+            toWithInput.push(createCustomRecipient(inputValues.to.trim()));
+          }
+          if (hasCcInput) {
+            ccWithInput.push(createCustomRecipient(inputValues.cc.trim()));
+          }
+          if (hasBccInput) {
+            bccWithInput.push(createCustomRecipient(inputValues.bcc.trim()));
+          }
+
+          // Clear input values that were converted to chips
+          setInputValues((prev) => ({
+            to: hasToInput ? "" : prev.to,
+            cc: hasCcInput ? "" : prev.cc,
+            bcc: hasBccInput ? "" : prev.bcc,
+          }));
+
+          // Only call onChange if we actually added new recipients
+          onToChange(toWithInput, hasToInput ? "" : inputValues.to.trim());
+          onCcChange(ccWithInput, hasCcInput ? "" : inputValues.cc.trim());
+          onBccChange(bccWithInput, hasBccInput ? "" : inputValues.bcc.trim());
+
+          validateRecipients({ to: toWithInput, cc: ccWithInput, bcc: bccWithInput }, inputValues);
         }
-        if (inputValues.cc.trim() && isValidEmail(inputValues.cc.trim())) {
-          ccWithInput.push(createCustomRecipient(inputValues.cc.trim()));
-        }
-        if (inputValues.bcc.trim() && isValidEmail(inputValues.bcc.trim())) {
-          bccWithInput.push(createCustomRecipient(inputValues.bcc.trim()));
-        }
 
-        // Pass both chips and raw input text for validation
-        onToChange(toWithInput, inputValues.to.trim());
-        onCcChange(ccWithInput, inputValues.cc.trim());
-        onBccChange(bccWithInput, inputValues.bcc.trim());
-
-        validateRecipients({ to: toWithInput, cc: ccWithInput, bcc: bccWithInput }, inputValues);
-
-        // Always collapse on outside click
+        // Always collapse on outside click (this is just local state, won't cause parent re-render)
         setIsExpanded(false);
         setShowCc(false);
         setShowBcc(false);
