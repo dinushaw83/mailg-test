@@ -18,42 +18,57 @@ const upload = multer({ storage: multer.memoryStorage() });
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('CORS: No origin header, allowing request');
+      return callback(null, true);
+    }
     
-    // Get allowed origins from environment variable
-    const allowedOrigins = process.env.ALLOWED_ORIGINS 
-      ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-      : [];
-    
-    // In development, allow localhost
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const localhostOrigins = [
+    const allowedOrigins = [
       'http://localhost:3000',
-      'http://localhost:5173', // Vite default
+      'http://localhost:5173',
       'http://127.0.0.1:3000',
-      'http://127.0.0.1:5173'
+      'http://127.0.0.1:5173',
+      'http://lite.mailg.rlgym.turing.com',
+      'https://lite.mailg.rlgym.turing.com',
     ];
     
-    // Check if origin is allowed
-    if (isDevelopment && localhostOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+    // Normalize origin (remove trailing slash, handle default ports)
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const originWithoutPort = normalizedOrigin.replace(/:(80|443)$/, '');
     
-    if (allowedOrigins.length === 0) {
-      // If no origins specified in production, allow all (not recommended for production)
-      console.warn('⚠️  WARNING: No ALLOWED_ORIGINS set. Allowing all origins.');
-      return callback(null, true);
-    }
+    // Check if origin is allowed (exact match or without default port)
+    const isAllowed = allowedOrigins.some(allowed => {
+      const normalizedAllowed = allowed.replace(/\/$/, '');
+      return normalizedOrigin === normalizedAllowed || 
+             originWithoutPort === normalizedAllowed.replace(/:(80|443)$/, '');
+    });
     
-    if (allowedOrigins.includes(origin)) {
+    if (isAllowed) {
+      console.log('CORS: Allowing origin:', origin);
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Log for debugging
+      console.log('CORS: Blocked origin:', origin);
+      console.log('CORS: Allowed origins:', allowedOrigins);
+      callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
     }
   },
-  credentials: true, // Allow cookies/credentials if needed
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'Content-Length', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  exposedHeaders: ['Content-Length', 'Content-Type'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  maxAge: 86400, // 24 hours
 };
 
 // Middleware
@@ -66,6 +81,10 @@ app.use(express.urlencoded({ extended: true }));
 // const getActualStateRoute = require('./src/api/v1/get_actual_state');
 
 // API Routes
+// Handle preflight OPTIONS requests for CORS
+app.options('/api/v1/get_expected_state', cors(corsOptions));
+app.options('/api/v1/get_actual_state', cors(corsOptions));
+
 app.post('/api/v1/get_expected_state', getExpectedStateRoute);
 app.post('/api/v1/get_actual_state', upload.single('localStorageDump'), getActualStateRoute);
 

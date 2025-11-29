@@ -13,11 +13,6 @@ services:
       - NODE_ENV=production
       - API_PORT=3001
       - VITE_RUN_MODE=localstorage
-      # CORS: Add your deployed frontend domain(s) here (comma-separated)
-      # Example: - ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-      # Or set it in .env file instead
-      # - ALLOWED_ORIGINS=https://yourdomain.com
-      - ALLOWED_ORIGINS=https://lite.mailg.rlgym.turing.com
       # Add your OpenRouter credentials here or use .env file
       # - OPENROUTER_API_KEY=your_key_here
       # - OPENROUTER_URL=https://openrouter.ai/api/v1/chat/completions
