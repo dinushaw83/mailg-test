@@ -14,8 +14,50 @@ dotenv.config();
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
+    if (!origin) return callback(null, true);
+    
+    // Get allowed origins from environment variable
+    const allowedOrigins = process.env.ALLOWED_ORIGINS 
+      ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+      : [];
+    
+    // In development, allow localhost
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const localhostOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173', // Vite default
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173'
+    ];
+    
+    // Check if origin is allowed
+    if (isDevelopment && localhostOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.length === 0) {
+      // If no origins specified in production, allow all (not recommended for production)
+      console.warn('⚠️  WARNING: No ALLOWED_ORIGINS set. Allowing all origins.');
+      return callback(null, true);
+    }
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow cookies/credentials if needed
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
