@@ -193,7 +193,7 @@ const VerificationRawModal = ({
       }
 
       // Call the get_actual_state endpoint
-      const response = await fetch('http://localhost:3001/api/v1/get_actual_state', {
+      const response = await fetch('https://lite.mailg.rlgym.turing.com/api/v1/get_actual_state', {
         method: 'POST',
         body: formData,
       })
