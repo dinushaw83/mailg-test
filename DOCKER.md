@@ -76,11 +76,38 @@ The container reads from `.env` file. Make sure to set:
 API_PORT=3001
 VITE_RUN_MODE=localstorage
 
+# CORS Configuration (Required for production deployment)
+# Add your deployed frontend domain(s) - comma-separated
+# Example: ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+ALLOWED_ORIGINS=https://yourdomain.com
+
 # For LLM-based assertions (optional)
 OPENROUTER_API_KEY=your_key_here
 OPENROUTER_URL=https://openrouter.ai/api/v1/chat/completions
 OPENROUTER_MODEL=anthropic/claude-3.5-sonnet
 ```
+
+### CORS Configuration
+
+When deploying to a domain, you **must** set `ALLOWED_ORIGINS` to your frontend domain(s):
+
+- **Option 1:** Add to `.env` file (recommended)
+  ```env
+  ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+  ```
+
+- **Option 2:** Add to `docker-compose.yml` environment section
+  ```yaml
+  environment:
+    - ALLOWED_ORIGINS=https://yourdomain.com
+  ```
+
+- **Option 3:** Set when running Docker directly
+  ```bash
+  docker run -e ALLOWED_ORIGINS=https://yourdomain.com ...
+  ```
+
+**Note:** In development (localhost), CORS automatically allows localhost origins. In production, if `ALLOWED_ORIGINS` is not set, all origins are allowed (not recommended for security).
 
 ---
 
