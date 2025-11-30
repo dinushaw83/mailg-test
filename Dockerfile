@@ -1,55 +1,63 @@
-# Use Node.js LTS version
-FROM node:18-alpine
+# Frontend build stage
+FROM node:20-slim AS frontend-build
 
 WORKDIR /app
 
-# Copy package files (lockfile recommended)
+# Copy package files
 COPY package*.json ./
 
-# Reproducible install (installs dev deps as well so we can build)
+# Install dependencies (including dev deps for build)
 RUN npm ci --include=dev
 
-# Copy application files
-COPY . .
+# Ensure VITE_APP_URL is available to Vite during build (optional)
+ARG VITE_APP_URL
+ENV VITE_APP_URL=$VITE_APP_URL
 
+# Copy build configuration and source files
+COPY vite.config.js ./
+COPY index.html ./
+COPY public ./public
+COPY src ./src
+
+# Build the frontend
 RUN npm run build
 
-# Set production env after build
+# Production runtime stage
+FROM node:20-slim
+
+# Install system dependencies (curl for healthcheck)
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+
+# Keep env available at runtime (for server or diagnostics)
+ARG VITE_APP_URL
+ENV VITE_APP_URL=$VITE_APP_URL
+
 ENV NODE_ENV=production
+ENV PORT=3000
 
-# Install global tools: pm2 to manage processes, serve to serve static dist
-RUN npm install -g pm2 serve
+WORKDIR /app
 
-# Expose ports
-EXPOSE 3000 3001
+# Copy package files for server dependencies
+COPY package*.json ./
 
-# Create a wrapper script for serve command
-RUN cat > serve-frontend.sh <<'EOF'
-#!/bin/sh
-exec serve -s dist -l tcp://0.0.0.0:3000
-EOF
-RUN chmod +x serve-frontend.sh
+# Install only production dependencies
+RUN npm ci --omit=dev
 
-# Create PM2 ecosystem config (CommonJS)
-RUN cat > ecosystem.config.cjs <<'EOF'
-module.exports = {
-  apps: [
-    {
-      name: 'frontend',
-      script: '/app/serve-frontend.sh',
-      interpreter: '/bin/sh',
-      cwd: '/app',
-      env: { NODE_ENV: 'production' }
-    },
-    {
-      name: 'api',
-      script: 'server.js',
-      cwd: '/app',
-      env: { NODE_ENV: 'production', PORT: 3001 }
-    }
-  ]
-};
-EOF
+# Copy server files and dependencies
+COPY server.js ./
+COPY src/api ./src/api
+COPY src/data ./src/data
+COPY src/lib ./src/lib
 
-# Start both servers using PM2 in foreground (pm2-runtime keeps container alive)
-CMD ["pm2-runtime", "ecosystem.config.cjs"]
+# Copy built frontend from build stage
+COPY --from=frontend-build /app/dist ./dist
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:${PORT}/api/health || exit 1
+
+EXPOSE 3000
+
+# Start the Express server (serves both frontend and API)
+CMD ["node", "server.js"]
