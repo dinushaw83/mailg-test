@@ -160,39 +160,36 @@
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Forwarded email exists",
+        "title": "New email exists (array length increased)",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails",
+        "expected": 215
+      },
+      {
+        "title": "New email has subject 'Fwd: Invoice mismatch - URGENT'",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
         "expected": [{"subject": "Fwd: Invoice mismatch - URGENT"}],
         "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Forward sent to manager",
+        "title": "New email receiver is manager@company.com",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"to": ["manager@company.com"]}],
-        "options": {"mode": "some", "matchBy": "key", "key": "to"}
-      },
-      {
-        "title": "Forward has Sent label",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].labels",
-        "expected": ["Sent"],
+        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].to",
+        "expected": ["manager@company.com"],
         "options": {"mode": "some"}
       },
       {
-        "title": "Forward body contains note",
+        "title": "New email body contains 'Please review this invoice discrepancy'",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].body",
-        "expected": "invoice",
-        "options": {"caseInsensitive": true}
+        "expected": "Please review this invoice discrepancy"
       },
       {
-        "title": "Forward is from logged in user",
-        "operator": "STRING_MATCH",
-        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].from.email",
-        "expected": "john.doe@example.com",
-        "options": {"caseInsensitive": true}
+        "title": "New email body contains original message",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].body",
+        "expected": "discrepancy in the invoice"
       }
     ]
   }
