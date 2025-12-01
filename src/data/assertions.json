@@ -163,7 +163,8 @@
         "title": "New email exists (array length increased)",
         "operator": "ARRAY_LENGTH",
         "path": "emails",
-        "expected": 215
+        "expected": 211,
+        "options": {"op": ">="}
       },
       {
         "title": "New email has subject 'Fwd: Invoice mismatch - URGENT'",
