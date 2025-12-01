@@ -717,7 +717,14 @@ export default function Editor({
       if (isCmdOrCtrl && event.key === "Enter") {
         event.preventDefault();
         event.stopPropagation();
-        onSend({ attachments });
+        // Get latest HTML directly from editor to avoid stale content state
+        const html = rteRef.current?.editor?.getHTML() || "";
+        const imageMap = {};
+        embeddedImages.forEach((image) => {
+          imageMap[image.url] = image.id;
+        });
+        const processedHtml = processHtmlForStorage(html, imageMap);
+        onSend({ attachments, embeddedImages, processedHtml });
         return true;
       }
 
@@ -804,7 +811,7 @@ export default function Editor({
 
       return false;
     },
-    [shortcutsOn, onSend, onDelete, rteRef]
+    [shortcutsOn, onSend, onDelete, rteRef, embeddedImages, attachments]
   );
   const openSignaturePopover = (event) => {
     setSignatureAnchorEl(event.currentTarget);
