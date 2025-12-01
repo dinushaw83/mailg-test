@@ -31,9 +31,9 @@ export default function RecipientsInput({
     });
   }, [globalRecipients]);
 
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showCc, setShowCc] = useState(false);
-  const [showBcc, setShowBcc] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);  // Always start expanded for better accessibility
+  const [showCc, setShowCc] = useState(true);  // Always show CC field for better accessibility
+  const [showBcc, setShowBcc] = useState(true); // Always show BCC field for better accessibility
   const [selectedRecipients, setSelectedRecipients] = useState({
     to: Array.isArray(to) ? to : [],
     cc: Array.isArray(cc) ? cc : [],
@@ -191,10 +191,8 @@ export default function RecipientsInput({
           validateRecipients({ to: toWithInput, cc: ccWithInput, bcc: bccWithInput }, inputValues);
         }
 
-        // Always collapse on outside click (this is just local state, won't cause parent re-render)
-        setIsExpanded(false);
-        setShowCc(false);
-        setShowBcc(false);
+        // Note: We intentionally do NOT collapse or hide CC/BCC fields on outside click
+        // This allows agents and users to see these fields without extra clicks
       }
     };
 
