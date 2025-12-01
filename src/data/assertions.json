@@ -4,6 +4,13 @@
     "isPrimary": true,
     "assertions": [
       {
+        "title": "New email exists (array length increased)",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails",
+        "expected": 211,
+        "options": {"op": ">="}
+      },
+      {
         "title": "Sent email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
@@ -64,6 +71,13 @@
     "isPrimary": true,
     "assertions": [
       {
+        "title": "New email exists (array length increased)",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails",
+        "expected": 211,
+        "options": {"op": ">="}
+      },
+      {
         "title": "Reply email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
@@ -103,6 +117,11 @@
     "isPrimary": true,
     "assertions": [
       {
+        "title": "Target email exists",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Tracking update for Order #56789')]"
+      },
+      {
         "title": "Tracking email is starred",
         "operator": "JSON_MATCH",
         "path": "emails[?(@.subject=='Tracking update for Order #56789')].starred",
@@ -120,6 +139,13 @@
     "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline' and body 'Dear Jane, I wanted to outline the key points for our upcoming proposal meeting.'. Save it as a draft.",
     "isPrimary": true,
     "assertions": [
+      {
+        "title": "New email exists (array length increased)",
+        "operator": "ARRAY_LENGTH",
+        "path": "emails",
+        "expected": 211,
+        "options": {"op": ">="}
+      },
       {
         "title": "Draft email exists",
         "operator": "ARRAY_CONTAINS",
