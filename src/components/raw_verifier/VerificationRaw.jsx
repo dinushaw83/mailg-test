@@ -28,7 +28,7 @@ const VerificationRaw = () => {
   useEffect(() => {
     const fetchAssertions = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/v1/get_expected_state', {
+        const response = await fetch('/api/v1/get_expected_state', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({}) // No taskId = get all tasks

@@ -1,45 +1,63 @@
-# Use Node.js LTS version
-FROM node:18-alpine
+# Frontend build stage
+FROM node:20-slim AS frontend-build
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install ALL dependencies (including devDependencies for build)
-RUN npm install
+# Install dependencies (including dev deps for build)
+RUN npm ci --include=dev
 
-# Copy application files
-COPY . .
+# Ensure VITE_APP_URL is available to Vite during build (optional)
+ARG VITE_APP_URL
+ENV VITE_APP_URL=$VITE_APP_URL
 
-# Build the Vite frontend
+# Copy build configuration and source files
+COPY vite.config.js ./
+COPY index.html ./
+COPY public ./public
+COPY src ./src
+
+# Build the frontend
 RUN npm run build
 
-# Expose ports
-# 3000 - Frontend (Vite preview)
-# 3001 - API server
-EXPOSE 3000 3001
+# Production runtime stage
+FROM node:20-slim
 
-# Install PM2 to run multiple processes
-RUN npm install -g pm2
+# Install system dependencies (curl for healthcheck)
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
 
-# Create PM2 ecosystem config
-RUN echo "module.exports = { \
-  apps: [ \
-    { \
-      name: 'frontend', \
-      script: 'npx', \
-      args: 'vite preview --host 0.0.0.0 --port 3000', \
-      cwd: '/app' \
-    }, \
-    { \
-      name: 'api', \
-      script: 'server.js', \
-      cwd: '/app' \
-    } \
-  ] \
-}" > ecosystem.config.js
+# Keep env available at runtime (for server or diagnostics)
+ARG VITE_APP_URL
+ENV VITE_APP_URL=$VITE_APP_URL
 
-# Start both servers using PM2
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+ENV NODE_ENV=production
+ENV PORT=3000
+
+WORKDIR /app
+
+# Copy package files for server dependencies
+COPY package*.json ./
+
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Copy server files and dependencies
+COPY server.js ./
+COPY src/api ./src/api
+COPY src/data ./src/data
+COPY src/lib ./src/lib
+
+# Copy built frontend from build stage
+COPY --from=frontend-build /app/dist ./dist
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:${PORT}/api/health || exit 1
+
+EXPOSE 3000
+
+# Start the Express server (serves both frontend and API)
+CMD ["node", "server.js"]
