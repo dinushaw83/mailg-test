@@ -1,15 +1,8 @@
 {
   "MAILG-COMPOSE-SEND-001": {
-    "prompt": "Compose a new email addressed to david.kim@acelogistics.com, cc: sarah.johnson@northwindretail.com, bcc: compliance@company.com. Subject should be 'Q3 Financial Forecast Submission'. The message body: 'Hi David, please find attached the updated Q3 financial forecast. We've incorporated the recent adjustments in marketing spend and logistics costs. Kindly review and confirm if these align with your records. Best, Laura'. Send it immediately.",
+    "prompt": "Compose a new email addressed to david.kim@acelogistics.com, cc: sarah.johnson@northwindretail.com, bcc: compliance@company.com. Subject should be 'Q3 Financial Forecast Submission'. The message body: 'Hi David, please find attached the updated Q3 financial forecast. We've incorporated the recent adjustments in marketing spend and logistics costs. Kindly review and confirm if these align with your records. Best, Laura'. Send it immediately. After sending, star the sent email and mark it as important.",
     "isPrimary": true,
     "assertions": [
-      {
-        "title": "New email exists (array length increased)",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 211,
-        "options": {"op": ">="}
-      },
       {
         "title": "Sent email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
@@ -39,10 +32,24 @@
         "options": {"mode": "some"}
       },
       {
-        "title": "Email body contains key content",
+        "title": "Email body contains greeting",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].body",
+        "expected": "Hi David",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Email body contains main content",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].body",
         "expected": "Q3 financial forecast",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Email body contains sign-off",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].body",
+        "expected": "Best",
         "options": {"caseInsensitive": true}
       },
       {
@@ -53,9 +60,16 @@
         "options": {"mode": "some"}
       },
       {
-        "title": "Email has timestamp",
-        "operator": "EXISTS",
-        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].timestamp"
+        "title": "Sent email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].starred",
+        "expected": true
+      },
+      {
+        "title": "Sent email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].important",
+        "expected": true
       },
       {
         "title": "Email is from logged in user",
@@ -67,16 +81,9 @@
     ]
   },
   "MAILG-REPLY-EMAIL-002": {
-    "prompt": "Reply to the email from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT'.",
+    "prompt": "Reply to the email from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT'. Add accounting@company.com in CC. Your reply: 'Hi Emma, thank you for flagging this issue. I have looped in our accounting team to investigate. We will get back to you within 24 hours. Regards, John'. After sending, add labels 'Accounting' and 'Urgent-Review' to the original email, and mark your reply as important.",
     "isPrimary": true,
     "assertions": [
-      {
-        "title": "New email exists (array length increased)",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 211,
-        "options": {"op": ">="}
-      },
       {
         "title": "Reply email exists",
         "operator": "ARRAY_CONTAINS",
@@ -87,9 +94,37 @@
       {
         "title": "Reply sent to emma.brown",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"to": ["emma.brown@techstream.com"]}],
-        "options": {"mode": "some", "matchBy": "key", "key": "to"}
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].to",
+        "expected": ["emma.brown@techstream.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply has CC to accounting",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].cc",
+        "expected": ["accounting@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply body contains thank you",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
+        "expected": "thank you for flagging",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Reply body mentions accounting team",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
+        "expected": "accounting team",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Reply body mentions timeframe",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
+        "expected": "24 hours",
+        "options": {"caseInsensitive": true}
       },
       {
         "title": "Reply has Sent label",
@@ -106,117 +141,153 @@
         "options": {"caseInsensitive": true}
       },
       {
-        "title": "Reply has timestamp",
-        "operator": "EXISTS",
-        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].timestamp"
+        "title": "Original email has Accounting label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].labels",
+        "expected": ["Accounting"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email has Urgent-Review label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].labels",
+        "expected": ["Urgent-Review"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].important",
+        "expected": true
       }
     ]
   },
   "MAILG-ORGANIZE-LABELS-003": {
-    "prompt": "Star the email with subject 'Tracking update for Order #56789' and mark it as important.",
+    "prompt": "Go to Promotions tab. Delete the Nike email 'End of season sale — up to 40% off' by moving it to Trash. Then star the Pinterest email 'Ideas you might love — Minimal home office' and mark it as important.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "Target email exists",
-        "operator": "EXISTS",
-        "path": "emails[?(@.subject=='Tracking update for Order #56789')]"
+        "title": "Nike email moved to Trash",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='👟 End of season sale — up to 40% off')].labels",
+        "expected": ["Trash"],
+        "options": {"mode": "some"}
       },
       {
-        "title": "Tracking email is starred",
+        "title": "Pinterest email is starred",
         "operator": "JSON_MATCH",
-        "path": "emails[?(@.subject=='Tracking update for Order #56789')].starred",
+        "path": "emails[?(@.subject=='Ideas you might love — Minimal home office')].starred",
         "expected": true
       },
       {
-        "title": "Tracking email is marked important",
+        "title": "Pinterest email is marked important",
         "operator": "JSON_MATCH",
-        "path": "emails[?(@.subject=='Tracking update for Order #56789')].important",
+        "path": "emails[?(@.subject=='Ideas you might love — Minimal home office')].important",
         "expected": true
       }
     ]
   },
   "MAILG-DRAFT-SCHEDULE-004": {
-    "prompt": "Create a draft email to jane.doe@northwindretail.com with subject 'Draft: Proposal Outline' and body 'Dear Jane, I wanted to outline the key points for our upcoming proposal meeting.'. Save it as a draft.",
+    "prompt": "Compose an email to jane.doe@northwindretail.com with CC to marketing@northwindretail.com. Subject: 'Proposal Outline'. Body: 'Dear Jane, I wanted to outline the key points for our upcoming proposal meeting. Best regards.'. Schedule it to send tomorrow morning. Then go to the Scheduled folder, find the email, and star it.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "New email exists (array length increased)",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 211,
-        "options": {"op": ">="}
-      },
-      {
-        "title": "Draft email exists",
+        "title": "Scheduled email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Draft: Proposal Outline"}],
+        "expected": [{"subject": "Proposal Outline"}],
         "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "Draft addressed to jane.doe",
+        "title": "Email has correct TO recipient",
         "operator": "ARRAY_CONTAINS",
-        "path": "emails",
-        "expected": [{"to": ["jane.doe@northwindretail.com"]}],
-        "options": {"mode": "some", "matchBy": "key", "key": "to"}
-      },
-      {
-        "title": "Draft has Drafts label",
-        "operator": "ARRAY_CONTAINS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].labels",
-        "expected": ["Drafts"],
+        "path": "emails[?(@.subject=='Proposal Outline')].to",
+        "expected": ["jane.doe@northwindretail.com"],
         "options": {"mode": "some"}
       },
       {
-        "title": "Draft body contains key content",
+        "title": "Email has CC recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Proposal Outline')].cc",
+        "expected": ["marketing@northwindretail.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has Scheduled label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Proposal Outline')].labels",
+        "expected": ["Scheduled"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has scheduledDate property",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Proposal Outline')].scheduledDate"
+      },
+      {
+        "title": "Email body contains proposal content",
         "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].body",
+        "path": "emails[?(@.subject=='Proposal Outline')].body",
         "expected": "proposal",
         "options": {"caseInsensitive": true}
       },
       {
-        "title": "Draft has timestamp",
-        "operator": "EXISTS",
-        "path": "emails[?(@.subject=='Draft: Proposal Outline')].timestamp"
+        "title": "Scheduled email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Proposal Outline')].starred",
+        "expected": true
       }
     ]
   },
   "MAILG-FORWARD-EMAIL-005": {
-    "prompt": "Forward the email with subject 'Invoice mismatch - URGENT' to manager@company.com with note 'Please review this invoice discrepancy'.",
+    "prompt": "Forward the email with subject 'Invoice mismatch - URGENT' to manager@company.com with CC to cfo@company.com. Add note 'Please review this invoice discrepancy'. After sending, snooze the original email until next week.",
     "isPrimary": true,
     "assertions": [
       {
-        "title": "New email exists (array length increased)",
-        "operator": "ARRAY_LENGTH",
-        "path": "emails",
-        "expected": 211,
-        "options": {"op": ">="}
-      },
-      {
-        "title": "New email has subject 'Fwd: Invoice mismatch - URGENT'",
+        "title": "Forwarded email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
         "expected": [{"subject": "Fwd: Invoice mismatch - URGENT"}],
         "options": {"mode": "some", "matchBy": "key", "key": "subject"}
       },
       {
-        "title": "New email receiver is manager@company.com",
+        "title": "Forwarded email TO is manager@company.com",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].to",
         "expected": ["manager@company.com"],
         "options": {"mode": "some"}
       },
       {
-        "title": "New email body contains 'Please review this invoice discrepancy'",
+        "title": "Forwarded email CC is cfo@company.com",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].cc",
+        "expected": ["cfo@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Forwarded email body contains note",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].body",
         "expected": "Please review this invoice discrepancy"
       },
       {
-        "title": "New email body contains original message",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].body",
-        "expected": "discrepancy in the invoice"
+        "title": "Forwarded email has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email is snoozed",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].labels",
+        "expected": ["Snoozed"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email has snoozeUntil date",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].snoozeUntil"
       }
     ]
   }
