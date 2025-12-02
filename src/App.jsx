@@ -24,6 +24,7 @@ import SearchResultsView from "./pages/SearchResultsView";
 import MailGAccount from "./pages/MailGAccount";
 import { initializeSearchIndex } from "./utils/search";
 import VerificationLocalStorage from "./pages/VerificationLocalStorage";
+import LocalStorageDownload from "./pages/LocalStorageDownload";
 
 // Component to handle contact details with edit parameter
 const ContactDetailsWithEdit = () => {
@@ -53,6 +54,8 @@ function App() {
 
             {/* Standalone verify_raw page without Layout */}
             <Route path="/verify_raw" element={<VerifyRawPage />} />
+
+            <Route path="/localStorage" element={<LocalStorageDownload />} />
 
             {/* All other routes wrapped in Layout */}
             <Route
