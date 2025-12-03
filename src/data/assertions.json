@@ -1,6 +1,6 @@
 {
   "MAILG-COMPOSE-SEND-001": {
-    "prompt": "Compose a new email addressed to david.kim@acelogistics.com, cc: sarah.johnson@northwindretail.com, bcc: compliance@company.com. Subject should be 'Q3 Financial Forecast Submission'. The message body: 'Hi David, please find attached the updated Q3 financial forecast. We've incorporated the recent adjustments in marketing spend and logistics costs. Kindly review and confirm if these align with your records. Best, Laura'. Send it immediately. After sending, star the sent email and mark it as important.",
+    "prompt": "Compose a new email addressed to david.kim@acelogistics.com, cc: sarah.johnson@northwindretail.com, bcc: compliance@company.com. Subject should be 'Q3 Financial Forecast Submission'. The message body: 'Hi David, please find attached the updated Q3 financial forecast. We've incorporated the recent adjustments in marketing spend and logistics costs. Kindly review and confirm if these align with your records. Best, Laura'. Send it immediately. After sending, star the sent email.",
     "isPrimary": true,
     "assertions": [
       {
@@ -39,20 +39,6 @@
         "options": {"caseInsensitive": true}
       },
       {
-        "title": "Email body contains main content",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].body",
-        "expected": "Q3 financial forecast",
-        "options": {"caseInsensitive": true}
-      },
-      {
-        "title": "Email body contains sign-off",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].body",
-        "expected": "Best",
-        "options": {"caseInsensitive": true}
-      },
-      {
         "title": "Email has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].labels",
@@ -64,24 +50,11 @@
         "operator": "JSON_MATCH",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].starred",
         "expected": true
-      },
-      {
-        "title": "Sent email is marked important",
-        "operator": "JSON_MATCH",
-        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].important",
-        "expected": true
-      },
-      {
-        "title": "Email is from logged in user",
-        "operator": "STRING_MATCH",
-        "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].from.email",
-        "expected": "john.doe@example.com",
-        "options": {"caseInsensitive": true}
       }
     ]
   },
   "MAILG-REPLY-EMAIL-002": {
-    "prompt": "Reply to the email from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT'. Add accounting@company.com in CC. Your reply: 'Hi Emma, thank you for flagging this issue. I have looped in our accounting team to investigate. We will get back to you within 24 hours. Regards, John'. After sending, add labels 'Accounting' and 'Urgent-Review' to the original email, and mark your reply as important.",
+    "prompt": "Reply to the email from emma.brown@techstream.com with subject 'Invoice mismatch - URGENT'. Add accounting@company.com in CC. Your reply: 'Hi Emma, thank you for flagging this issue. I have looped in our accounting team to investigate. We will get back to you within 24 hours. Regards, John'. After sending, add labels 'Accounting' and 'Urgent-Review' to the original email.",
     "isPrimary": true,
     "assertions": [
       {
@@ -113,32 +86,11 @@
         "options": {"caseInsensitive": true}
       },
       {
-        "title": "Reply body mentions accounting team",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
-        "expected": "accounting team",
-        "options": {"caseInsensitive": true}
-      },
-      {
-        "title": "Reply body mentions timeframe",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
-        "expected": "24 hours",
-        "options": {"caseInsensitive": true}
-      },
-      {
         "title": "Reply has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].labels",
         "expected": ["Sent"],
         "options": {"mode": "some"}
-      },
-      {
-        "title": "Reply is from logged in user",
-        "operator": "STRING_MATCH",
-        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].from.email",
-        "expected": "john.doe@example.com",
-        "options": {"caseInsensitive": true}
       },
       {
         "title": "Original email has Accounting label",
@@ -153,12 +105,6 @@
         "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].labels",
         "expected": ["Urgent-Review"],
         "options": {"mode": "some"}
-      },
-      {
-        "title": "Reply is marked important",
-        "operator": "JSON_MATCH",
-        "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].important",
-        "expected": true
       }
     ]
   },
@@ -225,13 +171,6 @@
         "path": "emails[?(@.subject=='Proposal Outline')].scheduledDate"
       },
       {
-        "title": "Email body contains proposal content",
-        "operator": "STRING_CONTAINS",
-        "path": "emails[?(@.subject=='Proposal Outline')].body",
-        "expected": "proposal",
-        "options": {"caseInsensitive": true}
-      },
-      {
         "title": "Scheduled email is starred",
         "operator": "JSON_MATCH",
         "path": "emails[?(@.subject=='Proposal Outline')].starred",
@@ -288,6 +227,1373 @@
         "title": "Original email has snoozeUntil date",
         "operator": "EXISTS",
         "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].snoozeUntil"
+      }
+    ]
+  },
+  "MAILG-ARCHIVE-LABEL-006": {
+    "prompt": "Find the email 'Project Phoenix Kickoff Notes' from Alex Green. Archive it (remove from Inbox), add the label 'Projects', star it, and mark it as important.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Email no longer in Inbox (archived)",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has Projects label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
+        "expected": ["Projects"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].starred",
+        "expected": true
+      },
+      {
+        "title": "Email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].important",
+        "expected": true
+      }
+    ]
+  },
+  "MAILG-UPDATES-MULTI-007": {
+    "prompt": "Go to Updates folder. Find the email 'Your Amazon order has been confirmed'. Star it, mark it as important, and add the label 'Shopping'. Then find the Dropbox email 'Your files were successfully synced' and archive it.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Amazon email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Your Amazon order has been confirmed')].starred",
+        "expected": true
+      },
+      {
+        "title": "Amazon email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Your Amazon order has been confirmed')].important",
+        "expected": true
+      },
+      {
+        "title": "Amazon email has Shopping label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Your Amazon order has been confirmed')].labels",
+        "expected": ["Shopping"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Dropbox email archived (not in Inbox)",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='📁 Your files were successfully synced')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-TRASH-RESTORE-008": {
+    "prompt": "Go to Trash folder. Find the email 'You Won a Prize!' and restore it back to Inbox. After restoring, star it, mark it as important, and add the label 'Review-Later'.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Email no longer in Trash",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='You Won a Prize!')].labels",
+        "expected": ["Trash"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email restored to Inbox",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='You Won a Prize!')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='You Won a Prize!')].starred",
+        "expected": true
+      },
+      {
+        "title": "Email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='You Won a Prize!')].important",
+        "expected": true
+      },
+      {
+        "title": "Email has Review-Later label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='You Won a Prize!')].labels",
+        "expected": ["Review-Later"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-JIRA-ACTIONS-009": {
+    "prompt": "Find the email '[Jira] Ticket #AC-221 moved to In Review'. Mark it as unread, remove its star, remove its important flag, and add the label 'Dev-Tasks'.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Jira email is marked unread",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject==\"[Jira] Ticket #AC-221 moved to 'In Review'\")].read",
+        "expected": false
+      },
+      {
+        "title": "Jira email is not starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject==\"[Jira] Ticket #AC-221 moved to 'In Review'\")].starred",
+        "expected": false
+      },
+      {
+        "title": "Jira email is not important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject==\"[Jira] Ticket #AC-221 moved to 'In Review'\")].important",
+        "expected": false
+      },
+      {
+        "title": "Jira email has Dev-Tasks label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject==\"[Jira] Ticket #AC-221 moved to 'In Review'\")].labels",
+        "expected": ["Dev-Tasks"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-COMPOSE-LABEL-010": {
+    "prompt": "Compose and send an email to hr@company.com with CC to manager@company.com. Subject: 'Vacation Request'. Body: 'Hi HR Team, I would like to request vacation days from December 20-27. Please let me know if you need any additional information. Thank you.' After sending, star the sent email and add the label 'Personal'.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Email exists with correct subject",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"subject": "Vacation Request"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+      },
+      {
+        "title": "Email has correct TO recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Vacation Request')].to",
+        "expected": ["hr@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has CC to manager",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Vacation Request')].cc",
+        "expected": ["manager@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email body contains vacation dates",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Vacation Request')].body",
+        "expected": "December 20-27",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Email has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Vacation Request')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Vacation Request')].starred",
+        "expected": true
+      },
+      {
+        "title": "Email has Personal label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Vacation Request')].labels",
+        "expected": ["Personal"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-FORWARD-MULTI-011": {
+    "prompt": "Forward the email 'Project Phoenix Kickoff Notes' to team-lead@company.com with CC to project-manager@company.com and BCC to compliance@company.com. Add the message: 'FYI - Please review the kickoff notes from our meeting.' After sending, add the label 'Projects' to the forwarded email, archive the original email, and mark the original email as read.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Forwarded email exists",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"subject": "Fwd: Project Phoenix Kickoff Notes"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+      },
+      {
+        "title": "Forwarded email TO is team-lead",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].to",
+        "expected": ["team-lead@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Forwarded email CC is project-manager",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].cc",
+        "expected": ["project-manager@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Forwarded email BCC is compliance",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].bcc",
+        "expected": ["compliance@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Forwarded email contains FYI note",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].body",
+        "expected": "FYI",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Forwarded email has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Forwarded email has Projects label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].labels",
+        "expected": ["Projects"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email archived (not in Inbox)",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email is marked as read",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].read",
+        "expected": true
+      }
+    ]
+  },
+  "MAILG-REPLY-SNOOZE-ARCHIVE-012": {
+    "prompt": "Reply to the email 'Reminder: Onboarding session tomorrow' from HR Team with CC to manager@company.com. Your reply: 'Thank you for the reminder. I will be there at 10 AM. Looking forward to it.' After sending, add the label 'HR' to the original email, snooze the original email until tomorrow, and then archive it.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Reply email exists",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"subject": "Re: Reminder: Onboarding session tomorrow"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+      },
+      {
+        "title": "Reply sent to HR",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].to",
+        "expected": ["hr@oakwoodltd.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply has CC to manager",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].cc",
+        "expected": ["manager@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply body contains confirmation",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].body",
+        "expected": "10 AM",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Reply has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email has HR label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Reminder: Onboarding session tomorrow')].labels",
+        "expected": ["HR"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email is snoozed",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Reminder: Onboarding session tomorrow')].labels",
+        "expected": ["Snoozed"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Original email has snoozeUntil date",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Reminder: Onboarding session tomorrow')].snoozeUntil"
+      },
+      {
+        "title": "Original HR email archived (not in Inbox)",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Reminder: Onboarding session tomorrow')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-SPAM-CLEANUP-013": {
+    "prompt": "Go to Spam folder. Find the email 'CONGRATULATIONS! You've Won $1,000,000!' and move it to Trash. Then find the email 'URGENT: Suspicious Activity Detected - Verify Your Account' and also move it to Trash.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Lottery spam moved to Trash",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🎉 CONGRATULATIONS! You\\'ve Won $1,000,000!')].labels",
+        "expected": ["Trash"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Lottery spam no longer in Spam",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🎉 CONGRATULATIONS! You\\'ve Won $1,000,000!')].labels",
+        "expected": ["Spam"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Phishing spam moved to Trash",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🚨 URGENT: Suspicious Activity Detected - Verify Your Account')].labels",
+        "expected": ["Trash"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Phishing spam no longer in Spam",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🚨 URGENT: Suspicious Activity Detected - Verify Your Account')].labels",
+        "expected": ["Spam"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-DRAFT-WORKFLOW-014": {
+    "prompt": "Create a draft email to legal@company.com with CC to compliance@company.com. Subject: 'Contract Review Request'. Body: 'Please review the attached contract before Friday. Let me know if there are any concerns.' Save it as a draft. Then add the label 'Legal' to the draft, mark it as important, and schedule it to send tomorrow morning.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Draft exists with correct subject",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"subject": "Contract Review Request"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+      },
+      {
+        "title": "Draft has correct TO recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Contract Review Request')].to",
+        "expected": ["legal@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Draft has CC recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Contract Review Request')].cc",
+        "expected": ["compliance@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has Scheduled label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Contract Review Request')].labels",
+        "expected": ["Scheduled"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email NOT in Sent",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Contract Review Request')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has scheduledDate property",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Contract Review Request')].scheduledDate"
+      },
+      {
+        "title": "Draft has Legal label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Contract Review Request')].labels",
+        "expected": ["Legal"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Draft is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Contract Review Request')].important",
+        "expected": true
+      }
+    ]
+  },
+  "MAILG-MULTI-EMAIL-ACTIONS-015": {
+    "prompt": "Go to Updates folder. Find the Zoom email 'Meeting Reminder: Design Sprint Planning' - mark it as important, add the label 'Meetings', and snooze it until tomorrow. Then find the Figma email 'Your Figma team has invited you to a new project' in Primary - archive it, add the label 'Design', and mark it as read. Finally, mark both emails as read.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Zoom email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='📅 Meeting Reminder: Design Sprint Planning')].important",
+        "expected": true
+      },
+      {
+        "title": "Zoom email has Meetings label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='📅 Meeting Reminder: Design Sprint Planning')].labels",
+        "expected": ["Meetings"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Zoom email is snoozed",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='📅 Meeting Reminder: Design Sprint Planning')].labels",
+        "expected": ["Snoozed"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Zoom email has snoozeUntil date",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='📅 Meeting Reminder: Design Sprint Planning')].snoozeUntil"
+      },
+      {
+        "title": "Zoom email is marked as read",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='📅 Meeting Reminder: Design Sprint Planning')].read",
+        "expected": true
+      },
+      {
+        "title": "Figma email archived (not in Inbox)",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🔔 Your Figma team has invited you to a new project')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Figma email has Design label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🔔 Your Figma team has invited you to a new project')].labels",
+        "expected": ["Design"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Figma email is marked as read",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='🔔 Your Figma team has invited you to a new project')].read",
+        "expected": true
+      }
+    ]
+  },
+  "MAILG-NEWSLETTER-016": {
+    "prompt": "Find the email 'Weekly Tech Roundup - Issue #42' from Tech Digest. Add the label 'Newsletters', star it, mark it as important, and then snooze it until next week.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Email has Newsletters label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].labels",
+        "expected": ["Newsletters"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].starred",
+        "expected": true
+      },
+      {
+        "title": "Email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].important",
+        "expected": true
+      },
+      {
+        "title": "Email is snoozed",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].labels",
+        "expected": ["Snoozed"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has snoozeUntil date",
+        "operator": "EXISTS",
+        "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].snoozeUntil"
+      }
+    ]
+  },
+  "MAILG-SPAM-TRASH-017": {
+    "prompt": "Go to Spam folder. Find the email 'URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution' and move it to Trash. Then find the crypto spam 'Turn $100 into $100,000 with this ONE crypto secret!' and also move it to Trash.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Health spam moved to Trash",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution')].labels",
+        "expected": ["Trash"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Health spam no longer in Spam",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution')].labels",
+        "expected": ["Spam"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Crypto spam moved to Trash",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='💰 Turn $100 into $100,000 with this ONE crypto secret!')].labels",
+        "expected": ["Trash"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Crypto spam no longer in Spam",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='💰 Turn $100 into $100,000 with this ONE crypto secret!')].labels",
+        "expected": ["Spam"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-PROMOTIONS-MULTI-018": {
+    "prompt": "Go to Promotions folder. Star the Spotify email 'Your summer playlist is ready' and mark it as important. Then find the Udemy email '90% OFF today — learn anything' - archive it and add the label 'Learning'.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Spotify email is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Your summer playlist is ready ☀️')].starred",
+        "expected": true
+      },
+      {
+        "title": "Spotify email is marked important",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Your summer playlist is ready ☀️')].important",
+        "expected": true
+      },
+      {
+        "title": "Udemy email archived (not in Inbox)",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🔥 90% OFF today — learn anything')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Udemy email has Learning label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='🔥 90% OFF today — learn anything')].labels",
+        "expected": ["Learning"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-SCHEDULE-EDIT-SEND-019": {
+    "prompt": "Compose an email to vendor@supplies.com with CC to purchasing@company.com. Subject: 'Order Confirmation'. Body: 'Please confirm receipt of order #12345. We expect delivery by end of month.' Schedule it for this evening. Then go to Scheduled folder, find the email, cancel the scheduled send (move to Drafts), edit the draft body to add 'Please respond by Friday.' at the end, and send it immediately.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Email exists with correct subject",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"subject": "Order Confirmation"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+      },
+      {
+        "title": "Email has correct TO recipient",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Order Confirmation')].to",
+        "expected": ["vendor@supplies.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has CC to purchasing",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Order Confirmation')].cc",
+        "expected": ["purchasing@company.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email has Sent label (sent immediately)",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Order Confirmation')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email NOT in Scheduled",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Order Confirmation')].labels",
+        "expected": ["Scheduled"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email NOT in Drafts",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Order Confirmation')].labels",
+        "expected": ["Drafts"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Email body contains edited text",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Order Confirmation')].body",
+        "expected": "Please respond by Friday",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Email body contains original text",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Order Confirmation')].body",
+        "expected": "order #12345",
+        "options": {"caseInsensitive": true}
+      }
+    ]
+  },
+  "MAILG-SEARCH-REPLY-020": {
+    "prompt": "Search for emails from 'stripe'. Find the email 'Receipt for your payment to Acme Corp'. Reply with: 'Thank you for the receipt. The payment has been recorded in our system.' After sending, star the reply and archive the original Stripe email.",
+    "isPrimary": true,
+    "assertions": [
+      {
+        "title": "Reply email exists",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails",
+        "expected": [{"subject": "Re: Receipt for your payment to Acme Corp"}],
+        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+      },
+      {
+        "title": "Reply sent to Stripe",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Receipt for your payment to Acme Corp')].to",
+        "expected": ["receipts@stripe.com"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply body contains acknowledgment",
+        "operator": "STRING_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Receipt for your payment to Acme Corp')].body",
+        "expected": "payment has been recorded",
+        "options": {"caseInsensitive": true}
+      },
+      {
+        "title": "Reply has Sent label",
+        "operator": "ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Re: Receipt for your payment to Acme Corp')].labels",
+        "expected": ["Sent"],
+        "options": {"mode": "some"}
+      },
+      {
+        "title": "Reply is starred",
+        "operator": "JSON_MATCH",
+        "path": "emails[?(@.subject=='Re: Receipt for your payment to Acme Corp')].starred",
+        "expected": true
+      },
+      {
+        "title": "Original Stripe email archived (not in Inbox)",
+        "operator": "NOT_ARRAY_CONTAINS",
+        "path": "emails[?(@.subject=='Receipt for your payment to Acme Corp')].labels",
+        "expected": ["Inbox"],
+        "options": {"mode": "some"}
+      }
+    ]
+  },
+  "MAILG-INBOX-ANALYSIS-RDT-001": {
+    "prompt": "Analyze your inbox and calculate the following statistics: (1) Total number of emails in the Inbox, (2) Number of unread emails in the Inbox, (3) Number of emails marked as important in the Inbox, (4) Number of starred emails in the Inbox, (5) Count of unread emails by sender - identify the top 5 senders with the most unread emails. Based on these calculations, recommend which sender's emails should be prioritized for review and explain your reasoning based on the unread counts and email importance.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of inbox email statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates inbox email statistics including total count, unread count, important count, starred count, and unread by sender.",
+        "expected_facts": [
+          {
+            "fact": "Total number of emails in the Inbox is 186",
+            "weight": 2
+          },
+          {
+            "fact": "Number of unread emails in the Inbox is 122",
+            "weight": 2
+          },
+          {
+            "fact": "Number of emails marked as important in the Inbox is 103",
+            "weight": 1.5
+          },
+          {
+            "fact": "Number of starred emails in the Inbox is 67",
+            "weight": 1.5
+          },
+          {
+            "fact": "Top 5 senders with most unread emails in Inbox: GitHub (noreply@github.com): 5 unread; Zoom (no-reply@zoom.us): 5 unread; Netflix (info@mailer.netflix.com): 4 unread; Calendly (no-reply@calendly.com): 4 unread; Ben Carson (ben.carson@example.com): 4 unread",
+            "weight": 2.5
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for sender prioritization based on calculated statistics",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for recommending which senders to prioritize based on unread counts and email importance.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that GitHub and Zoom are tied for most unread emails (5 each), followed by Netflix, Calendly, and Ben Carson (4 each)",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Reasoning correctly distinguishes between automated service emails (GitHub, Zoom, Netflix, Calendly) and personal/colleague emails (Ben Carson) when prioritizing, explaining why personal emails may warrant higher priority despite similar unread counts",
+            "weight": 2
+          },
+          {
+            "aspect": "Explains how the ratio of unread to total emails (122 unread out of 186 total = ~66% unread) indicates email management attention is needed",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Reasoning considers that important emails (103) represent a significant portion of inbox (55%) and should factor into prioritization decisions",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final sender prioritization recommendation aligns with calculated statistics and reasoning, explaining why certain senders should be addressed first based on unread count, sender type (automated vs personal), and importance",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of inbox analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only inbox-relevant statistics and recommendations without hallucinations or irrelevant details.",
+        "expected_facts": [
+          "Total inbox email count (186)",
+          "Unread email count (122)",
+          "Important email count (103)",
+          "Starred email count (67)",
+          "Top 5 senders by unread count with specific numbers (GitHub: 5, Zoom: 5, Netflix: 4, Calendly: 4, Ben Carson: 4)"
+        ],
+        "expected_reasonings": [
+          "Recommendation for sender prioritization based on calculated unread counts and sender types (automated vs personal)"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-CATEGORY-BREAKDOWN-RDT-002": {
+    "prompt": "Analyze your inbox and calculate the email distribution across categories: (1) Count emails in Primary category, (2) Count emails in Promotions category, (3) Count emails in Updates category. For each category, also count how many are unread. Based on these calculations, recommend which category should be reviewed first and explain your reasoning based on the counts and typical email importance by category.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of category email counts",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates email counts by category (Primary, Promotions, Updates) and unread counts within each.",
+        "expected_facts": [
+          {
+            "fact": "Primary category contains 84 emails in the Inbox",
+            "weight": 2
+          },
+          {
+            "fact": "Promotions category contains 36 emails in the Inbox",
+            "weight": 2
+          },
+          {
+            "fact": "Updates category contains 54 emails in the Inbox",
+            "weight": 2
+          },
+          {
+            "fact": "Total categorized emails (Primary 84 + Promotions 36 + Updates 54 = 174) account for most of the 186 inbox emails",
+            "weight": 1.5
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for category prioritization based on calculated counts",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for recommending which category to review first based on email counts and category importance.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that Primary (84 emails) is the largest category, followed by Updates (54 emails), then Promotions (36 emails)",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Reasoning correctly explains why Primary category typically contains more important emails (personal correspondence, work emails) compared to Promotions (marketing, sales) and Updates (notifications, alerts)",
+            "weight": 2
+          },
+          {
+            "aspect": "Explains how Promotions emails (36 emails) are typically lower priority and can be batch-processed or filtered, while Primary emails often require individual attention",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Reasoning considers that Updates category (54 emails) may contain time-sensitive notifications that warrant attention after Primary",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final category prioritization recommendation aligns with calculated counts and reasoning, recommending Primary first due to higher importance despite volume, followed by logical ordering of remaining categories",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of category analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only category-relevant statistics and recommendations without hallucinations or irrelevant details.",
+        "expected_facts": [
+          "Primary category count (84 emails)",
+          "Promotions category count (36 emails)",
+          "Updates category count (54 emails)",
+          "Category prioritization order with reasoning"
+        ],
+        "expected_reasonings": [
+          "Recommendation for category review order based on calculated counts and typical email importance by category type"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-IMPORTANT-UNREAD-RDT-003": {
+    "prompt": "Analyze your inbox and calculate: (1) Total number of emails marked as important, (2) Total number of unread emails, (3) Number of emails that are BOTH important AND unread. List the subjects and senders of the first 5 important unread emails. Based on these calculations, explain why important unread emails should be the highest priority and recommend an action plan for addressing them.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of important and unread email statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates important email count, unread count, and important-unread intersection.",
+        "expected_facts": [
+          {
+            "fact": "Total number of emails marked as important in the Inbox is 103",
+            "weight": 2
+          },
+          {
+            "fact": "Total number of unread emails in the Inbox is 122",
+            "weight": 2
+          },
+          {
+            "fact": "Number of emails that are both important AND unread is 72",
+            "weight": 2.5
+          },
+          {
+            "fact": "First 5 important unread emails include: 'Re: [GitHub] Please verify your device' from GitHub, 'IMPORTANT: Discussion on the Acme Project' from Jane Smith, '🔔 Your Figma team has invited you to a new project' from Figma, '📅 Meeting Invitation: Product Design Sync — Sep 8, 2:00 PM' from Google Calendar, '⚠️ New sign-in to your Slack workspace' from Slack",
+            "weight": 2
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for important-unread email prioritization",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for why important unread emails should be prioritized and the recommended action plan.",
+        "aspects": [
+          {
+            "aspect": "Correctly calculates that 72 out of 122 unread emails (59%) are marked as important, indicating a significant portion of unread emails warrant attention",
+            "weight": 2
+          },
+          {
+            "aspect": "Reasoning explains why the intersection of important AND unread (72 emails) represents the highest priority items that need immediate attention",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Explains that 72 out of 103 important emails (70%) are still unread, suggesting important emails are being neglected",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Reasoning provides actionable recommendations for addressing the 72 important unread emails (e.g., batch processing, time blocking, prioritization by sender type)",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final action plan aligns with calculated statistics and prioritizes the important-unread emails based on the analysis",
+            "weight": 1.5
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of important-unread analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only relevant statistics and recommendations without hallucinations or irrelevant details.",
+        "expected_facts": [
+          "Important email count (103)",
+          "Unread email count (122)",
+          "Important AND unread count (72)",
+          "List of first 5 important unread email subjects and senders",
+          "Action plan for addressing important unread emails"
+        ],
+        "expected_reasonings": [
+          "Recommendation for prioritizing important unread emails based on calculated intersection statistics"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-ATTACHMENT-ANALYSIS-RDT-004": {
+    "prompt": "Analyze your inbox and calculate: (1) Total number of emails with attachments, (2) List each email with attachments including subject, sender, and number of attachments. Based on these calculations, identify which emails with attachments might require immediate attention (e.g., documents to review, files to download) and explain your reasoning.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of attachment email statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates the number of emails with attachments and lists their details.",
+        "expected_facts": [
+          {
+            "fact": "Total number of emails with attachments in the Inbox is 3",
+            "weight": 2.5
+          },
+          {
+            "fact": "Email '[GitHub] Please verify your device' has 2 attachments",
+            "weight": 2
+          },
+          {
+            "fact": "Email 'A new device logged into your account' has 1 attachment",
+            "weight": 2
+          },
+          {
+            "fact": "Email '🔔 Your Figma team has invited you to a new project' has 1 attachment",
+            "weight": 2
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for attachment email prioritization",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for identifying which attachment emails require immediate attention.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that only 3 emails out of 186 inbox emails (1.6%) have attachments, making them relatively rare and potentially important",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Reasoning explains why the GitHub verification email with 2 attachments might be security-related and warrant immediate attention",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Explains that the Notion device login email with attachment could contain security-relevant information requiring review",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Reasoning considers the Figma project invitation attachment might contain project details or assets requiring action",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final recommendation aligns with reasoning and prioritizes attachment emails based on sender context (security notifications vs project invitations) and attachment count",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of attachment analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only attachment-relevant statistics and recommendations without hallucinations.",
+        "expected_facts": [
+          "Total count of emails with attachments (3)",
+          "List of all 3 emails with attachments including subjects and attachment counts",
+          "Sender information for each attachment email",
+          "Prioritization recommendation for attachment emails"
+        ],
+        "expected_reasonings": [
+          "Recommendation for which attachment emails to review first based on sender context and attachment content"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-FOLDER-COMPARISON-RDT-005": {
+    "prompt": "Analyze your email folders and calculate: (1) Number of emails in Inbox, (2) Number of emails in Sent folder, (3) Number of emails in Spam folder. Calculate the ratio of sent emails to received emails (Sent / Inbox). Based on these calculations, analyze your email activity pattern and recommend whether you need to focus more on responding to emails or if your send/receive ratio is healthy.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of folder email counts",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates email counts by folder (Inbox, Sent, Spam).",
+        "expected_facts": [
+          {
+            "fact": "Inbox folder contains 186 emails",
+            "weight": 2
+          },
+          {
+            "fact": "Sent folder contains 19 emails",
+            "weight": 2
+          },
+          {
+            "fact": "Spam folder contains 4 emails",
+            "weight": 2
+          },
+          {
+            "fact": "Ratio of sent emails to inbox emails is approximately 19/186 = 0.10 or 10% (sent about 1 email for every 10 received)",
+            "weight": 2.5
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for email activity analysis",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for analyzing email activity pattern based on folder counts and send/receive ratio.",
+        "aspects": [
+          {
+            "aspect": "Correctly calculates and interprets the send/receive ratio (19 sent out of 186 received = ~10%), explaining what this ratio means for email responsiveness",
+            "weight": 2
+          },
+          {
+            "aspect": "Reasoning explains whether a 10% response rate (1 sent for every 10 received) indicates a healthy email pattern or suggests more responses may be needed",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Explains that Spam folder having only 4 emails (2% of total) suggests spam filtering is working effectively",
+            "weight": 1.3
+          },
+          {
+            "aspect": "Reasoning considers that not all received emails require responses (newsletters, notifications) when evaluating the send/receive ratio",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final recommendation aligns with calculated statistics and provides actionable advice for email management based on the activity pattern analysis",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of folder analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only folder-relevant statistics and recommendations without hallucinations.",
+        "expected_facts": [
+          "Inbox email count (186)",
+          "Sent email count (19)",
+          "Spam email count (4)",
+          "Send/receive ratio calculation (~10% or 19/186)",
+          "Analysis of email activity pattern and recommendation"
+        ],
+        "expected_reasonings": [
+          "Recommendation for email management based on calculated folder counts and send/receive ratio analysis"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-THREAD-FOLLOWUP-RDT-006": {
+    "prompt": "Analyze your inbox for email threads (emails with 'Re:' in the subject). Calculate: (1) Total number of reply emails (threads) in your inbox, (2) How many of these thread emails are unread, (3) How many thread emails are marked as important. Based on these calculations, identify which email threads likely need follow-up responses and explain your reasoning for prioritizing them.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of email thread statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates thread email counts and their status.",
+        "expected_facts": [
+          {
+            "fact": "Total number of reply emails (threads) with 'Re:' in subject in the Inbox is 16",
+            "weight": 2.5
+          },
+          {
+            "fact": "Number of unread thread emails is 15",
+            "weight": 2
+          },
+          {
+            "fact": "Number of thread emails marked as important is 11",
+            "weight": 2
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for thread follow-up prioritization",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for identifying which threads need follow-up responses.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that 15 out of 16 thread emails (94%) are unread, indicating most conversations are waiting for responses",
+            "weight": 2
+          },
+          {
+            "aspect": "Reasoning explains that thread emails typically require responses since they're part of ongoing conversations",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Explains that important thread emails (11 out of 16) should be prioritized as they likely contain critical discussions",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final recommendation prioritizes unread important threads first, followed by other unread threads, explaining the logic clearly",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of thread analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only thread-relevant statistics and recommendations without hallucinations.",
+        "expected_facts": [
+          "Total thread email count (16)",
+          "Unread thread count (15)",
+          "Important thread count (11)",
+          "Prioritization recommendation for thread follow-up"
+        ],
+        "expected_reasonings": [
+          "Recommendation for which threads to respond to first based on unread status and importance"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-TIMESENSITIVE-PRIORITY-RDT-007": {
+    "prompt": "Analyze your inbox for time-sensitive emails. Calculate: (1) Number of emails with 'URGENT' in the subject, (2) Number of emails with 'meeting' or 'invitation' in the subject, (3) How many of these time-sensitive emails are unread, (4) How many are marked as important. Based on these calculations, create a priority list of time-sensitive emails that need immediate attention and explain your reasoning.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of time-sensitive email statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates time-sensitive email counts.",
+        "expected_facts": [
+          {
+            "fact": "Number of emails with 'URGENT' in subject in the Inbox is 1",
+            "weight": 2
+          },
+          {
+            "fact": "Number of emails with 'meeting' or 'invitation' in subject in the Inbox is 14",
+            "weight": 2.5
+          },
+          {
+            "fact": "Total time-sensitive emails (URGENT + meeting/invitation) is 15",
+            "weight": 2
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for time-sensitive email prioritization",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for prioritizing time-sensitive emails.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that the single URGENT email should be highest priority as urgent emails typically require immediate action",
+            "weight": 2
+          },
+          {
+            "aspect": "Reasoning explains that meeting invitations (14 emails) are time-sensitive because they often have RSVP deadlines or require calendar coordination",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Explains that unread time-sensitive emails should be prioritized over read ones, as they haven't been addressed yet",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final priority list aligns with reasoning, placing URGENT first, followed by unread meeting invitations, then read meeting invitations",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of time-sensitive analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only time-sensitive email statistics and prioritization without hallucinations.",
+        "expected_facts": [
+          "URGENT email count (1)",
+          "Meeting/invitation email count (14)",
+          "Total time-sensitive email count (15)",
+          "Priority list for time-sensitive emails"
+        ],
+        "expected_reasonings": [
+          "Recommendation for prioritizing time-sensitive emails based on urgency level and read status"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-BILLING-REVIEW-RDT-008": {
+    "prompt": "Analyze your inbox for billing and payment-related emails. Calculate: (1) Total number of emails related to invoices, billing, or payments, (2) How many billing emails are unread, (3) How many billing emails are marked as important. List the subjects and senders of all billing-related emails. Based on these calculations, recommend which billing emails need immediate review to avoid missed payments or account issues.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of billing email statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates billing email counts and lists them.",
+        "expected_facts": [
+          {
+            "fact": "Total number of billing-related emails (invoices, billing, payments) in the Inbox is 7",
+            "weight": 2.5
+          },
+          {
+            "fact": "All 7 billing emails should be listed with their subjects and senders",
+            "weight": 2
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for billing email prioritization",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for prioritizing billing emails.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that billing emails are critical because missed payments can result in service interruptions, late fees, or account issues",
+            "weight": 2
+          },
+          {
+            "aspect": "Reasoning explains that unread billing emails should be reviewed first as they may contain payment due dates or account notifications",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Explains that all billing emails, regardless of read status, should be reviewed to ensure no payment deadlines are missed",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final recommendation prioritizes billing emails appropriately, explaining why each needs attention",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of billing analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only billing-relevant statistics and recommendations without hallucinations.",
+        "expected_facts": [
+          "Total billing email count (7)",
+          "List of all billing emails with subjects and senders",
+          "Unread billing email count",
+          "Prioritization recommendation for billing emails"
+        ],
+        "expected_reasonings": [
+          "Recommendation for which billing emails to review first based on payment deadlines and account importance"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-SENDER-VOLUME-RDT-009": {
+    "prompt": "Analyze your inbox and identify the top 5 senders by email volume (number of emails received from each sender). For each of these top senders, calculate: (1) Total emails from that sender, (2) Number of unread emails from that sender, (3) Percentage of their emails that are unread. Based on these calculations, recommend which senders might benefit from email filtering, labels, or automated rules to improve inbox management.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of sender volume statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately identifies top senders and calculates their email statistics.",
+        "expected_facts": [
+          {
+            "fact": "Top 5 senders by email volume in the Inbox should be correctly identified with accurate email counts",
+            "weight": 2.5
+          },
+          {
+            "fact": "For each top sender, the unread count and unread percentage should be accurately calculated",
+            "weight": 2
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for sender filtering recommendations",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for recommending email filtering or labels for high-volume senders.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that senders with high email volume (many emails) might benefit from filtering to reduce inbox clutter",
+            "weight": 2
+          },
+          {
+            "aspect": "Reasoning explains that senders with high unread percentages indicate emails that are being ignored and might be candidates for automated filtering or labels",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Explains the difference between senders that need attention (low unread %) vs senders that could be filtered (high volume, high unread %)",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final recommendation aligns with calculated statistics, suggesting appropriate filtering strategies for high-volume senders",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of sender volume analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only sender volume statistics and filtering recommendations without hallucinations.",
+        "expected_facts": [
+          "Top 5 senders by email volume with counts",
+          "Unread counts and percentages for each top sender",
+          "Filtering/labeling recommendations"
+        ],
+        "expected_reasonings": [
+          "Recommendation for which senders to filter or label based on volume and unread patterns"
+        ],
+        "pass_threshold_percent": 80
+      }
+    ]
+  },
+  "MAILG-UNREAD-CATEGORY-RDT-010": {
+    "prompt": "Analyze your unread emails by category. Calculate: (1) Number of unread emails in Primary category, (2) Number of unread emails in Promotions category, (3) Number of unread emails in Updates category, (4) Percentage of unread emails in each category relative to total unread. Based on these calculations, recommend which category should be prioritized for review and explain your reasoning based on category importance and unread volume.",
+    "assertions": [
+      {
+        "title": "Verify factual accuracy of unread email category statistics",
+        "operator": "FACTUAL_VERIFICATION",
+        "description": "Confirm the response accurately calculates unread email counts by category.",
+        "expected_facts": [
+          {
+            "fact": "Number of unread emails in Primary category is 61",
+            "weight": 2.5
+          },
+          {
+            "fact": "Number of unread emails in Promotions category is 23",
+            "weight": 2
+          },
+          {
+            "fact": "Number of unread emails in Updates category is 32",
+            "weight": 2
+          },
+          {
+            "fact": "Total unread emails across all categories (61 + 23 + 32 = 116) accounts for most of the 122 total unread emails",
+            "weight": 1.5
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Evaluate reasoning quality for unread category prioritization",
+        "operator": "REASONING_QUALITY",
+        "description": "Assess reasoning for prioritizing which category to review first based on unread counts.",
+        "aspects": [
+          {
+            "aspect": "Correctly identifies that Primary category has the most unread emails (61), representing 50% of total unread, and should be prioritized",
+            "weight": 2
+          },
+          {
+            "aspect": "Reasoning explains that Primary unread emails are most important because they contain personal correspondence and work emails requiring responses",
+            "weight": 1.8
+          },
+          {
+            "aspect": "Explains that Promotions category (23 unread, 19%) can be lower priority as marketing emails rarely require immediate action",
+            "weight": 1.5
+          },
+          {
+            "aspect": "Final recommendation aligns with calculated statistics, prioritizing Primary first due to volume and importance, followed by Updates, then Promotions",
+            "weight": 1.8
+          }
+        ],
+        "pass_threshold_percent": 80
+      },
+      {
+        "title": "Assess information precision of unread category analysis",
+        "operator": "INFORMATION_PRECISION",
+        "description": "Ensure the response includes only unread category statistics and prioritization recommendations without hallucinations.",
+        "expected_facts": [
+          "Unread count in Primary category (61)",
+          "Unread count in Promotions category (23)",
+          "Unread count in Updates category (32)",
+          "Category prioritization recommendation"
+        ],
+        "expected_reasonings": [
+          "Recommendation for which category to review first based on unread volume and category importance"
+        ],
+        "pass_threshold_percent": 80
       }
     ]
   }

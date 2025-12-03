@@ -72,7 +72,7 @@ export const Icon = ({
           className="material-symbols-outlined"
           style={{
             fontSize,
-            color: disabled ? "#b8b8b8" : "rgb(68, 68, 68)",
+            color: disabled ? "#b8b8b8" : color,
           }}
         >
           {name}

@@ -170,12 +170,48 @@ async function processAssertion(assertion, data, modelResponse) {
         const response = await handleLLMAssertion(assertion, modelResponse || '');
         console.log(`LLM assertion successful on attempt ${attempt}`);
 
+        // Calculate weighted score from individual scores (1-5 scale)
+        const scores = response.fact_scores || response.aspect_scores || response.precision_scores || {};
+        const expectedItems = assertion.expected_facts || assertion.aspects || assertion.expected_reasonings || [];
+        const MAX_SCORE = 5; // Judge uses 1-5 scale where 5 is perfect
+        
+        let totalWeight = 0;
+        let weightedScore = 0;
+        
+        // Calculate weighted score - normalize 1-5 scores to 0-100%
+        if (Array.isArray(expectedItems)) {
+          expectedItems.forEach((item, index) => {
+            const weight = (typeof item === 'object' && item.weight) ? item.weight : 1;
+            // Get score value (1-5), default to 1 (worst) if missing
+            const scoreValue = Object.values(scores)[index] ?? 1;
+            // Normalize to percentage: score 5 = 100%, score 1 = 20%
+            const normalizedScore = (scoreValue / MAX_SCORE) * 100;
+            totalWeight += weight;
+            weightedScore += normalizedScore * weight;
+          });
+        } else {
+          // If scores is an object, calculate simple average
+          const scoreValues = Object.values(scores);
+          if (scoreValues.length > 0) {
+            totalWeight = scoreValues.length;
+            weightedScore = scoreValues.reduce((sum, val) => sum + ((val / MAX_SCORE) * 100 || 0), 0);
+          }
+        }
+        
+        // Calculate weighted average percentage
+        const percentScore = totalWeight > 0 ? weightedScore / totalWeight : 0;
+        const passThreshold = assertion.pass_threshold_percent || 80;
+        const passed = percentScore >= passThreshold;
+        
+        console.log(`RDT Score: ${percentScore.toFixed(1)}% (threshold: ${passThreshold}%) - ${passed ? 'PASS' : 'FAIL'}`);
+
         return {
           operator: operator,
-          actual: response.fact_scores || response.aspect_scores || response.precision_scores,
-          expected: assertion.expected_facts || assertion.aspects || assertion.expected_reasonings || {},
-          result: response.error ? 'fail' : 'pass',
-          score: response.score,
+          actual: scores,
+          expected: expectedItems,
+          result: response.error ? 'fail' : (passed ? 'pass' : 'fail'),
+          score: percentScore,
+          passThreshold: passThreshold,
           details: response.details,
           error: response.error || null,
           executionTime: Date.now() - startTime
