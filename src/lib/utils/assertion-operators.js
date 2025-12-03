@@ -91,8 +91,22 @@ const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   }
 
   try {
+    // Clean the content - remove markdown code blocks if present
+    let cleanedContent = content.trim();
+    
+    // Remove markdown code blocks (```json or ```)
+    if (cleanedContent.startsWith('```')) {
+      // Find the first newline after ```
+      const firstNewline = cleanedContent.indexOf('\n');
+      if (firstNewline !== -1) {
+        cleanedContent = cleanedContent.substring(firstNewline + 1);
+      }
+      // Remove trailing ```
+      cleanedContent = cleanedContent.replace(/```\s*$/, '').trim();
+    }
+    
     // Parse the JSON response from the LLM
-    const parsedResponse = JSON.parse(content);
+    const parsedResponse = JSON.parse(cleanedContent);
 
     // Validate the response structure
     if (!parsedResponse.operator) {
@@ -205,6 +219,35 @@ export const matchingOperators = {
     }
 
     return false;
+  },
+
+  NOT_ARRAY_CONTAINS: (actual, expected, options = {}) => {
+    // If actual is not an array, it definitely doesn't contain the expected items
+    if (!Array.isArray(actual)) {
+      return true;
+    }
+
+    const { mode = 'some', matchBy = 'deep', key } = options;
+
+    // Helper function to compare items based on matchBy
+    const compareItems = (actualItem, expectedItem) => {
+      if (matchBy === 'key' && key) {
+        if (typeof actualItem === 'object' && actualItem !== null) {
+          return JSON.stringify(actualItem[key]) === JSON.stringify(expectedItem[key]);
+        }
+        return false;
+      } else {
+        return JSON.stringify(actualItem) === JSON.stringify(expectedItem);
+      }
+    };
+
+    // Check if any of the expected items are in the actual array
+    const containsAny = expected.some(expectedItem =>
+      actual.some(actualItem => compareItems(actualItem, expectedItem))
+    );
+
+    // NOT_ARRAY_CONTAINS passes if NONE of the expected items are found
+    return !containsAny;
   },
 
   STRING_MATCH: (actual, expected, options = {}) => {

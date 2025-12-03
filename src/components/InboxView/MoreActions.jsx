@@ -20,14 +20,18 @@ const useCustomHotKeys = ({ handlePeriodPress }) => {
   });
 };
 
-const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
+const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu, anchorEl: externalAnchorEl, onClose: externalOnClose }) => {
   const { markRead, setStar, setImportant, snooze, unsnooze, setMuted } = useMailActions();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [internalAnchorEl, setInternalAnchorEl] = React.useState(null);
   const [currentPopover, setCurrentPopover] = React.useState("main");
 
   const moreVertRef = useRef(null);
   const { setSnackbar, emails, setEmails } = useGlobalContext();
+
+  // Use external anchorEl if provided, otherwise use internal state
+  const anchorEl = externalAnchorEl !== undefined ? externalAnchorEl : internalAnchorEl;
+  const setAnchorEl = externalAnchorEl !== undefined ? (() => {}) : setInternalAnchorEl;
 
   const threadEmails = useMemo(
     () => emails.filter((email) => email.threadId === thread.threadId),
@@ -40,14 +44,20 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
   );
 
   const handleClick = () => {
-    setAnchorEl(moreVertRef.current);
+    if (externalAnchorEl === undefined) {
+      setAnchorEl(moreVertRef.current);
+    }
     setCurrentPopover("main");
   };
 
   useCustomHotKeys({ handlePeriodPress: handleClick });
 
   const handleClose = () => {
-    setAnchorEl(null);
+    if (externalOnClose) {
+      externalOnClose();
+    } else {
+      setAnchorEl(null);
+    }
     setCurrentPopover("main");
   };
 
@@ -285,7 +295,10 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu }) => {
 
   return (
     <Box>
-      <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} _ref={moreVertRef} />
+      {/* Only render the icon if no external anchorEl is provided */}
+      {externalAnchorEl === undefined && (
+        <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} _ref={moreVertRef} />
+      )}
 
       {currentPopover === "main" && (
         <Popover

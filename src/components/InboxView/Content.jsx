@@ -1,11 +1,13 @@
 import styled from "@emotion/styled";
-import React, { useContext, useMemo, useState, useEffect } from "react";
+import React, { useContext, useMemo, useState, useEffect, useCallback } from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
 import { Attachments } from "./Attachments";
 import ContactPopup from "../Contacts/ContactPopup";
 import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
 import { getEmbeddedImage, processHtmlForDisplay, extractEmbeddedImageIds } from "../../utils/embeddedImages";
+import useMailActions from "../../hooks/useMailActions";
+import MoreActions from "./MoreActions";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -199,8 +201,9 @@ const Time = ({ timestamp }) => {
   );
 };
 
-const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], onReply }) => {
-  const { recipients: contacts, loggedInUser } = useGlobalContext();
+const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, onReply, responseViewRef }) => {
+  const { recipients: contacts, loggedInUser, setComposeWindows } = useGlobalContext();
+  const [moreActionsAnchor, setMoreActionsAnchor] = useState(null);
 
   const senderContact = useMemo(() => {
     // Check if sender email is of logged in user
@@ -225,22 +228,89 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], onReply }
     return { name: senderName, email: senderEmail, id: `custom-${senderEmail}` };
   }, [contacts, senderName, senderEmail]);
 
+  const { toggleStar } = useMailActions();
+
+  const handleStar = useCallback((e) => {
+    e?.stopPropagation();
+    if (email?.id) {
+      toggleStar([email.id]);
+    }
+  }, [email, toggleStar]);
+
+  const handleReply = useCallback((e) => {
+    e?.stopPropagation();
+    if (onReply) {
+      onReply();
+    } else if (responseViewRef?.current?.handleReply) {
+      responseViewRef.current.handleReply();
+      // Scroll to reply container
+      setTimeout(() => {
+        const replyContainer = document.querySelector('[data-testid="email-response-view"]');
+        if (replyContainer) {
+          replyContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else if (email) {
+      // Fallback: open compose window
+      const replySubject = email.subject?.startsWith("Re: ") ? email.subject : `Re: ${email.subject || ""}`;
+      setComposeWindows((prev) => [
+        ...prev,
+        {
+          id: `reply-${Date.now()}`,
+          fields: {
+            to: [email.from.email],
+            subject: replySubject,
+            replyingTo: email,
+            replyType: "reply",
+          },
+        },
+      ]);
+    }
+  }, [email, onReply, responseViewRef, setComposeWindows]);
+
+  const handleMoreActions = useCallback((e) => {
+    e?.stopPropagation();
+    setMoreActionsAnchor(e?.currentTarget || null);
+  }, []);
+
+  const handleCloseMoreActions = useCallback(() => {
+    setMoreActionsAnchor(null);
+  }, []);
+
+  const isStarred = email?.starred || false;
+
   return (
-    <TopBarContainer>
-      <div>
-        <ContactPopup contact={{ ...senderContact, email: senderEmail }}>
-          <Sender name={senderName} email={senderEmail} />
-        </ContactPopup>
-        <Recipient recipients={recipients} />
-      </div>
-      <ActionsContainer>
-        <Time timestamp={timestamp} />
-        <Icon name="star" label="Not starred" />
-        <Icon name="mood" label="Add a reaction" />
-        <Icon name="reply" label="Reply" onClick={onReply} />
-        <Icon name="more_vert" label="More" />
-      </ActionsContainer>
-    </TopBarContainer>
+    <>
+      <TopBarContainer>
+        <div>
+          <ContactPopup contact={{ ...senderContact, email: senderEmail }}>
+            <Sender name={senderName} email={senderEmail} />
+          </ContactPopup>
+          <Recipient recipients={recipients} />
+        </div>
+        <ActionsContainer>
+          <Time timestamp={timestamp} />
+          <Icon 
+            name={isStarred ? "star" : "star_border"} 
+            label={isStarred ? "Starred" : "Not starred"} 
+            onClick={handleStar}
+            color={isStarred ? "#f4b400" : "rgb(68, 68, 68)"}
+          />
+          <Icon name="mood" label="Add a reaction" />
+          <Icon name="reply" label="Reply" onClick={handleReply} />
+          <Icon name="more_vert" label="More" onClick={handleMoreActions} />
+        </ActionsContainer>
+      </TopBarContainer>
+      {email && (
+        <MoreActions
+          thread={{ threadId: email.threadId, starred: isStarred, important: email.important }}
+          showAdvancedMenu={false}
+          toggleShowAdvancedMenu={() => {}}
+          anchorEl={moreActionsAnchor}
+          onClose={handleCloseMoreActions}
+        />
+      )}
+    </>
   );
 };
 
@@ -450,6 +520,8 @@ export const Content = React.memo(
     scheduledDate,
     scheduledTime,
     emailId,
+    email,
+    responseViewRef,
   }) => {
     return (
       <ContentContainer>
@@ -457,7 +529,14 @@ export const Content = React.memo(
           <Avatar>{senderName.charAt(0)}</Avatar>
         </ProfileImageContainer>
         <BodyContainer>
-          <TopBar timestamp={timestamp} senderName={senderName} senderEmail={senderEmail} recipients={recipients} />
+          <TopBar 
+            timestamp={timestamp} 
+            senderName={senderName} 
+            senderEmail={senderEmail} 
+            recipients={recipients}
+            email={email}
+            responseViewRef={responseViewRef}
+          />
           {isScheduled && (
             <ScheduledMessage scheduledDate={scheduledDate} scheduledTime={scheduledTime} emailId={emailId} />
           )}

@@ -182,6 +182,8 @@ export const EmailContent = ({
                 scheduledDate={message.scheduledDate}
                 scheduledTime={message.scheduledTime}
                 emailId={message.id}
+                email={message}
+                responseViewRef={responseViewRef}
               />
               {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
             </React.Fragment>
