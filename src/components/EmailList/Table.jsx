@@ -169,7 +169,7 @@ const OneColumnData = ({
             aria-pressed={email.starred}
             onClick={(e) => {
               e.stopPropagation();
-              toggleStar();
+              toggleStar([email.id]);
             }}
             sx={{
               color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
