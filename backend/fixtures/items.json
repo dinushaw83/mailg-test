@@ -1,0 +1,91 @@
+[
+  {
+    "id": 1,
+    "name": "Example Item 1",
+    "description": "This is a high-priority item demonstrating the CRUD API",
+    "status": "active",
+    "priority": "high",
+    "is_public": true,
+    "created_by_id": 1,
+    "updated_by_id": null,
+    "is_deleted": false
+  },
+  {
+    "id": 2,
+    "name": "Example Item 2",
+    "description": "Medium priority item for testing list endpoints",
+    "status": "active",
+    "priority": "medium",
+    "is_public": true,
+    "created_by_id": 2,
+    "updated_by_id": null,
+    "is_deleted": false
+  },
+  {
+    "id": 3,
+    "name": "Private Item",
+    "description": "This item is private and only visible to agents and admins",
+    "status": "active",
+    "priority": "low",
+    "is_public": false,
+    "created_by_id": 1,
+    "updated_by_id": 2,
+    "is_deleted": false
+  },
+  {
+    "id": 4,
+    "name": "Inactive Item",
+    "description": "This item has been marked as inactive",
+    "status": "inactive",
+    "priority": "medium",
+    "is_public": true,
+    "created_by_id": 2,
+    "updated_by_id": null,
+    "is_deleted": false
+  },
+  {
+    "id": 5,
+    "name": "Archived Item",
+    "description": "This item has been archived for historical purposes",
+    "status": "archived",
+    "priority": "low",
+    "is_public": true,
+    "created_by_id": 1,
+    "updated_by_id": 1,
+    "is_deleted": false
+  },
+  {
+    "id": 6,
+    "name": "High Priority Task",
+    "description": "Urgent item requiring immediate attention",
+    "status": "active",
+    "priority": "high",
+    "is_public": true,
+    "created_by_id": 2,
+    "updated_by_id": null,
+    "is_deleted": false
+  },
+  {
+    "id": 7,
+    "name": "Simple Item",
+    "description": "A basic item with minimal configuration",
+    "status": "active",
+    "priority": "low",
+    "is_public": true,
+    "created_by_id": 3,
+    "updated_by_id": null,
+    "is_deleted": false
+  },
+  {
+    "id": 8,
+    "name": "Complex Item",
+    "description": "An item with more complex requirements and multiple updates",
+    "status": "active",
+    "priority": "high",
+    "is_public": false,
+    "created_by_id": 1,
+    "updated_by_id": 2,
+    "is_deleted": false
+  }
+]
+

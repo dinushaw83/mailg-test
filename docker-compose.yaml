@@ -1,0 +1,91 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: boiler_plate-postgres
+    environment:
+      - POSTGRES_USER=boiler_plate
+      - POSTGRES_PASSWORD=boiler_plate
+      - POSTGRES_DB=postgres
+      - POSTGRES_MAX_CONNECTIONS=1000
+    # Postgres tuning for ~32GB RAM / 32 vCPU host (adjust if your host differs)
+    command:
+      - postgres
+      - -c
+      - max_connections=1000
+      - -c
+      - shared_buffers=8GB
+      - -c
+      - effective_cache_size=24GB
+      - -c
+      - work_mem=8MB
+      - -c
+      - maintenance_work_mem=1GB
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - effective_io_concurrency=200
+      - -c
+      - checkpoint_completion_target=0.9
+      - -c
+      - wal_buffers=16MB
+      # CPU/parallelism (32 vCPU)
+      - -c
+      - max_worker_processes=32
+      - -c
+      - max_parallel_workers=32
+      - -c
+      - max_parallel_workers_per_gather=8
+      - -c
+      - max_parallel_maintenance_workers=8
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boiler_plate -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: boiler_plate-backend:latest
+    container_name: boiler_plate-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DEVELOPMENT_MODE=${DEVELOPMENT_MODE:-false}
+      - DB_BACKEND=postgres
+      - DATABASE_URL=postgresql+psycopg2://boiler_plate:boiler_plate@postgres:5432/postgres
+      - POSTGRES_ADMIN_DB=postgres
+      - POSTGRES_TEMPLATE_DB=boiler_plate_seed
+      - POSTGRES_RUN_DB_PREFIX=boiler_plate_
+      - UVICORN_WORKERS=1
+      # Shared secret for JWT signing/verification
+      # IMPORTANT: Set JWT_SECRET_KEY env var to a secure 32+ byte random value in production
+      # Generate with: python -c "import secrets; print(secrets.token_urlsafe(32))"
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-boiler_plate-local-dev-secret}
+      - JWT_ACCESS_TOKEN_TTL_SECONDS=86400
+    volumes:
+      - backend_logs:/app/backend/logs
+      - ./backend/fixtures:/seed/fixtures:ro
+    ports:
+      - "8766:8765"
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8765/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  backend_logs:
+  postgres_data:
