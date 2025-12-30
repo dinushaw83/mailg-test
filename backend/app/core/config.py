@@ -17,13 +17,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # in `docker-compose.yaml` to avoid conflicts with other services).
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+psycopg2://boiler_plate:boiler_plate@127.0.0.1:5434/postgres",
+    "postgresql+psycopg2://mailg:mailg@127.0.0.1:5434/postgres",
 )
 
 # Postgres template cloning settings
 POSTGRES_ADMIN_DB = os.getenv("POSTGRES_ADMIN_DB", "postgres")
-POSTGRES_TEMPLATE_DB = os.getenv("POSTGRES_TEMPLATE_DB", "boiler_plate_seed")
-POSTGRES_RUN_DB_PREFIX = os.getenv("POSTGRES_RUN_DB_PREFIX", "boiler_plate_")
+POSTGRES_TEMPLATE_DB = os.getenv("POSTGRES_TEMPLATE_DB", "mailg_seed")
+POSTGRES_RUN_DB_PREFIX = os.getenv("POSTGRES_RUN_DB_PREFIX", "mailg_")
 
 # API version prefix for all v1 endpoints.
 API_V1_PREFIX = "/api/v1"
@@ -55,12 +55,12 @@ def _get_jwt_secret() -> str:
 
 JWT_SECRET_KEY = _get_jwt_secret()
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-JWT_ISSUER = os.getenv("JWT_ISSUER", "boilerplate")
+JWT_ISSUER = os.getenv("JWT_ISSUER", "mailg")
 JWT_ACCESS_TOKEN_TTL_SECONDS = int(os.getenv("JWT_ACCESS_TOKEN_TTL_SECONDS", "3600"))
 
 # Known weak/common JWT secrets that should never be used in production
 _WEAK_JWT_SECRETS = frozenset({
-    "boiler_plate-local-dev-secret",
+    "mailg-local-dev-secret",
     "secret",
     "secret-key",
     "jwt-secret",

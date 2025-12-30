@@ -15,7 +15,7 @@ class User(Base):
     """User model representing system users with role-based access control.
     
     Supports admin, agent, and end-user roles with soft delete pattern.
-    This is a simplified boilerplate model - extend with additional fields as needed.
+    This is a simplified mailg model - extend with additional fields as needed.
     """
     __tablename__ = "users"
 

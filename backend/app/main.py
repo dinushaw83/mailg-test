@@ -47,9 +47,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Backend Boilerplate API",
+    title="Backend Mailg API",
     version="1.0.0",
-    description="FastAPI boilerplate with JWT auth, RBAC, and database isolation",
+    description="FastAPI mailg with JWT auth, RBAC, and database isolation",
     lifespan=lifespan,
     swagger_ui_parameters={
         # Keeps Authorization input on refresh (helps local dev).
@@ -84,7 +84,7 @@ def root() -> dict:
     Returns:
         Dictionary with API name and version.
     """
-    return {"message": "Backend Boilerplate API", "version": "1.0.0"}
+    return {"message": "Backend Mailg API", "version": "1.0.0"}
 
 
 @app.get("/health")

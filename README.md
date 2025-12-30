@@ -1,6 +1,6 @@
-# FastAPI Backend Boilerplate
+# FastAPI Backend Mailg
 
-A production-ready FastAPI boilerplate with JWT authentication, RBAC, and sophisticated database isolation system.
+A production-ready FastAPI mailg with JWT authentication, RBAC, and sophisticated database isolation system.
 
 ## Features
 
@@ -14,7 +14,7 @@ A production-ready FastAPI boilerplate with JWT authentication, RBAC, and sophis
 - **API Documentation**: Auto-generated OpenAPI/Swagger docs
 - **Standardized Response Format**: Consistent API response wrapper for all endpoints
 
-### Boilerplate includes reference implementations:
+### Mailg includes reference implementations:
 - **User Management**: Complete CRUD with role-based permissions
 - **Items CRUD**: Generic resource demonstrating best practices
 - **Authentication Endpoints**: Token generation and validation
@@ -24,7 +24,7 @@ A production-ready FastAPI boilerplate with JWT authentication, RBAC, and sophis
 
 ### Overview
 
-This boilerplate implements a sophisticated **run_id-based database isolation** system. Each authentication token provisions a completely isolated database instance, ensuring:
+This mailg implements a sophisticated **run_id-based database isolation** system. Each authentication token provisions a completely isolated database instance, ensuring:
 
 - Perfect session isolation
 - No cross-contamination between users/sessions
@@ -156,7 +156,7 @@ sequenceDiagram
     Client->>API: POST /api/v1/auth/token
     API->>Seed: Validate user exists and role
     Seed-->>API: user and role
-    API->>Postgres: CREATE DATABASE boiler_plate_RUN_ID
+    API->>Postgres: CREATE DATABASE mailg_RUN_ID
     Postgres-->>API: OK run DB ready
     API-->>Client: JWT with run_id role exp
 ```
@@ -168,7 +168,7 @@ flowchart TD
     A["Client Request with Bearer JWT"] --> B["Auth Middleware Parse and verify JWT"]
     B -->|"extract run_id"| C[DB Router]
     C --> D{"run_id DB exists?"}
-    D -->|"yes"| E[("Connect to boiler_plate_RUN_ID")]
+    D -->|"yes"| E[("Connect to mailg_RUN_ID")]
     D -->|"no"| F["401 or 404 invalid or expired run_id"]
     E --> G[Endpoint Handler]
     G --> H[SQLAlchemy Session]
@@ -179,7 +179,7 @@ flowchart TD
 
 ```mermaid
 stateDiagram-v2
-    [*] --> SeedReady: boiler_plate_seed initialized
+    [*] --> SeedReady: mailg_seed initialized
     SeedReady --> RunProvisioned: token issued run_id created
     RunProvisioned --> Active: API traffic uses run DB
     Active --> Idle: no requests
@@ -204,7 +204,7 @@ stateDiagram-v2
 
 ```bash
 git clone <repository-url>
-cd Backend_Boiler_Plate
+cd backend_mailg
 ```
 
 2. **Set environment variables** (optional)
@@ -295,7 +295,7 @@ curl -X GET http://localhost:8766/api/v1/items \
 | agent@example.com    | `UserRole.AGENT`       | N/A      | Elevated access    |
 | user@example.com     | `UserRole.END_USER`    | N/A      | Standard access    |
 
-Note: This boilerplate uses email-based authentication without passwords. Roles correspond to `UserRole` enum in `app.core.constants`. Extend as needed for production.
+Note: This mailg uses email-based authentication without passwords. Roles correspond to `UserRole` enum in `app.core.constants`. Extend as needed for production.
 
 ### API Endpoints
 
@@ -426,11 +426,11 @@ scripts/
 docker-compose.yaml              # Service orchestration
 ```
 
-## Extending the Boilerplate
+## Extending the Mailg
 
 ### Best Practices
 
-When extending the boilerplate, follow these best practices:
+When extending the mailg, follow these best practices:
 
 1. **Use Constants**: Always use enums and constants from `app.core.constants` instead of hardcoded strings
 2. **Type Safety**: Import and use `UserRole`, `ItemStatus`, `ItemPriority` enums for type hints
@@ -664,12 +664,12 @@ def create_item():
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | `postgresql+psycopg2://boiler_plate:boiler_plate@localhost:5433/postgres` | Database connection string |
-| `POSTGRES_TEMPLATE_DB` | `boiler_plate_seed` | Template database name |
-| `POSTGRES_RUN_DB_PREFIX` | `boiler_plate_` | Prefix for run databases |
+| `DATABASE_URL` | `postgresql+psycopg2://mailg:mailg@localhost:5433/postgres` | Database connection string |
+| `POSTGRES_TEMPLATE_DB` | `mailg_seed` | Template database name |
+| `POSTGRES_RUN_DB_PREFIX` | `mailg_` | Prefix for run databases |
 | `JWT_SECRET_KEY` | (required in prod) | Secret key for JWT signing |
 | `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
-| `JWT_ISSUER` | `boilerplate` | JWT issuer claim |
+| `JWT_ISSUER` | `mailg` | JWT issuer claim |
 | `JWT_ACCESS_TOKEN_TTL_SECONDS` | `3600` | Token expiration (seconds) |
 | `DEVELOPMENT_MODE` | `false` | Enable development features |
 
@@ -677,7 +677,7 @@ def create_item():
 
 The docker-compose.yaml configures PostgreSQL with:
 - Port: 5434 (host) → 5432 (container)
-- User/Password: `boiler_plate/boiler_plate`
+- User/Password: `mailg/mailg`
 - Database: `postgres` (admin database)
 
 ## Testing
@@ -728,13 +728,13 @@ curl -X DELETE http://localhost:8766/api/v1/db-snapshot/db_drop
 ### View Active Databases
 
 ```bash
-docker exec -it boiler_plate-postgres psql -U boiler_plate -d postgres -c "\l"
+docker exec -it mailg-postgres psql -U mailg -d postgres -c "\l"
 ```
 
 ### Backup Template Database
 
 ```bash
-docker exec boiler_plate-postgres pg_dump -U boiler_plate boiler_plate_seed > backup.sql
+docker exec mailg-postgres pg_dump -U mailg mailg_seed > backup.sql
 ```
 
 ## TODO / Roadmap
@@ -778,14 +778,14 @@ docker exec boiler_plate-postgres pg_dump -U boiler_plate boiler_plate_seed > ba
 docker ps | grep postgres
 
 # Check connection
-docker exec -it boiler_plate-postgres psql -U boiler_plate -d postgres -c "SELECT 1"
+docker exec -it mailg-postgres psql -U mailg -d postgres -c "SELECT 1"
 ```
 
 ### Token Issues
 
 ```bash
 # Verify JWT_SECRET_KEY is set
-docker exec boiler_plate-backend env | grep JWT_SECRET_KEY
+docker exec mailg-backend env | grep JWT_SECRET_KEY
 
 # Check token in JWT debugger: https://jwt.io
 ```

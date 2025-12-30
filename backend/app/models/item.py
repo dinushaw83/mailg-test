@@ -1,4 +1,4 @@
-"""Generic Item model - example CRUD resource for the boilerplate."""
+"""Generic Item model - example CRUD resource for the mailg."""
 
 from sqlalchemy import (
     Column,

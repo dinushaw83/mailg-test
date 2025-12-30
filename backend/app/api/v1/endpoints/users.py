@@ -1,4 +1,4 @@
-"""Users CRUD endpoint - simplified boilerplate version.
+"""Users CRUD endpoint - simplified mailg version.
 
 This module provides basic user management functionality with RBAC.
 """

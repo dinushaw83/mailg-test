@@ -1,4 +1,4 @@
-"""Pydantic schemas for User resource - simplified boilerplate version."""
+"""Pydantic schemas for User resource - simplified mailg version."""
 
 from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional

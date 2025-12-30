@@ -46,7 +46,7 @@ class TestResponseWrapperFormat:
         
         assert data["success"] is True
         assert data["statusCode"] == 200
-        assert data["data"]["message"] == "Backend Boilerplate API"
+        assert data["data"]["message"] == "Backend Mailg API"
         assert data["data"]["version"] == "1.0.0"
 
     def test_success_message_default(self, client):

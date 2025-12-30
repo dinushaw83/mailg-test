@@ -1,4 +1,4 @@
-"""Generic Items CRUD endpoint - reference implementation for the boilerplate.
+"""Generic Items CRUD endpoint - reference implementation for the mailg.
 
 This module demonstrates:
 - Full CRUD operations (Create, Read, Update, Delete, List)

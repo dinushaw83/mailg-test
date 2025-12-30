@@ -1,5 +1,5 @@
 #!/bin/bash
-# Quick setup script for FastAPI Backend Boilerplate
+# Quick setup script for FastAPI Backend Mailg
 # This script sets up the local development environment
 
 set -e
@@ -58,7 +58,7 @@ echo "✓ Dependencies installed"
 echo ""
 echo "Checking PostgreSQL connection..."
 if command -v docker &> /dev/null; then
-    if docker ps | grep -q "boiler_plate-postgres"; then
+    if docker ps | grep -q "mailg-postgres"; then
         echo "✓ PostgreSQL container is running"
     else
         echo "⚠️  PostgreSQL container is not running"
@@ -76,8 +76,8 @@ else
     echo "⚠️  Docker not found. Please ensure PostgreSQL is running manually:"
     echo "   Host: localhost"
     echo "   Port: 5434"
-    echo "   User: boiler_plate"
-    echo "   Password: boiler_plate"
+    echo "   User: mailg"
+    echo "   Password: mailg"
     echo "   Database: postgres"
 fi
 
@@ -85,9 +85,9 @@ fi
 echo ""
 echo "Setting environment variables..."
 export DEVELOPMENT_MODE=true
-export DATABASE_URL="postgresql+psycopg2://boiler_plate:boiler_plate@localhost:5434/postgres"
-export POSTGRES_TEMPLATE_DB="boiler_plate_seed"
-export POSTGRES_RUN_DB_PREFIX="boiler_plate_"
+export DATABASE_URL="postgresql+psycopg2://mailg:mailg@localhost:5434/postgres"
+export POSTGRES_TEMPLATE_DB="mailg_seed"
+export POSTGRES_RUN_DB_PREFIX="mailg_"
 
 # Generate JWT secret if not set
 if [ -z "$JWT_SECRET_KEY" ]; then

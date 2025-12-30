@@ -58,7 +58,7 @@ class DbDropResponse(BaseModel):
                 "run_id": "run_abc123",
                 "result": {
                     "dropped": True,
-                    "database": "boiler_plate_run_abc123"
+                    "database": "mailg_run_abc123"
                 }
             }
         }

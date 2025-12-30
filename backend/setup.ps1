@@ -1,4 +1,4 @@
-# Quick setup script for FastAPI Backend Boilerplate (Windows)
+# Quick setup script for FastAPI Backend Mailg (Windows)
 # This script sets up the local development environment
 
 $ErrorActionPreference = "Stop"
@@ -69,7 +69,7 @@ Write-Host ""
 Write-Host "Checking PostgreSQL connection..." -ForegroundColor Yellow
 try {
     $dockerPs = docker ps 2>&1
-    if ($dockerPs -match "boiler_plate-postgres") {
+    if ($dockerPs -match "mailg-postgres") {
         Write-Host "[OK] PostgreSQL container is running" -ForegroundColor Green
     } else {
         Write-Host "[WARNING] PostgreSQL container is not running" -ForegroundColor Yellow
@@ -88,8 +88,8 @@ try {
     Write-Host "   Please ensure PostgreSQL is running manually:" -ForegroundColor Yellow
     Write-Host "   Host: localhost" -ForegroundColor White
     Write-Host "   Port: 5434" -ForegroundColor White
-    Write-Host "   User: boiler_plate" -ForegroundColor White
-    Write-Host "   Password: boiler_plate" -ForegroundColor White
+    Write-Host "   User: mailg" -ForegroundColor White
+    Write-Host "   Password: mailg" -ForegroundColor White
     Write-Host "   Database: postgres" -ForegroundColor White
 }
 
@@ -97,9 +97,9 @@ try {
 Write-Host ""
 Write-Host "Setting environment variables..." -ForegroundColor Yellow
 $env:DEVELOPMENT_MODE = "true"
-$env:DATABASE_URL = "postgresql+psycopg2://boiler_plate:boiler_plate@localhost:5434/postgres"
-$env:POSTGRES_TEMPLATE_DB = "boiler_plate_seed"
-$env:POSTGRES_RUN_DB_PREFIX = "boiler_plate_"
+$env:DATABASE_URL = "postgresql+psycopg2://mailg:mailg@localhost:5434/postgres"
+$env:POSTGRES_TEMPLATE_DB = "mailg_seed"
+$env:POSTGRES_RUN_DB_PREFIX = "mailg_"
 
 # Generate JWT secret if not set
 if (-Not $env:JWT_SECRET_KEY) {
