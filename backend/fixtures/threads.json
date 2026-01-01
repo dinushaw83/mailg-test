@@ -1,0 +1,31 @@
+[
+  {
+    "id": 1,
+    "subject": "Project Kickoff Meeting",
+    "owner_id": 1,
+    "participant_count": 3,
+    "email_count": 3
+  },
+  {
+    "id": 2,
+    "subject": "Quarterly Report Review",
+    "owner_id": 1,
+    "participant_count": 2,
+    "email_count": 2
+  },
+  {
+    "id": 3,
+    "subject": "Support Request #1234",
+    "owner_id": 2,
+    "participant_count": 2,
+    "email_count": 4
+  },
+  {
+    "id": 4,
+    "subject": "Welcome to the Platform",
+    "owner_id": 3,
+    "participant_count": 2,
+    "email_count": 1
+  }
+]
+

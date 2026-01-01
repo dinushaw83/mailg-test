@@ -1,0 +1,156 @@
+[
+  {
+    "id": 1,
+    "name": "Newsletters",
+    "color": "#4285f4",
+    "owner_id": 1,
+    "parent_id": null
+  },
+  {
+    "id": 2,
+    "name": "Personal",
+    "color": "#34a853",
+    "owner_id": 1,
+    "parent_id": null
+  },
+  {
+    "id": 3,
+    "name": "Receipts",
+    "color": "#9e9e9e",
+    "owner_id": 1,
+    "parent_id": 2
+  },
+  {
+    "id": 4,
+    "name": "Travel",
+    "color": "#9c27b0",
+    "owner_id": 1,
+    "parent_id": 2
+  },
+  {
+    "id": 5,
+    "name": "Projects",
+    "color": "#ff9800",
+    "owner_id": 1,
+    "parent_id": null
+  },
+  {
+    "id": 6,
+    "name": "2025",
+    "color": "#607d8b",
+    "owner_id": 1,
+    "parent_id": 5
+  },
+  {
+    "id": 7,
+    "name": "App Launch",
+    "color": "#e91e63",
+    "owner_id": 1,
+    "parent_id": 6
+  },
+  {
+    "id": 8,
+    "name": "Website Redesign",
+    "color": "#00bcd4",
+    "owner_id": 1,
+    "parent_id": 6
+  },
+  {
+    "id": 9,
+    "name": "Work",
+    "color": "#ea4335",
+    "owner_id": 1,
+    "parent_id": null
+  },
+  {
+    "id": 10,
+    "name": "Clients",
+    "color": "#ffeb3b",
+    "owner_id": 1,
+    "parent_id": 9
+  },
+  {
+    "id": 11,
+    "name": "Invoices",
+    "color": "#8bc34a",
+    "owner_id": 1,
+    "parent_id": 9
+  },
+  {
+    "id": 12,
+    "name": "Reports",
+    "color": "#03a9f4",
+    "owner_id": 1,
+    "parent_id": 9
+  },
+  {
+    "id": 13,
+    "name": "Urgent",
+    "color": "#ea4335",
+    "owner_id": 2,
+    "parent_id": null
+  },
+  {
+    "id": 14,
+    "name": "Support",
+    "color": "#ff9800",
+    "owner_id": 2,
+    "parent_id": null
+  },
+  {
+    "id": 15,
+    "name": "Tickets",
+    "color": "#ffc107",
+    "owner_id": 2,
+    "parent_id": 14
+  },
+  {
+    "id": 16,
+    "name": "Bugs",
+    "color": "#f44336",
+    "owner_id": 2,
+    "parent_id": 14
+  },
+  {
+    "id": 17,
+    "name": "Features",
+    "color": "#4caf50",
+    "owner_id": 2,
+    "parent_id": 14
+  },
+  {
+    "id": 18,
+    "name": "Follow Up",
+    "color": "#2196f3",
+    "owner_id": 2,
+    "parent_id": null
+  },
+  {
+    "id": 19,
+    "name": "Personal",
+    "color": "#4caf50",
+    "owner_id": 3,
+    "parent_id": null
+  },
+  {
+    "id": 20,
+    "name": "Shopping",
+    "color": "#e91e63",
+    "owner_id": 3,
+    "parent_id": null
+  },
+  {
+    "id": 21,
+    "name": "Wishlist",
+    "color": "#9c27b0",
+    "owner_id": 3,
+    "parent_id": 20
+  },
+  {
+    "id": 22,
+    "name": "Orders",
+    "color": "#ff5722",
+    "owner_id": 3,
+    "parent_id": 20
+  }
+]

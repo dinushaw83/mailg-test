@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "email_id": 1,
+    "recipient_id": 2,
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": 2,
+    "email_id": 1,
+    "recipient_id": 3,
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": 3,
+    "email_id": 2,
+    "recipient_id": 1,
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  },
+  {
+    "id": 4,
+    "email_id": 2,
+    "recipient_id": 3,
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "cc"
+  },
+  {
+    "id": 5,
+    "email_id": 3,
+    "recipient_id": 1,
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  },
+  {
+    "id": 6,
+    "email_id": 3,
+    "recipient_id": 2,
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "cc"
+  },
+  {
+    "id": 7,
+    "email_id": 4,
+    "recipient_id": 2,
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": 8,
+    "email_id": 5,
+    "recipient_id": 1,
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  },
+  {
+    "id": 9,
+    "email_id": 6,
+    "recipient_id": 2,
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": 10,
+    "email_id": 7,
+    "recipient_id": 3,
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": 11,
+    "email_id": 8,
+    "recipient_id": 2,
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": 12,
+    "email_id": 9,
+    "recipient_id": 3,
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": 13,
+    "email_id": 10,
+    "recipient_id": 3,
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": 14,
+    "email_id": 11,
+    "recipient_id": 2,
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": 15,
+    "email_id": 12,
+    "recipient_id": 1,
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  }
+]

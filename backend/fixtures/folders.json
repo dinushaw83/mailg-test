@@ -1,0 +1,193 @@
+[
+  {
+    "id": 1,
+    "name": "Inbox",
+    "folder_type": "inbox",
+    "color": "#4285f4",
+    "icon": "inbox",
+    "owner_id": 1,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 2,
+    "name": "Sent",
+    "folder_type": "sent",
+    "color": "#34a853",
+    "icon": "send",
+    "owner_id": 1,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 3,
+    "name": "Drafts",
+    "folder_type": "drafts",
+    "color": "#fbbc04",
+    "icon": "drafts",
+    "owner_id": 1,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 4,
+    "name": "Trash",
+    "folder_type": "trash",
+    "color": "#ea4335",
+    "icon": "delete",
+    "owner_id": 1,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 5,
+    "name": "Spam",
+    "folder_type": "spam",
+    "color": "#9e9e9e",
+    "icon": "report",
+    "owner_id": 1,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 6,
+    "name": "Starred",
+    "folder_type": "starred",
+    "color": "#f9ab00",
+    "icon": "star",
+    "owner_id": 1,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 7,
+    "name": "Work Projects",
+    "folder_type": "custom",
+    "color": "#673ab7",
+    "icon": "folder",
+    "owner_id": 1,
+    "parent_folder_id": null,
+    "is_system": false
+  },
+  {
+    "id": 8,
+    "name": "Inbox",
+    "folder_type": "inbox",
+    "color": "#4285f4",
+    "icon": "inbox",
+    "owner_id": 2,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 9,
+    "name": "Sent",
+    "folder_type": "sent",
+    "color": "#34a853",
+    "icon": "send",
+    "owner_id": 2,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 10,
+    "name": "Drafts",
+    "folder_type": "drafts",
+    "color": "#fbbc04",
+    "icon": "drafts",
+    "owner_id": 2,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 11,
+    "name": "Trash",
+    "folder_type": "trash",
+    "color": "#ea4335",
+    "icon": "delete",
+    "owner_id": 2,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 12,
+    "name": "Spam",
+    "folder_type": "spam",
+    "color": "#9e9e9e",
+    "icon": "report",
+    "owner_id": 2,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 13,
+    "name": "Starred",
+    "folder_type": "starred",
+    "color": "#f9ab00",
+    "icon": "star",
+    "owner_id": 2,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 14,
+    "name": "Inbox",
+    "folder_type": "inbox",
+    "color": "#4285f4",
+    "icon": "inbox",
+    "owner_id": 3,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 15,
+    "name": "Sent",
+    "folder_type": "sent",
+    "color": "#34a853",
+    "icon": "send",
+    "owner_id": 3,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 16,
+    "name": "Drafts",
+    "folder_type": "drafts",
+    "color": "#fbbc04",
+    "icon": "drafts",
+    "owner_id": 3,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 17,
+    "name": "Trash",
+    "folder_type": "trash",
+    "color": "#ea4335",
+    "icon": "delete",
+    "owner_id": 3,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 18,
+    "name": "Spam",
+    "folder_type": "spam",
+    "color": "#9e9e9e",
+    "icon": "report",
+    "owner_id": 3,
+    "parent_folder_id": null,
+    "is_system": true
+  },
+  {
+    "id": 19,
+    "name": "Starred",
+    "folder_type": "starred",
+    "color": "#f9ab00",
+    "icon": "star",
+    "owner_id": 3,
+    "parent_folder_id": null,
+    "is_system": true
+  }
+]
+
