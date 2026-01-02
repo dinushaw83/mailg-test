@@ -37,6 +37,21 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+def get_label_hierarchy_name(label) -> str:
+    """Build full hierarchical name for a label (e.g., 'grand/parent/child').
+    
+    Traverses up the parent chain to construct the full path.
+    """
+    parts = []
+    current = label
+    while current:
+        parts.append(current.name)
+        current = current.parent
+    # Reverse to get grand -> parent -> child order
+    parts.reverse()
+    return "/".join(parts)
+
+
 def parse_search_query(query: str) -> dict:
     """Parse Gmail-style search operators from query string.
     
@@ -332,7 +347,7 @@ def search_emails(
     results = []
     for email in emails:
         recipients = [r.recipient_email for r in email.recipients] if hasattr(email, 'recipients') else []
-        labels = [l.name for l in email.labels if not l.is_deleted]
+        labels = [get_label_hierarchy_name(l) for l in email.labels if not l.is_deleted]
         attachments = [a for a in email.attachments if not a.is_deleted]
         
         results.append({
@@ -420,7 +435,7 @@ def get_search_suggestions(
         ).limit(limit).all()
         
         suggestions["labels"] = [
-            {"value": l.name, "type": "label", "description": None}
+            {"value": get_label_hierarchy_name(l), "type": "label", "description": None}
             for l in labels
         ]
     
@@ -531,8 +546,13 @@ def list_saved_searches(
 def delete_saved_search(
     search_id: int,
     db: Session = Depends(get_db),
+    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
-    """Delete a saved search."""
+    """Delete a saved search.
+    
+    Args:
+        permanent: If True, permanently removes from database. If False (default), soft deletes.
+    """
     current_user = auth.user
     
     saved = db.query(SavedSearch).filter(
@@ -547,7 +567,12 @@ def delete_saved_search(
             detail=f"Saved search {search_id} not found"
         )
     
-    saved.is_deleted = True
+    if permanent:
+        # Permanently delete from database
+        db.delete(saved)
+    else:
+        # Soft delete
+        saved.is_deleted = True
     
     try:
         db.commit()
@@ -555,5 +580,5 @@ def delete_saved_search(
         db.rollback()
         raise
     
-    logger.info(f"Saved search {search_id} deleted by user {current_user.id}")
+    logger.info(f"Saved search {search_id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
 

@@ -7,7 +7,6 @@
     "body": "Dear [Name],\n\nWelcome to our platform! We're thrilled to have you join our community.\n\nHere are some quick tips to get started:\n- Complete your profile\n- Explore our features\n- Reach out if you need help\n\nBest regards,\nThe Team",
     "html_body": "<p>Dear [Name],</p><p>Welcome to our platform! We're thrilled to have you join our community.</p><p>Here are some quick tips to get started:</p><ul><li>Complete your profile</li><li>Explore our features</li><li>Reach out if you need help</li></ul><p>Best regards,<br>The Team</p>",
     "is_shared": true,
-    "usage_count": 15,
     "owner_id": 1,
     "is_deleted": false
   },
@@ -19,7 +18,6 @@
     "body": "Hi [Name],\n\nI'd like to schedule a meeting to discuss [topic].\n\nProposed times:\n- [Option 1]\n- [Option 2]\n- [Option 3]\n\nPlease let me know your availability.\n\nBest regards",
     "html_body": "<p>Hi [Name],</p><p>I'd like to schedule a meeting to discuss [topic].</p><p>Proposed times:</p><ul><li>[Option 1]</li><li>[Option 2]</li><li>[Option 3]</li></ul><p>Please let me know your availability.</p><p>Best regards</p>",
     "is_shared": true,
-    "usage_count": 28,
     "owner_id": 1,
     "is_deleted": false
   },
@@ -31,7 +29,6 @@
     "body": "Hi everyone,\n\nThank you for attending today's meeting. Here's a summary of what we discussed:\n\nKey Points:\n- [Point 1]\n- [Point 2]\n- [Point 3]\n\nAction Items:\n- [Action 1] - Owner: [Name] - Due: [Date]\n- [Action 2] - Owner: [Name] - Due: [Date]\n\nNext meeting: [Date/Time]\n\nBest regards",
     "html_body": "<p>Hi everyone,</p><p>Thank you for attending today's meeting. Here's a summary of what we discussed:</p><h4>Key Points:</h4><ul><li>[Point 1]</li><li>[Point 2]</li><li>[Point 3]</li></ul><h4>Action Items:</h4><ul><li>[Action 1] - Owner: [Name] - Due: [Date]</li><li>[Action 2] - Owner: [Name] - Due: [Date]</li></ul><p>Next meeting: [Date/Time]</p><p>Best regards</p>",
     "is_shared": true,
-    "usage_count": 12,
     "owner_id": 1,
     "is_deleted": false
   },
@@ -43,7 +40,6 @@
     "body": "Hi [Name],\n\nThank you for reaching out to our support team. We've received your request and are looking into it.\n\nTicket Reference: [Ticket #]\n\nWe'll get back to you within 24 hours with an update.\n\nBest regards,\nSupport Team",
     "html_body": "<p>Hi [Name],</p><p>Thank you for reaching out to our support team. We've received your request and are looking into it.</p><p><strong>Ticket Reference:</strong> [Ticket #]</p><p>We'll get back to you within 24 hours with an update.</p><p>Best regards,<br>Support Team</p>",
     "is_shared": true,
-    "usage_count": 45,
     "owner_id": 2,
     "is_deleted": false
   },
@@ -55,7 +51,6 @@
     "body": "Hi [Name],\n\nGreat news! Your support request has been resolved.\n\nResolution Summary:\n[Description of the fix]\n\nIf you have any further questions or concerns, please don't hesitate to reach out.\n\nThank you for your patience.\n\nBest regards,\nSupport Team",
     "html_body": "<p>Hi [Name],</p><p>Great news! Your support request has been resolved.</p><p><strong>Resolution Summary:</strong><br>[Description of the fix]</p><p>If you have any further questions or concerns, please don't hesitate to reach out.</p><p>Thank you for your patience.</p><p>Best regards,<br>Support Team</p>",
     "is_shared": true,
-    "usage_count": 38,
     "owner_id": 2,
     "is_deleted": false
   },
@@ -67,7 +62,6 @@
     "body": "Hi team,\n\nHere's this week's project update:\n\nCompleted:\n- [Task 1]\n- [Task 2]\n\nIn Progress:\n- [Task 3]\n- [Task 4]\n\nUpcoming:\n- [Task 5]\n- [Task 6]\n\nBlockers:\n- [Blocker description]\n\nLet me know if you have any questions.\n\nBest regards",
     "html_body": "<p>Hi team,</p><p>Here's this week's project update:</p><h4>Completed:</h4><ul><li>[Task 1]</li><li>[Task 2]</li></ul><h4>In Progress:</h4><ul><li>[Task 3]</li><li>[Task 4]</li></ul><h4>Upcoming:</h4><ul><li>[Task 5]</li><li>[Task 6]</li></ul><h4>Blockers:</h4><ul><li>[Blocker description]</li></ul><p>Let me know if you have any questions.</p><p>Best regards</p>",
     "is_shared": false,
-    "usage_count": 8,
     "owner_id": 1,
     "is_deleted": false
   },
@@ -79,7 +73,6 @@
     "body": "Dear [Name],\n\nI wanted to take a moment to thank you for [reason].\n\n[Additional details or personal note]\n\nYour [contribution/help/support] is greatly appreciated.\n\nBest regards",
     "html_body": "<p>Dear [Name],</p><p>I wanted to take a moment to thank you for [reason].</p><p>[Additional details or personal note]</p><p>Your [contribution/help/support] is greatly appreciated.</p><p>Best regards</p>",
     "is_shared": false,
-    "usage_count": 5,
     "owner_id": 3,
     "is_deleted": false
   },
@@ -91,7 +84,6 @@
     "body": "Hello,\n\nThank you for your email. I am currently out of the office from [Start Date] to [End Date] with limited access to email.\n\nFor urgent matters, please contact [Backup Contact] at [Email/Phone].\n\nI will respond to your email upon my return.\n\nBest regards,\n[Your Name]",
     "html_body": "<p>Hello,</p><p>Thank you for your email. I am currently out of the office from <strong>[Start Date]</strong> to <strong>[End Date]</strong> with limited access to email.</p><p>For urgent matters, please contact <strong>[Backup Contact]</strong> at [Email/Phone].</p><p>I will respond to your email upon my return.</p><p>Best regards,<br>[Your Name]</p>",
     "is_shared": true,
-    "usage_count": 22,
     "owner_id": 1,
     "is_deleted": false
   },
@@ -103,7 +95,6 @@
     "body": "Hello [Name],\n\nWelcome to this month's newsletter!\n\nHighlights:\n- [Highlight 1]\n- [Highlight 2]\n- [Highlight 3]\n\nUpcoming Events:\n- [Event 1] - [Date]\n- [Event 2] - [Date]\n\nFeatured Article:\n[Article summary]\n\nStay connected!\n\nBest regards,\nThe Newsletter Team",
     "html_body": "<h2>[Company] Newsletter - [Month Year]</h2><p>Hello [Name],</p><p>Welcome to this month's newsletter!</p><h3>Highlights:</h3><ul><li>[Highlight 1]</li><li>[Highlight 2]</li><li>[Highlight 3]</li></ul><h3>Upcoming Events:</h3><ul><li>[Event 1] - [Date]</li><li>[Event 2] - [Date]</li></ul><h3>Featured Article:</h3><p>[Article summary]</p><p>Stay connected!</p><p>Best regards,<br>The Newsletter Team</p>",
     "is_shared": true,
-    "usage_count": 4,
     "owner_id": 1,
     "is_deleted": false
   },
@@ -115,7 +106,6 @@
     "body": "Hi [Name],\n\nWe hope you're enjoying [product/service]. We'd love to hear your thoughts!\n\nCould you take a moment to share your feedback?\n\n[Feedback Link]\n\nYour input helps us improve and serve you better.\n\nThank you!\n\nBest regards,\nThe Team",
     "html_body": "<p>Hi [Name],</p><p>We hope you're enjoying [product/service]. We'd love to hear your thoughts!</p><p>Could you take a moment to share your feedback?</p><p><a href='#'>[Take Survey]</a></p><p>Your input helps us improve and serve you better.</p><p>Thank you!</p><p>Best regards,<br>The Team</p>",
     "is_shared": true,
-    "usage_count": 18,
     "owner_id": 4,
     "is_deleted": false
   }

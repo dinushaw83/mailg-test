@@ -370,7 +370,7 @@ class TestTemplateOperations:
         assert response.status_code == 403
 
     def test_delete_template(self, client_with_auth, sample_template, db_session):
-        """Test deleting a template."""
+        """Test deleting a template (soft delete)."""
         client, token, user = client_with_auth
         template_id = sample_template.id
         
@@ -384,6 +384,32 @@ class TestTemplateOperations:
         # Verify soft deleted
         db_session.refresh(sample_template)
         assert sample_template.is_deleted == True
+
+    def test_delete_template_permanent(self, client_with_auth, db_session):
+        """Test permanently deleting a template removes it from database."""
+        client, token, user = client_with_auth
+        
+        # Create template
+        template = EmailTemplate(
+            name="To Delete Permanently",
+            subject="Test",
+            owner_id=user.id
+        )
+        db_session.add(template)
+        db_session.commit()
+        template_id = template.id
+        
+        response = client.delete(
+            f"/api/v1/templates/{template_id}?permanent=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 204
+        
+        # Verify template is completely gone
+        db_session.expire_all()
+        template_check = db_session.query(EmailTemplate).filter(EmailTemplate.id == template_id).first()
+        assert template_check is None
 
     def test_delete_other_user_template_forbidden(self, client_with_auth, db_session):
         """Test deleting another user's template is forbidden."""

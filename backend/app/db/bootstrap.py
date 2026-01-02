@@ -203,8 +203,7 @@ def initialize_template_database_schema_and_fixtures():
         # Load email templates (depends on users)
         count = load_fixture(
             session, EmailTemplate,
-            fixtures_dir / "email_templates.json",
-            date_fields=['last_used_at']
+            fixtures_dir / "email_templates.json"
         )
         logger.info(f"Loaded {count} new email templates from fixtures")
         

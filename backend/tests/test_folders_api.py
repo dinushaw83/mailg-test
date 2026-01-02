@@ -130,7 +130,7 @@ class TestFolderOperations:
         assert response.status_code == 400
 
     def test_delete_custom_folder(self, client_with_auth, db_session):
-        """Test deleting a custom folder."""
+        """Test deleting a custom folder (soft delete)."""
         client, token, user = client_with_auth
         
         # Create inbox folder first (for moving emails)
@@ -154,6 +154,43 @@ class TestFolderOperations:
         )
         
         assert response.status_code == 204
+        
+        # Verify soft delete (still exists but marked deleted)
+        db_session.expire_all()
+        folder_check = db_session.query(Folder).filter(Folder.id == folder_id).first()
+        assert folder_check is not None
+        assert folder_check.is_deleted == True
+
+    def test_delete_custom_folder_permanent(self, client_with_auth, db_session):
+        """Test permanently deleting a custom folder removes it from database."""
+        client, token, user = client_with_auth
+        
+        # Create inbox folder first (for moving emails)
+        inbox = Folder(name="Inbox", folder_type="inbox", owner_id=user.id, is_system=True)
+        db_session.add(inbox)
+        db_session.commit()
+        
+        folder = Folder(
+            name="To Delete Permanently",
+            folder_type="custom",
+            owner_id=user.id,
+            is_system=False
+        )
+        db_session.add(folder)
+        db_session.commit()
+        folder_id = folder.id
+        
+        response = client.delete(
+            f"/api/v1/folders/{folder_id}?permanent=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 204
+        
+        # Verify folder is completely gone
+        db_session.expire_all()
+        folder_check = db_session.query(Folder).filter(Folder.id == folder_id).first()
+        assert folder_check is None
 
     def test_cannot_delete_system_folder(self, client_with_auth, db_session, sample_folder):
         """Test that system folders cannot be deleted."""

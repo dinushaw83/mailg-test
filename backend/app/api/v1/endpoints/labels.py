@@ -467,13 +467,15 @@ def update_label(
 def delete_label(
     label_id: int,
     db: Session = Depends(get_db),
-    cascade: bool = Query(True, description="Delete child labels (True) or move them to parent level (False)"),
+    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
-    """Delete a label.
+    """Delete a label and all its child labels.
+    
+    When a label is deleted, all descendant labels (children, grandchildren, etc.)
+    are also deleted along with their email associations.
     
     Args:
-        cascade: If True, deletes all child labels recursively.
-                 If False, moves child labels to the deleted label's parent.
+        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete their own labels
@@ -492,33 +494,23 @@ def delete_label(
             detail=f"Label {label_id} not found"
         )
     
-    if cascade:
-        # Get all descendant IDs and delete them all
-        all_ids_to_delete = {label_id} | get_all_descendant_ids(db, label_id)
-        
-        # Remove all email associations for labels being deleted
-        db.query(EmailLabel).filter(EmailLabel.label_id.in_(all_ids_to_delete)).delete(synchronize_session=False)
-        
-        # Mark all labels as deleted
+    # Get all descendant IDs and delete them all (cascade delete)
+    all_ids_to_delete = {label_id} | get_all_descendant_ids(db, label_id)
+    
+    # Remove all email associations for labels being deleted
+    db.query(EmailLabel).filter(EmailLabel.label_id.in_(all_ids_to_delete)).delete(synchronize_session=False)
+    
+    if permanent:
+        # Permanently delete from database
+        db.query(Label).filter(Label.id.in_(all_ids_to_delete)).delete(synchronize_session=False)
+    else:
+        # Soft delete - mark as deleted
         db.query(Label).filter(Label.id.in_(all_ids_to_delete)).update(
             {"is_deleted": True},
             synchronize_session=False
         )
-        
-        deleted_count = len(all_ids_to_delete)
-    else:
-        # Move children to the deleted label's parent
-        db.query(Label).filter(
-            Label.parent_id == label_id,
-            Label.is_deleted == False
-        ).update({"parent_id": label.parent_id}, synchronize_session=False)
-        
-        # Remove email associations for this label only
-        db.query(EmailLabel).filter(EmailLabel.label_id == label_id).delete()
-        
-        # Delete the label
-        label.is_deleted = True
-        deleted_count = 1
+    
+    deleted_count = len(all_ids_to_delete)
     
     try:
         db.commit()
@@ -526,7 +518,7 @@ def delete_label(
         db.rollback()
         raise
     
-    logger.info(f"Label {label_id} deleted by user {current_user.id} (cascade={cascade}, count={deleted_count})")
+    logger.info(f"Label {label_id} {'permanently ' if permanent else ''}deleted by user {current_user.id} (deleted {deleted_count} labels)")
 
 
 @router.get("/labels/{label_id}/emails", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])

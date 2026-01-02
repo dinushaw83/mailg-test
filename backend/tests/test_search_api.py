@@ -139,6 +139,51 @@ class TestSearchOperators:
             assert result["is_starred"] == True
 
 
+class TestSearchLabelHierarchy:
+    """Test hierarchical label names in search results."""
+
+    def test_search_results_show_hierarchical_label_names(self, client_with_auth, db_session, sample_folder):
+        """Test that search results show full label hierarchy path."""
+        client, token, user = client_with_auth
+        
+        # Create hierarchical labels
+        parent = Label(name="Work", owner_id=user.id)
+        db_session.add(parent)
+        db_session.commit()
+        
+        child = Label(name="Projects", parent_id=parent.id, owner_id=user.id)
+        db_session.add(child)
+        db_session.commit()
+        
+        # Create email with nested label
+        email = Email(
+            subject="Project Update",
+            body="Status report",
+            status="received",
+            sender_id=user.id,
+            folder_id=sample_folder.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        email_label = EmailLabel(email_id=email.id, label_id=child.id)
+        db_session.add(email_label)
+        db_session.commit()
+        
+        # Search and check label names
+        response = client.get(
+            "/api/v1/search?q=Project",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Find our email
+        our_result = next((r for r in data["results"] if r["id"] == email.id), None)
+        assert our_result is not None
+        assert "Work/Projects" in our_result["labels"]
+
+
 class TestSearchPagination:
     """Test search pagination and sorting."""
 
@@ -218,7 +263,7 @@ class TestSavedSearches:
         assert response.status_code == 200
 
     def test_delete_saved_search(self, client_with_auth, db_session):
-        """Test deleting a saved search."""
+        """Test deleting a saved search (soft delete)."""
         client, token, user = client_with_auth
         
         # First create a saved search
@@ -237,4 +282,35 @@ class TestSavedSearches:
         )
         
         assert response.status_code == 204
+        
+        # Verify soft delete (still exists but marked deleted)
+        db_session.expire_all()
+        saved_check = db_session.query(SavedSearch).filter(SavedSearch.id == saved_id).first()
+        assert saved_check is not None
+        assert saved_check.is_deleted == True
+
+    def test_delete_saved_search_permanent(self, client_with_auth, db_session):
+        """Test permanently deleting a saved search removes it from database."""
+        client, token, user = client_with_auth
+        
+        saved = SavedSearch(
+            name="Test Search Permanent",
+            query="is:unread",
+            owner_id=user.id
+        )
+        db_session.add(saved)
+        db_session.commit()
+        saved_id = saved.id
+        
+        response = client.delete(
+            f"/api/v1/search/saved/{saved_id}?permanent=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 204
+        
+        # Verify saved search is completely gone
+        db_session.expire_all()
+        saved_check = db_session.query(SavedSearch).filter(SavedSearch.id == saved_id).first()
+        assert saved_check is None
 

@@ -214,8 +214,12 @@ def get_attachment(
 def delete_attachment(
     attachment_id: int,
     db: Session = Depends(get_db),
+    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete an attachment.
+    
+    Args:
+        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete attachments on their own draft emails
@@ -247,7 +251,12 @@ def delete_attachment(
             detail="Can only delete attachments from your own draft emails"
         )
     
-    attachment.is_deleted = True
+    if permanent:
+        # Permanently delete from database
+        db.delete(attachment)
+    else:
+        # Soft delete
+        attachment.is_deleted = True
     
     try:
         db.commit()
@@ -255,7 +264,7 @@ def delete_attachment(
         db.rollback()
         raise
     
-    logger.info(f"Attachment {attachment.id} deleted by user {current_user.id}")
+    logger.info(f"Attachment {attachment.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
 
 
 @router.get("/attachments/{attachment_id}/download", dependencies=[Depends(authorized())])

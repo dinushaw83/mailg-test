@@ -294,8 +294,9 @@ def update_user(
 def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
+    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
-    """Delete a user (soft delete).
+    """Delete a user.
     
     Permissions:
     - admin: Can delete any user
@@ -303,7 +304,7 @@ def delete_user(
     
     Args:
         user_id: User ID.
-        db: Database session.
+        permanent: If True, permanently removes from database. If False (default), soft deletes.
         
     Raises:
         HTTPException: 404 if user not found.
@@ -316,8 +317,12 @@ def delete_user(
             detail=f"User {user_id} not found"
         )
     
-    # Soft delete
-    user.is_deleted = True
+    if permanent:
+        # Permanently delete from database
+        db.delete(user)
+    else:
+        # Soft delete
+        user.is_deleted = True
     
     try:
         db.commit()
@@ -325,6 +330,6 @@ def delete_user(
         db.rollback()
         raise
     
-    logger.info(f"User {user.id} deleted by admin {auth.user.id}")
+    logger.info(f"User {user.id} {'permanently ' if permanent else ''}deleted by admin {auth.user.id}")
 
     return None

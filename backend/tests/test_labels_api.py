@@ -2,7 +2,9 @@
 
 import pytest
 from app.models.label import Label
+from app.models.email import Email
 from app.models.email_label import EmailLabel
+from app.models.folder import Folder
 
 
 class TestLabelCreate:
@@ -301,6 +303,145 @@ class TestLabelOperations:
         assert response.status_code == 200
 
 
+class TestHierarchicalLabelNames:
+    """Test hierarchical label names in email responses."""
+
+    def test_email_label_shows_hierarchy_name(self, client_with_auth, db_session):
+        """Test that labels on emails show full hierarchy path (grand/parent/child)."""
+        client, token, user = client_with_auth
+        
+        # Create folder for email
+        folder = Folder(name="Inbox", folder_type="inbox", owner_id=user.id, is_system=True)
+        db_session.add(folder)
+        db_session.commit()
+        
+        # Create hierarchical labels: Work -> Projects -> 2025
+        work = Label(name="Work", owner_id=user.id)
+        db_session.add(work)
+        db_session.commit()
+        
+        projects = Label(name="Projects", parent_id=work.id, owner_id=user.id)
+        db_session.add(projects)
+        db_session.commit()
+        
+        year_2025 = Label(name="2025", parent_id=projects.id, owner_id=user.id)
+        db_session.add(year_2025)
+        db_session.commit()
+        
+        # Create email and add the nested label
+        email = Email(
+            subject="Project Update",
+            body="Content",
+            status="received",
+            sender_id=user.id,
+            folder_id=folder.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        email_label = EmailLabel(email_id=email.id, label_id=year_2025.id)
+        db_session.add(email_label)
+        db_session.commit()
+        
+        # Get email and check label name includes full hierarchy
+        response = client.get(
+            f"/api/v1/emails/{email.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert len(data["labels"]) == 1
+        assert data["labels"][0]["name"] == "Work/Projects/2025"
+
+    def test_email_list_label_shows_hierarchy_name(self, client_with_auth, db_session):
+        """Test that labels in email list responses show full hierarchy path."""
+        client, token, user = client_with_auth
+        
+        # Create folder for email
+        folder = Folder(name="Inbox", folder_type="inbox", owner_id=user.id, is_system=True)
+        db_session.add(folder)
+        db_session.commit()
+        
+        # Create hierarchical labels: Personal -> Family
+        personal = Label(name="Personal", owner_id=user.id)
+        db_session.add(personal)
+        db_session.commit()
+        
+        family = Label(name="Family", parent_id=personal.id, owner_id=user.id)
+        db_session.add(family)
+        db_session.commit()
+        
+        # Create email with nested label
+        email = Email(
+            subject="Family Reunion",
+            body="Content",
+            status="received",
+            sender_id=user.id,
+            folder_id=folder.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        email_label = EmailLabel(email_id=email.id, label_id=family.id)
+        db_session.add(email_label)
+        db_session.commit()
+        
+        # List emails and check label hierarchy
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Find our email
+        our_email = next((e for e in data["results"] if e["id"] == email.id), None)
+        assert our_email is not None
+        assert len(our_email["labels"]) == 1
+        assert our_email["labels"][0]["name"] == "Personal/Family"
+
+    def test_root_label_shows_simple_name(self, client_with_auth, db_session):
+        """Test that root-level labels show just their name (no slash)."""
+        client, token, user = client_with_auth
+        
+        # Create folder for email
+        folder = Folder(name="Inbox", folder_type="inbox", owner_id=user.id, is_system=True)
+        db_session.add(folder)
+        db_session.commit()
+        
+        # Create root label (no parent)
+        important = Label(name="Important", owner_id=user.id)
+        db_session.add(important)
+        db_session.commit()
+        
+        # Create email with root label
+        email = Email(
+            subject="Important Email",
+            body="Content",
+            status="received",
+            sender_id=user.id,
+            folder_id=folder.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        email_label = EmailLabel(email_id=email.id, label_id=important.id)
+        db_session.add(email_label)
+        db_session.commit()
+        
+        # Get email and check label name is simple
+        response = client.get(
+            f"/api/v1/emails/{email.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert len(data["labels"]) == 1
+        assert data["labels"][0]["name"] == "Important"
+
+
 class TestNestedLabelOperations:
     """Test nested label specific operations."""
 
@@ -420,7 +561,7 @@ class TestNestedLabelOperations:
         assert "circular" in response.json()["message"].lower()
 
     def test_delete_label_cascade(self, client_with_auth, db_session):
-        """Test deleting a label cascades to children."""
+        """Test deleting a label always cascades to children."""
         client, token, user = client_with_auth
         
         # Create: Parent -> Child1, Child2
@@ -435,9 +576,9 @@ class TestNestedLabelOperations:
         db_session.commit()
         child1_id, child2_id = child1.id, child2.id
         
-        # Delete with cascade=true (default)
+        # Delete parent (children should be cascade deleted)
         response = client.delete(
-            f"/api/v1/labels/{parent_id}?cascade=true",
+            f"/api/v1/labels/{parent_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -459,14 +600,15 @@ class TestNestedLabelOperations:
         assert child1_check is None
         assert child2_check is None
 
-    def test_delete_label_no_cascade(self, client_with_auth, db_session):
-        """Test deleting a label moves children to grandparent."""
+    def test_delete_label_deep_cascade(self, client_with_auth, db_session):
+        """Test deleting a label cascades through multiple levels."""
         client, token, user = client_with_auth
         
         # Create: Grandparent -> Parent -> Child
         grandparent = Label(name="Grandparent", owner_id=user.id)
         db_session.add(grandparent)
         db_session.commit()
+        grandparent_id = grandparent.id
         
         parent = Label(name="Parent", parent_id=grandparent.id, owner_id=user.id)
         db_session.add(parent)
@@ -478,52 +620,74 @@ class TestNestedLabelOperations:
         db_session.commit()
         child_id = child.id
         
-        # Delete parent with cascade=false
+        # Delete grandparent - should cascade to parent and child
         response = client.delete(
-            f"/api/v1/labels/{parent_id}?cascade=false",
+            f"/api/v1/labels/{grandparent_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 204
         
-        # Verify child moved to grandparent
+        # Verify all descendants are deleted
         db_session.expire_all()
+        grandparent_check = db_session.query(Label).filter(
+            Label.id == grandparent_id, Label.is_deleted == False
+        ).first()
+        parent_check = db_session.query(Label).filter(
+            Label.id == parent_id, Label.is_deleted == False
+        ).first()
         child_check = db_session.query(Label).filter(
             Label.id == child_id, Label.is_deleted == False
         ).first()
         
-        assert child_check is not None
-        assert child_check.parent_id == grandparent.id
+        assert grandparent_check is None
+        assert parent_check is None
+        assert child_check is None
 
-    def test_delete_root_label_no_cascade(self, client_with_auth, db_session):
-        """Test deleting a root label moves children to root."""
+    def test_delete_label_permanent(self, client_with_auth, db_session):
+        """Test permanently deleting a label removes it from database."""
         client, token, user = client_with_auth
         
-        # Create: Root -> Child
-        root = Label(name="Root", owner_id=user.id)
-        db_session.add(root)
+        # Create label
+        label = Label(name="ToDelete", owner_id=user.id)
+        db_session.add(label)
         db_session.commit()
-        root_id = root.id
+        label_id = label.id
         
-        child = Label(name="Child", parent_id=root.id, owner_id=user.id)
-        db_session.add(child)
-        db_session.commit()
-        child_id = child.id
-        
-        # Delete root with cascade=false
+        # Delete permanently
         response = client.delete(
-            f"/api/v1/labels/{root_id}?cascade=false",
+            f"/api/v1/labels/{label_id}?permanent=true",
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 204
         
-        # Verify child is now at root level
+        # Verify label is completely gone (not just soft deleted)
         db_session.expire_all()
-        child_check = db_session.query(Label).filter(
-            Label.id == child_id, Label.is_deleted == False
-        ).first()
+        label_check = db_session.query(Label).filter(Label.id == label_id).first()
+        assert label_check is None
+
+    def test_delete_label_soft_delete_default(self, client_with_auth, db_session):
+        """Test default delete is soft delete (is_deleted=True)."""
+        client, token, user = client_with_auth
         
-        assert child_check is not None
-        assert child_check.parent_id is None
+        # Create label
+        label = Label(name="SoftDelete", owner_id=user.id)
+        db_session.add(label)
+        db_session.commit()
+        label_id = label.id
+        
+        # Delete without permanent flag (soft delete)
+        response = client.delete(
+            f"/api/v1/labels/{label_id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 204
+        
+        # Verify label still exists but is marked deleted
+        db_session.expire_all()
+        label_check = db_session.query(Label).filter(Label.id == label_id).first()
+        assert label_check is not None
+        assert label_check.is_deleted == True
 

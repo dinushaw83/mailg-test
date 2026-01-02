@@ -263,8 +263,12 @@ def update_template(
 def delete_template(
     template_id: int,
     db: Session = Depends(get_db),
+    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
-    """Delete an email template (soft delete).
+    """Delete an email template.
+    
+    Args:
+        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete their own templates
@@ -290,7 +294,12 @@ def delete_template(
             detail="Not authorized to delete this template"
         )
     
-    template.is_deleted = True
+    if permanent:
+        # Permanently delete from database
+        db.delete(template)
+    else:
+        # Soft delete
+        template.is_deleted = True
     
     try:
         db.commit()
@@ -298,7 +307,7 @@ def delete_template(
         db.rollback()
         raise
     
-    logger.info(f"Template {template.id} deleted by user {current_user.id}")
+    logger.info(f"Template {template.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
 
 
 @router.post("/templates/{template_id}/apply", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])

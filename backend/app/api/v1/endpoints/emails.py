@@ -57,6 +57,21 @@ def get_snippet(body: Optional[str], max_length: int = 200) -> str:
     return text
 
 
+def get_label_hierarchy_name(label) -> str:
+    """Build full hierarchical name for a label (e.g., 'grand/parent/child').
+    
+    Traverses up the parent chain to construct the full path.
+    """
+    parts = []
+    current = label
+    while current:
+        parts.append(current.name)
+        current = current.parent
+    # Reverse to get grand -> parent -> child order
+    parts.reverse()
+    return "/".join(parts)
+
+
 def format_email_response(email: Email) -> dict:
     """Format email model to response dict."""
     recipients = []
@@ -83,7 +98,7 @@ def format_email_response(email: Email) -> dict:
         if not l.is_deleted:
             labels.append({
                 "id": l.id,
-                "name": l.name,
+                "name": get_label_hierarchy_name(l),
                 "color": l.color,
             })
     
@@ -132,7 +147,7 @@ def format_email_list_response(email: Email) -> dict:
         if not l.is_deleted:
             labels.append({
                 "id": l.id,
-                "name": l.name,
+                "name": get_label_hierarchy_name(l),
                 "color": l.color,
             })
     
@@ -516,8 +531,14 @@ def update_email(
 def delete_email(
     email_id: int,
     db: Session = Depends(get_db),
+    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
-    """Delete an email (soft delete - moves to trash first, then permanent delete)."""
+    """Delete an email.
+    
+    Args:
+        permanent: If True, permanently removes from database. 
+                   If False (default), moves to trash or soft deletes if already in trash.
+    """
     current_user = auth.user
     
     email = db.query(Email).filter(
@@ -543,16 +564,20 @@ def delete_email(
                 detail=f"Email {email_id} not found"
             )
     
-    # Check if already in trash
-    trash_folder = get_user_folder(db, current_user.id, FolderType.TRASH.value)
-    
-    if email.folder_id == (trash_folder.id if trash_folder else None):
-        # Already in trash, permanently delete
-        email.is_deleted = True
+    if permanent:
+        # Permanently delete from database
+        db.delete(email)
     else:
-        # Move to trash
-        if trash_folder:
-            email.folder_id = trash_folder.id
+        # Check if already in trash
+        trash_folder = get_user_folder(db, current_user.id, FolderType.TRASH.value)
+        
+        if email.folder_id == (trash_folder.id if trash_folder else None):
+            # Already in trash, soft delete
+            email.is_deleted = True
+        else:
+            # Move to trash
+            if trash_folder:
+                email.folder_id = trash_folder.id
     
     try:
         db.commit()
@@ -560,7 +585,7 @@ def delete_email(
         db.rollback()
         raise
     
-    logger.info(f"Email {email.id} deleted by user {current_user.id}")
+    logger.info(f"Email {email.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
 
 
 @router.post("/emails/{email_id}/send", response_model=EmailResponse, dependencies=[Depends(authorized())])

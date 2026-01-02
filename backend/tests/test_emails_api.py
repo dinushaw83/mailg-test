@@ -253,6 +253,53 @@ class TestEmailOperations:
         
         assert response.status_code == 204
 
+    def test_delete_email_permanent(self, client_with_auth, db_session, sample_email, sample_trash_folder):
+        """Test permanently deleting an email removes it from database."""
+        client, token, user = client_with_auth
+        email_id = sample_email.id
+        
+        response = client.delete(
+            f"/api/v1/emails/{email_id}?permanent=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 204
+        
+        # Verify email is completely gone (not just soft deleted)
+        db_session.expire_all()
+        email_check = db_session.query(Email).filter(Email.id == email_id).first()
+        assert email_check is None
+
+    def test_delete_email_soft_delete_default(self, client_with_auth, db_session, sample_folder):
+        """Test default delete moves to trash (not permanent)."""
+        client, token, user = client_with_auth
+        
+        # Create email
+        email = Email(
+            subject="Test Email",
+            body="Content",
+            status="received",
+            sender_id=user.id,
+            folder_id=sample_folder.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        email_id = email.id
+        original_folder_id = email.folder_id
+        
+        # Delete without permanent flag
+        response = client.delete(
+            f"/api/v1/emails/{email_id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 204
+        
+        # Verify email still exists (moved to trash or soft deleted)
+        db_session.expire_all()
+        email_check = db_session.query(Email).filter(Email.id == email_id).first()
+        assert email_check is not None
+
 
 class TestEmailSendReplyForward:
     """Test email send, reply, and forward operations."""

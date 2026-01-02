@@ -277,8 +277,12 @@ def update_folder(
 def delete_folder(
     folder_id: int,
     db: Session = Depends(get_db),
+    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete a folder (custom folders only).
+    
+    Args:
+        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete their own custom folders
@@ -317,7 +321,12 @@ def delete_folder(
             Email.is_deleted == False
         ).update({"folder_id": inbox.id})
     
-    folder.is_deleted = True
+    if permanent:
+        # Permanently delete from database
+        db.delete(folder)
+    else:
+        # Soft delete
+        folder.is_deleted = True
     
     try:
         db.commit()
@@ -325,7 +334,7 @@ def delete_folder(
         db.rollback()
         raise
     
-    logger.info(f"Folder {folder.id} deleted by user {current_user.id}")
+    logger.info(f"Folder {folder_id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
 
 
 @router.get("/folders/{folder_id}/emails", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
