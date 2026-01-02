@@ -12,9 +12,11 @@ class UserRole(str, Enum):
 class EmailStatus(str, Enum):
     """Email status enumeration."""
     DRAFT = "draft"
+    QUEUED = "queued"  # Pending send (undo send buffer period)
     SENT = "sent"
     RECEIVED = "received"
     ARCHIVED = "archived"
+    CANCELLED = "cancelled"  # Cancelled during undo send period
 
 
 class FolderType(str, Enum):
@@ -42,9 +44,19 @@ class AttachmentType(str, Enum):
     DOCUMENT = "document"
 
 
+class EmailCategory(str, Enum):
+    """Email category enumeration (Gmail-style tabs)."""
+    PRIMARY = "primary"
+    PROMOTIONS = "promotions"
+    SOCIAL = "social"
+    UPDATES = "updates"
+    FORUMS = "forums"
+
+
 # List versions for validation
 VALID_USER_ROLES = [role.value for role in UserRole]
 VALID_EMAIL_STATUSES = [s.value for s in EmailStatus]
 VALID_FOLDER_TYPES = [t.value for t in FolderType]
 VALID_RECIPIENT_TYPES = [t.value for t in RecipientType]
 VALID_ATTACHMENT_TYPES = [t.value for t in AttachmentType]
+VALID_EMAIL_CATEGORIES = [c.value for c in EmailCategory]

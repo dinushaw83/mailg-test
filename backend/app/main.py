@@ -15,6 +15,7 @@ from app.core.middleware.response_wrapper import ResponseWrapperMiddleware
 from app.db.template import initialize_template_Database
 from app.db.bootstrap import initialize_template_database_schema_and_fixtures
 from app.tasks.cleanup import cleanup_old_databases
+from app.tasks.scheduled_sender import process_scheduled_emails
 from app.api.v1.router import router as v1_router
 
 logger = logging.getLogger(__name__)
@@ -40,8 +41,9 @@ async def lifespan(app: FastAPI):
         # Log error but continue - cleanup task must always run
         logger.error(f"Failed to initialize database: {e}")
     
-    # Always start cleanup task regardless of initialization result
+    # Always start background tasks regardless of initialization result
     asyncio.create_task(cleanup_old_databases())
+    asyncio.create_task(process_scheduled_emails())
     
     yield
 

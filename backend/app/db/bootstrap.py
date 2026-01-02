@@ -22,6 +22,7 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.email_label import EmailLabel
 from app.models.attachment import Attachment
+from app.models.email_template import EmailTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +199,14 @@ def initialize_template_database_schema_and_fixtures():
             fixtures_dir / "attachments.json"
         )
         logger.info(f"Loaded {count} new attachments from fixtures")
+        
+        # Load email templates (depends on users)
+        count = load_fixture(
+            session, EmailTemplate,
+            fixtures_dir / "email_templates.json",
+            date_fields=['last_used_at']
+        )
+        logger.info(f"Loaded {count} new email templates from fixtures")
         
         # Reset PostgreSQL sequences to avoid ID conflicts on new inserts
         reset_sequences(session)

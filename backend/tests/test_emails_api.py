@@ -261,6 +261,10 @@ class TestEmailSendReplyForward:
         """Test sending a draft email."""
         client, token, user = client_with_auth
         
+        # Disable undo send for this test (default is 10 seconds which would queue the email)
+        user.undo_send_delay_seconds = 0
+        db_session.commit()
+        
         response = client.post(
             f"/api/v1/emails/{sample_draft_email.id}/send",
             headers={"Authorization": f"Bearer {token}"}
@@ -503,3 +507,145 @@ class TestEmailSnooze:
         # Field should exist even if null
         assert "snooze_until" in data
 
+
+class TestEmailCategory:
+    """Test email category (Gmail-style tabs) operations."""
+
+    def test_update_email_category_success(self, client_with_auth, db_session, sample_email):
+        """Test updating an email's category."""
+        client, token, user = client_with_auth
+        
+        response = client.patch(
+            f"/api/v1/emails/{sample_email.id}/category",
+            json={"category": "promotions"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["category"] == "promotions"
+
+    def test_update_email_category_all_types(self, client_with_auth, db_session, sample_email):
+        """Test all valid category types."""
+        client, token, user = client_with_auth
+        
+        categories = ["primary", "promotions", "social", "updates", "forums"]
+        for category in categories:
+            response = client.patch(
+                f"/api/v1/emails/{sample_email.id}/category",
+                json={"category": category},
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            
+            assert response.status_code == 200
+            data = response.json()["data"]
+            assert data["category"] == category
+
+    def test_update_email_category_invalid(self, client_with_auth, db_session, sample_email):
+        """Test updating with invalid category fails."""
+        client, token, user = client_with_auth
+        
+        response = client.patch(
+            f"/api/v1/emails/{sample_email.id}/category",
+            json={"category": "invalid_category"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 400
+
+    def test_update_email_category_not_found(self, client_with_auth):
+        """Test updating category of non-existent email returns 404."""
+        client, token, user = client_with_auth
+        
+        response = client.patch(
+            "/api/v1/emails/99999/category",
+            json={"category": "promotions"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 404
+
+    def test_update_email_category_unauthenticated(self, client, sample_email):
+        """Test updating category without authentication fails."""
+        response = client.patch(
+            f"/api/v1/emails/{sample_email.id}/category",
+            json={"category": "promotions"}
+        )
+        
+        assert response.status_code == 401
+
+    def test_list_emails_filter_by_category(self, client_with_auth, db_session, sample_folder):
+        """Test filtering emails by category."""
+        client, token, user = client_with_auth
+        
+        # Create emails with different categories
+        email_primary = Email(
+            subject="Primary Email",
+            body="Content",
+            status="received",
+            category="primary",
+            sender_id=user.id,
+            folder_id=sample_folder.id
+        )
+        email_promo = Email(
+            subject="Promo Email",
+            body="Content",
+            status="received",
+            category="promotions",
+            sender_id=user.id,
+            folder_id=sample_folder.id
+        )
+        email_social = Email(
+            subject="Social Email",
+            body="Content",
+            status="received",
+            category="social",
+            sender_id=user.id,
+            folder_id=sample_folder.id
+        )
+        db_session.add_all([email_primary, email_promo, email_social])
+        db_session.commit()
+        
+        # Filter by category
+        response = client.get(
+            "/api/v1/emails?category=promotions",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # All returned emails should have promotions category
+        for email in data["results"]:
+            assert email["category"] == "promotions"
+
+    def test_email_response_includes_category(self, client_with_auth, db_session, sample_email):
+        """Test that email response includes category field."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            f"/api/v1/emails/{sample_email.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "category" in data
+
+    def test_email_default_category_is_primary(self, client_with_auth, db_session, sample_drafts_folder):
+        """Test that new emails default to 'primary' category."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            "/api/v1/emails",
+            json={
+                "subject": "New Email",
+                "body": "Test body",
+                "recipients": [{"email": "test@example.com", "type": "to"}],
+                "is_draft": True
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 201
+        data = response.json()["data"]
+        assert data["category"] == "primary"

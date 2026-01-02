@@ -54,6 +54,7 @@ def format_user_response(user: User, db: Session) -> dict:
         "labels": user.labels,
         "custom_fields": user.custom_fields,
         "notes": user.notes,
+        "undo_send_delay_seconds": user.undo_send_delay_seconds,
         "active": user.active,
         "created_at": user.created_at,
         "updated_at": user.updated_at,

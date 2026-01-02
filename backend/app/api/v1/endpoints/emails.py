@@ -27,14 +27,15 @@ from app.schemas.email import (
     EmailCreate, EmailUpdate, EmailResponse, EmailListResponse,
     EmailReadUpdate, EmailStarUpdate, EmailMoveRequest, EmailLabelRequest,
     EmailReplyRequest, EmailForwardRequest, EmailRecipientResponse,
-    AttachmentBriefResponse, LabelBriefResponse, EmailSnoozeRequest
+    AttachmentBriefResponse, LabelBriefResponse, EmailSnoozeRequest,
+    EmailCategoryUpdate
 )
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import (
-    VALID_EMAIL_STATUSES, VALID_RECIPIENT_TYPES,
-    EmailStatus, FolderType
+    VALID_EMAIL_STATUSES, VALID_RECIPIENT_TYPES, VALID_EMAIL_CATEGORIES,
+    EmailStatus, FolderType, EmailCategory
 )
 
 logger = logging.getLogger(__name__)
@@ -86,12 +87,20 @@ def format_email_response(email: Email) -> dict:
                 "color": l.color,
             })
     
+    # Determine if email can be cancelled (undo send)
+    can_undo = (
+        email.status == EmailStatus.QUEUED.value and 
+        email.scheduled_send_at and 
+        email.scheduled_send_at > datetime.utcnow()
+    )
+    
     return {
         "id": email.id,
         "subject": email.subject,
         "body": email.body,
         "html_body": email.html_body,
         "status": email.status,
+        "category": email.category or "primary",
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": email.is_important,
@@ -105,12 +114,14 @@ def format_email_response(email: Email) -> dict:
         "parent_email_id": email.parent_email_id,
         "sent_at": email.sent_at,
         "received_at": email.received_at,
+        "scheduled_send_at": email.scheduled_send_at,
         "snooze_until": email.snooze_until,
         "created_at": email.created_at,
         "updated_at": email.updated_at,
         "attachment_count": len(attachments),
         "attachments": attachments,
         "labels": labels,
+        "can_undo_send": can_undo,
     }
 
 
@@ -127,11 +138,19 @@ def format_email_list_response(email: Email) -> dict:
     
     attachment_count = len([a for a in email.attachments if not a.is_deleted])
     
+    # Determine if email can be cancelled (undo send)
+    can_undo = (
+        email.status == EmailStatus.QUEUED.value and 
+        email.scheduled_send_at and 
+        email.scheduled_send_at > datetime.utcnow()
+    )
+    
     return {
         "id": email.id,
         "subject": email.subject,
         "snippet": get_snippet(email.body),
         "status": email.status,
+        "category": email.category or "primary",
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": email.is_important,
@@ -141,11 +160,13 @@ def format_email_list_response(email: Email) -> dict:
         "folder_id": email.folder_id,
         "thread_id": email.thread_id,
         "sent_at": email.sent_at,
+        "scheduled_send_at": email.scheduled_send_at,
         "snooze_until": email.snooze_until,
         "created_at": email.created_at,
         "attachment_count": attachment_count,
         "has_attachments": attachment_count > 0,
         "labels": labels,
+        "can_undo_send": can_undo,
     }
 
 
@@ -198,6 +219,12 @@ def create_email(
                 detail="Invalid folder ID"
             )
     
+    # Handle scheduled send (undo send feature)
+    scheduled_send_at = email_data.scheduled_send_at
+    if scheduled_send_at and not email_data.is_draft:
+        # Email is scheduled for later - queue it
+        email_status = EmailStatus.QUEUED.value
+    
     # Create email
     email = Email(
         subject=email_data.subject,
@@ -207,7 +234,8 @@ def create_email(
         sender_id=current_user.id,
         folder_id=folder.id if folder else None,
         is_read=True,  # Sender has read their own email
-        sent_at=None if email_data.is_draft else datetime.utcnow(),
+        sent_at=None if email_data.is_draft or scheduled_send_at else datetime.utcnow(),
+        scheduled_send_at=scheduled_send_at,
     )
     
     try:
@@ -231,8 +259,8 @@ def create_email(
             )
             db.add(email_recipient)
             
-            # If sending (not draft), create received copy for recipients who are users
-            if not email_data.is_draft and recipient_user:
+            # If sending immediately (not draft, not queued), create received copy for recipients who are users
+            if not email_data.is_draft and not scheduled_send_at and recipient_user:
                 recipient_folder = get_user_folder(db, recipient_user.id, FolderType.INBOX.value)
                 received_email = Email(
                     subject=email_data.subject,
@@ -279,6 +307,7 @@ def list_emails(
     folder_type: Optional[str] = Query(None, description="Filter by folder type"),
     thread_id: Optional[int] = Query(None, description="Filter by thread ID to get all emails in a conversation"),
     status: Optional[str] = Query(None, description="Filter by status"),
+    category: Optional[str] = Query(None, description="Filter by category (primary, promotions, social, updates, forums)"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
     is_starred: Optional[bool] = Query(None, description="Filter by starred"),
     is_snoozed: Optional[bool] = Query(None, description="Filter by snoozed status (True=snoozed, False=not snoozed)"),
@@ -325,6 +354,9 @@ def list_emails(
     
     if status:
         query = query.filter(Email.status == status)
+    
+    if category:
+        query = query.filter(Email.category == category)
     
     if is_read is not None:
         query = query.filter(Email.is_read == is_read)
@@ -536,7 +568,14 @@ def send_email(
     email_id: int,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Send a draft email."""
+    """Send a draft email.
+    
+    If the user has undo_send_delay_seconds > 0 configured, the email will be
+    queued with a scheduled send time. During this window, the user can cancel
+    the send using the /emails/{email_id}/cancel-send endpoint.
+    
+    If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
+    """
     current_user = auth.user
     
     email = db.query(Email).options(
@@ -565,14 +604,56 @@ def send_email(
             detail="Email must have at least one recipient"
         )
     
-    # Update status and move to sent folder
+    # Get user's undo send delay preference (default 10 seconds, 0 to disable)
+    undo_delay = current_user.undo_send_delay_seconds or 0
+    
+    # Clamp to valid range (0 = disabled, 5-30 seconds)
+    if undo_delay > 0:
+        undo_delay = max(5, min(30, undo_delay))
+    
     sent_folder = get_user_folder(db, current_user.id, FolderType.SENT.value)
+    
+    if undo_delay > 0:
+        # Queue the email with scheduled send time (undo send enabled)
+        from datetime import timedelta
+        email.status = EmailStatus.QUEUED.value
+        email.scheduled_send_at = datetime.utcnow() + timedelta(seconds=undo_delay)
+        if sent_folder:
+            email.folder_id = sent_folder.id
+        
+        try:
+            db.commit()
+            db.refresh(email)
+        except Exception:
+            db.rollback()
+            raise
+        
+        logger.info(f"Email {email.id} queued for send in {undo_delay}s by user {current_user.id}")
+        return format_email_response(email)
+    
+    # Immediate send (undo send disabled)
     email.status = EmailStatus.SENT.value
     email.sent_at = datetime.utcnow()
     if sent_folder:
         email.folder_id = sent_folder.id
     
     # Create received copies for recipients who are users
+    _deliver_email_to_recipients(db, email, current_user)
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} sent by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+def _deliver_email_to_recipients(db: Session, email: Email, sender) -> None:
+    """Create received copies of an email for all recipients who are system users."""
     for recipient in email.recipients:
         if recipient.recipient_id:
             recipient_user = db.query(User).filter(
@@ -586,7 +667,8 @@ def send_email(
                     body=email.body,
                     html_body=email.html_body,
                     status=EmailStatus.RECEIVED.value,
-                    sender_id=current_user.id,
+                    category=email.category,
+                    sender_id=sender.id,
                     folder_id=recipient_folder.id if recipient_folder else None,
                     is_read=False,
                     received_at=datetime.utcnow(),
@@ -603,6 +685,57 @@ def send_email(
                     recipient_type=recipient.recipient_type,
                 )
                 db.add(recv_recipient)
+
+
+@router.post("/emails/{email_id}/cancel-send", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def cancel_send(
+    email_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Cancel a queued email before it's sent (undo send).
+    
+    Only works for emails in 'queued' status before their scheduled_send_at time.
+    The email will be moved back to draft status so it can be edited or re-sent.
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        joinedload(Email.folder),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.sender_id == current_user.id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.status != EmailStatus.QUEUED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only queued emails can be cancelled. This email has already been sent."
+        )
+    
+    # Check if still within the undo window
+    if email.scheduled_send_at and email.scheduled_send_at <= datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Undo window has expired. The email has been sent."
+        )
+    
+    # Move back to drafts
+    drafts_folder = get_user_folder(db, current_user.id, FolderType.DRAFTS.value)
+    email.status = EmailStatus.DRAFT.value
+    email.scheduled_send_at = None
+    if drafts_folder:
+        email.folder_id = drafts_folder.id
     
     try:
         db.commit()
@@ -611,7 +744,62 @@ def send_email(
         db.rollback()
         raise
     
-    logger.info(f"Email {email.id} sent by user {current_user.id}")
+    logger.info(f"Email {email.id} send cancelled (undo send) by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+@router.post("/emails/{email_id}/confirm-send", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def confirm_send(
+    email_id: int,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Immediately send a queued email without waiting for the scheduled time.
+    
+    Use this if you want to skip the undo send waiting period.
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        joinedload(Email.folder),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.sender_id == current_user.id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.status != EmailStatus.QUEUED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only queued emails can be confirmed for immediate send"
+        )
+    
+    # Send immediately
+    email.status = EmailStatus.SENT.value
+    email.sent_at = datetime.utcnow()
+    email.scheduled_send_at = None
+    
+    # Deliver to recipients
+    _deliver_email_to_recipients(db, email, current_user)
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} confirmed and sent immediately by user {current_user.id}")
     
     return format_email_response(email)
 
@@ -1166,6 +1354,70 @@ def unsnooze_email(
         raise
     
     logger.info(f"Email {email.id} unsnoozed by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+@router.patch("/emails/{email_id}/category", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def update_email_category(
+    email_id: int,
+    category_data: EmailCategoryUpdate,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Update an email's category (Primary, Promotions, Social, Updates, Forums).
+    
+    Categories help organize inbox similar to Gmail tabs.
+    
+    Permissions:
+    - Users can only update categories on their own emails (sent or received)
+    """
+    current_user = auth.user
+    
+    # Validate category
+    if category_data.category not in VALID_EMAIL_CATEGORIES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid category. Must be one of: {', '.join(VALID_EMAIL_CATEGORIES)}"
+        )
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        joinedload(Email.folder),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    email.category = category_data.category
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} category changed to {category_data.category} by user {current_user.id}")
     
     return format_email_response(email)
 

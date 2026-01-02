@@ -9,6 +9,7 @@ from app.models.email_label import EmailLabel
 from app.models.attachment import Attachment
 from app.models.thread import Thread
 from app.models.saved_search import SavedSearch
+from app.models.email_template import EmailTemplate
 
 __all__ = [
     "User",
@@ -20,4 +21,5 @@ __all__ = [
     "Attachment",
     "Thread",
     "SavedSearch",
+    "EmailTemplate",
 ]

@@ -21,7 +21,9 @@ class EmailCreate(BaseModel):
     html_body: Optional[str] = Field(None, description="HTML body")
     recipients: List[EmailRecipientSchema] = Field(..., min_length=1, description="List of recipients")
     folder_id: Optional[int] = Field(None, description="Target folder ID")
+    category: Optional[str] = Field("primary", description="Email category: primary, promotions, social, updates, forums")
     is_draft: bool = Field(False, description="Save as draft instead of sending")
+    scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time (for undo send feature)")
 
 
 class EmailUpdate(BaseModel):
@@ -33,6 +35,7 @@ class EmailUpdate(BaseModel):
     is_starred: Optional[bool] = None
     is_important: Optional[bool] = None
     folder_id: Optional[int] = None
+    category: Optional[str] = Field(None, description="Email category: primary, promotions, social, updates, forums")
 
 
 class EmailReadUpdate(BaseModel):
@@ -74,6 +77,11 @@ class EmailSnoozeRequest(BaseModel):
     snooze_until: datetime = Field(..., description="Date and time when the email should reappear")
 
 
+class EmailCategoryUpdate(BaseModel):
+    """Schema for updating email category."""
+    category: str = Field(..., description="Email category: primary, promotions, social, updates, forums")
+
+
 class EmailRecipientResponse(BaseModel):
     """Schema for email recipient in response."""
     model_config = {"from_attributes": True}
@@ -112,6 +120,7 @@ class EmailResponse(BaseModel):
     body: Optional[str] = None
     html_body: Optional[str] = None
     status: str
+    category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool
     is_important: bool
@@ -125,12 +134,14 @@ class EmailResponse(BaseModel):
     parent_email_id: Optional[int] = None
     sent_at: Optional[datetime] = None
     received_at: Optional[datetime] = None
+    scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
     snooze_until: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     attachment_count: int = 0
     attachments: List[AttachmentBriefResponse] = []
     labels: List[LabelBriefResponse] = []
+    can_undo_send: bool = False  # True if email is in queued status and can be cancelled
 
 
 class EmailListResponse(BaseModel):
@@ -141,6 +152,7 @@ class EmailListResponse(BaseModel):
     subject: str
     snippet: Optional[str] = None  # Preview of body
     status: str
+    category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool
     is_important: bool
@@ -150,11 +162,13 @@ class EmailListResponse(BaseModel):
     folder_id: Optional[int] = None
     thread_id: Optional[int] = None
     sent_at: Optional[datetime] = None
+    scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
     snooze_until: Optional[datetime] = None
     created_at: datetime
     attachment_count: int = 0
     has_attachments: bool = False
     labels: List[LabelBriefResponse] = []
+    can_undo_send: bool = False  # True if email is in queued status and can be cancelled
 
 
 EmailPaginatedResponse = PaginatedListResponse[EmailListResponse]

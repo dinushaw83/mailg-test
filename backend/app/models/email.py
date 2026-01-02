@@ -14,13 +14,20 @@ class Email(Base):
     subject = Column(String, nullable=False)
     body = Column(Text)
     html_body = Column(Text)  # HTML version of email
-    status = Column(String, default="draft", index=True)  # draft, sent, received, archived
+    # Status: draft, queued (pending send), sent, received, archived, cancelled
+    status = Column(String, default="draft", index=True)
     is_read = Column(Boolean, default=False, index=True)
     is_starred = Column(Boolean, default=False, index=True)
     is_important = Column(Boolean, default=False)
     
+    # Gmail-style category (Primary, Promotions, Social, Updates, Forums)
+    category = Column(String(50), default="primary", index=True)
+    
     # Snooze functionality
     snooze_until = Column(DateTime, nullable=True, index=True)  # When email should reappear
+    
+    # Undo send functionality
+    scheduled_send_at = Column(DateTime, nullable=True, index=True)  # When email will actually be sent
     
     # Foreign keys
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
@@ -54,5 +61,7 @@ class Email(Base):
         Index("ix_emails_folder_is_deleted", "folder_id", "is_deleted"),
         Index("ix_emails_is_deleted_is_read", "is_deleted", "is_read"),
         Index("ix_emails_thread_created", "thread_id", "created_at"),
+        Index("ix_emails_folder_category", "folder_id", "category"),
+        Index("ix_emails_scheduled_send", "scheduled_send_at"),
     )
 
