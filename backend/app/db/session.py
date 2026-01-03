@@ -86,6 +86,24 @@ def get_db(request: Request):
         # Connections are returned to the pool when the session is closed.
 
 
+def get_seed_db():
+    """FastAPI dependency that provides a database session to the seed/template database.
+    
+    Used for schema inspection and other operations that need access to the 
+    template database structure without authentication.
+    
+    Yields:
+        Database session instance for the seed/template database.
+    """
+    engine = _get_seed_engine()
+    SessionLocal = sessionmaker(bind=engine)
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 # For backward compatibility with initialization scripts
 # Lazy initialization using __getattr__ to avoid creating engine on import
 def __getattr__(name):

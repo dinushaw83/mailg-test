@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Optional
 import logging
 
-from app.db.session import get_db
+from app.db.session import get_db, get_seed_db
 from app.db.run_router import drop_run_database
 from app.schemas.db_snapshot import DbSnapshotResponse, DbDropResponse
 
@@ -306,3 +306,97 @@ def drop_db_for_run(
         "run_id": effective_run_id,
         "result": result,
     }
+
+
+def _sql_type_to_json_type(sql_type: str) -> str:
+    """Map SQL column types to JSON schema types."""
+    sql_type_lower = sql_type.lower()
+    
+    # Integer types
+    if any(t in sql_type_lower for t in ['int', 'serial', 'smallint', 'bigint']):
+        return "integer"
+    
+    # Numeric/float types
+    if any(t in sql_type_lower for t in ['float', 'double', 'decimal', 'numeric', 'real']):
+        return "number"
+    
+    # Boolean
+    if 'bool' in sql_type_lower:
+        return "boolean"
+    
+    # Array/JSON types
+    if any(t in sql_type_lower for t in ['json', 'array', '[]']):
+        return "array"
+    
+    # Default to string (varchar, text, uuid, timestamp, date, etc.)
+    return "string"
+
+
+@router.get("/db_schema")
+def get_db_schema(db: Session = Depends(get_seed_db)):
+    """
+    Return the database schema from the seed database.
+    
+    This endpoint inspects the seed database and returns the schema in a
+    JSON schema-like format. No authentication required since this is
+    static metadata used for verification configuration.
+    
+    Returns:
+        JSON object with database schema in the format:
+        {
+            "properties": {
+                "tables": {
+                    "properties": {
+                        "table_name": {
+                            "properties": {
+                                "column_name": {"type": "json_type"}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """
+    try:
+        inspector = inspect(db.get_bind())
+        
+        # Get all tables
+        try:
+            tables = inspector.get_table_names(schema="public")
+        except TypeError:
+            tables = inspector.get_table_names()
+        
+        # Build schema structure
+        tables_properties = {}
+        
+        for table_name in tables:
+            columns_info = inspector.get_columns(table_name)
+            column_properties = {}
+            
+            for col in columns_info:
+                col_name = col["name"]
+                col_type = str(col["type"])
+                json_type = _sql_type_to_json_type(col_type)
+                column_properties[col_name] = {"type": json_type}
+            
+            tables_properties[table_name] = {
+                "properties": column_properties
+            }
+        
+        schema = {
+            "properties": {
+                "tables": {
+                    "properties": tables_properties
+                }
+            }
+        }
+        
+        logger.info(f"Returning database schema with {len(tables)} tables")
+        return schema
+        
+    except Exception as e:
+        logger.error(f"Error reading database schema: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to read database schema: {str(e)}"
+        )
