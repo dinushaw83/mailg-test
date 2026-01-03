@@ -549,6 +549,7 @@ def list_label_emails(
     # Base query
     query = db.query(Email).options(
         joinedload(Email.sender),
+        joinedload(Email.folder),
         selectinload(Email.attachments),
         selectinload(Email.labels),
     ).join(

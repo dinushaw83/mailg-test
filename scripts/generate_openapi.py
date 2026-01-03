@@ -23,7 +23,7 @@ os.environ.setdefault("DATABASE_URL", "postgresql+psycopg2://mailg:mailg@127.0.0
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BACKEND_DIR = REPO_ROOT / "backend"
-DEFAULT_OUTPUT = REPO_ROOT / "API_CONTRACT_OPENAPI.md"
+DEFAULT_OUTPUT = REPO_ROOT / "docs" / "API_CONTRACT_OPENAPI.md"
 
 # Set UTF-8 encoding for Windows compatibility (avoid cp1252 UnicodeEncodeError)
 if sys.platform == "win32":

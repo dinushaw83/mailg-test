@@ -73,6 +73,35 @@ def get_label_hierarchy_name(label) -> str:
     return "/".join(parts)
 
 
+# System label colors for different folder types
+SYSTEM_LABEL_COLORS = {
+    "inbox": "#1a73e8",    # Blue
+    "spam": "#d93025",     # Red
+    "trash": "#5f6368",    # Gray
+    "sent": "#1e8e3e",     # Green
+    "drafts": "#f9ab00",   # Amber
+    "starred": "#fbbc04",  # Yellow/Gold
+}
+
+
+def get_system_labels(email: Email) -> list:
+    """Get system labels derived from the email's folder type.
+    
+    Returns a list of system label dicts with name and color.
+    System labels represent folder-based categorization like Inbox, Spam, etc.
+    """
+    system_labels = []
+    
+    if email.folder and email.folder.folder_type and email.folder.folder_type != "custom":
+        folder_type = email.folder.folder_type
+        system_labels.append({
+            "name": folder_type.capitalize(),
+            "color": SYSTEM_LABEL_COLORS.get(folder_type),
+        })
+    
+    return system_labels
+
+
 def format_email_response(email: Email) -> dict:
     """Format email model to response dict."""
     recipients = []
@@ -137,6 +166,7 @@ def format_email_response(email: Email) -> dict:
         "attachment_count": len(attachments),
         "attachments": attachments,
         "labels": labels,
+        "system_labels": get_system_labels(email),
         "can_undo_send": can_undo,
     }
 
@@ -182,6 +212,7 @@ def format_email_list_response(email: Email) -> dict:
         "attachment_count": attachment_count,
         "has_attachments": attachment_count > 0,
         "labels": labels,
+        "system_labels": get_system_labels(email),
         "can_undo_send": can_undo,
     }
 
@@ -339,6 +370,7 @@ def list_emails(
     # Base query - user's emails (sent by them or received by them)
     query = db.query(Email).options(
         joinedload(Email.sender),
+        joinedload(Email.folder),
         selectinload(Email.attachments),
         selectinload(Email.labels),
     ).filter(

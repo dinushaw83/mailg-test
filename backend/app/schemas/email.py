@@ -112,6 +112,14 @@ class LabelBriefResponse(BaseModel):
     color: Optional[str] = None
 
 
+class SystemLabelResponse(BaseModel):
+    """System label derived from folder type (e.g., Inbox, Spam, Trash)."""
+    model_config = {"from_attributes": True}
+    
+    name: str = Field(..., description="System label name (e.g., Inbox, Spam, Trash)")
+    color: Optional[str] = Field(None, description="Display color for the label")
+
+
 class EmailResponse(BaseModel):
     """Schema for email response with all fields including metadata."""
     model_config = {"from_attributes": True}
@@ -142,6 +150,7 @@ class EmailResponse(BaseModel):
     attachment_count: int = 0
     attachments: List[AttachmentBriefResponse] = []
     labels: List[LabelBriefResponse] = []
+    system_labels: List[SystemLabelResponse] = []  # System labels derived from folder (Inbox, Spam, etc.)
     can_undo_send: bool = False  # True if email is in queued status and can be cancelled
 
 
@@ -169,6 +178,7 @@ class EmailListResponse(BaseModel):
     attachment_count: int = 0
     has_attachments: bool = False
     labels: List[LabelBriefResponse] = []
+    system_labels: List[SystemLabelResponse] = []  # System labels derived from folder (Inbox, Spam, etc.)
     can_undo_send: bool = False  # True if email is in queued status and can be cancelled
 
 
