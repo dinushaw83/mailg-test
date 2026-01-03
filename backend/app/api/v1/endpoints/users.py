@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import Optional
+from uuid import UUID
 import logging
 
 from app.db.session import get_db
@@ -138,7 +139,7 @@ def list_users(
 
 @router.get("/users/{user_id}", response_model=UserResponse, dependencies=[Depends(authorized())])
 def get_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Get a specific user by ID.
@@ -233,7 +234,7 @@ def create_user(
 
 @router.put("/users/{user_id}", response_model=UserResponse, dependencies=[Depends(authorized(["admin"]))])
 def update_user(
-    user_id: int,
+    user_id: UUID,
     user_data: UserUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -292,7 +293,7 @@ def update_user(
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized(["admin"]))])
 def delete_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db),
     permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:

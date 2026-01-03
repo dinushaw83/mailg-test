@@ -3,6 +3,7 @@
 from pydantic import BaseModel, ConfigDict, field_validator, computed_field
 from typing import Optional, List, Any
 from datetime import datetime
+from uuid import UUID
 import re
 
 from app.schemas.pagination import PaginatedListResponse
@@ -30,7 +31,7 @@ class UserResponse(BaseModel):
     """User API response schema."""
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
+    id: UUID
     first_name: str
     last_name: str
     email: str

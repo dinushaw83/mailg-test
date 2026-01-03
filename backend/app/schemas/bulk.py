@@ -3,11 +3,12 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
+from uuid import UUID
 
 
 class BulkEmailIds(BaseModel):
     """Base schema for bulk operations with email IDs."""
-    email_ids: List[int] = Field(..., min_length=1, max_length=100, description="List of email IDs to operate on")
+    email_ids: List[UUID] = Field(..., min_length=1, max_length=100, description="List of email IDs to operate on")
 
 
 class BulkReadRequest(BulkEmailIds):
@@ -22,7 +23,7 @@ class BulkStarRequest(BulkEmailIds):
 
 class BulkMoveRequest(BulkEmailIds):
     """Schema for bulk move to folder."""
-    folder_id: int = Field(..., description="Target folder ID")
+    folder_id: UUID = Field(..., description="Target folder ID")
 
 
 class BulkDeleteRequest(BulkEmailIds):
@@ -32,12 +33,12 @@ class BulkDeleteRequest(BulkEmailIds):
 
 class BulkLabelAddRequest(BulkEmailIds):
     """Schema for bulk add labels."""
-    label_ids: List[int] = Field(..., min_length=1, description="Label IDs to add")
+    label_ids: List[UUID] = Field(..., min_length=1, description="Label IDs to add")
 
 
 class BulkLabelRemoveRequest(BulkEmailIds):
     """Schema for bulk remove labels."""
-    label_ids: List[int] = Field(..., min_length=1, description="Label IDs to remove")
+    label_ids: List[UUID] = Field(..., min_length=1, description="Label IDs to remove")
 
 
 class BulkSnoozeRequest(BulkEmailIds):
@@ -62,7 +63,7 @@ class BulkCategoryRequest(BulkEmailIds):
 
 class BulkOperationResult(BaseModel):
     """Result of a single item in bulk operation."""
-    id: int = Field(..., description="Email ID")
+    id: UUID = Field(..., description="Email ID")
     success: bool = Field(..., description="Whether operation succeeded")
     error: Optional[str] = Field(None, description="Error message if failed")
 
@@ -73,4 +74,3 @@ class BulkOperationResponse(BaseModel):
     successful: int = Field(..., description="Number of successfully processed emails")
     failed: int = Field(..., description="Number of failed operations")
     results: List[BulkOperationResult] = Field(default_factory=list, description="Individual results")
-

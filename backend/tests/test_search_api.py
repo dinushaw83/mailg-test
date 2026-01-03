@@ -1,12 +1,17 @@
 """Tests for Search API endpoints."""
 
 import pytest
+import uuid
 from app.models.email import Email
 from app.models.folder import Folder
 from app.models.label import Label
 from app.models.email_label import EmailLabel
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
+
+
+# Helper to generate a non-existent UUID for 404 tests
+NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
 
 
 class TestSearchBasic:
@@ -179,7 +184,7 @@ class TestSearchLabelHierarchy:
         assert response.status_code == 200
         data = response.json()["data"]
         # Find our email
-        our_result = next((r for r in data["results"] if r["id"] == email.id), None)
+        our_result = next((r for r in data["results"] if r["id"] == str(email.id)), None)
         assert our_result is not None
         assert "Work/Projects" in our_result["labels"]
 

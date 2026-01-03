@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, case
 from typing import Optional, List
+from uuid import UUID
 import logging
 
 from app.db.session import get_db
@@ -184,7 +185,7 @@ def list_folders(
 
 @router.get("/folders/{folder_id}", response_model=FolderResponse, dependencies=[Depends(authorized())])
 def get_folder(
-    folder_id: int,
+    folder_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Get a specific folder by ID.
@@ -224,7 +225,7 @@ def get_folder(
 
 @router.put("/folders/{folder_id}", response_model=FolderResponse, dependencies=[Depends(authorized())])
 def update_folder(
-    folder_id: int,
+    folder_id: UUID,
     folder_data: FolderUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -275,7 +276,7 @@ def update_folder(
 
 @router.delete("/folders/{folder_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
 def delete_folder(
-    folder_id: int,
+    folder_id: UUID,
     db: Session = Depends(get_db),
     permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
@@ -339,7 +340,7 @@ def delete_folder(
 
 @router.get("/folders/{folder_id}/emails", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
 def list_folder_emails(
-    folder_id: int,
+    folder_id: UUID,
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
@@ -406,4 +407,3 @@ def list_folder_emails(
         page_size=page_size,
         total_pages=total_pages,
     )
-

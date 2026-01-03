@@ -1,6 +1,8 @@
 """Email conversation thread model."""
 
+import uuid
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -10,10 +12,10 @@ class Thread(Base):
     """Email conversation thread model with relationships."""
     __tablename__ = "threads"
     
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     subject = Column(String, nullable=False)  # Original subject
     
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     participant_count = Column(Integer, default=1)
     email_count = Column(Integer, default=0)
     
@@ -32,4 +34,3 @@ class Thread(Base):
         Index("ix_threads_owner_deleted", "owner_id", "is_deleted"),
         Index("ix_threads_last_email", "last_email_at"),
     )
-

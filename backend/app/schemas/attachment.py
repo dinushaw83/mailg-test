@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
 
@@ -18,8 +19,8 @@ class AttachmentResponse(BaseModel):
     """Schema for attachment response."""
     model_config = {"from_attributes": True}
     
-    id: int
-    email_id: int
+    id: UUID
+    email_id: UUID
     filename: str
     content_type: Optional[str] = None
     size_bytes: Optional[int] = None
@@ -33,7 +34,7 @@ class AttachmentListResponse(BaseModel):
     """Brief attachment info for list responses."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     filename: str
     content_type: Optional[str] = None
     size_bytes: Optional[int] = None
@@ -41,4 +42,3 @@ class AttachmentListResponse(BaseModel):
 
 
 AttachmentPaginatedResponse = PaginatedListResponse[AttachmentListResponse]
-

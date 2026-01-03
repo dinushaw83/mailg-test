@@ -1,8 +1,13 @@
 """Tests for Attachments API endpoints."""
 
 import pytest
+import uuid
 from app.models.attachment import Attachment
 from app.models.email import Email
+
+
+# Helper to generate a non-existent UUID for 404 tests
+NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
 
 
 class TestAttachmentList:
@@ -62,7 +67,7 @@ class TestAttachmentOperations:
         client, token, user = client_with_auth
         
         response = client.get(
-            "/api/v1/attachments/99999",
+            f"/api/v1/attachments/{NON_EXISTENT_UUID}",
             headers={"Authorization": f"Bearer {token}"}
         )
         

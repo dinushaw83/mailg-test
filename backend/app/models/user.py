@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import (
     Column,
     Integer,
@@ -8,6 +9,7 @@ from sqlalchemy import (
     Text,
     JSON,
 )
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from app.db.base import Base
 
@@ -20,7 +22,7 @@ class User(Base):
     """
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     
     # Basic identity
     first_name = Column(String, nullable=False)

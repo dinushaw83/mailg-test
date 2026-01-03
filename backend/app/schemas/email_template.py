@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
+from uuid import UUID
 
 
 class EmailTemplateCreate(BaseModel):
@@ -29,14 +30,14 @@ class EmailTemplateResponse(BaseModel):
     """Schema for email template response."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     name: str
     description: Optional[str] = None
     subject: Optional[str] = None
     body: Optional[str] = None
     html_body: Optional[str] = None
     is_shared: bool
-    owner_id: int
+    owner_id: UUID
     owner_name: Optional[str] = None
     owner_email: Optional[str] = None
     created_at: datetime
@@ -47,12 +48,12 @@ class EmailTemplateListResponse(BaseModel):
     """Brief template info for list responses."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     name: str
     description: Optional[str] = None
     subject: Optional[str] = None
     is_shared: bool
-    owner_id: int
+    owner_id: UUID
     owner_name: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -60,8 +61,7 @@ class EmailTemplateListResponse(BaseModel):
 
 class EmailTemplateApplyRequest(BaseModel):
     """Schema for applying a template to create a new email."""
-    template_id: int = Field(..., description="Template ID to apply")
+    template_id: UUID = Field(..., description="Template ID to apply")
     recipients: Optional[List[dict]] = Field(None, description="Optional recipients to add")
     additional_body: Optional[str] = Field(None, description="Additional text to append")
     save_as_draft: bool = Field(True, description="Save as draft or just return content")
-

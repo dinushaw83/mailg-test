@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 import logging
 
 from app.db.session import get_db
@@ -185,7 +186,7 @@ def format_email_list_response(email: Email) -> dict:
     }
 
 
-def get_user_folder(db: Session, user_id: int, folder_type: str) -> Optional[Folder]:
+def get_user_folder(db: Session, user_id: UUID, folder_type: str) -> Optional[Folder]:
     """Get user's folder by type."""
     return db.query(Folder).filter(
         Folder.owner_id == user_id,
@@ -318,9 +319,9 @@ def list_emails(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    folder_id: Optional[int] = Query(None, description="Filter by folder ID"),
+    folder_id: Optional[UUID] = Query(None, description="Filter by folder ID"),
     folder_type: Optional[str] = Query(None, description="Filter by folder type"),
-    thread_id: Optional[int] = Query(None, description="Filter by thread ID to get all emails in a conversation"),
+    thread_id: Optional[UUID] = Query(None, description="Filter by thread ID to get all emails in a conversation"),
     status: Optional[str] = Query(None, description="Filter by status"),
     category: Optional[str] = Query(None, description="Filter by category (primary, promotions, social, updates, forums)"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
@@ -428,7 +429,7 @@ def list_emails(
 
 @router.get("/emails/{email_id}", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def get_email(
-    email_id: int,
+    email_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Get a specific email by ID.
@@ -471,7 +472,7 @@ def get_email(
 
 @router.put("/emails/{email_id}", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def update_email(
-    email_id: int,
+    email_id: UUID,
     email_data: EmailUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -529,7 +530,7 @@ def update_email(
 
 @router.delete("/emails/{email_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
 def delete_email(
-    email_id: int,
+    email_id: UUID,
     db: Session = Depends(get_db),
     permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
@@ -590,7 +591,7 @@ def delete_email(
 
 @router.post("/emails/{email_id}/send", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def send_email(
-    email_id: int,
+    email_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Send a draft email.
@@ -714,7 +715,7 @@ def _deliver_email_to_recipients(db: Session, email: Email, sender) -> None:
 
 @router.post("/emails/{email_id}/cancel-send", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def cancel_send(
-    email_id: int,
+    email_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Cancel a queued email before it's sent (undo send).
@@ -776,7 +777,7 @@ def cancel_send(
 
 @router.post("/emails/{email_id}/confirm-send", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def confirm_send(
-    email_id: int,
+    email_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Immediately send a queued email without waiting for the scheduled time.
@@ -831,7 +832,7 @@ def confirm_send(
 
 @router.post("/emails/{email_id}/reply", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
 def reply_to_email(
-    email_id: int,
+    email_id: UUID,
     reply_data: EmailReplyRequest,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -972,7 +973,7 @@ def reply_to_email(
 
 @router.post("/emails/{email_id}/forward", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
 def forward_email(
-    email_id: int,
+    email_id: UUID,
     forward_data: EmailForwardRequest,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -1004,7 +1005,7 @@ def forward_email(
     
     # Create forward email
     sent_folder = get_user_folder(db, current_user.id, FolderType.SENT.value)
-    forward_email = Email(
+    forward_email_obj = Email(
         subject=subject,
         body=body,
         html_body=html_body,
@@ -1017,7 +1018,7 @@ def forward_email(
     )
     
     try:
-        db.add(forward_email)
+        db.add(forward_email_obj)
         db.flush()
         
         # Add recipients
@@ -1028,7 +1029,7 @@ def forward_email(
             ).first()
             
             email_recipient = EmailRecipient(
-                email_id=forward_email.id,
+                email_id=forward_email_obj.id,
                 recipient_id=recipient_user.id if recipient_user else None,
                 recipient_email=recipient.email,
                 recipient_name=recipient.name,
@@ -1062,20 +1063,20 @@ def forward_email(
                 db.add(recv_recipient)
         
         db.commit()
-        db.refresh(forward_email)
+        db.refresh(forward_email_obj)
         
     except Exception:
         db.rollback()
         raise
     
-    logger.info(f"Forward {forward_email.id} of email {email_id} by user {current_user.id}")
+    logger.info(f"Forward {forward_email_obj.id} of email {email_id} by user {current_user.id}")
     
-    return format_email_response(forward_email)
+    return format_email_response(forward_email_obj)
 
 
 @router.patch("/emails/{email_id}/read", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def mark_email_read(
-    email_id: int,
+    email_id: UUID,
     read_data: EmailReadUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -1107,7 +1108,7 @@ def mark_email_read(
 
 @router.patch("/emails/{email_id}/star", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def star_email(
-    email_id: int,
+    email_id: UUID,
     star_data: EmailStarUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -1139,7 +1140,7 @@ def star_email(
 
 @router.post("/emails/{email_id}/move", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def move_email(
-    email_id: int,
+    email_id: UUID,
     move_data: EmailMoveRequest,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -1184,7 +1185,7 @@ def move_email(
 
 @router.post("/emails/{email_id}/labels", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def add_label_to_email(
-    email_id: int,
+    email_id: UUID,
     label_data: EmailLabelRequest,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -1237,8 +1238,8 @@ def add_label_to_email(
 
 @router.delete("/emails/{email_id}/labels/{label_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
 def remove_label_from_email(
-    email_id: int,
-    label_id: int,
+    email_id: UUID,
+    label_id: UUID,
     db: Session = Depends(get_db),
 ) -> None:
     """Remove a label from an email."""
@@ -1260,7 +1261,7 @@ def remove_label_from_email(
 
 @router.post("/emails/{email_id}/snooze", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def snooze_email(
-    email_id: int,
+    email_id: UUID,
     snooze_data: EmailSnoozeRequest,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -1325,7 +1326,7 @@ def snooze_email(
 
 @router.post("/emails/{email_id}/unsnooze", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def unsnooze_email(
-    email_id: int,
+    email_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Unsnooze an email, making it immediately visible again.
@@ -1385,7 +1386,7 @@ def unsnooze_email(
 
 @router.patch("/emails/{email_id}/category", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def update_email_category(
-    email_id: int,
+    email_id: UUID,
     category_data: EmailCategoryUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -1445,4 +1446,3 @@ def update_email_category(
     logger.info(f"Email {email.id} category changed to {category_data.category} by user {current_user.id}")
     
     return format_email_response(email)
-

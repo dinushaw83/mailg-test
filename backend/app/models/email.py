@@ -1,6 +1,8 @@
 """Main email model with relationships for JOIN queries."""
 
+import uuid
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -10,7 +12,7 @@ class Email(Base):
     """Email model with optimized relationships for JOIN queries."""
     __tablename__ = "emails"
     
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     subject = Column(String, nullable=False)
     body = Column(Text)
     html_body = Column(Text)  # HTML version of email
@@ -30,10 +32,10 @@ class Email(Base):
     scheduled_send_at = Column(DateTime, nullable=True, index=True)  # When email will actually be sent
     
     # Foreign keys
-    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    thread_id = Column(Integer, ForeignKey("threads.id"), index=True)
-    folder_id = Column(Integer, ForeignKey("folders.id"), index=True)
-    parent_email_id = Column(Integer, ForeignKey("emails.id"))  # For replies/forwards
+    sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id"), index=True)
+    folder_id = Column(UUID(as_uuid=True), ForeignKey("folders.id"), index=True)
+    parent_email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id"))  # For replies/forwards
     
     # Timestamps
     sent_at = Column(DateTime)
@@ -64,4 +66,3 @@ class Email(Base):
         Index("ix_emails_folder_category", "folder_id", "category"),
         Index("ix_emails_scheduled_send", "scheduled_send_at"),
     )
-

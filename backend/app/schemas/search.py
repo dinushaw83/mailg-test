@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
 
@@ -21,9 +22,9 @@ class SearchQuery(BaseModel):
     body: Optional[str] = Field(None, description="Search in body")
     
     # Folder/label filters
-    folder_id: Optional[int] = Field(None, description="Filter by folder ID")
+    folder_id: Optional[UUID] = Field(None, description="Filter by folder ID")
     folder_type: Optional[str] = Field(None, description="Filter by folder type")
-    label_id: Optional[int] = Field(None, description="Filter by label ID")
+    label_id: Optional[UUID] = Field(None, description="Filter by label ID")
     label_name: Optional[str] = Field(None, description="Filter by label name")
     
     # Status filters
@@ -49,13 +50,13 @@ class SearchResult(BaseModel):
     """Search result item."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     subject: str
     snippet: str  # Preview of body (first 200 chars)
     sender_email: str
     sender_name: Optional[str] = None
     recipients: List[str] = []
-    folder_id: Optional[int] = None
+    folder_id: Optional[UUID] = None
     folder_name: Optional[str] = None
     labels: List[str] = []
     is_read: bool
@@ -107,11 +108,11 @@ class SavedSearchResponse(BaseModel):
     """Schema for saved search response."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     name: str
     query: str
     filters: Optional[Dict[str, Any]] = None
-    owner_id: int
+    owner_id: UUID
     use_count: int = 0
     last_used_at: Optional[datetime] = None
     created_at: datetime
@@ -119,4 +120,3 @@ class SavedSearchResponse(BaseModel):
 
 
 SavedSearchPaginatedResponse = PaginatedListResponse[SavedSearchResponse]
-

@@ -6,11 +6,12 @@ Separated from template.py to avoid circular imports with session.py.
 
 import json
 import logging
+import uuid
 from datetime import datetime
 from pathlib import Path
+from typing import List, Optional
 
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import text
 
 from app.db.session import engine
 from app.db.base import Base
@@ -27,62 +28,28 @@ from app.models.email_template import EmailTemplate
 logger = logging.getLogger(__name__)
 
 
-def reset_sequences(session):
-    """Reset all PostgreSQL sequences to max ID values after fixture loading.
-    
-    When fixtures with explicit IDs are loaded, PostgreSQL sequences don't
-    automatically update. This causes IntegrityError on subsequent inserts.
-    
-    This function auto-discovers all sequences from PostgreSQL system catalogs,
-    so no manual updates are needed when adding new tables.
-    """
-    try:
-        # Auto-discover all sequences and their associated tables from PostgreSQL
-        # This query finds sequences tied to table columns (typically 'id' columns)
-        result = session.execute(text("""
-            SELECT 
-                t.relname AS table_name,
-                s.relname AS sequence_name,
-                a.attname AS column_name
-            FROM pg_class s
-            JOIN pg_depend d ON d.objid = s.oid
-            JOIN pg_class t ON d.refobjid = t.oid
-            JOIN pg_attribute a ON (a.attrelid = t.oid AND a.attnum = d.refobjsubid)
-            WHERE s.relkind = 'S'  -- 'S' = sequence
-              AND t.relkind = 'r'  -- 'r' = ordinary table
-            ORDER BY t.relname
-        """))
-        
-        sequences = result.fetchall()
-        reset_count = 0
-        
-        for table_name, seq_name, col_name in sequences:
-            try:
-                # Get the max value from the column
-                max_result = session.execute(
-                    text(f'SELECT COALESCE(MAX("{col_name}"), 0) FROM "{table_name}"')
-                )
-                max_id = max_result.scalar()
-                
-                # Only reset if there's data in the table
-                if max_id and max_id > 0:
-                    session.execute(
-                        text(f"SELECT setval('{seq_name}', {max_id})")
-                    )
-                    logger.debug(f"Reset sequence {seq_name} to {max_id} for {table_name}.{col_name}")
-                    reset_count += 1
-            except Exception as e:
-                logger.warning(f"Could not reset sequence {seq_name} for {table_name}: {e}")
-        
-        session.commit()
-        logger.info(f"PostgreSQL sequences reset: {reset_count} sequences updated")
-        
-    except Exception as e:
-        logger.error(f"Failed to auto-discover sequences: {e}")
-        session.rollback()
+# Define UUID fields for each model to enable automatic parsing
+UUID_FIELDS = {
+    'User': ['id'],
+    'Folder': ['id', 'owner_id', 'parent_folder_id'],
+    'Label': ['id', 'owner_id', 'parent_id'],
+    'Thread': ['id', 'owner_id'],
+    'Email': ['id', 'sender_id', 'thread_id', 'folder_id', 'parent_email_id'],
+    'EmailRecipient': ['id', 'email_id', 'recipient_id'],
+    'EmailLabel': ['id', 'email_id', 'label_id'],
+    'Attachment': ['id', 'email_id'],
+    'EmailTemplate': ['id', 'owner_id'],
+}
 
 
-def load_fixture(session, model_class, fixture_file, date_fields=None):
+def parse_uuid(value: Optional[str]) -> Optional[uuid.UUID]:
+    """Parse a string UUID value, returning None for null/empty values."""
+    if value is None or value == '':
+        return None
+    return uuid.UUID(value)
+
+
+def load_fixture(session, model_class, fixture_file, date_fields=None, uuid_fields=None):
     """Generic fixture loader for any model.
     
     Args:
@@ -90,6 +57,7 @@ def load_fixture(session, model_class, fixture_file, date_fields=None):
         model_class: SQLAlchemy model class
         fixture_file: Path to JSON fixture file
         date_fields: List of field names that should be parsed as dates
+        uuid_fields: List of field names that should be parsed as UUIDs
     """
     if not fixture_file.exists():
         return 0
@@ -97,7 +65,13 @@ def load_fixture(session, model_class, fixture_file, date_fields=None):
     with open(fixture_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
-    fixture_ids = [item['id'] for item in data]
+    # Get UUID fields for this model if not explicitly provided
+    if uuid_fields is None:
+        model_name = model_class.__name__
+        uuid_fields = UUID_FIELDS.get(model_name, ['id'])
+    
+    # Parse UUIDs from fixture data for comparison
+    fixture_ids = [parse_uuid(item['id']) for item in data]
     existing_ids = set(
         row[0] for row in session.query(model_class.id).filter(
             model_class.id.in_(fixture_ids)
@@ -106,6 +80,12 @@ def load_fixture(session, model_class, fixture_file, date_fields=None):
     
     new_items = []
     for item_data in data:
+        # Parse UUID fields
+        for field in uuid_fields:
+            if field in item_data:
+                item_data[field] = parse_uuid(item_data[field])
+        
+        # Skip if already exists
         if item_data['id'] in existing_ids:
             continue
         
@@ -207,8 +187,7 @@ def initialize_template_database_schema_and_fixtures():
         )
         logger.info(f"Loaded {count} new email templates from fixtures")
         
-        # Reset PostgreSQL sequences to avoid ID conflicts on new inserts
-        reset_sequences(session)
+        # No need to reset sequences with UUIDs - they are generated automatically
         
     except Exception as e:
         logger.error(f"Error loading fixtures: {e}")

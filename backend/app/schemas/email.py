@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
+from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
 
@@ -20,7 +21,7 @@ class EmailCreate(BaseModel):
     body: Optional[str] = Field(None, description="Plain text body")
     html_body: Optional[str] = Field(None, description="HTML body")
     recipients: List[EmailRecipientSchema] = Field(..., min_length=1, description="List of recipients")
-    folder_id: Optional[int] = Field(None, description="Target folder ID")
+    folder_id: Optional[UUID] = Field(None, description="Target folder ID")
     category: Optional[str] = Field("primary", description="Email category: primary, promotions, social, updates, forums")
     is_draft: bool = Field(False, description="Save as draft instead of sending")
     scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time (for undo send feature)")
@@ -34,7 +35,7 @@ class EmailUpdate(BaseModel):
     is_read: Optional[bool] = None
     is_starred: Optional[bool] = None
     is_important: Optional[bool] = None
-    folder_id: Optional[int] = None
+    folder_id: Optional[UUID] = None
     category: Optional[str] = Field(None, description="Email category: primary, promotions, social, updates, forums")
 
 
@@ -50,12 +51,12 @@ class EmailStarUpdate(BaseModel):
 
 class EmailMoveRequest(BaseModel):
     """Schema for moving email to folder."""
-    folder_id: int = Field(..., description="Target folder ID")
+    folder_id: UUID = Field(..., description="Target folder ID")
 
 
 class EmailLabelRequest(BaseModel):
     """Schema for adding label to email."""
-    label_id: int = Field(..., description="Label ID to add")
+    label_id: UUID = Field(..., description="Label ID to add")
 
 
 class EmailReplyRequest(BaseModel):
@@ -86,7 +87,7 @@ class EmailRecipientResponse(BaseModel):
     """Schema for email recipient in response."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     email: str
     name: Optional[str] = None
     type: str
@@ -96,7 +97,7 @@ class AttachmentBriefResponse(BaseModel):
     """Brief attachment info for email response."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     filename: str
     content_type: Optional[str] = None
     size_bytes: Optional[int] = None
@@ -106,7 +107,7 @@ class LabelBriefResponse(BaseModel):
     """Brief label info for email response."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     name: str
     color: Optional[str] = None
 
@@ -115,7 +116,7 @@ class EmailResponse(BaseModel):
     """Schema for email response with all fields including metadata."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     subject: str
     body: Optional[str] = None
     html_body: Optional[str] = None
@@ -124,14 +125,14 @@ class EmailResponse(BaseModel):
     is_read: bool
     is_starred: bool
     is_important: bool
-    sender_id: int
+    sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
     recipients: List[EmailRecipientResponse] = []
-    folder_id: Optional[int] = None
+    folder_id: Optional[UUID] = None
     folder_name: Optional[str] = None
-    thread_id: Optional[int] = None
-    parent_email_id: Optional[int] = None
+    thread_id: Optional[UUID] = None
+    parent_email_id: Optional[UUID] = None
     sent_at: Optional[datetime] = None
     received_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
@@ -148,7 +149,7 @@ class EmailListResponse(BaseModel):
     """Brief email info for list responses."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     subject: str
     snippet: Optional[str] = None  # Preview of body
     status: str
@@ -156,11 +157,11 @@ class EmailListResponse(BaseModel):
     is_read: bool
     is_starred: bool
     is_important: bool
-    sender_id: int
+    sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
-    folder_id: Optional[int] = None
-    thread_id: Optional[int] = None
+    folder_id: Optional[UUID] = None
+    thread_id: Optional[UUID] = None
     sent_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
     snooze_until: Optional[datetime] = None
@@ -172,4 +173,3 @@ class EmailListResponse(BaseModel):
 
 
 EmailPaginatedResponse = PaginatedListResponse[EmailListResponse]
-

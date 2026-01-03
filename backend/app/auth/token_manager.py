@@ -28,7 +28,7 @@ from app.core.config import (
 @dataclass
 class TokenData:
     """Token metadata stored in cache."""
-    user_id: int
+    user_id: str  # UUID as string
     role: str
     email: str
     expires_at: datetime
@@ -76,11 +76,11 @@ class TokenManager:
         self._revoked_jtis: Dict[str, datetime] = {}
         self._active_run_ids: Dict[str, datetime] = {}
     
-    def create_token(self, user_id: int, role: str, email: str, run_id: str = "default") -> str:
+    def create_token(self, user_id: str, role: str, email: str, run_id: str = "default") -> str:
         """Generate a new JWT access token.
         
         Args:
-            user_id: User ID associated with token.
+            user_id: User ID associated with token (UUID as string).
             role: User role (admin, user).
             email: User email address.
             run_id: Run ID associated with the session.
@@ -89,11 +89,11 @@ class TokenManager:
             Signed JWT string.
             
         Raises:
-            ValueError: If user_id is 0 or negative.
+            ValueError: If user_id is empty or invalid.
         """
-        # Validate user_id
-        if user_id <= 0:
-            raise ValueError("user_id must be greater than 0")
+        # Validate user_id (must be a non-empty string, typically a UUID)
+        if not user_id or not str(user_id).strip():
+            raise ValueError("user_id must be a non-empty string")
         
         # IMPORTANT: use timezone-aware UTC datetimes.
         # On Windows, `datetime.utcnow()` returns a naive datetime and `.timestamp()`
@@ -162,10 +162,7 @@ class TokenManager:
                 )
                 # Touch a few expected fields to mirror the "success" code path.
                 _ = unverified.get("jti")
-                try:
-                    int(unverified.get("sub"))
-                except Exception:
-                    pass
+                _ = unverified.get("sub")  # UUID string, no int conversion needed
                 _ = unverified.get("role")
                 _ = unverified.get("email")
                 _ = unverified.get("exp")
@@ -179,13 +176,9 @@ class TokenManager:
             if jti in self._revoked_jtis:
                 return None
 
-        try:
-            user_id = int(payload.get("sub"))
-        except Exception:
-            return None
-        
-        # Reject user_id of 0 or negative
-        if user_id <= 0:
+        # Get user_id from sub claim (UUID as string)
+        user_id = payload.get("sub")
+        if not user_id or not isinstance(user_id, str) or not user_id.strip():
             return None
 
         role = payload.get("role")

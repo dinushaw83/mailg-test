@@ -1,11 +1,16 @@
 """Tests for Emails API endpoints."""
 
 import pytest
+import uuid
 from datetime import datetime, timedelta
 from app.models.email import Email
 from app.models.folder import Folder
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
+
+
+# Helper to generate a non-existent UUID for 404 tests
+NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
 
 
 class TestEmailCreate:
@@ -32,7 +37,7 @@ class TestEmailCreate:
         data = response.json()["data"]
         assert data["subject"] == "Test Email"
         assert data["status"] == "draft"
-        assert data["sender_id"] == user.id
+        assert data["sender_id"] == str(user.id)
 
     def test_create_email_unauthenticated(self, client):
         """Test creating an email without authentication fails."""
@@ -171,7 +176,7 @@ class TestEmailList:
         assert data["total"] == 3
         # All returned emails should belong to the thread
         for email in data["results"]:
-            assert email["thread_id"] == thread.id
+            assert email["thread_id"] == str(thread.id)
 
 
 class TestEmailOperations:
@@ -188,14 +193,14 @@ class TestEmailOperations:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        assert data["id"] == sample_email.id
+        assert data["id"] == str(sample_email.id)
 
     def test_get_email_not_found(self, client_with_auth):
         """Test getting a non-existent email returns 404."""
         client, token, user = client_with_auth
         
         response = client.get(
-            "/api/v1/emails/99999",
+            f"/api/v1/emails/{NON_EXISTENT_UUID}",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -336,7 +341,7 @@ class TestEmailSendReplyForward:
         
         assert response.status_code == 201
         data = response.json()["data"]
-        assert data["parent_email_id"] == sample_email.id
+        assert data["parent_email_id"] == str(sample_email.id)
 
     def test_forward_email(self, client_with_auth, db_session, sample_email, sample_sent_folder):
         """Test forwarding an email."""
@@ -375,7 +380,7 @@ class TestEmailSnooze:
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["snooze_until"] is not None
-        assert data["id"] == sample_email.id
+        assert data["id"] == str(sample_email.id)
 
     def test_snooze_email_past_time_fails(self, client_with_auth, db_session, sample_email):
         """Test that snoozing to a past time fails."""
@@ -403,7 +408,7 @@ class TestEmailSnooze:
         snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
         
         response = client.post(
-            "/api/v1/emails/99999/snooze",
+            f"/api/v1/emails/{NON_EXISTENT_UUID}/snooze",
             json={"snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -462,7 +467,7 @@ class TestEmailSnooze:
         client, token, user = client_with_auth
         
         response = client.post(
-            "/api/v1/emails/99999/unsnooze",
+            f"/api/v1/emails/{NON_EXISTENT_UUID}/unsnooze",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -605,7 +610,7 @@ class TestEmailCategory:
         client, token, user = client_with_auth
         
         response = client.patch(
-            "/api/v1/emails/99999/category",
+            f"/api/v1/emails/{NON_EXISTENT_UUID}/category",
             json={"category": "promotions"},
             headers={"Authorization": f"Bearer {token}"}
         )

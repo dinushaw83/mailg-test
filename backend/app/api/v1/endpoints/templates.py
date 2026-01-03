@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import Optional
+from uuid import UUID
 import logging
 
 from app.db.session import get_db
@@ -65,7 +66,7 @@ def format_template_list_response(template: EmailTemplate) -> dict:
     }
 
 
-def get_user_folder(db: Session, user_id: int, folder_type: str) -> Optional[Folder]:
+def get_user_folder(db: Session, user_id: UUID, folder_type: str) -> Optional[Folder]:
     """Get user's folder by type."""
     return db.query(Folder).filter(
         Folder.owner_id == user_id,
@@ -175,7 +176,7 @@ def list_templates(
 
 @router.get("/templates/{template_id}", response_model=EmailTemplateResponse, dependencies=[Depends(authorized())])
 def get_template(
-    template_id: int,
+    template_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Get a specific template by ID.
@@ -212,7 +213,7 @@ def get_template(
 
 @router.put("/templates/{template_id}", response_model=EmailTemplateResponse, dependencies=[Depends(authorized())])
 def update_template(
-    template_id: int,
+    template_id: UUID,
     template_data: EmailTemplateUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -261,7 +262,7 @@ def update_template(
 
 @router.delete("/templates/{template_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
 def delete_template(
-    template_id: int,
+    template_id: UUID,
     db: Session = Depends(get_db),
     permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
@@ -312,7 +313,7 @@ def delete_template(
 
 @router.post("/templates/{template_id}/apply", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
 def apply_template(
-    template_id: int,
+    template_id: UUID,
     apply_data: EmailTemplateApplyRequest,
     db: Session = Depends(get_db),
 ) -> dict:
@@ -441,4 +442,3 @@ def apply_template(
         "attachments": [],
         "labels": [],
     }
-

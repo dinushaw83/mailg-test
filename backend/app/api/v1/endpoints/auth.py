@@ -81,7 +81,7 @@ def create_token(
     lookup_engine = database.engine
     LookupSessionLocal = sessionmaker(bind=lookup_engine)
     lookup_db = LookupSessionLocal()
-    user_id: Optional[int] = None
+    user_id: Optional[str] = None  # UUID as string
     user_email: Optional[str] = None
     token_role: Optional[str] = None
     
@@ -110,7 +110,7 @@ def create_token(
             )
 
         # ALWAYS use role from database - backend is source of truth for permissions
-        user_id = user.id
+        user_id = str(user.id)  # Convert UUID to string for consistency
         user_email = user.email
         token_role = user.role
         valid_roles = ["admin", "user"]
@@ -157,7 +157,7 @@ def create_token(
 
         token_manager = get_token_manager()
         token = token_manager.create_token(
-            user_id=run_user.id,
+            user_id=str(run_user.id),  # Convert UUID to string
             role=token_role,
             email=run_user.email,
             run_id=run_id,

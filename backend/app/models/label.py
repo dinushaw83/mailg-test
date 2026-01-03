@@ -1,6 +1,8 @@
 """User-defined label model with hierarchical (nested) support."""
 
+import uuid
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Index, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -14,14 +16,14 @@ class Label(Base):
     """
     __tablename__ = "labels"
     
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String, nullable=False)
     color = Column(String)  # Hex color
     
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     
     # Hierarchical relationship - self-referential
-    parent_id = Column(Integer, ForeignKey("labels.id"), nullable=True, index=True)
+    parent_id = Column(UUID(as_uuid=True), ForeignKey("labels.id"), nullable=True, index=True)
     
     is_deleted = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, server_default=func.now())
@@ -46,4 +48,3 @@ class Label(Base):
         Index("ix_labels_owner_deleted", "owner_id", "is_deleted"),
         Index("ix_labels_parent", "parent_id"),
     )
-

@@ -1,16 +1,20 @@
 """Tests for Email Templates API endpoints."""
 
 import pytest
+import uuid
 from app.models.email_template import EmailTemplate
 from app.models.email import Email
 from app.models.user import User
+
+
+# Helper to generate a non-existent UUID for 404 tests
+NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
 
 
 @pytest.fixture
 def sample_template(db_session, sample_user):
     """Create a sample email template for testing."""
     template = EmailTemplate(
-        id=1,
         name="Welcome Email",
         description="Template for welcoming new users",
         subject="Welcome to Our Platform!",
@@ -29,7 +33,6 @@ def sample_template(db_session, sample_user):
 def sample_shared_template(db_session, sample_user):
     """Create a shared template for testing."""
     template = EmailTemplate(
-        id=2,
         name="Meeting Request",
         description="Template for scheduling meetings",
         subject="Meeting Request: [Topic]",
@@ -174,7 +177,6 @@ class TestTemplateList:
         
         # Create another user with a shared template
         other_user = User(
-            id=10,
             first_name="Other",
             last_name="User",
             email="other@example.com",
@@ -212,7 +214,6 @@ class TestTemplateList:
         
         # Create another user with a shared template
         other_user = User(
-            id=11,
             first_name="Another",
             last_name="User",
             email="another@example.com",
@@ -239,7 +240,7 @@ class TestTemplateList:
         data = response.json()["data"]
         # Only own templates
         for template in data["results"]:
-            assert template["owner_id"] == user.id
+            assert template["owner_id"] == str(user.id)
 
 
 class TestTemplateOperations:
@@ -256,7 +257,7 @@ class TestTemplateOperations:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        assert data["id"] == sample_template.id
+        assert data["id"] == str(sample_template.id)
         assert data["name"] == sample_template.name
 
     def test_get_template_not_found(self, client_with_auth):
@@ -264,7 +265,7 @@ class TestTemplateOperations:
         client, token, user = client_with_auth
         
         response = client.get(
-            "/api/v1/templates/99999",
+            f"/api/v1/templates/{NON_EXISTENT_UUID}",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -276,7 +277,6 @@ class TestTemplateOperations:
         
         # Create another user with a shared template
         other_user = User(
-            id=12,
             first_name="Sharer",
             last_name="User",
             email="sharer@example.com",
@@ -343,7 +343,6 @@ class TestTemplateOperations:
         client, token, user = client_with_auth
         
         other_user = User(
-            id=13,
             first_name="Other",
             last_name="Owner",
             email="otherowner@example.com",
@@ -416,7 +415,6 @@ class TestTemplateOperations:
         client, token, user = client_with_auth
         
         other_user = User(
-            id=14,
             first_name="Another",
             last_name="Owner",
             email="anotherowner@example.com",
@@ -514,8 +512,8 @@ class TestTemplateApply:
         client, token, user = client_with_auth
         
         response = client.post(
-            "/api/v1/templates/99999/apply",
-            json={"template_id": 99999},
+            f"/api/v1/templates/{NON_EXISTENT_UUID}/apply",
+            json={"template_id": NON_EXISTENT_UUID},
             headers={"Authorization": f"Bearer {token}"}
         )
         

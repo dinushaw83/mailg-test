@@ -1,6 +1,8 @@
 """Email attachment model."""
 
+import uuid
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -10,8 +12,8 @@ class Attachment(Base):
     """Email attachment model with relationships."""
     __tablename__ = "attachments"
     
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    email_id = Column(Integer, ForeignKey("emails.id", ondelete="CASCADE"), nullable=False, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id", ondelete="CASCADE"), nullable=False, index=True)
     
     filename = Column(String, nullable=False)
     content_type = Column(String)  # MIME type
@@ -30,4 +32,3 @@ class Attachment(Base):
         Index("ix_attachments_email_deleted", "email_id", "is_deleted"),
         Index("ix_attachments_type", "attachment_type"),
     )
-

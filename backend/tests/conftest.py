@@ -14,11 +14,12 @@ os.environ.setdefault("JWT_SECRET_KEY", "unit-test-secret-key-please-change-1234
 # Database URL - matches docker-compose.yaml port mapping (5436 external -> 5432 internal)
 os.environ.setdefault("DATABASE_URL", "postgresql+psycopg2://mailg:mailg@127.0.0.1:5436/postgres")
 
+import uuid
 import pytest
 from unittest.mock import Mock
 from datetime import datetime, timezone
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -37,6 +38,20 @@ from app.auth.token_manager import get_token_manager
 
 # Use in-memory SQLite for tests
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
+
+
+# Enable UUID support for SQLite by registering a custom type adapter
+def _sqlite_uuid_adapter():
+    """Configure SQLite to handle UUID columns as strings."""
+    import sqlite3
+    
+    # Register adapter to store UUIDs as strings
+    sqlite3.register_adapter(uuid.UUID, lambda u: str(u))
+    # Register converter to parse UUIDs from strings
+    sqlite3.register_converter("UUID", lambda b: uuid.UUID(b.decode()))
+
+
+_sqlite_uuid_adapter()
 
 
 @pytest.fixture(scope="function")
@@ -82,7 +97,6 @@ def client(db_session):
 def sample_user(db_session):
     """Create a sample regular user."""
     user = User(
-        id=1,
         first_name="Test",
         last_name="User",
         email="testuser@example.com",
@@ -100,7 +114,6 @@ def sample_user(db_session):
 def sample_admin(db_session):
     """Create a sample admin user."""
     user = User(
-        id=2,
         first_name="Test",
         last_name="Admin",
         email="admin@example.com",
@@ -119,7 +132,7 @@ def client_with_auth(client, sample_user, db_session):
     """Create a test client with authentication as regular user."""
     token_manager = get_token_manager()
     token = token_manager.create_token(
-        user_id=sample_user.id,
+        user_id=str(sample_user.id),
         role=sample_user.role,
         email=sample_user.email,
         run_id="test-run-id",
@@ -132,7 +145,7 @@ def client_with_admin_auth(client, sample_admin, db_session):
     """Create a test client with authentication as admin."""
     token_manager = get_token_manager()
     token = token_manager.create_token(
-        user_id=sample_admin.id,
+        user_id=str(sample_admin.id),
         role=sample_admin.role,
         email=sample_admin.email,
         run_id="test-run-id",
@@ -145,7 +158,7 @@ def client_with_user_auth(client, sample_user, db_session):
     """Create a test client with authentication as regular user."""
     token_manager = get_token_manager()
     token = token_manager.create_token(
-        user_id=sample_user.id,
+        user_id=str(sample_user.id),
         role=sample_user.role,
         email=sample_user.email,
         run_id="test-run-id",
@@ -175,7 +188,6 @@ def mock_request():
 def sample_folder(db_session, sample_user):
     """Create a sample folder for testing."""
     folder = Folder(
-        id=1,
         name="Test Inbox",
         folder_type="inbox",
         owner_id=sample_user.id,
@@ -191,7 +203,6 @@ def sample_folder(db_session, sample_user):
 def sample_drafts_folder(db_session, sample_user):
     """Create a sample drafts folder for testing."""
     folder = Folder(
-        id=2,
         name="Test Drafts",
         folder_type="drafts",
         owner_id=sample_user.id,
@@ -207,7 +218,6 @@ def sample_drafts_folder(db_session, sample_user):
 def sample_sent_folder(db_session, sample_user):
     """Create a sample sent folder for testing."""
     folder = Folder(
-        id=3,
         name="Test Sent",
         folder_type="sent",
         owner_id=sample_user.id,
@@ -223,7 +233,6 @@ def sample_sent_folder(db_session, sample_user):
 def sample_trash_folder(db_session, sample_user):
     """Create a sample trash folder for testing."""
     folder = Folder(
-        id=4,
         name="Test Trash",
         folder_type="trash",
         owner_id=sample_user.id,
@@ -239,7 +248,6 @@ def sample_trash_folder(db_session, sample_user):
 def sample_email(db_session, sample_user, sample_folder):
     """Create a sample email for testing."""
     email = Email(
-        id=1,
         subject="Test Email Subject",
         body="Test email body content",
         status="received",
@@ -258,7 +266,6 @@ def sample_email(db_session, sample_user, sample_folder):
 def sample_draft_email(db_session, sample_user, sample_drafts_folder):
     """Create a sample draft email for testing."""
     email = Email(
-        id=2,
         subject="Draft Email",
         body="Draft content",
         status="draft",
@@ -287,7 +294,6 @@ def sample_draft_email(db_session, sample_user, sample_drafts_folder):
 def sample_label(db_session, sample_user):
     """Create a sample label for testing."""
     label = Label(
-        id=1,
         name="Test Label",
         color="#ff0000",
         owner_id=sample_user.id
@@ -302,7 +308,6 @@ def sample_label(db_session, sample_user):
 def sample_attachment(db_session, sample_email):
     """Create a sample attachment for testing."""
     attachment = Attachment(
-        id=1,
         email_id=sample_email.id,
         filename="test_file.pdf",
         content_type="application/pdf",

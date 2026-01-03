@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_
 from typing import Optional, List
 from datetime import datetime, timedelta
+from uuid import UUID
 import re
 import time
 import logging
@@ -159,9 +160,9 @@ def search_emails(
     from_email: Optional[str] = Query(None, alias="from", description="Filter by sender"),
     to_email: Optional[str] = Query(None, alias="to", description="Filter by recipient"),
     subject: Optional[str] = Query(None, description="Search in subject"),
-    folder_id: Optional[int] = Query(None, description="Filter by folder"),
+    folder_id: Optional[UUID] = Query(None, description="Filter by folder"),
     folder_type: Optional[str] = Query(None, description="Filter by folder type"),
-    label_id: Optional[int] = Query(None, description="Filter by label"),
+    label_id: Optional[UUID] = Query(None, description="Filter by label"),
     label_name: Optional[str] = Query(None, description="Filter by label name"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
     is_starred: Optional[bool] = Query(None, description="Filter by starred"),
@@ -544,7 +545,7 @@ def list_saved_searches(
 
 @router.delete("/search/saved/{search_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
 def delete_saved_search(
-    search_id: int,
+    search_id: UUID,
     db: Session = Depends(get_db),
     permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
@@ -581,4 +582,3 @@ def delete_saved_search(
         raise
     
     logger.info(f"Saved search {search_id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
-

@@ -3,6 +3,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
 
@@ -13,7 +14,7 @@ class FolderCreate(BaseModel):
     folder_type: str = Field("custom", description="Folder type")
     color: Optional[str] = Field(None, description="Hex color for UI")
     icon: Optional[str] = Field(None, description="Icon name for UI")
-    parent_folder_id: Optional[int] = Field(None, description="Parent folder for nesting")
+    parent_folder_id: Optional[UUID] = Field(None, description="Parent folder for nesting")
 
 
 class FolderUpdate(BaseModel):
@@ -27,13 +28,13 @@ class FolderResponse(BaseModel):
     """Schema for folder response."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     name: str
     folder_type: str
     color: Optional[str] = None
     icon: Optional[str] = None
-    owner_id: int
-    parent_folder_id: Optional[int] = None
+    owner_id: UUID
+    parent_folder_id: Optional[UUID] = None
     is_system: bool
     is_deleted: bool = False
     created_at: datetime
@@ -46,7 +47,7 @@ class FolderListResponse(BaseModel):
     """Brief folder info for list responses."""
     model_config = {"from_attributes": True}
     
-    id: int
+    id: UUID
     name: str
     folder_type: str
     color: Optional[str] = None
@@ -57,4 +58,3 @@ class FolderListResponse(BaseModel):
 
 
 FolderPaginatedResponse = PaginatedListResponse[FolderListResponse]
-

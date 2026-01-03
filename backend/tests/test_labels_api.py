@@ -1,10 +1,15 @@
 """Tests for Labels API endpoints with hierarchical (nested) label support."""
 
 import pytest
+import uuid
 from app.models.label import Label
 from app.models.email import Email
 from app.models.email_label import EmailLabel
 from app.models.folder import Folder
+
+
+# Helper to generate a non-existent UUID for 404 tests
+NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
 
 
 class TestLabelCreate:
@@ -52,7 +57,7 @@ class TestLabelCreate:
         assert response.status_code == 201
         data = response.json()["data"]
         assert data["name"] == "2025"
-        assert data["parent_id"] == parent.id
+        assert data["parent_id"] == str(parent.id)
 
     def test_create_deeply_nested_label(self, client_with_auth, db_session):
         """Test creating labels with multiple nesting levels."""
@@ -75,7 +80,7 @@ class TestLabelCreate:
         
         assert response.status_code == 201
         data = response.json()["data"]
-        assert data["parent_id"] == year_2025.id
+        assert data["parent_id"] == str(year_2025.id)
 
     def test_create_label_invalid_parent(self, client_with_auth, db_session):
         """Test creating a label with non-existent parent fails."""
@@ -83,7 +88,7 @@ class TestLabelCreate:
         
         response = client.post(
             "/api/v1/labels",
-            json={"name": "Orphan", "parent_id": 99999},
+            json={"name": "Orphan", "parent_id": NON_EXISTENT_UUID},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -396,7 +401,7 @@ class TestHierarchicalLabelNames:
         assert response.status_code == 200
         data = response.json()["data"]
         # Find our email
-        our_email = next((e for e in data["results"] if e["id"] == email.id), None)
+        our_email = next((e for e in data["results"] if e["id"] == str(email.id)), None)
         assert our_email is not None
         assert len(our_email["labels"]) == 1
         assert our_email["labels"][0]["name"] == "Personal/Family"
@@ -468,7 +473,7 @@ class TestNestedLabelOperations:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        assert data["parent_id"] == parent2.id
+        assert data["parent_id"] == str(parent2.id)
 
     def test_move_label_to_root(self, client_with_auth, db_session):
         """Test moving a nested label to root level."""
@@ -493,8 +498,8 @@ class TestNestedLabelOperations:
         data = response.json()["data"]
         assert data["parent_id"] is None
 
-    def test_move_label_to_root_with_zero(self, client_with_auth, db_session):
-        """Test moving a label to root using parent_id=0."""
+    def test_move_label_to_root_with_zero_uuid(self, client_with_auth, db_session):
+        """Test moving a label to root using null UUID."""
         client, token, user = client_with_auth
         
         parent = Label(name="Parent", owner_id=user.id)
@@ -505,10 +510,10 @@ class TestNestedLabelOperations:
         db_session.add(child)
         db_session.commit()
         
-        # Move to root using 0
+        # Move to root using null UUID (00000000-0000-0000-0000-000000000000)
         response = client.put(
             f"/api/v1/labels/{child.id}",
-            json={"parent_id": 0},
+            json={"parent_id": "00000000-0000-0000-0000-000000000000"},
             headers={"Authorization": f"Bearer {token}"}
         )
         

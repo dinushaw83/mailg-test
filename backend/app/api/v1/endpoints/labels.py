@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from typing import Optional, List, Dict, Set, Union
+from uuid import UUID
 import logging
 
 from app.db.session import get_db
@@ -44,7 +45,7 @@ def format_label_response(label: Label, email_count: int = 0) -> dict:
     }
 
 
-def get_all_descendant_ids(db: Session, label_id: int) -> Set[int]:
+def get_all_descendant_ids(db: Session, label_id: UUID) -> Set[UUID]:
     """Get all descendant label IDs (children, grandchildren, etc.)."""
     descendants = set()
     to_process = [label_id]
@@ -64,7 +65,7 @@ def get_all_descendant_ids(db: Session, label_id: int) -> Set[int]:
     return descendants
 
 
-def would_create_cycle(db: Session, label_id: int, new_parent_id: int) -> bool:
+def would_create_cycle(db: Session, label_id: UUID, new_parent_id: UUID) -> bool:
     """Check if setting new_parent_id would create a circular reference."""
     if new_parent_id is None:
         return False
@@ -79,11 +80,11 @@ def would_create_cycle(db: Session, label_id: int, new_parent_id: int) -> bool:
 
 def build_label_tree(
     labels_with_counts: List[tuple],
-    email_counts: Dict[int, int]
+    email_counts: Dict[UUID, int]
 ) -> List[dict]:
     """Build hierarchical tree from flat label list."""
     # Create lookup dict
-    label_map: Dict[int, dict] = {}
+    label_map: Dict[UUID, dict] = {}
     
     for label, count in labels_with_counts:
         label_map[label.id] = {
@@ -313,7 +314,7 @@ def list_labels_tree(
 
 @router.get("/labels/{label_id}", response_model=LabelResponse, dependencies=[Depends(authorized())])
 def get_label(
-    label_id: int,
+    label_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Get a specific label by ID.
@@ -348,14 +349,14 @@ def get_label(
 
 @router.put("/labels/{label_id}", response_model=LabelResponse, dependencies=[Depends(authorized())])
 def update_label(
-    label_id: int,
+    label_id: UUID,
     label_data: LabelUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
     """Update a label.
     
     Labels can be moved to a different parent by updating parent_id.
-    Use parent_id=null or parent_id=0 to move to root level.
+    Use parent_id=null to move to root level.
     
     Permissions:
     - Users can only update their own labels
@@ -379,11 +380,6 @@ def update_label(
     # Handle parent_id update
     if "parent_id" in update_data:
         new_parent_id = update_data["parent_id"]
-        
-        # Treat 0 as None (move to root)
-        if new_parent_id == 0:
-            new_parent_id = None
-            update_data["parent_id"] = None
         
         if new_parent_id is not None:
             # Validate parent exists and belongs to user
@@ -465,7 +461,7 @@ def update_label(
 
 @router.delete("/labels/{label_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
 def delete_label(
-    label_id: int,
+    label_id: UUID,
     db: Session = Depends(get_db),
     permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
@@ -523,7 +519,7 @@ def delete_label(
 
 @router.get("/labels/{label_id}/emails", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
 def list_label_emails(
-    label_id: int,
+    label_id: UUID,
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
@@ -582,4 +578,3 @@ def list_label_emails(
         page_size=page_size,
         total_pages=total_pages,
     )
-

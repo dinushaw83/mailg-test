@@ -1,12 +1,18 @@
 """Tests for Bulk Operations API endpoints."""
 
 import pytest
+import uuid
 from datetime import datetime, timedelta
 from app.models.email import Email
 from app.models.folder import Folder
 from app.models.label import Label
 from app.models.email_label import EmailLabel
 from app.models.user import User
+
+
+# Helper to generate a non-existent UUID for 404 tests
+NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
+NON_EXISTENT_UUID_2 = "00000000-0000-0000-0000-000000099998"
 
 
 class TestBulkRead:
@@ -103,7 +109,7 @@ class TestBulkRead:
         db_session.commit()
         
         # Mix valid and invalid IDs
-        email_ids = [email.id, 99999, 99998]
+        email_ids = [str(email.id), NON_EXISTENT_UUID, NON_EXISTENT_UUID_2]
         
         response = client.post(
             "/api/v1/bulk/read",
@@ -121,7 +127,7 @@ class TestBulkRead:
         """Test bulk read without authentication fails."""
         response = client.post(
             "/api/v1/bulk/read",
-            json={"email_ids": [1, 2], "is_read": True}
+            json={"email_ids": [NON_EXISTENT_UUID, NON_EXISTENT_UUID_2], "is_read": True}
         )
         
         assert response.status_code == 401
@@ -265,7 +271,7 @@ class TestBulkMove:
         
         response = client.post(
             "/api/v1/bulk/move",
-            json={"email_ids": [email.id], "folder_id": 99999},
+            json={"email_ids": [str(email.id)], "folder_id": NON_EXISTENT_UUID},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -412,7 +418,7 @@ class TestBulkLabels:
         
         response = client.post(
             "/api/v1/bulk/labels/add",
-            json={"email_ids": [email.id], "label_ids": [99999]},
+            json={"email_ids": [str(email.id)], "label_ids": [NON_EXISTENT_UUID]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -611,7 +617,6 @@ class TestBulkAccessControl:
         
         # Create another user
         other_user = User(
-            id=10,
             first_name="Other",
             last_name="User",
             email="other@example.com",
@@ -624,7 +629,6 @@ class TestBulkAccessControl:
         
         # Create another user's folder
         other_folder = Folder(
-            id=100,
             name="Other Inbox",
             folder_type="inbox",
             owner_id=other_user.id,
@@ -647,7 +651,7 @@ class TestBulkAccessControl:
         # Try to modify other user's email
         response = client.post(
             "/api/v1/bulk/read",
-            json={"email_ids": [other_email.id], "is_read": True},
+            json={"email_ids": [str(other_email.id)], "is_read": True},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -674,7 +678,7 @@ class TestBulkAccessControl:
         
         response = client.post(
             "/api/v1/bulk/read",
-            json={"email_ids": [email.id, 99999], "is_read": True},
+            json={"email_ids": [str(email.id), NON_EXISTENT_UUID], "is_read": True},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -805,7 +809,7 @@ class TestBulkCategory:
         db_session.commit()
         
         # Mix valid and invalid IDs
-        email_ids = [email.id, 99999, 99998]
+        email_ids = [str(email.id), NON_EXISTENT_UUID, NON_EXISTENT_UUID_2]
         
         response = client.post(
             "/api/v1/bulk/category",
@@ -823,7 +827,7 @@ class TestBulkCategory:
         """Test bulk category without authentication fails."""
         response = client.post(
             "/api/v1/bulk/category",
-            json={"email_ids": [1, 2], "category": "promotions"}
+            json={"email_ids": [NON_EXISTENT_UUID, NON_EXISTENT_UUID_2], "category": "promotions"}
         )
         
         assert response.status_code == 401

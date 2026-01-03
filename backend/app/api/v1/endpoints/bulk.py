@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List, Tuple
 from datetime import datetime
+from uuid import UUID
 import logging
 
 from app.db.session import get_db
@@ -40,9 +41,9 @@ router = APIRouter()
 
 def get_user_accessible_emails(
     db: Session, 
-    user_id: int, 
-    email_ids: List[int]
-) -> Tuple[List[Email], List[int]]:
+    user_id: UUID, 
+    email_ids: List[UUID]
+) -> Tuple[List[Email], List[UUID]]:
     """
     Get emails that the user has access to (owned or received).
     
@@ -69,7 +70,7 @@ def get_user_accessible_emails(
     return emails, not_found
 
 
-def get_user_folder(db: Session, user_id: int, folder_type: str) -> Folder:
+def get_user_folder(db: Session, user_id: UUID, folder_type: str) -> Folder:
     """Get user's folder by type."""
     return db.query(Folder).filter(
         Folder.owner_id == user_id,
@@ -79,8 +80,8 @@ def get_user_folder(db: Session, user_id: int, folder_type: str) -> Folder:
 
 
 def create_bulk_response(
-    email_ids: List[int],
-    success_ids: List[int],
+    email_ids: List[UUID],
+    success_ids: List[UUID],
     failures: dict
 ) -> BulkOperationResponse:
     """Create standardized bulk operation response."""
@@ -569,4 +570,3 @@ def bulk_update_category(
     logger.info(f"Bulk category: {len(success_ids)} emails updated to '{request.category}' by user {current_user.id}")
     
     return create_bulk_response(request.email_ids, success_ids, failures)
-

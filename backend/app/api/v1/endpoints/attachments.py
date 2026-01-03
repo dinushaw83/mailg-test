@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, 
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional, List
+from uuid import UUID
 import logging
 import os
 import io
@@ -61,7 +62,7 @@ def format_attachment_response(attachment: Attachment) -> dict:
     }
 
 
-def check_email_access(db: Session, email_id: int, user_id: int, user_role: str) -> Email:
+def check_email_access(db: Session, email_id: UUID, user_id: UUID, user_role: str) -> Email:
     """Check if user has access to email and return it."""
     email = db.query(Email).filter(
         Email.id == email_id,
@@ -93,7 +94,7 @@ def check_email_access(db: Session, email_id: int, user_id: int, user_role: str)
 
 @router.get("/emails/{email_id}/attachments", response_model=List[AttachmentListResponse], dependencies=[Depends(authorized())])
 def list_email_attachments(
-    email_id: int,
+    email_id: UUID,
     db: Session = Depends(get_db),
 ) -> List[dict]:
     """List attachments for an email.
@@ -125,7 +126,7 @@ def list_email_attachments(
 
 @router.post("/emails/{email_id}/attachments", response_model=AttachmentResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
 def upload_attachment(
-    email_id: int,
+    email_id: UUID,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> dict:
@@ -183,7 +184,7 @@ def upload_attachment(
 
 @router.get("/attachments/{attachment_id}", response_model=AttachmentResponse, dependencies=[Depends(authorized())])
 def get_attachment(
-    attachment_id: int,
+    attachment_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
     """Get attachment details.
@@ -212,7 +213,7 @@ def get_attachment(
 
 @router.delete("/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
 def delete_attachment(
-    attachment_id: int,
+    attachment_id: UUID,
     db: Session = Depends(get_db),
     permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
@@ -269,7 +270,7 @@ def delete_attachment(
 
 @router.get("/attachments/{attachment_id}/download", dependencies=[Depends(authorized())])
 def download_attachment(
-    attachment_id: int,
+    attachment_id: UUID,
     db: Session = Depends(get_db),
 ):
     """Download an attachment.
@@ -305,4 +306,3 @@ def download_attachment(
             "Content-Length": str(len(content)),
         }
     )
-

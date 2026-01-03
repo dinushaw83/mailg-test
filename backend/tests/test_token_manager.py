@@ -4,9 +4,14 @@ Tests cover token generation, validation, revocation, and cleanup.
 """
 
 import pytest
+import uuid
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timezone, timedelta
 import jwt
+
+
+# Sample UUID string for testing
+TEST_USER_UUID = "00000000-0000-0000-0000-000000000001"
 
 
 class TestTokenCreation:
@@ -17,7 +22,7 @@ class TestTokenCreation:
         from app.auth.token_manager import _token_manager
         
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id="test-run"
@@ -32,7 +37,7 @@ class TestTokenCreation:
         from app.auth.token_manager import _token_manager
         
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id="test-run"
@@ -48,13 +53,13 @@ class TestTokenCreation:
         from app.core.config import JWT_SECRET_KEY, JWT_ALGORITHM
         
         token1 = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id="test-run"
         )
         token2 = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id="test-run"
@@ -74,7 +79,7 @@ class TestTokenValidation:
         from app.auth.token_manager import _token_manager
         
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id="test-run"
@@ -83,7 +88,7 @@ class TestTokenValidation:
         token_data = _token_manager.validate_token(token)
         
         assert token_data is not None
-        assert token_data.user_id == 1
+        assert token_data.user_id == TEST_USER_UUID
         assert token_data.role == "user"
         assert token_data.email == "testuser@example.com"
         assert token_data.run_id == "test-run"
@@ -95,7 +100,7 @@ class TestTokenValidation:
         
         # Create a manually expired token
         payload = {
-            "sub": 1,
+            "sub": TEST_USER_UUID,
             "role": "user",
             "email": "testuser@example.com",
             "run_id": "test-run",
@@ -116,7 +121,7 @@ class TestTokenValidation:
         
         # Create token with wrong secret
         payload = {
-            "sub": 1,
+            "sub": TEST_USER_UUID,
             "role": "user",
             "email": "testuser@example.com",
             "run_id": "test-run",
@@ -155,7 +160,7 @@ class TestTokenRevocation:
         from app.auth.token_manager import _token_manager
         
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id="test-run"
@@ -188,7 +193,7 @@ class TestTokenCleanup:
         
         # Create and revoke a token
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id="test-run"
@@ -207,14 +212,14 @@ class TestTokenDataClass:
         from app.auth.token_manager import TokenData
         
         token_data = TokenData(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
             run_id="test-run"
         )
         
-        assert token_data.user_id == 1
+        assert token_data.user_id == TEST_USER_UUID
         assert token_data.role == "user"
         assert token_data.email == "testuser@example.com"
         assert token_data.run_id == "test-run"
@@ -258,7 +263,7 @@ class TestEdgeCases:
         long_email = "a" * 200 + "@example.com"
         
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email=long_email,
             run_id="test-run"
@@ -275,7 +280,7 @@ class TestEdgeCases:
         special_run_id = "run-with-dashes_and_underscores"
         
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email="testuser@example.com",
             run_id=special_run_id
@@ -292,7 +297,7 @@ class TestEdgeCases:
         unicode_email = "user@example.com"  # Use simple email to avoid encoding issues
         
         token = _token_manager.create_token(
-            user_id=1,
+            user_id=TEST_USER_UUID,
             role="user",
             email=unicode_email,
             run_id="test-run"

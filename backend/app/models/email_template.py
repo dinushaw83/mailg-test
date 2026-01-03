@@ -1,6 +1,8 @@
 """Email template model for reusable email content."""
 
+import uuid
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
@@ -14,7 +16,7 @@ class EmailTemplate(Base):
     """
     __tablename__ = "email_templates"
     
-    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     name = Column(String(255), nullable=False)  # Template name for identification
     description = Column(String(500))  # Optional description of template purpose
     
@@ -27,7 +29,7 @@ class EmailTemplate(Base):
     is_shared = Column(Boolean, default=False)  # Whether template is shared with team
     
     # Ownership
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     
     # Soft delete and timestamps
     is_deleted = Column(Boolean, default=False, index=True)
@@ -42,4 +44,3 @@ class EmailTemplate(Base):
         Index("ix_email_templates_owner_deleted", "owner_id", "is_deleted"),
         Index("ix_email_templates_shared", "is_shared"),
     )
-

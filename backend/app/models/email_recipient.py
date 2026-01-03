@@ -1,6 +1,8 @@
 """Email recipient model for to/cc/bcc handling."""
 
+import uuid
 from sqlalchemy import Column, Integer, String, ForeignKey, Index
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 
@@ -9,9 +11,9 @@ class EmailRecipient(Base):
     """Email recipient model for to/cc/bcc handling."""
     __tablename__ = "email_recipients"
     
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    email_id = Column(Integer, ForeignKey("emails.id", ondelete="CASCADE"), nullable=False, index=True)
-    recipient_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id", ondelete="CASCADE"), nullable=False, index=True)
+    recipient_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), index=True)
     recipient_email = Column(String, nullable=False)
     recipient_name = Column(String)
     recipient_type = Column(String, nullable=False)  # to, cc, bcc
@@ -25,4 +27,3 @@ class EmailRecipient(Base):
         Index("ix_email_recipients_email_type", "email_id", "recipient_type"),
         Index("ix_email_recipients_recipient", "recipient_id", "email_id"),
     )
-
