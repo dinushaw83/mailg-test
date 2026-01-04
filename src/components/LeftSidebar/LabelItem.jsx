@@ -32,28 +32,34 @@ const Swatch = styled("div")(({ theme, rgb, text }) => ({
   },
 }));
 
+function ColorSwatch({ rgb, text, check }) {
+  return (
+    <Swatch rgb={rgb} text={text} style={{ position: "relative" }}>
+      {check ? (
+        <span
+          className="material-symbols-outlined"
+          style={{
+            fontSize: 20,
+            color: text,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          check
+        </span>
+      ) : (
+        "a"
+      )}
+    </Swatch>
+  );
+}
+
 function ColorCell({ rgb, text, check, onClick = () => {} }) {
   return (
     <td role="gridcell" style={{ padding: 2, textAlign: "center" }} onClick={onClick}>
-      <Swatch rgb={rgb} text={text} style={{ position: "relative" }}>
-        {check ? (
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 20,
-              color: text,
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            check
-          </span>
-        ) : (
-          "a"
-        )}
-      </Swatch>
+      <ColorSwatch rgb={rgb} text={text} check={check} />
     </td>
   );
 }
@@ -319,7 +325,7 @@ export default function LabelItem({
           }}
         >
           <ListItemIcon>
-            <ColorCell rgb={selectedColor?.rgb} text={selectedColor?.text} check={selectedColor?.check} />
+            <ColorSwatch rgb={selectedColor?.rgb} text={selectedColor?.text} check={selectedColor?.check} />
           </ListItemIcon>
           <ListItemText primary={<Typography fontSize={14}>Label color</Typography>} />
           <ListItemIcon sx={{ justifyContent: "flex-end", minWidth: "auto" }}>

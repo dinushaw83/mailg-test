@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useGlobalContext } from "../contexts/GlobalContext";
+
 import { isValidEmail } from "../utils/helperFunctions";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 export const useComposeModal = () => {
   const { composeWindows, setComposeWindows, emails, rightSidebarActiveTab, recipients } = useGlobalContext();
@@ -100,7 +101,16 @@ export const useComposeModal = () => {
 
   // Add new compose window with proper minimized state management
   const addNewComposeWindow = useCallback(
-    (draftId = null, fields = {}, autoFocus = true) => {
+    (draftId = null, fields = {}, autoFocusInput = true) => {
+      // If draftId is an object (like a React event), ignore it
+      const finalDraftId = (draftId && typeof draftId === 'object') ? null : draftId;
+      
+      // Ensure fields is an object
+      const finalFields = (fields && typeof fields === 'object') ? fields : {};
+      
+      // Ensure autoFocus is a boolean and handle cases where an event might be passed
+      const autoFocus = typeof autoFocusInput === 'boolean' ? autoFocusInput : true;
+
       const windowWidth = window.innerWidth;
       const availableSpace = windowWidth - TOTAL_MARGINS - TOTAL_GAPS;
 
@@ -120,10 +130,10 @@ export const useComposeModal = () => {
       // Create new window
       const newWindow = {
         id: Date.now(),
-        draftId: draftId || null,
+        draftId: finalDraftId,
         isMinimized: false,
         isMaximized: false,
-        fields: fields || {},
+        fields: finalFields,
         autoFocus,
       };
 
@@ -161,7 +171,7 @@ export const useComposeModal = () => {
 
       // Update URL with compose parameter
       const newSearchParams = new URLSearchParams(location.search);
-      newSearchParams.set("compose", draftId ? draftId.toString() : "new");
+      newSearchParams.set("compose", finalDraftId ? finalDraftId.toString() : "new");
       const newSearch = newSearchParams.toString();
       const newUrl = `${location.pathname}?${newSearch}`;
       navigate(newUrl);

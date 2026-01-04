@@ -1,10 +1,10 @@
 // RDT operators that require model response input
 export const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
 
-// Import judges.json - Node.js v22+ requires 'with { type: "json" }'
-// Vite should handle this syntax, but if it doesn't, we may need a fallback
-// Note: Server-side code (get_actual_state.js) loads judges.json separately using readFileSync
-import judgesDataRaw from '../../data/judges.json' with { type: 'json' };
+// Import judges.json
+// Vite handles this automatically. For Node.js contexts that require 'with', 
+// we handle it via other means or use a fallback.
+import judgesDataRaw from '../../data/judges.json';
 
 // Handle both default export and named export formats
 const judgesData = judgesDataRaw.default || judgesDataRaw;

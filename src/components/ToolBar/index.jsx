@@ -1,22 +1,22 @@
-import Pagination from "./Pagination";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import styled from "@emotion/styled";
-import ClickAwayListener from "@mui/material/ClickAwayListener";
-import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useRef, useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import { Icon } from "../InboxView/ActionBar";
-import MailActions from "../MailActions";
-import SpamActions from "../MailActions/SpamActions";
-import MoreActions from "../MailActions/MoreActions";
-import Popover from "@mui/material/Popover";
-import Box from "@mui/material/Box";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
-import { useHotkeys } from "react-hotkeys-hook";
-import { createPortal } from "react-dom";
+import Box from "@mui/material/Box";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import { Icon } from "../InboxView/ActionBar";
+import IconButton from "@mui/material/IconButton";
+import MailActions from "../MailActions";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import MoreActions from "../MailActions/MoreActions";
+import Pagination from "./Pagination";
+import Popover from "@mui/material/Popover";
+import SpamActions from "../MailActions/SpamActions";
+import { createPortal } from "react-dom";
+import styled from "@emotion/styled";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useHotkeys } from "react-hotkeys-hook";
+import { useParams } from "react-router-dom";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -161,7 +161,6 @@ const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, 
           </IconButton>
         </CheckboxContainer>
         <Menu
-          dense
           anchorEl={anchorEl}
           open={open}
           onClose={handleMenuClose}
@@ -180,6 +179,7 @@ const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, 
               },
             },
             list: {
+              dense: true,
               sx: {
                 padding: "4px 0",
               },
@@ -383,12 +383,9 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
   const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
-  // Show top-center yellow loading banner for ~2.5s
   const manualEmailSync = useCallback(() => {
     setIsManualSyncing(true);
-    // Increment the manual sync counter
     setManualSyncCount((prevCount) => prevCount + 1);
-    // Keep visible for 2.5 seconds to simulate manual sync loading
     setTimeout(() => setIsManualSyncing(false), 2500);
   }, [setManualSyncCount]);
 

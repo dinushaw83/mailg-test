@@ -1,14 +1,15 @@
-import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useLabels, { getPathLabelFromKey, normalizeLabelName } from "../../hooks/useLabels";
+
 import Box from "@mui/material/Box";
-import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
-import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
+import Divider from "@mui/material/Divider";
+import Popover from "@mui/material/Popover";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import useLabels, { normalizeLabelName, getPathLabelFromKey } from "../../hooks/useLabels";
-import Button from "@mui/material/Button";
 
 export const Labels = ({
   searchQuery,
@@ -24,7 +25,7 @@ export const Labels = ({
   onOpenCreateLabelDialog,
 }) => {
   const { labels, setSnackbar, selection } = useGlobalContext();
-  const { addLabels, removeLabels } = useMailActions();
+  const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
   const inputRef = useRef(null);
@@ -68,12 +69,10 @@ export const Labels = ({
       // "indeterminate" means leave it as-is
     }
 
-    addLabels(ids, labelsToAdd);
-    removeLabels(ids, labelsToRemove);
+    modifyLabels(ids, { add: labelsToAdd, remove: labelsToRemove });
 
     const undo = () => {
-      addLabels(ids, labelsToRemove);
-      removeLabels(ids, labelsToAdd);
+      modifyLabels(ids, { add: labelsToRemove, remove: labelsToAdd });
       setSnackbar({
         open: true,
         message: "Action undone.",
@@ -120,13 +119,13 @@ export const Labels = ({
   }, [
     overrides,
     currentLabels,
-    addLabels,
-    removeLabels,
+    modifyLabels,
     setSnackbar,
     selection,
     handleLabelClose,
     handleClose,
     selectedIds,
+    labels,
   ]);
 
   return (

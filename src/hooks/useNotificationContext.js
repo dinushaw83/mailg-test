@@ -1,18 +1,30 @@
-import { useSelector, useDispatch } from 'react-redux';
 import { setNotificationSettings, setPermissionStatus } from '../store/slices/notificationSlice';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { notificationManager } from '../utils/notifications';
+import { useCallback } from 'react';
 
 export const useNotificationContext = () => {
   const dispatch = useDispatch();
   const notification = useSelector(state => state.notification);
 
-  const updateNotificationSettings = (newSettings) => {
-    dispatch(setNotificationSettings(newSettings));
-  };
+  const updateNotificationSettings = useCallback((val) => {
+    if (typeof val === 'function') {
+      const stateCopy = JSON.parse(JSON.stringify(notification.notificationSettings));
+      dispatch(setNotificationSettings(val(stateCopy)));
+    } else {
+      dispatch(setNotificationSettings(val));
+    }
+  }, [dispatch, notification.notificationSettings]);
 
-  const updatePermissionStatus = (status) => {
-    dispatch(setPermissionStatus(status));
-  };
+  const updatePermissionStatus = useCallback((val) => {
+    if (typeof val === 'function') {
+      const stateCopy = JSON.parse(JSON.stringify(notification.permissionStatus));
+      dispatch(setPermissionStatus(val(stateCopy)));
+    } else {
+      dispatch(setPermissionStatus(val));
+    }
+  }, [dispatch, notification.permissionStatus]);
 
   const showNewMailNotification = async (subject, sender) => {
     const { notificationSettings } = notification;

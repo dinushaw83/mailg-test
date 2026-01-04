@@ -1,18 +1,19 @@
-import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
+
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
 import TextField from "@mui/material/TextField";
-import Checkbox from "@mui/material/Checkbox";
+import Typography from "@mui/material/Typography";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
-import Button from "@mui/material/Button";
 
 export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { labels, setSnackbar, selection } = useGlobalContext();
-  const { addLabels, removeLabels } = useMailActions();
+  const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
   const inputRef = useRef(null);
@@ -72,12 +73,10 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
 
     if (message) {
-      addLabels(selectedIds, labelsToAdd);
-      removeLabels(selectedIds, labelsToRemove);
+      modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove });
 
       const undo = () => {
-        addLabels(selectedIds, labelsToRemove);
-        removeLabels(selectedIds, labelsToAdd);
+        modifyLabels(selectedIds, { add: labelsToRemove, remove: labelsToAdd });
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -100,7 +99,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
 
     selection.clear();
     setOverrides({}); // reset
-  }, [overrides, currentLabels, addLabels, removeLabels, setSnackbar, selection, selectedIds]);
+  }, [overrides, currentLabels, modifyLabels, setSnackbar, selection, selectedIds, labels]);
 
   return (
     <Box sx={{ width: "280px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>

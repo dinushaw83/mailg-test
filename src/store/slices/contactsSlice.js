@@ -1,12 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { recipients as initialRecipients } from '../../contexts/fixtures/recipients';
 import { recipientLabels as initialRecipientLabels } from '../../contexts/fixtures/recipientLabels';
+import { recipients as initialRecipients } from '../../contexts/fixtures/recipients';
 
 const contactsSlice = createSlice({
   name: 'contacts',
   initialState: {
-    recipients: initialRecipients,
-    recipientLabels: initialRecipientLabels,
+    recipients: JSON.parse(JSON.stringify(initialRecipients)),
+    recipientLabels: JSON.parse(JSON.stringify(initialRecipientLabels)),
     deletedRecipients: [],
     hiddenRecipients: [],
     contactsLeftSidebarExpanded: true,

@@ -1,5 +1,6 @@
+import { Avatar, ListItem, ListItemAvatar, ListItemText, Tooltip } from "@mui/material";
+
 import React from "react";
-import { ListItem, ListItemText, ListItemAvatar, Avatar, Tooltip } from "@mui/material";
 import { generateAvatarColor } from "../../../utils/helperFunctions";
 
 const ContactListItem = ({ contact, onClick }) => {
@@ -8,7 +9,6 @@ const ContactListItem = ({ contact, onClick }) => {
 
   return (
     <Tooltip
-      key={contact.id}
       title={contact.name}
       placement="top"
       slotProps={{

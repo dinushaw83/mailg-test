@@ -303,7 +303,7 @@ const CreateContactPage = () => {
 
   // Check if labels have changed
   const hasLabelsChanged = () => {
-    return JSON.stringify(formData.labels.sort()) !== JSON.stringify(tempLabels.sort());
+    return JSON.stringify([...formData.labels].sort()) !== JSON.stringify([...tempLabels].sort());
   };
 
   // Handle back button click

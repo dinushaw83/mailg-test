@@ -284,7 +284,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     // Check if there are any changes in temp labels
     if (selectedContactRef.current?.contact) {
       const originalLabels = selectedContactRef.current.contact.labels || [];
-      const hasChanges = JSON.stringify(originalLabels.sort()) !== JSON.stringify(tempLabels.sort());
+      const hasChanges = JSON.stringify([...originalLabels].sort()) !== JSON.stringify([...tempLabels].sort());
 
       if (hasChanges) {
         // Apply the label changes

@@ -186,7 +186,10 @@ const LeftSidebar = () => {
   }, [customLabels, collapsed]);
 
   // Open a new compose window
-  const openComposeWindow = (autoFocus = true) => {
+  const openComposeWindow = (e) => {
+    // If called as an event handler, e will be the event object.
+    // We want to pass true for autoFocus, not the event object.
+    const autoFocus = typeof e === "boolean" ? e : true;
     addNewComposeWindow(null, {}, autoFocus);
   };
 
