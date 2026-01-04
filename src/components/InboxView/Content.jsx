@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import React, { useContext, useMemo, useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import Avatar from "@mui/material/Avatar";
 import { Icon } from "./ActionBar";
 import { Attachments } from "./Attachments";
 import ContactPopup from "../Contacts/ContactPopup";
-import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import { getEmbeddedImage, processHtmlForDisplay, extractEmbeddedImageIds } from "../../utils/embeddedImages";
 import useMailActions from "../../hooks/useMailActions";
 import MoreActions from "./MoreActions";
@@ -315,7 +315,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
 };
 
 const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
-  const { setEmails, setSnackbar } = useContext(GlobalContext);
+  const { setEmails, setSnackbar } = useGlobalContext();
 
   // Format the scheduled date and time
   const formatScheduledDateTime = (dateStr, timeStr) => {
@@ -458,7 +458,7 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
 };
 
 const EmailHtmlBody = React.memo(({ body, embeddedImages = [] }) => {
-  const { db } = useContext(GlobalContext);
+  const { db } = useGlobalContext();
   const [processedBody, setProcessedBody] = useState(body);
 
   useEffect(() => {

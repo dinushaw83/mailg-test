@@ -1,6 +1,6 @@
-import { useContext, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button, Box, MenuItem, Popper, Grow, Paper, ClickAwayListener, MenuList } from "@mui/material";
-import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Icon } from "../InboxView/ActionBar";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
@@ -22,7 +22,7 @@ const Pagination = ({
   overwriteItemsPerPage = null,
   showNavigationButtons = true,
 }) => {
-  const { currentPage, setCurrentPage, itemsPerPage, setSortOrder } = useContext(GlobalContext);
+  const { currentPage, setCurrentPage, itemsPerPage, setSortOrder } = useGlobalContext();
   const anchorRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
 

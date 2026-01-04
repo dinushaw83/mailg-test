@@ -1,9 +1,10 @@
-import React, { useContext } from "react";
-import { Snackbar, Tooltip, IconButton } from "@mui/material";
-import { GlobalContext } from "../contexts/GlobalContext";
+import { IconButton, Snackbar, Tooltip } from "@mui/material";
+
+import React from "react";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 export default function GlobalSnackbar() {
-  const { snackbar, setSnackbar } = useContext(GlobalContext);
+  const { snackbar, setSnackbar } = useGlobalContext();
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {

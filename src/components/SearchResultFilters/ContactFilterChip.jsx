@@ -1,7 +1,7 @@
 import React, { useState, useContext, useRef, useMemo, useEffect } from "react";
 import { Box, Chip, Popover, Stack, Typography, Avatar, Autocomplete, TextField } from "@mui/material";
 import { generateAvatarColor, restructureRecipients } from "../../utils/helperFunctions";
-import { GlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import RecipientChip from "../ComposeEmail/RecipientChip";
 import { useLocation } from "react-router-dom";
 
@@ -24,7 +24,7 @@ const InputStyle = {
 };
 
 export default function ContactFilterChip({ label, isActive, onFilterChange }) {
-  const { recipients: globalRecipients, loggedInUser } = useContext(GlobalContext);
+  const { recipients: globalRecipients, loggedInUser } = useGlobalContext();
   const location = useLocation();
 
   // Process recipients - restructure and remove duplicates

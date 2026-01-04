@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Tooltip, Autocomplete, TextField, Avatar, Box, Typography } from "@mui/material";
-import { GlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateAvatarColor } from '../../utils/helperFunctions';
 import './EmailInput.css';
 
 const EmailInput = React.forwardRef(({ label, emails, onEmailAdded, onEmailRemoved, isParentFocused = false, onFocusChange }, ref) => {
-  const { recipients: globalRecipients } = useContext(GlobalContext);
+  const { recipients: globalRecipients } = useGlobalContext();
   const [inputValue, setInputValue] = useState('');
   const [addedEmails, setAddedEmails] = useState(emails);
   const [isFocused, setIsFocused] = useState(isParentFocused);

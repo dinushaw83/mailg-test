@@ -1,9 +1,9 @@
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import styled from "@emotion/styled";
-import { GlobalContext, useGlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import Tooltip from "@mui/material/Tooltip";
 import useMailActions from "../../hooks/useMailActions";
 import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
@@ -1040,7 +1040,7 @@ const useNavigationHotKeys = ({ goBack, goForward, handleArchive }) => {
 
 const NavigationActions = () => {
   const { threadId, folder, label: labelParam } = useParams();
-  const { emails } = useContext(GlobalContext);
+  const { emails } = useGlobalContext();
   const navigate = useNavigate();
   const location = useLocation();
   const { archive } = useMailActions();

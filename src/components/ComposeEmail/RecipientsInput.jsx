@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect, useContext, useMemo, useCallback } from "react";
-import { Tooltip, Autocomplete, TextField, Avatar, Box, Typography } from "@mui/material";
+import { Autocomplete, Avatar, Box, TextField, Tooltip, Typography } from "@mui/material";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { generateAvatarColor, isValidEmail, restructureRecipients } from "../../utils/helperFunctions";
+
 import RecipientChip from "./RecipientChip";
 import SelectContacts from "./SelectContacts/SelectContacts";
-import { GlobalContext } from "../../contexts/GlobalContext";
-import { generateAvatarColor, restructureRecipients, isValidEmail } from "../../utils/helperFunctions";
 import styles from "./RecipientsInput.module.css";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 export default function RecipientsInput({
   to = [],
@@ -16,7 +17,7 @@ export default function RecipientsInput({
   placeholder = "Recipients",
   autoFocus = true,
 }) {
-  const { recipients: globalRecipients, loggedInUser } = useContext(GlobalContext);
+  const { recipients: globalRecipients, loggedInUser } = useGlobalContext();
 
   // Include only the recipients that has an email and restructure them
   const recipients = useMemo(() => {

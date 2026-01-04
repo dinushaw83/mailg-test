@@ -4,7 +4,7 @@ import { Button } from "@mui/material";
 import RichTextEditor from "../RichTextEditor/RichTextEditor";
 import RecipientsInput from "./RecipientsInput";
 import InfoModal from "./InfoModal";
-import { GlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useComposeModal } from "../../hooks/useComposeModal";
 import { useSendEmail } from "../../hooks/useSendEmail";
@@ -24,7 +24,7 @@ export default function ComposeEmail({ composeWindow }) {
     rightSidebarActiveTab,
     loggedInUser,
     signaturesState,
-  } = useContext(GlobalContext);
+  } = useGlobalContext();
 
   // Create restructured recipients array for proper lookup
   const restructuredRecipients = useMemo(() => {

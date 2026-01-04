@@ -1,6 +1,6 @@
-import React, { useContext, useMemo, useEffect, useCallback, useState } from "react";
+import React, { useMemo, useEffect, useCallback, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { GlobalContext } from "../../contexts/GlobalContext";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import ActionBar from "./ActionBar";
 import styled from "@emotion/styled";
 import { Content } from "./Content";
@@ -109,7 +109,7 @@ export const EmailContent = ({
   isPreview = false,
   markAsReadAfter = 3000,
 }) => {
-  const { emails, normalizedEmails } = useContext(GlobalContext);
+  const { emails, normalizedEmails } = useGlobalContext();
   const responseViewRef = React.useRef();
   const { markRead } = useMailActions();
 
@@ -199,7 +199,7 @@ export const EmailContent = ({
 
 const InboxView = () => {
   const { threadId, folder, label } = useParams();
-  const { emails, normalizedEmails, loggedInUser } = useContext(GlobalContext);
+  const { emails, normalizedEmails, loggedInUser } = useGlobalContext();
   const { markRead } = useMailActions();
   const { messagesById } = normalizedEmails;
   const [shouldMarkUnreadEmailsAsRead, setShouldMarkUnreadEmailsAsRead] = useState(true);
