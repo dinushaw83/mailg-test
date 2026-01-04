@@ -194,7 +194,7 @@ function generateEmailHash(emails) {
   if (!emails || emails.length === 0) return "";
   return emails
     .map((email) => {
-      const labels = email.labels ? email.labels.sort().join(",") : "";
+      const labels = email.labels ? [...email.labels].sort().join(",") : "";
       return `${email.id}-${email.timestamp}-${labels}`;
     })
     .join("|")

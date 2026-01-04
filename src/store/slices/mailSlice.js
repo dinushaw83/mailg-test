@@ -5,8 +5,8 @@ import { initialLabels } from '../../contexts/fixtures/labels';
 const mailSlice = createSlice({
   name: 'mail',
   initialState: {
-    emails: initialEmails,
-    labels: initialLabels,
+    emails: JSON.parse(JSON.stringify(initialEmails)),
+    labels: JSON.parse(JSON.stringify(initialLabels)),
     selectedEmails: [],
     previewEmailId: null,
     softRemovedLabels: {},
@@ -28,7 +28,7 @@ const mailSlice = createSlice({
       state.softRemovedLabels = action.payload;
     },
     refreshEmails: (state) => {
-      state.emails = initialEmails;
+      state.emails = JSON.parse(JSON.stringify(initialEmails));
     },
   },
 });

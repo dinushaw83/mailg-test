@@ -4,7 +4,7 @@ import { initialUser } from '../../contexts/fixtures/me';
 const userSlice = createSlice({
   name: 'user',
   initialState: {
-    loggedInUser: initialUser,
+    loggedInUser: JSON.parse(JSON.stringify(initialUser)),
   },
   reducers: {
     setLoggedInUser: (state, action) => {

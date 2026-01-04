@@ -1,12 +1,13 @@
+import { Box, Button, IconButton, List, Tab, Tabs, TextField, Typography } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
 import React, { useEffect, useMemo, useState } from "react";
-import { List, Typography, Box, IconButton, Button, TextField, Tabs, Tab } from "@mui/material";
-import { useLocation, Link } from "react-router-dom";
+
+import { ActionIconButton } from "./ContactComponents";
+import ContactDetails from "./ContactDetails";
 import ContactListItem from "./ContactListItem";
 import CreateContact from "./CreateContact";
-import ContactDetails from "./ContactDetails";
-import { ActionIconButton } from "./ContactComponents";
-import { useGlobalContext } from "../../../contexts/GlobalContext";
 import EmptyContacts from "./EmptyContacts";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
 
 const ContactsTab = () => {
   const { recipients, rightSidebarActiveTab, setRightSidebarActiveTab, emails, loggedInUser } = useGlobalContext();
@@ -150,8 +151,8 @@ const ContactsTab = () => {
     const loggedInUserInThread =
       loggedInUser && loggedInUser.emails && loggedInUser.emails.some((emailObj) => emailAddresses.has(emailObj.value));
 
-    // Add logged-in user to contacts if they're in the thread
-    if (loggedInUserInThread) {
+    // Add logged-in user to contacts if they're in the thread and not already there
+    if (loggedInUserInThread && !contacts.some((c) => c.isLoggedInUser)) {
       contacts.push(loggedInUser);
     }
 
@@ -384,9 +385,9 @@ const ContactsTab = () => {
             <Box sx={{ overflowY: "auto", py: 2, px: 1, height: "calc(100vh - 230px)", mt: displaySearch ? 7 : 0 }}>
               {threadContacts.length > 0 && (
                 <List sx={{ p: 0, pl: 1 }}>
-                  {threadContacts.map((contact) => (
+                  {threadContacts.map((contact, index) => (
                     <ContactListItem
-                      key={contact.id}
+                      key={contact.id || contact.email || index}
                       contact={contact}
                       onClick={() => handleViewContactDetails(contact)}
                     />
@@ -444,9 +445,9 @@ const ContactsTab = () => {
                 Favorites ({favoriteContacts.length})
               </p>
               <List sx={{ p: 0, pl: 1 }}>
-                {favoriteContacts.map((contact) => (
+                {favoriteContacts.map((contact, index) => (
                   <ContactListItem
-                    key={contact.id}
+                    key={contact.id || contact.email || index}
                     contact={contact}
                     onClick={() => handleViewContactDetails(contact)}
                   />
@@ -462,9 +463,9 @@ const ContactsTab = () => {
                 Contacts {hasSearched ? "" : `(${myContacts.length})`}
               </p>
               <List sx={{ p: 0, pl: 1 }}>
-                {myContacts.map((contact) => (
+                {myContacts.map((contact, index) => (
                   <ContactListItem
-                    key={contact.id}
+                    key={contact.id || contact.email || index}
                     contact={contact}
                     onClick={() => handleViewContactDetails(contact)}
                   />
@@ -480,9 +481,9 @@ const ContactsTab = () => {
                 Other Contacts
               </p>
               <List sx={{ p: 0, pl: 1 }}>
-                {otherContacts.map((contact) => (
+                {otherContacts.map((contact, index) => (
                   <ContactListItem
-                    key={contact.id}
+                    key={contact.id || contact.email || index}
                     contact={contact}
                     onClick={() => handleViewContactDetails(contact)}
                   />

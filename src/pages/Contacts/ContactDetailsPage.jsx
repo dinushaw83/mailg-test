@@ -683,7 +683,7 @@ const contact = [...recipients, ...hiddenRecipients].find(
 
   // Check if labels have changed
   const hasLabelsChanged = () => {
-    return JSON.stringify((contact?.labels || []).sort()) !== JSON.stringify(tempLabels.sort());
+    return JSON.stringify([...(contact?.labels || [])].sort()) !== JSON.stringify([...tempLabels].sort());
   };
 
   // Open website in new tab

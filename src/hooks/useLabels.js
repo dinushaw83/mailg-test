@@ -6,7 +6,7 @@ export const ROOT = null;
 const getThreadKey = (m) => {
   if (!m) return null;
   if (m.threadId) {
-    return String(m.threadId).replace(/^#thread-f:/, "");
+    return String(m.threadId).replace("#thread-f:", "");
   }
   return m.legacyThreadId || null;
 };
@@ -318,7 +318,7 @@ export default function useLabels() {
         m.id,
         m.messageId,
         m.threadId,
-        m.threadId && String(m.threadId).replace(/^#thread-f:/, ""),
+        m.threadId && String(m.threadId).replace("#thread-f:", ""),
         m.legacyThreadId,
         m.legacyLastMessageId,
         m.legacyLastNonDraftMessageId,

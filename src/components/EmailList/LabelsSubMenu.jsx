@@ -12,7 +12,7 @@ import Button from "@mui/material/Button";
 export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { labels, setSnackbar, selection } = useGlobalContext();
-  const { addLabels, removeLabels } = useMailActions();
+  const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
   const inputRef = useRef(null);
@@ -72,12 +72,10 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
 
     if (message) {
-      addLabels(selectedIds, labelsToAdd);
-      removeLabels(selectedIds, labelsToRemove);
+      modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove });
 
       const undo = () => {
-        addLabels(selectedIds, labelsToRemove);
-        removeLabels(selectedIds, labelsToAdd);
+        modifyLabels(selectedIds, { add: labelsToRemove, remove: labelsToAdd });
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -100,7 +98,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
 
     selection.clear();
     setOverrides({}); // reset
-  }, [overrides, currentLabels, addLabels, removeLabels, setSnackbar, selection, selectedIds]);
+  }, [overrides, currentLabels, modifyLabels, setSnackbar, selection, selectedIds, labels]);
 
   return (
     <Box sx={{ width: "280px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>

@@ -26,6 +26,7 @@ const persistConfig = {
   key: 'root',
   version: 1,
   storage,
+  blacklist: ['ui', 'compose'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -36,6 +37,8 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+        ignoredActionPaths: ['payload.action', 'payload.snackbar.action'],
+        ignoredPaths: ['ui.snackbar.action'],
       },
     }),
 });

@@ -826,7 +826,7 @@ const CreateContact = ({ onClose, onTabClose }) => {
 
   // Check if labels have changed
   const hasLabelsChanged = () => {
-    return JSON.stringify(formData.labels.sort()) !== JSON.stringify(tempLabels.sort());
+    return JSON.stringify([...formData.labels].sort()) !== JSON.stringify([...tempLabels].sort());
   };
 
   // Get the label id

@@ -137,6 +137,19 @@ export default function useMailActions() {
     [updateByIds]
   );
 
+  const modifyLabels = useCallback(
+    (ids, { add = [], remove = [] }) =>
+      updateByIds(ids, (labelSet) => {
+        for (const n of add) {
+          if (n) labelSet.add(String(n));
+        }
+        for (const n of remove) {
+          if (n) labelSet.delete(String(n));
+        }
+      }),
+    [updateByIds]
+  );
+
   const moveToInbox = useCallback(
     (ids) => {
       const undo = withUndo(ids, setEmails, () => {
@@ -479,6 +492,7 @@ export default function useMailActions() {
     () => ({
       addLabels,
       removeLabels,
+      modifyLabels,
       moveToInbox,
       archive,
       moveToSpam,

@@ -1,23 +1,22 @@
-import React, { useCallback, useRef, useState, useId } from "react";
 import { Link, useParams } from "react-router-dom";
+import React, { useCallback, useId, useRef, useState } from "react";
+import { isDocument, isPresentation, isSpreadsheet } from "../InboxView/Attachments";
 
-import { useContextMenu } from "react-contexify";
-
-import CheckBox from "../ui/CheckBox";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import { useElementDimensions } from "../../hooks/useElementDimensions";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import styled from "@emotion/styled";
-import Icon from "../ui/Icon";
-import useMailActions from "../../hooks/useMailActions";
-import { SnoozePopover } from "../MailActions/Snooze";
+import Button from "@mui/material/Button";
+import CheckBox from "../ui/CheckBox";
 import ContextMenu from "./ContextMenu";
-import { isDocument, isSpreadsheet, isPresentation } from "../InboxView/Attachments";
-import { useHotkeys } from "react-hotkeys-hook";
+import Icon from "../ui/Icon";
+import IconButton from "@mui/material/IconButton";
+import { SnoozePopover } from "../MailActions/Snooze";
+import Typography from "@mui/material/Typography";
 import { getEmbeddedImage } from "../../utils/embeddedImages";
+import styled from "@emotion/styled";
+import { useContextMenu } from "react-contexify";
+import { useElementDimensions } from "../../hooks/useElementDimensions";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useHotkeys } from "react-hotkeys-hook";
+import useMailActions from "../../hooks/useMailActions";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -762,6 +761,7 @@ const Table = ({
     bulkMarkImportant,
   });
 
+  console.log({emails})
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -1138,34 +1138,34 @@ const Table = ({
               </tr>
             );
           })}
-          {showSnoozePopover && (
-            <SnoozePopover
-              anchorEl={snoozeAnchorEl}
-              open={showSnoozePopover}
-              onClose={() => {
-                setState((prev) => ({
-                  ...prev,
-                  snoozeAnchorEl: null,
-                  snoozeId: null,
-                }));
-              }}
-              selectedIds={selection.ids}
-              snooze={handleSnooze}
-            />
-          )}
-          <ContextMenu
-            menuId={MENU_ID}
-            handleArchive={handleArchive}
-            handleDelete={handleDelete}
-            handleReadAction={handleReadAction}
-            handleSnoozeAction={handleSnoozeAction}
-            contextRow={contextRow}
-            handleMuteAction={handleMuteAction}
-            folder={folder}
-            label={label}
-          />
         </tbody>
       </table>
+      {showSnoozePopover && (
+        <SnoozePopover
+          anchorEl={snoozeAnchorEl}
+          open={showSnoozePopover}
+          onClose={() => {
+            setState((prev) => ({
+              ...prev,
+              snoozeAnchorEl: null,
+              snoozeId: null,
+            }));
+          }}
+          selectedIds={selection.ids}
+          snooze={handleSnooze}
+        />
+      )}
+      <ContextMenu
+        menuId={MENU_ID}
+        handleArchive={handleArchive}
+        handleDelete={handleDelete}
+        handleReadAction={handleReadAction}
+        handleSnoozeAction={handleSnoozeAction}
+        contextRow={contextRow}
+        handleMuteAction={handleMuteAction}
+        folder={folder}
+        label={label}
+      />
     </div>
   );
 };
