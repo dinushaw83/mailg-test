@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback, useContext } from "react";
-import { GlobalContext } from "../contexts/GlobalContext";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useGlobalContext } from "../contexts/GlobalContext";
 import {
   generateNextIntegerId,
   generateThreadId,
@@ -8,7 +8,7 @@ import {
 } from "../utils/helperFunctions";
 
 export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraftId, parentEmail, replyType }) => {
-  const { emails, setEmails, loggedInUser } = useContext(GlobalContext);
+  const { emails, setEmails, loggedInUser } = useGlobalContext();
   const [draftSaved, setDraftSaved] = useState(false);
   const [isDraft, setIsDraft] = useState(currentDraftId ? true : false);
   const [draftId, setDraftId] = useState(currentDraftId || null);

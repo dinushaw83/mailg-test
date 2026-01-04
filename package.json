@@ -18,6 +18,7 @@
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "@mui/x-date-pickers": "^8.11.1",
+    "@reduxjs/toolkit": "^2.11.2",
     "@tiptap/core": "^3.4.1",
     "@tiptap/extension-blockquote": "^3.4.1",
     "@tiptap/extension-bold": "^3.4.1",
@@ -77,8 +78,10 @@
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^5.1.0",
     "react-is": "^18.2.0",
+    "react-redux": "^9.2.0",
     "react-resizable-panels": "^3.0.6",
     "react-router-dom": "^6.8.1",
+    "redux-persist": "^6.0.0",
     "tippy.js": "^6.2.5"
   },
   "devDependencies": {

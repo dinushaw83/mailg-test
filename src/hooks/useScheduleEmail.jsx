@@ -1,15 +1,16 @@
-import React, { useState, useRef, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@mui/material";
-import { GlobalContext } from "../contexts/GlobalContext";
+import React, { useRef, useState } from "react";
 import {
-  generateThreadId,
   generateLegacyThreadId,
   generateNextIntegerId,
-  restructureRecipients,
+  generateThreadId,
   isValidEmail,
+  restructureRecipients,
 } from "../utils/helperFunctions";
+
+import { Button } from "@mui/material";
 import { updateEmbeddedImagesEmailId } from "../utils/embeddedImages";
+import { useGlobalContext } from "../contexts/GlobalContext";
+import { useNavigate } from "react-router-dom";
 
 export const useScheduleEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     db,
     hiddenRecipients,
     deletedRecipients,
-  } = useContext(GlobalContext);
+  } = useGlobalContext();
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
   const lastScheduledEmailRef = useRef(null);

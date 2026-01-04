@@ -1,10 +1,12 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
-import EmailInput from "./EmailInput";
 import "./EmailRecipients.css";
-import { GlobalContext } from "../../contexts/GlobalContext";
+
+import React, { useContext, useEffect, useRef, useState } from "react";
+
+import EmailInput from "./EmailInput";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const EmailRecipients = ({ recipients, setRecipients }) => {
-  const { recipients: globalRecipients } = useContext(GlobalContext);
+  const { recipients: globalRecipients } = useGlobalContext();
   const [isAnyInputFocused, setIsAnyInputFocused] = useState(false);
   const eventListenersAdded = useRef(false);
 

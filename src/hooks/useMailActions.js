@@ -1,6 +1,7 @@
 // hooks/useMailActions.js
-import React, { useCallback, useContext, useMemo, useState } from "react";
-import { GlobalContext } from "../contexts/GlobalContext";
+import React, { useCallback, useMemo, useState } from "react";
+
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ID utilities (thread-aware)
@@ -100,7 +101,7 @@ const withUndo = (ids, setEmails, operation) => {
  * ────────────────────────────────────────────────────────────────────────── */
 
 export default function useMailActions() {
-  const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useContext(GlobalContext);
+  const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
 
   const updateByIds = useCallback(
     (ids, transform) => {

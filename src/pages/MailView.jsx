@@ -1,21 +1,20 @@
-import React, { useContext, useMemo, useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
 
+import Banner from "../components/Banners";
+import { CATEGORIES } from "../utils/categories";
+import { EmailContent } from "../components/InboxView";
 import EmailList from "../components/EmailList";
-import { GlobalContext } from "../contexts/GlobalContext";
+import InboxSection from "./InboxSection";
+import SearchResultFilters from "../components/SearchResultFilters";
 import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
-import styled from "@emotion/styled";
-import SearchResultFilters from "../components/SearchResultFilters";
-import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
-import Banner from "../components/Banners";
-import { CATEGORIES } from "../utils/categories";
-import InboxSection from "./InboxSection";
-
-import { PanelGroup, Panel, PanelResizeHandle } from "react-resizable-panels";
-import { EmailContent } from "../components/InboxView";
 import { normalizeLabelName } from "../hooks/useLabels";
+import styled from "@emotion/styled";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 const Container = styled.div`
   overflow: hidden;
@@ -65,9 +64,9 @@ const Inbox = () => {
     vacationResponder,
     setSortOrder,
     previewEmailId,
-    panelState,
     setPreviewEmailId,
-  } = useContext(GlobalContext);
+    panelState,
+  } = useGlobalContext();
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
