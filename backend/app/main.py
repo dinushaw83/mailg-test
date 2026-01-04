@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from app.core.config import API_V1_PREFIX, get_jwt_secret_warnings
 from app.core.openapi import custom_openapi
 from app.core.exceptions import register_exception_handlers
+from app.core.telemetry import setup_telemetry
 from app.core.middleware.cors import cors_middleware
 from app.core.middleware.auth import auth_middleware
 from app.core.middleware.response_wrapper import ResponseWrapperMiddleware
@@ -58,6 +59,9 @@ app = FastAPI(
         "persistAuthorization": True,
     },
 )
+
+# Initialize OpenTelemetry instrumentation (if enabled)
+setup_telemetry(app)
 
 # Customize OpenAPI schema
 app.openapi = lambda: custom_openapi(app)
