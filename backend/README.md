@@ -22,9 +22,14 @@ A production-ready FastAPI mailg with JWT authentication, RBAC, and sophisticate
 ### Email API:
 - **Emails**: Compose, send, receive, read, archive, delete with threading support
 - **Folders**: Inbox, Sent, Drafts, Trash, Spam, Starred, and custom folders
-- **Labels**: User-defined tags for email organization
+- **Labels**: User-defined tags for email organization (hierarchical/nested)
 - **Attachments**: File attachments for emails
 - **Search**: Advanced search with operators (`from:`, `to:`, `is:unread`, `has:attachment`, etc.)
+- **Templates**: Reusable email templates with sharing support
+- **Bulk Operations**: Batch actions (read, star, move, delete, label, snooze, archive, category)
+- **Undo Send**: Configurable delay before emails are sent (5-30 seconds)
+- **Categories**: Gmail-style tabs (Primary, Promotions, Social, Updates, Forums)
+- **Snooze**: Temporarily hide emails until a specified time
 
 ## Database Isolation System
 
@@ -295,11 +300,14 @@ curl -X GET http://localhost:8766/api/v1/emails \
 
 ### Available Users (from fixtures)
 
-| Email                | Role (UserRole)        | Password | Use Case           |
-|----------------------|------------------------|----------|--------------------|
-| admin@example.com    | `UserRole.ADMIN`       | N/A      | Full access        |
-| john@example.com     | `UserRole.USER`        | N/A      | Regular access     |
-| jane@example.com     | `UserRole.USER`        | N/A      | Regular access     |
+| Email                   | Name           | Role (UserRole)   | Use Case           |
+|-------------------------|----------------|-------------------|--------------------|
+| admin@example.com       | Admin User     | `UserRole.ADMIN`  | Full access        |
+| john@example.com        | John Smith     | `UserRole.USER`   | Regular access     |
+| jane@example.com        | Jane Doe       | `UserRole.USER`   | Regular access     |
+| bob@example.com         | Bob Wilson     | `UserRole.USER`   | Regular access     |
+| emily.davis@example.com | Emily Davis    | `UserRole.USER`   | Regular access     |
+| inactive@example.com    | Inactive User  | `UserRole.USER`   | Inactive account   |
 
 Note: This mailg uses email-based authentication without passwords. Roles correspond to `UserRole` enum in `app.core.constants`. Extend as needed for production.
 
@@ -321,17 +329,22 @@ Note: This mailg uses email-based authentication without passwords. Roles corres
 - `GET /api/v1/db-snapshot/snapshot` - Get full database snapshot
 
 #### Emails
-- `GET /api/v1/emails` - List emails (paginated, filtered by folder/status/read)
-- `POST /api/v1/emails` - Create email (draft or send)
+- `GET /api/v1/emails` - List emails (paginated, filtered by folder/status/read/category)
+- `POST /api/v1/emails` - Create email (draft or send, with optional scheduled_send_at)
 - `GET /api/v1/emails/{id}` - Get email by ID
 - `PUT /api/v1/emails/{id}` - Update email (drafts only for content)
 - `DELETE /api/v1/emails/{id}` - Delete email (soft delete to trash)
-- `POST /api/v1/emails/{id}/send` - Send a draft email
+- `POST /api/v1/emails/{id}/send` - Send a draft email (queued if undo_send enabled)
+- `POST /api/v1/emails/{id}/cancel-send` - Cancel queued email (undo send)
+- `POST /api/v1/emails/{id}/confirm-send` - Send queued email immediately
 - `POST /api/v1/emails/{id}/reply` - Reply to email
 - `POST /api/v1/emails/{id}/forward` - Forward email
 - `PATCH /api/v1/emails/{id}/read` - Mark as read/unread
 - `PATCH /api/v1/emails/{id}/star` - Star/unstar email
+- `PATCH /api/v1/emails/{id}/category` - Update category (primary/promotions/social/updates/forums)
 - `POST /api/v1/emails/{id}/move` - Move to folder
+- `POST /api/v1/emails/{id}/snooze` - Snooze until specified time
+- `POST /api/v1/emails/{id}/unsnooze` - Unsnooze email
 - `POST /api/v1/emails/{id}/labels` - Add label to email
 - `DELETE /api/v1/emails/{id}/labels/{label_id}` - Remove label
 
@@ -365,6 +378,26 @@ Note: This mailg uses email-based authentication without passwords. Roles corres
 - `POST /api/v1/search/saved` - Save a search query
 - `GET /api/v1/search/saved` - List saved searches
 - `DELETE /api/v1/search/saved/{id}` - Delete saved search
+
+#### Templates
+- `GET /api/v1/templates` - List templates (own + shared)
+- `POST /api/v1/templates` - Create template
+- `GET /api/v1/templates/{id}` - Get template by ID
+- `PUT /api/v1/templates/{id}` - Update template
+- `DELETE /api/v1/templates/{id}` - Delete template
+- `POST /api/v1/templates/{id}/apply` - Apply template to create draft
+
+#### Bulk Operations
+- `POST /api/v1/bulk/read` - Bulk mark read/unread
+- `POST /api/v1/bulk/star` - Bulk star/unstar
+- `POST /api/v1/bulk/move` - Bulk move to folder
+- `POST /api/v1/bulk/delete` - Bulk delete
+- `POST /api/v1/bulk/labels/add` - Bulk add labels
+- `POST /api/v1/bulk/labels/remove` - Bulk remove labels
+- `POST /api/v1/bulk/snooze` - Bulk snooze
+- `POST /api/v1/bulk/unsnooze` - Bulk unsnooze
+- `POST /api/v1/bulk/archive` - Bulk archive
+- `POST /api/v1/bulk/category` - Bulk update category
 
 ### Search Operators
 
@@ -537,7 +570,8 @@ backend/
 │   │   └── registry.py          # Track active run databases
 │   │
 │   ├── tasks/                   # Background services
-│   │   └── cleanup.py           # Automatic database cleanup
+│   │   ├── cleanup.py           # Automatic database cleanup
+│   │   └── scheduled_sender.py  # Process queued emails (undo send)
 │   │
 │   ├── api/                     # API endpoints
 │   │   └── v1/
@@ -546,11 +580,13 @@ backend/
 │   │           ├── auth.py      # Authentication endpoints
 │   │           ├── users.py     # User management
 │   │           ├── db_snapshot.py  # Database inspection tools
-│   │           ├── emails.py    # Email CRUD and operations
+│   │           ├── emails.py    # Email CRUD, snooze, undo-send
 │   │           ├── folders.py   # Folder management
-│   │           ├── labels.py    # Label management
+│   │           ├── labels.py    # Label management (hierarchical)
 │   │           ├── attachments.py  # Attachment handling
-│   │           └── search.py    # Email search with operators
+│   │           ├── search.py    # Email search with operators
+│   │           ├── bulk.py      # Bulk email operations
+│   │           └── templates.py # Email template CRUD
 │   │
 │   ├── auth/                    # Authentication & Authorization
 │   │   ├── token_manager.py     # JWT token generation
@@ -560,10 +596,11 @@ backend/
 │   │   └── context.py           # Request context management
 │   │
 │   ├── models/                  # SQLAlchemy models
-│   │   ├── user.py              # User model
+│   │   ├── user.py              # User model (with contact fields)
 │   │   ├── log.py               # Log model
 │   │   ├── email.py             # Email model
 │   │   ├── email_recipient.py   # Email recipient (to/cc/bcc)
+│   │   ├── email_template.py    # Email template model
 │   │   ├── folder.py            # Email folder model
 │   │   ├── label.py             # Email label model
 │   │   ├── email_label.py       # Email-label association
@@ -573,8 +610,10 @@ backend/
 │   │
 │   ├── schemas/                 # Pydantic schemas
 │   │   ├── user.py              # User request/response schemas
-│   │   ├── pagination.py        # Generic PaginatedListResponse[T] (paginated list results)
+│   │   ├── pagination.py        # Generic PaginatedListResponse[T]
 │   │   ├── email.py             # Email request/response schemas
+│   │   ├── email_template.py    # Template schemas
+│   │   ├── bulk.py              # Bulk operation schemas
 │   │   ├── folder.py            # Folder schemas
 │   │   ├── label.py             # Label schemas
 │   │   ├── attachment.py        # Attachment schemas
@@ -585,13 +624,14 @@ backend/
 │       └── logger.py            # Logging configuration
 │
 ├── fixtures/                    # Seed data
-│   ├── users.json               # Example users
+│   ├── users.json               # Example users (with contact info)
 │   ├── folders.json             # Email folders (system + custom)
 │   ├── labels.json              # User labels
 │   ├── threads.json             # Email threads
 │   ├── emails.json              # Sample emails
 │   ├── email_recipients.json    # Email recipients
 │   ├── email_labels.json        # Email-label associations
+│   ├── email_templates.json     # Email templates
 │   └── attachments.json         # Sample attachments
 │
 ├── tests/                       # Test suite
@@ -604,6 +644,9 @@ backend/
 │   ├── test_folders_api.py      # Folder endpoint tests
 │   ├── test_labels_api.py       # Label endpoint tests
 │   ├── test_attachments_api.py  # Attachment endpoint tests
+│   ├── test_bulk_api.py         # Bulk operations tests
+│   ├── test_templates_api.py    # Template endpoint tests
+│   ├── test_undo_send_api.py    # Undo send feature tests
 │   └── test_search_api.py       # Search endpoint tests
 │
 ├── Dockerfile                   # Container image definition
@@ -799,11 +842,13 @@ from app.core.constants import (
     VALID_USER_ROLES,   # List of valid role strings
     
     # Email constants
-    EmailStatus,        # Enum: DRAFT, SENT, RECEIVED, ARCHIVED
+    EmailStatus,        # Enum: DRAFT, QUEUED, SENT, RECEIVED, ARCHIVED, CANCELLED
+    EmailCategory,      # Enum: PRIMARY, PROMOTIONS, SOCIAL, UPDATES, FORUMS
     FolderType,         # Enum: INBOX, SENT, DRAFTS, TRASH, SPAM, STARRED, CUSTOM
     RecipientType,      # Enum: TO, CC, BCC
     AttachmentType,     # Enum: FILE, IMAGE, DOCUMENT
     VALID_EMAIL_STATUSES,   # List of valid email status strings
+    VALID_EMAIL_CATEGORIES, # List of valid category strings
     VALID_FOLDER_TYPES,     # List of valid folder type strings
     VALID_RECIPIENT_TYPES,  # List of valid recipient type strings
     VALID_ATTACHMENT_TYPES, # List of valid attachment type strings
@@ -904,7 +949,6 @@ pytest --cov=app --cov-report=html
 - `test_auth_security.py`: JWT and authentication tests
 - `test_db_router.py`: Database isolation verification
 - `test_rbac_edge_cases.py`: Permission system tests
-- `test_emails_api.py`: Email endpoint tests
 - `test_token_manager.py`: Token generation/validation tests
 - `test_response_wrapper.py`: Response format wrapper tests
 - `test_emails_api.py`: Email CRUD, send/reply/forward tests
@@ -912,6 +956,9 @@ pytest --cov=app --cov-report=html
 - `test_labels_api.py`: Label CRUD and email-label association tests
 - `test_attachments_api.py`: Attachment upload/download tests
 - `test_search_api.py`: Search operators, filters, and saved search tests
+- `test_bulk_api.py`: Bulk operations tests
+- `test_templates_api.py`: Email template CRUD tests
+- `test_undo_send_api.py`: Undo send and scheduled email tests
 
 ## Maintenance
 
