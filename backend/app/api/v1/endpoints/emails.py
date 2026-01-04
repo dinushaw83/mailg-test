@@ -1416,6 +1416,62 @@ def unsnooze_email(
     return format_email_response(email)
 
 
+@router.post("/emails/{email_id}/archive", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def archive_email(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Archive an email.
+    
+    Sets the email status to 'archived'.
+    
+    Permissions:
+    - Users can only archive their own emails (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        joinedload(Email.folder),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    email.status = EmailStatus.ARCHIVED.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} archived by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
 @router.patch("/emails/{email_id}/category", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def update_email_category(
     email_id: UUID,

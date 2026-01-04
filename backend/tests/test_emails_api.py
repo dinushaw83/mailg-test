@@ -7,6 +7,7 @@ from app.models.email import Email
 from app.models.folder import Folder
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
+from app.models.user import User
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -558,6 +559,106 @@ class TestEmailSnooze:
         data = response.json()["data"]
         # Field should exist even if null
         assert "snooze_until" in data
+
+
+class TestEmailArchive:
+    """Test email archive operations."""
+
+    def test_archive_email_success(self, client_with_auth, db_session, sample_email):
+        """Test archiving an email."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_email.id}/archive",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["status"] == "archived"
+        assert data["id"] == str(sample_email.id)
+
+    def test_archive_email_not_found(self, client_with_auth):
+        """Test archiving a non-existent email returns 404."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/emails/{NON_EXISTENT_UUID}/archive",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 404
+
+    def test_archive_email_unauthenticated(self, client, sample_email):
+        """Test archiving without authentication fails."""
+        response = client.post(
+            f"/api/v1/emails/{sample_email.id}/archive"
+        )
+        
+        assert response.status_code == 401
+
+    def test_archive_email_updates_status_in_db(self, client_with_auth, db_session, sample_email):
+        """Test that archiving updates the status in database."""
+        client, token, user = client_with_auth
+        
+        # Verify initial status is not archived
+        assert sample_email.status != "archived"
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_email.id}/archive",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        
+        # Refresh from database
+        db_session.refresh(sample_email)
+        assert sample_email.status == "archived"
+
+    def test_archive_email_as_recipient(self, client_with_auth, db_session, sample_folder):
+        """Test that a recipient can archive an email they received."""
+        client, token, user = client_with_auth
+        
+        # Create another user as sender
+        sender = User(
+            first_name="Sender",
+            last_name="User",
+            email="sender@example.com",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.commit()
+        
+        # Create an email from sender to current user
+        email = Email(
+            subject="Test received email",
+            body="Email body",
+            sender_id=sender.id,
+            folder_id=sample_folder.id,
+            status="received"
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Add current user as recipient
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Archive as recipient
+        response = client.post(
+            f"/api/v1/emails/{email.id}/archive",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["status"] == "archived"
 
 
 class TestEmailCategory:

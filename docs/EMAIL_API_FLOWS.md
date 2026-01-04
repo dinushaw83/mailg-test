@@ -231,7 +231,8 @@ User A (Sender)                                          User B (Recipient)
 | `POST` | `/api/v1/emails/{id}/reply` | Reply to email |
 | `POST` | `/api/v1/emails/{id}/forward` | Forward email |
 | `POST` | `/api/v1/emails/{id}/snooze` | Snooze email |
-| `DELETE` | `/api/v1/emails/{id}/snooze` | Unsnooze email |
+| `POST` | `/api/v1/emails/{id}/unsnooze` | Unsnooze email |
+| `POST` | `/api/v1/emails/{id}/archive` | Archive email |
 
 ### Folder Endpoints
 
@@ -581,13 +582,37 @@ curl -X POST "${BASE_URL}/emails/{email_id}/snooze" \
 ### 1️⃣5️⃣ Unsnooze Email
 
 ```bash
-curl -X DELETE "${BASE_URL}/emails/{email_id}/snooze" \
+curl -X POST "${BASE_URL}/emails/{email_id}/unsnooze" \
   -H "Authorization: Bearer ${TOKEN}"
 ```
 
 ---
 
-### 1️⃣6️⃣ Delete Email
+### 1️⃣6️⃣ Archive Email
+
+```bash
+curl -X POST "${BASE_URL}/emails/{email_id}/archive" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "data": {
+    "id": "email-uuid-1",
+    "subject": "Meeting tomorrow",
+    "status": "archived",
+    "is_read": true,
+    "is_starred": false
+  }
+}
+```
+
+---
+
+### 1️⃣7️⃣ Delete Email
 
 #### Soft Delete (Move to Trash)
 ```bash
