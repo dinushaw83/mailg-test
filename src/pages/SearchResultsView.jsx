@@ -1,24 +1,25 @@
-import React, { useContext, useMemo, useEffect } from "react";
+import { Button, Stack } from "@mui/material";
+import React, { useEffect, useMemo } from "react";
+import {
+  advancedSearchWithFullData,
+  buildSearchIndex,
+  createSearchSummary,
+  initializeSearchIndex,
+  isSearchIndexReady,
+  searchEmails,
+} from "../utils/search";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Stack, Button } from "@mui/material";
+
 import EmailList from "../components/EmailList";
-import { GlobalContext } from "../contexts/GlobalContext";
+import SearchResultFilters from "../components/SearchResultFilters";
 import ToolBar from "../components/ToolBar";
+import { buildSearchBarFromUrl } from "../utils/helperFunctions";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
-import {
-  buildSearchIndex,
-  searchEmails,
-  isSearchIndexReady,
-  initializeSearchIndex,
-  advancedSearchWithFullData,
-  createSearchSummary,
-} from "../utils/search";
-import { buildSearchBarFromUrl } from "../utils/helperFunctions";
-import SearchResultFilters from "../components/SearchResultFilters";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 const SearchResultsView = () => {
-  const { emails, currentPage, itemsPerPage } = useContext(GlobalContext);
+  const { emails, currentPage, itemsPerPage } = useGlobalContext();
   const location = useLocation();
   const navigate = useNavigate();
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);

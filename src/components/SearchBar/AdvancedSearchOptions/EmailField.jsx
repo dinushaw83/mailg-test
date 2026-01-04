@@ -1,6 +1,6 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
 import { Autocomplete, Stack, TextField, Box, Avatar, Typography } from "@mui/material";
-import { GlobalContext } from "../../../contexts/GlobalContext";
+import { useGlobalContext } from "../../../contexts/GlobalContext";
 import { generateAvatarColor } from "../../../utils/helperFunctions";
 
 const InputStyle = {
@@ -22,7 +22,7 @@ const InputStyle = {
 };
 
 const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
-  const { recipients: globalRecipients } = useContext(GlobalContext);
+  const { recipients: globalRecipients } = useGlobalContext();
   const [inputValue, setInputValue] = useState("");
   const [confirmedEmails, setConfirmedEmails] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
