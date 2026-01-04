@@ -1,0 +1,122 @@
+[
+  {
+    "id": "00000000-0000-0000-0005-000000000001",
+    "email_id": "00000000-0000-0000-0004-000000000001",
+    "recipient_id": "00000000-0000-0000-0000-000000000002",
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000002",
+    "email_id": "00000000-0000-0000-0004-000000000001",
+    "recipient_id": "00000000-0000-0000-0000-000000000003",
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000003",
+    "email_id": "00000000-0000-0000-0004-000000000002",
+    "recipient_id": "00000000-0000-0000-0000-000000000001",
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000004",
+    "email_id": "00000000-0000-0000-0004-000000000002",
+    "recipient_id": "00000000-0000-0000-0000-000000000003",
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "cc"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000005",
+    "email_id": "00000000-0000-0000-0004-000000000003",
+    "recipient_id": "00000000-0000-0000-0000-000000000001",
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000006",
+    "email_id": "00000000-0000-0000-0004-000000000003",
+    "recipient_id": "00000000-0000-0000-0000-000000000002",
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "cc"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000007",
+    "email_id": "00000000-0000-0000-0004-000000000004",
+    "recipient_id": "00000000-0000-0000-0000-000000000002",
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000008",
+    "email_id": "00000000-0000-0000-0004-000000000005",
+    "recipient_id": "00000000-0000-0000-0000-000000000001",
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000009",
+    "email_id": "00000000-0000-0000-0004-000000000006",
+    "recipient_id": "00000000-0000-0000-0000-000000000002",
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000010",
+    "email_id": "00000000-0000-0000-0004-000000000007",
+    "recipient_id": "00000000-0000-0000-0000-000000000003",
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000011",
+    "email_id": "00000000-0000-0000-0004-000000000008",
+    "recipient_id": "00000000-0000-0000-0000-000000000002",
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000012",
+    "email_id": "00000000-0000-0000-0004-000000000009",
+    "recipient_id": "00000000-0000-0000-0000-000000000003",
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000013",
+    "email_id": "00000000-0000-0000-0004-000000000010",
+    "recipient_id": "00000000-0000-0000-0000-000000000003",
+    "recipient_email": "jane@example.com",
+    "recipient_name": "Jane Doe",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000014",
+    "email_id": "00000000-0000-0000-0004-000000000011",
+    "recipient_id": "00000000-0000-0000-0000-000000000002",
+    "recipient_email": "john@example.com",
+    "recipient_name": "John Smith",
+    "recipient_type": "to"
+  },
+  {
+    "id": "00000000-0000-0000-0005-000000000015",
+    "email_id": "00000000-0000-0000-0004-000000000012",
+    "recipient_id": "00000000-0000-0000-0000-000000000001",
+    "recipient_email": "admin@example.com",
+    "recipient_name": "Admin User",
+    "recipient_type": "to"
+  }
+]

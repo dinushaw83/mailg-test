@@ -1,0 +1,32 @@
+[
+  {
+    "id": "00000000-0000-0000-0007-000000000001",
+    "email_id": "00000000-0000-0000-0004-000000000004",
+    "filename": "Q4_Report_2024.pdf",
+    "content_type": "application/pdf",
+    "size_bytes": 2048576,
+    "storage_path": "/attachments/q4_report_2024.pdf",
+    "attachment_type": "document",
+    "is_deleted": false
+  },
+  {
+    "id": "00000000-0000-0000-0007-000000000002",
+    "email_id": "00000000-0000-0000-0004-000000000004",
+    "filename": "Financial_Summary.xlsx",
+    "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "size_bytes": 512000,
+    "storage_path": "/attachments/financial_summary.xlsx",
+    "attachment_type": "document",
+    "is_deleted": false
+  },
+  {
+    "id": "00000000-0000-0000-0007-000000000003",
+    "email_id": "00000000-0000-0000-0004-000000000001",
+    "filename": "project_timeline.png",
+    "content_type": "image/png",
+    "size_bytes": 156000,
+    "storage_path": "/attachments/project_timeline.png",
+    "attachment_type": "image",
+    "is_deleted": false
+  }
+]
