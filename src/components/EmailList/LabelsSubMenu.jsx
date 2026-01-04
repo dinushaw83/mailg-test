@@ -1,13 +1,14 @@
-import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
+
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
 import Divider from "@mui/material/Divider";
 import TextField from "@mui/material/TextField";
-import Checkbox from "@mui/material/Checkbox";
+import Typography from "@mui/material/Typography";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
-import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
-import Button from "@mui/material/Button";
 
 export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
   const [searchQuery, setSearchQuery] = useState("");

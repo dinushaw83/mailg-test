@@ -1,6 +1,9 @@
 import "./index.css";
 
 import App from "./App.jsx";
+// Initialize telemetry first (before other imports)
+import "./telemetry.js";
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import setupLocator from "@locator/runtime";

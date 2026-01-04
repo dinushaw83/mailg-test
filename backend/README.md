@@ -345,6 +345,7 @@ Note: This mailg uses email-based authentication without passwords. Roles corres
 - `POST /api/v1/emails/{id}/move` - Move to folder
 - `POST /api/v1/emails/{id}/snooze` - Snooze until specified time
 - `POST /api/v1/emails/{id}/unsnooze` - Unsnooze email
+- `POST /api/v1/emails/{id}/archive` - Archive email
 - `POST /api/v1/emails/{id}/labels` - Add label to email
 - `DELETE /api/v1/emails/{id}/labels/{label_id}` - Remove label
 
