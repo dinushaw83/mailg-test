@@ -1,0 +1,1066 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Mailg Database Schema",
+  "description": "Database schema for Mailg - An email application",
+  "version": "1.0.0",
+  "generatedAt": "2026-01-04T00:00:00.000000Z",
+  "type": "object",
+  "properties": {
+    "tables": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "first_name": {
+              "type": "string",
+              "nullable": false
+            },
+            "last_name": {
+              "type": "string",
+              "nullable": false
+            },
+            "email": {
+              "type": "string",
+              "nullable": false,
+              "unique": true,
+              "indexed": true
+            },
+            "email_label": {
+              "type": "string",
+              "nullable": true,
+              "default": "Home"
+            },
+            "role": {
+              "type": "string",
+              "nullable": false,
+              "indexed": true,
+              "enum": [
+                "admin",
+                "user"
+              ]
+            },
+            "photo": {
+              "type": "string",
+              "nullable": true
+            },
+            "company": {
+              "type": "string",
+              "nullable": true
+            },
+            "job_title": {
+              "type": "string",
+              "nullable": true
+            },
+            "phone": {
+              "type": "string",
+              "nullable": true
+            },
+            "phone_country_code": {
+              "type": "string",
+              "nullable": true,
+              "default": "+1"
+            },
+            "phone_label": {
+              "type": "string",
+              "nullable": true,
+              "default": "Mobile"
+            },
+            "address": {
+              "type": "string",
+              "nullable": true
+            },
+            "birthday_month": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true
+            },
+            "birthday_day": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true
+            },
+            "birthday_year": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true
+            },
+            "significant_dates": {
+              "type": "object",
+              "nullable": true
+            },
+            "website": {
+              "type": "string",
+              "nullable": true
+            },
+            "related_persons": {
+              "type": "object",
+              "nullable": true
+            },
+            "labels": {
+              "type": "object",
+              "nullable": true
+            },
+            "custom_fields": {
+              "type": "object",
+              "nullable": true
+            },
+            "notes": {
+              "type": "string",
+              "nullable": true
+            },
+            "undo_send_delay_seconds": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true,
+              "default": 10
+            },
+            "active": {
+              "type": "boolean",
+              "nullable": false,
+              "default": true,
+              "indexed": true
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "role",
+            "active",
+            "is_deleted",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "folders": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": false
+            },
+            "folder_type": {
+              "type": "string",
+              "nullable": false,
+              "default": "custom",
+              "indexed": true,
+              "enum": [
+                "inbox",
+                "sent",
+                "drafts",
+                "trash",
+                "spam",
+                "starred",
+                "custom"
+              ]
+            },
+            "color": {
+              "type": "string",
+              "nullable": true
+            },
+            "icon": {
+              "type": "string",
+              "nullable": true
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "parent_folder_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "foreignKey": "folders.id"
+            },
+            "is_system": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "folder_type",
+            "owner_id",
+            "is_system",
+            "is_deleted",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "threads": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "subject": {
+              "type": "string",
+              "nullable": false
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "participant_count": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": false,
+              "default": 1
+            },
+            "email_count": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": false,
+              "default": 0
+            },
+            "last_email_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "subject",
+            "owner_id",
+            "participant_count",
+            "email_count",
+            "is_deleted",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "emails": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "subject": {
+              "type": "string",
+              "nullable": false,
+              "maxLength": 500
+            },
+            "body": {
+              "type": "string",
+              "nullable": true
+            },
+            "html_body": {
+              "type": "string",
+              "nullable": true
+            },
+            "status": {
+              "type": "string",
+              "nullable": false,
+              "default": "draft",
+              "indexed": true,
+              "enum": [
+                "draft",
+                "queued",
+                "sent",
+                "received",
+                "archived",
+                "cancelled"
+              ]
+            },
+            "is_read": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "is_starred": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "is_important": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false
+            },
+            "category": {
+              "type": "string",
+              "nullable": false,
+              "maxLength": 50,
+              "default": "primary",
+              "indexed": true,
+              "enum": [
+                "primary",
+                "promotions",
+                "social",
+                "updates",
+                "forums"
+              ]
+            },
+            "snooze_until": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "indexed": true
+            },
+            "scheduled_send_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "indexed": true
+            },
+            "sender_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "thread_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "foreignKey": "threads.id",
+              "indexed": true
+            },
+            "folder_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "foreignKey": "folders.id",
+              "indexed": true
+            },
+            "parent_email_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "foreignKey": "emails.id"
+            },
+            "sent_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "received_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "subject",
+            "status",
+            "is_read",
+            "is_starred",
+            "is_important",
+            "category",
+            "sender_id",
+            "is_deleted",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "email_recipients": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true
+            },
+            "email_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "emails.id",
+              "onDelete": "CASCADE",
+              "indexed": true
+            },
+            "recipient_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "foreignKey": "users.id",
+              "onDelete": "SET NULL",
+              "indexed": true
+            },
+            "recipient_email": {
+              "type": "string",
+              "nullable": false
+            },
+            "recipient_name": {
+              "type": "string",
+              "nullable": true
+            },
+            "recipient_type": {
+              "type": "string",
+              "nullable": false,
+              "enum": [
+                "to",
+                "cc",
+                "bcc"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "email_id",
+            "recipient_email",
+            "recipient_type"
+          ]
+        },
+        "attachments": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "email_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "emails.id",
+              "onDelete": "CASCADE",
+              "indexed": true
+            },
+            "filename": {
+              "type": "string",
+              "nullable": false,
+              "maxLength": 255
+            },
+            "content_type": {
+              "type": "string",
+              "nullable": true
+            },
+            "size_bytes": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true
+            },
+            "storage_path": {
+              "type": "string",
+              "nullable": true
+            },
+            "attachment_type": {
+              "type": "string",
+              "nullable": false,
+              "default": "file",
+              "enum": [
+                "file",
+                "image",
+                "document"
+              ]
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "email_id",
+            "filename",
+            "attachment_type",
+            "is_deleted",
+            "created_at"
+          ]
+        },
+        "labels": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": false,
+              "maxLength": 100
+            },
+            "color": {
+              "type": "string",
+              "nullable": true
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "parent_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true,
+              "foreignKey": "labels.id",
+              "indexed": true
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "owner_id",
+            "is_deleted",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "email_labels": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true
+            },
+            "email_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "emails.id",
+              "onDelete": "CASCADE",
+              "indexed": true
+            },
+            "label_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "labels.id",
+              "onDelete": "CASCADE",
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "email_id",
+            "label_id",
+            "created_at"
+          ],
+          "uniqueConstraints": [
+            [
+              "email_id",
+              "label_id"
+            ]
+          ]
+        },
+        "email_templates": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": false,
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "nullable": true,
+              "maxLength": 500
+            },
+            "subject": {
+              "type": "string",
+              "nullable": true,
+              "maxLength": 500
+            },
+            "body": {
+              "type": "string",
+              "nullable": true
+            },
+            "html_body": {
+              "type": "string",
+              "nullable": true
+            },
+            "is_shared": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "is_shared",
+            "owner_id",
+            "is_deleted",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "saved_searches": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": false
+            },
+            "query": {
+              "type": "string",
+              "nullable": false
+            },
+            "filters": {
+              "type": "object",
+              "nullable": true
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "use_count": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": false,
+              "default": 0
+            },
+            "last_used_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "query",
+            "owner_id",
+            "use_count",
+            "is_deleted",
+            "created_at",
+            "updated_at"
+          ]
+        },
+        "api_logs": {
+          "properties": {
+            "id": {
+              "type": "integer",
+              "subtype": "bigint",
+              "nullable": false,
+              "primaryKey": true,
+              "indexed": true
+            },
+            "timestamp": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()",
+              "indexed": true
+            },
+            "level": {
+              "type": "string",
+              "nullable": false,
+              "indexed": true,
+              "enum": [
+                "INFO",
+                "WARNING",
+                "ERROR"
+              ]
+            },
+            "operation": {
+              "type": "string",
+              "nullable": false,
+              "indexed": true,
+              "enum": [
+                "CREATE",
+                "READ",
+                "UPDATE",
+                "DELETE",
+                "RESTORE"
+              ]
+            },
+            "resource": {
+              "type": "string",
+              "nullable": false,
+              "indexed": true
+            },
+            "resource_id": {
+              "type": "string",
+              "nullable": true,
+              "indexed": true
+            },
+            "method": {
+              "type": "string",
+              "nullable": false
+            },
+            "endpoint": {
+              "type": "string",
+              "nullable": false
+            },
+            "status_code": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true,
+              "indexed": true
+            },
+            "user_id": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true,
+              "indexed": true
+            },
+            "ip_address": {
+              "type": "string",
+              "nullable": true
+            },
+            "request_data": {
+              "type": "object",
+              "nullable": true
+            },
+            "response_data": {
+              "type": "object",
+              "nullable": true
+            },
+            "error_message": {
+              "type": "string",
+              "nullable": true
+            },
+            "duration_ms": {
+              "type": "integer",
+              "subtype": "smallint",
+              "nullable": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": false,
+              "format": "date-time",
+              "default": "now()",
+              "indexed": true
+            }
+          },
+          "required": [
+            "id",
+            "timestamp",
+            "level",
+            "operation",
+            "resource",
+            "method",
+            "endpoint",
+            "created_at"
+          ]
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "default": [
+        {
+          "from_table": "folders",
+          "from_column": "owner_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "folders",
+          "from_column": "parent_folder_id",
+          "to_table": "folders",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "threads",
+          "from_column": "owner_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "emails",
+          "from_column": "sender_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "emails",
+          "from_column": "thread_id",
+          "to_table": "threads",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "emails",
+          "from_column": "folder_id",
+          "to_table": "folders",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "emails",
+          "from_column": "parent_email_id",
+          "to_table": "emails",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "email_recipients",
+          "from_column": "email_id",
+          "to_table": "emails",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "email_recipients",
+          "from_column": "recipient_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "SET NULL"
+        },
+        {
+          "from_table": "attachments",
+          "from_column": "email_id",
+          "to_table": "emails",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "labels",
+          "from_column": "owner_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "labels",
+          "from_column": "parent_id",
+          "to_table": "labels",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "email_labels",
+          "from_column": "email_id",
+          "to_table": "emails",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "email_labels",
+          "from_column": "label_id",
+          "to_table": "labels",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "email_templates",
+          "from_column": "owner_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "saved_searches",
+          "from_column": "owner_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        }
+      ]
+    }
+  }
+}
