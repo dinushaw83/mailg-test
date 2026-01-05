@@ -4,7 +4,7 @@ export const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFO
 // Import judges.json
 // Vite handles this automatically. For Node.js contexts that require 'with', 
 // we handle it via other means or use a fallback.
-import judgesDataRaw from '../../data/judges.json';
+import judgesDataRaw from '../../data/judges.json' assert { type: 'json' };
 
 // Handle both default export and named export formats
 const judgesData = judgesDataRaw.default || judgesDataRaw;
