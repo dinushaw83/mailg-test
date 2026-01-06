@@ -61,6 +61,21 @@ class BulkCategoryRequest(BulkEmailIds):
     category: str = Field(..., description="Email category: primary, promotions, social, updates, forums")
 
 
+class BulkUnarchiveRequest(BulkEmailIds):
+    """Schema for bulk unarchive emails."""
+    pass
+
+
+class BulkSpamRequest(BulkEmailIds):
+    """Schema for bulk mark as spam."""
+    pass
+
+
+class BulkUnspamRequest(BulkEmailIds):
+    """Schema for bulk unmark as spam."""
+    pass
+
+
 class BulkOperationResult(BaseModel):
     """Result of a single item in bulk operation."""
     id: UUID = Field(..., description="Email ID")

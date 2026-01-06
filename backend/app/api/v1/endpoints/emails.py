@@ -114,7 +114,6 @@ def format_email_response(email: Email) -> dict:
         "subject": email.subject,
         "body": email.body,
         "html_body": email.html_body,
-        "status": email.status,
         "folder": email.folder or FolderType.INBOX.value,
         "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
@@ -163,7 +162,6 @@ def format_email_list_response(email: Email) -> dict:
         "id": email.id,
         "subject": email.subject,
         "snippet": get_snippet(email.body),
-        "status": email.status,
         "folder": email.folder or FolderType.INBOX.value,
         "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
@@ -218,20 +216,31 @@ def create_email(
         # Email is scheduled for later - queue it
         email_status = EmailStatus.QUEUED.value
     
-    # Create email
-    email = Email(
-        subject=email_data.subject,
-        body=email_data.body,
-        html_body=email_data.html_body,
-        status=email_status,
-        folder=email_folder,
-        sender_id=current_user.id,
-        is_read=True,  # Sender has read their own email
-        sent_at=None if email_data.is_draft or scheduled_send_at else datetime.utcnow(),
-        scheduled_send_at=scheduled_send_at,
-    )
-    
     try:
+        # Create a new thread for this email (new conversation)
+        thread = Thread(
+            subject=email_data.subject or "(No Subject)",
+            owner_id=current_user.id,
+            participant_count=len(email_data.recipients) + 1,
+            email_count=1,
+            last_email_at=datetime.utcnow(),
+        )
+        db.add(thread)
+        db.flush()  # Get thread ID
+        
+        # Create email with thread
+        email = Email(
+            subject=email_data.subject,
+            body=email_data.body,
+            html_body=email_data.html_body,
+            status=email_status,
+            folder=email_folder,
+            sender_id=current_user.id,
+            thread_id=thread.id,
+            is_read=True,  # Sender has read their own email
+            sent_at=None if email_data.is_draft or scheduled_send_at else datetime.utcnow(),
+            scheduled_send_at=scheduled_send_at,
+        )
         db.add(email)
         db.flush()  # Get email ID
         
@@ -295,13 +304,14 @@ def list_emails(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    folder: Optional[str] = Query(None, description="Filter by folder: inbox, sent, drafts, trash, spam, starred"),
+    folder: Optional[FolderType] = Query(None, description="Filter by folder"),
     thread_id: Optional[UUID] = Query(None, description="Filter by thread ID to get all emails in a conversation"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    category: Optional[str] = Query(None, description="Filter by category (primary, promotions, social, updates, forums)"),
+    category: Optional[EmailCategory] = Query(None, description="Filter by category"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
     is_starred: Optional[bool] = Query(None, description="Filter by starred"),
     is_snoozed: Optional[bool] = Query(None, description="Filter by snoozed status (True=snoozed, False=not snoozed)"),
+    is_important: Optional[bool] = Query(None, description="Filter by important"),
+    include_archived: Optional[bool] = Query(False, description="Include archived emails"),
     search: Optional[str] = Query(None, description="Search in subject and body"),
 ) -> dict:
     """List emails with pagination and filtering.
@@ -330,21 +340,13 @@ def list_emails(
     
     # Apply folder filter
     if folder:
-        if folder not in VALID_FOLDER_TYPES:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
-            )
-        query = query.filter(Email.folder == folder)
+        query = query.filter(Email.folder == folder.value)
     
     if thread_id:
         query = query.filter(Email.thread_id == thread_id)
     
-    if status:
-        query = query.filter(Email.status == status)
-    
     if category:
-        query = query.filter(Email.category == category)
+        query = query.filter(Email.category == category.value)
     
     if is_read is not None:
         query = query.filter(Email.is_read == is_read)
@@ -367,6 +369,12 @@ def list_emails(
                     Email.snooze_until <= datetime.utcnow()
                 )
             )
+    
+    if is_important is not None:
+        query = query.filter(Email.is_important == is_important)
+    
+    if include_archived is False:
+        query = query.filter(Email.status != EmailStatus.ARCHIVED.value)
     
     if search:
         search_term = f"%{search}%"
@@ -1382,6 +1390,193 @@ def archive_email(
         raise
     
     logger.info(f"Email {email.id} archived by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+@router.post("/emails/{email_id}/unarchive", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def unarchive_email(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Unarchive an email.
+    
+    Restores an archived email back to its original folder (inbox for received, sent for sent emails).
+    
+    Permissions:
+    - Users can only unarchive their own emails (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.status != EmailStatus.ARCHIVED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is not archived"
+        )
+    
+    # Restore to original status based on whether user sent or received it
+    if email.sender_id == current_user.id:
+        email.status = EmailStatus.SENT.value
+    else:
+        email.status = EmailStatus.RECEIVED.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} unarchived by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+@router.post("/emails/{email_id}/spam", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def mark_email_spam(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Mark an email as spam.
+    
+    Moves the email to the spam folder.
+    
+    Permissions:
+    - Users can only mark their own emails as spam (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.folder == FolderType.SPAM.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is already marked as spam"
+        )
+    
+    email.folder = FolderType.SPAM.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} marked as spam by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+@router.post("/emails/{email_id}/unspam", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def unmark_email_spam(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Remove spam mark from an email.
+    
+    Moves the email from spam folder back to inbox.
+    
+    Permissions:
+    - Users can only unmark their own emails from spam (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.folder != FolderType.SPAM.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is not in spam folder"
+        )
+    
+    email.folder = FolderType.INBOX.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} removed from spam by user {current_user.id}")
     
     return format_email_response(email)
 

@@ -6,6 +6,7 @@ from datetime import datetime
 from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
+from app.core.constants import EmailCategory, FolderType
 
 
 class EmailRecipientSchema(BaseModel):
@@ -25,7 +26,6 @@ class EmailCreate(BaseModel):
     body: Optional[str] = Field(None, description="Plain text body")
     html_body: Optional[str] = Field(None, description="HTML body")
     recipients: List[EmailRecipientSchema] = Field(default_factory=list, description="List of recipients")
-    category: Optional[str] = Field("primary", description="Email category: primary, promotions, social, updates, forums")
     is_draft: bool = Field(False, description="Save as draft instead of sending")
     scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time (for undo send feature)")
     
@@ -134,7 +134,6 @@ class EmailResponse(BaseModel):
     subject: str
     body: Optional[str] = None
     html_body: Optional[str] = None
-    status: str
     folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, starred
     category: Optional[str] = "primary"
     is_read: bool
@@ -165,9 +164,8 @@ class EmailListResponse(BaseModel):
     id: UUID
     subject: str
     snippet: Optional[str] = None  # Preview of body
-    status: str
-    folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, starred
-    category: Optional[str] = "primary"
+    folder: Optional[FolderType] = FolderType.INBOX
+    category: Optional[EmailCategory] = EmailCategory.PRIMARY
     is_read: bool
     is_starred: bool
     is_important: bool
