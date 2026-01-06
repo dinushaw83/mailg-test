@@ -448,7 +448,7 @@ class TestTemplateApply:
         
         response = client.post(
             f"/api/v1/templates/{sample_template.id}/apply",
-            json={"template_id": sample_template.id},
+            json={"template_id": str(sample_template.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -465,7 +465,7 @@ class TestTemplateApply:
         response = client.post(
             f"/api/v1/templates/{sample_template.id}/apply",
             json={
-                "template_id": sample_template.id,
+                "template_id": str(sample_template.id),
                 "recipients": [
                     {"email": "recipient@example.com", "name": "Test Recipient", "type": "to"}
                 ]
@@ -485,7 +485,7 @@ class TestTemplateApply:
         response = client.post(
             f"/api/v1/templates/{sample_template.id}/apply",
             json={
-                "template_id": sample_template.id,
+                "template_id": str(sample_template.id),
                 "additional_body": "P.S. Additional message"
             },
             headers={"Authorization": f"Bearer {token}"}
@@ -501,7 +501,7 @@ class TestTemplateApply:
         
         response = client.post(
             f"/api/v1/templates/{sample_shared_template.id}/apply",
-            json={"template_id": sample_shared_template.id},
+            json={"template_id": str(sample_shared_template.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         

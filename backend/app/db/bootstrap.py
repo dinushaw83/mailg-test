@@ -13,7 +13,6 @@ from typing import List, Optional
 
 from sqlalchemy.orm import sessionmaker
 
-from app.db.session import engine
 from app.db.base import Base
 from app.models.user import User
 from app.models.folder import Folder
@@ -115,6 +114,9 @@ def initialize_template_database_schema_and_fixtures():
     Drops all existing tables and recreates them with fresh fixtures
     to ensure schema is always up to date.
     """
+    # Lazy import to avoid database connection during module import
+    from app.db.session import engine
+    
     # Drop all existing tables first to ensure fresh schema
     logger.info("Dropping all existing tables for fresh schema...")
     Base.metadata.drop_all(bind=engine)

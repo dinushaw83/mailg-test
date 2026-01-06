@@ -37,7 +37,7 @@ class TestBulkRead:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/read",
@@ -75,7 +75,7 @@ class TestBulkRead:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/read",
@@ -167,7 +167,7 @@ class TestBulkStar:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/star",
@@ -203,7 +203,7 @@ class TestBulkStar:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/star",
@@ -237,11 +237,11 @@ class TestBulkMove:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/move",
-            json={"email_ids": email_ids, "folder_id": sample_trash_folder.id},
+            json={"email_ids": email_ids, "folder_id": str(sample_trash_folder.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -299,7 +299,7 @@ class TestBulkDelete:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/delete",
@@ -334,7 +334,7 @@ class TestBulkDelete:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/delete",
@@ -382,11 +382,11 @@ class TestBulkLabels:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/labels/add",
-            json={"email_ids": email_ids, "label_ids": [sample_label.id, label2.id]},
+            json={"email_ids": email_ids, "label_ids": [str(sample_label.id), str(label2.id)]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -448,11 +448,11 @@ class TestBulkLabels:
             db_session.add(email_label)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/labels/remove",
-            json={"email_ids": email_ids, "label_ids": [sample_label.id]},
+            json={"email_ids": email_ids, "label_ids": [str(sample_label.id)]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -489,7 +489,7 @@ class TestBulkSnooze:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
         
         response = client.post(
@@ -526,7 +526,7 @@ class TestBulkSnooze:
         
         response = client.post(
             "/api/v1/bulk/snooze",
-            json={"email_ids": [email.id], "snooze_until": snooze_time},
+            json={"email_ids": [str(email.id)], "snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -551,7 +551,7 @@ class TestBulkSnooze:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/unsnooze",
@@ -590,7 +590,7 @@ class TestBulkArchive:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/archive",
@@ -722,7 +722,7 @@ class TestBulkCategory:
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/category",
@@ -759,7 +759,7 @@ class TestBulkCategory:
             
             response = client.post(
                 "/api/v1/bulk/category",
-                json={"email_ids": [email.id], "category": category},
+                json={"email_ids": [str(email.id)], "category": category},
                 headers={"Authorization": f"Bearer {token}"}
             )
             
@@ -787,7 +787,7 @@ class TestBulkCategory:
         
         response = client.post(
             "/api/v1/bulk/category",
-            json={"email_ids": [email.id], "category": "invalid_category"},
+            json={"email_ids": [str(email.id)], "category": "invalid_category"},
             headers={"Authorization": f"Bearer {token}"}
         )
         

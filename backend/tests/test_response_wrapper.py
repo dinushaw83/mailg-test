@@ -77,8 +77,10 @@ class TestErrorResponseWrapping:
         """Test 404 Not Found is wrapped correctly."""
         client, token, user = client_with_auth
         
+        # Use a valid UUID format that doesn't exist
+        non_existent_uuid = "00000000-0000-0000-0000-000000000001"
         response = client.get(
-            "/api/v1/emails/99999",
+            f"/api/v1/emails/{non_existent_uuid}",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -122,7 +124,6 @@ class TestCRUDResponseWrapping:
         
         # Create a folder first
         folder = Folder(
-            id=100,
             name="Test Drafts",
             folder_type="drafts",
             owner_id=user.id,
@@ -154,7 +155,6 @@ class TestCRUDResponseWrapping:
         
         # Create folder
         folder = Folder(
-            id=101,
             name="Test Inbox",
             folder_type="inbox",
             owner_id=user.id,
@@ -194,7 +194,6 @@ class TestCRUDResponseWrapping:
         
         # Create folder
         folder = Folder(
-            id=102,
             name="Test Inbox",
             folder_type="inbox",
             owner_id=user.id,
@@ -224,7 +223,7 @@ class TestCRUDResponseWrapping:
         
         assert data["success"] is True
         assert data["statusCode"] == 200
-        assert data["data"]["id"] == email.id
+        assert data["data"]["id"] == str(email.id)
         assert data["data"]["subject"] == "Test Email"
 
 

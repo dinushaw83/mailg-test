@@ -241,7 +241,7 @@ class TestEmailOperations:
         
         response = client.post(
             f"/api/v1/emails/{sample_email.id}/move",
-            json={"folder_id": sample_trash_folder.id},
+            json={"folder_id": str(sample_trash_folder.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         

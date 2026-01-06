@@ -10,6 +10,7 @@ and cache results on `request.state` for reuse within the same request.
 
 from __future__ import annotations
 
+import uuid
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Request, status
@@ -35,7 +36,16 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
 
     token_data = require_token_data(request)
 
-    user = db.query(User).filter(User.id == token_data.user_id).first()
+    # Convert string UUID to UUID object for comparison
+    try:
+        user_id_uuid = uuid.UUID(token_data.user_id)
+    except (ValueError, TypeError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid user ID in token: {e}",
+        )
+
+    user = db.query(User).filter(User.id == user_id_uuid).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

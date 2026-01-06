@@ -39,13 +39,13 @@ class TestUserIdZeroValidation:
         """Test that creating token with user_id=0 is rejected"""
         manager = TokenManager()
         with pytest.raises(ValueError, match="user_id must be greater than 0"):
-            manager.create_token(user_id=0, role="admin", email="test@example.com")
+            manager.create_token(user_id="0", role="admin", email="test@example.com")
     
     def test_user_id_negative_rejected(self):
         """Test that negative user_id is rejected"""
         manager = TokenManager()
         with pytest.raises(ValueError, match="user_id must be greater than 0"):
-            manager.create_token(user_id=-1, role="admin", email="test@example.com")
+            manager.create_token(user_id="-1", role="admin", email="test@example.com")
     
     def test_user_id_zero_in_token_rejected_on_validation(self):
         """Test that token with user_id=0 is rejected during validation"""
@@ -189,7 +189,7 @@ class TestIntegrationJWTSecurity:
         
         # Create token
         token = manager.create_token(
-            user_id=123,
+            user_id="123",
             role="admin",
             email="admin@example.com",
             run_id="test-run-123"
@@ -198,7 +198,7 @@ class TestIntegrationJWTSecurity:
         # Validate immediately - should work
         token_data = manager.validate_token(token)
         assert token_data is not None
-        assert token_data.user_id == 123
+        assert token_data.user_id == "123"
         assert token_data.role == "admin"
         assert token_data.email == "admin@example.com"
         assert token_data.is_expired() is False

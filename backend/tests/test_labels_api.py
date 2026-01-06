@@ -49,7 +49,7 @@ class TestLabelCreate:
             json={
                 "name": "2025",
                 "color": "#34a853",
-                "parent_id": parent.id
+                "parent_id": str(parent.id)
             },
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -74,7 +74,7 @@ class TestLabelCreate:
         
         response = client.post(
             "/api/v1/labels",
-            json={"name": "App Launch", "parent_id": year_2025.id},
+            json={"name": "App Launch", "parent_id": str(year_2025.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -125,7 +125,7 @@ class TestLabelCreate:
         # Create "Reports" under Work
         response1 = client.post(
             "/api/v1/labels",
-            json={"name": "Reports", "parent_id": parent1.id},
+            json={"name": "Reports", "parent_id": str(parent1.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         assert response1.status_code == 201
@@ -133,7 +133,7 @@ class TestLabelCreate:
         # Create "Reports" under Personal (same name, different parent)
         response2 = client.post(
             "/api/v1/labels",
-            json={"name": "Reports", "parent_id": parent2.id},
+            json={"name": "Reports", "parent_id": str(parent2.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         assert response2.status_code == 201
@@ -274,7 +274,7 @@ class TestLabelOperations:
         
         response = client.post(
             f"/api/v1/emails/{sample_email.id}/labels",
-            json={"label_id": sample_label.id},
+            json={"label_id": str(sample_label.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -467,7 +467,7 @@ class TestNestedLabelOperations:
         # Move child to parent2
         response = client.put(
             f"/api/v1/labels/{child.id}",
-            json={"parent_id": parent2.id},
+            json={"parent_id": str(parent2.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -510,10 +510,10 @@ class TestNestedLabelOperations:
         db_session.add(child)
         db_session.commit()
         
-        # Move to root using null UUID (00000000-0000-0000-0000-000000000000)
+        # Move to root using null (None)
         response = client.put(
             f"/api/v1/labels/{child.id}",
-            json={"parent_id": "00000000-0000-0000-0000-000000000000"},
+            json={"parent_id": None},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -531,7 +531,7 @@ class TestNestedLabelOperations:
         
         response = client.put(
             f"/api/v1/labels/{label.id}",
-            json={"parent_id": label.id},
+            json={"parent_id": str(label.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -558,7 +558,7 @@ class TestNestedLabelOperations:
         # Try to set grandparent's parent as child (circular)
         response = client.put(
             f"/api/v1/labels/{grandparent.id}",
-            json={"parent_id": child.id},
+            json={"parent_id": str(child.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
