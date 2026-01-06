@@ -3,7 +3,6 @@
 from app.models.user import User
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.folder import Folder
 from app.models.label import Label
 from app.models.email_label import EmailLabel
 from app.models.attachment import Attachment
@@ -15,7 +14,6 @@ __all__ = [
     "User",
     "Email",
     "EmailRecipient",
-    "Folder",
     "Label",
     "EmailLabel",
     "Attachment",

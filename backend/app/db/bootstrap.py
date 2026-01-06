@@ -16,7 +16,6 @@ from sqlalchemy.orm import sessionmaker
 from app.db.session import engine
 from app.db.base import Base
 from app.models.user import User
-from app.models.folder import Folder
 from app.models.label import Label
 from app.models.thread import Thread
 from app.models.email import Email
@@ -31,10 +30,9 @@ logger = logging.getLogger(__name__)
 # Define UUID fields for each model to enable automatic parsing
 UUID_FIELDS = {
     'User': ['id'],
-    'Folder': ['id', 'owner_id', 'parent_folder_id'],
     'Label': ['id', 'owner_id', 'parent_id'],
     'Thread': ['id', 'owner_id'],
-    'Email': ['id', 'sender_id', 'thread_id', 'folder_id', 'parent_email_id'],
+    'Email': ['id', 'sender_id', 'thread_id', 'parent_email_id'],
     'EmailRecipient': ['id', 'email_id', 'recipient_id'],
     'EmailLabel': ['id', 'email_id', 'label_id'],
     'Attachment': ['id', 'email_id'],
@@ -115,8 +113,25 @@ def initialize_template_database_schema_and_fixtures():
     Drops all existing tables and recreates them with fresh fixtures
     to ensure schema is always up to date.
     """
+    from sqlalchemy import text
+    
     # Drop all existing tables first to ensure fresh schema
     logger.info("Dropping all existing tables for fresh schema...")
+    
+    # First, try to drop removed tables that may still exist (like folders)
+    # Using raw SQL with CASCADE to handle foreign key constraints
+    with engine.connect() as conn:
+        # Drop legacy tables that are no longer in our models
+        legacy_tables = ['folders']
+        for table_name in legacy_tables:
+            try:
+                conn.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))
+                conn.commit()
+                logger.info(f"Dropped legacy table: {table_name}")
+            except Exception as e:
+                logger.debug(f"Could not drop {table_name}: {e}")
+    
+    # Now drop all tables defined in our models
     Base.metadata.drop_all(bind=engine)
     logger.info("All tables dropped successfully")
     
@@ -135,10 +150,6 @@ def initialize_template_database_schema_and_fixtures():
         count = load_fixture(session, User, fixtures_dir / "users.json")
         logger.info(f"Loaded {count} new users from fixtures")
         
-        # Load folders (depends on users)
-        count = load_fixture(session, Folder, fixtures_dir / "folders.json")
-        logger.info(f"Loaded {count} new folders from fixtures")
-        
         # Load labels (depends on users)
         count = load_fixture(session, Label, fixtures_dir / "labels.json")
         logger.info(f"Loaded {count} new labels from fixtures")
@@ -151,7 +162,7 @@ def initialize_template_database_schema_and_fixtures():
         )
         logger.info(f"Loaded {count} new threads from fixtures")
         
-        # Load emails (depends on users, folders, threads)
+        # Load emails (depends on users, threads)
         count = load_fixture(
             session, Email,
             fixtures_dir / "emails.json",

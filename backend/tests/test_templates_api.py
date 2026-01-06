@@ -442,13 +442,13 @@ class TestTemplateOperations:
 class TestTemplateApply:
     """Test applying templates to create emails."""
 
-    def test_apply_template_success(self, client_with_auth, sample_template, sample_drafts_folder):
+    def test_apply_template_success(self, client_with_auth, sample_template):
         """Test applying a template to create a draft email."""
         client, token, user = client_with_auth
         
         response = client.post(
             f"/api/v1/templates/{sample_template.id}/apply",
-            json={"template_id": sample_template.id},
+            json={"template_id": str(sample_template.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -458,14 +458,14 @@ class TestTemplateApply:
         assert data["body"] == sample_template.body
         assert data["status"] == "draft"
 
-    def test_apply_template_with_recipients(self, client_with_auth, sample_template, sample_drafts_folder):
+    def test_apply_template_with_recipients(self, client_with_auth, sample_template):
         """Test applying a template with recipients."""
         client, token, user = client_with_auth
         
         response = client.post(
             f"/api/v1/templates/{sample_template.id}/apply",
             json={
-                "template_id": sample_template.id,
+                "template_id": str(sample_template.id),
                 "recipients": [
                     {"email": "recipient@example.com", "name": "Test Recipient", "type": "to"}
                 ]
@@ -478,14 +478,14 @@ class TestTemplateApply:
         assert len(data["recipients"]) == 1
         assert data["recipients"][0]["email"] == "recipient@example.com"
 
-    def test_apply_template_with_additional_body(self, client_with_auth, sample_template, sample_drafts_folder):
+    def test_apply_template_with_additional_body(self, client_with_auth, sample_template):
         """Test applying a template with additional content."""
         client, token, user = client_with_auth
         
         response = client.post(
             f"/api/v1/templates/{sample_template.id}/apply",
             json={
-                "template_id": sample_template.id,
+                "template_id": str(sample_template.id),
                 "additional_body": "P.S. Additional message"
             },
             headers={"Authorization": f"Bearer {token}"}
@@ -495,19 +495,19 @@ class TestTemplateApply:
         data = response.json()["data"]
         assert "Additional message" in data["body"]
 
-    def test_apply_shared_template(self, client_with_auth, sample_shared_template, sample_drafts_folder):
+    def test_apply_shared_template(self, client_with_auth, sample_shared_template):
         """Test applying a shared template from another context."""
         client, token, user = client_with_auth
         
         response = client.post(
             f"/api/v1/templates/{sample_shared_template.id}/apply",
-            json={"template_id": sample_shared_template.id},
+            json={"template_id": str(sample_shared_template.id)},
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 201
 
-    def test_apply_template_not_found(self, client_with_auth, sample_drafts_folder):
+    def test_apply_template_not_found(self, client_with_auth):
         """Test applying a non-existent template."""
         client, token, user = client_with_auth
         

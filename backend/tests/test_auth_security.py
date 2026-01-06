@@ -33,30 +33,30 @@ class TestTokenNoneHandling:
 
 
 class TestUserIdZeroValidation:
-    """Test that user_id=0 is rejected (#95, #122)"""
+    """Test that invalid user_id values are rejected"""
     
     def test_user_id_zero_rejected_in_token_creation(self):
         """Test that creating token with user_id=0 is rejected"""
         manager = TokenManager()
-        with pytest.raises(ValueError, match="user_id must be greater than 0"):
+        with pytest.raises(ValueError, match="user_id must be a non-empty string"):
             manager.create_token(user_id=0, role="admin", email="test@example.com")
     
-    def test_user_id_negative_rejected(self):
-        """Test that negative user_id is rejected"""
+    def test_user_id_whitespace_rejected(self):
+        """Test that whitespace-only user_id is rejected"""
         manager = TokenManager()
-        with pytest.raises(ValueError, match="user_id must be greater than 0"):
-            manager.create_token(user_id=-1, role="admin", email="test@example.com")
+        with pytest.raises(ValueError, match="user_id must be a non-empty string"):
+            manager.create_token(user_id="   ", role="admin", email="test@example.com")
     
-    def test_user_id_zero_in_token_rejected_on_validation(self):
-        """Test that token with user_id=0 is rejected during validation"""
+    def test_user_id_empty_in_token_rejected_on_validation(self):
+        """Test that token with empty user_id is rejected during validation"""
         manager = TokenManager()
         
-        # Manually create a token with user_id=0
+        # Manually create a token with empty user_id
         now = datetime.now(timezone.utc)
         expires_at = now + timedelta(hours=1)
         
         payload = {
-            "sub": "0",  # user_id as 0
+            "sub": "",  # empty user_id
             "email": "test@example.com",
             "role": "admin",
             "run_id": "test-run",
@@ -107,7 +107,7 @@ class TestTokenExpiryCheck:
         
         # Non-expired token
         token_data = TokenData(
-            user_id=123,
+            user_id="550e8400-e29b-41d4-a716-446655440000",
             role="admin",
             email="test@example.com",
             expires_at=now + timedelta(hours=1),
@@ -117,7 +117,7 @@ class TestTokenExpiryCheck:
         
         # Expired token
         expired_token_data = TokenData(
-            user_id=123,
+            user_id="550e8400-e29b-41d4-a716-446655440000",
             role="admin",
             email="test@example.com",
             expires_at=now - timedelta(hours=1),
@@ -131,7 +131,7 @@ class TestTokenExpiryCheck:
         
         # Token expires in 1 second
         token_data = TokenData(
-            user_id=123,
+            user_id="550e8400-e29b-41d4-a716-446655440000",
             role="admin",
             email="test@example.com",
             expires_at=now + timedelta(seconds=1),
@@ -152,7 +152,7 @@ class TestTimingAttackResistance:
         manager = TokenManager()
         
         # Create a valid token
-        token = manager.create_token(user_id=123, role="admin", email="test@example.com")
+        token = manager.create_token(user_id="550e8400-e29b-41d4-a716-446655440000", role="admin", email="test@example.com")
         
         # Time multiple validations
         valid_times = []
@@ -187,9 +187,10 @@ class TestIntegrationJWTSecurity:
         """Test creating, validating, and handling token throughout lifecycle"""
         manager = TokenManager()
         
-        # Create token
+        # Create token with UUID string
+        test_user_id = "550e8400-e29b-41d4-a716-446655440000"
         token = manager.create_token(
-            user_id=123,
+            user_id=test_user_id,
             role="admin",
             email="admin@example.com",
             run_id="test-run-123"
@@ -198,7 +199,7 @@ class TestIntegrationJWTSecurity:
         # Validate immediately - should work
         token_data = manager.validate_token(token)
         assert token_data is not None
-        assert token_data.user_id == 123
+        assert token_data.user_id == test_user_id
         assert token_data.role == "admin"
         assert token_data.email == "admin@example.com"
         assert token_data.is_expired() is False

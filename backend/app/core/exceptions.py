@@ -69,10 +69,26 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors and ensure CORS headers are included."""
+    # Serialize validation errors properly, handling any non-JSON-serializable objects
+    errors = []
+    for error in exc.errors():
+        serializable_error = {
+            "type": error.get("type"),
+            "loc": error.get("loc"),
+            "msg": str(error.get("msg", "")),
+        }
+        # Convert any non-serializable ctx values to strings
+        if "ctx" in error and error["ctx"]:
+            serializable_error["ctx"] = {
+                k: str(v) if not isinstance(v, (str, int, float, bool, type(None), list, dict)) else v
+                for k, v in error["ctx"].items()
+            }
+        errors.append(serializable_error)
+    
     content = wrap_error_response(
         message="Validation error",
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        data={"errors": exc.errors()}
+        data={"errors": errors}
     )
     response = JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

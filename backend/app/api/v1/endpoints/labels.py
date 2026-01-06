@@ -6,6 +6,7 @@ This module provides:
 - Email listing per label
 """
 
+from app.core.constants import ProhibitedLabels
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func
@@ -132,6 +133,13 @@ def create_label(
     - All authenticated users can create labels
     """
     current_user = auth.user
+    
+    # Validate label name
+    if label_data.name.strip().lower() in {pl.value for pl in ProhibitedLabels}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Label name {label_data.name} is prohibited"
+        )
     
     # Validate parent_id if provided
     if label_data.parent_id is not None:
@@ -381,6 +389,12 @@ def update_label(
     if "parent_id" in update_data:
         new_parent_id = update_data["parent_id"]
         
+        # Treat zero UUID as null (move to root)
+        zero_uuid = UUID("00000000-0000-0000-0000-000000000000")
+        if new_parent_id == zero_uuid:
+            new_parent_id = None
+            update_data["parent_id"] = None
+        
         if new_parent_id is not None:
             # Validate parent exists and belongs to user
             parent = db.query(Label).filter(
@@ -549,7 +563,6 @@ def list_label_emails(
     # Base query
     query = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.attachments),
         selectinload(Email.labels),
     ).join(

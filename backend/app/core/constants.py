@@ -20,15 +20,22 @@ class EmailStatus(str, Enum):
 
 
 class FolderType(str, Enum):
-    """Folder type enumeration."""
+    """Folder type enumeration (system folders only)."""
     INBOX = "inbox"
     SENT = "sent"
     DRAFTS = "drafts"
     TRASH = "trash"
     SPAM = "spam"
-    STARRED = "starred"
-    CUSTOM = "custom"
 
+class ProhibitedLabels(str, Enum):
+    """Prohibited label enumeration."""
+    SPAM = "spam"
+    TRASH = "trash"
+    DRAFTS = "drafts"
+    SENT = "sent"
+    INBOX = "inbox"
+    STARRED = "starred"
+    IMPORTANT = "important"
 
 class RecipientType(str, Enum):
     """Email recipient type enumeration."""

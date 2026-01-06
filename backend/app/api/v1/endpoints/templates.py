@@ -17,7 +17,6 @@ from app.db.session import get_db
 from app.models.email_template import EmailTemplate
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.folder import Folder
 from app.models.user import User
 from app.schemas.email_template import (
     EmailTemplateCreate, EmailTemplateUpdate, EmailTemplateResponse,
@@ -64,15 +63,6 @@ def format_template_list_response(template: EmailTemplate) -> dict:
         "created_at": template.created_at,
         "updated_at": template.updated_at,
     }
-
-
-def get_user_folder(db: Session, user_id: UUID, folder_type: str) -> Optional[Folder]:
-    """Get user's folder by type."""
-    return db.query(Folder).filter(
-        Folder.owner_id == user_id,
-        Folder.folder_type == folder_type,
-        Folder.is_deleted == False
-    ).first()
 
 
 @router.post("/templates", response_model=EmailTemplateResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -348,9 +338,6 @@ def apply_template(
             detail=f"Template {template_id} not found"
         )
     
-    # Get drafts folder
-    drafts_folder = get_user_folder(db, current_user.id, FolderType.DRAFTS.value)
-    
     # Create email body with optional additional content
     body = template.body or ""
     html_body = template.html_body
@@ -366,8 +353,8 @@ def apply_template(
         body=body,
         html_body=html_body,
         status=EmailStatus.DRAFT.value,
+        folder=FolderType.DRAFTS.value,
         sender_id=current_user.id,
-        folder_id=drafts_folder.id if drafts_folder else None,
         is_read=True,
     )
     
@@ -422,6 +409,7 @@ def apply_template(
         "body": email.body,
         "html_body": email.html_body,
         "status": email.status,
+        "folder": email.folder or "drafts",
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": email.is_important,
@@ -429,8 +417,6 @@ def apply_template(
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
         "recipients": recipients,
-        "folder_id": email.folder_id,
-        "folder_name": email.folder.name if email.folder else None,
         "thread_id": email.thread_id,
         "parent_email_id": email.parent_email_id,
         "sent_at": email.sent_at,

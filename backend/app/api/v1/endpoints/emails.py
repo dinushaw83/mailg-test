@@ -18,7 +18,6 @@ import logging
 from app.db.session import get_db
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.folder import Folder
 from app.models.label import Label
 from app.models.email_label import EmailLabel
 from app.models.attachment import Attachment
@@ -36,7 +35,7 @@ from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import (
     VALID_EMAIL_STATUSES, VALID_RECIPIENT_TYPES, VALID_EMAIL_CATEGORIES,
-    EmailStatus, FolderType, EmailCategory
+    VALID_FOLDER_TYPES, EmailStatus, FolderType, EmailCategory
 )
 
 logger = logging.getLogger(__name__)
@@ -71,35 +70,6 @@ def get_label_hierarchy_name(label) -> str:
     # Reverse to get grand -> parent -> child order
     parts.reverse()
     return "/".join(parts)
-
-
-# System label colors for different folder types
-SYSTEM_LABEL_COLORS = {
-    "inbox": "#1a73e8",    # Blue
-    "spam": "#d93025",     # Red
-    "trash": "#5f6368",    # Gray
-    "sent": "#1e8e3e",     # Green
-    "drafts": "#f9ab00",   # Amber
-    "starred": "#fbbc04",  # Yellow/Gold
-}
-
-
-def get_system_labels(email: Email) -> list:
-    """Get system labels derived from the email's folder type.
-    
-    Returns a list of system label dicts with name and color.
-    System labels represent folder-based categorization like Inbox, Spam, etc.
-    """
-    system_labels = []
-    
-    if email.folder and email.folder.folder_type and email.folder.folder_type != "custom":
-        folder_type = email.folder.folder_type
-        system_labels.append({
-            "name": folder_type.capitalize(),
-            "color": SYSTEM_LABEL_COLORS.get(folder_type),
-        })
-    
-    return system_labels
 
 
 def format_email_response(email: Email) -> dict:
@@ -144,8 +114,8 @@ def format_email_response(email: Email) -> dict:
         "subject": email.subject,
         "body": email.body,
         "html_body": email.html_body,
-        "status": email.status,
-        "category": email.category or "primary",
+        "folder": email.folder or FolderType.INBOX.value,
+        "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": email.is_important,
@@ -153,8 +123,6 @@ def format_email_response(email: Email) -> dict:
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
         "recipients": recipients,
-        "folder_id": email.folder_id,
-        "folder_name": email.folder.name if email.folder else None,
         "thread_id": email.thread_id,
         "parent_email_id": email.parent_email_id,
         "sent_at": email.sent_at,
@@ -166,7 +134,6 @@ def format_email_response(email: Email) -> dict:
         "attachment_count": len(attachments),
         "attachments": attachments,
         "labels": labels,
-        "system_labels": get_system_labels(email),
         "can_undo_send": can_undo,
     }
 
@@ -195,15 +162,14 @@ def format_email_list_response(email: Email) -> dict:
         "id": email.id,
         "subject": email.subject,
         "snippet": get_snippet(email.body),
-        "status": email.status,
-        "category": email.category or "primary",
+        "folder": email.folder or FolderType.INBOX.value,
+        "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": email.is_important,
         "sender_id": email.sender_id,
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
-        "folder_id": email.folder_id,
         "thread_id": email.thread_id,
         "sent_at": email.sent_at,
         "scheduled_send_at": email.scheduled_send_at,
@@ -212,18 +178,8 @@ def format_email_list_response(email: Email) -> dict:
         "attachment_count": attachment_count,
         "has_attachments": attachment_count > 0,
         "labels": labels,
-        "system_labels": get_system_labels(email),
         "can_undo_send": can_undo,
     }
-
-
-def get_user_folder(db: Session, user_id: UUID, folder_type: str) -> Optional[Folder]:
-    """Get user's folder by type."""
-    return db.query(Folder).filter(
-        Folder.owner_id == user_id,
-        Folder.folder_type == folder_type,
-        Folder.is_deleted == False
-    ).first()
 
 
 @router.post("/emails", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -246,25 +202,13 @@ def create_email(
                 detail=f"Invalid recipient type. Must be one of: {', '.join(VALID_RECIPIENT_TYPES)}"
             )
     
-    # Determine folder
+    # Determine status and folder
     if email_data.is_draft:
-        folder = get_user_folder(db, current_user.id, FolderType.DRAFTS.value)
         email_status = EmailStatus.DRAFT.value
+        email_folder = FolderType.DRAFTS.value
     else:
-        folder = get_user_folder(db, current_user.id, FolderType.SENT.value)
         email_status = EmailStatus.SENT.value
-    
-    if email_data.folder_id:
-        folder = db.query(Folder).filter(
-            Folder.id == email_data.folder_id,
-            Folder.owner_id == current_user.id,
-            Folder.is_deleted == False
-        ).first()
-        if not folder:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid folder ID"
-            )
+        email_folder = FolderType.SENT.value
     
     # Handle scheduled send (undo send feature)
     scheduled_send_at = email_data.scheduled_send_at
@@ -272,20 +216,31 @@ def create_email(
         # Email is scheduled for later - queue it
         email_status = EmailStatus.QUEUED.value
     
-    # Create email
-    email = Email(
-        subject=email_data.subject,
-        body=email_data.body,
-        html_body=email_data.html_body,
-        status=email_status,
-        sender_id=current_user.id,
-        folder_id=folder.id if folder else None,
-        is_read=True,  # Sender has read their own email
-        sent_at=None if email_data.is_draft or scheduled_send_at else datetime.utcnow(),
-        scheduled_send_at=scheduled_send_at,
-    )
-    
     try:
+        # Create a new thread for this email (new conversation)
+        thread = Thread(
+            subject=email_data.subject or "(No Subject)",
+            owner_id=current_user.id,
+            participant_count=len(email_data.recipients) + 1,
+            email_count=1,
+            last_email_at=datetime.utcnow(),
+        )
+        db.add(thread)
+        db.flush()  # Get thread ID
+        
+        # Create email with thread
+        email = Email(
+            subject=email_data.subject,
+            body=email_data.body,
+            html_body=email_data.html_body,
+            status=email_status,
+            folder=email_folder,
+            sender_id=current_user.id,
+            thread_id=thread.id,
+            is_read=True,  # Sender has read their own email
+            sent_at=None if email_data.is_draft or scheduled_send_at else datetime.utcnow(),
+            scheduled_send_at=scheduled_send_at,
+        )
         db.add(email)
         db.flush()  # Get email ID
         
@@ -308,14 +263,13 @@ def create_email(
             
             # If sending immediately (not draft, not queued), create received copy for recipients who are users
             if not email_data.is_draft and not scheduled_send_at and recipient_user:
-                recipient_folder = get_user_folder(db, recipient_user.id, FolderType.INBOX.value)
                 received_email = Email(
                     subject=email_data.subject,
                     body=email_data.body,
                     html_body=email_data.html_body,
                     status=EmailStatus.RECEIVED.value,
+                    folder=FolderType.INBOX.value,
                     sender_id=current_user.id,
-                    folder_id=recipient_folder.id if recipient_folder else None,
                     is_read=False,
                     received_at=datetime.utcnow(),
                     thread_id=email.thread_id,
@@ -350,14 +304,14 @@ def list_emails(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    folder_id: Optional[UUID] = Query(None, description="Filter by folder ID"),
-    folder_type: Optional[str] = Query(None, description="Filter by folder type"),
+    folder: Optional[FolderType] = Query(None, description="Filter by folder"),
     thread_id: Optional[UUID] = Query(None, description="Filter by thread ID to get all emails in a conversation"),
-    status: Optional[str] = Query(None, description="Filter by status"),
-    category: Optional[str] = Query(None, description="Filter by category (primary, promotions, social, updates, forums)"),
+    category: Optional[EmailCategory] = Query(None, description="Filter by category"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
     is_starred: Optional[bool] = Query(None, description="Filter by starred"),
     is_snoozed: Optional[bool] = Query(None, description="Filter by snoozed status (True=snoozed, False=not snoozed)"),
+    is_important: Optional[bool] = Query(None, description="Filter by important"),
+    include_archived: Optional[bool] = Query(False, description="Include archived emails"),
     search: Optional[str] = Query(None, description="Search in subject and body"),
 ) -> dict:
     """List emails with pagination and filtering.
@@ -370,7 +324,6 @@ def list_emails(
     # Base query - user's emails (sent by them or received by them)
     query = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.attachments),
         selectinload(Email.labels),
     ).filter(
@@ -385,26 +338,15 @@ def list_emails(
         )
     )
     
-    # Apply filters
-    if folder_id:
-        query = query.filter(Email.folder_id == folder_id)
-    
-    if folder_type:
-        folder_ids = db.query(Folder.id).filter(
-            Folder.owner_id == current_user.id,
-            Folder.folder_type == folder_type,
-            Folder.is_deleted == False
-        ).subquery()
-        query = query.filter(Email.folder_id.in_(folder_ids))
+    # Apply folder filter
+    if folder:
+        query = query.filter(Email.folder == folder.value)
     
     if thread_id:
         query = query.filter(Email.thread_id == thread_id)
     
-    if status:
-        query = query.filter(Email.status == status)
-    
     if category:
-        query = query.filter(Email.category == category)
+        query = query.filter(Email.category == category.value)
     
     if is_read is not None:
         query = query.filter(Email.is_read == is_read)
@@ -427,6 +369,12 @@ def list_emails(
                     Email.snooze_until <= datetime.utcnow()
                 )
             )
+    
+    if is_important is not None:
+        query = query.filter(Email.is_important == is_important)
+    
+    if include_archived is False:
+        query = query.filter(Email.status != EmailStatus.ARCHIVED.value)
     
     if search:
         search_term = f"%{search}%"
@@ -473,7 +421,6 @@ def get_email(
     
     email = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
         selectinload(Email.labels),
@@ -602,15 +549,12 @@ def delete_email(
         db.delete(email)
     else:
         # Check if already in trash
-        trash_folder = get_user_folder(db, current_user.id, FolderType.TRASH.value)
-        
-        if email.folder_id == (trash_folder.id if trash_folder else None):
+        if email.folder == FolderType.TRASH.value:
             # Already in trash, soft delete
             email.is_deleted = True
         else:
             # Move to trash
-            if trash_folder:
-                email.folder_id = trash_folder.id
+            email.folder = FolderType.TRASH.value
     
     try:
         db.commit()
@@ -669,15 +613,12 @@ def send_email(
     if undo_delay > 0:
         undo_delay = max(5, min(30, undo_delay))
     
-    sent_folder = get_user_folder(db, current_user.id, FolderType.SENT.value)
-    
     if undo_delay > 0:
         # Queue the email with scheduled send time (undo send enabled)
         from datetime import timedelta
         email.status = EmailStatus.QUEUED.value
         email.scheduled_send_at = datetime.utcnow() + timedelta(seconds=undo_delay)
-        if sent_folder:
-            email.folder_id = sent_folder.id
+        email.folder = FolderType.SENT.value
         
         try:
             db.commit()
@@ -692,8 +633,7 @@ def send_email(
     # Immediate send (undo send disabled)
     email.status = EmailStatus.SENT.value
     email.sent_at = datetime.utcnow()
-    if sent_folder:
-        email.folder_id = sent_folder.id
+    email.folder = FolderType.SENT.value
     
     # Create received copies for recipients who are users
     _deliver_email_to_recipients(db, email, current_user)
@@ -719,15 +659,14 @@ def _deliver_email_to_recipients(db: Session, email: Email, sender) -> None:
                 User.is_deleted == False
             ).first()
             if recipient_user:
-                recipient_folder = get_user_folder(db, recipient_user.id, FolderType.INBOX.value)
                 received_email = Email(
                     subject=email.subject,
                     body=email.body,
                     html_body=email.html_body,
                     status=EmailStatus.RECEIVED.value,
+                    folder=FolderType.INBOX.value,
                     category=email.category,
                     sender_id=sender.id,
-                    folder_id=recipient_folder.id if recipient_folder else None,
                     is_read=False,
                     received_at=datetime.utcnow(),
                     thread_id=email.thread_id,
@@ -759,7 +698,6 @@ def cancel_send(
     
     email = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
         selectinload(Email.labels),
@@ -789,11 +727,9 @@ def cancel_send(
         )
     
     # Move back to drafts
-    drafts_folder = get_user_folder(db, current_user.id, FolderType.DRAFTS.value)
     email.status = EmailStatus.DRAFT.value
     email.scheduled_send_at = None
-    if drafts_folder:
-        email.folder_id = drafts_folder.id
+    email.folder = FolderType.DRAFTS.value
     
     try:
         db.commit()
@@ -820,7 +756,6 @@ def confirm_send(
     
     email = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
         selectinload(Email.labels),
@@ -930,14 +865,13 @@ def reply_to_email(
         original_email.thread_id = thread_id
     
     # Create reply email
-    sent_folder = get_user_folder(db, current_user.id, FolderType.SENT.value)
     reply_email = Email(
         subject=subject,
         body=reply_data.body,
         html_body=reply_data.html_body,
         status=EmailStatus.SENT.value,
+        folder=FolderType.SENT.value,
         sender_id=current_user.id,
-        folder_id=sent_folder.id if sent_folder else None,
         thread_id=thread_id,
         parent_email_id=email_id,
         is_read=True,
@@ -966,14 +900,13 @@ def reply_to_email(
             
             # Create received copy
             if recipient_user:
-                recipient_folder = get_user_folder(db, recipient_user.id, FolderType.INBOX.value)
                 received_email = Email(
                     subject=subject,
                     body=reply_data.body,
                     html_body=reply_data.html_body,
                     status=EmailStatus.RECEIVED.value,
+                    folder=FolderType.INBOX.value,
                     sender_id=current_user.id,
-                    folder_id=recipient_folder.id if recipient_folder else None,
                     thread_id=thread_id,
                     parent_email_id=email_id,
                     is_read=False,
@@ -1036,14 +969,13 @@ def forward_email(
         html_body = (forward_data.html_body or "") + "<hr><p>---------- Forwarded message ---------</p>" + (original_email.html_body or "")
     
     # Create forward email
-    sent_folder = get_user_folder(db, current_user.id, FolderType.SENT.value)
     forward_email_obj = Email(
         subject=subject,
         body=body,
         html_body=html_body,
         status=EmailStatus.SENT.value,
+        folder=FolderType.SENT.value,
         sender_id=current_user.id,
-        folder_id=sent_folder.id if sent_folder else None,
         parent_email_id=email_id,
         is_read=True,
         sent_at=datetime.utcnow(),
@@ -1071,14 +1003,13 @@ def forward_email(
             
             # Create received copy
             if recipient_user:
-                recipient_folder = get_user_folder(db, recipient_user.id, FolderType.INBOX.value)
                 received_email = Email(
                     subject=subject,
                     body=body,
                     html_body=html_body,
                     status=EmailStatus.RECEIVED.value,
+                    folder=FolderType.INBOX.value,
                     sender_id=current_user.id,
-                    folder_id=recipient_folder.id if recipient_folder else None,
                     is_read=False,
                     received_at=datetime.utcnow(),
                 )
@@ -1179,6 +1110,13 @@ def move_email(
     """Move an email to a different folder."""
     current_user = auth.user
     
+    # Validate folder type
+    if move_data.folder not in VALID_FOLDER_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
+        )
+    
     email = db.query(Email).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1190,20 +1128,7 @@ def move_email(
             detail=f"Email {email_id} not found"
         )
     
-    # Verify folder belongs to user
-    folder = db.query(Folder).filter(
-        Folder.id == move_data.folder_id,
-        Folder.owner_id == current_user.id,
-        Folder.is_deleted == False
-    ).first()
-    
-    if not folder:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid folder ID"
-        )
-    
-    email.folder_id = folder.id
+    email.folder = move_data.folder
     
     try:
         db.commit()
@@ -1309,7 +1234,6 @@ def snooze_email(
     
     email = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
         selectinload(Email.labels),
@@ -1370,7 +1294,6 @@ def unsnooze_email(
     
     email = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
         selectinload(Email.labels),
@@ -1432,7 +1355,6 @@ def archive_email(
     
     email = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
         selectinload(Email.labels),
@@ -1472,6 +1394,193 @@ def archive_email(
     return format_email_response(email)
 
 
+@router.post("/emails/{email_id}/unarchive", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def unarchive_email(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Unarchive an email.
+    
+    Restores an archived email back to its original folder (inbox for received, sent for sent emails).
+    
+    Permissions:
+    - Users can only unarchive their own emails (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.status != EmailStatus.ARCHIVED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is not archived"
+        )
+    
+    # Restore to original status based on whether user sent or received it
+    if email.sender_id == current_user.id:
+        email.status = EmailStatus.SENT.value
+    else:
+        email.status = EmailStatus.RECEIVED.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} unarchived by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+@router.post("/emails/{email_id}/spam", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def mark_email_spam(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Mark an email as spam.
+    
+    Moves the email to the spam folder.
+    
+    Permissions:
+    - Users can only mark their own emails as spam (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.folder == FolderType.SPAM.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is already marked as spam"
+        )
+    
+    email.folder = FolderType.SPAM.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} marked as spam by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
+@router.post("/emails/{email_id}/unspam", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def unmark_email_spam(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Remove spam mark from an email.
+    
+    Moves the email from spam folder back to inbox.
+    
+    Permissions:
+    - Users can only unmark their own emails from spam (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.folder != FolderType.SPAM.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is not in spam folder"
+        )
+    
+    email.folder = FolderType.INBOX.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} removed from spam by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
 @router.patch("/emails/{email_id}/category", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def update_email_category(
     email_id: UUID,
@@ -1496,7 +1605,6 @@ def update_email_category(
     
     email = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
         selectinload(Email.labels),

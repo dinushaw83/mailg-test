@@ -3,7 +3,7 @@
 import pytest
 from datetime import datetime, timedelta
 from app.models.email import Email
-from app.models.folder import Folder
+from app.core.constants import FolderType
 from app.models.email_recipient import EmailRecipient
 
 
@@ -84,7 +84,7 @@ class TestUndoSendConfiguration:
 class TestSendWithUndoEnabled:
     """Test sending emails with undo send enabled."""
 
-    def test_send_email_queued_with_undo_enabled(self, client_with_auth, db_session, sample_drafts_folder, sample_sent_folder):
+    def test_send_email_queued_with_undo_enabled(self, client_with_auth, db_session):
         """Test that sending an email queues it when undo send is enabled."""
         client, token, user = client_with_auth
         
@@ -98,7 +98,7 @@ class TestSendWithUndoEnabled:
             body="Test body",
             status="draft",
             sender_id=user.id,
-            folder_id=sample_drafts_folder.id
+            folder=FolderType.DRAFTS.value
         )
         db_session.add(draft)
         db_session.commit()
@@ -127,7 +127,7 @@ class TestSendWithUndoEnabled:
         assert data["scheduled_send_at"] is not None
         assert data["can_undo_send"] == True
 
-    def test_send_email_immediate_with_undo_disabled(self, client_with_auth, db_session, sample_drafts_folder, sample_sent_folder):
+    def test_send_email_immediate_with_undo_disabled(self, client_with_auth, db_session):
         """Test that sending is immediate when undo send is disabled."""
         client, token, user = client_with_auth
         
@@ -141,7 +141,7 @@ class TestSendWithUndoEnabled:
             body="Test body",
             status="draft",
             sender_id=user.id,
-            folder_id=sample_drafts_folder.id
+            folder=FolderType.DRAFTS.value
         )
         db_session.add(draft)
         db_session.commit()
@@ -174,7 +174,7 @@ class TestSendWithUndoEnabled:
 class TestCancelSend:
     """Test cancelling queued emails (undo send)."""
 
-    def test_cancel_queued_email_success(self, client_with_auth, db_session, sample_sent_folder, sample_drafts_folder):
+    def test_cancel_queued_email_success(self, client_with_auth, db_session):
         """Test successfully cancelling a queued email."""
         client, token, user = client_with_auth
         
@@ -184,7 +184,7 @@ class TestCancelSend:
             body="Test body",
             status="queued",
             sender_id=user.id,
-            folder_id=sample_sent_folder.id,
+            folder=FolderType.SENT.value,
             scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
         )
         db_session.add(queued_email)
@@ -204,7 +204,7 @@ class TestCancelSend:
         assert data["scheduled_send_at"] is None
         assert data["can_undo_send"] == False
 
-    def test_cancel_already_sent_email_fails(self, client_with_auth, db_session, sample_sent_folder):
+    def test_cancel_already_sent_email_fails(self, client_with_auth, db_session):
         """Test that cancelling an already sent email fails."""
         client, token, user = client_with_auth
         
@@ -214,7 +214,7 @@ class TestCancelSend:
             body="Test body",
             status="sent",
             sender_id=user.id,
-            folder_id=sample_sent_folder.id,
+            folder=FolderType.SENT.value,
             sent_at=datetime.utcnow()
         )
         db_session.add(sent_email)
@@ -229,7 +229,7 @@ class TestCancelSend:
         assert response.status_code == 400
         assert "already been sent" in response.json()["message"].lower()
 
-    def test_cancel_draft_email_fails(self, client_with_auth, db_session, sample_drafts_folder):
+    def test_cancel_draft_email_fails(self, client_with_auth, db_session):
         """Test that cancelling a draft email fails."""
         client, token, user = client_with_auth
         
@@ -239,7 +239,7 @@ class TestCancelSend:
             body="Test body",
             status="draft",
             sender_id=user.id,
-            folder_id=sample_drafts_folder.id
+            folder=FolderType.DRAFTS.value
         )
         db_session.add(draft_email)
         db_session.commit()
@@ -252,7 +252,7 @@ class TestCancelSend:
         
         assert response.status_code == 400
 
-    def test_cancel_expired_window_fails(self, client_with_auth, db_session, sample_sent_folder):
+    def test_cancel_expired_window_fails(self, client_with_auth, db_session):
         """Test that cancelling after undo window expires fails."""
         client, token, user = client_with_auth
         
@@ -262,7 +262,7 @@ class TestCancelSend:
             body="Test body",
             status="queued",
             sender_id=user.id,
-            folder_id=sample_sent_folder.id,
+            folder=FolderType.SENT.value,
             scheduled_send_at=datetime.utcnow() - timedelta(seconds=1)
         )
         db_session.add(queued_email)
@@ -281,7 +281,7 @@ class TestCancelSend:
 class TestConfirmSend:
     """Test confirming immediate send for queued emails."""
 
-    def test_confirm_send_success(self, client_with_auth, db_session, sample_sent_folder):
+    def test_confirm_send_success(self, client_with_auth, db_session):
         """Test confirming immediate send of a queued email."""
         client, token, user = client_with_auth
         
@@ -291,7 +291,7 @@ class TestConfirmSend:
             body="Test body",
             status="queued",
             sender_id=user.id,
-            folder_id=sample_sent_folder.id,
+            folder=FolderType.SENT.value,
             scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
         )
         db_session.add(queued_email)
@@ -312,7 +312,7 @@ class TestConfirmSend:
         assert data["scheduled_send_at"] is None
         assert data["can_undo_send"] == False
 
-    def test_confirm_send_already_sent_fails(self, client_with_auth, db_session, sample_sent_folder):
+    def test_confirm_send_already_sent_fails(self, client_with_auth, db_session):
         """Test that confirming an already sent email fails."""
         client, token, user = client_with_auth
         
@@ -322,7 +322,7 @@ class TestConfirmSend:
             body="Test body",
             status="sent",
             sender_id=user.id,
-            folder_id=sample_sent_folder.id,
+            folder=FolderType.SENT.value,
             sent_at=datetime.utcnow()
         )
         db_session.add(sent_email)
@@ -340,7 +340,7 @@ class TestConfirmSend:
 class TestEmailResponseFields:
     """Test email response includes undo send fields."""
 
-    def test_email_response_includes_scheduled_send_at(self, client_with_auth, db_session, sample_sent_folder):
+    def test_email_response_includes_scheduled_send_at(self, client_with_auth, db_session):
         """Test that email response includes scheduled_send_at field."""
         client, token, user = client_with_auth
         
@@ -350,7 +350,7 @@ class TestEmailResponseFields:
             body="Test body",
             status="queued",
             sender_id=user.id,
-            folder_id=sample_sent_folder.id,
+            folder=FolderType.SENT.value,
             scheduled_send_at=scheduled_time
         )
         db_session.add(queued_email)
@@ -367,7 +367,7 @@ class TestEmailResponseFields:
         assert "can_undo_send" in data
         assert data["can_undo_send"] == True
 
-    def test_email_list_includes_scheduled_send_at(self, client_with_auth, db_session, sample_sent_folder):
+    def test_email_list_includes_scheduled_send_at(self, client_with_auth, db_session):
         """Test that email list response includes scheduled_send_at field."""
         client, token, user = client_with_auth
         
@@ -377,7 +377,7 @@ class TestEmailResponseFields:
             body="Test body",
             status="queued",
             sender_id=user.id,
-            folder_id=sample_sent_folder.id,
+            folder=FolderType.SENT.value,
             scheduled_send_at=scheduled_time
         )
         db_session.add(queued_email)

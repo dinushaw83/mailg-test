@@ -22,6 +22,9 @@ class Email(Base):
     is_starred = Column(Boolean, default=False, index=True)
     is_important = Column(Boolean, default=False)
     
+    # Folder type (enum-based): inbox, sent, drafts, trash, spam, starred
+    folder = Column(String(20), default="inbox", index=True)
+    
     # Gmail-style category (Primary, Promotions, Social, Updates, Forums)
     category = Column(String(50), default="primary", index=True)
     
@@ -34,7 +37,6 @@ class Email(Base):
     # Foreign keys
     sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id"), index=True)
-    folder_id = Column(UUID(as_uuid=True), ForeignKey("folders.id"), index=True)
     parent_email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id"))  # For replies/forwards
     
     # Timestamps
@@ -46,7 +48,6 @@ class Email(Base):
     
     # Relationships for eager loading (JOIN queries)
     sender = relationship("User", foreign_keys=[sender_id], lazy="joined")
-    folder = relationship("Folder", back_populates="emails", lazy="select")
     thread = relationship("Thread", back_populates="emails", lazy="select")
     parent_email = relationship("Email", remote_side=[id], backref="replies", lazy="select")
     
@@ -60,9 +61,9 @@ class Email(Base):
     # Composite indexes for common query patterns
     __table_args__ = (
         Index("ix_emails_sender_status", "sender_id", "status"),
-        Index("ix_emails_folder_is_deleted", "folder_id", "is_deleted"),
+        Index("ix_emails_folder_is_deleted", "folder", "is_deleted"),
         Index("ix_emails_is_deleted_is_read", "is_deleted", "is_read"),
         Index("ix_emails_thread_created", "thread_id", "created_at"),
-        Index("ix_emails_folder_category", "folder_id", "category"),
+        Index("ix_emails_folder_category", "folder", "category"),
         Index("ix_emails_scheduled_send", "scheduled_send_at"),
     )

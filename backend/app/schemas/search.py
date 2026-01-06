@@ -22,8 +22,7 @@ class SearchQuery(BaseModel):
     body: Optional[str] = Field(None, description="Search in body")
     
     # Folder/label filters
-    folder_id: Optional[UUID] = Field(None, description="Filter by folder ID")
-    folder_type: Optional[str] = Field(None, description="Filter by folder type")
+    folder: Optional[str] = Field(None, description="Filter by folder: inbox, sent, drafts, trash, spam, starred")
     label_id: Optional[UUID] = Field(None, description="Filter by label ID")
     label_name: Optional[str] = Field(None, description="Filter by label name")
     
@@ -56,8 +55,7 @@ class SearchResult(BaseModel):
     sender_email: str
     sender_name: Optional[str] = None
     recipients: List[str] = []
-    folder_id: Optional[UUID] = None
-    folder_name: Optional[str] = None
+    folder: Optional[str] = "inbox"
     labels: List[str] = []
     is_read: bool
     is_starred: bool

@@ -19,12 +19,12 @@ import logging
 from app.db.session import get_db
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.folder import Folder
 from app.models.label import Label
 from app.models.email_label import EmailLabel
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 from app.models.user import User
+from app.core.constants import VALID_FOLDER_TYPES
 from app.schemas.search import (
     SearchQuery, SearchResult, SearchResponse,
     SearchSuggestion, SearchSuggestionsResponse,
@@ -160,8 +160,7 @@ def search_emails(
     from_email: Optional[str] = Query(None, alias="from", description="Filter by sender"),
     to_email: Optional[str] = Query(None, alias="to", description="Filter by recipient"),
     subject: Optional[str] = Query(None, description="Search in subject"),
-    folder_id: Optional[UUID] = Query(None, description="Filter by folder"),
-    folder_type: Optional[str] = Query(None, description="Filter by folder type"),
+    folder: Optional[str] = Query(None, description="Filter by folder: inbox, sent, drafts, trash, spam, starred"),
     label_id: Optional[UUID] = Query(None, description="Filter by label"),
     label_name: Optional[str] = Query(None, description="Filter by label name"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
@@ -205,8 +204,8 @@ def search_emails(
         to_email = parsed_filters['to_email']
     if 'subject' in parsed_filters and not subject:
         subject = parsed_filters['subject']
-    if 'folder_type' in parsed_filters and not folder_type:
-        folder_type = parsed_filters['folder_type']
+    if 'folder_type' in parsed_filters and not folder:
+        folder = parsed_filters['folder_type']
     if 'label_name' in parsed_filters and not label_name:
         label_name = parsed_filters['label_name']
     if 'is_read' in parsed_filters and is_read is None:
@@ -233,7 +232,6 @@ def search_emails(
     # Build base query - user's emails
     query = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
         selectinload(Email.labels),
         selectinload(Email.attachments),
     ).outerjoin(
@@ -269,16 +267,13 @@ def search_emails(
             )
         )
     
-    if folder_id:
-        query = query.filter(Email.folder_id == folder_id)
-    
-    if folder_type:
-        folder_subq = db.query(Folder.id).filter(
-            Folder.owner_id == current_user.id,
-            Folder.folder_type == folder_type,
-            Folder.is_deleted == False
-        ).subquery()
-        query = query.filter(Email.folder_id.in_(folder_subq))
+    if folder:
+        if folder not in VALID_FOLDER_TYPES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
+            )
+        query = query.filter(Email.folder == folder)
     
     if label_id:
         query = query.join(EmailLabel, Email.id == EmailLabel.email_id).filter(
@@ -358,8 +353,7 @@ def search_emails(
             "sender_email": email.sender.email if email.sender else "",
             "sender_name": email.sender.name if email.sender else None,
             "recipients": recipients,
-            "folder_id": email.folder_id,
-            "folder_name": email.folder.name if email.folder else None,
+            "folder": email.folder or "inbox",
             "labels": labels,
             "is_read": email.is_read,
             "is_starred": email.is_starred,

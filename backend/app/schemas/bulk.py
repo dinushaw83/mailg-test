@@ -23,7 +23,7 @@ class BulkStarRequest(BulkEmailIds):
 
 class BulkMoveRequest(BulkEmailIds):
     """Schema for bulk move to folder."""
-    folder_id: UUID = Field(..., description="Target folder ID")
+    folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, starred")
 
 
 class BulkDeleteRequest(BulkEmailIds):
@@ -59,6 +59,21 @@ class BulkArchiveRequest(BulkEmailIds):
 class BulkCategoryRequest(BulkEmailIds):
     """Schema for bulk update email category."""
     category: str = Field(..., description="Email category: primary, promotions, social, updates, forums")
+
+
+class BulkUnarchiveRequest(BulkEmailIds):
+    """Schema for bulk unarchive emails."""
+    pass
+
+
+class BulkSpamRequest(BulkEmailIds):
+    """Schema for bulk mark as spam."""
+    pass
+
+
+class BulkUnspamRequest(BulkEmailIds):
+    """Schema for bulk unmark as spam."""
+    pass
 
 
 class BulkOperationResult(BaseModel):

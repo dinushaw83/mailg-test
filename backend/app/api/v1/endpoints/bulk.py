@@ -22,18 +22,18 @@ import logging
 from app.db.session import get_db
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.folder import Folder
 from app.models.label import Label
 from app.models.email_label import EmailLabel
 from app.schemas.bulk import (
     BulkReadRequest, BulkStarRequest, BulkMoveRequest, BulkDeleteRequest,
     BulkLabelAddRequest, BulkLabelRemoveRequest, BulkSnoozeRequest,
     BulkUnsnoozeRequest, BulkArchiveRequest, BulkCategoryRequest,
+    BulkUnarchiveRequest, BulkSpamRequest, BulkUnspamRequest,
     BulkOperationResponse, BulkOperationResult
 )
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import FolderType, EmailStatus, VALID_EMAIL_CATEGORIES
+from app.core.constants import FolderType, EmailStatus, VALID_EMAIL_CATEGORIES, VALID_FOLDER_TYPES
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -68,15 +68,6 @@ def get_user_accessible_emails(
     not_found = [eid for eid in email_ids if eid not in found_ids]
     
     return emails, not_found
-
-
-def get_user_folder(db: Session, user_id: UUID, folder_type: str) -> Folder:
-    """Get user's folder by type."""
-    return db.query(Folder).filter(
-        Folder.owner_id == user_id,
-        Folder.folder_type == folder_type,
-        Folder.is_deleted == False
-    ).first()
 
 
 def create_bulk_response(
@@ -188,21 +179,14 @@ def bulk_move(
     
     Permissions:
     - Users can only move their own emails
-    - Target folder must belong to the user
     """
     current_user = auth.user
     
-    # Verify folder belongs to user
-    folder = db.query(Folder).filter(
-        Folder.id == request.folder_id,
-        Folder.owner_id == current_user.id,
-        Folder.is_deleted == False
-    ).first()
-    
-    if not folder:
+    # Validate folder type
+    if request.folder not in VALID_FOLDER_TYPES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid folder ID or folder not found"
+            detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
         )
     
     emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
@@ -212,7 +196,7 @@ def bulk_move(
     
     for email in emails:
         try:
-            email.folder_id = folder.id
+            email.folder = request.folder
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -227,7 +211,7 @@ def bulk_move(
             detail="Bulk operation failed"
         )
     
-    logger.info(f"Bulk move: {len(success_ids)} emails moved to folder {folder.id} by user {current_user.id}")
+    logger.info(f"Bulk move: {len(success_ids)} emails moved to folder {request.folder} by user {current_user.id}")
     
     return create_bulk_response(request.email_ids, success_ids, failures)
 
@@ -247,8 +231,6 @@ def bulk_delete(
     """
     current_user = auth.user
     
-    trash_folder = get_user_folder(db, current_user.id, FolderType.TRASH.value)
-    
     emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
     
     success_ids = []
@@ -256,16 +238,12 @@ def bulk_delete(
     
     for email in emails:
         try:
-            if request.permanent or (trash_folder and email.folder_id == trash_folder.id):
+            if request.permanent or email.folder == FolderType.TRASH.value:
                 # Permanent delete (soft delete)
                 email.is_deleted = True
             else:
                 # Move to trash
-                if trash_folder:
-                    email.folder_id = trash_folder.id
-                else:
-                    # No trash folder, just soft delete
-                    email.is_deleted = True
+                email.folder = FolderType.TRASH.value
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -568,5 +546,144 @@ def bulk_update_category(
         )
     
     logger.info(f"Bulk category: {len(success_ids)} emails updated to '{request.category}' by user {current_user.id}")
+    
+    return create_bulk_response(request.email_ids, success_ids, failures)
+
+
+@router.post("/bulk/unarchive", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
+def bulk_unarchive(
+    request: BulkUnarchiveRequest,
+    db: Session = Depends(get_db),
+) -> BulkOperationResponse:
+    """Unarchive multiple emails.
+    
+    Restores archived emails back to their original status (sent or received).
+    
+    Permissions:
+    - Users can only unarchive their own emails
+    """
+    current_user = auth.user
+    
+    emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
+    
+    success_ids = []
+    failures = {eid: "Email not found or access denied" for eid in not_found}
+    
+    for email in emails:
+        try:
+            if email.status != EmailStatus.ARCHIVED.value:
+                failures[email.id] = "Email is not archived"
+                continue
+            
+            # Restore to original status based on whether user sent or received it
+            if email.sender_id == current_user.id:
+                email.status = EmailStatus.SENT.value
+            else:
+                email.status = EmailStatus.RECEIVED.value
+            success_ids.append(email.id)
+        except Exception as e:
+            failures[email.id] = str(e)
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Bulk unarchive operation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Bulk operation failed"
+        )
+    
+    logger.info(f"Bulk unarchive: {len(success_ids)} emails unarchived by user {current_user.id}")
+    
+    return create_bulk_response(request.email_ids, success_ids, failures)
+
+
+@router.post("/bulk/spam", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
+def bulk_spam(
+    request: BulkSpamRequest,
+    db: Session = Depends(get_db),
+) -> BulkOperationResponse:
+    """Mark multiple emails as spam.
+    
+    Moves emails to the spam folder.
+    
+    Permissions:
+    - Users can only mark their own emails as spam
+    """
+    current_user = auth.user
+    
+    emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
+    
+    success_ids = []
+    failures = {eid: "Email not found or access denied" for eid in not_found}
+    
+    for email in emails:
+        try:
+            if email.folder == FolderType.SPAM.value:
+                failures[email.id] = "Email is already marked as spam"
+                continue
+            
+            email.folder = FolderType.SPAM.value
+            success_ids.append(email.id)
+        except Exception as e:
+            failures[email.id] = str(e)
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Bulk spam operation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Bulk operation failed"
+        )
+    
+    logger.info(f"Bulk spam: {len(success_ids)} emails marked as spam by user {current_user.id}")
+    
+    return create_bulk_response(request.email_ids, success_ids, failures)
+
+
+@router.post("/bulk/unspam", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
+def bulk_unspam(
+    request: BulkUnspamRequest,
+    db: Session = Depends(get_db),
+) -> BulkOperationResponse:
+    """Remove spam mark from multiple emails.
+    
+    Moves emails from spam folder back to inbox.
+    
+    Permissions:
+    - Users can only unmark their own emails from spam
+    """
+    current_user = auth.user
+    
+    emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
+    
+    success_ids = []
+    failures = {eid: "Email not found or access denied" for eid in not_found}
+    
+    for email in emails:
+        try:
+            if email.folder != FolderType.SPAM.value:
+                failures[email.id] = "Email is not in spam folder"
+                continue
+            
+            email.folder = FolderType.INBOX.value
+            success_ids.append(email.id)
+        except Exception as e:
+            failures[email.id] = str(e)
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Bulk unspam operation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Bulk operation failed"
+        )
+    
+    logger.info(f"Bulk unspam: {len(success_ids)} emails removed from spam by user {current_user.id}")
     
     return create_bulk_response(request.email_ids, success_ids, failures)

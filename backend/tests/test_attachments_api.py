@@ -73,6 +73,79 @@ class TestAttachmentOperations:
         
         assert response.status_code == 404
 
+    def test_download_attachment_mock(self, client_with_auth, db_session, sample_attachment):
+        """Test download endpoint returns mock info (no actual file content)."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            f"/api/v1/attachments/{sample_attachment.id}/download",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["filename"] == sample_attachment.filename
+        assert "download_url" in data
+        assert "mock" in data["message"].lower()
+
+
+class TestAttachmentCreate:
+    """Test attachment metadata creation."""
+
+    def test_create_attachment_metadata(self, client_with_auth, db_session, sample_draft_email):
+        """Test creating attachment metadata (mock - no actual file)."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_draft_email.id}/attachments",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "filename": "test_document.pdf",
+                "content_type": "application/pdf",
+                "size_bytes": 1024
+            }
+        )
+        
+        assert response.status_code == 201
+        data = response.json()["data"]
+        assert data["filename"] == "test_document.pdf"
+        assert data["content_type"] == "application/pdf"
+        assert data["size_bytes"] == 1024
+        assert data["attachment_type"] == "document"
+
+    def test_create_attachment_minimal(self, client_with_auth, db_session, sample_draft_email):
+        """Test creating attachment with minimal data (only filename)."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_draft_email.id}/attachments",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "filename": "minimal.txt"
+            }
+        )
+        
+        assert response.status_code == 201
+        data = response.json()["data"]
+        assert data["filename"] == "minimal.txt"
+        # Defaults should be applied
+        assert data["content_type"] == "application/octet-stream"
+        assert data["size_bytes"] == 0
+
+    def test_create_attachment_on_non_draft_fails(self, client_with_auth, db_session, sample_email):
+        """Test that creating attachment on non-draft email fails."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_email.id}/attachments",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "filename": "should_fail.pdf"
+            }
+        )
+        
+        assert response.status_code == 404
+
 
 class TestAttachmentDelete:
     """Test attachment deletion."""
