@@ -276,6 +276,17 @@ sudo systemctl start mailg.service
 
 ## GitHub Actions Configuration
 
+The project uses a unified CI/CD pipeline (`.github/workflows/ci-cd.yml`) that handles:
+1. **Test Stage**: Runs backend and frontend tests in parallel
+2. **Build Stage**: Builds Docker images and pushes to GitHub Container Registry (GHCR)
+3. **Deploy Stage**: Deploys to GCP VM using pre-built images from GHCR
+
+### Workflow Triggers
+
+- **Push to main/master/feature branches**: Runs test → build → deploy
+- **Pull Requests**: Runs test → build only (no deployment)
+- **Manual Dispatch**: Can trigger deployment with environment selection
+
 ### Required GitHub Secrets
 
 Configure these in your repository settings (Settings → Secrets and variables → Actions):
@@ -290,9 +301,9 @@ Configure these in your repository settings (Settings → Secrets and variables 
    - `GCP_SSH_PRIVATE_KEY`: Private SSH key for VM access
 
 2. **Container Registry:**
-   - `CONTAINER_REGISTRY_URL`: Registry URL (e.g., `gcr.io` or `us-central1-docker.pkg.dev`)
-   - For Docker Hub: `DOCKERHUB_USERNAME`, `DOCKERHUB_PASSWORD`
-   - For GHCR: Uses `GITHUB_TOKEN` automatically
+   - Uses GitHub Container Registry (GHCR) by default
+   - `GITHUB_TOKEN`: Automatically provided by GitHub Actions
+   - For other registries, additional secrets may be needed
 
 3. **Application (Optional):**
    - `VITE_APP_URL`: Frontend URL (if needed during build)
@@ -364,9 +375,23 @@ cat ~/.ssh/github_actions
 
 ### Automated Deployment (GitHub Actions)
 
-1. **Push to main/master branch** - triggers build workflow
-2. **Build workflow completes** - triggers deploy workflow
-3. **Deploy workflow** - automatically deploys to VM
+The unified CI/CD pipeline (`.github/workflows/ci-cd.yml`) automatically:
+
+1. **On push to main/master/feature branches:**
+   - Runs tests (backend + frontend)
+   - Builds Docker images
+   - Pushes images to GHCR
+   - Deploys to GCP VM
+
+2. **On pull requests:**
+   - Runs tests and builds images
+   - Does NOT deploy (for safety)
+
+3. **Manual dispatch:**
+   - Go to Actions → CI/CD Pipeline → Run workflow
+   - Select environment (production/staging)
+   - Optionally skip tests
+   - Triggers full pipeline including deployment
 
 ### Manual Deployment
 
