@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const settingsSlice = createSlice({
-  name: 'settings',
+  name: "settings",
   initialState: {
     vacationResponder: {
       enabled: false,
@@ -131,8 +131,8 @@ const settingsSlice = createSlice({
       currentTheme: "default",
     },
     settingsAccounts: {
-      markAsRead: true, 
-      showAttribution: true, 
+      markAsRead: true,
+      showAttribution: true,
     },
   },
   reducers: {
@@ -199,4 +199,3 @@ export const {
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;
-

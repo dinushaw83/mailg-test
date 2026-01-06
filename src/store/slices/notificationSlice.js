@@ -1,14 +1,14 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const notificationSlice = createSlice({
-  name: 'notification',
+  name: "notification",
   initialState: {
     notificationSettings: {
-      type: 'off', // 'off', 'new', 'important'
-      sound: '1',  // Sound ID
+      type: "off", // 'off', 'new', 'important'
+      sound: "1", // Sound ID
       enabled: false,
     },
-    permissionStatus: 'default',
+    permissionStatus: "default",
   },
   reducers: {
     setNotificationSettings: (state, action) => {
@@ -22,4 +22,3 @@ const notificationSlice = createSlice({
 
 export const { setNotificationSettings, setPermissionStatus } = notificationSlice.actions;
 export default notificationSlice.reducer;
-

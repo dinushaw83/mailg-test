@@ -12,13 +12,7 @@ import {
   ListItemText,
 } from "@mui/material";
 
-const RiskyFileDialog = ({ 
-  open, 
-  onClose, 
-  riskyFiles = [], 
-  onSendWithoutFiles, 
-  onCancel 
-}) => {
+const RiskyFileDialog = ({ open, onClose, riskyFiles = [], onSendWithoutFiles, onCancel }) => {
   const handleSendWithout = () => {
     onSendWithoutFiles?.();
     onClose();
@@ -40,7 +34,7 @@ const RiskyFileDialog = ({
           borderRadius: 2,
           minWidth: 400,
           maxWidth: 500,
-        }
+        },
       }}
     >
       <DialogTitle sx={{ pb: 1 }}>
@@ -48,13 +42,12 @@ const RiskyFileDialog = ({
           Attachment security issue
         </Typography>
       </DialogTitle>
-      
+
       <DialogContent sx={{ pt: 1 }}>
         <Typography variant="body2" sx={{ mb: 2, color: "#5f6368" }}>
-          Note: there were errors attaching your file(s). 
-          Send this message without these attachments?
+          Note: there were errors attaching your file(s). Send this message without these attachments?
         </Typography>
-        
+
         {riskyFiles.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <Typography variant="body2" sx={{ fontWeight: 500, mb: 1, color: "#d93025" }}>
@@ -67,7 +60,7 @@ const RiskyFileDialog = ({
                     primary={file.name}
                     primaryTypographyProps={{
                       fontSize: "13px",
-                      color: "#d93025"
+                      color: "#d93025",
                     }}
                   />
                 </ListItem>
@@ -79,7 +72,7 @@ const RiskyFileDialog = ({
           </Box>
         )}
       </DialogContent>
-      
+
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button
           onClick={handleCancel}
@@ -93,8 +86,8 @@ const RiskyFileDialog = ({
             py: 1,
             borderRadius: 1,
             "&:hover": {
-              backgroundColor: "#e8f0fe"
-            }
+              backgroundColor: "#e8f0fe",
+            },
           }}
         >
           Cancel
@@ -114,8 +107,8 @@ const RiskyFileDialog = ({
             boxShadow: "none",
             "&:hover": {
               backgroundColor: "#1557b0",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-            }
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+            },
           }}
         >
           OK

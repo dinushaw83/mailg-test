@@ -51,7 +51,7 @@ export default function CreateLabelDialog({
   );
 
   const trimmed = name.trim();
-  const targetParentKey = nest ? parentKey ?? ROOT : ROOT;
+  const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;
 
   const isEditing = useMemo(() => !!labelDefaultName, [labelDefaultName]);
 
@@ -95,10 +95,10 @@ export default function CreateLabelDialog({
   const errorText = missingName
     ? "Please enter a label name:"
     : isDup
-    ? "The label name you have chosen already exists. Please try another name:"
-    : missingParent
-    ? "Please choose a parent label:"
-    : "Please enter a new label name:";
+      ? "The label name you have chosen already exists. Please try another name:"
+      : missingParent
+        ? "Please choose a parent label:"
+        : "Please enter a new label name:";
 
   const reset = () => {
     setName("");

@@ -53,24 +53,31 @@ const ImportNotification = ({ open, fileName = "contacts.csv", onUndo, onClose }
     <div style={containerStyle} role="alert" aria-live="assertive">
       <div style={headerStyle}>
         <div style={{ display: "flex", alignItems: "center", fontSize: 14, fontWeight: 500 }}>
-          <span className="material-symbols-outlined" style={iconStyle}>check_circle</span>
+          <span className="material-symbols-outlined" style={iconStyle}>
+            check_circle
+          </span>
           <span>All done</span>
         </div>
         <button onClick={onClose} aria-label="Close" style={{ ...buttonBase, color: "#fff" }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#fff" }}>close</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#fff" }}>
+            close
+          </span>
         </button>
       </div>
       <div style={dividerStyle} />
       <div style={bodyStyle}>
-        <span style={{ fontSize: 14, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={fileName}>
+        <span
+          style={{ fontSize: 14, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+          title={fileName}
+        >
           {fileName}
         </span>
-        <button onClick={onUndo} style={{ ...buttonBase, color: "#1a73e8", fontWeight: 500, padding: "6px 8px" }}>Undo</button>
+        <button onClick={onUndo} style={{ ...buttonBase, color: "#1a73e8", fontWeight: 500, padding: "6px 8px" }}>
+          Undo
+        </button>
       </div>
     </div>
   );
 };
 
 export default ImportNotification;
-
-

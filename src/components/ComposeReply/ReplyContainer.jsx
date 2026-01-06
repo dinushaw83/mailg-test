@@ -15,15 +15,15 @@ import { Button } from "@mui/material";
 
 const ReplyContainer = forwardRef(({ email, replyType, currentDraftId, onClose, onUndoDelete }, ref) => {
   const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
-  
+
   useImperativeHandle(ref, () => ({
     focusEditor: () => {
       // Find the ProseMirror editor element and focus it
-      const editorElement = document.querySelector('.ProseMirror');
+      const editorElement = document.querySelector(".ProseMirror");
       if (editorElement) {
         editorElement.focus();
       }
-    }
+    },
   }));
   const firstLetter = loggedInUser.name.charAt(0);
   const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
@@ -168,9 +168,7 @@ ${email.body}
     if (!signature?.content) return;
 
     // Sanitize signature to remove wrapping <p> tags
-    const sanitizedSignature = signature.content
-      .replace(/^<p[^>]*>/i, '')
-      .replace(/<\/p>$/i, '');
+    const sanitizedSignature = signature.content.replace(/^<p[^>]*>/i, "").replace(/<\/p>$/i, "");
 
     // Prevent duplicate insertion
     if (content.html.includes(sanitizedSignature)) return;

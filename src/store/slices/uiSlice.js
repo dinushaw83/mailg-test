@@ -1,36 +1,36 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const uiSlice = createSlice({
-  name: 'ui',
+  name: "ui",
   initialState: {
-    currentView: 'inbox',
-    sortOrder: 'newest',
+    currentView: "inbox",
+    sortOrder: "newest",
     currentPage: 1,
     itemsPerPage: 25,
     panelState: {
       showPanel: false,
-      direction: 'no-split',
+      direction: "no-split",
     },
     showQuickSettings: false,
-    density: 'default',
+    density: "default",
     threading: true,
-    inboxType: 'default',
+    inboxType: "default",
     isLeftSidebarExpanded: true,
     rightSidebarExpanded: true,
     rightSidebarActiveTab: {
-      contact: { screen: 'CONTACTS' },
+      contact: { screen: "CONTACTS" },
       activeTab: null,
     },
-    keyboardShortcuts: 'shortcuts-off',
+    keyboardShortcuts: "shortcuts-off",
     showShortCutsModal: false,
     createLabelModal: {
       show: false,
-      type: 'create',
+      type: "create",
       label: null,
     },
     snackbar: {
       open: false,
-      message: '',
+      message: "",
       action: null,
       autoHideDuration: null,
       hideClose: false,

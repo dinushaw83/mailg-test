@@ -52,9 +52,13 @@ export default function GlobalSnackbar() {
               <IconButton size="medium" aria-label="close" color="inherit" onClick={handleClose}>
                 <span
                   className="material-symbols-outlined"
-                  style={{ 
-                    fontSize: "22px", 
-                    color: snackbar?.closeIconColor || (snackbar?.severity === "error" || snackbar?.severity === "success" ? "#ffffff" : "rgb(95,99,104)")
+                  style={{
+                    fontSize: "22px",
+                    color:
+                      snackbar?.closeIconColor ||
+                      (snackbar?.severity === "error" || snackbar?.severity === "success"
+                        ? "#ffffff"
+                        : "rgb(95,99,104)"),
                   }}
                 >
                   close
@@ -66,16 +70,17 @@ export default function GlobalSnackbar() {
       }
       sx={{
         "& .MuiSnackbarContent-root": {
-          backgroundColor:
-            snackbar?.transparent ? "transparent" : snackbar?.severity === "error" || snackbar?.severity === "success" ? "#323232" : "#fff",
+          backgroundColor: snackbar?.transparent
+            ? "transparent"
+            : snackbar?.severity === "error" || snackbar?.severity === "success"
+              ? "#323232"
+              : "#fff",
           color: snackbar?.transparent
             ? "inherit"
             : snackbar?.severity === "error" || snackbar?.severity === "success"
-            ? "#ffffff"
-            : "rgb(95,99,104)",
-          boxShadow: snackbar?.transparent
-            ? "none"
-            : "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)",
+              ? "#ffffff"
+              : "rgb(95,99,104)",
+          boxShadow: snackbar?.transparent ? "none" : "0 1px 3px 0 rgba(60,64,67,.3),0 4px 8px 3px rgba(60,64,67,.15)",
           minWidth: "150px",
           padding: snackbar?.transparent ? 0 : "12px 16px",
           fontSize: "14px",

@@ -4,7 +4,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 export default function LabelsTab() {
   const { settingsLabels, setSettingsLabels } = useGlobalContext();
 
-  const handleToggleSystemLabel = (labelKey, field = 'show') => {
+  const handleToggleSystemLabel = (labelKey, field = "show") => {
     setSettingsLabels({
       ...settingsLabels,
       systemLabels: {
@@ -77,8 +77,7 @@ export default function LabelsTab() {
             }}
           >
             show
-          </span>
-          {" "}
+          </span>{" "}
           <span
             className="alP"
             role="link"
@@ -111,8 +110,7 @@ export default function LabelsTab() {
             }}
           >
             show
-          </span>
-          {" "}
+          </span>{" "}
           <span
             className="alR"
             style={{
@@ -141,8 +139,7 @@ export default function LabelsTab() {
             }}
           >
             show if unread
-          </span>
-          {" "}
+          </span>{" "}
           <span
             className="alP"
             role="link"
@@ -175,8 +172,7 @@ export default function LabelsTab() {
             }}
           >
             show if unread
-          </span>
-          {" "}
+          </span>{" "}
           <span
             className="alR"
             style={{
@@ -245,10 +241,7 @@ export default function LabelsTab() {
 
             {/* Inbox */}
             <tr id=":8t" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -308,17 +301,14 @@ export default function LabelsTab() {
                     defaultChecked
                     disabled
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":8u">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -327,10 +317,7 @@ export default function LabelsTab() {
 
             {/* Starred */}
             <tr id=":8v" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -353,7 +340,9 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.systemLabels.starred.show, () => handleToggleSystemLabel('starred', 'show'))}
+                {renderShowHide(settingsLabels.systemLabels.starred.show, () =>
+                  handleToggleSystemLabel("starred", "show")
+                )}
               </td>
               <td
                 className="alQ"
@@ -391,17 +380,14 @@ export default function LabelsTab() {
                     type="checkbox"
                     defaultChecked
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":8w">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -410,10 +396,7 @@ export default function LabelsTab() {
 
             {/* Snoozed */}
             <tr id=":8x" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -436,7 +419,9 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.systemLabels.snoozed.show, () => handleToggleSystemLabel('snoozed', 'show'))}
+                {renderShowHide(settingsLabels.systemLabels.snoozed.show, () =>
+                  handleToggleSystemLabel("snoozed", "show")
+                )}
               </td>
               <td
                 className="alQ"
@@ -474,17 +459,14 @@ export default function LabelsTab() {
                     type="checkbox"
                     defaultChecked
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":8y">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -493,10 +475,7 @@ export default function LabelsTab() {
 
             {/* Sent */}
             <tr id=":8z" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -519,7 +498,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.systemLabels.sent.show, () => handleToggleSystemLabel('sent', 'show'))}
+                {renderShowHide(settingsLabels.systemLabels.sent.show, () => handleToggleSystemLabel("sent", "show"))}
               </td>
               <td
                 className="alQ"
@@ -557,17 +536,14 @@ export default function LabelsTab() {
                     type="checkbox"
                     defaultChecked
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":90">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -576,10 +552,7 @@ export default function LabelsTab() {
 
             {/* Drafts */}
             <tr id=":91" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -602,7 +575,9 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.systemLabels.drafts.show, () => handleToggleSystemLabel('drafts', 'show'))}
+                {renderShowHide(settingsLabels.systemLabels.drafts.show, () =>
+                  handleToggleSystemLabel("drafts", "show")
+                )}
               </td>
               <td
                 className="alQ"
@@ -612,7 +587,9 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowIfUnread(settingsLabels.systemLabels.drafts.showUnread, () => handleToggleSystemLabel('drafts', 'showUnread'))}
+                {renderShowIfUnread(settingsLabels.systemLabels.drafts.showUnread, () =>
+                  handleToggleSystemLabel("drafts", "showUnread")
+                )}
               </td>
               <td
                 className="alQ"
@@ -642,17 +619,14 @@ export default function LabelsTab() {
                     type="checkbox"
                     defaultChecked
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":92">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -661,10 +635,7 @@ export default function LabelsTab() {
 
             {/* Spam */}
             <tr id=":93" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -687,7 +658,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.systemLabels.spam.show, () => handleToggleSystemLabel('spam', 'show'))}
+                {renderShowHide(settingsLabels.systemLabels.spam.show, () => handleToggleSystemLabel("spam", "show"))}
               </td>
               <td
                 className="alQ"
@@ -697,7 +668,9 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowIfUnread(settingsLabels.systemLabels.spam.showUnread, () => handleToggleSystemLabel('spam', 'showUnread'))}
+                {renderShowIfUnread(settingsLabels.systemLabels.spam.showUnread, () =>
+                  handleToggleSystemLabel("spam", "showUnread")
+                )}
               </td>
               <td
                 className="alQ"
@@ -727,17 +700,14 @@ export default function LabelsTab() {
                     type="checkbox"
                     defaultChecked
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":94">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -746,10 +716,7 @@ export default function LabelsTab() {
 
             {/* Trash */}
             <tr id=":95" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -772,7 +739,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.systemLabels.trash.show, () => handleToggleSystemLabel('trash', 'show'))}
+                {renderShowHide(settingsLabels.systemLabels.trash.show, () => handleToggleSystemLabel("trash", "show"))}
               </td>
               <td
                 className="alQ"
@@ -782,7 +749,9 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowIfUnread(settingsLabels.systemLabels.trash.showUnread, () => handleToggleSystemLabel('trash', 'showUnread'))}
+                {renderShowIfUnread(settingsLabels.systemLabels.trash.showUnread, () =>
+                  handleToggleSystemLabel("trash", "showUnread")
+                )}
               </td>
               <td
                 className="alQ"
@@ -812,17 +781,14 @@ export default function LabelsTab() {
                     type="checkbox"
                     defaultChecked
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":96">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -831,10 +797,7 @@ export default function LabelsTab() {
 
             {/* Important */}
             <tr id=":97" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -857,7 +820,9 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.systemLabels.important.show, () => handleToggleSystemLabel('important', 'show'))}
+                {renderShowHide(settingsLabels.systemLabels.important.show, () =>
+                  handleToggleSystemLabel("important", "show")
+                )}
               </td>
               <td
                 className="alQ"
@@ -895,17 +860,14 @@ export default function LabelsTab() {
                     type="checkbox"
                     defaultChecked
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       fontWeight: "normal",
                     }}
-                  />
-                  {" "}
+                  />{" "}
                   <label htmlFor=":98">Show in IMAP</label>
-                </span>
-                {" "}
+                </span>{" "}
               </td>
               <td className="YQh8id" style={{ margin: "0px" }}>
                 {" "}
@@ -964,10 +926,7 @@ export default function LabelsTab() {
 
             {/* Social */}
             <tr id=":99" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -990,7 +949,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.social, () => handleToggleCategory('social'))}
+                {renderShowHide(settingsLabels.categories.social, () => handleToggleCategory("social"))}
               </td>
               <td
                 className="alQ"
@@ -1000,7 +959,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.social, () => handleToggleCategory('social'))}
+                {renderShowHide(settingsLabels.categories.social, () => handleToggleCategory("social"))}
               </td>
               <td
                 className="alQ"
@@ -1025,10 +984,7 @@ export default function LabelsTab() {
 
             {/* Promotions */}
             <tr id=":9a" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -1051,7 +1007,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.promotions, () => handleToggleCategory('promotions'))}
+                {renderShowHide(settingsLabels.categories.promotions, () => handleToggleCategory("promotions"))}
               </td>
               <td
                 className="alQ"
@@ -1061,7 +1017,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.promotions, () => handleToggleCategory('promotions'))}
+                {renderShowHide(settingsLabels.categories.promotions, () => handleToggleCategory("promotions"))}
               </td>
               <td
                 className="alQ"
@@ -1086,10 +1042,7 @@ export default function LabelsTab() {
 
             {/* Updates */}
             <tr id=":9b" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -1112,7 +1065,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.updates, () => handleToggleCategory('updates'))}
+                {renderShowHide(settingsLabels.categories.updates, () => handleToggleCategory("updates"))}
               </td>
               <td
                 className="alQ"
@@ -1122,7 +1075,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.updates, () => handleToggleCategory('updates'))}
+                {renderShowHide(settingsLabels.categories.updates, () => handleToggleCategory("updates"))}
               </td>
               <td
                 className="alQ"
@@ -1147,10 +1100,7 @@ export default function LabelsTab() {
 
             {/* Forums */}
             <tr id=":9c" className="To">
-              <td
-                className="alT"
-                style={{ margin: "0px", padding: "3px 15px" }}
-              >
+              <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                 <div
                   className="al6"
                   style={{
@@ -1173,7 +1123,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.forums, () => handleToggleCategory('forums'))}
+                {renderShowHide(settingsLabels.categories.forums, () => handleToggleCategory("forums"))}
               </td>
               <td
                 className="alQ"
@@ -1183,7 +1133,7 @@ export default function LabelsTab() {
                   verticalAlign: "top",
                 }}
               >
-                {renderShowHide(settingsLabels.categories.forums, () => handleToggleCategory('forums'))}
+                {renderShowHide(settingsLabels.categories.forums, () => handleToggleCategory("forums"))}
               </td>
               <td
                 className="alQ"
@@ -1220,7 +1170,7 @@ export default function LabelsTab() {
                   fontWeight: "bold",
                 }}
               >
-        Labels
+                Labels
               </td>
             </tr>
             <tr>
@@ -1283,13 +1233,11 @@ export default function LabelsTab() {
             </tr>
 
             {/* Custom labels */}
-            {settingsLabels.customLabels && settingsLabels.customLabels.length > 0 && (
+            {settingsLabels.customLabels &&
+              settingsLabels.customLabels.length > 0 &&
               settingsLabels.customLabels.map((label, index) => (
                 <tr key={index} className="To">
-                  <td
-                    className="alT"
-                    style={{ margin: "0px", padding: "3px 15px" }}
-                  >
+                  <td className="alT" style={{ margin: "0px", padding: "3px 15px" }}>
                     <div
                       className="al6"
                       style={{
@@ -1312,7 +1260,7 @@ export default function LabelsTab() {
                       verticalAlign: "top",
                     }}
                   >
-                    {renderShowHide(label.show, () => handleToggleCustomLabel(index, 'show'))}
+                    {renderShowHide(label.show, () => handleToggleCustomLabel(index, "show"))}
                   </td>
                   <td
                     className="alQ"
@@ -1322,7 +1270,7 @@ export default function LabelsTab() {
                       verticalAlign: "top",
                     }}
                   >
-                    {renderShowHide(label.showInMessageList, () => handleToggleCustomLabel(index, 'showInMessageList'))}
+                    {renderShowHide(label.showInMessageList, () => handleToggleCustomLabel(index, "showInMessageList"))}
                   </td>
                   <td
                     className="alQ"
@@ -1358,8 +1306,7 @@ export default function LabelsTab() {
                     {" "}
                   </td>
                 </tr>
-              ))
-            )}
+              ))}
           </tbody>
         </table>
       </div>

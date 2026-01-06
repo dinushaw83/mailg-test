@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const composeSlice = createSlice({
-  name: 'compose',
+  name: "compose",
   initialState: {
     composeWindows: [],
   },
@@ -13,11 +13,10 @@ const composeSlice = createSlice({
       state.composeWindows.push(action.payload);
     },
     removeComposeWindow: (state, action) => {
-      state.composeWindows = state.composeWindows.filter(win => win.id !== action.payload);
+      state.composeWindows = state.composeWindows.filter((win) => win.id !== action.payload);
     },
   },
 });
 
 export const { setComposeWindows, addComposeWindow, removeComposeWindow } = composeSlice.actions;
 export default composeSlice.reducer;
-

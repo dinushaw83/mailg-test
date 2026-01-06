@@ -12,11 +12,11 @@ const VacationResponderBar = () => {
   }
 
   const handleEndNow = () => {
-    setVacationResponder(prev => ({
+    setVacationResponder((prev) => ({
       ...prev,
-      enabled: false
+      enabled: false,
     }));
-    
+
     // Show snackbar notification
     setSnackbar({
       open: true,
@@ -28,24 +28,26 @@ const VacationResponderBar = () => {
   };
 
   const handleVacationSettings = () => {
-    navigate('/settings/general');
+    navigate("/settings/general");
   };
 
   return (
-    <div style={{
-      backgroundColor: '#fff1a8', // Pale yellow background
-      padding: '8px 16px',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderBottom: '1px solid #e0e0e0',
-      fontSize: '14px',
-      gap: "8px"
-    }}>
-      <span style={{ color: '#1a73e8', cursor: 'pointer' }} onClick={handleEndNow}>
+    <div
+      style={{
+        backgroundColor: "#fff1a8", // Pale yellow background
+        padding: "8px 16px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        borderBottom: "1px solid #e0e0e0",
+        fontSize: "14px",
+        gap: "8px",
+      }}
+    >
+      <span style={{ color: "#1a73e8", cursor: "pointer" }} onClick={handleEndNow}>
         End now
       </span>
-      <span style={{ color: '#1a73e8', cursor: 'pointer' }} onClick={handleVacationSettings}>
+      <span style={{ color: "#1a73e8", cursor: "pointer" }} onClick={handleVacationSettings}>
         Vacation Settings
       </span>
     </div>

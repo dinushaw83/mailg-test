@@ -112,10 +112,7 @@ const ContactsSearch = () => {
               title: "Other contacts",
               data: searchResults?.filter((recipient) => !recipient?.isSaved),
             },
-          ].slice(
-            0,
-            searchResults?.filter((recipient) => !recipient?.isSaved).length === 0 ? 1 : 2
-          )}
+          ].slice(0, searchResults?.filter((recipient) => !recipient?.isSaved).length === 0 ? 1 : 2)}
           hidePrintExport={true}
         />
       )}

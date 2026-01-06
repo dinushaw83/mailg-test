@@ -247,8 +247,8 @@ const SearchResultsView = () => {
                                 excludeChats: searchParams.get("excludeChats") === "true",
                               })})`
                             : searchQuery
-                            ? `Search results for "${searchQuery}"`
-                            : "Search Results"}
+                              ? `Search results for "${searchQuery}"`
+                              : "Search Results"}
                         </h2>
                       </div>
                       <div

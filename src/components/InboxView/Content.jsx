@@ -230,43 +230,49 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
 
   const { toggleStar } = useMailActions();
 
-  const handleStar = useCallback((e) => {
-    e?.stopPropagation();
-    if (email?.id) {
-      toggleStar([email.id]);
-    }
-  }, [email, toggleStar]);
+  const handleStar = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (email?.id) {
+        toggleStar([email.id]);
+      }
+    },
+    [email, toggleStar]
+  );
 
-  const handleReply = useCallback((e) => {
-    e?.stopPropagation();
-    if (onReply) {
-      onReply();
-    } else if (responseViewRef?.current?.handleReply) {
-      responseViewRef.current.handleReply();
-      // Scroll to reply container
-      setTimeout(() => {
-        const replyContainer = document.querySelector('[data-testid="email-response-view"]');
-        if (replyContainer) {
-          replyContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    } else if (email) {
-      // Fallback: open compose window
-      const replySubject = email.subject?.startsWith("Re: ") ? email.subject : `Re: ${email.subject || ""}`;
-      setComposeWindows((prev) => [
-        ...prev,
-        {
-          id: `reply-${Date.now()}`,
-          fields: {
-            to: [email.from.email],
-            subject: replySubject,
-            replyingTo: email,
-            replyType: "reply",
+  const handleReply = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (onReply) {
+        onReply();
+      } else if (responseViewRef?.current?.handleReply) {
+        responseViewRef.current.handleReply();
+        // Scroll to reply container
+        setTimeout(() => {
+          const replyContainer = document.querySelector('[data-testid="email-response-view"]');
+          if (replyContainer) {
+            replyContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 100);
+      } else if (email) {
+        // Fallback: open compose window
+        const replySubject = email.subject?.startsWith("Re: ") ? email.subject : `Re: ${email.subject || ""}`;
+        setComposeWindows((prev) => [
+          ...prev,
+          {
+            id: `reply-${Date.now()}`,
+            fields: {
+              to: [email.from.email],
+              subject: replySubject,
+              replyingTo: email,
+              replyType: "reply",
+            },
           },
-        },
-      ]);
-    }
-  }, [email, onReply, responseViewRef, setComposeWindows]);
+        ]);
+      }
+    },
+    [email, onReply, responseViewRef, setComposeWindows]
+  );
 
   const handleMoreActions = useCallback((e) => {
     e?.stopPropagation();
@@ -290,9 +296,9 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
         </div>
         <ActionsContainer>
           <Time timestamp={timestamp} />
-          <Icon 
-            name={isStarred ? "star" : "star_border"} 
-            label={isStarred ? "Starred" : "Not starred"} 
+          <Icon
+            name={isStarred ? "star" : "star_border"}
+            label={isStarred ? "Starred" : "Not starred"}
             onClick={handleStar}
             color={isStarred ? "#f4b400" : "rgb(68, 68, 68)"}
           />
@@ -529,10 +535,10 @@ export const Content = React.memo(
           <Avatar>{senderName.charAt(0)}</Avatar>
         </ProfileImageContainer>
         <BodyContainer>
-          <TopBar 
-            timestamp={timestamp} 
-            senderName={senderName} 
-            senderEmail={senderEmail} 
+          <TopBar
+            timestamp={timestamp}
+            senderName={senderName}
+            senderEmail={senderEmail}
             recipients={recipients}
             email={email}
             responseViewRef={responseViewRef}

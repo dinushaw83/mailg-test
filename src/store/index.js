@@ -1,15 +1,16 @@
-import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore } from 'redux-persist';
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { FLUSH, PAUSE, PERSIST, PURGE, REGISTER, REHYDRATE, persistReducer, persistStore } from "redux-persist";
+import { combineReducers, configureStore, createListenerMiddleware } from "@reduxjs/toolkit";
 
-import composeReducer from './slices/composeSlice';
-import contactsReducer from './slices/contactsSlice';
-import mailGAccountReducer from './slices/mailGAccountSlice';
-import mailReducer from './slices/mailSlice';
-import notificationReducer from './slices/notificationSlice';
-import settingsReducer from './slices/settingsSlice';
-import storage from 'redux-persist/lib/storage';
-import uiReducer from './slices/uiSlice';
-import userReducer from './slices/userSlice';
+import composeReducer from "./slices/composeSlice";
+import contactsReducer from "./slices/contactsSlice";
+import mailGAccountReducer from "./slices/mailGAccountSlice";
+import mailReducer from "./slices/mailSlice";
+import notificationReducer from "./slices/notificationSlice";
+import { registerReactQueryListeners } from "./listeners/reactQueryListeners";
+import settingsReducer from "./slices/settingsSlice";
+import storage from "redux-persist/lib/storage";
+import uiReducer from "./slices/uiSlice";
+import userReducer from "./slices/userSlice";
 
 const rootReducer = combineReducers({
   user: userReducer,
@@ -23,13 +24,16 @@ const rootReducer = combineReducers({
 });
 
 const persistConfig = {
-  key: 'root',
+  key: "root",
   version: 1,
   storage,
-  blacklist: ['ui', 'compose'],
+  blacklist: ["ui", "compose"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+const listenerMiddleware = createListenerMiddleware();
+registerReactQueryListeners(listenerMiddleware);
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -37,11 +41,10 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-        ignoredActionPaths: ['payload.action', 'payload.snackbar.action'],
-        ignoredPaths: ['ui.snackbar.action'],
+        ignoredActionPaths: ["payload.action", "payload.snackbar.action"],
+        ignoredPaths: ["ui.snackbar.action"],
       },
-    }),
+    }).prepend(listenerMiddleware.middleware),
 });
 
 export const persistor = persistStore(store);
-

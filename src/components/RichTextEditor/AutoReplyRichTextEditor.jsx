@@ -5,13 +5,8 @@ import { RichTextEditor, RichTextEditorProvider } from "mui-tiptap";
 import EditorMenuControls from "./EditorMenuControls";
 import InfoModal from "../ComposeEmail/InfoModal";
 
-const AutoReplyRichTextEditor = ({ 
-  content = "", 
-  onChange, 
-  isPlainText = false,
-  onTogglePlainText 
-}) => {
-  const extensions = useExtensions({ });
+const AutoReplyRichTextEditor = ({ content = "", onChange, isPlainText = false, onTogglePlainText }) => {
+  const extensions = useExtensions({});
   const rteRef = useRef(null);
   const [isEditable, setIsEditable] = useState(true);
   const [editor, setEditor] = useState(null);
@@ -31,11 +26,11 @@ const AutoReplyRichTextEditor = ({
 
   useEffect(() => {
     if (rteRef.current?.editor) {
-      setFormattingVisible(true)
+      setFormattingVisible(true);
     } else {
-      setFormattingVisible(false)
+      setFormattingVisible(false);
     }
-  }, [rteRef.current?.editor])
+  }, [rteRef.current?.editor]);
 
   // Handle content prop updates after initial render
   useEffect(() => {
@@ -51,20 +46,33 @@ const AutoReplyRichTextEditor = ({
   // Check if content has styling/formatting
   const hasStyling = (htmlContent) => {
     if (!htmlContent) return false;
-    
+
     // Remove the outer paragraph tags and check for formatting tags
-    const innerContent = htmlContent.replace(/^<p[^>]*>|<\/p>$/g, '');
-    
+    const innerContent = htmlContent.replace(/^<p[^>]*>|<\/p>$/g, "");
+
     // Check for common formatting tags
     const formattingTags = [
-      '<strong>', '</strong>', '<b>', '</b>',
-      '<em>', '</em>', '<i>', '</i>',
-      '<u>', '</u>', '<span', '</span>',
-      '<font', '</font>', 'style=',
-      '<br>', '<br/>', '<br />'
+      "<strong>",
+      "</strong>",
+      "<b>",
+      "</b>",
+      "<em>",
+      "</em>",
+      "<i>",
+      "</i>",
+      "<u>",
+      "</u>",
+      "<span",
+      "</span>",
+      "<font",
+      "</font>",
+      "style=",
+      "<br>",
+      "<br/>",
+      "<br />",
     ];
-    
-    return formattingTags.some(tag => innerContent.includes(tag));
+
+    return formattingTags.some((tag) => innerContent.includes(tag));
   };
 
   // Handle plain text toggle with confirmation
@@ -72,7 +80,7 @@ const AutoReplyRichTextEditor = ({
     if (!isPlainText) {
       // Check if content has styling
       const currentContent = rteRef.current?.editor?.getHTML() || content;
-      
+
       if (hasStyling(currentContent)) {
         // Show confirmation modal when switching from rich text to plain text with styling
         setShowPlainTextModal(true);
@@ -111,25 +119,29 @@ const AutoReplyRichTextEditor = ({
       {/* Editor Menu Controls - positioned above the editor */}
       {!isPlainText && formattingVisible && (
         <RichTextEditorProvider editor={rteRef.current?.editor}>
-          <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={false} containerClass="autoReplyContainer" />
+          <EditorMenuControls
+            editor={rteRef.current?.editor}
+            useCompactFormatting={false}
+            containerClass="autoReplyContainer"
+          />
         </RichTextEditorProvider>
       )}
 
       {/* Plain Text Toggle Link */}
-      <Link 
-        href="#" 
+      <Link
+        href="#"
         onClick={(e) => {
           e.preventDefault();
           handlePlainTextToggle();
         }}
-        sx={{ 
-          color: "#1a73e8", 
+        sx={{
+          color: "#1a73e8",
           textDecoration: "none",
           fontSize: "14px",
           zIndex: 10,
           padding: "2px 4px",
           borderRadius: "2px",
-          "&:hover": { textDecoration: "underline" }
+          "&:hover": { textDecoration: "underline" },
         }}
       >
         {isPlainText ? "Rich formatting >>" : "<< Plain Text"}
@@ -144,14 +156,14 @@ const AutoReplyRichTextEditor = ({
         RichTextFieldProps={{
           variant: "standard",
           MenuBarProps: {
-            hide: true, 
+            hide: true,
           },
         }}
         sx={{
           border: "1px solid #d9d9d9 !important", // Add border to the editor container
           "& .MuiInputBase-root": {
             border: "none", // Remove inner border if any
-            fontSize: "13px"
+            fontSize: "13px",
           },
           "& .ProseMirror": {
             minHeight: "115p  x",
@@ -160,12 +172,11 @@ const AutoReplyRichTextEditor = ({
             overflowY: "auto",
             padding: "12px",
             "&:focus": {
-              outline: "none"
-            }
-          }
+              outline: "none",
+            },
+          },
         }}
-      >
-      </RichTextEditor>
+      ></RichTextEditor>
 
       {/* Plain Text Confirmation Modal */}
       <InfoModal
@@ -178,13 +189,13 @@ const AutoReplyRichTextEditor = ({
           {
             text: "Cancel",
             className: "tertiary",
-            onClick: handleCancelPlainText
+            onClick: handleCancelPlainText,
           },
           {
             text: "OK",
             className: "primary",
-            onClick: handleConfirmPlainText
-          }
+            onClick: handleConfirmPlainText,
+          },
         ]}
       />
     </Box>

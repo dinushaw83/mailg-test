@@ -27,8 +27,7 @@ export default function AddonsTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -60,8 +59,7 @@ export default function AddonsTab() {
                 <button
                   className="e WF"
                   style={{
-                    fontFamily:
-                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     background: "none",
                     border: "none",
                     padding: "0px",
@@ -97,8 +95,7 @@ export default function AddonsTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -163,12 +160,10 @@ export default function AddonsTab() {
                   >
                     Apps Script
                   </a>
-                  . Developer add-ons are simply add-ons which haven't been
-                  published. If you're a developer, installing your developer
-                  add-on allows you to test it prior to publishing. Some
-                  add-ons are specific to a particular organization or user and
-                  thus aren't intended for wider publication; you can install
-                  these add-ons as developer add-ons.
+                  . Developer add-ons are simply add-ons which haven't been published. If you're a developer, installing
+                  your developer add-on allows you to test it prior to publishing. Some add-ons are specific to a
+                  particular organization or user and thus aren't intended for wider publication; you can install these
+                  add-ons as developer add-ons.
                 </div>
               </td>
             </tr>
@@ -176,8 +171,7 @@ export default function AddonsTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}

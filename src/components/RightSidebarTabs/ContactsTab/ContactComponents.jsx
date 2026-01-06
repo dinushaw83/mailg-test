@@ -365,8 +365,8 @@ export const ContactDetailRow = ({
           itemType === "email"
             ? item.value
             : itemType === "address"
-            ? generateAddressString(item)
-            : `${item.dialCode}${item.value}`
+              ? generateAddressString(item)
+              : `${item.dialCode}${item.value}`
         } (from your MailG Contacts)`}
         placement="top"
         slotProps={{
@@ -421,8 +421,8 @@ export const ContactDetailRow = ({
                 itemType === "address"
                   ? generateAddressString(item, addressStringType === "multi" ? "array" : "string")
                   : itemType === "phone"
-                  ? `${item.dialCode}${item.value}`
-                  : item.value;
+                    ? `${item.dialCode}${item.value}`
+                    : item.value;
 
               return (
                 <Box
@@ -624,7 +624,7 @@ export const LabelsDropdown = ({
         </Typography>
 
         {/* Labels List */}
-        {recipientLabels
+        {[...recipientLabels]
           .sort((a, b) => a.label.localeCompare(b.label))
           .map((label) => {
             const isSelected = tempLabels.includes(label.label);

@@ -527,12 +527,12 @@ ${email.body || email.preview || ""}
     isSpamFolder
       ? { id: "not_spam", label: "Not Spam", icon: "report_off" }
       : isThreadNotInInbox
-      ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
-      : {
-          id: "archive",
-          label: "Archive",
-          icon: "archive",
-        },
+        ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
+        : {
+            id: "archive",
+            label: "Archive",
+            icon: "archive",
+          },
     isSpamFolder
       ? { id: "delete_forever", label: "Delete forever", icon: "delete" }
       : {

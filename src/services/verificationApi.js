@@ -1,7 +1,7 @@
-import { deepParseJson, resolvePath } from '../lib/utils/path-resolver.js';
-import { matchingOperators, existenceOperators, RDT_OPERATORS } from '../lib/utils/assertion-operators.js';
-import { AssertionEngine } from '../lib/assertion-engine.js';
-import assertionsData from '../data/assertions.json';
+import { deepParseJson, resolvePath } from "../lib/utils/path-resolver.js";
+import { matchingOperators, existenceOperators, RDT_OPERATORS } from "../lib/utils/assertion-operators.js";
+import { AssertionEngine } from "../lib/assertion-engine.js";
+import assertionsData from "../data/assertions.json";
 
 /**
  * Processes a single assertion and returns the result
@@ -12,7 +12,7 @@ import assertionsData from '../data/assertions.json';
  */
 async function processAssertion(assertion, data, modelResponse) {
   const { title, operator, path, expected, options = {} } = assertion;
-  
+
   let result = {
     title: title,
     operator,
@@ -29,15 +29,15 @@ async function processAssertion(assertion, data, modelResponse) {
     const startTime = performance.now();
     const maxRetries = 3;
     let lastError = null;
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         console.log(`LLM assertion attempt ${attempt}/${maxRetries}`);
-        
+
         // Use assertion engine for RDT operators
         const engine = new AssertionEngine();
         const engineResult = await engine.execute(assertion, data, modelResponse);
-        
+
         if (engineResult) {
           const executionTime = performance.now() - startTime;
           return {
@@ -45,30 +45,29 @@ async function processAssertion(assertion, data, modelResponse) {
             operator: operator,
             actual: engineResult.actual,
             expected: assertion.expected_facts || assertion.aspects || assertion.expected_reasonings || {},
-            result: engineResult.result === 'match' ? 'pass' : 'fail',
+            result: engineResult.result === "match" ? "pass" : "fail",
             score: engineResult.score,
             details: engineResult.details,
             error: engineResult.error || null,
-            executionTime: Math.round(executionTime * 100) / 100
+            executionTime: Math.round(executionTime * 100) / 100,
           };
         }
-        
       } catch (error) {
         console.error(`Error processing RDT assertion on attempt ${attempt}:`, error);
         lastError = error;
-        
+
         if (attempt < maxRetries) {
           console.log(`Retrying RDT assertion (attempt ${attempt + 1}/${maxRetries})...`);
           // Add a small delay before retry
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
       }
     }
-    
+
     // If all retries failed
     const executionTime = performance.now() - startTime;
     console.error(`RDT assertion failed after ${maxRetries} attempts`);
-    result.error = `Failed to process RDT assertion after ${maxRetries} attempts: ${lastError instanceof Error ? lastError.message : 'Unknown error'}`;
+    result.error = `Failed to process RDT assertion after ${maxRetries} attempts: ${lastError instanceof Error ? lastError.message : "Unknown error"}`;
     result.result = "fail";
     result.executionTime = Math.round(executionTime * 100) / 100;
     return result;
@@ -102,7 +101,7 @@ async function processAssertion(assertion, data, modelResponse) {
       throw new Error(`Unknown operator: ${operator}`);
     }
   } catch (error) {
-    result.error = error instanceof Error ? error.message : 'Unknown error';
+    result.error = error instanceof Error ? error.message : "Unknown error";
     result.result = "fail";
   }
 
@@ -153,10 +152,8 @@ export async function getExpectedState(taskId = null) {
     // Filter by TASK_IDS environment variable if set (only when returning all tasks)
     const taskIdsEnv = import.meta.env.VITE_TASK_IDS;
     if (taskIdsEnv && !taskId) {
-      const taskIdsFilter = taskIdsEnv.split(',').map(id => id.trim());
-      assertions = Object.fromEntries(
-        Object.entries(assertions).filter(([key]) => taskIdsFilter.includes(key))
-      );
+      const taskIdsFilter = taskIdsEnv.split(",").map((id) => id.trim());
+      assertions = Object.fromEntries(Object.entries(assertions).filter(([key]) => taskIdsFilter.includes(key)));
     }
 
     // If no taskId provided, return all available tasks (potentially filtered)
@@ -169,13 +166,13 @@ export async function getExpectedState(taskId = null) {
 
     // Check if task exists
     if (!(taskId in assertions)) {
-      throw new Error('Task not found');
+      throw new Error("Task not found");
     }
 
     const assertion = assertions[taskId];
 
     // Transform assertions - include all fields for RDT operators
-    const transformedAssertions = assertion.assertions.map(_assertion => ({
+    const transformedAssertions = assertion.assertions.map((_assertion) => ({
       title: _assertion.title,
       operator: _assertion.operator,
       path: _assertion.path,
@@ -195,7 +192,7 @@ export async function getExpectedState(taskId = null) {
       assertions: transformedAssertions,
     };
   } catch (error) {
-    console.error('Error in getExpectedState:', error);
+    console.error("Error in getExpectedState:", error);
     throw error;
   }
 }
@@ -211,21 +208,21 @@ export async function getExpectedState(taskId = null) {
 export async function getActualState(taskId, localStorageData, assertion = null, modelResponse = null) {
   try {
     if (!taskId) {
-      throw new Error('taskId is required');
+      throw new Error("taskId is required");
     }
 
     // Check if task exists in assertions.json
     if (!assertionsData[taskId]) {
-      throw new Error('Task not found');
+      throw new Error("Task not found");
     }
 
     // Parse localStorage data if it's a string
     let data = localStorageData;
-    if (typeof localStorageData === 'string') {
+    if (typeof localStorageData === "string") {
       try {
         data = deepParseJson(localStorageData);
       } catch (error) {
-        throw new Error('Invalid localStorageData JSON format');
+        throw new Error("Invalid localStorageData JSON format");
       }
     }
 
@@ -245,8 +242,7 @@ export async function getActualState(taskId, localStorageData, assertion = null,
       assertions: processedAssertions,
     };
   } catch (error) {
-    console.error('Error in getActualState:', error);
+    console.error("Error in getActualState:", error);
     throw error;
   }
 }
-

@@ -761,7 +761,7 @@ const Table = ({
     bulkMarkImportant,
   });
 
-  console.log({emails})
+  console.log({ emails });
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table
@@ -784,7 +784,7 @@ const Table = ({
       >
         <tbody>
           {emails.map((email, index) => {
-            const threadId = email.threadId.split(":")[1];
+            const threadId = email.threadId.split(":")[1] || email.threadId;
             const isActive = showSnoozePopover && snoozeId === email.id;
             const selected = selection.isSelected(threadId);
 

@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Tabs,
-  Tab,
-  Paper,
-  Container,
-} from "@mui/material";
+import { Box, Typography, Tabs, Tab, Paper, Container } from "@mui/material";
 import {
   GeneralTab,
   LabelsTab,
@@ -26,7 +19,7 @@ import Footer from "../components/EmailList/Footer";
 const Settings = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
-  
+
   // Define the available tabs
   const tabs = [
     { id: "general", label: "General" },
@@ -58,14 +51,14 @@ const Settings = () => {
   };
 
   // Find the current tab index, default to "general" if not found
-  const currentTabIndex = tabs.findIndex(t => t.id === tab) || 0;
+  const currentTabIndex = tabs.findIndex((t) => t.id === tab) || 0;
 
   const handleTabChange = (event, newValue) => {
     const selectedTab = tabs[newValue];
-    
+
     // Only allow switching between "general" and "accounts" tabs
     const allowedTabs = ["general", "accounts"];
-    
+
     if (allowedTabs.includes(selectedTab.id)) {
       navigate(`/settings/${selectedTab.id}`);
     }
@@ -109,11 +102,9 @@ const Settings = () => {
                 minHeight: 24,
                 height: "max-content",
                 display: "flex",
-                flexWrap: "wrap"
+                flexWrap: "wrap",
               },
-              "& .MuiButtonBase-root": {
-                
-              },
+              "& .MuiButtonBase-root": {},
               "& .MuiTabs-list": {
                 flexWrap: "wrap",
                 rowGap: 2,
@@ -133,12 +124,12 @@ const Settings = () => {
                 "&.Mui-selected": {
                   color: "#1a73e8",
                   fontWeight: 500,
-                  borderBottom: "3px solid #1a73e8"
+                  borderBottom: "3px solid #1a73e8",
                 },
               },
               "& .MuiTabs-indicator": {
                 backgroundColor: "#1a73e8",
-                display: "none"
+                display: "none",
               },
             }}
           >

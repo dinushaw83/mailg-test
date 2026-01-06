@@ -48,12 +48,14 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     deletedRecipients,
     setDeletedRecipients,
   } = useGlobalContext();
-  
+
   // Filter out deleted contacts from each section (unless showDeleted is true, like in trash view)
-  const filteredContacts = showDeleted ? contacts : contacts.map(section => ({
-    ...section,
-    data: section.data ? section.data.filter(contact => !contact.isDeleted) : []
-  }));
+  const filteredContacts = showDeleted
+    ? contacts
+    : contacts.map((section) => ({
+        ...section,
+        data: section.data ? section.data.filter((contact) => !contact.isDeleted) : [],
+      }));
   const navigate = useNavigate();
   const timeoutsRef = useRef({});
 
@@ -79,7 +81,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
   const [tempLabels, setTempLabels] = useState([]);
 
   // Create set of all contact IDs from all sections (no duplicates, excluding deleted)
-  const allContactsSet = new Set(filteredContacts.flatMap((section) => section.data || []).map((contact) => contact.id));
+  const allContactsSet = new Set(
+    filteredContacts.flatMap((section) => section.data || []).map((contact) => contact.id)
+  );
 
   // Check if all selected contacts are non-saved (should show hide from contacts option)
   const shouldShowHideFromContacts = useMemo(() => {
@@ -198,13 +202,13 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
       setSnackbar({
         open: true,
         message: isFavorite
-        ? `Removed ${contact?.name ?? contact?.email ?? "contact"} from favorites`
-        : `Added ${contact?.name ?? contact?.email ?? "contact"} to favorites`,
-      action: null,
-      autoHideDuration: 3000,
-      hideClose: true,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-      style: snackbarStyle,
+          ? `Removed ${contact?.name ?? contact?.email ?? "contact"} from favorites`
+          : `Added ${contact?.name ?? contact?.email ?? "contact"} to favorites`,
+        action: null,
+        autoHideDuration: 3000,
+        hideClose: true,
+        anchorOrigin: { vertical: "bottom", horizontal: "center" },
+        style: snackbarStyle,
       });
     }, 500);
   };
@@ -218,21 +222,17 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
   const handleSaveContact = (contact) => {
     // Store the previous state for undo
     const previousContact = { ...contact };
-    
+
     // Mark contact as saved (restore it)
     setRecipients((prev) =>
-      prev.map((recipient) =>
-        recipient.id === contact.id
-          ? { ...recipient, isSaved: true }
-          : recipient
-      )
+      prev.map((recipient) => (recipient.id === contact.id ? { ...recipient, isSaved: true } : recipient))
     );
-    
+
     // Show snackbar with undo
     setSnackbar({
       open: true,
       message: `Added ${contact.name || contact.email || "contact"} to contacts`,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+      anchorOrigin: { vertical: "bottom", horizontal: "center" },
       action: (
         <Button
           variant="text"
@@ -240,18 +240,14 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
           onClick={() => {
             // Undo save
             setRecipients((prev) =>
-              prev.map((recipient) =>
-                recipient.id === contact.id
-                  ? previousContact
-                  : recipient
-              )
+              prev.map((recipient) => (recipient.id === contact.id ? previousContact : recipient))
             );
             setSnackbar({
               open: true,
               message: "Undone",
               autoHideDuration: 2000,
               hideClose: true,
-              anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+              anchorOrigin: { vertical: "bottom", horizontal: "center" },
               style: snackbarStyle,
             });
           }}
@@ -321,28 +317,24 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
   // Handle hide from contacts action
   const handleHideFromContacts = () => {
     if (!selectedContactRef.current || !selectedContactRef.current.contact) return;
-    
+
     const contact = selectedContactRef.current.contact;
-    
+
     // Store the contact for undo
     const previousContact = { ...contact };
-    
+
     // Mark contact as hidden (not saved)
     setRecipients((prev) =>
-      prev.map((recipient) =>
-        recipient.id === contact.id
-          ? { ...recipient, isSaved: false }
-          : recipient
-      )
+      prev.map((recipient) => (recipient.id === contact.id ? { ...recipient, isSaved: false } : recipient))
     );
-    
+
     handleCloseMoreMenu();
-    
+
     // Show snackbar with undo
     setSnackbar({
       open: true,
       message: `${contact.name || contact.email || "Contact"} has been hidden from your contacts list`,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+      anchorOrigin: { vertical: "bottom", horizontal: "center" },
       action: (
         <Button
           variant="text"
@@ -350,18 +342,14 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
           onClick={() => {
             // Undo hide
             setRecipients((prev) =>
-              prev.map((recipient) =>
-                recipient.id === contact.id
-                  ? previousContact
-                  : recipient
-              )
+              prev.map((recipient) => (recipient.id === contact.id ? previousContact : recipient))
             );
             setSnackbar({
               open: true,
               message: "Undone",
               autoHideDuration: 2000,
               hideClose: true,
-              anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+              anchorOrigin: { vertical: "bottom", horizontal: "center" },
               style: snackbarStyle,
             });
           }}
@@ -385,17 +373,17 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     setDeleteActionType("single");
     setDeleteModalOpen(true);
   };
-  
+
   // Handle remove from label action
   const handleRemoveFromLabel = () => {
     if (!selectedContactRef.current || !selectedContactRef.current.contact || !currentLabel) return;
-    
+
     const contact = selectedContactRef.current.contact;
     const labelName = currentLabel.label;
-    
+
     // Store the previous contact for undo
     const previousContact = { ...contact };
-    
+
     // Remove the label from the contact
     setRecipients((prev) =>
       prev.map((recipient) =>
@@ -407,14 +395,14 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
           : recipient
       )
     );
-    
+
     handleCloseMoreMenu();
-    
+
     // Show snackbar with undo
     setSnackbar({
       open: true,
       message: `${contact.name} has been removed from ${labelName}`,
-      anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+      anchorOrigin: { vertical: "bottom", horizontal: "center" },
       action: (
         <Button
           variant="text"
@@ -422,11 +410,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
           onClick={() => {
             // Undo remove from label
             setRecipients((prev) =>
-              prev.map((recipient) =>
-                recipient.id === contact.id
-                  ? previousContact
-                  : recipient
-              )
+              prev.map((recipient) => (recipient.id === contact.id ? previousContact : recipient))
             );
             setSnackbar({
               open: true,
@@ -1300,8 +1284,8 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                   headerIndex === 0
                     ? "4px 0px 0px 4px"
                     : headerIndex === tableHeaders.length - 1
-                    ? "0px 4px 4px 0px"
-                    : 0,
+                      ? "0px 4px 4px 0px"
+                      : 0,
               }}
             >
               {columnData.type === "name" && (
@@ -1719,8 +1703,8 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       {/* Show Save contact icon if any selected contacts are hidden */}
                       {(() => {
-                        const selectedContacts = recipients.filter(contact => checkedContacts.has(contact.id));
-                        const hasHiddenContacts = selectedContacts.some(contact => contact.isSaved === false);
+                        const selectedContacts = recipients.filter((contact) => checkedContacts.has(contact.id));
+                        const hasHiddenContacts = selectedContacts.some((contact) => contact.isSaved === false);
                         return hasHiddenContacts;
                       })() && (
                         <Tooltip
@@ -1739,22 +1723,22 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                             },
                           }}
                         >
-                          <IconButton 
-                            size="medium" 
+                          <IconButton
+                            size="medium"
                             onClick={() => {
                               // Save all selected hidden contacts
-                              const selectedContacts = recipients.filter(contact => checkedContacts.has(contact.id));
-                              const hiddenContacts = selectedContacts.filter(contact => contact.isSaved === false);
-                              
+                              const selectedContacts = recipients.filter((contact) => checkedContacts.has(contact.id));
+                              const hiddenContacts = selectedContacts.filter((contact) => contact.isSaved === false);
+
                               if (hiddenContacts.length > 0) {
                                 setRecipients((prev) =>
                                   prev.map((recipient) =>
-                                    hiddenContacts.some(c => c.id === recipient.id)
+                                    hiddenContacts.some((c) => c.id === recipient.id)
                                       ? { ...recipient, isSaved: true }
                                       : recipient
                                   )
                                 );
-                                
+
                                 // Create message with contact names
                                 let message;
                                 if (hiddenContacts.length === 1) {
@@ -1763,13 +1747,13 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                                 } else {
                                   message = `Added ${hiddenContacts.length} contacts to contacts`;
                                 }
-                                
+
                                 setSnackbar({
                                   open: true,
                                   message: message,
                                   autoHideDuration: 3000,
                                   hideClose: true,
-                                  anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+                                  anchorOrigin: { vertical: "bottom", horizontal: "center" },
                                   style: snackbarStyle,
                                 });
                               }
@@ -2239,8 +2223,8 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
             {/* Hide from contacts action - only show if there are visible contacts selected */}
             {(() => {
-              const selectedContacts = recipients.filter(contact => checkedContacts.has(contact.id));
-              const hasVisibleContacts = selectedContacts.some(contact => contact.isSaved !== false);
+              const selectedContacts = recipients.filter((contact) => checkedContacts.has(contact.id));
+              const hasVisibleContacts = selectedContacts.some((contact) => contact.isSaved !== false);
               return hasVisibleContacts;
             })() && (
               <MenuItem onClick={handleBulkHideFromContacts}>

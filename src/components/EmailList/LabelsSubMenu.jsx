@@ -53,15 +53,13 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     const labelsToRemove = Object.keys(overrides).filter((labelKey) => overrides[labelKey] === "unchecked");
 
     const addedMessage =
-      labelsToAdd.length > 0
-        ? `added to ${labelsToAdd.map((key) => getPathLabelFromKey(labels, key)).join(", ")}`
-        : "";
+      labelsToAdd.length > 0 ? `added to ${labelsToAdd.map((key) => getPathLabelFromKey(labels, key)).join(", ")}` : "";
 
     const removedMessage =
       labelsToRemove.length > 0
         ? `removed from ${labelsToRemove.map((key) => getPathLabelFromKey(labels, key)).join(", ")}`
         : "";
-    
+
     let message = "";
 
     if (labelsToAdd.length > 0 && labelsToRemove.length > 0) {

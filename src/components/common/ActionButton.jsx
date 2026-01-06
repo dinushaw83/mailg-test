@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const ActionButton = ({ text, onClick, icon }) => {
   return (
@@ -19,7 +19,7 @@ const ActionButton = ({ text, onClick, icon }) => {
         position: "relative",
         zIndex: 0,
         WebkitFontSmoothing: "antialiased",
-        fontFamily: 'Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+        fontFamily: "Roboto, RobotoDraft, Helvetica, Arial, sans-serif",
         fontSize: "0.875rem",
         letterSpacing: "normal",
         boxSizing: "border-box",
@@ -36,11 +36,7 @@ const ActionButton = ({ text, onClick, icon }) => {
         marginRight: "8px",
       }}
     >
-      {icon && (
-        <span style={{ marginRight: '8px', display: 'flex', alignItems: 'center' }}>
-          {icon}
-        </span>
-      )}
+      {icon && <span style={{ marginRight: "8px", display: "flex", alignItems: "center" }}>{icon}</span>}
       {text}
     </span>
   );

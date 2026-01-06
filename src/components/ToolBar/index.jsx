@@ -260,8 +260,8 @@ const ToggleSplitPaneButton = () => {
   const icon = panelState.showPanel
     ? "reorder"
     : prevSplitPane === "horizontal"
-    ? "horizontal_split"
-    : "vertical_split";
+      ? "horizontal_split"
+      : "vertical_split";
 
   const handleSplitPane = ({ direction, showPanel }) => {
     setPanelState((prev) => ({

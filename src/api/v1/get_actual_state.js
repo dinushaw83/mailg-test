@@ -1,5 +1,5 @@
 // const fs = require('fs');
-import { readFileSync } from 'fs';
+import { readFileSync } from "fs";
 // const path = require('path');
 import path from "path";
 import { fileURLToPath } from "url";
@@ -7,29 +7,29 @@ import { fileURLToPath } from "url";
 // Recreate __dirname and __filename
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import { deepParseJson, resolvePath } from '../../lib/utils/path-resolver.js';
-import { existenceOperators, matchingOperators } from '../../lib/utils/assertion-operators.js';
+import { deepParseJson, resolvePath } from "../../lib/utils/path-resolver.js";
+import { existenceOperators, matchingOperators } from "../../lib/utils/assertion-operators.js";
 
 // Load tasks.json
-const tasksPath = path.join(__dirname, '../../data/assertions.json');
+const tasksPath = path.join(__dirname, "../../data/assertions.json");
 let tasksData = {};
 
 try {
-  const rawData = readFileSync(tasksPath, 'utf8');
+  const rawData = readFileSync(tasksPath, "utf8");
   tasksData = JSON.parse(rawData);
 } catch (error) {
-  console.error('Error loading tasks.json:', error);
+  console.error("Error loading tasks.json:", error);
 }
 
 // Load judges.json for LLM-based assertions
-const judgesPath = path.join(__dirname, '../../data/judges.json');
+const judgesPath = path.join(__dirname, "../../data/judges.json");
 let judgesData = {};
 
 try {
-  const rawData = readFileSync(judgesPath, 'utf8');
+  const rawData = readFileSync(judgesPath, "utf8");
   judgesData = JSON.parse(rawData);
 } catch (error) {
-  console.error('Error loading judges.json:', error);
+  console.error("Error loading judges.json:", error);
 }
 
 // Import assertion operators using ES Module syntax
@@ -39,7 +39,7 @@ const assertionOperators = {
 };
 
 // RDT operators that require model response
-const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
+const RDT_OPERATORS = ["FACTUAL_VERIFICATION", "REASONING_QUALITY", "INFORMATION_PRECISION"];
 
 /**
  * Handle LLM-based assertions
@@ -50,17 +50,17 @@ async function handleLLMAssertion(assertion, modelResponse) {
   const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL;
 
   if (!OPENROUTER_URL || !OPENROUTER_API_KEY || !OPENROUTER_MODEL) {
-    throw new Error('Missing required environment variables: OPENROUTER_URL, OPENROUTER_API_KEY, or OPENROUTER_MODEL');
+    throw new Error("Missing required environment variables: OPENROUTER_URL, OPENROUTER_API_KEY, or OPENROUTER_MODEL");
   }
 
   // Determine which judge template to use based on operator
   let judgeTemplate;
-  if (assertion.operator === 'FACTUAL_VERIFICATION') {
-    judgeTemplate = 'factual_verification_judge_v1';
-  } else if (assertion.operator === 'REASONING_QUALITY') {
-    judgeTemplate = 'reasoning_quality_judge_v1';
-  } else if (assertion.operator === 'INFORMATION_PRECISION') {
-    judgeTemplate = 'information_precision_judge_v1';
+  if (assertion.operator === "FACTUAL_VERIFICATION") {
+    judgeTemplate = "factual_verification_judge_v1";
+  } else if (assertion.operator === "REASONING_QUALITY") {
+    judgeTemplate = "reasoning_quality_judge_v1";
+  } else if (assertion.operator === "INFORMATION_PRECISION") {
+    judgeTemplate = "information_precision_judge_v1";
   }
 
   const judgePrompt = judgesData[judgeTemplate];
@@ -70,19 +70,19 @@ async function handleLLMAssertion(assertion, modelResponse) {
 
   // Create the combined prompt by replacing template variables
   let prompt = judgePrompt
-    .replace(/{{description}}/g, assertion.description || '')
+    .replace(/{{description}}/g, assertion.description || "")
     .replace(/{{modelResponse}}/g, modelResponse);
 
   // Handle Handlebars-style each loops for expected_facts
   if (assertion.expected_facts) {
     const factsSection = assertion.expected_facts
       .map((fact, index) => {
-        if (typeof fact === 'object' && fact.fact) {
+        if (typeof fact === "object" && fact.fact) {
           return `${index + 1}. ${fact.fact} (Weight: ${fact.weight})`;
         }
         return `${index + 1}. ${fact}`;
       })
-      .join('\n');
+      .join("\n");
     prompt = prompt.replace(/{{#each expected_facts}}[\s\S]*?{{\/each}}/g, factsSection);
   }
 
@@ -90,7 +90,7 @@ async function handleLLMAssertion(assertion, modelResponse) {
   if (assertion.aspects) {
     const aspectsSection = assertion.aspects
       .map((aspect, index) => `${index + 1}. ${aspect.aspect} (Weight: ${aspect.weight})`)
-      .join('\n');
+      .join("\n");
     prompt = prompt.replace(/{{#each aspects}}[\s\S]*?{{\/each}}/g, aspectsSection);
   }
 
@@ -98,22 +98,22 @@ async function handleLLMAssertion(assertion, modelResponse) {
   if (assertion.expected_reasonings) {
     const reasoningsSection = assertion.expected_reasonings
       .map((reasoning, index) => `${index + 1}. ${reasoning}`)
-      .join('\n');
+      .join("\n");
     prompt = prompt.replace(/{{#each expected_reasonings}}[\s\S]*?{{\/each}}/g, reasoningsSection);
   }
 
   const response = await fetch(OPENROUTER_URL, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({
       model: OPENROUTER_MODEL,
       messages: [
         {
-          role: 'user',
-          content: prompt
-        }
+          role: "user",
+          content: prompt,
+        },
       ],
     }),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENROUTER_API_KEY}` },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENROUTER_API_KEY}` },
   });
 
   if (!response.ok) {
@@ -124,7 +124,7 @@ async function handleLLMAssertion(assertion, modelResponse) {
   const content = data.choices?.[0]?.message?.content;
 
   if (!content) {
-    throw new Error('No content returned from LLM');
+    throw new Error("No content returned from LLM");
   }
 
   try {
@@ -150,7 +150,7 @@ async function processAssertion(assertion, data, modelResponse) {
     title: title,
     operator,
     path: path,
-    result: 'fail',
+    result: "fail",
     error: null,
     actual: null,
     expected: expected,
@@ -167,21 +167,21 @@ async function processAssertion(assertion, data, modelResponse) {
       try {
         console.log(`LLM assertion attempt ${attempt}/${maxRetries}`);
 
-        const response = await handleLLMAssertion(assertion, modelResponse || '');
+        const response = await handleLLMAssertion(assertion, modelResponse || "");
         console.log(`LLM assertion successful on attempt ${attempt}`);
 
         // Calculate weighted score from individual scores (1-5 scale)
         const scores = response.fact_scores || response.aspect_scores || response.precision_scores || {};
         const expectedItems = assertion.expected_facts || assertion.aspects || assertion.expected_reasonings || [];
         const MAX_SCORE = 5; // Judge uses 1-5 scale where 5 is perfect
-        
+
         let totalWeight = 0;
         let weightedScore = 0;
-        
+
         // Calculate weighted score - normalize 1-5 scores to 0-100%
         if (Array.isArray(expectedItems)) {
           expectedItems.forEach((item, index) => {
-            const weight = (typeof item === 'object' && item.weight) ? item.weight : 1;
+            const weight = typeof item === "object" && item.weight ? item.weight : 1;
             // Get score value (1-5), default to 1 (worst) if missing
             const scoreValue = Object.values(scores)[index] ?? 1;
             // Normalize to percentage: score 5 = 100%, score 1 = 20%
@@ -197,24 +197,26 @@ async function processAssertion(assertion, data, modelResponse) {
             weightedScore = scoreValues.reduce((sum, val) => sum + ((val / MAX_SCORE) * 100 || 0), 0);
           }
         }
-        
+
         // Calculate weighted average percentage
         const percentScore = totalWeight > 0 ? weightedScore / totalWeight : 0;
         const passThreshold = assertion.pass_threshold_percent || 80;
         const passed = percentScore >= passThreshold;
-        
-        console.log(`RDT Score: ${percentScore.toFixed(1)}% (threshold: ${passThreshold}%) - ${passed ? 'PASS' : 'FAIL'}`);
+
+        console.log(
+          `RDT Score: ${percentScore.toFixed(1)}% (threshold: ${passThreshold}%) - ${passed ? "PASS" : "FAIL"}`
+        );
 
         return {
           operator: operator,
           actual: scores,
           expected: expectedItems,
-          result: response.error ? 'fail' : (passed ? 'pass' : 'fail'),
+          result: response.error ? "fail" : passed ? "pass" : "fail",
           score: percentScore,
           passThreshold: passThreshold,
           details: response.details,
           error: response.error || null,
-          executionTime: Date.now() - startTime
+          executionTime: Date.now() - startTime,
         };
       } catch (error) {
         console.error(`Error parsing LLM response on attempt ${attempt}:`, error);
@@ -222,7 +224,7 @@ async function processAssertion(assertion, data, modelResponse) {
 
         if (attempt < maxRetries) {
           console.log(`Retrying LLM assertion (attempt ${attempt + 1}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
       }
     }
@@ -230,8 +232,8 @@ async function processAssertion(assertion, data, modelResponse) {
     // If all retries failed
     const executionTime = Date.now() - startTime;
     console.error(`LLM assertion failed after ${maxRetries} attempts`);
-    result.error = `Failed to parse judge model's response after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`;
-    result.result = 'fail';
+    result.error = `Failed to parse judge model's response after ${maxRetries} attempts: ${lastError?.message || "Unknown error"}`;
+    result.result = "fail";
     result.executionTime = executionTime;
     return result;
   }
@@ -247,29 +249,29 @@ async function processAssertion(assertion, data, modelResponse) {
 
     let actualValue;
 
-    if (typeof path === 'string') {
+    if (typeof path === "string") {
       actualValue = resolvePath(data, path);
-    } else if (typeof path === 'object') {
+    } else if (typeof path === "object") {
       actualValue = {};
       for (const [key, pathValue] of Object.entries(path)) {
         actualValue[key] = resolvePath(data, pathValue);
       }
     } else {
-      throw new Error('path must be a string or an object');
+      throw new Error("path must be a string or an object");
     }
 
     result.actual = actualValue;
 
     if (operator in ops) {
-      result.result = ops[operator](actualValue, expected, options) ? 'pass' : 'fail';
+      result.result = ops[operator](actualValue, expected, options) ? "pass" : "fail";
     } else if (operator in existOps) {
-      result.result = existOps[operator](actualValue) ? 'pass' : 'fail';
+      result.result = existOps[operator](actualValue) ? "pass" : "fail";
     } else {
       throw new Error(`Unknown operator: ${operator}`);
     }
   } catch (error) {
     result.error = error.message;
-    result.result = 'fail';
+    result.result = "fail";
   }
 
   return result;
@@ -310,39 +312,39 @@ async function getActualState(req, res) {
     const localStorageDumpFile = req.file;
 
     // Get run mode from environment variables
-    const RUN_MODE = process.env.VITE_RUN_MODE || 'localstorage';
+    const RUN_MODE = process.env.VITE_RUN_MODE || "localstorage";
 
     if (!taskId) {
-      return res.status(400).json({ error: 'taskId is required' });
+      return res.status(400).json({ error: "taskId is required" });
     }
 
     // Validate required parameters based on run mode
-    if (RUN_MODE === 'localstorage' && !localStorageDumpFile) {
-      return res.status(400).json({ error: 'localStorageDump is required when running in localstorage mode' });
+    if (RUN_MODE === "localstorage" && !localStorageDumpFile) {
+      return res.status(400).json({ error: "localStorageDump is required when running in localstorage mode" });
     }
 
-    if (RUN_MODE === 'runid' && !runId) {
-      return res.status(400).json({ error: 'runId is required when running in runid mode' });
+    if (RUN_MODE === "runid" && !runId) {
+      return res.status(400).json({ error: "runId is required when running in runid mode" });
     }
 
     // Check if task exists in tasks.json
     if (!tasksData[taskId]) {
-      return res.status(404).json({ error: 'Task not found' });
+      return res.status(404).json({ error: "Task not found" });
     }
 
     // Get data based on run mode
     let data;
-    if (RUN_MODE === 'localstorage') {
+    if (RUN_MODE === "localstorage") {
       // Read the localStorage dump file
-      const localStorageDumpReq = localStorageDumpFile.buffer.toString('utf8');
+      const localStorageDumpReq = localStorageDumpFile.buffer.toString("utf8");
       try {
         data = deepParseJson(localStorageDumpReq);
       } catch (error) {
-        return res.status(400).json({ error: 'Invalid localStorageDump JSON format' });
+        return res.status(400).json({ error: "Invalid localStorageDump JSON format" });
       }
-    } else if (RUN_MODE === 'runid') {
+    } else if (RUN_MODE === "runid") {
       // TODO: Get data from database when implementing runid mode
-      return res.status(501).json({ error: 'runid mode not yet implemented' });
+      return res.status(501).json({ error: "runid mode not yet implemented" });
     }
 
     try {
@@ -362,16 +364,16 @@ async function getActualState(req, res) {
         assertions: processedAssertions,
       });
     } catch (error) {
-      console.error('Error processing assertions:', error);
+      console.error("Error processing assertions:", error);
       return res.status(500).json({
-        error: 'Failed to process assertions',
+        error: "Failed to process assertions",
         taskId: taskId,
-        details: error.message
+        details: error.message,
       });
     }
   } catch (error) {
-    console.error('API error:', error);
-    return res.status(500).json({ error: 'Internal server error', details: error.message });
+    console.error("API error:", error);
+    return res.status(500).json({ error: "Internal server error", details: error.message });
   }
 }
 

@@ -126,10 +126,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     const idSet = new Set(selectedIds.map(String));
     return emails.filter((email) => idSet.has(email.threadId.split(":")[1]));
   }, [emails, selectedIds]);
-  const selectedThreadIdSet = useMemo(
-    () => new Set(selectedEmails.map((email) => email.threadId)),
-    [selectedEmails]
-  );
+  const selectedThreadIdSet = useMemo(() => new Set(selectedEmails.map((email) => email.threadId)), [selectedEmails]);
   const selectedConversationCount = useMemo(() => {
     const count = selectedThreadIdSet.size;
     return count || selectedIds.length;
@@ -149,9 +146,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   const collectLabelSnapshot = useCallback(
     (matchKeys) => {
       if (!matchKeys?.length) return new Map();
-      const targets = new Set(
-        matchKeys.map((key) => String(key ?? "").trim()).filter((value) => value.length > 0)
-      );
+      const targets = new Set(matchKeys.map((key) => String(key ?? "").trim()).filter((value) => value.length > 0));
       if (!targets.size) return new Map();
 
       const snapshot = new Map();
@@ -232,8 +227,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
     setSnackbar({
       open: true,
-      message:
-        conversations > 1 ? `${conversations} conversations moved to Trash.` : "Conversation moved to Trash.",
+      message: conversations > 1 ? `${conversations} conversations moved to Trash.` : "Conversation moved to Trash.",
       autoHideDuration: 10000,
       action: (
         <Button
@@ -345,9 +339,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       return;
     }
 
-    const originalLabels = new Map(
-      emailsWithInbox.map((email) => [email.id, [...(email.labels || [])]])
-    );
+    const originalLabels = new Map(emailsWithInbox.map((email) => [email.id, [...(email.labels || [])]]));
     const idsToArchive = [...originalLabels.keys()];
 
     const conversations = new Set(emailsWithInbox.map((email) => email.threadId)).size || 1;
@@ -384,14 +376,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [
-    selectedEmails,
-    archive,
-    selection,
-    setSnackbar,
-    setEmails,
-    showNoConversationsSelectedSnackbar,
-  ]);
+  }, [selectedEmails, archive, selection, setSnackbar, setEmails, showNoConversationsSelectedSnackbar]);
 
   const toggleSpamModal = useCallback(() => {
     setState((prev) => ({
@@ -733,8 +718,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           ? `${affectedConversations} conversations marked as read.`
           : "Conversation marked as read."
         : affectedConversations > 1
-        ? `${affectedConversations} conversations marked as unread.`
-        : "Conversation marked as unread.",
+          ? `${affectedConversations} conversations marked as unread.`
+          : "Conversation marked as unread.",
       autoHideDuration: 10000,
       action: (
         <Button

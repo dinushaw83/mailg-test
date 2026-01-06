@@ -9,9 +9,9 @@ const ContactsByLabel = () => {
   const { labelId } = useParams();
   const label = recipientLabels.find((label) => label.id === labelId || label.id === parseInt(labelId));
   const contacts = recipients.filter((recipient) => label?.label && recipient.labels?.includes(label.label));
-  
+
   // Debug logging
-  console.log('ContactsByLabel Debug:', {
+  console.log("ContactsByLabel Debug:", {
     labelId,
     label,
     recipientLabelsCount: recipientLabels.length,

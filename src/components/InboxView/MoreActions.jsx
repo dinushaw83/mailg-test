@@ -20,7 +20,13 @@ const useCustomHotKeys = ({ handlePeriodPress }) => {
   });
 };
 
-const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu, anchorEl: externalAnchorEl, onClose: externalOnClose }) => {
+const MoreActions = ({
+  thread,
+  showAdvancedMenu,
+  toggleShowAdvancedMenu,
+  anchorEl: externalAnchorEl,
+  onClose: externalOnClose,
+}) => {
   const { markRead, setStar, setImportant, snooze, unsnooze, setMuted } = useMailActions();
   const navigate = useNavigate();
   const [internalAnchorEl, setInternalAnchorEl] = React.useState(null);
@@ -31,7 +37,7 @@ const MoreActions = ({ thread, showAdvancedMenu, toggleShowAdvancedMenu, anchorE
 
   // Use external anchorEl if provided, otherwise use internal state
   const anchorEl = externalAnchorEl !== undefined ? externalAnchorEl : internalAnchorEl;
-  const setAnchorEl = externalAnchorEl !== undefined ? (() => {}) : setInternalAnchorEl;
+  const setAnchorEl = externalAnchorEl !== undefined ? () => {} : setInternalAnchorEl;
 
   const threadEmails = useMemo(
     () => emails.filter((email) => email.threadId === thread.threadId),

@@ -32,8 +32,8 @@ export default function RecipientsInput({
     });
   }, [globalRecipients]);
 
-  const [isExpanded, setIsExpanded] = useState(true);  // Always start expanded for better accessibility
-  const [showCc, setShowCc] = useState(true);  // Always show CC field for better accessibility
+  const [isExpanded, setIsExpanded] = useState(true); // Always start expanded for better accessibility
+  const [showCc, setShowCc] = useState(true); // Always show CC field for better accessibility
   const [showBcc, setShowBcc] = useState(true); // Always show BCC field for better accessibility
   const [selectedRecipients, setSelectedRecipients] = useState({
     to: Array.isArray(to) ? to : [],
@@ -160,7 +160,7 @@ export default function RecipientsInput({
         const hasToInput = inputValues.to.trim() && isValidEmail(inputValues.to.trim());
         const hasCcInput = inputValues.cc.trim() && isValidEmail(inputValues.cc.trim());
         const hasBccInput = inputValues.bcc.trim() && isValidEmail(inputValues.bcc.trim());
-        
+
         // Only update state if there's actually pending input to convert
         if (hasToInput || hasCcInput || hasBccInput) {
           const toWithInput = [...selectedRecipients.to];

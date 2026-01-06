@@ -30,20 +30,20 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
   };
 
   const truncateFileName = (fileName, maxLength = 50) => {
-    if (!fileName) return '';
-    
+    if (!fileName) return "";
+
     // Get file extension
-    const lastDotIndex = fileName.lastIndexOf('.');
-    const extension = lastDotIndex > -1 ? fileName.substring(lastDotIndex) : '';
+    const lastDotIndex = fileName.lastIndexOf(".");
+    const extension = lastDotIndex > -1 ? fileName.substring(lastDotIndex) : "";
     const nameWithoutExt = lastDotIndex > -1 ? fileName.substring(0, lastDotIndex) : fileName;
-    
+
     // If the name is short enough, return as is
     if (fileName.length <= maxLength) {
       return fileName;
     }
-    
+
     // Truncate the name part and add extension
-    const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 3) + '...';
+    const truncatedName = nameWithoutExt.substring(0, maxLength - extension.length - 3) + "...";
     return truncatedName + extension;
   };
 
@@ -51,7 +51,7 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
   const calculateUploadTime = (size) => {
     const sizeInMB = size / (1024 * 1024);
     // Base time of 2 seconds, plus 0.5 seconds per MB
-    return Math.max(2000, 2000 + (sizeInMB * 500));
+    return Math.max(2000, 2000 + sizeInMB * 500);
   };
 
   const handleAccept = () => {
@@ -59,15 +59,15 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
     setIsUploading(true);
     setProgress(0);
     hasCalledAcceptRef.current = false; // Reset the flag
-    
+
     const uploadTime = calculateUploadTime(fileSize);
     const interval = 50; // Update every 50ms
     const increment = 100 / (uploadTime / interval);
-    
+
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         const newProgress = Math.min(prev + increment, 100);
-        
+
         if (newProgress >= 100) {
           clearInterval(progressInterval);
           setIsUploading(false);
@@ -124,10 +124,10 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
           padding: "24px 24px 16px 24px",
         }}
       >
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontWeight: 400, 
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 400,
             color: "#202124",
             fontSize: showProgress ? "22px" : "20px",
           }}
@@ -141,21 +141,22 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
           // Initial popup content
           <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
             <Box sx={{ flex: 1 }}>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: "rgb(68, 71, 70)", 
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "rgb(68, 71, 70)",
                   fontSize: "14px",
                   lineHeight: "20px",
                   fontFamily: '"Google Sans Flex", "Google Sans Text", "Google Sans", Roboto, Arial, sans-serif',
                 }}
               >
-                Attachments larger than 25MB will be automatically uploaded to MailG Drive. A download link will be included in your emails.
+                Attachments larger than 25MB will be automatically uploaded to MailG Drive. A download link will be
+                included in your emails.
                 <br />
                 <a
                   href="#"
                   onClick={(e) => e.preventDefault()}
-                  style={{ 
+                  style={{
                     color: "rgb(17, 85, 204)",
                     textDecoration: "underline",
                     cursor: "pointer",
@@ -177,10 +178,7 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
                 flexShrink: 0,
               }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "24px", color: "white" }}
-              >
+              <span className="material-symbols-outlined" style={{ fontSize: "24px", color: "white" }}>
                 cloud_upload
               </span>
             </Box>
@@ -188,9 +186,9 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
         ) : (
           // Progress content
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Typography 
-              variant="body1" 
-              sx={{ 
+            <Typography
+              variant="body1"
+              sx={{
                 color: "#5f6368",
                 fontSize: "14px",
                 lineHeight: "20px",
@@ -205,8 +203,7 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
                 }}
               >
                 MailG Drive
-              </Typography>
-              {" "}
+              </Typography>{" "}
               <Typography
                 component="span"
                 sx={{
@@ -220,10 +217,10 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
             </Typography>
 
             {fileName && (
-              <Box 
-                sx={{ 
-                  display: "flex", 
-                  alignItems: "center", 
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
                   gap: 2,
                   paddingLeft: "24px",
                   paddingTop: "8px",
@@ -238,14 +235,11 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
                     justifyContent: "center",
                   }}
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "20px", color: "#5f6368" }}
-                  >
+                  <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#5f6368" }}>
                     description
                   </span>
                 </Box>
-                
+
                 <Box sx={{ flex: 1, display: "flex", alignItems: "center", gap: 2 }}>
                   <Typography
                     variant="body2"
@@ -259,11 +253,11 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
                   >
                     {truncateFileName(fileName, 40)}
                   </Typography>
-                  
+
                   <Typography variant="body2" sx={{ color: "#5f6368", minWidth: "fit-content" }}>
                     {formatSize(fileSize)}
                   </Typography>
-                  
+
                   <Box sx={{ width: "100px", minWidth: "100px" }}>
                     <LinearProgress
                       variant="determinate"
@@ -279,7 +273,7 @@ const LargeFileModal = ({ open, onClose, onAccept, fileName, fileSize }) => {
                       }}
                     />
                   </Box>
-                  
+
                   {isUploading && (
                     <IconButton
                       size="small"
