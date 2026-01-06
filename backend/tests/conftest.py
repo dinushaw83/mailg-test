@@ -27,13 +27,13 @@ from app.main import app
 from app.db.base import Base
 from app.db.session import get_db
 from app.models.user import User
-from app.models.folder import Folder
 from app.models.label import Label
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 from app.auth.token_manager import get_token_manager
+from app.core.constants import FolderType
 
 
 # Use in-memory SQLite for tests
@@ -185,76 +185,16 @@ def mock_request():
 # Email-related fixtures
 
 @pytest.fixture
-def sample_folder(db_session, sample_user):
-    """Create a sample folder for testing."""
-    folder = Folder(
-        name="Test Inbox",
-        folder_type="inbox",
-        owner_id=sample_user.id,
-        is_system=True
-    )
-    db_session.add(folder)
-    db_session.commit()
-    db_session.refresh(folder)
-    return folder
-
-
-@pytest.fixture
-def sample_drafts_folder(db_session, sample_user):
-    """Create a sample drafts folder for testing."""
-    folder = Folder(
-        name="Test Drafts",
-        folder_type="drafts",
-        owner_id=sample_user.id,
-        is_system=True
-    )
-    db_session.add(folder)
-    db_session.commit()
-    db_session.refresh(folder)
-    return folder
-
-
-@pytest.fixture
-def sample_sent_folder(db_session, sample_user):
-    """Create a sample sent folder for testing."""
-    folder = Folder(
-        name="Test Sent",
-        folder_type="sent",
-        owner_id=sample_user.id,
-        is_system=True
-    )
-    db_session.add(folder)
-    db_session.commit()
-    db_session.refresh(folder)
-    return folder
-
-
-@pytest.fixture
-def sample_trash_folder(db_session, sample_user):
-    """Create a sample trash folder for testing."""
-    folder = Folder(
-        name="Test Trash",
-        folder_type="trash",
-        owner_id=sample_user.id,
-        is_system=True
-    )
-    db_session.add(folder)
-    db_session.commit()
-    db_session.refresh(folder)
-    return folder
-
-
-@pytest.fixture
-def sample_email(db_session, sample_user, sample_folder):
+def sample_email(db_session, sample_user):
     """Create a sample email for testing."""
     email = Email(
         subject="Test Email Subject",
         body="Test email body content",
         status="received",
+        folder=FolderType.INBOX.value,
         is_read=False,
         is_starred=False,
         sender_id=sample_user.id,
-        folder_id=sample_folder.id
     )
     db_session.add(email)
     db_session.commit()
@@ -263,14 +203,14 @@ def sample_email(db_session, sample_user, sample_folder):
 
 
 @pytest.fixture
-def sample_draft_email(db_session, sample_user, sample_drafts_folder):
+def sample_draft_email(db_session, sample_user):
     """Create a sample draft email for testing."""
     email = Email(
         subject="Draft Email",
         body="Draft content",
         status="draft",
+        folder=FolderType.DRAFTS.value,
         sender_id=sample_user.id,
-        folder_id=sample_drafts_folder.id
     )
     db_session.add(email)
     db_session.commit()

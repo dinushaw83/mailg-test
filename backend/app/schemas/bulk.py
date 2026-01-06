@@ -23,7 +23,7 @@ class BulkStarRequest(BulkEmailIds):
 
 class BulkMoveRequest(BulkEmailIds):
     """Schema for bulk move to folder."""
-    folder_id: UUID = Field(..., description="Target folder ID")
+    folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, starred")
 
 
 class BulkDeleteRequest(BulkEmailIds):

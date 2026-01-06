@@ -14,7 +14,6 @@ import asyncio
 import logging
 import os
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
@@ -25,7 +24,6 @@ from app.core.config import DATABASE_URL, POSTGRES_ADMIN_DB, POSTGRES_RUN_DB_PRE
 from app.core.constants import EmailStatus, FolderType
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.folder import Folder
 from app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -64,15 +62,6 @@ def _get_active_run_databases() -> list[str]:
         engine.dispose()
 
 
-def _get_user_folder(db, user_id: int, folder_type: str) -> Optional[Folder]:
-    """Get a user's folder by type."""
-    return db.query(Folder).filter(
-        Folder.owner_id == user_id,
-        Folder.folder_type == folder_type,
-        Folder.is_deleted == False
-    ).first()
-
-
 def _deliver_email_to_recipients(db, email: Email, sender_id: int) -> None:
     """Create received copies of an email for all recipients who are system users."""
     for recipient in email.recipients:
@@ -82,15 +71,14 @@ def _deliver_email_to_recipients(db, email: Email, sender_id: int) -> None:
                 User.is_deleted == False
             ).first()
             if recipient_user:
-                recipient_folder = _get_user_folder(db, recipient_user.id, FolderType.INBOX.value)
                 received_email = Email(
                     subject=email.subject,
                     body=email.body,
                     html_body=email.html_body,
                     status=EmailStatus.RECEIVED.value,
+                    folder=FolderType.INBOX.value,
                     category=email.category,
                     sender_id=sender_id,
-                    folder_id=recipient_folder.id if recipient_folder else None,
                     is_read=False,
                     received_at=datetime.utcnow(),
                     thread_id=email.thread_id,

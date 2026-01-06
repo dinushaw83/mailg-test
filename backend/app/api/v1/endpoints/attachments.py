@@ -2,28 +2,24 @@
 
 This module provides:
 - Attachment listing and details
-- Attachment upload and download
+- Attachment metadata creation (mock - no actual file storage)
 - Attachment deletion
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, status
-from fastapi.responses import StreamingResponse
-from sqlalchemy.orm import Session, joinedload
-from typing import Optional, List
-from uuid import UUID
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+from typing import List
+from uuid import UUID, uuid4
 import logging
-import os
-import io
 
 from app.db.session import get_db
 from app.models.attachment import Attachment
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.schemas.attachment import AttachmentCreate, AttachmentResponse, AttachmentListResponse
-from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import VALID_ATTACHMENT_TYPES, AttachmentType
+from app.core.constants import AttachmentType
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -125,12 +121,15 @@ def list_email_attachments(
 
 
 @router.post("/emails/{email_id}/attachments", response_model=AttachmentResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
-def upload_attachment(
+def create_attachment(
     email_id: UUID,
-    file: UploadFile = File(...),
+    attachment_data: AttachmentCreate,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Upload an attachment to an email.
+    """Create attachment metadata for an email (mock - no actual file storage).
+    
+    This endpoint accepts attachment metadata only. In a production system,
+    actual file upload would be handled separately via pre-signed URLs or similar.
     
     Permissions:
     - Users can only add attachments to their own draft emails
@@ -150,21 +149,17 @@ def upload_attachment(
             detail=f"Draft email {email_id} not found"
         )
     
-    # Read file content
-    content = file.file.read()
-    size_bytes = len(content)
+    # Determine attachment type from content_type
+    attachment_type = get_attachment_type(attachment_data.content_type)
     
-    # Determine attachment type
-    attachment_type = get_attachment_type(file.content_type)
-    
-    # Create storage path (in production, this would upload to S3/storage)
-    storage_path = f"/attachments/{email_id}/{file.filename}"
+    # Create mock storage path
+    storage_path = f"/attachments/{email_id}/{attachment_data.filename}"
     
     attachment = Attachment(
         email_id=email_id,
-        filename=file.filename,
-        content_type=file.content_type,
-        size_bytes=size_bytes,
+        filename=attachment_data.filename,
+        content_type=attachment_data.content_type,
+        size_bytes=attachment_data.size_bytes,
         storage_path=storage_path,
         attachment_type=attachment_type,
     )
@@ -177,7 +172,7 @@ def upload_attachment(
         db.rollback()
         raise
     
-    logger.info(f"Attachment {attachment.id} uploaded to email {email_id} by user {current_user.id}")
+    logger.info(f"Attachment metadata {attachment.id} created for email {email_id} by user {current_user.id}")
     
     return format_attachment_response(attachment)
 
@@ -272,11 +267,14 @@ def delete_attachment(
 def download_attachment(
     attachment_id: UUID,
     db: Session = Depends(get_db),
-):
-    """Download an attachment.
+) -> dict:
+    """Get download URL for an attachment (mock - returns placeholder info).
+    
+    In a production system, this would return a pre-signed URL for direct download.
+    Since this is a mock system without actual file storage, it returns metadata.
     
     Permissions:
-    - Users can only download attachments on emails they have access to
+    - Users can only access attachments on emails they have access to
     """
     current_user = auth.user
     
@@ -294,15 +292,12 @@ def download_attachment(
     # Verify email access
     check_email_access(db, attachment.email_id, current_user.id, current_user.role)
     
-    # In production, this would stream from S3/storage
-    # For now, return a placeholder response
-    content = b"Attachment content would be here"
-    
-    return StreamingResponse(
-        io.BytesIO(content),
-        media_type=attachment.content_type or "application/octet-stream",
-        headers={
-            "Content-Disposition": f'attachment; filename="{attachment.filename}"',
-            "Content-Length": str(len(content)),
-        }
-    )
+    # Return mock download info (in production, this would be a pre-signed URL)
+    return {
+        "id": attachment.id,
+        "filename": attachment.filename,
+        "content_type": attachment.content_type,
+        "size_bytes": attachment.size_bytes,
+        "download_url": f"/mock/download/{attachment.id}/{attachment.filename}",
+        "message": "Mock attachment - no actual file content stored"
+    }

@@ -4,10 +4,10 @@ import pytest
 import uuid
 from datetime import datetime, timedelta
 from app.models.email import Email
-from app.models.folder import Folder
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.user import User
+from app.core.constants import FolderType
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -17,7 +17,7 @@ NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
 class TestEmailCreate:
     """Test email creation endpoints."""
 
-    def test_create_email_draft_authenticated(self, client_with_auth, db_session, sample_drafts_folder):
+    def test_create_email_draft_authenticated(self, client_with_auth, db_session):
         """Test creating a draft email with authentication."""
         client, token, user = client_with_auth
         
@@ -53,7 +53,7 @@ class TestEmailCreate:
         
         assert response.status_code == 401
 
-    def test_create_email_with_cc_bcc(self, client_with_auth, db_session, sample_drafts_folder):
+    def test_create_email_with_cc_bcc(self, client_with_auth, db_session):
         """Test creating an email with CC and BCC recipients."""
         client, token, user = client_with_auth
         
@@ -78,7 +78,7 @@ class TestEmailCreate:
 class TestEmailList:
     """Test email listing endpoints."""
 
-    def test_list_emails_pagination(self, client_with_auth, db_session, sample_folder):
+    def test_list_emails_pagination(self, client_with_auth, db_session):
         """Test listing emails with pagination."""
         client, token, user = client_with_auth
         
@@ -88,8 +88,8 @@ class TestEmailList:
                 subject=f"Email {i}",
                 body=f"Body {i}",
                 status="received",
+                folder=FolderType.INBOX.value,
                 sender_id=user.id,
-                folder_id=sample_folder.id
             )
             db_session.add(email)
         db_session.commit()
@@ -105,26 +105,26 @@ class TestEmailList:
         assert "total" in data
         assert "page" in data
 
-    def test_list_emails_filter_by_folder(self, client_with_auth, db_session, sample_folder):
+    def test_list_emails_filter_by_folder(self, client_with_auth, db_session):
         """Test filtering emails by folder."""
         client, token, user = client_with_auth
         
         response = client.get(
-            f"/api/v1/emails?folder_id={sample_folder.id}",
+            "/api/v1/emails?folder=inbox",
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 200
 
-    def test_list_emails_filter_unread(self, client_with_auth, db_session, sample_folder):
+    def test_list_emails_filter_unread(self, client_with_auth, db_session):
         """Test filtering unread emails."""
         client, token, user = client_with_auth
         
         # Create emails with different read status
-        email1 = Email(subject="Read", body="Content", status="received", 
-                       is_read=True, sender_id=user.id, folder_id=sample_folder.id)
-        email2 = Email(subject="Unread", body="Content", status="received", 
-                       is_read=False, sender_id=user.id, folder_id=sample_folder.id)
+        email1 = Email(subject="Read", body="Content", status="received", folder=FolderType.INBOX.value,
+                       is_read=True, sender_id=user.id)
+        email2 = Email(subject="Unread", body="Content", status="received", folder=FolderType.INBOX.value,
+                       is_read=False, sender_id=user.id)
         db_session.add_all([email1, email2])
         db_session.commit()
         
@@ -135,7 +135,7 @@ class TestEmailList:
         
         assert response.status_code == 200
 
-    def test_list_emails_filter_by_thread_id(self, client_with_auth, db_session, sample_folder):
+    def test_list_emails_filter_by_thread_id(self, client_with_auth, db_session):
         """Test filtering emails by thread ID to get all messages in a conversation."""
         client, token, user = client_with_auth
         
@@ -153,15 +153,15 @@ class TestEmailList:
         
         # Create emails in the thread
         email1 = Email(subject="Thread Email 1", body="First message", status="received",
-                       sender_id=user.id, folder_id=sample_folder.id, thread_id=thread.id)
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
         email2 = Email(subject="Re: Thread Email 1", body="Reply message", status="sent",
-                       sender_id=user.id, folder_id=sample_folder.id, thread_id=thread.id)
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
         email3 = Email(subject="Re: Thread Email 1", body="Another reply", status="received",
-                       sender_id=user.id, folder_id=sample_folder.id, thread_id=thread.id)
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
         
         # Create an email NOT in the thread
         email_other = Email(subject="Other Email", body="Not in thread", status="received",
-                            sender_id=user.id, folder_id=sample_folder.id, thread_id=None)
+                            sender_id=user.id, folder=FolderType.INBOX.value, thread_id=None)
         
         db_session.add_all([email1, email2, email3, email_other])
         db_session.commit()
@@ -235,19 +235,19 @@ class TestEmailOperations:
         data = response.json()["data"]
         assert data["is_starred"] == True
 
-    def test_move_email_to_folder(self, client_with_auth, db_session, sample_email, sample_trash_folder):
+    def test_move_email_to_folder(self, client_with_auth, db_session, sample_email):
         """Test moving an email to a different folder."""
         client, token, user = client_with_auth
         
         response = client.post(
             f"/api/v1/emails/{sample_email.id}/move",
-            json={"folder_id": sample_trash_folder.id},
+            json={"folder": "trash"},
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 200
 
-    def test_delete_email_soft_delete(self, client_with_auth, db_session, sample_email, sample_trash_folder):
+    def test_delete_email_soft_delete(self, client_with_auth, db_session, sample_email):
         """Test deleting an email (soft delete - moves to trash)."""
         client, token, user = client_with_auth
         email_id = sample_email.id
@@ -259,7 +259,7 @@ class TestEmailOperations:
         
         assert response.status_code == 204
 
-    def test_delete_email_permanent(self, client_with_auth, db_session, sample_email, sample_trash_folder):
+    def test_delete_email_permanent(self, client_with_auth, db_session, sample_email):
         """Test permanently deleting an email removes it from database."""
         client, token, user = client_with_auth
         email_id = sample_email.id
@@ -276,7 +276,7 @@ class TestEmailOperations:
         email_check = db_session.query(Email).filter(Email.id == email_id).first()
         assert email_check is None
 
-    def test_delete_email_soft_delete_default(self, client_with_auth, db_session, sample_folder):
+    def test_delete_email_soft_delete_default(self, client_with_auth, db_session):
         """Test default delete moves to trash (not permanent)."""
         client, token, user = client_with_auth
         
@@ -286,12 +286,12 @@ class TestEmailOperations:
             body="Content",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
         email_id = email.id
-        original_folder_id = email.folder_id
+        original_folder = email.folder
         
         # Delete without permanent flag
         response = client.delete(
@@ -310,7 +310,7 @@ class TestEmailOperations:
 class TestEmailSendReplyForward:
     """Test email send, reply, and forward operations."""
 
-    def test_send_draft_email(self, client_with_auth, db_session, sample_draft_email, sample_sent_folder):
+    def test_send_draft_email(self, client_with_auth, db_session, sample_draft_email):
         """Test sending a draft email."""
         client, token, user = client_with_auth
         
@@ -327,7 +327,7 @@ class TestEmailSendReplyForward:
         data = response.json()["data"]
         assert data["status"] == "sent"
 
-    def test_reply_to_email(self, client_with_auth, db_session, sample_email, sample_sent_folder):
+    def test_reply_to_email(self, client_with_auth, db_session, sample_email):
         """Test replying to an email."""
         client, token, user = client_with_auth
         
@@ -344,7 +344,7 @@ class TestEmailSendReplyForward:
         data = response.json()["data"]
         assert data["parent_email_id"] == str(sample_email.id)
 
-    def test_forward_email(self, client_with_auth, db_session, sample_email, sample_sent_folder):
+    def test_forward_email(self, client_with_auth, db_session, sample_email):
         """Test forwarding an email."""
         client, token, user = client_with_auth
         
@@ -474,7 +474,7 @@ class TestEmailSnooze:
         
         assert response.status_code == 404
 
-    def test_list_snoozed_emails_filter(self, client_with_auth, db_session, sample_folder):
+    def test_list_snoozed_emails_filter(self, client_with_auth, db_session):
         """Test filtering emails by snoozed status."""
         client, token, user = client_with_auth
         
@@ -484,7 +484,7 @@ class TestEmailSnooze:
             body="Content",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id,
+            folder=FolderType.INBOX.value,
             snooze_until=datetime.utcnow() + timedelta(days=1)
         )
         normal_email = Email(
@@ -492,7 +492,7 @@ class TestEmailSnooze:
             body="Content",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id,
+            folder=FolderType.INBOX.value,
             snooze_until=None
         )
         db_session.add_all([snoozed_email, normal_email])
@@ -510,7 +510,7 @@ class TestEmailSnooze:
         for email in data["results"]:
             assert email["snooze_until"] is not None
 
-    def test_list_non_snoozed_emails_filter(self, client_with_auth, db_session, sample_folder):
+    def test_list_non_snoozed_emails_filter(self, client_with_auth, db_session):
         """Test filtering non-snoozed emails."""
         client, token, user = client_with_auth
         
@@ -520,7 +520,7 @@ class TestEmailSnooze:
             body="Content",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id,
+            folder=FolderType.INBOX.value,
             snooze_until=datetime.utcnow() + timedelta(days=1)
         )
         normal_email = Email(
@@ -528,7 +528,7 @@ class TestEmailSnooze:
             body="Content",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id,
+            folder=FolderType.INBOX.value,
             snooze_until=None
         )
         db_session.add_all([snoozed_email, normal_email])
@@ -615,7 +615,7 @@ class TestEmailArchive:
         db_session.refresh(sample_email)
         assert sample_email.status == "archived"
 
-    def test_archive_email_as_recipient(self, client_with_auth, db_session, sample_folder):
+    def test_archive_email_as_recipient(self, client_with_auth, db_session):
         """Test that a recipient can archive an email they received."""
         client, token, user = client_with_auth
         
@@ -634,7 +634,7 @@ class TestEmailArchive:
             subject="Test received email",
             body="Email body",
             sender_id=sender.id,
-            folder_id=sample_folder.id,
+            folder=FolderType.INBOX.value,
             status="received"
         )
         db_session.add(email)
@@ -727,7 +727,7 @@ class TestEmailCategory:
         
         assert response.status_code == 401
 
-    def test_list_emails_filter_by_category(self, client_with_auth, db_session, sample_folder):
+    def test_list_emails_filter_by_category(self, client_with_auth, db_session):
         """Test filtering emails by category."""
         client, token, user = client_with_auth
         
@@ -738,7 +738,7 @@ class TestEmailCategory:
             status="received",
             category="primary",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         email_promo = Email(
             subject="Promo Email",
@@ -746,7 +746,7 @@ class TestEmailCategory:
             status="received",
             category="promotions",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         email_social = Email(
             subject="Social Email",
@@ -754,7 +754,7 @@ class TestEmailCategory:
             status="received",
             category="social",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add_all([email_primary, email_promo, email_social])
         db_session.commit()
@@ -784,7 +784,7 @@ class TestEmailCategory:
         data = response.json()["data"]
         assert "category" in data
 
-    def test_email_default_category_is_primary(self, client_with_auth, db_session, sample_drafts_folder):
+    def test_email_default_category_is_primary(self, client_with_auth, db_session):
         """Test that new emails default to 'primary' category."""
         client, token, user = client_with_auth
         

@@ -1,6 +1,6 @@
 """Pydantic schemas for Email resource - request/response validation."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -16,15 +16,29 @@ class EmailRecipientSchema(BaseModel):
 
 
 class EmailCreate(BaseModel):
-    """Schema for creating a new email."""
-    subject: str = Field(..., min_length=1, max_length=500, description="Email subject")
+    """Schema for creating a new email.
+    
+    For drafts (is_draft=True): subject and recipients are optional, allowing empty drafts.
+    For sending (is_draft=False): subject must be provided and at least one recipient is required.
+    """
+    subject: Optional[str] = Field(default="", max_length=500, description="Email subject")
     body: Optional[str] = Field(None, description="Plain text body")
     html_body: Optional[str] = Field(None, description="HTML body")
-    recipients: List[EmailRecipientSchema] = Field(..., min_length=1, description="List of recipients")
-    folder_id: Optional[UUID] = Field(None, description="Target folder ID")
+    recipients: List[EmailRecipientSchema] = Field(default_factory=list, description="List of recipients")
     category: Optional[str] = Field("primary", description="Email category: primary, promotions, social, updates, forums")
     is_draft: bool = Field(False, description="Save as draft instead of sending")
     scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time (for undo send feature)")
+    
+    @model_validator(mode='after')
+    def validate_send_requirements(self):
+        """Validate that non-draft emails have required fields."""
+        if not self.is_draft:
+            # When sending, subject and recipients are required
+            if not self.subject or not self.subject.strip():
+                raise ValueError("Subject is required when sending an email")
+            if not self.recipients:
+                raise ValueError("At least one recipient is required when sending an email")
+        return self
 
 
 class EmailUpdate(BaseModel):
@@ -35,7 +49,7 @@ class EmailUpdate(BaseModel):
     is_read: Optional[bool] = None
     is_starred: Optional[bool] = None
     is_important: Optional[bool] = None
-    folder_id: Optional[UUID] = None
+    folder: Optional[str] = Field(None, description="Folder: inbox, sent, drafts, trash, spam, starred")
     category: Optional[str] = Field(None, description="Email category: primary, promotions, social, updates, forums")
 
 
@@ -51,7 +65,7 @@ class EmailStarUpdate(BaseModel):
 
 class EmailMoveRequest(BaseModel):
     """Schema for moving email to folder."""
-    folder_id: UUID = Field(..., description="Target folder ID")
+    folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, starred")
 
 
 class EmailLabelRequest(BaseModel):
@@ -112,14 +126,6 @@ class LabelBriefResponse(BaseModel):
     color: Optional[str] = None
 
 
-class SystemLabelResponse(BaseModel):
-    """System label derived from folder type (e.g., Inbox, Spam, Trash)."""
-    model_config = {"from_attributes": True}
-    
-    name: str = Field(..., description="System label name (e.g., Inbox, Spam, Trash)")
-    color: Optional[str] = Field(None, description="Display color for the label")
-
-
 class EmailResponse(BaseModel):
     """Schema for email response with all fields including metadata."""
     model_config = {"from_attributes": True}
@@ -129,6 +135,7 @@ class EmailResponse(BaseModel):
     body: Optional[str] = None
     html_body: Optional[str] = None
     status: str
+    folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, starred
     category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool
@@ -137,8 +144,6 @@ class EmailResponse(BaseModel):
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
     recipients: List[EmailRecipientResponse] = []
-    folder_id: Optional[UUID] = None
-    folder_name: Optional[str] = None
     thread_id: Optional[UUID] = None
     parent_email_id: Optional[UUID] = None
     sent_at: Optional[datetime] = None
@@ -150,7 +155,6 @@ class EmailResponse(BaseModel):
     attachment_count: int = 0
     attachments: List[AttachmentBriefResponse] = []
     labels: List[LabelBriefResponse] = []
-    system_labels: List[SystemLabelResponse] = []  # System labels derived from folder (Inbox, Spam, etc.)
     can_undo_send: bool = False  # True if email is in queued status and can be cancelled
 
 
@@ -162,6 +166,7 @@ class EmailListResponse(BaseModel):
     subject: str
     snippet: Optional[str] = None  # Preview of body
     status: str
+    folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, starred
     category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool
@@ -169,7 +174,6 @@ class EmailListResponse(BaseModel):
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
-    folder_id: Optional[UUID] = None
     thread_id: Optional[UUID] = None
     sent_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
@@ -178,7 +182,6 @@ class EmailListResponse(BaseModel):
     attachment_count: int = 0
     has_attachments: bool = False
     labels: List[LabelBriefResponse] = []
-    system_labels: List[SystemLabelResponse] = []  # System labels derived from folder (Inbox, Spam, etc.)
     can_undo_send: bool = False  # True if email is in queued status and can be cancelled
 
 

@@ -4,7 +4,7 @@ import pytest
 import uuid
 from datetime import datetime, timedelta
 from app.models.email import Email
-from app.models.folder import Folder
+from app.core.constants import FolderType
 from app.models.label import Label
 from app.models.email_label import EmailLabel
 from app.models.user import User
@@ -18,7 +18,7 @@ NON_EXISTENT_UUID_2 = "00000000-0000-0000-0000-000000099998"
 class TestBulkRead:
     """Test bulk mark read/unread operations."""
 
-    def test_bulk_mark_read_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_mark_read_success(self, client_with_auth, db_session):
         """Test marking multiple emails as read."""
         client, token, user = client_with_auth
         
@@ -31,13 +31,13 @@ class TestBulkRead:
                 status="received",
                 is_read=False,
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/read",
@@ -56,7 +56,7 @@ class TestBulkRead:
             db_session.refresh(email)
             assert email.is_read == True
 
-    def test_bulk_mark_unread_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_mark_unread_success(self, client_with_auth, db_session):
         """Test marking multiple emails as unread."""
         client, token, user = client_with_auth
         
@@ -69,13 +69,13 @@ class TestBulkRead:
                 status="received",
                 is_read=True,
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/read",
@@ -92,7 +92,7 @@ class TestBulkRead:
             db_session.refresh(email)
             assert email.is_read == False
 
-    def test_bulk_read_partial_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_read_partial_success(self, client_with_auth, db_session):
         """Test bulk read with some invalid email IDs."""
         client, token, user = client_with_auth
         
@@ -103,7 +103,7 @@ class TestBulkRead:
             status="received",
             is_read=False,
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
@@ -148,7 +148,7 @@ class TestBulkRead:
 class TestBulkStar:
     """Test bulk star/unstar operations."""
 
-    def test_bulk_star_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_star_success(self, client_with_auth, db_session):
         """Test starring multiple emails."""
         client, token, user = client_with_auth
         
@@ -161,13 +161,13 @@ class TestBulkStar:
                 status="received",
                 is_starred=False,
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/star",
@@ -184,7 +184,7 @@ class TestBulkStar:
             db_session.refresh(email)
             assert email.is_starred == True
 
-    def test_bulk_unstar_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_unstar_success(self, client_with_auth, db_session):
         """Test unstarring multiple emails."""
         client, token, user = client_with_auth
         
@@ -197,13 +197,13 @@ class TestBulkStar:
                 status="received",
                 is_starred=True,
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/star",
@@ -219,7 +219,7 @@ class TestBulkStar:
 class TestBulkMove:
     """Test bulk move to folder operations."""
 
-    def test_bulk_move_success(self, client_with_auth, db_session, sample_folder, sample_trash_folder):
+    def test_bulk_move_success(self, client_with_auth, db_session):
         """Test moving multiple emails to a folder."""
         client, token, user = client_with_auth
         
@@ -231,17 +231,17 @@ class TestBulkMove:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/move",
-            json={"email_ids": email_ids, "folder_id": sample_trash_folder.id},
+            json={"email_ids": email_ids, "folder": "trash"},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -252,9 +252,9 @@ class TestBulkMove:
         # Verify emails are moved
         for email in emails:
             db_session.refresh(email)
-            assert email.folder_id == sample_trash_folder.id
+            assert email.folder == FolderType.TRASH.value
 
-    def test_bulk_move_invalid_folder(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_move_invalid_folder(self, client_with_auth, db_session):
         """Test bulk move to invalid folder fails."""
         client, token, user = client_with_auth
         
@@ -264,14 +264,14 @@ class TestBulkMove:
             body="Body",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
         
         response = client.post(
             "/api/v1/bulk/move",
-            json={"email_ids": [str(email.id)], "folder_id": NON_EXISTENT_UUID},
+            json={"email_ids": [str(email.id)], "folder": "invalid_folder"},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -281,7 +281,7 @@ class TestBulkMove:
 class TestBulkDelete:
     """Test bulk delete operations."""
 
-    def test_bulk_delete_to_trash(self, client_with_auth, db_session, sample_folder, sample_trash_folder):
+    def test_bulk_delete_to_trash(self, client_with_auth, db_session):
         """Test deleting multiple emails (moves to trash)."""
         client, token, user = client_with_auth
         
@@ -293,13 +293,13 @@ class TestBulkDelete:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/delete",
@@ -314,9 +314,9 @@ class TestBulkDelete:
         # Verify emails are moved to trash
         for email in emails:
             db_session.refresh(email)
-            assert email.folder_id == sample_trash_folder.id
+            assert email.folder == FolderType.TRASH.value
 
-    def test_bulk_delete_permanent(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_delete_permanent(self, client_with_auth, db_session):
         """Test permanently deleting multiple emails."""
         client, token, user = client_with_auth
         
@@ -328,13 +328,13 @@ class TestBulkDelete:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/delete",
@@ -355,7 +355,7 @@ class TestBulkDelete:
 class TestBulkLabels:
     """Test bulk label add/remove operations."""
 
-    def test_bulk_add_labels_success(self, client_with_auth, db_session, sample_folder, sample_label):
+    def test_bulk_add_labels_success(self, client_with_auth, db_session, sample_label):
         """Test adding labels to multiple emails."""
         client, token, user = client_with_auth
         
@@ -376,17 +376,17 @@ class TestBulkLabels:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/labels/add",
-            json={"email_ids": email_ids, "label_ids": [sample_label.id, label2.id]},
+            json={"email_ids": email_ids, "label_ids": [str(sample_label.id), str(label2.id)]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -401,7 +401,7 @@ class TestBulkLabels:
             ).all()
             assert len(email_labels) == 2
 
-    def test_bulk_add_labels_invalid_label(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_add_labels_invalid_label(self, client_with_auth, db_session):
         """Test adding invalid labels fails."""
         client, token, user = client_with_auth
         
@@ -411,7 +411,7 @@ class TestBulkLabels:
             body="Body",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
@@ -424,7 +424,7 @@ class TestBulkLabels:
         
         assert response.status_code == 400
 
-    def test_bulk_remove_labels_success(self, client_with_auth, db_session, sample_folder, sample_label):
+    def test_bulk_remove_labels_success(self, client_with_auth, db_session, sample_label):
         """Test removing labels from multiple emails."""
         client, token, user = client_with_auth
         
@@ -436,7 +436,7 @@ class TestBulkLabels:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
@@ -448,11 +448,11 @@ class TestBulkLabels:
             db_session.add(email_label)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/labels/remove",
-            json={"email_ids": email_ids, "label_ids": [sample_label.id]},
+            json={"email_ids": email_ids, "label_ids": [str(sample_label.id)]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -471,7 +471,7 @@ class TestBulkLabels:
 class TestBulkSnooze:
     """Test bulk snooze/unsnooze operations."""
 
-    def test_bulk_snooze_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_snooze_success(self, client_with_auth, db_session):
         """Test snoozing multiple emails."""
         client, token, user = client_with_auth
         
@@ -483,13 +483,13 @@ class TestBulkSnooze:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
         
         response = client.post(
@@ -507,7 +507,7 @@ class TestBulkSnooze:
             db_session.refresh(email)
             assert email.snooze_until is not None
 
-    def test_bulk_snooze_past_time_fails(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_snooze_past_time_fails(self, client_with_auth, db_session):
         """Test bulk snooze with past time fails."""
         client, token, user = client_with_auth
         
@@ -517,7 +517,7 @@ class TestBulkSnooze:
             body="Body",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
@@ -526,13 +526,13 @@ class TestBulkSnooze:
         
         response = client.post(
             "/api/v1/bulk/snooze",
-            json={"email_ids": [email.id], "snooze_until": snooze_time},
+            json={"email_ids": [str(email.id)], "snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 400
 
-    def test_bulk_unsnooze_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_unsnooze_success(self, client_with_auth, db_session):
         """Test unsnoozing multiple emails."""
         client, token, user = client_with_auth
         
@@ -544,14 +544,14 @@ class TestBulkSnooze:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id,
+                folder=FolderType.INBOX.value,
                 snooze_until=datetime.utcnow() + timedelta(days=1)
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/unsnooze",
@@ -572,7 +572,7 @@ class TestBulkSnooze:
 class TestBulkArchive:
     """Test bulk archive operations."""
 
-    def test_bulk_archive_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_archive_success(self, client_with_auth, db_session):
         """Test archiving multiple emails."""
         client, token, user = client_with_auth
         
@@ -584,13 +584,13 @@ class TestBulkArchive:
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/archive",
@@ -611,7 +611,7 @@ class TestBulkArchive:
 class TestBulkAccessControl:
     """Test bulk operations access control."""
 
-    def test_bulk_operation_other_user_emails(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_operation_other_user_emails(self, client_with_auth, db_session):
         """Test that users cannot modify other users' emails."""
         client, token, user = client_with_auth
         
@@ -627,23 +627,13 @@ class TestBulkAccessControl:
         db_session.add(other_user)
         db_session.commit()
         
-        # Create another user's folder
-        other_folder = Folder(
-            name="Other Inbox",
-            folder_type="inbox",
-            owner_id=other_user.id,
-            is_system=True
-        )
-        db_session.add(other_folder)
-        db_session.commit()
-        
         # Create email owned by other user
         other_email = Email(
             subject="Other's Email",
             body="Body",
             status="received",
             sender_id=other_user.id,
-            folder_id=other_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(other_email)
         db_session.commit()
@@ -661,7 +651,7 @@ class TestBulkAccessControl:
         assert data["failed"] == 1
         assert data["successful"] == 0
 
-    def test_bulk_response_structure(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_response_structure(self, client_with_auth, db_session):
         """Test that bulk response has correct structure."""
         client, token, user = client_with_auth
         
@@ -671,7 +661,7 @@ class TestBulkAccessControl:
             body="Body",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
@@ -703,7 +693,7 @@ class TestBulkAccessControl:
 class TestBulkCategory:
     """Test bulk category update operations."""
 
-    def test_bulk_category_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_category_success(self, client_with_auth, db_session):
         """Test updating category for multiple emails."""
         client, token, user = client_with_auth
         
@@ -716,13 +706,13 @@ class TestBulkCategory:
                 status="received",
                 category="primary",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             emails.append(email)
         db_session.commit()
         
-        email_ids = [e.id for e in emails]
+        email_ids = [str(e.id) for e in emails]
         
         response = client.post(
             "/api/v1/bulk/category",
@@ -739,7 +729,7 @@ class TestBulkCategory:
             db_session.refresh(email)
             assert email.category == "promotions"
 
-    def test_bulk_category_all_types(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_category_all_types(self, client_with_auth, db_session):
         """Test all valid category types."""
         client, token, user = client_with_auth
         
@@ -752,14 +742,14 @@ class TestBulkCategory:
                 body="Body",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
             db_session.commit()
             
             response = client.post(
                 "/api/v1/bulk/category",
-                json={"email_ids": [email.id], "category": category},
+                json={"email_ids": [str(email.id)], "category": category},
                 headers={"Authorization": f"Bearer {token}"}
             )
             
@@ -770,7 +760,7 @@ class TestBulkCategory:
             db_session.refresh(email)
             assert email.category == category
 
-    def test_bulk_category_invalid_fails(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_category_invalid_fails(self, client_with_auth, db_session):
         """Test bulk category with invalid category fails."""
         client, token, user = client_with_auth
         
@@ -780,20 +770,20 @@ class TestBulkCategory:
             body="Body",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
         
         response = client.post(
             "/api/v1/bulk/category",
-            json={"email_ids": [email.id], "category": "invalid_category"},
+            json={"email_ids": [str(email.id)], "category": "invalid_category"},
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 400
 
-    def test_bulk_category_partial_success(self, client_with_auth, db_session, sample_folder):
+    def test_bulk_category_partial_success(self, client_with_auth, db_session):
         """Test bulk category with some invalid email IDs."""
         client, token, user = client_with_auth
         
@@ -803,7 +793,7 @@ class TestBulkCategory:
             body="Body",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
