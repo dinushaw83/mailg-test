@@ -60,6 +60,8 @@ jobs:
 
       - name: Run backend unit tests
         working-directory: ./backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/backend:${{ env.PYTHONPATH }}
         run: |
           pytest tests/ -v --cov=app --cov-report=xml --cov-report=term --tb=short
         continue-on-error: false
