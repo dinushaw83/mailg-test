@@ -3,8 +3,8 @@ name: Build Docker Images
 on:
   push:
     branches:
+      - main
       - feature/*
-      - develop
   pull_request:
     branches:
       - main
@@ -18,9 +18,8 @@ on:
         type: boolean
 
 env:
-  REGISTRY: ${{ secrets.CONTAINER_REGISTRY_URL || 'gcr.io' }}
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+  REGISTRY: ghcr.io
+  REGISTRY_OWNER: ${{ github.repository_owner }}
 
 jobs:
   build:
@@ -42,8 +41,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-backend
-            ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-frontend
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-backend
+            ${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-frontend
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -52,26 +51,7 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Set up GCP authentication
-        if: env.REGISTRY == 'gcr.io' || contains(env.REGISTRY, 'pkg.dev')
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-      - name: Configure Docker for GCP
-        if: env.REGISTRY == 'gcr.io' || contains(env.REGISTRY, 'pkg.dev')
-        run: |
-          gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
-
-      - name: Log in to Docker Hub
-        if: contains(env.REGISTRY, 'docker.io')
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Log in to GHCR
-        if: contains(env.REGISTRY, 'ghcr.io')
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -84,7 +64,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
-          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-backend:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -96,7 +76,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_images != 'false') }}
-          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-frontend:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -104,16 +84,16 @@ jobs:
 
       - name: Output image tags
         run: |
-          echo "Backend image: ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-backend:${{ github.sha }}"
-          echo "Frontend image: ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-frontend:${{ github.sha }}"
-          echo "BACKEND_IMAGE=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-backend:${{ github.sha }}" >> $GITHUB_ENV
-          echo "FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-frontend:${{ github.sha }}" >> $GITHUB_ENV
+          echo "Backend image: ${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-backend:${{ github.sha }}"
+          echo "Frontend image: ${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-frontend:${{ github.sha }}"
+          echo "BACKEND_IMAGE=${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-backend:${{ github.sha }}" >> $GITHUB_ENV
+          echo "FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-frontend:${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Save image tags as artifact
         if: github.event_name != 'pull_request'
         run: |
-          echo "BACKEND_IMAGE=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-backend:${{ github.sha }}" > image-tags.txt
-          echo "FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/mailg-frontend:${{ github.sha }}" >> image-tags.txt
+          echo "BACKEND_IMAGE=${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-backend:${{ github.sha }}" > image-tags.txt
+          echo "FRONTEND_IMAGE=${{ env.REGISTRY }}/${{ env.REGISTRY_OWNER }}/mailg-frontend:${{ github.sha }}" >> image-tags.txt
           echo "COMMIT_SHA=${{ github.sha }}" >> image-tags.txt
           echo "BRANCH=${{ github.ref_name }}" >> image-tags.txt
 
