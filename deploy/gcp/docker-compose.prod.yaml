@@ -2,7 +2,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: mailg-postgres
+    container_name: ui-gym-mailg-postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-mailg}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -55,7 +55,7 @@ services:
 
   backend:
     image: ${BACKEND_IMAGE:-gcr.io/${GCP_PROJECT_ID}/mailg-backend:latest}
-    container_name: mailg-backend
+    container_name: ui-gym-mailg-backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -92,7 +92,7 @@ services:
 
   mailg:
     image: ${FRONTEND_IMAGE:-gcr.io/${GCP_PROJECT_ID}/mailg-frontend:latest}
-    container_name: mailg-frontend
+    container_name: ui-gym-mailg-frontend
     ports:
       - "${FRONTEND_EXTERNAL_PORT:-3002}:3000"
     environment:
@@ -119,7 +119,7 @@ services:
   cadvisor:
     image: ghcr.io/google/cadvisor:latest
     profiles: ["instrumentation"]
-    container_name: mailg-cadvisor
+    container_name: ui-gym-mailg-cadvisor
     ports:
       - "${CADVISOR_EXTERNAL_PORT:-8090}:8080"
     privileged: true
@@ -137,7 +137,7 @@ services:
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
     profiles: ["instrumentation"]
-    container_name: mailg-node-exporter
+    container_name: ui-gym-mailg-node-exporter
     command:
       - "--path.rootfs=/host"
       - "--path.procfs=/host/proc"
@@ -153,7 +153,7 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     profiles: ["instrumentation"]
-    container_name: mailg-otel-collector
+    container_name: ui-gym-mailg-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./instrumentation/collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
@@ -168,7 +168,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     profiles: ["instrumentation"]
-    container_name: mailg-prometheus
+    container_name: ui-gym-mailg-prometheus
     volumes:
       - ./instrumentation/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -191,7 +191,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     profiles: ["instrumentation"]
-    container_name: mailg-grafana
+    container_name: ui-gym-mailg-grafana
     entrypoint: ["sh", "-c", "sh /etc/grafana/init.sh & exec /run.sh"]
     ports:
       - "${GRAFANA_EXTERNAL_PORT:-3000}:3000"
