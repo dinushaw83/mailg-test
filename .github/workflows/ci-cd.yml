@@ -26,6 +26,7 @@ on:
         default: 'false'
         type: boolean
 
+# Consolidated environment variables
 env:
   REGISTRY: ghcr.io
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -33,24 +34,29 @@ env:
   VM_HOST: ${{ secrets.GCP_VM_HOST }}
   VM_USER: ${{ secrets.GCP_VM_USER }}
   DEPLOY_DIR: ~/mailg-deploy
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+  BACKEND_PORT: 8766
+  FRONTEND_PORT: 3002
 
 jobs:
   # Test Stage - Run tests in parallel
-  test:
-    name: Run Tests
+  backend-tests:
+    name: Backend Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     if: github.event.inputs.skip_tests != 'true'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Backend Tests
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
+          cache-dependency-path: './backend/requirements.txt'
       
       - name: Install backend dependencies
         working-directory: ./backend
@@ -64,7 +70,6 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/backend:${{ env.PYTHONPATH }}
         run: |
           pytest tests/ -v --cov=app --cov-report=xml --cov-report=term --tb=short
-        continue-on-error: false
 
       - name: Upload backend coverage
         uses: codecov/codecov-action@v4
@@ -74,12 +79,22 @@ jobs:
           name: backend-coverage
         continue-on-error: true
 
-      # Frontend Tests
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.skip_tests != 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: './package-lock.json'
 
       - name: Install frontend dependencies
         run: npm ci
@@ -89,7 +104,6 @@ jobs:
 
       - name: Build frontend (test build)
         run: npm run build
-        continue-on-error: false
 
       - name: Verify build output
         run: |
@@ -99,7 +113,16 @@ jobs:
           fi
           echo "✅ Frontend build successful"
 
-      # Integration Tests (Dockerfile validation)
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event.inputs.skip_tests != 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -118,15 +141,61 @@ jobs:
           docker compose config > /dev/null || exit 1
           echo "✓ docker-compose.yaml is valid"
 
-  # Build Stage - Build and push images to GHCR
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [backend-tests, frontend-tests, integration-tests]
+    if: always() && github.event.inputs.skip_tests != 'true'
+    
+    steps:
+      - name: Check test results
+        run: |
+          BACKEND_RESULT="${{ needs.backend-tests.result }}"
+          FRONTEND_RESULT="${{ needs.frontend-tests.result }}"
+          INTEGRATION_RESULT="${{ needs.integration-tests.result }}"
+          
+          if [ "$BACKEND_RESULT" != "success" ]; then
+            echo "❌ Backend tests failed"
+            exit 1
+          fi
+          if [ "$FRONTEND_RESULT" != "success" ]; then
+            echo "❌ Frontend tests failed"
+            exit 1
+          fi
+          if [ "$INTEGRATION_RESULT" != "success" ]; then
+            echo "❌ Integration tests failed"
+            exit 1
+          fi
+          echo "✅ All tests passed"
+
+  # Build Stage - Build and push images in parallel using matrix
   build:
     name: Build and Push Images
     runs-on: ubuntu-latest
-    needs: test
-    if: always() && (needs.test.result == 'success' || github.event.inputs.skip_tests == 'true')
+    needs: [backend-tests, frontend-tests, integration-tests]
+    if: |
+      always() && 
+      (needs.backend-tests.result == 'success' || github.event.inputs.skip_tests == 'true') &&
+      (needs.frontend-tests.result == 'success' || github.event.inputs.skip_tests == 'true') &&
+      (needs.integration-tests.result == 'success' || github.event.inputs.skip_tests == 'true')
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: backend
+            context: ./backend
+            dockerfile: ./backend/Dockerfile
+            output_key: backend_image
+          - name: frontend
+            context: .
+            dockerfile: ./Dockerfile
+            output_key: frontend_image
 
     steps:
       - name: Checkout code
@@ -134,21 +203,23 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
 
       - name: Set registry owner (lowercase)
         id: registry-owner
         run: |
           OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "owner=${OWNER_LOWER}" >> $GITHUB_OUTPUT
-          echo "Registry owner (lowercase): ${OWNER_LOWER}"
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-backend
-            ${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-frontend
+            ${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-${{ matrix.image.name }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -164,42 +235,57 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push backend image
+      - name: Build and push ${{ matrix.image.name }} image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-backend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-${{ matrix.image.name }}:${{ github.sha }}
+          cache-from: |
+            type=gha
+            type=registry,ref=${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-${{ matrix.image.name }}:buildcache
+          cache-to: |
+            type=gha,mode=max
+            type=registry,ref=${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-${{ matrix.image.name }}:buildcache,mode=max
           build-args: |
             VITE_APP_URL=${{ secrets.VITE_APP_URL }}
 
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }},${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-frontend:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VITE_APP_URL=${{ secrets.VITE_APP_URL }}
+      - name: Output ${{ matrix.image.name }} image tag
+        run: |
+          IMG="${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-${{ matrix.image.name }}:${{ github.sha }}"
+          echo "Built ${{ matrix.image.name }} image: ${IMG}"
 
-      - name: Output image tags
+  # Collect build outputs
+  build-summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: build
+    if: always() && needs.build.result == 'success'
+    timeout-minutes: 2
+    
+    steps:
+      - name: Set registry owner (lowercase)
+        id: registry-owner
+        run: |
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "owner=${OWNER_LOWER}" >> $GITHUB_OUTPUT
+
+      - name: Collect image tags
         id: image-tags
         run: |
           BACKEND_IMG="${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-backend:${{ github.sha }}"
           FRONTEND_IMG="${{ env.REGISTRY }}/${{ steps.registry-owner.outputs.owner }}/mailg-frontend:${{ github.sha }}"
           
-          echo "Backend image: ${BACKEND_IMG}"
-          echo "Frontend image: ${FRONTEND_IMG}"
-          
           echo "backend_image=${BACKEND_IMG}" >> $GITHUB_OUTPUT
           echo "frontend_image=${FRONTEND_IMG}" >> $GITHUB_OUTPUT
           echo "commit_sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+          
+          echo "Backend image: ${BACKEND_IMG}"
+          echo "Frontend image: ${FRONTEND_IMG}"
+
     outputs:
       backend_image: ${{ steps.image-tags.outputs.backend_image }}
       frontend_image: ${{ steps.image-tags.outputs.frontend_image }}
@@ -209,12 +295,13 @@ jobs:
   deploy:
     name: Deploy to GCP VM
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-summary
     if: |
       always() && 
-      needs.build.result == 'success' && 
+      needs.build-summary.result == 'success' && 
       github.event_name != 'pull_request' &&
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/feature/') || github.event_name == 'workflow_dispatch')
+    timeout-minutes: 20
     environment: ${{ github.event.inputs.environment || 'production' }}
 
     steps:
@@ -248,10 +335,9 @@ jobs:
       - name: Set image tags
         id: image-tags
         run: |
-          # Use image tags from build job output, with fallback
-          BACKEND_IMG="${{ needs.build.outputs.backend_image }}"
-          FRONTEND_IMG="${{ needs.build.outputs.frontend_image }}"
-          COMMIT_SHA="${{ needs.build.outputs.commit_sha }}"
+          BACKEND_IMG="${{ needs.build-summary.outputs.backend_image }}"
+          FRONTEND_IMG="${{ needs.build-summary.outputs.frontend_image }}"
+          COMMIT_SHA="${{ needs.build-summary.outputs.commit_sha }}"
           
           # Fallback to constructing tags if outputs not available
           if [ -z "${BACKEND_IMG}" ]; then
@@ -270,12 +356,26 @@ jobs:
           echo "Using backend image: ${BACKEND_IMG}"
           echo "Using frontend image: ${FRONTEND_IMG}"
 
+      - name: Pre-deployment checks
+        run: |
+          echo "Running pre-deployment checks..."
+          if [ -z "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" ]; then
+            echo "❌ GCP_SERVICE_ACCOUNT_KEY secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.GCP_SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ GCP_SSH_PRIVATE_KEY secret is not set"
+            exit 1
+          fi
+          echo "✅ Pre-deployment checks passed"
+
       - name: Copy deployment files to VM
         run: |
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/
           scp docker-compose.yaml ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/docker-compose.prod.yaml
 
       - name: Deploy to VM
+        id: deploy
         run: |
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} << EOF
             set -e
@@ -294,7 +394,6 @@ jobs:
             
             # Update docker-compose.prod.yaml with image tags
             if [ -f docker-compose.prod.yaml ]; then
-              # Use sed to update image tags in docker-compose.prod.yaml
               sed -i "s|image:.*mailg-backend.*|image: \${BACKEND_IMAGE}|g" docker-compose.prod.yaml || true
               sed -i "s|image:.*mailg-frontend.*|image: \${FRONTEND_IMAGE}|g" docker-compose.prod.yaml || true
             fi
@@ -314,57 +413,74 @@ jobs:
             sleep 15
           EOF
 
-      - name: Verify deployment
+      - name: Verify deployment with retries
+        id: health-check
         run: |
           echo "Waiting for services to be ready..."
           sleep 10
           
+          # Health check function with exponential backoff
+          check_health() {
+            local SERVICE=$1
+            local URL=$2
+            local MAX_ATTEMPTS=30
+            local ATTEMPT=1
+            local WAIT_TIME=2
+            
+            while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+              if curl -fsS --max-time 5 "$URL" > /dev/null 2>&1; then
+                echo "✅ $SERVICE is healthy"
+                return 0
+              fi
+              
+              if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+                echo "❌ $SERVICE health check failed after $MAX_ATTEMPTS attempts"
+                return 1
+              fi
+              
+              echo "Waiting for $SERVICE... ($ATTEMPT/$MAX_ATTEMPTS)"
+              sleep $WAIT_TIME
+              ATTEMPT=$((ATTEMPT + 1))
+              # Exponential backoff: 2s, 4s, 8s, then cap at 10s
+              WAIT_TIME=$((WAIT_TIME * 2))
+              if [ $WAIT_TIME -gt 10 ]; then
+                WAIT_TIME=10
+              fi
+            done
+          }
+          
           # Check backend health
-          BACKEND_URL="http://${{ env.VM_HOST }}:8766/health"
-          MAX_ATTEMPTS=30
-          ATTEMPT=1
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            if curl -fsS "$BACKEND_URL" > /dev/null 2>&1; then
-              echo "✅ Backend is healthy"
-              break
-            fi
-            if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-              echo "❌ Backend health check failed after $MAX_ATTEMPTS attempts"
-              exit 1
-            fi
-            echo "Waiting for backend... ($ATTEMPT/$MAX_ATTEMPTS)"
-            sleep 2
-            ATTEMPT=$((ATTEMPT + 1))
-          done
+          BACKEND_URL="http://${{ env.VM_HOST }}:${{ env.BACKEND_PORT }}/health"
+          if ! check_health "Backend" "$BACKEND_URL"; then
+            echo "backend_healthy=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          echo "backend_healthy=true" >> $GITHUB_OUTPUT
           
           # Check frontend health
-          FRONTEND_URL="http://${{ env.VM_HOST }}:3002/api/health"
-          ATTEMPT=1
-          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
-            if curl -fsS "$FRONTEND_URL" > /dev/null 2>&1; then
-              echo "✅ Frontend is healthy"
-              break
-            fi
-            if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
-              echo "❌ Frontend health check failed after $MAX_ATTEMPTS attempts"
-              exit 1
-            fi
-            echo "Waiting for frontend... ($ATTEMPT/$MAX_ATTEMPTS)"
-            sleep 2
-            ATTEMPT=$((ATTEMPT + 1))
-          done
+          FRONTEND_URL="http://${{ env.VM_HOST }}:${{ env.FRONTEND_PORT }}/api/health"
+          if ! check_health "Frontend" "$FRONTEND_URL"; then
+            echo "frontend_healthy=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          echo "frontend_healthy=true" >> $GITHUB_OUTPUT
 
       - name: Deployment summary
+        if: always()
         run: |
+          STATUS="✅ Successful"
+          if [ "${{ steps.health-check.outcome }}" != "success" ]; then
+            STATUS="❌ Failed"
+          fi
+          
           echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ✅ Successful" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${STATUS}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ steps.image-tags.outputs.commit_sha }}" >> $GITHUB_STEP_SUMMARY
           echo "**Backend Image:** \`${{ steps.image-tags.outputs.backend_image }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Frontend Image:** \`${{ steps.image-tags.outputs.frontend_image }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Access URLs:**" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend: http://${{ env.VM_HOST }}:3002" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: http://${{ env.VM_HOST }}:8766" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend Health: http://${{ env.VM_HOST }}:8766/health" >> $GITHUB_STEP_SUMMARY
-
+          echo "- Frontend: http://${{ env.VM_HOST }}:${{ env.FRONTEND_PORT }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: http://${{ env.VM_HOST }}:${{ env.BACKEND_PORT }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend Health: http://${{ env.VM_HOST }}:${{ env.BACKEND_PORT }}/health" >> $GITHUB_STEP_SUMMARY
