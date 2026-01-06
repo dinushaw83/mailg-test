@@ -22,10 +22,7 @@ const ALL_SEARCH_QUERIES_KEY = "allSearchQueries";
     // allSearchQueries should always be an object with basic + advanced arrays
     const allQueries = localStorage.getItem(ALL_SEARCH_QUERIES_KEY);
     if (!allQueries || allQueries.trim() === "") {
-      localStorage.setItem(
-        ALL_SEARCH_QUERIES_KEY,
-        JSON.stringify({ basic: [], advanced: [] })
-      );
+      localStorage.setItem(ALL_SEARCH_QUERIES_KEY, JSON.stringify({ basic: [], advanced: [] }));
     }
   } catch (err) {
     console.warn("⚠️ Failed to validate search keys:", err);

@@ -59,9 +59,9 @@ export default function ComposeEmail({ composeWindow }) {
   const composeReplyType = forwardingEmail
     ? "forward"
     : replyingToEmail
-    ? composeWindow?.fields?.replyType ||
-      (Array.isArray(presetCcRecipients) && presetCcRecipients.length > 0 ? "replyAll" : "reply")
-    : null;
+      ? composeWindow?.fields?.replyType ||
+        (Array.isArray(presetCcRecipients) && presetCcRecipients.length > 0 ? "replyAll" : "reply")
+      : null;
   const originalEmail = forwardingEmail || replyingToEmail || null;
 
   const currentDraftId = composeWindow?.draftId;
@@ -406,10 +406,10 @@ export default function ComposeEmail({ composeWindow }) {
             {draftSaved
               ? "Draft saved"
               : composeWindow?.fields?.replyingTo
-              ? `Re: ${composeWindow?.fields?.replyingTo?.subject || subject}`
-              : composeWindow?.fields?.forwardingTo
-              ? `Fwd: ${composeWindow?.fields?.forwardingTo?.subject || subject}`
-              : "New Message"}
+                ? `Re: ${composeWindow?.fields?.replyingTo?.subject || subject}`
+                : composeWindow?.fields?.forwardingTo
+                  ? `Fwd: ${composeWindow?.fields?.forwardingTo?.subject || subject}`
+                  : "New Message"}
           </span>
           <div className={styles.composeWindowControls}>
             <button

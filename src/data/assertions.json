@@ -7,43 +7,43 @@
         "title": "Sent email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Q3 Financial Forecast Submission"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Q3 Financial Forecast Submission" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Email has correct TO recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].to",
         "expected": ["david.kim@acelogistics.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has correct CC recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].cc",
         "expected": ["sarah.johnson@northwindretail.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has correct BCC recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].bcc",
         "expected": ["compliance@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email body contains greeting",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].body",
         "expected": "Hi David",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       },
       {
         "title": "Email has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Q3 Financial Forecast Submission')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Sent email is starred",
@@ -61,50 +61,50 @@
         "title": "Reply email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Re: Invoice mismatch - URGENT"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Re: Invoice mismatch - URGENT" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Reply sent to emma.brown",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].to",
         "expected": ["emma.brown@techstream.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Reply has CC to accounting",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].cc",
         "expected": ["accounting@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Reply body contains thank you",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].body",
         "expected": "thank you for flagging",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       },
       {
         "title": "Reply has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Invoice mismatch - URGENT')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email has Accounting label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].labels",
         "expected": ["Accounting"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email has Urgent-Review label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].labels",
         "expected": ["Urgent-Review"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -117,7 +117,7 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='👟 End of season sale — up to 40% off')].labels",
         "expected": ["Trash"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Pinterest email is starred",
@@ -141,29 +141,29 @@
         "title": "Scheduled email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Proposal Outline"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Proposal Outline" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Email has correct TO recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Proposal Outline')].to",
         "expected": ["jane.doe@northwindretail.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has CC recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Proposal Outline')].cc",
         "expected": ["marketing@northwindretail.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has Scheduled label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Proposal Outline')].labels",
         "expected": ["Scheduled"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has scheduledDate property",
@@ -186,22 +186,22 @@
         "title": "Forwarded email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Fwd: Invoice mismatch - URGENT"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Fwd: Invoice mismatch - URGENT" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Forwarded email TO is manager@company.com",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].to",
         "expected": ["manager@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Forwarded email CC is cfo@company.com",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].cc",
         "expected": ["cfo@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Forwarded email body contains note",
@@ -214,14 +214,14 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Invoice mismatch - URGENT')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email is snoozed",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Invoice mismatch - URGENT')].labels",
         "expected": ["Snoozed"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email has snoozeUntil date",
@@ -239,14 +239,14 @@
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has Projects label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
         "expected": ["Projects"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email is starred",
@@ -283,14 +283,14 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Your Amazon order has been confirmed')].labels",
         "expected": ["Shopping"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Dropbox email archived (not in Inbox)",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='📁 Your files were successfully synced')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -303,14 +303,14 @@
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='You Won a Prize!')].labels",
         "expected": ["Trash"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email restored to Inbox",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='You Won a Prize!')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email is starred",
@@ -329,7 +329,7 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='You Won a Prize!')].labels",
         "expected": ["Review-Later"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -360,7 +360,7 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject==\"[Jira] Ticket #AC-221 moved to 'In Review'\")].labels",
         "expected": ["Dev-Tasks"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -372,36 +372,36 @@
         "title": "Email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Vacation Request"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Vacation Request" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Email has correct TO recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Vacation Request')].to",
         "expected": ["hr@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has CC to manager",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Vacation Request')].cc",
         "expected": ["manager@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email body contains vacation dates",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Vacation Request')].body",
         "expected": "December 20-27",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       },
       {
         "title": "Email has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Vacation Request')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email is starred",
@@ -414,7 +414,7 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Vacation Request')].labels",
         "expected": ["Personal"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -426,57 +426,57 @@
         "title": "Forwarded email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Fwd: Project Phoenix Kickoff Notes"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Fwd: Project Phoenix Kickoff Notes" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Forwarded email TO is team-lead",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].to",
         "expected": ["team-lead@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Forwarded email CC is project-manager",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].cc",
         "expected": ["project-manager@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Forwarded email BCC is compliance",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].bcc",
         "expected": ["compliance@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Forwarded email contains FYI note",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].body",
         "expected": "FYI",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       },
       {
         "title": "Forwarded email has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Forwarded email has Projects label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Fwd: Project Phoenix Kickoff Notes')].labels",
         "expected": ["Projects"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email archived (not in Inbox)",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Project Phoenix Kickoff Notes')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email is marked as read",
@@ -494,50 +494,50 @@
         "title": "Reply email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Re: Reminder: Onboarding session tomorrow"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Re: Reminder: Onboarding session tomorrow" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Reply sent to HR",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].to",
         "expected": ["hr@oakwoodltd.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Reply has CC to manager",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].cc",
         "expected": ["manager@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Reply body contains confirmation",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].body",
         "expected": "10 AM",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       },
       {
         "title": "Reply has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Reminder: Onboarding session tomorrow')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email has HR label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Reminder: Onboarding session tomorrow')].labels",
         "expected": ["HR"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email is snoozed",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Reminder: Onboarding session tomorrow')].labels",
         "expected": ["Snoozed"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Original email has snoozeUntil date",
@@ -549,7 +549,7 @@
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Reminder: Onboarding session tomorrow')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -562,28 +562,28 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🎉 CONGRATULATIONS! You\\'ve Won $1,000,000!')].labels",
         "expected": ["Trash"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Lottery spam no longer in Spam",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🎉 CONGRATULATIONS! You\\'ve Won $1,000,000!')].labels",
         "expected": ["Spam"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Phishing spam moved to Trash",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🚨 URGENT: Suspicious Activity Detected - Verify Your Account')].labels",
         "expected": ["Trash"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Phishing spam no longer in Spam",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🚨 URGENT: Suspicious Activity Detected - Verify Your Account')].labels",
         "expected": ["Spam"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -595,36 +595,36 @@
         "title": "Draft exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Contract Review Request"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Contract Review Request" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Draft has correct TO recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Contract Review Request')].to",
         "expected": ["legal@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Draft has CC recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Contract Review Request')].cc",
         "expected": ["compliance@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has Scheduled label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Contract Review Request')].labels",
         "expected": ["Scheduled"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email NOT in Sent",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Contract Review Request')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has scheduledDate property",
@@ -636,7 +636,7 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Contract Review Request')].labels",
         "expected": ["Legal"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Draft is marked important",
@@ -661,14 +661,14 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='📅 Meeting Reminder: Design Sprint Planning')].labels",
         "expected": ["Meetings"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Zoom email is snoozed",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='📅 Meeting Reminder: Design Sprint Planning')].labels",
         "expected": ["Snoozed"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Zoom email has snoozeUntil date",
@@ -686,14 +686,14 @@
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🔔 Your Figma team has invited you to a new project')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Figma email has Design label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🔔 Your Figma team has invited you to a new project')].labels",
         "expected": ["Design"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Figma email is marked as read",
@@ -712,7 +712,7 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].labels",
         "expected": ["Newsletters"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email is starred",
@@ -731,7 +731,7 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Weekly Tech Roundup - Issue #42')].labels",
         "expected": ["Snoozed"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has snoozeUntil date",
@@ -749,28 +749,28 @@
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution')].labels",
         "expected": ["Trash"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Health spam no longer in Spam",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='URGENT: Your Health is at Risk - Revolutionary Weight Loss Solution')].labels",
         "expected": ["Spam"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Crypto spam moved to Trash",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='💰 Turn $100 into $100,000 with this ONE crypto secret!')].labels",
         "expected": ["Trash"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Crypto spam no longer in Spam",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='💰 Turn $100 into $100,000 with this ONE crypto secret!')].labels",
         "expected": ["Spam"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -795,14 +795,14 @@
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🔥 90% OFF today — learn anything')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Udemy email has Learning label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='🔥 90% OFF today — learn anything')].labels",
         "expected": ["Learning"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },
@@ -814,57 +814,57 @@
         "title": "Email exists with correct subject",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Order Confirmation"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Order Confirmation" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Email has correct TO recipient",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Order Confirmation')].to",
         "expected": ["vendor@supplies.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has CC to purchasing",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Order Confirmation')].cc",
         "expected": ["purchasing@company.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email has Sent label (sent immediately)",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Order Confirmation')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email NOT in Scheduled",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Order Confirmation')].labels",
         "expected": ["Scheduled"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email NOT in Drafts",
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Order Confirmation')].labels",
         "expected": ["Drafts"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Email body contains edited text",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Order Confirmation')].body",
         "expected": "Please respond by Friday",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       },
       {
         "title": "Email body contains original text",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Order Confirmation')].body",
         "expected": "order #12345",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       }
     ]
   },
@@ -876,29 +876,29 @@
         "title": "Reply email exists",
         "operator": "ARRAY_CONTAINS",
         "path": "emails",
-        "expected": [{"subject": "Re: Receipt for your payment to Acme Corp"}],
-        "options": {"mode": "some", "matchBy": "key", "key": "subject"}
+        "expected": [{ "subject": "Re: Receipt for your payment to Acme Corp" }],
+        "options": { "mode": "some", "matchBy": "key", "key": "subject" }
       },
       {
         "title": "Reply sent to Stripe",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Receipt for your payment to Acme Corp')].to",
         "expected": ["receipts@stripe.com"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Reply body contains acknowledgment",
         "operator": "STRING_CONTAINS",
         "path": "emails[?(@.subject=='Re: Receipt for your payment to Acme Corp')].body",
         "expected": "payment has been recorded",
-        "options": {"caseInsensitive": true}
+        "options": { "caseInsensitive": true }
       },
       {
         "title": "Reply has Sent label",
         "operator": "ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Re: Receipt for your payment to Acme Corp')].labels",
         "expected": ["Sent"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       },
       {
         "title": "Reply is starred",
@@ -911,7 +911,7 @@
         "operator": "NOT_ARRAY_CONTAINS",
         "path": "emails[?(@.subject=='Receipt for your payment to Acme Corp')].labels",
         "expected": ["Inbox"],
-        "options": {"mode": "some"}
+        "options": { "mode": "some" }
       }
     ]
   },

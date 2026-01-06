@@ -257,13 +257,9 @@ const Header = () => {
         </div>
         <div id=":c" />
       </div>
-      
+
       {/* Profile Menu */}
-      <ProfileMenu
-        anchorEl={profileMenuAnchor}
-        open={Boolean(profileMenuAnchor)}
-        onClose={handleProfileMenuClose}
-      />
+      <ProfileMenu anchorEl={profileMenuAnchor} open={Boolean(profileMenuAnchor)} onClose={handleProfileMenuClose} />
     </div>
   );
 };

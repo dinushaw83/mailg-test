@@ -2,11 +2,67 @@ import { emailToUsernameMap } from "../contexts/fixtures/emails.js";
 
 const PERSONAL_EMAIL = "john.doe@example.com";
 
+const normalizeLabelKey = (label) => {
+  const name = typeof label === "string" ? label : label?.name;
+  if (!name) return null;
+  return String(name).trim().replace(/\//g, "::");
+};
+
+const titleCase = (value) => {
+  const s = String(value || "").trim();
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const categoryToLabel = (category) => {
+  const c = String(category || "").toLowerCase();
+  if (!c) return null;
+  if (c === "primary") return "Primary";
+  if (c === "promotions") return "Promotions";
+  if (c === "updates") return "Updates";
+  if (c === "social") return "Social";
+  if (c === "forums") return "Forums";
+  return titleCase(c);
+};
+
+export const emailAPIMapper = (emails) => {
+  return emails
+    .map((email) => {
+      return {
+        ...email,
+        id: email?.id,
+        from: {
+          name: email?.sender_name,
+          email: email?.sender_email,
+          id: email.sender_id,
+        },
+        folderId: email?.folder_id,
+        threadId: email?.thread_id,
+        timestamp: email?.sent_at || email?.created_at,
+        preview: email?.snippet || email?.preview,
+        status: email?.status || "inbox",
+        read: email?.is_read || email?.read,
+        starred: email?.is_starred || false,
+        important: email?.is_important || false,
+        scheduled_send_at: email?.scheduled_send_at,
+        snooze_until: email?.snooze_until,
+        attachment_count: email?.attachment_count,
+        has_attachments: email?.has_attachments,
+        labels: [
+          ...(email?.labels || []).map((l) => (typeof l === "string" ? l : l?.name)),
+          ...(email?.system_labels || []).map((l) => (typeof l === "string" ? l : l?.name)),
+        ].filter(Boolean),
+        system_labels: email?.system_labels,
+        can_undo_send: email?.can_undo_send,
+      };
+    })
+    .filter((email) => email.thread_id);
+};
 // src/contexts/normalize.js
 export function normalizeEmails(messages) {
   const messagesById = {};
   const threadsById = {};
-
+  console.log({ messages });
   const normalizeEmailAddress = (value) => (value || "").toLowerCase();
   const isLikelyEmail = (value = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   const getParticipantScore = (participant) => {
@@ -72,7 +128,8 @@ export function normalizeEmails(messages) {
     const threadId = String(m.threadId);
     const ts = new Date(m.timestamp).getTime();
 
-    let enrichedLabels = (m.labels || []).slice();
+    // labels can be fixture strings (["Inbox","Primary"]) or BE objects ([{name,color}])
+    let enrichedLabels = (m.labels || []).map((l) => (typeof l === "string" ? l : l?.name)).filter(Boolean);
 
     // Categories are now set directly in the email fixtures
 
@@ -82,7 +139,6 @@ export function normalizeEmails(messages) {
       threadId,
       timestampMs: ts,
       labels: enrichedLabels,
-      // keep body as-is; optionally split into {html, text}
     };
     messagesById[id] = msg;
 
@@ -111,7 +167,9 @@ export function normalizeEmails(messages) {
     thread.updatedAt = Math.max(thread.updatedAt, ts);
     if (!m.read) thread.unreadCount += 1;
     enrichedLabels.forEach((l) => thread.labels.add(l));
-    const messageIsDraft = (m.labels || []).some((label) => label.toLowerCase() === "drafts");
+    const messageIsDraft = (m.labels || []).some(
+      (label) => (label?.name?.toLowerCase?.() || label?.toLowerCase?.()) === "drafts"
+    );
     if (!thread.personalEmailSent && !messageIsDraft && (m.from?.email || "").toLowerCase() === PERSONAL_EMAIL) {
       thread.personalEmailSent = true;
     }
@@ -418,7 +476,9 @@ export const getLabel = (participants, { includePersonal = true } = {}) => {
 // - Subject comes from the first message in the thread
 // - Labels are the union of all labels within the thread
 export function getThreadRows(messages, { label = null, folder = "inbox" } = {}) {
+  console.log("getThreadRows", { messages, label, folder });
   const { messagesById, threadsById, threadIds } = normalizeEmails(messages);
+  console.log("getThreadRows", { messagesById, threadsById, threadIds });
 
   // Build a label for the Sent folder that lists only recipient first names
   // - Excludes the sender (john.doe@example.com)
@@ -442,7 +502,7 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     // Find the last non-draft message sent by PERSONAL_EMAIL
     for (let i = thread.messageIds.length - 1; i >= 0; i -= 1) {
       const msg = messagesById[thread.messageIds[i]];
-      const isDraft = (msg.labels || []).some((l) => l.toLowerCase() === "drafts");
+      const isDraft = (msg.labels || []).some((l) => (l?.name?.toLowerCase?.() || l?.toLowerCase?.()) === "drafts");
       const fromPersonal = (msg.from?.email || "").toLowerCase() === PERSONAL_EMAIL;
       if (!isDraft && fromPersonal) {
         const toList = Array.isArray(msg.to) ? msg.to : [];
@@ -514,7 +574,6 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     }
     return (labels || []).includes(name);
   };
-
   let filtered = rows;
   if (label) {
     // Filter by label, but exclude Spam and Trash

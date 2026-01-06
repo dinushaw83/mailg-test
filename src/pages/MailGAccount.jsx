@@ -9,16 +9,16 @@ const MailGAccount = () => {
   // Convert hyphenated URL param to camelCase for PrivacyHub
   // e.g., 'data-privacy' -> 'dataAndPrivacy', 'personal-info' -> 'personalInfo'
   const convertViewName = (urlView) => {
-    if (!urlView) return 'personalInfo';
-    
+    if (!urlView) return "personalInfo";
+
     const viewMap = {
-      'personal-info': 'personalInfo',
-      'data-privacy': 'dataAndPrivacy',
-      'security': 'security',
-      'storage': 'storage',
-      'preferences': 'preferences',
+      "personal-info": "personalInfo",
+      "data-privacy": "dataAndPrivacy",
+      security: "security",
+      storage: "storage",
+      preferences: "preferences",
     };
-    
+
     return viewMap[urlView] || urlView;
   };
 
@@ -29,14 +29,7 @@ const MailGAccount = () => {
     navigate(-1);
   };
 
-  return (
-    <PrivacyHub 
-      open={true} 
-      onClose={handleClose} 
-      initialView={initialView}
-    />
-  );
+  return <PrivacyHub open={true} onClose={handleClose} initialView={initialView} />;
 };
 
 export default MailGAccount;
-

@@ -3,7 +3,10 @@
   background-color: white;
   position: absolute;
   bottom: 50px;
-  box-shadow: 0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12),0 2px 4px -1px rgba(0,0,0,.2);
+  box-shadow:
+    0 4px 5px 0 rgba(0, 0, 0, 0.14),
+    0 1px 10px 0 rgba(0, 0, 0, 0.12),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
 .autoReplyContainer {
@@ -11,7 +14,10 @@
   background-color: white;
   padding: 4px 0px;
   margin-bottom: 8px;
-  box-shadow: 0 4px 5px 0 rgba(0,0,0,.14),0 1px 10px 0 rgba(0,0,0,.12),0 2px 4px -1px rgba(0,0,0,.2);
+  box-shadow:
+    0 4px 5px 0 rgba(0, 0, 0, 0.14),
+    0 1px 10px 0 rgba(0, 0, 0, 0.12),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
 .MuiTiptap-ColorPicker-gradientPicker,
@@ -27,7 +33,7 @@
 .MuiTiptap-ColorPicker-swatchGrid {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 1px;  
+  column-gap: 1px;
   row-gap: 1px;
 }
 
@@ -37,9 +43,8 @@
   gap: 1px !important;
 }
 
-.MuiTiptap-ColorPicker-swatchContainer > button:nth-child(-n+16) {
+.MuiTiptap-ColorPicker-swatchContainer > button:nth-child(-n + 16) {
   margin-bottom: 4px !important;
-
 }
 
 .MuiTiptap-ColorPicker-swatchContainer > button {

@@ -124,6 +124,32 @@ curl -X GET "http://localhost:8766/api/v1/auth/me" \
 
 ## 📬 Email Lifecycle
 
+---
+
+## 🧭 Inbox Categories (Primary / Promotions / Social / Updates / Forums)
+
+MailG’s **frontend** distributes emails into inbox tabs using the email/thread **`labels`** array.
+
+### How categorization works in the UI
+- **Promotions/Social/Updates/Forums tabs**: an item is shown when it has:
+  - `labels` includes `"Inbox"` **and**
+  - `labels` includes the tab name (e.g. `"Promotions"`)
+- **Primary tab**: an item is shown when it has:
+  - `labels` includes `"Inbox"` **and**
+  - it does **not** include any of: `"Promotions"`, `"Social"`, `"Updates"`, `"Forums"`
+
+### What the API should return
+For the frontend to place emails into these tabs, each returned email (or thread) should include a `labels` array containing:
+- `"Inbox"` (for inbox items)
+- plus exactly one of the category labels when applicable:
+  - `"Primary"` (optional; Primary is derived by exclusion in the UI)
+  - `"Promotions"`
+  - `"Social"`
+  - `"Updates"`
+  - `"Forums"`
+
+> **Note:** Even if your backend supports a `category` field (e.g. `primary` / `promotions`), the current UI logic uses `labels` to render tabs. If you return `category`, also return the corresponding label(s) in `labels` for the best UX.
+
 ### Sender → Receiver Flow
 
 ```

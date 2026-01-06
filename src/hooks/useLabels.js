@@ -30,7 +30,7 @@ function buildTree(labels) {
     let parentKey = meta?.parentKey;
 
     if (!name || !parentKey) {
-      const parsed = splitKey(key);        // "__ROOT__::Parent::Child"
+      const parsed = splitKey(key); // "__ROOT__::Parent::Child"
       name = name ?? parsed.name;
       parentKey = parentKey ?? parsed.parentKey ?? ROOT;
     }
@@ -44,13 +44,16 @@ function buildTree(labels) {
     };
   });
 
-  const byKey = Object.fromEntries(nodes.map(n => [n.key, n]));
+  const byKey = Object.fromEntries(nodes.map((n) => [n.key, n]));
   const roots = [];
   for (const n of nodes) {
     if (n.parentKey && byKey[n.parentKey]) byKey[n.parentKey].children.push(n);
     else roots.push(n);
   }
-  const sortRec = arr => { arr.sort((a, b) => a.name.localeCompare(b.name)); arr.forEach(c => sortRec(c.children)); };
+  const sortRec = (arr) => {
+    arr.sort((a, b) => a.name.localeCompare(b.name));
+    arr.forEach((c) => sortRec(c.children));
+  };
   sortRec(roots);
   return roots;
 }
@@ -63,7 +66,7 @@ export function flattenTreeForSelect(roots, depth = 0, out = []) {
       name: node.name,
       depth,
       system: node.system,
-      children: node.children?.map(c => c.key) ?? [], // keep child keys
+      children: node.children?.map((c) => c.key) ?? [], // keep child keys
     });
     if (node.children?.length) flattenTreeForSelect(node.children, depth + 1, out);
   }
@@ -75,8 +78,8 @@ export function getPathLabelFromKey(labelsMap, key) {
   const parts = key.split("::");
   const paths = [];
   for (let i = 0; i < parts.length; i++) {
-    const k = parts.slice(0, i + 1).join("::");       // cumulative key
-    const nm = labelsMap?.[k]?.name ?? parts[i];      // fallback to raw segment
+    const k = parts.slice(0, i + 1).join("::"); // cumulative key
+    const nm = labelsMap?.[k]?.name ?? parts[i]; // fallback to raw segment
     paths.push(nm);
   }
   return paths.join("/");
@@ -90,16 +93,17 @@ export default function useLabels() {
       const nm = String(name || "").trim();
       if (!nm) return;
 
-      setLabels(prev => {
+      setLabels((prev) => {
         const cur = prev || {};
 
         // sibling uniqueness: check names under same parentKey (fallback to key parsing)
         const isDup = Object.entries(cur).some(([key, v]) => {
-          let nm = v?.name, pk = v?.parentKey;
+          let nm = v?.name,
+            pk = v?.parentKey;
           if (nm == null || pk === undefined) {
             const parsed = splitKey(key);
             nm = nm ?? parsed.name;
-            pk = pk ?? (parsed.parentKey ?? ROOT);
+            pk = pk ?? parsed.parentKey ?? ROOT;
           }
           return (pk ?? ROOT) === parentKey && (nm || "").toLowerCase() === name.toLowerCase();
         });
@@ -117,103 +121,102 @@ export default function useLabels() {
     [setLabels]
   );
 
-  const renameLabel = useCallback((key, newName, newParentKey = undefined) => {
-    console.log("renameLabel", key, newName, newParentKey);
+  const renameLabel = useCallback(
+    (key, newName, newParentKey = undefined) => {
+      console.log("renameLabel", key, newName, newParentKey);
 
-    const nm = String(newName || "").trim();
-    if (!nm) return;
+      const nm = String(newName || "").trim();
+      if (!nm) return;
 
-    let oldToNew = new Map();
+      let oldToNew = new Map();
 
-    setLabels(prev => {
-      const cur = { ...(prev || {}) };
-      const lbl = cur[key];
-      if (!lbl) return prev;
+      setLabels((prev) => {
+        const cur = { ...(prev || {}) };
+        const lbl = cur[key];
+        if (!lbl) return prev;
 
-      // Determine target parent (explicit override or existing)
-      const targetParent =
-        newParentKey === undefined ? lbl.parentKey ?? null : newParentKey;
+        // Determine target parent (explicit override or existing)
+        const targetParent = newParentKey === undefined ? (lbl.parentKey ?? null) : newParentKey;
 
-      // Prevent circular nesting (self or descendant)
-      if (targetParent === key || (targetParent && targetParent.startsWith(key + "::"))) {
-        console.warn("Invalid move: cannot nest label under its own descendant");
-        return prev;
-      }
-
-      // New key for renamed/moved label
-      const newKey = targetParent ? `${targetParent}::${nm}` : nm;
-      if (newKey === key) return prev;
-
-      // --- Build children index ---
-      const childrenByParent = {};
-      for (const [k, v] of Object.entries(cur)) {
-        const parsed = splitKey(k);
-        const p = (v.parentKey ?? parsed.parentKey ?? ROOT);
-        (childrenByParent[p] ||= []).push(k);
-      }
-
-      // --- BFS collect subtree ---
-      oldToNew = new Map();
-      const queue = [key];
-      oldToNew.set(key, newKey);
-
-      while (queue.length) {
-        const oldK = queue.shift();
-        const mappedParent = oldToNew.get(oldK);
-        const childKeys = childrenByParent[oldK] || [];
-        for (const ck of childKeys) {
-          const child = cur[ck];
-          const childName = (child?.name ?? splitKey(ck).name);
-          const childNewKey = `${mappedParent}::${childName}`;
-          oldToNew.set(ck, childNewKey);
-          queue.push(ck);
-        }
-      }
-
-      // --- Prevent collisions with existing labels outside the moved subtree ---
-      for (const [, newK] of oldToNew.entries()) {
-        if (cur[newK] && !oldToNew.has(newK)) {
-          console.warn("Invalid move: target path collides with an existing label", newK);
+        // Prevent circular nesting (self or descendant)
+        if (targetParent === key || (targetParent && targetParent.startsWith(key + "::"))) {
+          console.warn("Invalid move: cannot nest label under its own descendant");
           return prev;
         }
-      }
 
-      // --- Rebuild map with corrected parent references ---
-      const next = { ...cur };
-      for (const [oldK, newK] of oldToNew.entries()) {
-        const node = cur[oldK];
-        if (!node) continue;
-        const oldParent = node.parentKey;
-        const newParent =
-          oldK === key
-            ? targetParent || null
-            : oldToNew.get(oldParent) || node.parentKey || null;
+        // New key for renamed/moved label
+        const newKey = targetParent ? `${targetParent}::${nm}` : nm;
+        if (newKey === key) return prev;
 
-        next[newK] = {
-          ...node,
-          name: oldK === key ? nm : node.name,
-          parentKey: newParent,
-        };
-      }
+        // --- Build children index ---
+        const childrenByParent = {};
+        for (const [k, v] of Object.entries(cur)) {
+          const parsed = splitKey(k);
+          const p = v.parentKey ?? parsed.parentKey ?? ROOT;
+          (childrenByParent[p] ||= []).push(k);
+        }
 
-      // Clean out the old keys
-      for (const oldK of oldToNew.keys()) delete next[oldK];
+        // --- BFS collect subtree ---
+        oldToNew = new Map();
+        const queue = [key];
+        oldToNew.set(key, newKey);
 
-      return next;
-    });
+        while (queue.length) {
+          const oldK = queue.shift();
+          const mappedParent = oldToNew.get(oldK);
+          const childKeys = childrenByParent[oldK] || [];
+          for (const ck of childKeys) {
+            const child = cur[ck];
+            const childName = child?.name ?? splitKey(ck).name;
+            const childNewKey = `${mappedParent}::${childName}`;
+            oldToNew.set(ck, childNewKey);
+            queue.push(ck);
+          }
+        }
 
-    // --- Sync email labels ---
-    setEmails(prevEmails =>
-      (prevEmails || []).map(m => ({
-        ...m,
-        labels: (m.labels || []).map(l => oldToNew.get(l) || l),
-      }))
-    );
-  }, [setLabels, setEmails]);
+        // --- Prevent collisions with existing labels outside the moved subtree ---
+        for (const [, newK] of oldToNew.entries()) {
+          if (cur[newK] && !oldToNew.has(newK)) {
+            console.warn("Invalid move: target path collides with an existing label", newK);
+            return prev;
+          }
+        }
+
+        // --- Rebuild map with corrected parent references ---
+        const next = { ...cur };
+        for (const [oldK, newK] of oldToNew.entries()) {
+          const node = cur[oldK];
+          if (!node) continue;
+          const oldParent = node.parentKey;
+          const newParent = oldK === key ? targetParent || null : oldToNew.get(oldParent) || node.parentKey || null;
+
+          next[newK] = {
+            ...node,
+            name: oldK === key ? nm : node.name,
+            parentKey: newParent,
+          };
+        }
+
+        // Clean out the old keys
+        for (const oldK of oldToNew.keys()) delete next[oldK];
+
+        return next;
+      });
+
+      // --- Sync email labels ---
+      setEmails((prevEmails) =>
+        (prevEmails || []).map((m) => ({
+          ...m,
+          labels: (m.labels || []).map((l) => oldToNew.get(l) || l),
+        }))
+      );
+    },
+    [setLabels, setEmails]
+  );
 
   const deleteLabel = useCallback(
     (key) => {
-      setLabels(prev => {
+      setLabels((prev) => {
         const cur = { ...(prev || {}) };
         const lbl = cur[key];
         if (!lbl || lbl.system) return prev;
@@ -233,10 +236,10 @@ export default function useLabels() {
 
         for (const k of toDelete) delete cur[k];
 
-        setEmails(prevEmails =>
-          (prevEmails || []).map(m => ({
+        setEmails((prevEmails) =>
+          (prevEmails || []).map((m) => ({
             ...m,
-            labels: (m.labels || []).filter(l => !toDelete.has(l)),
+            labels: (m.labels || []).filter((l) => !toDelete.has(l)),
           }))
         );
 
@@ -251,9 +254,7 @@ export default function useLabels() {
       const normalizedThreadId = String(threadId).replace(/^#thread-f:/, "");
       setEmails((prev) =>
         (prev || []).map((m) =>
-          getThreadKey(m) === normalizedThreadId
-            ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) }
-            : m
+          getThreadKey(m) === normalizedThreadId ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) } : m
         )
       );
     },
@@ -262,13 +263,13 @@ export default function useLabels() {
 
   const addLabelToThread = useCallback(
     (threadId, labelKey) => {
-      setEmails(prev =>
-        (prev || []).map(m =>
+      setEmails((prev) =>
+        (prev || []).map((m) =>
           getThreadKey(m) === String(threadId).replace("#thread-f:", "")
             ? {
-              ...m,
-              labels: Array.from(new Set([...(m.labels || []), labelKey])),
-            }
+                ...m,
+                labels: Array.from(new Set([...(m.labels || []), labelKey])),
+              }
             : m
         )
       );
@@ -291,7 +292,7 @@ export default function useLabels() {
   }, [emails]);
 
   const setLabelColor = (key, color, { withSublabels = false } = {}) => {
-    setLabels(prev => {
+    setLabels((prev) => {
       const next = { ...prev };
       const update = (k) => {
         if (next[k]) {
@@ -310,49 +311,45 @@ export default function useLabels() {
 
   const labelTree = useMemo(() => buildTree(labels || {}), [labels]);
 
-  const getSelectionLabels = useCallback((selectedIds) => {
-    const ids = new Set(Array.from(selectedIds ?? []).map(String));
+  const getSelectionLabels = useCallback(
+    (selectedIds) => {
+      const ids = new Set(Array.from(selectedIds ?? []).map(String));
 
-    const hasAnyId = (m) => {
-      const keys = [
-        m.id,
-        m.messageId,
-        m.threadId,
-        m.threadId && String(m.threadId).replace("#thread-f:", ""),
-        m.legacyThreadId,
-        m.legacyLastMessageId,
-        m.legacyLastNonDraftMessageId,
-      ]
-        .map((v) => String(v ?? "").trim())
-        .filter(Boolean);
+      const hasAnyId = (m) => {
+        const keys = [
+          m.id,
+          m.messageId,
+          m.threadId,
+          m.threadId && String(m.threadId).replace("#thread-f:", ""),
+          m.legacyThreadId,
+          m.legacyLastMessageId,
+          m.legacyLastNonDraftMessageId,
+        ]
+          .map((v) => String(v ?? "").trim())
+          .filter(Boolean);
 
-      return keys.some((k) => ids.has(k));
-    };
+        return keys.some((k) => ids.has(k));
+      };
 
-    const selectedList = (emails || []).filter(hasAnyId);
-    const nSel = selectedList.length;
+      const selectedList = (emails || []).filter(hasAnyId);
+      const nSel = selectedList.length;
 
-    // count labels across selected
-    const labelCounts = new Map();
-    for (const m of selectedList) {
-      for (const l of m.labels ?? []) {
-        labelCounts.set(l, (labelCounts.get(l) || 0) + 1);
+      // count labels across selected
+      const labelCounts = new Map();
+      for (const m of selectedList) {
+        for (const l of m.labels ?? []) {
+          labelCounts.set(l, (labelCounts.get(l) || 0) + 1);
+        }
       }
-    }
 
-    // intersection (labels on ALL selected)
-    const currentLabels =
-      nSel === 0
-        ? new Set()
-        : new Set(
-          [...labelCounts.entries()]
-            .filter(([_, c]) => c === nSel)
-            .map(([l]) => l)
-        );
+      // intersection (labels on ALL selected)
+      const currentLabels =
+        nSel === 0 ? new Set() : new Set([...labelCounts.entries()].filter(([_, c]) => c === nSel).map(([l]) => l));
 
-    return { currentLabels, labelCounts, nSel };
-  }, [emails]);
-
+      return { currentLabels, labelCounts, nSel };
+    },
+    [emails]
+  );
 
   return {
     labels,

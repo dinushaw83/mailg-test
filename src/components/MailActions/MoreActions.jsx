@@ -238,15 +238,18 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const changedThreadCount =
         (value
           ? selectedThreads.filter((thread) => !thread.starred)
-          : selectedThreads.filter((thread) => thread.starred)).length || selectedThreads.length || 1;
+          : selectedThreads.filter((thread) => thread.starred)
+        ).length ||
+        selectedThreads.length ||
+        1;
 
       const message = value
         ? changedThreadCount > 1
           ? `${changedThreadCount} conversations starred.`
           : "Conversation starred."
         : changedThreadCount > 1
-        ? `${changedThreadCount} conversations unstarred.`
-        : "Conversation unstarred.";
+          ? `${changedThreadCount} conversations unstarred.`
+          : "Conversation unstarred.";
 
       const undo = () => {
         const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
@@ -304,15 +307,18 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const changedThreadCount =
         (value
           ? selectedThreads.filter((thread) => !thread.important)
-          : selectedThreads.filter((thread) => thread.important)).length || selectedThreads.length || 1;
+          : selectedThreads.filter((thread) => thread.important)
+        ).length ||
+        selectedThreads.length ||
+        1;
 
       const message = value
         ? changedThreadCount > 1
           ? `${changedThreadCount} conversations marked as important.`
           : "Conversation marked as important."
         : changedThreadCount > 1
-        ? `${changedThreadCount} conversations marked as not important.`
-        : "Conversation marked as not important.";
+          ? `${changedThreadCount} conversations marked as not important.`
+          : "Conversation marked as not important.";
 
       const undo = () => {
         const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
@@ -357,9 +363,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       return;
     }
 
-    const labelSnapshot = new Map(
-      selectedEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])
-    );
+    const labelSnapshot = new Map(selectedEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]]));
 
     const wasMuted = selectedEmails.every((email) => (email.labels || []).includes("Muted"));
     const nextValue = !wasMuted;
@@ -396,8 +400,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     const action = nextValue ? "muted" : "unmuted";
     const conversationCount =
       new Set(selectedEmails.map((email) => email.threadId)).size || selectedThreads.length || 1;
-    const message =
-      conversationCount > 1 ? `${conversationCount} conversations ${action}.` : `Conversation ${action}.`;
+    const message = conversationCount > 1 ? `${conversationCount} conversations ${action}.` : `Conversation ${action}.`;
 
     setSnackbar({
       open: true,
@@ -451,9 +454,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       });
     };
 
-    const affectedThreadCount = new Set(
-      previousStates.filter((state) => state.read).map((state) => state.threadId)
-    ).size;
+    const affectedThreadCount = new Set(previousStates.filter((state) => state.read).map((state) => state.threadId))
+      .size;
     const conversations = affectedThreadCount || selectedThreads.length || 1;
 
     setSnackbar({

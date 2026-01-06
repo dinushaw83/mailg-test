@@ -3,21 +3,81 @@
 // List of risky file extensions that should be blocked
 export const RISKY_FILE_EXTENSIONS = [
   // Executable files
-  '.exe', '.bat', '.cmd', '.com', '.pif', '.scr', '.vbs', '.vbe', '.js', '.jse', '.wsf', '.wsh', '.msi', '.msp', '.dll',
-  
+  ".exe",
+  ".bat",
+  ".cmd",
+  ".com",
+  ".pif",
+  ".scr",
+  ".vbs",
+  ".vbe",
+  ".js",
+  ".jse",
+  ".wsf",
+  ".wsh",
+  ".msi",
+  ".msp",
+  ".dll",
+
   // Archive files that might contain executables
-  '.rar', '.zip', '.7z', '.tar', '.gz', '.bz2',
-  
+  ".rar",
+  ".zip",
+  ".7z",
+  ".tar",
+  ".gz",
+  ".bz2",
+
   // Script files
-  '.ps1', '.psm1', '.sh', '.py', '.pl', '.rb', '.php', '.asp', '.aspx', '.jsp',
-  
+  ".ps1",
+  ".psm1",
+  ".sh",
+  ".py",
+  ".pl",
+  ".rb",
+  ".php",
+  ".asp",
+  ".aspx",
+  ".jsp",
+
   // Macro-enabled office documents
-  '.xlsm', '.xltm', '.docm', '.dotm', '.pptm', '.potm', '.ppam', '.xlam',
-  
+  ".xlsm",
+  ".xltm",
+  ".docm",
+  ".dotm",
+  ".pptm",
+  ".potm",
+  ".ppam",
+  ".xlam",
+
   // Other potentially dangerous files
-  '.app', '.deb', '.pkg', '.dmg', '.iso', '.img', '.bin', '.run', '.action', '.workflow',
-  '.jar', '.class', '.apk', '.ipa', '.xap', '.cab', '.msu', '.wim', '.swf', '.air',
-  '.gadget', '.theme', '.deskthemepack', '.themepack', '.scf', '.lnk', '.inf', '.reg'
+  ".app",
+  ".deb",
+  ".pkg",
+  ".dmg",
+  ".iso",
+  ".img",
+  ".bin",
+  ".run",
+  ".action",
+  ".workflow",
+  ".jar",
+  ".class",
+  ".apk",
+  ".ipa",
+  ".xap",
+  ".cab",
+  ".msu",
+  ".wim",
+  ".swf",
+  ".air",
+  ".gadget",
+  ".theme",
+  ".deskthemepack",
+  ".themepack",
+  ".scf",
+  ".lnk",
+  ".inf",
+  ".reg",
 ];
 
 // Maximum file size in bytes (25MB)
@@ -29,9 +89,9 @@ export const MAX_FILE_SIZE = 25 * 1024 * 1024;
  * @returns {boolean} - True if the file extension is risky
  */
 export const isRiskyFileExtension = (filename) => {
-  if (!filename || typeof filename !== 'string') return false;
-  
-  const extension = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+  if (!filename || typeof filename !== "string") return false;
+
+  const extension = filename.toLowerCase().substring(filename.lastIndexOf("."));
   return RISKY_FILE_EXTENSIONS.includes(extension);
 };
 
@@ -55,7 +115,7 @@ export const validateFiles = (files) => {
   const riskyFiles = [];
   const oversizedFiles = [];
 
-  fileArray.forEach(file => {
+  fileArray.forEach((file) => {
     if (isFileTooLarge(file.size)) {
       oversizedFiles.push(file);
     } else if (isRiskyFileExtension(file.name)) {
@@ -71,7 +131,7 @@ export const validateFiles = (files) => {
     oversizedFiles,
     hasRiskyFiles: riskyFiles.length > 0,
     hasOversizedFiles: oversizedFiles.length > 0,
-    hasValidFiles: validFiles.length > 0
+    hasValidFiles: validFiles.length > 0,
   };
 };
 
@@ -81,13 +141,13 @@ export const validateFiles = (files) => {
  * @returns {string} - Formatted file size string
  */
 export const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  
+  if (bytes === 0) return "0 Bytes";
+
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 /**
@@ -96,8 +156,8 @@ export const formatFileSize = (bytes) => {
  * @returns {string} - The file extension (including the dot)
  */
 export const getFileExtension = (filename) => {
-  if (!filename || typeof filename !== 'string') return '';
-  
-  const lastDotIndex = filename.lastIndexOf('.');
-  return lastDotIndex >= 0 ? filename.substring(lastDotIndex).toLowerCase() : '';
+  if (!filename || typeof filename !== "string") return "";
+
+  const lastDotIndex = filename.lastIndexOf(".");
+  return lastDotIndex >= 0 ? filename.substring(lastDotIndex).toLowerCase() : "";
 };

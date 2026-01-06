@@ -6,17 +6,11 @@ export default function ForwardingTab() {
   // Track changes in form inputs
   useEffect(() => {
     const handleInputChange = () => setHasChanges(true);
-    const inputs = document.querySelectorAll(
-      '#forwarding-tab input, #forwarding-tab select'
-    );
-    inputs.forEach((input) =>
-      input.addEventListener('change', handleInputChange)
-    );
+    const inputs = document.querySelectorAll("#forwarding-tab input, #forwarding-tab select");
+    inputs.forEach((input) => input.addEventListener("change", handleInputChange));
 
     return () => {
-      inputs.forEach((input) =>
-        input.removeEventListener('change', handleInputChange)
-      );
+      inputs.forEach((input) => input.removeEventListener("change", handleInputChange));
     };
   }, []);
 
@@ -56,8 +50,7 @@ export default function ForwardingTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -116,17 +109,9 @@ export default function ForwardingTab() {
               >
                 <div id="forwarding-content">
                   <div id="forwarding-options" style={{ display: "none" }}>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -141,8 +126,7 @@ export default function ForwardingTab() {
                               defaultChecked
                               value="0"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -161,24 +145,14 @@ export default function ForwardingTab() {
                               paddingLeft: "8px",
                             }}
                           >
-                            <label htmlFor="forward-disable">
-                              Disable forwarding
-                            </label>
+                            <label htmlFor="forward-disable">Disable forwarding</label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -192,8 +166,7 @@ export default function ForwardingTab() {
                               type="radio"
                               value="1"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -217,8 +190,7 @@ export default function ForwardingTab() {
                               <select
                                 id="forward-address"
                                 style={{
-                                  fontFamily:
-                                    '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                  fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                   margin: "0px",
                                   fontSize: "100%",
                                 }}
@@ -229,25 +201,16 @@ export default function ForwardingTab() {
                               <select
                                 id="forward-action"
                                 style={{
-                                  fontFamily:
-                                    '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                  fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                   margin: "0px",
                                   fontSize: "100%",
                                   width: "37ex",
                                 }}
                               >
-                                <option value="selected">
-                                  keep MailG's copy in the Inbox
-                                </option>
-                                <option value="read">
-                                  mark MailG's copy as read
-                                </option>
-                                <option value="archive">
-                                  archive MailG's copy
-                                </option>
-                                <option value="trash">
-                                  delete MailG's copy
-                                </option>
+                                <option value="selected">keep MailG's copy in the Inbox</option>
+                                <option value="read">mark MailG's copy as read</option>
+                                <option value="archive">archive MailG's copy</option>
+                                <option value="trash">delete MailG's copy</option>
                               </select>
                             </span>
                           </td>
@@ -261,8 +224,7 @@ export default function ForwardingTab() {
                       type="button"
                       defaultValue="Add a forwarding address"
                       style={{
-                        fontFamily:
-                          '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                        fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                         margin: "0px",
                         fontSize: "100%",
                         fontWeight: "normal",
@@ -295,8 +257,7 @@ export default function ForwardingTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -357,29 +318,15 @@ export default function ForwardingTab() {
                 }}
               >
                 <div>
-                  <span
-                    className="rQ"
-                    style={{ fontWeight: "bold" }}
-                  >
+                  <span className="rQ" style={{ fontWeight: "bold" }}>
                     1. Status:{" "}
                   </span>{" "}
-                  <span
-                    className="rQ"
-                    style={{ fontWeight: "bold" }}
-                  >
+                  <span className="rQ" style={{ fontWeight: "bold" }}>
                     POP is disabled
                   </span>
-                  <table
-                    className="cf bA1"
-                    cellPadding="0"
-                    cellSpacing="0"
-                    style={{ borderCollapse: "collapse" }}
-                  >
+                  <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                     <tbody>
-                      <tr
-                        className="C7"
-                        style={{ verticalAlign: "top" }}
-                      >
+                      <tr className="C7" style={{ verticalAlign: "top" }}>
                         <td
                           className="C6"
                           style={{
@@ -393,8 +340,7 @@ export default function ForwardingTab() {
                             type="radio"
                             value="3"
                             style={{
-                              fontFamily:
-                                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                               margin: "0px",
                               fontSize: "100%",
                               position: "relative",
@@ -415,10 +361,7 @@ export default function ForwardingTab() {
                         >
                           <label htmlFor="pop-all">
                             Enable POP for{" "}
-                            <span
-                              className="rQ"
-                              style={{ fontWeight: "bold" }}
-                            >
+                            <span className="rQ" style={{ fontWeight: "bold" }}>
                               all mail
                             </span>
                           </label>
@@ -426,17 +369,9 @@ export default function ForwardingTab() {
                       </tr>
                     </tbody>
                   </table>
-                  <table
-                    className="cf bA1"
-                    cellPadding="0"
-                    cellSpacing="0"
-                    style={{ borderCollapse: "collapse" }}
-                  >
+                  <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                     <tbody>
-                      <tr
-                        className="C7"
-                        style={{ verticalAlign: "top" }}
-                      >
+                      <tr className="C7" style={{ verticalAlign: "top" }}>
                         <td
                           className="C6"
                           style={{
@@ -450,8 +385,7 @@ export default function ForwardingTab() {
                             type="radio"
                             value="2"
                             style={{
-                              fontFamily:
-                                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                               margin: "0px",
                               fontSize: "100%",
                               position: "relative",
@@ -472,10 +406,7 @@ export default function ForwardingTab() {
                         >
                           <label htmlFor="pop-new">
                             Enable POP for{" "}
-                            <span
-                              className="rQ"
-                              style={{ fontWeight: "bold" }}
-                            >
+                            <span className="rQ" style={{ fontWeight: "bold" }}>
                               mail that arrives from now on
                             </span>
                           </label>
@@ -486,43 +417,28 @@ export default function ForwardingTab() {
                 </div>
                 <div>
                   <br />
-                  <span
-                    className="rQ"
-                    style={{ fontWeight: "bold" }}
-                  >
+                  <span className="rQ" style={{ fontWeight: "bold" }}>
                     2. When messages are accessed with POP{" "}
                   </span>
                   <select
                     id="pop-action"
                     disabled
                     style={{
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                       margin: "0px",
                       fontSize: "100%",
                       width: "37ex",
                     }}
                   >
-                    <option value="0">
-                      keep MailG's copy in the Inbox
-                    </option>
-                    <option value="3">
-                      mark MailG's copy as read
-                    </option>
-                    <option value="1">
-                      archive MailG's copy
-                    </option>
-                    <option value="2">
-                      delete MailG's copy
-                    </option>
+                    <option value="0">keep MailG's copy in the Inbox</option>
+                    <option value="3">mark MailG's copy as read</option>
+                    <option value="1">archive MailG's copy</option>
+                    <option value="2">delete MailG's copy</option>
                   </select>
                 </div>
                 <div>
                   <br />
-                  <span
-                    className="rQ"
-                    style={{ fontWeight: "bold" }}
-                  >
+                  <span className="rQ" style={{ fontWeight: "bold" }}>
                     3. Configure your email client
                   </span>{" "}
                   (e.g. Outlook, Eudora, Netscape Mail)
@@ -550,8 +466,7 @@ export default function ForwardingTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -585,8 +500,7 @@ export default function ForwardingTab() {
                   className="ra"
                   style={{
                     WebkitFontSmoothing: "auto",
-                    fontFamily:
-                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     fontSize: "0.75rem",
                     letterSpacing: "normal",
                   }}
@@ -626,23 +540,12 @@ export default function ForwardingTab() {
               >
                 <div id="imap-settings">
                   <div>
-                    <span
-                      className="q4"
-                      style={{ fontWeight: "bold" }}
-                    >
+                    <span className="q4" style={{ fontWeight: "bold" }}>
                       When I mark a message in IMAP as deleted:
                     </span>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -656,8 +559,7 @@ export default function ForwardingTab() {
                               type="radio"
                               value="1"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -677,24 +579,15 @@ export default function ForwardingTab() {
                             }}
                           >
                             <label htmlFor="imap-expunge-on">
-                              Auto-Expunge on - Immediately update the
-                              server. (default)
+                              Auto-Expunge on - Immediately update the server. (default)
                             </label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -709,8 +602,7 @@ export default function ForwardingTab() {
                               defaultChecked
                               value="0"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -730,38 +622,22 @@ export default function ForwardingTab() {
                             }}
                           >
                             <label htmlFor="imap-expunge-off">
-                              Auto-Expunge off - Wait for the client to
-                              update the server.
+                              Auto-Expunge off - Wait for the client to update the server.
                             </label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                  <div
-                    className="q5"
-                    style={{ height: "4px" }}
-                  />
+                  <div className="q5" style={{ height: "4px" }} />
                   <div>
                     <br />
-                    <span
-                      className="q4"
-                      style={{ fontWeight: "bold" }}
-                    >
-                      When a message is marked as deleted and expunged
-                      from the last visible IMAP folder:
+                    <span className="q4" style={{ fontWeight: "bold" }}>
+                      When a message is marked as deleted and expunged from the last visible IMAP folder:
                     </span>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -776,8 +652,7 @@ export default function ForwardingTab() {
                               defaultChecked
                               value="0"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -796,24 +671,14 @@ export default function ForwardingTab() {
                               paddingLeft: "8px",
                             }}
                           >
-                            <label htmlFor="imap-archive">
-                              Archive the message (default)
-                            </label>
+                            <label htmlFor="imap-archive">Archive the message (default)</label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -827,8 +692,7 @@ export default function ForwardingTab() {
                               type="radio"
                               value="1"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -847,24 +711,14 @@ export default function ForwardingTab() {
                               paddingLeft: "8px",
                             }}
                           >
-                            <label htmlFor="imap-trash">
-                              Move the message to the Trash
-                            </label>
+                            <label htmlFor="imap-trash">Move the message to the Trash</label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -878,8 +732,7 @@ export default function ForwardingTab() {
                               type="radio"
                               value="2"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -898,37 +751,21 @@ export default function ForwardingTab() {
                               paddingLeft: "8px",
                             }}
                           >
-                            <label htmlFor="imap-delete">
-                              Immediately delete the message forever
-                            </label>
+                            <label htmlFor="imap-delete">Immediately delete the message forever</label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                  <div
-                    className="q5"
-                    style={{ height: "4px" }}
-                  />
+                  <div className="q5" style={{ height: "4px" }} />
                   <div>
                     <br />
-                    <span
-                      className="q4"
-                      style={{ fontWeight: "bold" }}
-                    >
+                    <span className="q4" style={{ fontWeight: "bold" }}>
                       Folder size limits
                     </span>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -943,8 +780,7 @@ export default function ForwardingTab() {
                               defaultChecked
                               value="0"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -964,24 +800,15 @@ export default function ForwardingTab() {
                             }}
                           >
                             <label htmlFor="imap-no-limit">
-                              Do not limit the number of messages in an
-                              IMAP folder (default)
+                              Do not limit the number of messages in an IMAP folder (default)
                             </label>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <table
-                      className="cf bA1"
-                      cellPadding="0"
-                      cellSpacing="0"
-                      style={{ borderCollapse: "collapse" }}
-                    >
+                    <table className="cf bA1" cellPadding="0" cellSpacing="0" style={{ borderCollapse: "collapse" }}>
                       <tbody>
-                        <tr
-                          className="C7"
-                          style={{ verticalAlign: "top" }}
-                        >
+                        <tr className="C7" style={{ verticalAlign: "top" }}>
                           <td
                             className="C6"
                             style={{
@@ -995,8 +822,7 @@ export default function ForwardingTab() {
                               type="radio"
                               value="1"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                                 position: "relative",
@@ -1016,14 +842,12 @@ export default function ForwardingTab() {
                             }}
                           >
                             <label htmlFor="imap-limit">
-                              Limit IMAP folders to contain no more than
-                              this many messages
+                              Limit IMAP folders to contain no more than this many messages
                             </label>{" "}
                             <select
                               id="imap-limit-select"
                               style={{
-                                fontFamily:
-                                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                                 margin: "0px",
                                 fontSize: "100%",
                               }}
@@ -1041,10 +865,7 @@ export default function ForwardingTab() {
                 </div>
                 <div>
                   <br />
-                  <span
-                    className="rQ"
-                    style={{ fontWeight: "bold" }}
-                  >
+                  <span className="rQ" style={{ fontWeight: "bold" }}>
                     Configure your email client
                   </span>{" "}
                   (e.g. Outlook, Thunderbird, iPhone)
@@ -1072,8 +893,7 @@ export default function ForwardingTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -1095,8 +915,7 @@ export default function ForwardingTab() {
                       WebkitFontSmoothing: "antialiased",
                       fontSize: "0.875rem",
                       letterSpacing: "normal",
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     }}
                   >
                     Save Changes
@@ -1110,8 +929,7 @@ export default function ForwardingTab() {
                       WebkitFontSmoothing: "antialiased",
                       fontSize: "0.875rem",
                       letterSpacing: "normal",
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     }}
                   >
                     Cancel

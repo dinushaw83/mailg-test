@@ -24,7 +24,7 @@ const PrivacyTab = () => {
       <Button
         variant="outlined"
         onClick={() => setOpenHub(true)}
-        sx={{ textTransform: 'none', borderRadius: 10, mb: 2 }}
+        sx={{ textTransform: "none", borderRadius: 10, mb: 2 }}
       >
         Open Privacy & Data Controls
       </Button>
@@ -41,7 +41,9 @@ const PrivacyTab = () => {
         <Divider sx={{ my: 1.5 }} />
 
         <FormControlLabel
-          control={<Switch checked={!!privacySettings.crashReportsEnabled} onChange={handleToggle("crashReportsEnabled")} />}
+          control={
+            <Switch checked={!!privacySettings.crashReportsEnabled} onChange={handleToggle("crashReportsEnabled")} />
+          }
           label="Send crash reports"
         />
         <Typography variant="caption" color="text.secondary" sx={{ ml: 6, mt: -1, mb: 1 }}>
@@ -51,7 +53,12 @@ const PrivacyTab = () => {
         <Divider sx={{ my: 1.5 }} />
 
         <FormControlLabel
-          control={<Switch checked={!!privacySettings.personalizationEnabled} onChange={handleToggle("personalizationEnabled")} />}
+          control={
+            <Switch
+              checked={!!privacySettings.personalizationEnabled}
+              onChange={handleToggle("personalizationEnabled")}
+            />
+          }
           label="Use data for personalization"
         />
         <Typography variant="caption" color="text.secondary" sx={{ ml: 6, mt: -1, mb: 1 }}>
@@ -62,7 +69,11 @@ const PrivacyTab = () => {
       <Divider sx={{ my: 2 }} />
 
       <Typography variant="body2" color="text.secondary">
-        Learn more in our <Link href="#" underline="hover">Privacy Policy</Link>.
+        Learn more in our{" "}
+        <Link href="#" underline="hover">
+          Privacy Policy
+        </Link>
+        .
       </Typography>
 
       <PrivacyHub open={openHub} onClose={() => setOpenHub(false)} />
@@ -71,5 +82,3 @@ const PrivacyTab = () => {
 };
 
 export default PrivacyTab;
-
-

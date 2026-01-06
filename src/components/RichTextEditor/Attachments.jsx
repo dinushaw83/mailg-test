@@ -81,7 +81,7 @@ const Attachments = ({ attachments, setAttachments }) => {
                     ({formatSize(attachment.size)})
                   </Typography>
                 </Box>
-                
+
                 {/* Error message row with X button beside Help */}
                 <Box
                   sx={{
@@ -118,9 +118,9 @@ const Attachments = ({ attachments, setAttachments }) => {
                   </Typography>
                   <span
                     className="material-symbols-outlined"
-                    style={{ 
-                      fontSize: "14px", 
-                      color: "rgb(95, 99, 104)", 
+                    style={{
+                      fontSize: "14px",
+                      color: "rgb(95, 99, 104)",
                       cursor: "pointer",
                       marginLeft: "4px",
                     }}
@@ -172,8 +172,8 @@ const Attachments = ({ attachments, setAttachments }) => {
               <Box sx={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
                 <span
                   className="material-symbols-outlined"
-                  style={{ 
-                    fontSize: "20px", 
+                  style={{
+                    fontSize: "20px",
                     color: "#1a73e8",
                     flexShrink: 0,
                   }}
@@ -185,7 +185,7 @@ const Attachments = ({ attachments, setAttachments }) => {
                   href={attachment.driveLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ 
+                  sx={{
                     color: "#202124",
                     cursor: "pointer",
                     overflow: "hidden",
@@ -216,9 +216,9 @@ const Attachments = ({ attachments, setAttachments }) => {
               </Box>
               <span
                 className="material-symbols-outlined"
-                style={{ 
-                  fontSize: "18px", 
-                  color: "rgb(95, 99, 104)", 
+                style={{
+                  fontSize: "18px",
+                  color: "rgb(95, 99, 104)",
                   cursor: "pointer",
                   flexShrink: 0,
                   marginLeft: "8px",
@@ -235,66 +235,66 @@ const Attachments = ({ attachments, setAttachments }) => {
         return (
           <Box
             key={attachment.name}
-          sx={{
-            maxWidth: "462px",
-            minWidth: "320px",
-            height: "33.5px",
-            backgroundColor: "#F5F5F5",
-            marginBottom: "8px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "0 12px",
-            color: "#222",
-            ...(activeAttachment?.name === attachment.name
-              ? {
-                  backgroundColor: "rgb(32, 33, 36, .12)",
-                  boxShadow: "0 0 0 1px rgb(189, 193, 198)",
-                }
-              : {}),
-          }}
-          onClick={(e) => {
-            setActiveAttachment(attachment);
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <a
-              href={attachment.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ textDecoration: "none", ...(attachment.url ? { color: "#1155cc" } : {}) }}
-            >
+            sx={{
+              maxWidth: "462px",
+              minWidth: "320px",
+              height: "33.5px",
+              backgroundColor: "#F5F5F5",
+              marginBottom: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "0 12px",
+              color: "#222",
+              ...(activeAttachment?.name === attachment.name
+                ? {
+                    backgroundColor: "rgb(32, 33, 36, .12)",
+                    boxShadow: "0 0 0 1px rgb(189, 193, 198)",
+                  }
+                : {}),
+            }}
+            onClick={(e) => {
+              setActiveAttachment(attachment);
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <a
+                href={attachment.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: "none", ...(attachment.url ? { color: "#1155cc" } : {}) }}
+              >
+                <Typography
+                  sx={{
+                    maxWidth: "315px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    fontWeight: "bold",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  {attachment.name}
+                </Typography>
+              </a>
               <Typography
                 sx={{
-                  maxWidth: "315px",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
                   fontWeight: "bold",
                   fontSize: "0.875rem",
+                  color: "#444746",
                 }}
               >
-                {attachment.name}
+                ({formatSize(attachment.size)})
               </Typography>
-            </a>
-            <Typography
-              sx={{
-                fontWeight: "bold",
-                fontSize: "0.875rem",
-                color: "#444746",
-              }}
+            </Box>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "14px", color: "rgb(95, 99, 104)", cursor: "pointer" }}
+              onClick={(e) => handleRemoveAttachment(e, attachment)}
             >
-              ({formatSize(attachment.size)})
-            </Typography>
+              close
+            </span>
           </Box>
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: "14px", color: "rgb(95, 99, 104)", cursor: "pointer" }}
-            onClick={(e) => handleRemoveAttachment(e, attachment)}
-          >
-            close
-          </span>
-        </Box>
         );
       })}
     </Box>

@@ -53,8 +53,7 @@ const ChatTab = () => {
             className="r7"
             style={{
               WebkitFontSmoothing: "antialiased",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
               fontSize: "0.875rem",
               letterSpacing: "normal",
             }}
@@ -111,10 +110,7 @@ const ChatTab = () => {
               >
                 <tbody>
                   <tr className="C7" style={{ verticalAlign: "top" }}>
-                    <td
-                      className="C6"
-                      style={{ margin: "0px", padding: "0px" }}
-                    >
+                    <td className="C6" style={{ margin: "0px", padding: "0px" }}>
                       <input
                         id="chat-on"
                         className="aVG"
@@ -124,8 +120,7 @@ const ChatTab = () => {
                         onChange={() => handleChatChange("on")}
                         value="on"
                         style={{
-                          fontFamily:
-                            '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                          fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                           margin: "0px",
                           fontSize: "100%",
                           position: "relative",
@@ -163,10 +158,7 @@ const ChatTab = () => {
               >
                 <tbody>
                   <tr className="C7" style={{ verticalAlign: "top" }}>
-                    <td
-                      className="C6"
-                      style={{ margin: "0px", padding: "0px" }}
-                    >
+                    <td className="C6" style={{ margin: "0px", padding: "0px" }}>
                       <input
                         id="chat-off"
                         className="aVF"
@@ -176,8 +168,7 @@ const ChatTab = () => {
                         onChange={() => handleChatChange("off")}
                         value="off"
                         style={{
-                          fontFamily:
-                            '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                          fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                           margin: "0px",
                           fontSize: "100%",
                           position: "relative",
@@ -211,8 +202,7 @@ const ChatTab = () => {
             className="r7"
             style={{
               WebkitFontSmoothing: "antialiased",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
               fontSize: "0.875rem",
               letterSpacing: "normal",
             }}
@@ -268,10 +258,7 @@ const ChatTab = () => {
               >
                 <tbody>
                   <tr className="C7" style={{ verticalAlign: "top" }}>
-                    <td
-                      className="C6"
-                      style={{ margin: "0px", padding: "0px" }}
-                    >
+                    <td className="C6" style={{ margin: "0px", padding: "0px" }}>
                       <input
                         id="meet-show"
                         className="aao"
@@ -281,8 +268,7 @@ const ChatTab = () => {
                         onChange={() => handleMeetChange("show")}
                         value="show"
                         style={{
-                          fontFamily:
-                            '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                          fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                           margin: "0px",
                           fontSize: "100%",
                           position: "relative",
@@ -302,9 +288,7 @@ const ChatTab = () => {
                       }}
                     >
                       <span className="rS" style={{ fontWeight: "bold" }}>
-                        <label htmlFor="meet-show">
-                          Show the Meet section in the main menu
-                        </label>
+                        <label htmlFor="meet-show">Show the Meet section in the main menu</label>
                       </span>
                     </td>
                   </tr>
@@ -322,10 +306,7 @@ const ChatTab = () => {
               >
                 <tbody>
                   <tr className="C7" style={{ verticalAlign: "top" }}>
-                    <td
-                      className="C6"
-                      style={{ margin: "0px", padding: "0px" }}
-                    >
+                    <td className="C6" style={{ margin: "0px", padding: "0px" }}>
                       <input
                         id="meet-hide"
                         className="aan"
@@ -335,8 +316,7 @@ const ChatTab = () => {
                         onChange={() => handleMeetChange("hide")}
                         value="hide"
                         style={{
-                          fontFamily:
-                            '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                          fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                           margin: "0px",
                           fontSize: "100%",
                           position: "relative",
@@ -356,9 +336,7 @@ const ChatTab = () => {
                       }}
                     >
                       <span className="rS" style={{ fontWeight: "bold" }}>
-                        <label htmlFor="meet-hide">
-                          Hide the Meet section in the main menu
-                        </label>
+                        <label htmlFor="meet-hide">Hide the Meet section in the main menu</label>
                       </span>
                     </td>
                   </tr>
@@ -372,8 +350,7 @@ const ChatTab = () => {
             className="r7"
             style={{
               WebkitFontSmoothing: "antialiased",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
               fontSize: "0.875rem",
               letterSpacing: "normal",
             }}
@@ -395,8 +372,7 @@ const ChatTab = () => {
                     WebkitFontSmoothing: "antialiased",
                     fontSize: "0.875rem",
                     letterSpacing: "normal",
-                    fontFamily:
-                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                   }}
                 >
                   Save Changes
@@ -410,8 +386,7 @@ const ChatTab = () => {
                     WebkitFontSmoothing: "antialiased",
                     fontSize: "0.875rem",
                     letterSpacing: "normal",
-                    fontFamily:
-                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                   }}
                 >
                   Cancel

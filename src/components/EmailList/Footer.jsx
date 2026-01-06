@@ -86,8 +86,8 @@ const TermsPrivacyProgramPolicies = ({ centerText = false, onPrivacyClick }) => 
           Terms
         </a>
         <Dot />
-        <a 
-          href="#" 
+        <a
+          href="#"
           className="l9"
           onClick={(e) => {
             e.preventDefault();

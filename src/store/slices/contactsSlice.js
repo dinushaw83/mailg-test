@@ -1,9 +1,9 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { recipientLabels as initialRecipientLabels } from '../../contexts/fixtures/recipientLabels';
-import { recipients as initialRecipients } from '../../contexts/fixtures/recipients';
+import { createSlice } from "@reduxjs/toolkit";
+import { recipientLabels as initialRecipientLabels } from "../../contexts/fixtures/recipientLabels";
+import { recipients as initialRecipients } from "../../contexts/fixtures/recipients";
 
 const contactsSlice = createSlice({
-  name: 'contacts',
+  name: "contacts",
   initialState: {
     recipients: JSON.parse(JSON.stringify(initialRecipients)),
     recipientLabels: JSON.parse(JSON.stringify(initialRecipientLabels)),
@@ -30,13 +30,12 @@ const contactsSlice = createSlice({
   },
 });
 
-export const { 
-  setRecipients, 
-  setRecipientLabels, 
-  setDeletedRecipients, 
+export const {
+  setRecipients,
+  setRecipientLabels,
+  setDeletedRecipients,
   setHiddenRecipients,
-  setContactsLeftSidebarExpanded 
+  setContactsLeftSidebarExpanded,
 } = contactsSlice.actions;
 
 export default contactsSlice.reducer;
-

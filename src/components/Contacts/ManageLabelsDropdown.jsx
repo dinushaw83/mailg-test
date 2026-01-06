@@ -415,7 +415,7 @@ const ManageLabelsDropdown = ({ anchorEl, open, onClose, selectedContacts, conta
           </Typography>
 
           {/* Labels List */}
-          {recipientLabels
+          {[...recipientLabels]
             .sort((a, b) => a.label.localeCompare(b.label))
             .map((label) => {
               const isSelected = selectedLabels.has(label.label);

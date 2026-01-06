@@ -1,5 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, Typography, Button, Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Button,
+  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar,
+} from "@mui/material";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { generateAvatarColor } from "../../utils/helperFunctions";
 import { format, isToday, isYesterday, isThisWeek, isThisYear as isCurrentYear } from "date-fns";
@@ -30,8 +42,11 @@ const ContactTrash = () => {
 
   const clearSelection = () => setSelectedIds(new Set());
 
-  const snackbarStyle = { "& .MuiSnackbarContent-root": { backgroundColor: "#303030", color: "#fff", minHeight: "40px" } };
-  const showToast = (message) => setSnackbar?.({ open: true, message, autoHideDuration: 3000, hideClose: true, style: snackbarStyle });
+  const snackbarStyle = {
+    "& .MuiSnackbarContent-root": { backgroundColor: "#303030", color: "#fff", minHeight: "40px" },
+  };
+  const showToast = (message) =>
+    setSnackbar?.({ open: true, message, autoHideDuration: 3000, hideClose: true, style: snackbarStyle });
 
   const handleRecover = () => {
     if (selectedIds.size === 0) return;
@@ -41,11 +56,15 @@ const ContactTrash = () => {
     if (toRecover.length === 0) return;
     setRecipients((prev) => [
       ...prev,
-      ...toRecover.map((c) => ({ ...c, isSaved: true, savedAt: now, updatedAt: now }))
+      ...toRecover.map((c) => ({ ...c, isSaved: true, savedAt: now, updatedAt: now })),
     ]);
     setDeletedRecipients((prev) => prev.filter((c) => !ids.includes(c.id)));
     clearSelection();
-    showToast(toRecover.length === 1 ? `Recovered ${toRecover[0].name || toRecover[0].email || "contact"}` : `Recovered ${toRecover.length} contacts`);
+    showToast(
+      toRecover.length === 1
+        ? `Recovered ${toRecover[0].name || toRecover[0].email || "contact"}`
+        : `Recovered ${toRecover.length} contacts`
+    );
   };
 
   const handleRecoverSingle = (id) => {
@@ -133,35 +152,111 @@ const ContactTrash = () => {
 
       {/* Deleted contacts list */}
       {deletedRecipients?.length > 0 ? (
-        <TableContainer sx={{ backgroundColor: "transparent", flex: 1, overflowY: "auto", maxHeight: "calc(100vh - 200px)", width: "100%", mt: 1 }}>
+        <TableContainer
+          sx={{
+            backgroundColor: "transparent",
+            flex: 1,
+            overflowY: "auto",
+            maxHeight: "calc(100vh - 200px)",
+            width: "100%",
+            mt: 1,
+          }}
+        >
           <Table sx={{ borderCollapse: "separate", borderSpacing: 0, width: "100%" }}>
             <TableHead sx={{ backgroundColor: "#fff", position: "sticky", top: 0, zIndex: 1 }}>
               {selectedIds.size === 0 ? (
                 <TableRow>
-                  <TableCell sx={{ border: 0, borderBottom: "1px solid #c4c7c5", py: 1.5, px: 1, backgroundColor: "transparent", position: "sticky", top: 0, zIndex: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.875rem", color: "#444746" }}>Name</Typography>
+                  <TableCell
+                    sx={{
+                      border: 0,
+                      borderBottom: "1px solid #c4c7c5",
+                      py: 1.5,
+                      px: 1,
+                      backgroundColor: "transparent",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.875rem", color: "#444746" }}>
+                      Name
+                    </Typography>
                   </TableCell>
-                  <TableCell sx={{ border: 0, borderBottom: "1px solid #c4c7c5", py: 1.5, px: 1, backgroundColor: "transparent" }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.875rem", color: "#444746" }}>Why in Trash?</Typography>
+                  <TableCell
+                    sx={{
+                      border: 0,
+                      borderBottom: "1px solid #c4c7c5",
+                      py: 1.5,
+                      px: 1,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.875rem", color: "#444746" }}>
+                      Why in Trash?
+                    </Typography>
                   </TableCell>
-                  <TableCell sx={{ border: 0, borderBottom: "1px solid #c4c7c5", py: 1.5, px: 1, backgroundColor: "transparent" }}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.875rem", color: "#444746" }}>Date deleted</Typography>
+                  <TableCell
+                    sx={{
+                      border: 0,
+                      borderBottom: "1px solid #c4c7c5",
+                      py: 1.5,
+                      px: 1,
+                      backgroundColor: "transparent",
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: "0.875rem", color: "#444746" }}>
+                      Date deleted
+                    </Typography>
                   </TableCell>
-                  <TableCell sx={{ border: 0, borderBottom: "1px solid #c4c7c5", py: 1.5, px: 1, backgroundColor: "transparent", width: 120, textAlign: "right" }}>
+                  <TableCell
+                    sx={{
+                      border: 0,
+                      borderBottom: "1px solid #c4c7c5",
+                      py: 1.5,
+                      px: 1,
+                      backgroundColor: "transparent",
+                      width: 120,
+                      textAlign: "right",
+                    }}
+                  >
                     {/* Intentionally empty header for hover Recover action */}
                   </TableCell>
                 </TableRow>
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ border: 0, borderBottom: "1px solid #e0e0e0", py: 1.5, px: 2, backgroundColor: "transparent", position: "sticky", top: 0, zIndex: 1 }}>
+                  <TableCell
+                    colSpan={4}
+                    sx={{
+                      border: 0,
+                      borderBottom: "1px solid #e0e0e0",
+                      py: 1.5,
+                      px: 2,
+                      backgroundColor: "transparent",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 1,
+                    }}
+                  >
                     <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Checkbox size="medium" checked={false} indeterminate={selectedIds.size > 0} onChange={selectAll} sx={{ "&.Mui-checked": { color: "#0b57d0" } }} />
-                        <Typography variant="body2" sx={{ color: "#0b57d0", fontWeight: 500, fontSize: "0.875rem" }}>{selectedIds.size} selected</Typography>
+                        <Checkbox
+                          size="medium"
+                          checked={false}
+                          indeterminate={selectedIds.size > 0}
+                          onChange={selectAll}
+                          sx={{ "&.Mui-checked": { color: "#0b57d0" } }}
+                        />
+                        <Typography variant="body2" sx={{ color: "#0b57d0", fontWeight: 500, fontSize: "0.875rem" }}>
+                          {selectedIds.size} selected
+                        </Typography>
                       </Box>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <Button onClick={handleDeleteForever} sx={{ textTransform: "none", color: "#1a73e8" }}>Delete forever</Button>
-                        <Button onClick={handleRecover} sx={{ textTransform: "none", color: "#1a73e8" }}>Recover</Button>
+                        <Button onClick={handleDeleteForever} sx={{ textTransform: "none", color: "#1a73e8" }}>
+                          Delete forever
+                        </Button>
+                        <Button onClick={handleRecover} sx={{ textTransform: "none", color: "#1a73e8" }}>
+                          Recover
+                        </Button>
                       </Box>
                     </Box>
                   </TableCell>
@@ -182,24 +277,62 @@ const ContactTrash = () => {
                   >
                     <TableCell sx={{ border: 0, py: 1 }}>
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Checkbox size="medium" checked={selectedIds.has(c.id)} onChange={() => toggleSelect(c.id)} onClick={(e) => e.stopPropagation()} sx={{ "&.Mui-checked": { color: "#0b57d0" } }} />
-                        <Avatar sx={{ bgcolor: c.avatar ? "transparent" : avatarColor, color: c.avatar ? "inherit" : "white", width: 36, height: 36, fontSize: "14px" }}>
-                          {c.avatar ? <img src={c.avatar} alt={c.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : initials}
+                        <Checkbox
+                          size="medium"
+                          checked={selectedIds.has(c.id)}
+                          onChange={() => toggleSelect(c.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{ "&.Mui-checked": { color: "#0b57d0" } }}
+                        />
+                        <Avatar
+                          sx={{
+                            bgcolor: c.avatar ? "transparent" : avatarColor,
+                            color: c.avatar ? "inherit" : "white",
+                            width: 36,
+                            height: 36,
+                            fontSize: "14px",
+                          }}
+                        >
+                          {c.avatar ? (
+                            <img
+                              src={c.avatar}
+                              alt={c.name}
+                              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+                            />
+                          ) : (
+                            initials
+                          )}
                         </Avatar>
-                        <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "0.875rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 400,
+                            fontSize: "0.875rem",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           {c?.name || c?.email || "—"}
                         </Typography>
                       </Box>
                     </TableCell>
                     <TableCell sx={{ border: 0, py: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "0.875rem" }}>Deleted in MailG Contacts (Web)</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "0.875rem" }}>
+                        Deleted in MailG Contacts (Web)
+                      </Typography>
                     </TableCell>
                     <TableCell sx={{ border: 0, py: 1 }}>
-                      <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "0.875rem" }}>{formatTrashDate(c.updatedAt || Date.now())}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 400, fontSize: "0.875rem" }}>
+                        {formatTrashDate(c.updatedAt || Date.now())}
+                      </Typography>
                     </TableCell>
                     <TableCell sx={{ border: 0, py: 1, textAlign: "right", width: 120 }}>
                       <Button
-                        onClick={(e) => { e.stopPropagation(); handleRecoverSingle(c.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRecoverSingle(c.id);
+                        }}
                         sx={{
                           textTransform: "none",
                           color: "#1a73e8",

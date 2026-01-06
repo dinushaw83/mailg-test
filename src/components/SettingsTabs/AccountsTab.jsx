@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+
+import { Box } from "@mui/material";
 import EditEmailAddressModal from "./EditEmailAddressModal";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { Box } from "@mui/material";
 
 const AccountsTab = () => {
   const [editOpen, setEditOpen] = useState(false);

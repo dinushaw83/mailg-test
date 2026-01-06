@@ -60,9 +60,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
   const collectLabelSnapshot = useCallback(
     (matchKeys) => {
       if (!matchKeys?.length) return new Map();
-      const targets = new Set(
-        matchKeys.map((key) => String(key ?? "").trim()).filter((value) => value.length > 0)
-      );
+      const targets = new Set(matchKeys.map((key) => String(key ?? "").trim()).filter((value) => value.length > 0));
       if (!targets.size) return new Map();
 
       const snapshot = new Map();
@@ -345,8 +343,8 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
           ? `${affectedConversations} conversations marked as read.`
           : "Conversation marked as read."
         : affectedConversations > 1
-        ? `${affectedConversations} conversations marked as unread.`
-        : "Conversation marked as unread.",
+          ? `${affectedConversations} conversations marked as unread.`
+          : "Conversation marked as unread.",
       autoHideDuration: 3000,
       action: (
         <Button

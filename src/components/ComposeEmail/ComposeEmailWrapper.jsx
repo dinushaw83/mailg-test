@@ -14,7 +14,5 @@ export default function ComposeEmailWrapper() {
   }, [composeWindows, visibleWindowCount]);
 
   // Only render visible windows
-  return visibleWindows.map((window) => (
-    <ComposeEmail key={window.id} composeWindow={window} />
-  ));
+  return visibleWindows.map((window) => <ComposeEmail key={window.id} composeWindow={window} />);
 }

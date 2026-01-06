@@ -28,10 +28,7 @@ const ContactsTab = () => {
     [recipients]
   );
   // Contacts in search results that are not in my contacts
-  const otherContacts = useMemo(
-    () => searchResults.filter((recipient) => !recipient?.isSaved),
-    [searchResults]
-  );
+  const otherContacts = useMemo(() => searchResults.filter((recipient) => !recipient?.isSaved), [searchResults]);
 
   // Update search results when recipients change
   useEffect(() => {

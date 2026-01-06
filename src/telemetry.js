@@ -21,16 +21,10 @@ async function initTelemetry() {
 
   try {
     const { metrics } = await import("@opentelemetry/api");
-    const { MeterProvider, PeriodicExportingMetricReader } = await import(
-      "@opentelemetry/sdk-metrics"
-    );
-    const { OTLPMetricExporter } = await import(
-      "@opentelemetry/exporter-metrics-otlp-http"
-    );
+    const { MeterProvider, PeriodicExportingMetricReader } = await import("@opentelemetry/sdk-metrics");
+    const { OTLPMetricExporter } = await import("@opentelemetry/exporter-metrics-otlp-http");
     const { Resource } = await import("@opentelemetry/resources");
-    const { SEMRESATTRS_SERVICE_NAME } = await import(
-      "@opentelemetry/semantic-conventions"
-    );
+    const { SEMRESATTRS_SERVICE_NAME } = await import("@opentelemetry/semantic-conventions");
 
     // Create resource with service name
     const resource = new Resource({
@@ -126,4 +120,3 @@ async function initTelemetry() {
 initTelemetry();
 
 export default initTelemetry;
-

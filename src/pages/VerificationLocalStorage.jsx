@@ -223,7 +223,7 @@ const VerificationLocalStorage = () => {
       console.log("⏸️ Skipping refresh — baseline not ready yet");
       return;
     }
-    
+
     const currentSnapshot = gatherLocalStorageConfig();
     window.currentConfig = currentSnapshot;
     setCurrentConfig(currentSnapshot);
@@ -302,22 +302,24 @@ const VerificationLocalStorage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  
   const hasDifferences = diffData?.hunks?.length > 0;
 
   if (isLoading) {
     return (
-      <div style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#1E40AF"
-      }}>
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#1E40AF",
+        }}
+      >
         <h2>⏳ Waiting for baseline configuration...</h2>
         <p style={{ color: "#6B7280" }}>
-          Please ensure the MailG web app is running — the verification dashboard will load automatically once the baseline is ready.
+          Please ensure the MailG web app is running — the verification dashboard will load automatically once the
+          baseline is ready.
         </p>
       </div>
     );

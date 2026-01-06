@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { setDeletedRecipients, setHiddenRecipients, setRecipientLabels, setRecipients } from "../store/slices/contactsSlice";
+import {
+  setDeletedRecipients,
+  setHiddenRecipients,
+  setRecipientLabels,
+  setRecipients,
+} from "../store/slices/contactsSlice";
 import { setEmails, setLabels } from "../store/slices/mailSlice";
 
 import { clearSelection } from "../store/slices/uiSlice";
@@ -10,14 +15,50 @@ import { useLocation } from "react-router-dom";
 
 const VERIFICATION_INITIAL_CONFIG_KEY = "__verification_initial_config__";
 const LOCAL_STORAGE_KEYS = [
-  "loggedInUser", "emails", "recipients", "recipientLabels", "deletedRecipients", "hiddenRecipients",
-  "allSearchQueries", "mailg_search_history", "currentView", "selectedEmails", "labels", "sortOrder",
-  "currentPage", "itemsPerPage", "panelState", "isLeftSidebarExpanded", "showQuickSettings", "density",
-  "threading", "inboxType", "mailg-notification-settings", "rightSidebarExpanded", "rightSidebarActiveTab",
-  "vacationResponder", "sendAsSettings", "signatures", "notificationSettings", "privacySettings",
-  "settingsGeneral", "settingsAdvanced", "settingsLabels", "settingsInbox", "settingsChat", "settingsFilters",
-  "settingsForwarding", "settingsOffline", "settingsThemes", "settingsAccounts", "mailGAccountPersonalInfo",
-  "mailGAccountDataPrivacy", "thirdPartyApps", "signInSettings", "keyboardShortcuts", "manualSyncCount",
+  "loggedInUser",
+  "emails",
+  "recipients",
+  "recipientLabels",
+  "deletedRecipients",
+  "hiddenRecipients",
+  "allSearchQueries",
+  "mailg_search_history",
+  "currentView",
+  "selectedEmails",
+  "labels",
+  "sortOrder",
+  "currentPage",
+  "itemsPerPage",
+  "panelState",
+  "isLeftSidebarExpanded",
+  "showQuickSettings",
+  "density",
+  "threading",
+  "inboxType",
+  "mailg-notification-settings",
+  "rightSidebarExpanded",
+  "rightSidebarActiveTab",
+  "vacationResponder",
+  "sendAsSettings",
+  "signatures",
+  "notificationSettings",
+  "privacySettings",
+  "settingsGeneral",
+  "settingsAdvanced",
+  "settingsLabels",
+  "settingsInbox",
+  "settingsChat",
+  "settingsFilters",
+  "settingsForwarding",
+  "settingsOffline",
+  "settingsThemes",
+  "settingsAccounts",
+  "mailGAccountPersonalInfo",
+  "mailGAccountDataPrivacy",
+  "thirdPartyApps",
+  "signInSettings",
+  "keyboardShortcuts",
+  "manualSyncCount",
 ];
 
 const captureInitialConfig = () => {
@@ -46,30 +87,34 @@ const ReduxInitialization = ({ children }) => {
 
   // Migration logic (Optional but good for backward compatibility)
   useEffect(() => {
-    const isMigrated = localStorage.getItem('__redux_migrated__');
+    const isMigrated = localStorage.getItem("__redux_migrated__");
     if (!isMigrated) {
       const getOld = (key) => {
         const val = localStorage.getItem(key);
         if (!val) return null;
-        try { return JSON.parse(val); } catch(e) { return val; }
+        try {
+          return JSON.parse(val);
+        } catch (e) {
+          return val;
+        }
       };
 
-      const oldUser = getOld('loggedInUser');
+      const oldUser = getOld("loggedInUser");
       if (oldUser) dispatch(setLoggedInUser(oldUser));
 
-      const oldEmails = getOld('emails');
+      const oldEmails = getOld("emails");
       if (oldEmails) dispatch(setEmails(oldEmails));
 
-      const oldLabels = getOld('labels');
+      const oldLabels = getOld("labels");
       if (oldLabels) dispatch(setLabels(oldLabels));
 
-      const oldRecipients = getOld('recipients');
+      const oldRecipients = getOld("recipients");
       if (oldRecipients) dispatch(setRecipients(oldRecipients));
 
-      const oldRecipientLabels = getOld('recipientLabels');
+      const oldRecipientLabels = getOld("recipientLabels");
       if (oldRecipientLabels) dispatch(setRecipientLabels(oldRecipientLabels));
 
-      localStorage.setItem('__redux_migrated__', 'true');
+      localStorage.setItem("__redux_migrated__", "true");
     }
   }, [dispatch]);
 
@@ -148,4 +193,3 @@ const ReduxInitialization = ({ children }) => {
 };
 
 export default ReduxInitialization;
-

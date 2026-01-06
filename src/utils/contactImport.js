@@ -105,24 +105,24 @@ export const parseCSV = (csvContent) => {
       const nameParts = [];
       if (contact.firstName) nameParts.push(contact.firstName);
       if (contact.lastName) nameParts.push(contact.lastName);
-      contact.name = nameParts.join(' ');
+      contact.name = nameParts.join(" ");
     }
 
     // If still no name but we have email, use email prefix as fallback
     if (!contact.name && contact.email) {
-      contact.name = contact.email.split('@')[0];
+      contact.name = contact.email.split("@")[0];
     }
-    
+
     // Debug log for first few contacts
     if (contacts.length < 3) {
-      console.log('Contact Import Debug:', {
+      console.log("Contact Import Debug:", {
         contactIndex: contacts.length,
         fieldMap,
         values,
         contact,
       });
     }
-    
+
     // If first/last are missing but we now have a name, try to derive them
     if ((!contact.firstName || !contact.lastName) && contact.name) {
       const parts = contact.name.trim().split(/\s+/);
@@ -130,7 +130,7 @@ export const parseCSV = (csvContent) => {
         if (!contact.firstName) contact.firstName = parts[0];
       } else if (parts.length >= 2) {
         if (!contact.firstName) contact.firstName = parts[0];
-        if (!contact.lastName) contact.lastName = parts.slice(1).join(' ');
+        if (!contact.lastName) contact.lastName = parts.slice(1).join(" ");
       }
     }
     if (fieldMap.phone !== -1 && values[fieldMap.phone]) {

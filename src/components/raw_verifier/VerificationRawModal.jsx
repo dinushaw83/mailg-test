@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -15,7 +15,7 @@ import {
   CircularProgress,
   IconButton,
   Paper,
-} from '@mui/material';
+} from "@mui/material";
 import {
   ExpandMore,
   CheckCircle,
@@ -25,10 +25,10 @@ import {
   ChevronLeft,
   ChevronRight,
   AccessTime,
-} from '@mui/icons-material';
-import { RDT_OPERATORS } from '../../lib/utils/assertion-operators';
-import DiffViewer from '../ui/DiffViewer';
-import { getActualState } from '../../services/verificationApi';
+} from "@mui/icons-material";
+import { RDT_OPERATORS } from "../../lib/utils/assertion-operators";
+import DiffViewer from "../ui/DiffViewer";
+import { getActualState } from "../../services/verificationApi";
 
 const VerificationRawModal = ({
   isOpen,
@@ -60,9 +60,9 @@ const VerificationRawModal = ({
     console.log("initialAssertions -> ", initialAssertions);
     if (isOpen && initialAssertions) {
       setAssertions(
-        initialAssertions.map(assertion => ({
+        initialAssertions.map((assertion) => ({
           ...assertion,
-          status: 'pending',
+          status: "pending",
         }))
       );
       setExpandedAssertions(new Set());
@@ -82,39 +82,39 @@ const VerificationRawModal = ({
 
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
     }
   }, [isOpen, onClose]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!isOpen) return;
-      if (event.key === 'ArrowLeft' && hasPrevious) {
+      if (event.key === "ArrowLeft" && hasPrevious) {
         event.preventDefault();
-        onNavigate?.('prev');
-      } else if (event.key === 'ArrowRight' && hasNext) {
+        onNavigate?.("prev");
+      } else if (event.key === "ArrowRight" && hasNext) {
         event.preventDefault();
-        onNavigate?.('next');
+        onNavigate?.("next");
       }
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, hasPrevious, hasNext, onNavigate]);
 
-  const addLogEntry = (message, type = 'info') => {
-    const timestamp = new Date().toLocaleTimeString('en-US', {
+  const addLogEntry = (message, type = "info") => {
+    const timestamp = new Date().toLocaleTimeString("en-US", {
       hour12: true,
-      hour: 'numeric',
-      minute: '2-digit',
-      second: '2-digit',
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
     });
-    setExecutionLog(prev => [
+    setExecutionLog((prev) => [
       ...prev,
       {
         id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
@@ -126,7 +126,7 @@ const VerificationRawModal = ({
   };
 
   const toggleAssertionExpansion = (assertionIndex) => {
-    setExpandedAssertions(prev => {
+    setExpandedAssertions((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(assertionIndex)) {
         newSet.delete(assertionIndex);
@@ -142,19 +142,17 @@ const VerificationRawModal = ({
     if (!assertion) return;
 
     if (requiresModelResponse(assertion.operator) && !modelResponses[assertionIndex]) {
-      setModelResponsesErrors(prev => ({
+      setModelResponsesErrors((prev) => ({
         ...prev,
-        [assertionIndex]: 'Please enter a model response for this assertion.',
+        [assertionIndex]: "Please enter a model response for this assertion.",
       }));
-      setExpandedAssertions(prev => new Set([...prev, assertionIndex]));
+      setExpandedAssertions((prev) => new Set([...prev, assertionIndex]));
       return;
     }
 
     addLogEntry(`Starting assertion: ${assertion.title || `Assertion ${assertionIndex + 1}`}`);
 
-    setAssertions(prev =>
-      prev.map((a, index) => (index === assertionIndex ? { ...a, status: 'running' } : a))
-    );
+    setAssertions((prev) => prev.map((a, index) => (index === assertionIndex ? { ...a, status: "running" } : a)));
 
     try {
       // Capture current localStorage data
@@ -174,43 +172,43 @@ const VerificationRawModal = ({
       //   modelResponses[assertionIndex] || null
       // );
       // Convert localStorage data to a File object
-      const dataStr = JSON.stringify(localStorageData, null, 2)
-      const dataBlob = new Blob([dataStr], { type: 'application/json' })
-      const localStorageFile = new File([dataBlob], 'localStorage.json', {
-        type: 'application/json',
-      })
+      const dataStr = JSON.stringify(localStorageData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
+      const localStorageFile = new File([dataBlob], "localStorage.json", {
+        type: "application/json",
+      });
 
       // Create form data for the API call
-      const formData = new FormData()
-      console.log("Prompt ID:", promptId)
-      formData.append('taskId', promptId)
-      formData.append('localStorageDump', localStorageFile)
-      formData.append('assertion', JSON.stringify(assertion))
+      const formData = new FormData();
+      console.log("Prompt ID:", promptId);
+      formData.append("taskId", promptId);
+      formData.append("localStorageDump", localStorageFile);
+      formData.append("assertion", JSON.stringify(assertion));
 
       // RDT-specific: Add model response only for RDT operators
       if (requiresModelResponse(assertion.operator) && modelResponses[assertionIndex]) {
-        formData.append('modelResponse', modelResponses[assertionIndex])
+        formData.append("modelResponse", modelResponses[assertionIndex]);
       }
 
       // Call the get_actual_state endpoint
-      const response = await fetch('/api/v1/get_actual_state', {
-        method: 'POST',
+      const response = await fetch("/api/v1/get_actual_state", {
+        method: "POST",
         body: formData,
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`API call failed: ${response.statusText}`)
+        throw new Error(`API call failed: ${response.statusText}`);
       }
 
-      const result = await response.json()
+      const result = await response.json();
 
       // Update assertion with the result
-      setAssertions(prev =>
+      setAssertions((prev) =>
         prev.map((a, index) =>
           index === assertionIndex
             ? {
                 ...a,
-                status: result.result === 'pass' ? 'passed' : 'failed',
+                status: result.result === "pass" ? "passed" : "failed",
                 actual: result.actual,
                 error: result.error,
                 executionTime: result.executionTime,
@@ -221,15 +219,15 @@ const VerificationRawModal = ({
         )
       );
 
-      setAssertionStatuses(prev => ({
+      setAssertionStatuses((prev) => ({
         ...prev,
-        [assertionIndex]: result.result === 'pass' ? 'passed' : 'failed',
+        [assertionIndex]: result.result === "pass" ? "passed" : "failed",
       }));
 
-      if (result.result === 'pass') {
+      if (result.result === "pass") {
         addLogEntry(
           `Assertion ${assertionIndex + 1} PASSED: ${assertion.title || `Assertion ${assertionIndex + 1}`}`,
-          'success'
+          "success"
         );
         addLogEntry(`Actual value: ${JSON.stringify(result.actual)}`);
         addLogEntry(`Expected value: ${JSON.stringify(result.expected)}`);
@@ -239,7 +237,7 @@ const VerificationRawModal = ({
       } else {
         addLogEntry(
           `Assertion ${assertionIndex + 1} FAILED: ${assertion.title || `Assertion ${assertionIndex + 1}`}`,
-          'error'
+          "error"
         );
         if (result.error) {
           addLogEntry(`Error: ${result.error}`);
@@ -250,15 +248,15 @@ const VerificationRawModal = ({
           addLogEntry(`Execution time: ${result.executionTime}ms`);
         }
       }
-      setCompletedCount(prev => prev + 1);
+      setCompletedCount((prev) => prev + 1);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setAssertions(prev =>
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      setAssertions((prev) =>
         prev.map((a, index) =>
           index === assertionIndex
             ? {
                 ...a,
-                status: 'failed',
+                status: "failed",
                 error: errorMessage,
                 executionTime: 0,
               }
@@ -267,25 +265,25 @@ const VerificationRawModal = ({
       );
       addLogEntry(
         `Assertion ${assertionIndex + 1} FAILED: ${assertion.title || `Assertion ${assertionIndex + 1}`}`,
-        'error'
+        "error"
       );
       addLogEntry(`Error: ${errorMessage}`);
     }
   };
 
   const runAllAssertions = async () => {
-    console.log('Running all assertions');
+    console.log("Running all assertions");
     setIsRunning(true);
     setCompletedCount(0);
     addLogEntry(`Starting execution of ${assertions.length} assertions`);
 
     for (let i = 0; i < assertions.length; i++) {
       if (requiresModelResponse(assertions[i].operator) && !modelResponses[i]) {
-        setModelResponsesErrors(prev => ({
+        setModelResponsesErrors((prev) => ({
           ...prev,
-          [i]: 'Please enter a model response for this assertion.',
+          [i]: "Please enter a model response for this assertion.",
         }));
-        setExpandedAssertions(prev => new Set([...prev, i]));
+        setExpandedAssertions((prev) => new Set([...prev, i]));
         setIsRunning(false);
         return;
       }
@@ -297,14 +295,14 @@ const VerificationRawModal = ({
 
     addLogEntry(`Execution completed. All assertions have been processed.`);
     setIsRunning(false);
-    console.log('All assertions have been run -> ', assertions)
+    console.log("All assertions have been run -> ", assertions);
   };
 
   const clearResults = () => {
-    setAssertions(prev =>
-      prev.map(a => ({
+    setAssertions((prev) =>
+      prev.map((a) => ({
         ...a,
-        status: 'pending',
+        status: "pending",
         actual: undefined,
         error: undefined,
         executionTime: undefined,
@@ -318,69 +316,69 @@ const VerificationRawModal = ({
     setCompletedCount(0);
     setExecutionLog([]);
     setTimeout(() => {
-      addLogEntry('Results cleared');
+      addLogEntry("Results cleared");
     }, 0);
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'passed':
-        return <CheckCircle sx={{ color: 'success.main', fontSize: 20 }} />;
-      case 'failed':
-        return <Cancel sx={{ color: 'error.main', fontSize: 20 }} />;
-      case 'running':
+      case "passed":
+        return <CheckCircle sx={{ color: "success.main", fontSize: 20 }} />;
+      case "failed":
+        return <Cancel sx={{ color: "error.main", fontSize: 20 }} />;
+      case "running":
         return <CircularProgress size={20} />;
       default:
-        return <AccessTime sx={{ color: 'text.disabled', fontSize: 20 }} />;
+        return <AccessTime sx={{ color: "text.disabled", fontSize: 20 }} />;
     }
   };
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'passed':
-        return 'PASSED';
-      case 'failed':
-        return 'FAILED';
-      case 'running':
-        return 'RUNNING';
+      case "passed":
+        return "PASSED";
+      case "failed":
+        return "FAILED";
+      case "running":
+        return "RUNNING";
       default:
-        return 'PENDING';
+        return "PENDING";
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'passed':
-        return 'success';
-      case 'failed':
-        return 'error';
-      case 'running':
-        return 'info';
+      case "passed":
+        return "success";
+      case "failed":
+        return "error";
+      case "running":
+        return "info";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const getTaskStatus = () => {
     const statusValues = Object.values(assertionStatuses);
     if (statusValues.length === 0) {
-      return { status: 'pending', message: 'Ready to run', color: 'default' };
+      return { status: "pending", message: "Ready to run", color: "default" };
     }
     if (statusValues.length !== assertions.length) {
       return {
-        status: 'partial',
+        status: "partial",
         message: `${statusValues.length} / ${assertions.length} assertions running`,
-        color: 'warning',
+        color: "warning",
       };
     }
-    if (statusValues.every(status => status === 'passed')) {
-      return { status: 'passed', message: 'All assertions passed', color: 'success' };
+    if (statusValues.every((status) => status === "passed")) {
+      return { status: "passed", message: "All assertions passed", color: "success" };
     }
-    const failedCount = statusValues.filter(status => status === 'failed').length;
+    const failedCount = statusValues.filter((status) => status === "failed").length;
     return {
-      status: 'failed',
+      status: "failed",
       message: `${failedCount} / ${assertions.length} assertions failed`,
-      color: 'error',
+      color: "error",
     };
   };
 
@@ -396,14 +394,14 @@ const VerificationRawModal = ({
       fullWidth
       PaperProps={{
         sx: {
-          maxHeight: '88vh',
-          display: 'flex',
-          flexDirection: 'column',
+          maxHeight: "88vh",
+          display: "flex",
+          flexDirection: "column",
         },
       }}
     >
       <DialogTitle>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Box>
             <Typography variant="h6">Raw Verifier - {promptId}</Typography>
             {totalCount > 0 && (
@@ -416,9 +414,9 @@ const VerificationRawModal = ({
         </Box>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <DialogContent dividers sx={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Prompt Section */}
-        <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+        <Paper sx={{ p: 2, bgcolor: "grey.50" }}>
           <Typography variant="subtitle2" gutterBottom fontWeight="bold">
             Prompt:
           </Typography>
@@ -428,20 +426,16 @@ const VerificationRawModal = ({
         </Paper>
 
         {/* Assertions Section */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {assertions.map((assertion, index) => {
             const isExpanded = expandedAssertions.has(index);
-            const status = assertion.status || 'pending';
+            const status = assertion.status || "pending";
             const isRDT = requiresModelResponse(assertion.operator);
 
             return (
-              <Accordion
-                key={index}
-                expanded={isExpanded}
-                onChange={() => toggleAssertionExpansion(index)}
-              >
+              <Accordion key={index} expanded={isExpanded} onChange={() => toggleAssertionExpansion(index)}>
                 <AccordionSummary expandIcon={<ExpandMore />}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
                     {getStatusIcon(status)}
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" fontWeight="medium">
@@ -451,11 +445,7 @@ const VerificationRawModal = ({
                         {assertion.operator} {assertion.path && `• ${assertion.path}`}
                       </Typography>
                     </Box>
-                    <Chip
-                      label={getStatusText(status)}
-                      color={getStatusColor(status)}
-                      size="small"
-                    />
+                    <Chip label={getStatusText(status)} color={getStatusColor(status)} size="small" />
                     <Button
                       size="small"
                       variant="outlined"
@@ -464,14 +454,14 @@ const VerificationRawModal = ({
                         e.stopPropagation();
                         runAssertion(index);
                       }}
-                      disabled={isRunning || status === 'running'}
+                      disabled={isRunning || status === "running"}
                     >
                       Run
                     </Button>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {isRDT && (
                       <Box>
                         <TextField
@@ -479,10 +469,10 @@ const VerificationRawModal = ({
                           multiline
                           rows={4}
                           label="Model Response"
-                          value={modelResponses[index] || ''}
+                          value={modelResponses[index] || ""}
                           onChange={(e) => {
-                            setModelResponses(prev => ({ ...prev, [index]: e.target.value }));
-                            setModelResponsesErrors(prev => ({ ...prev, [index]: '' }));
+                            setModelResponses((prev) => ({ ...prev, [index]: e.target.value }));
+                            setModelResponsesErrors((prev) => ({ ...prev, [index]: "" }));
                           }}
                           error={!!modelResponsesErrors[index]}
                           helperText={modelResponsesErrors[index]}
@@ -509,7 +499,7 @@ const VerificationRawModal = ({
                     </Box>
 
                     {/* Verification Result */}
-                    {status !== 'pending' && status !== 'running' && (
+                    {status !== "pending" && status !== "running" && (
                       <Box>
                         {isRDT && assertion.details ? (
                           <Box>
@@ -525,12 +515,7 @@ const VerificationRawModal = ({
                                   Criteria Scores:
                                 </Typography>
                                 {Object.entries(assertion.details.criteria).map(([key, value]) => (
-                                  <Chip
-                                    key={key}
-                                    label={`${key}: ${value}`}
-                                    size="small"
-                                    sx={{ mr: 0.5, mb: 0.5 }}
-                                  />
+                                  <Chip key={key} label={`${key}: ${value}`} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
                                 ))}
                               </Box>
                             )}
@@ -548,7 +533,7 @@ const VerificationRawModal = ({
                           </Typography>
                         )}
                         {assertion.executionTime && (
-                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
                             Execution time: {assertion.executionTime}ms
                           </Typography>
                         )}
@@ -562,7 +547,7 @@ const VerificationRawModal = ({
         </Box>
 
         {/* Execution Log */}
-        <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: '200px', overflow: 'auto' }} ref={executionLogRef}>
+        <Paper sx={{ p: 2, bgcolor: "grey.50", maxHeight: "200px", overflow: "auto" }} ref={executionLogRef}>
           <Typography variant="subtitle2" gutterBottom fontWeight="bold">
             Execution Log:
           </Typography>
@@ -571,12 +556,17 @@ const VerificationRawModal = ({
               No log entries yet
             </Typography>
           ) : (
-            <Box component="pre" sx={{ fontSize: '0.75rem', fontFamily: 'monospace', m: 0 }}>
-              {executionLog.map(entry => (
+            <Box component="pre" sx={{ fontSize: "0.75rem", fontFamily: "monospace", m: 0 }}>
+              {executionLog.map((entry) => (
                 <Box
                   key={entry.id}
                   sx={{
-                    color: entry.type === 'error' ? 'error.main' : entry.type === 'success' ? 'success.main' : 'text.primary',
+                    color:
+                      entry.type === "error"
+                        ? "error.main"
+                        : entry.type === "success"
+                          ? "success.main"
+                          : "text.primary",
                   }}
                 >
                   {entry.timestamp} {entry.message}
@@ -593,21 +583,16 @@ const VerificationRawModal = ({
         </Button>
         <Box sx={{ flex: 1 }} />
         {hasPrevious && (
-          <IconButton onClick={() => onNavigate?.('prev')}>
+          <IconButton onClick={() => onNavigate?.("prev")}>
             <ChevronLeft />
           </IconButton>
         )}
         {hasNext && (
-          <IconButton onClick={() => onNavigate?.('next')}>
+          <IconButton onClick={() => onNavigate?.("next")}>
             <ChevronRight />
           </IconButton>
         )}
-        <Button
-          onClick={runAllAssertions}
-          variant="contained"
-          startIcon={<PlayArrow />}
-          disabled={isRunning}
-        >
+        <Button onClick={runAllAssertions} variant="contained" startIcon={<PlayArrow />} disabled={isRunning}>
           Run All Assertions
         </Button>
         <Button onClick={onClose}>Close</Button>
@@ -617,4 +602,3 @@ const VerificationRawModal = ({
 };
 
 export default VerificationRawModal;
-

@@ -40,16 +40,16 @@ const ImportantMarker = styled.span`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  
+
   .material-symbols-outlined {
     font-size: 22px;
-    color: ${props => props.isImportant ? '#f4b400' : '#dadce0'};
+    color: ${(props) => (props.isImportant ? "#f4b400" : "#dadce0")};
     transition: color 0.15s ease;
-    font-variation-settings: ${props => props.isImportant ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 500"};
+    font-variation-settings: ${(props) => (props.isImportant ? "'FILL' 1, 'wght' 400" : "'FILL' 0, 'wght' 500")};
   }
-  
+
   &:hover .material-symbols-outlined {
-    color: ${props => props.isImportant ? '#f4b400' : '#5f6368'};
+    color: ${(props) => (props.isImportant ? "#f4b400" : "#5f6368")};
   }
 `;
 
@@ -57,28 +57,29 @@ export const Subject = ({ subject, message }) => {
   const { toggleImportant } = useMailActions();
   const isImportant = message?.important || false;
 
-  const handleImportant = useCallback((e) => {
-    e?.stopPropagation();
-    if (message?.id) {
-      toggleImportant([message.id]);
-    }
-  }, [message, toggleImportant]);
+  const handleImportant = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (message?.id) {
+        toggleImportant([message.id]);
+      }
+    },
+    [message, toggleImportant]
+  );
 
   return (
     <SubjectContainer>
       {/* Left side: subject + important marker + labels */}
       <LeftSection>
         <StyledSubject>{subject}</StyledSubject>
-        <ImportantMarker 
-          isImportant={isImportant} 
+        <ImportantMarker
+          isImportant={isImportant}
           onClick={handleImportant}
           title={isImportant ? "Click to mark as not important" : "Click to mark as important"}
         >
-          <span className="material-symbols-outlined">
-            label_important
-          </span>
+          <span className="material-symbols-outlined">label_important</span>
         </ImportantMarker>
-        <EmailLabelChips onRemove={() => { }} message={message} />
+        <EmailLabelChips onRemove={() => {}} message={message} />
       </LeftSection>
 
       {/* Right side: action icons */}

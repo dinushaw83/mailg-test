@@ -1,5 +1,5 @@
 // const fs = require('fs');
-import { readFileSync } from 'fs';
+import { readFileSync } from "fs";
 // const path = require('path');
 import path from "path";
 import { fileURLToPath } from "url";
@@ -9,14 +9,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load tasks.json (equivalent to assertions.json in Mira)
-const tasksPath = path.join(__dirname, '../../data/assertions.json');
+const tasksPath = path.join(__dirname, "../../data/assertions.json");
 let tasksData = {};
 
 try {
-  const rawData = readFileSync(tasksPath, 'utf8');
+  const rawData = readFileSync(tasksPath, "utf8");
   tasksData = JSON.parse(rawData);
 } catch (error) {
-  console.error('Error loading tasks.json:', error);
+  console.error("Error loading tasks.json:", error);
 }
 
 // Get filtered tasks based on environment variables
@@ -26,11 +26,11 @@ function getFilteredTasks() {
   // Check if TASK_IDS environment variable is defined
   const taskIdsEnv = process.env.TASK_IDS;
   if (taskIdsEnv) {
-    const taskIds = taskIdsEnv.split(',').map(id => id.trim());
+    const taskIds = taskIdsEnv.split(",").map((id) => id.trim());
     const filteredTasks = {};
 
     // Filter tasks to only include specified task IDs
-    taskIds.forEach(taskId => {
+    taskIds.forEach((taskId) => {
       if (allTasks[taskId]) {
         filteredTasks[taskId] = allTasks[taskId];
       }
@@ -74,13 +74,13 @@ async function getExpectedState(req, res) {
 
     // Check if task exists in tasks.json
     if (!(taskId in tasks)) {
-      return res.status(404).json({ error: 'Task not found' });
+      return res.status(404).json({ error: "Task not found" });
     }
 
     const task = tasks[taskId];
 
     // Transform assertions - include all fields for RDT operators
-    const transformedAssertions = (task.assertions || []).map(_assertion => ({
+    const transformedAssertions = (task.assertions || []).map((_assertion) => ({
       title: _assertion.title,
       operator: _assertion.operator,
       path: _assertion.path,
@@ -102,8 +102,8 @@ async function getExpectedState(req, res) {
 
     return res.json(response);
   } catch (error) {
-    console.error('Error in get_expected_state:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error("Error in get_expected_state:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
 

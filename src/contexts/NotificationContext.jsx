@@ -1,4 +1,4 @@
-import { useNotificationContext } from '../hooks/useNotificationContext';
+import { useNotificationContext } from "../hooks/useNotificationContext";
 
 // For backward compatibility
 export { useNotificationContext };

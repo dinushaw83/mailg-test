@@ -14,11 +14,13 @@ import Frequent from "./pages/Contacts/Frequent";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import Layout from "./components/Layout";
 import LocalStorageDownload from "./pages/LocalStorageDownload";
+import Login from "./pages/Login";
 import MailGAccount from "./pages/MailGAccount";
 import MailView from "./pages/MailView";
 import MergeAndFix from "./pages/Contacts/MergeAndFix";
 import OtherContacts from "./pages/Contacts/OtherContacts";
 import { PersistGate } from "redux-persist/integration/react";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 import { Provider } from "react-redux";
 import ReduxInitialization from "./components/ReduxInitialization";
 import SearchResultsView from "./pages/SearchResultsView";
@@ -49,52 +51,80 @@ function App() {
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ReduxInitialization>
             <Routes>
-              {/* Standalone verification page without Layout */}
-              <Route path="/verify-ls" element={<VerificationLocalStorage />} />
+              {/* Public Routes */}
+              <Route path="/login" element={<Login />} />
 
-              {/* Standalone verification page without Layout */}
-              <Route path="/verify" element={<VerificationDashboard />} />
+              {/* Standalone verification pages (Protected) */}
+              <Route
+                path="/verify-ls"
+                element={
+                  <ProtectedRoute>
+                    <VerificationLocalStorage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/verify"
+                element={
+                  <ProtectedRoute>
+                    <VerificationDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/verify_raw"
+                element={
+                  <ProtectedRoute>
+                    <VerifyRawPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/localStorage"
+                element={
+                  <ProtectedRoute>
+                    <LocalStorageDownload />
+                  </ProtectedRoute>
+                }
+              />
 
-              {/* Standalone verify_raw page without Layout */}
-              <Route path="/verify_raw" element={<VerifyRawPage />} />
-
-              <Route path="/localStorage" element={<LocalStorageDownload />} />
-
-              {/* All other routes wrapped in Layout */}
+              {/* All other routes wrapped in Layout and ProtectedRoute */}
               <Route
                 path="/*"
                 element={
-                  <Layout>
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/inbox" replace />} />
-                      <Route path="/:folder/:threadId" element={<EmailDetails />} />
-                      <Route path="/label/:label/:threadId" element={<EmailDetails />} />
-                      <Route path="/:folder" element={<MailView />} />
-                      <Route path="/label/:label" element={<MailView />} />
-                      <Route path="/search/:query" element={<SearchResultsView />} />
-                      <Route path="/search" element={<SearchResultsView />} />
-                      <Route path="/settings/:tab" element={<Settings />} />
-                      <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
-                      <Route path="/mailg-account/:view?" element={<MailGAccount />} />
-                      <Route path="/mailg-account" element={<MailGAccount />} />
+                  <ProtectedRoute>
+                    <Layout>
+                      <Routes>
+                        <Route path="/" element={<Navigate to="/inbox" replace />} />
+                        <Route path="/:folder/:threadId" element={<EmailDetails />} />
+                        <Route path="/label/:label/:threadId" element={<EmailDetails />} />
+                        <Route path="/:folder" element={<MailView />} />
+                        <Route path="/label/:label" element={<MailView />} />
+                        <Route path="/search/:query" element={<SearchResultsView />} />
+                        <Route path="/search" element={<SearchResultsView />} />
+                        <Route path="/settings/:tab" element={<Settings />} />
+                        <Route path="/settings" element={<Navigate to="/settings/general" replace />} />
+                        <Route path="/mailg-account/:view?" element={<MailGAccount />} />
+                        <Route path="/mailg-account" element={<MailGAccount />} />
 
-                      {/* Contacts paths */}
-                      <Route path="/contacts" element={<Contacts />} />
-                      <Route path="/contacts/frequent" element={<Frequent />} />
-                      <Route path="/contacts/other" element={<OtherContacts />} />
-                      <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
-                      <Route path="/contacts/person/:contactId" element={<ContactDetailsWithEdit />} />
-                      <Route path="/contacts/trash" element={<ContactTrash />} />
-                      <Route path="/contacts/search/:query" element={<ContactsSearch />} />
-                      <Route path="/contacts/suggestions" element={<MergeAndFix />} />
-                      <Route path="/contacts/new" element={<CreateContactPage />} />
+                        {/* Contacts paths */}
+                        <Route path="/contacts" element={<Contacts />} />
+                        <Route path="/contacts/frequent" element={<Frequent />} />
+                        <Route path="/contacts/other" element={<OtherContacts />} />
+                        <Route path="/contacts/label/:labelId" element={<ContactsByLabel />} />
+                        <Route path="/contacts/person/:contactId" element={<ContactDetailsWithEdit />} />
+                        <Route path="/contacts/trash" element={<ContactTrash />} />
+                        <Route path="/contacts/search/:query" element={<ContactsSearch />} />
+                        <Route path="/contacts/suggestions" element={<MergeAndFix />} />
+                        <Route path="/contacts/new" element={<CreateContactPage />} />
 
-                      <Route path="*" element={<Navigate to="/inbox" replace />} />
-                    </Routes>
+                        <Route path="*" element={<Navigate to="/inbox" replace />} />
+                      </Routes>
 
-                    {/* Compose Email Wrapper (only for Layout pages) */}
-                    <ComposeEmailWrapper />
-                  </Layout>
+                      {/* Compose Email Wrapper (only for Layout pages) */}
+                      <ComposeEmailWrapper />
+                    </Layout>
+                  </ProtectedRoute>
                 }
               />
             </Routes>
