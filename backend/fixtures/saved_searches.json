@@ -1,0 +1,676 @@
+[
+  {
+    "id": "55da41a3-b354-452e-b68e-068d73c2487b",
+    "name": "Emails with Attachments",
+    "query": "to:me",
+    "filters": null,
+    "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
+    "use_count": 70,
+    "last_used_at": "2025-09-24T16:15:34.620480",
+    "is_deleted": false,
+    "created_at": "2025-04-18T21:25:34.620492",
+    "updated_at": "2025-04-26T06:25:34.620492"
+  },
+  {
+    "id": "89a9f19e-5a9f-4537-8440-7bfa7ed9fdbb",
+    "name": "Starred Messages",
+    "query": "label:work",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
+    "use_count": 16,
+    "last_used_at": "2025-12-16T16:15:34.620545",
+    "is_deleted": false,
+    "created_at": "2025-11-12T22:23:34.620557",
+    "updated_at": "2025-11-21T02:23:34.620557"
+  },
+  {
+    "id": "767c3a9a-9e8a-4b8c-bd48-8dc0d15338cf",
+    "name": "Work Emails",
+    "query": "in:inbox",
+    "filters": {
+      "is_starred": true
+    },
+    "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
+    "use_count": 9,
+    "last_used_at": "2025-11-06T16:15:34.620606",
+    "is_deleted": false,
+    "created_at": "2025-02-22T17:08:34.620618",
+    "updated_at": "2025-03-11T21:08:34.620618"
+  },
+  {
+    "id": "034486ff-6811-4d83-922f-e95a4d3a6efc",
+    "name": "Recent from Client",
+    "query": "in:inbox",
+    "filters": {
+      "from_domain": "gmail.com"
+    },
+    "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
+    "use_count": 69,
+    "last_used_at": "2025-12-10T16:15:34.620666",
+    "is_deleted": false,
+    "created_at": "2026-01-03T19:43:34.620678",
+    "updated_at": "2026-01-05T16:15:34.620686"
+  },
+  {
+    "id": "0f6b6991-dfd4-42d4-a433-f9f438b85d9e",
+    "name": "Recent from Client",
+    "query": "has:attachment",
+    "filters": {
+      "has_attachment": true
+    },
+    "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
+    "use_count": 66,
+    "last_used_at": "2025-07-24T16:15:34.620727",
+    "is_deleted": false,
+    "created_at": "2025-07-22T11:37:34.620738",
+    "updated_at": "2025-08-20T13:37:34.620738"
+  },
+  {
+    "id": "9d29d5ee-b8c4-467a-8e91-a754725fd400",
+    "name": "Work Emails",
+    "query": "from:boss@company.com",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
+    "use_count": 41,
+    "last_used_at": "2025-11-19T16:15:34.620786",
+    "is_deleted": false,
+    "created_at": "2025-07-16T15:53:34.620798",
+    "updated_at": "2025-07-25T19:53:34.620798"
+  },
+  {
+    "id": "4b1cf753-525a-4342-8ac8-8a903c2902e2",
+    "name": "Important Emails",
+    "query": "has:attachment",
+    "filters": {
+      "date_range": "last_7_days"
+    },
+    "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
+    "use_count": 74,
+    "last_used_at": "2025-11-27T16:15:34.620845",
+    "is_deleted": false,
+    "created_at": "2025-09-13T02:24:34.620857",
+    "updated_at": "2025-10-07T02:24:34.620857"
+  },
+  {
+    "id": "17e20956-a4a4-4b0e-9030-673bc31124a9",
+    "name": "Unread Messages",
+    "query": "is:unread",
+    "filters": {
+      "date_range": "last_7_days"
+    },
+    "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
+    "use_count": 78,
+    "last_used_at": "2025-10-01T16:15:34.620904",
+    "is_deleted": false,
+    "created_at": "2025-07-06T22:10:34.620915",
+    "updated_at": "2025-07-12T02:10:34.620915"
+  },
+  {
+    "id": "10aaff03-e805-4e09-8665-a3dedad95ada",
+    "name": "Emails with Attachments",
+    "query": "in:inbox",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
+    "use_count": 77,
+    "last_used_at": "2025-07-09T16:15:34.620962",
+    "is_deleted": false,
+    "created_at": "2025-08-17T18:14:34.620974",
+    "updated_at": "2025-08-29T04:14:34.620974"
+  },
+  {
+    "id": "8deaf5a4-0474-4407-bc18-ed04e68c0dcf",
+    "name": "Recent from Client",
+    "query": "has:attachment",
+    "filters": {
+      "is_unread": true
+    },
+    "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
+    "use_count": 55,
+    "last_used_at": "2025-12-12T16:15:34.621021",
+    "is_deleted": false,
+    "created_at": "2025-08-29T10:52:34.621033",
+    "updated_at": "2025-09-18T21:52:34.621033"
+  },
+  {
+    "id": "c15341a4-b495-4280-87bb-9885c04cb744",
+    "name": "This Week",
+    "query": "from:important@client.com",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
+    "use_count": 25,
+    "last_used_at": "2025-09-07T16:15:34.621081",
+    "is_deleted": false,
+    "created_at": "2025-03-07T15:06:34.621092",
+    "updated_at": "2025-04-05T18:06:34.621092"
+  },
+  {
+    "id": "21134899-9b4d-4fce-8da0-970483e21c50",
+    "name": "Unread Messages",
+    "query": "label:work",
+    "filters": {
+      "date_range": "last_7_days"
+    },
+    "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
+    "use_count": 53,
+    "last_used_at": "2025-09-02T16:15:34.621139",
+    "is_deleted": false,
+    "created_at": "2025-04-18T15:58:34.621151",
+    "updated_at": "2025-05-10T07:58:34.621151"
+  },
+  {
+    "id": "dbbd1004-b62d-4bce-935f-2f70142a3656",
+    "name": "Emails with Attachments",
+    "query": "larger:10MB",
+    "filters": {
+      "category": "promotions"
+    },
+    "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
+    "use_count": 9,
+    "last_used_at": "2025-12-20T16:15:34.621198",
+    "is_deleted": true,
+    "created_at": "2025-06-07T05:19:34.621210",
+    "updated_at": "2025-06-09T11:19:34.621210"
+  },
+  {
+    "id": "abdca200-2171-44c8-b71c-d36044c35ab7",
+    "name": "Recent from Client",
+    "query": "label:work",
+    "filters": {
+      "category": "social"
+    },
+    "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
+    "use_count": 57,
+    "last_used_at": "2025-11-26T16:15:34.621257",
+    "is_deleted": false,
+    "created_at": "2025-03-05T16:29:34.621269",
+    "updated_at": "2025-04-03T00:29:34.621269"
+  },
+  {
+    "id": "c9350ac5-e36f-4644-9b9d-b74e5acb4470",
+    "name": "Important Emails",
+    "query": "subject:urgent",
+    "filters": null,
+    "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
+    "use_count": 37,
+    "last_used_at": "2025-08-28T16:15:34.621315",
+    "is_deleted": false,
+    "created_at": "2025-02-12T02:55:34.621327",
+    "updated_at": "2025-02-16T03:55:34.621327"
+  },
+  {
+    "id": "17662483-9399-4e1a-b4f5-93f9a14068d7",
+    "name": "This Week",
+    "query": "after:2024/01/01",
+    "filters": {
+      "from_domain": "gmail.com"
+    },
+    "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
+    "use_count": 70,
+    "last_used_at": "2025-12-06T16:15:34.621374",
+    "is_deleted": false,
+    "created_at": "2025-08-17T16:01:34.621386",
+    "updated_at": "2025-09-09T03:01:34.621386"
+  },
+  {
+    "id": "fad955a8-7ba8-4955-ac8f-86c3de51f58d",
+    "name": "Unread Messages",
+    "query": "from:important@client.com",
+    "filters": {
+      "is_starred": true
+    },
+    "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
+    "use_count": 88,
+    "last_used_at": "2025-10-07T16:15:34.621433",
+    "is_deleted": false,
+    "created_at": "2025-09-01T06:20:34.621444",
+    "updated_at": "2025-09-05T17:20:34.621444"
+  },
+  {
+    "id": "00c5dfe2-5e21-40df-8261-6ff4aff5e6f5",
+    "name": "Important Emails",
+    "query": "subject:urgent",
+    "filters": {
+      "date_range": "last_7_days"
+    },
+    "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
+    "use_count": 47,
+    "last_used_at": "2025-12-24T16:15:34.621492",
+    "is_deleted": false,
+    "created_at": "2025-09-21T22:41:34.621504",
+    "updated_at": "2025-10-17T00:41:34.621504"
+  },
+  {
+    "id": "c3205db7-680b-4f64-b294-fccb747d0da0",
+    "name": "Urgent Items",
+    "query": "to:me",
+    "filters": {
+      "is_unread": true
+    },
+    "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
+    "use_count": 23,
+    "last_used_at": "2025-08-17T16:15:34.621551",
+    "is_deleted": false,
+    "created_at": "2025-10-13T01:15:34.621563",
+    "updated_at": "2025-10-22T12:15:34.621563"
+  },
+  {
+    "id": "5a21453a-ec26-406a-907b-a27f7d86a7fc",
+    "name": "This Week",
+    "query": "is:unread",
+    "filters": {
+      "is_starred": true
+    },
+    "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
+    "use_count": 11,
+    "last_used_at": "2025-08-05T16:15:34.621610",
+    "is_deleted": false,
+    "created_at": "2025-07-08T19:42:34.621621",
+    "updated_at": "2025-07-23T19:42:34.621621"
+  },
+  {
+    "id": "a915d2b7-95d9-4a24-acf7-8aeebe197863",
+    "name": "Recent from Client",
+    "query": "subject:urgent",
+    "filters": {
+      "from_domain": "gmail.com"
+    },
+    "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
+    "use_count": 55,
+    "last_used_at": "2025-10-10T16:15:34.621668",
+    "is_deleted": false,
+    "created_at": "2025-10-30T22:46:34.621679",
+    "updated_at": "2025-11-26T20:46:34.621679"
+  },
+  {
+    "id": "fab3d0f8-807f-4bfc-8a63-ab129de33b45",
+    "name": "Urgent Items",
+    "query": "is:unread",
+    "filters": null,
+    "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
+    "use_count": 51,
+    "last_used_at": "2025-12-01T16:15:34.621725",
+    "is_deleted": false,
+    "created_at": "2025-06-21T12:07:34.621736",
+    "updated_at": "2025-07-06T10:07:34.621736"
+  },
+  {
+    "id": "8f62c0dd-105b-48fb-ab9c-f913bcf64cc4",
+    "name": "Important Emails",
+    "query": "larger:10MB",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "use_count": 12,
+    "last_used_at": "2025-09-21T16:15:34.621783",
+    "is_deleted": false,
+    "created_at": "2025-02-26T13:28:34.621795",
+    "updated_at": "2025-02-27T13:28:34.621795"
+  },
+  {
+    "id": "d435c6d2-4f44-4c24-9fc1-134279a631ae",
+    "name": "Unread Messages",
+    "query": "after:2024/01/01",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
+    "use_count": 41,
+    "last_used_at": "2025-10-21T16:15:34.621842",
+    "is_deleted": false,
+    "created_at": "2025-07-18T02:57:34.621853",
+    "updated_at": "2025-08-05T12:57:34.621853"
+  },
+  {
+    "id": "d4c88607-397f-46a4-adb1-228c039240ef",
+    "name": "Urgent Items",
+    "query": "after:2024/01/01",
+    "filters": null,
+    "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
+    "use_count": 12,
+    "last_used_at": "2025-07-11T16:15:34.621900",
+    "is_deleted": false,
+    "created_at": "2025-10-24T06:22:34.621911",
+    "updated_at": "2025-11-15T05:22:34.621911"
+  },
+  {
+    "id": "92cb8582-5a37-42aa-8375-951e83e2ecc6",
+    "name": "Recent from Client",
+    "query": "subject:urgent",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
+    "use_count": 90,
+    "last_used_at": "2025-08-15T16:15:34.621959",
+    "is_deleted": false,
+    "created_at": "2025-07-08T08:20:34.621970",
+    "updated_at": "2025-08-06T20:20:34.621970"
+  },
+  {
+    "id": "c0eac808-e8e4-4e38-9c81-140cbabbf19b",
+    "name": "Starred Messages",
+    "query": "is:unread",
+    "filters": null,
+    "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
+    "use_count": 66,
+    "last_used_at": "2025-11-06T16:15:34.622019",
+    "is_deleted": false,
+    "created_at": "2025-01-23T15:50:34.622031",
+    "updated_at": "2025-02-12T07:50:34.622031"
+  },
+  {
+    "id": "b20badb5-80a0-4d96-a960-d93706f00d61",
+    "name": "Recent from Client",
+    "query": "in:inbox",
+    "filters": {
+      "date_range": "last_7_days"
+    },
+    "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
+    "use_count": 12,
+    "last_used_at": "2025-07-17T16:15:34.622078",
+    "is_deleted": false,
+    "created_at": "2025-10-28T12:14:34.622089",
+    "updated_at": "2025-11-12T23:14:34.622089"
+  },
+  {
+    "id": "aaca32c5-b1c4-4fc7-916d-6a315ce0149d",
+    "name": "Work Emails",
+    "query": "from:important@client.com",
+    "filters": {
+      "is_unread": true
+    },
+    "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
+    "use_count": 98,
+    "last_used_at": "2025-09-17T16:15:34.622137",
+    "is_deleted": false,
+    "created_at": "2025-01-09T04:19:34.622149",
+    "updated_at": "2025-01-14T20:19:34.622149"
+  },
+  {
+    "id": "5e999831-d204-4408-a89d-40fd1459d69d",
+    "name": "Recent from Client",
+    "query": "to:me",
+    "filters": {
+      "is_unread": true
+    },
+    "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
+    "use_count": 18,
+    "last_used_at": "2025-07-25T16:15:34.622195",
+    "is_deleted": false,
+    "created_at": "2025-04-28T23:52:34.622207",
+    "updated_at": "2025-05-25T10:52:34.622207"
+  },
+  {
+    "id": "44b24c7f-968b-4cc7-b83f-66e0e0a6caa9",
+    "name": "This Week",
+    "query": "label:work",
+    "filters": {
+      "is_unread": true
+    },
+    "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
+    "use_count": 82,
+    "last_used_at": "2025-08-21T16:15:34.622253",
+    "is_deleted": false,
+    "created_at": "2025-11-08T21:11:34.622265",
+    "updated_at": "2025-11-21T15:11:34.622265"
+  },
+  {
+    "id": "eab59707-dd5d-467b-85cf-c59fa7b82bc1",
+    "name": "Work Emails",
+    "query": "from:boss@company.com",
+    "filters": null,
+    "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
+    "use_count": 27,
+    "last_used_at": "2025-09-07T16:15:34.622311",
+    "is_deleted": false,
+    "created_at": "2025-02-22T08:09:34.622323",
+    "updated_at": "2025-03-19T00:09:34.622323"
+  },
+  {
+    "id": "5c444df0-69ff-43a3-8aa2-067f7f691b0b",
+    "name": "Work Emails",
+    "query": "in:inbox",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
+    "use_count": 68,
+    "last_used_at": null,
+    "is_deleted": true,
+    "created_at": "2025-05-19T14:24:34.622380",
+    "updated_at": "2025-05-29T11:24:34.622380"
+  },
+  {
+    "id": "27dce90f-3322-4b3c-92dd-8d2c05979f8d",
+    "name": "This Week",
+    "query": "is:unread",
+    "filters": null,
+    "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
+    "use_count": 99,
+    "last_used_at": "2025-09-14T16:15:34.622439",
+    "is_deleted": false,
+    "created_at": "2025-07-15T23:42:34.622451",
+    "updated_at": "2025-08-09T04:42:34.622451"
+  },
+  {
+    "id": "22d4adf6-9e15-4aed-b9ec-b0d4f3ffe356",
+    "name": "Important Emails",
+    "query": "from:important@client.com",
+    "filters": null,
+    "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
+    "use_count": 32,
+    "last_used_at": "2025-08-01T16:15:34.622498",
+    "is_deleted": false,
+    "created_at": "2025-11-08T02:59:34.622510",
+    "updated_at": "2025-11-29T22:59:34.622510"
+  },
+  {
+    "id": "e5962f8e-3fdc-4e87-8405-95527dc828a9",
+    "name": "Unread Messages",
+    "query": "larger:10MB",
+    "filters": {
+      "date_range": "last_7_days"
+    },
+    "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
+    "use_count": 20,
+    "last_used_at": null,
+    "is_deleted": false,
+    "created_at": "2025-12-04T13:59:34.622567",
+    "updated_at": "2025-12-06T08:59:34.622567"
+  },
+  {
+    "id": "088a848b-7ac8-4216-8d01-1d4576910363",
+    "name": "Urgent Items",
+    "query": "has:attachment",
+    "filters": null,
+    "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
+    "use_count": 41,
+    "last_used_at": "2025-11-30T16:15:34.622613",
+    "is_deleted": false,
+    "created_at": "2025-05-09T21:10:34.622625",
+    "updated_at": "2025-06-01T15:10:34.622625"
+  },
+  {
+    "id": "b89d3b3b-dcec-437e-a445-c44633d4621d",
+    "name": "Emails with Attachments",
+    "query": "in:inbox",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
+    "use_count": 54,
+    "last_used_at": "2025-10-01T16:15:34.622673",
+    "is_deleted": false,
+    "created_at": "2025-02-07T17:14:34.622684",
+    "updated_at": "2025-03-04T05:14:34.622684"
+  },
+  {
+    "id": "b5ad8a11-079e-43b3-b92c-07879c6df130",
+    "name": "This Week",
+    "query": "is:unread",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
+    "use_count": 20,
+    "last_used_at": "2025-12-26T16:15:34.622731",
+    "is_deleted": false,
+    "created_at": "2025-08-12T13:55:34.622742",
+    "updated_at": "2025-08-21T12:55:34.622742"
+  },
+  {
+    "id": "80534265-e152-4798-be8f-517e63c0b1f9",
+    "name": "Important Emails",
+    "query": "after:2024/01/01",
+    "filters": {
+      "has_attachment": true
+    },
+    "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
+    "use_count": 53,
+    "last_used_at": "2025-09-19T16:15:34.622789",
+    "is_deleted": false,
+    "created_at": "2025-11-05T22:11:34.622800",
+    "updated_at": "2025-11-19T13:11:34.622800"
+  },
+  {
+    "id": "0c6830f6-3167-40b3-9f06-69c3d44fb568",
+    "name": "Recent from Client",
+    "query": "larger:10MB",
+    "filters": {
+      "is_unread": true
+    },
+    "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
+    "use_count": 25,
+    "last_used_at": "2025-08-13T16:15:34.622847",
+    "is_deleted": false,
+    "created_at": "2025-10-03T19:08:34.622858",
+    "updated_at": "2025-10-18T09:08:34.622858"
+  },
+  {
+    "id": "650492da-d2b0-4f9a-9388-b329fe9daedd",
+    "name": "Unread Messages",
+    "query": "has:attachment",
+    "filters": null,
+    "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
+    "use_count": 88,
+    "last_used_at": "2025-07-31T16:15:34.622904",
+    "is_deleted": true,
+    "created_at": "2025-08-17T03:23:34.622916",
+    "updated_at": "2025-08-19T21:23:34.622916"
+  },
+  {
+    "id": "cb6a8d29-b3ee-43fb-9b29-23f4ed06348a",
+    "name": "Recent from Client",
+    "query": "larger:10MB",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
+    "use_count": 36,
+    "last_used_at": "2025-11-23T16:15:34.622962",
+    "is_deleted": false,
+    "created_at": "2025-12-12T22:15:34.622974",
+    "updated_at": "2026-01-02T15:15:34.622974"
+  },
+  {
+    "id": "557db7b6-0667-490d-8a21-155ae3215a1e",
+    "name": "Starred Messages",
+    "query": "is:unread",
+    "filters": {
+      "category": "promotions"
+    },
+    "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
+    "use_count": 9,
+    "last_used_at": null,
+    "is_deleted": false,
+    "created_at": "2025-07-25T01:14:34.623030",
+    "updated_at": "2025-08-06T19:14:34.623030"
+  },
+  {
+    "id": "2f28e67a-0fa5-402c-a346-6f69728c6a0b",
+    "name": "Recent from Client",
+    "query": "to:me",
+    "filters": {
+      "has_attachment": true
+    },
+    "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
+    "use_count": 84,
+    "last_used_at": "2025-07-15T16:15:34.623076",
+    "is_deleted": false,
+    "created_at": "2025-09-25T10:27:34.623088",
+    "updated_at": "2025-09-30T14:27:34.623088"
+  },
+  {
+    "id": "558b22b1-0dae-45bf-a002-3fd0fd673de3",
+    "name": "Recent from Client",
+    "query": "has:attachment",
+    "filters": null,
+    "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
+    "use_count": 10,
+    "last_used_at": "2025-09-04T16:15:34.623133",
+    "is_deleted": false,
+    "created_at": "2025-01-22T13:46:34.623145",
+    "updated_at": "2025-02-16T14:46:34.623145"
+  },
+  {
+    "id": "0d9ab146-7e21-428d-a09c-584e2a2a84ea",
+    "name": "Work Emails",
+    "query": "larger:10MB",
+    "filters": null,
+    "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
+    "use_count": 89,
+    "last_used_at": "2025-07-13T16:15:34.623191",
+    "is_deleted": false,
+    "created_at": "2025-08-04T03:20:34.623202",
+    "updated_at": "2025-08-24T01:20:34.623202"
+  },
+  {
+    "id": "09486e9a-4d81-49ef-b5bd-3e285d0acb8c",
+    "name": "Recent from Client",
+    "query": "from:important@client.com",
+    "filters": {
+      "date_range": "last_30_days"
+    },
+    "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
+    "use_count": 58,
+    "last_used_at": "2025-11-08T16:15:34.623249",
+    "is_deleted": false,
+    "created_at": "2025-10-09T22:16:34.623260",
+    "updated_at": "2025-10-28T15:16:34.623260"
+  },
+  {
+    "id": "3f2a2a11-b4c4-4cbf-b22e-8112fb1eaa18",
+    "name": "Unread Messages",
+    "query": "label:work",
+    "filters": null,
+    "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
+    "use_count": 71,
+    "last_used_at": "2025-08-13T16:15:34.623306",
+    "is_deleted": false,
+    "created_at": "2025-09-05T11:48:34.623317",
+    "updated_at": "2025-09-07T20:48:34.623317"
+  },
+  {
+    "id": "5cca77e1-e4bf-47ff-9724-2f3a4ba8ea96",
+    "name": "Recent from Client",
+    "query": "after:2024/01/01",
+    "filters": {
+      "is_starred": true
+    },
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "use_count": 8,
+    "last_used_at": "2025-12-06T16:15:34.623364",
+    "is_deleted": false,
+    "created_at": "2025-03-25T12:02:34.623375",
+    "updated_at": "2025-04-03T02:02:34.623375"
+  }
+]
