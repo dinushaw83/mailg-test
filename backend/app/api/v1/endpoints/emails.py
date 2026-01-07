@@ -313,6 +313,7 @@ def list_emails(
     is_important: Optional[bool] = Query(None, description="Filter by important"),
     include_archived: Optional[bool] = Query(False, description="Include archived emails"),
     search: Optional[str] = Query(None, description="Search in subject and body"),
+    threaded: bool = Query(False, description="Group by thread and return only latest email from each thread"),
 ) -> dict:
     """List emails with pagination and filtering.
     
@@ -385,6 +386,42 @@ def list_emails(
             )
         )
     
+    # Apply threaded grouping - return only latest email from each thread
+    if threaded:
+        # Use sent_at for sorting, fallback to created_at if null
+        sort_date = func.coalesce(Email.sent_at, Email.created_at)
+        
+        # Subquery to get max sent_at per thread_id (for emails with thread_id)
+        latest_per_thread = db.query(
+            Email.thread_id,
+            func.max(func.coalesce(Email.sent_at, Email.created_at)).label("max_date")
+        ).filter(
+            Email.is_deleted == False,
+            Email.thread_id.isnot(None),
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        ).group_by(Email.thread_id).subquery()
+        
+        # Filter to only include:
+        # 1. Emails that match the max date for their thread, OR
+        # 2. Emails without a thread_id (each is its own "thread")
+        query = query.filter(
+            or_(
+                and_(
+                    Email.thread_id.isnot(None),
+                    Email.thread_id == latest_per_thread.c.thread_id,
+                    sort_date == latest_per_thread.c.max_date
+                ),
+                Email.thread_id.is_(None)
+            )
+        )
+    
     # Get total count
     total = query.count()
     
@@ -392,8 +429,11 @@ def list_emails(
     total_pages = (total + page_size - 1) // page_size if total > 0 else 0
     offset = (page - 1) * page_size
     
-    # Get results
-    emails = query.order_by(Email.created_at.desc()).offset(offset).limit(page_size).all()
+    # Get results - sort by sent_at when threaded, otherwise by created_at
+    if threaded:
+        emails = query.order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).offset(offset).limit(page_size).all()
+    else:
+        emails = query.order_by(Email.created_at.desc()).offset(offset).limit(page_size).all()
     
     # Format response
     emails_data = [format_email_list_response(email) for email in emails]
