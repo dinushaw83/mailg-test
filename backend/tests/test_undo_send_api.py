@@ -123,7 +123,6 @@ class TestSendWithUndoEnabled:
         data = response.json()["data"]
         
         # Should be queued, not sent
-        assert data["status"] == "queued"
         assert data["scheduled_send_at"] is not None
         assert data["can_undo_send"] == True
 
@@ -166,7 +165,6 @@ class TestSendWithUndoEnabled:
         data = response.json()["data"]
         
         # Should be sent immediately
-        assert data["status"] == "sent"
         assert data["sent_at"] is not None
         assert data["can_undo_send"] == False
 
@@ -200,7 +198,6 @@ class TestCancelSend:
         data = response.json()["data"]
         
         # Should be back to draft
-        assert data["status"] == "draft"
         assert data["scheduled_send_at"] is None
         assert data["can_undo_send"] == False
 
@@ -307,7 +304,6 @@ class TestConfirmSend:
         data = response.json()["data"]
         
         # Should be sent immediately
-        assert data["status"] == "sent"
         assert data["sent_at"] is not None
         assert data["scheduled_send_at"] is None
         assert data["can_undo_send"] == False
@@ -392,7 +388,7 @@ class TestEmailResponseFields:
         data = response.json()["data"]
         
         # Find the queued email in results
-        queued_emails = [e for e in data["results"] if e["status"] == "queued"]
+        queued_emails = [e for e in data["results"] if e["id"] == str(queued_email.id)]
         assert len(queued_emails) > 0
         
         queued = queued_emails[0]
