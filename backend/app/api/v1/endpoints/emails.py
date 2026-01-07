@@ -447,6 +447,48 @@ def list_emails(
     )
 
 
+@router.get("/emails/thread/{thread_id}", response_model=list[EmailResponse], dependencies=[Depends(authorized())])
+def get_emails_by_thread(
+    thread_id: UUID,
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    """Get all emails in a thread/conversation.
+    
+    Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
+    
+    Permissions:
+    - Users can only access threads containing their own emails (sent or received)
+    """
+    current_user = auth.user
+    
+    # Query all emails in the thread that the user has access to
+    emails = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.thread_id == thread_id,
+        Email.is_deleted == False,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).order_by(func.coalesce(Email.sent_at, Email.created_at).asc()).all()
+    
+    if not emails:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No emails found for thread {thread_id}"
+        )
+    
+    return [format_email_response(email) for email in emails]
+
+
 @router.get("/emails/{email_id}", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def get_email(
     email_id: UUID,
