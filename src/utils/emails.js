@@ -49,10 +49,6 @@ export const emailAPIMapper = (emails) => {
         snooze_until: email?.snooze_until,
         attachment_count: email?.attachment_count,
         has_attachments: email?.has_attachments,
-        labels: [
-          ...(email?.labels || []).map((l) => (typeof l === "string" ? l : l?.name)),
-          ...(email?.system_labels || []).map((l) => (typeof l === "string" ? l : l?.name)),
-        ].filter(Boolean),
         system_labels: email?.system_labels,
         can_undo_send: email?.can_undo_send,
       };
@@ -63,7 +59,6 @@ export const emailAPIMapper = (emails) => {
 export function normalizeEmails(messages) {
   const messagesById = {};
   const threadsById = {};
-  console.log({ messages });
   const normalizeEmailAddress = (value) => (value || "").toLowerCase();
   const isLikelyEmail = (value = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   const getParticipantScore = (participant) => {
@@ -129,10 +124,16 @@ export function normalizeEmails(messages) {
     const threadId = String(m.threadId);
     const ts = new Date(m.timestamp).getTime();
 
-    // labels can be fixture strings (["Inbox","Primary"]) or BE objects ([{name,color}])
-    let enrichedLabels = (m.labels || []).map((l) => (typeof l === "string" ? l : l?.name)).filter(Boolean);
-
-    // Categories are now set directly in the email fixtures
+    // Preserve full label objects with id, name, and color
+    // Convert string labels to objects for consistency
+    let enrichedLabels = (m.labels || []).map((l) => {
+      if (typeof l === "string") {
+        // Convert string to object format
+        return { name: l, color: null, id: null };
+      }
+      // Keep object format with id, name, color
+      return { id: l.id || null, name: l.name, color: l.color || null };
+    }).filter((l) => l.name);
 
     const msg = {
       ...m,
@@ -167,7 +168,14 @@ export function normalizeEmails(messages) {
     thread.messageIds.push(id);
     thread.updatedAt = Math.max(thread.updatedAt, ts);
     if (!m.read) thread.unreadCount += 1;
-    enrichedLabels.forEach((l) => thread.labels.add(l));
+    // Add label objects to thread (use Set to deduplicate by name)
+    enrichedLabels.forEach((labelObj) => {
+      // Check if label with same name already exists in thread
+      const existing = Array.from(thread.labels).find((l) => l.name === labelObj.name);
+      if (!existing) {
+        thread.labels.add(labelObj);
+      }
+    });
     const messageIsDraft = (m.labels || []).some(
       (label) => (label?.name?.toLowerCase?.() || label?.toLowerCase?.()) === "drafts"
     );
@@ -477,7 +485,7 @@ export const getLabel = (participants, { includePersonal = true } = {}) => {
 // - Subject comes from the first message in the thread
 // - Labels are the union of all labels within the thread
 export function getThreadRows(messages, { label = null, folder = "inbox" } = {}) {
-  console.log("getThreadRows", { messages, label, folder });
+  console.log("BEFORE NORMALIZE", { messages, label, folder });
   const { messagesById, threadsById, threadIds } = normalizeEmails(messages);
   console.log("getThreadRows", { messagesById, threadsById, threadIds });
 
@@ -568,12 +576,15 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 
   // Filter by label or folder semantics
   const has = (row, name) => {
-    // Handle both Sets and Arrays
+    // Labels are now objects with { id, name, color }
     const labels = row.labels;
-    if (labels instanceof Set) {
-      return labels.has(name);
+    if (Array.isArray(labels)) {
+      return labels.some((l) => l.name === name);
     }
-    return (labels || []).includes(name);
+    if (labels instanceof Set) {
+      return Array.from(labels).some((l) => l.name === name);
+    }
+    return false;
   };
   let filtered = rows;
   if (label) {

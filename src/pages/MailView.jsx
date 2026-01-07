@@ -136,6 +136,7 @@ const Inbox = () => {
 
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
+    
     let rows = getThreadRows(emails, { label, folder: activeFolder });
     console.log("rows", { rows });
     console.log("asdadasdasd", { rows });

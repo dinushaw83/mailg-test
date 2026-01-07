@@ -964,24 +964,30 @@ const Table = ({
                             </div>
                             <div className="y6">
                               <span id={`:pr${index}`} className="bog">
-                                {getLabelBadges(email).map((badge) => (
-                                  <div
-                                    key={`Badge-${badge.key}`}
-                                    style={{
-                                      backgroundColor: badge?.color?.rgb ?? "#e1e3e1",
-                                      color: badge?.color?.text ?? "#444746",
-                                      fontSize: "0.75rem",
-                                      padding: "0 4px",
-                                      textDecoration: "none",
-                                      width: "fit-content",
-                                      borderRadius: "4px",
-                                      marginRight: "6px",
-                                      display: "inline-block",
-                                    }}
-                                  >
-                                    {badge.displayName}
-                                  </div>
-                                ))}
+                                {getLabelBadges(email).map((badge) => {
+                                  // Handle color format: could be string, null, or object with rgb/text
+                                  const bgColor = badge?.color?.rgb || badge?.color || "#e1e3e1";
+                                  const textColor = badge?.color?.text || "#444746";
+                                  
+                                  return (
+                                    <div
+                                      key={`Badge-${badge.key}`}
+                                      style={{
+                                        backgroundColor: bgColor,
+                                        color: textColor,
+                                        fontSize: "0.75rem",
+                                        padding: "0 4px",
+                                        textDecoration: "none",
+                                        width: "fit-content",
+                                        borderRadius: "4px",
+                                        marginRight: "6px",
+                                        display: "inline-block",
+                                      }}
+                                    >
+                                      {badge.displayName}
+                                    </div>
+                                  );
+                                })}
                                 <span
                                   className={email.isEmailRead ? "" : "bqe"}
                                   data-thread-id={email.threadId}
