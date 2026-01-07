@@ -400,21 +400,21 @@ jobs:
             # Make scripts executable
             chmod +x deploy-from-registry.sh || true
             
-            # Update docker-compose.prod.yaml with image tags
+            # Update docker-compose.prod.yaml with actual image tags
+            # Use the exported BACKEND_IMAGE and FRONTEND_IMAGE variables
             if [ -f docker-compose.prod.yaml ]; then
-              sed -i "s|image:.*mailg-backend.*|image: \${BACKEND_IMAGE}|g" docker-compose.prod.yaml || true
-              sed -i "s|image:.*mailg-frontend.*|image: \${FRONTEND_IMAGE}|g" docker-compose.prod.yaml || true
+              sed -i "s|image:.*mailg-backend.*|image: ${BACKEND_IMAGE}|g" docker-compose.prod.yaml || true
+              sed -i "s|image:.*mailg-frontend.*|image: ${FRONTEND_IMAGE}|g" docker-compose.prod.yaml || true
             fi
             
             # Pull images from GHCR
-            docker pull "\${BACKEND_IMAGE}" || echo "Warning: Failed to pull backend image"
-            docker pull "\${FRONTEND_IMAGE}" || echo "Warning: Failed to pull frontend image"
+            docker pull "${BACKEND_IMAGE}" || echo "Warning: Failed to pull backend image"
+            docker pull "${FRONTEND_IMAGE}" || echo "Warning: Failed to pull frontend image"
             
             # Stop existing containers
             docker compose -f docker-compose.prod.yaml down --timeout 30 || true
             
-            # Start services with new images
-            BACKEND_IMAGE="\${BACKEND_IMAGE}" FRONTEND_IMAGE="\${FRONTEND_IMAGE}" \
+            # Start services with new images (no need to pass env vars since they're in the file now)
             docker compose -f docker-compose.prod.yaml up -d
             
             # Wait for services to start
