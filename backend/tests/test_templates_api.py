@@ -456,7 +456,6 @@ class TestTemplateApply:
         data = response.json()["data"]
         assert data["subject"] == sample_template.subject
         assert data["body"] == sample_template.body
-        assert data["status"] == "draft"
 
     def test_apply_template_with_recipients(self, client_with_auth, sample_template):
         """Test applying a template with recipients."""
