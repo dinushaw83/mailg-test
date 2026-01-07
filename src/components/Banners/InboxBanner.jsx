@@ -1,6 +1,7 @@
-import { useMemo } from "react";
-import styled from "@emotion/styled";
 import { CATEGORIES } from "../../utils/categories";
+import styled from "@emotion/styled";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 
 const TabCell = styled.td`
   user-select: none;
@@ -56,17 +57,29 @@ function InboxTab({ tab, isActive, activeTabClass, onClick, counts, previews, ta
 
 export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows }) {
   const activeTabClass = "J-KU-KO aIf-aLe";
+  const emailCounts = useSelector((state) => state.mail.emailCounts);
 
+  // Old implementation: Calculate counts from rows (client-side)
+  // const counts = useMemo(() => {
+  //   const tabs = Object.values(CATEGORIES);
+  //   const result = {};
+  //   for (const t of tabs) {
+  //     result[t] = rows.filter(
+  //       (row) => row.labels.includes("Inbox") && row.labels.includes(t) && row.unreadCount > 0
+  //     ).length;
+  //   }
+  //   return result;
+  // }, [rows]);
+
+  // New implementation: Use counts from Redux (fetched via API)
   const counts = useMemo(() => {
-    const tabs = Object.values(CATEGORIES);
     const result = {};
-    for (const t of tabs) {
-      result[t] = rows.filter(
-        (row) => row.labels.includes("Inbox") && row.labels.includes(t) && row.unreadCount > 0
-      ).length;
-    }
+    result.Primary = emailCounts.primary || 0;
+    result.Promotions = emailCounts.promotions || 0;
+    result.Social = emailCounts.social || 0;
+    result.Updates = emailCounts.updates || 0;
     return result;
-  }, [rows]);
+  }, [emailCounts]);
 
   const previews = useMemo(() => {
     const result = {};

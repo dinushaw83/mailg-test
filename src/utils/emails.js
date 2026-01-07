@@ -36,14 +36,15 @@ export const emailAPIMapper = (emails) => {
           email: email?.sender_email,
           id: email.sender_id,
         },
+        beFormattedEMailLabels: email?.labels,
         folderId: email?.folder_id,
         threadId: email?.thread_id,
         timestamp: email?.sent_at || email?.created_at,
         preview: email?.snippet || email?.preview,
         status: email?.status || "inbox",
-        read: email?.is_read || email?.read,
-        starred: email?.is_starred || false,
-        important: email?.is_important || false,
+        is_read: email?.is_read || email?.read,
+        is_starred: email?.is_starred || false,
+        is_important: email?.is_important || false,
         scheduled_send_at: email?.scheduled_send_at,
         snooze_until: email?.snooze_until,
         attachment_count: email?.attachment_count,
@@ -581,7 +582,8 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
   } else if (folder) {
     switch (folder) {
       case "inbox":
-        filtered = filtered.filter((r) => has(r, "Inbox"));
+        // Skip filtering for inbox since API already returns category-specific emails
+        // The emails are already filtered by category (primary, promotions, social, updates)
         break;
       case "starred":
         filtered = filtered.filter((r) => r.starred && !has(r, "Spam") && !has(r, "Trash"));

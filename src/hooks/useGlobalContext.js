@@ -81,7 +81,9 @@ export const useGlobalContext = () => {
   const stateRef = useRef({ mail, user, contacts, ui, settings, notification, mailGAccount, compose });
   stateRef.current = { mail, user, contacts, ui, settings, notification, mailGAccount, compose };
 
-  const normalizedEmails = useMemo(() => normalizeEmails(mail.emails), [mail.emails]);
+  // For backward compatibility, default to inbox emails
+  // Components can also access specific folders via mail.primary, mail.promotions, etc.
+  const normalizedEmails = useMemo(() => normalizeEmails(mail.inbox), [mail.inbox]);
 
   const selection = useMemo(() => {
     const isSelected = (id) => ui.selectedIds.includes(String(id));
@@ -141,8 +143,26 @@ export const useGlobalContext = () => {
     selection,
     loggedInUser: user.loggedInUser,
     setLoggedInUser: handleFunctionalUpdate(setLoggedInUser, "user", "loggedInUser"),
-    emails: mail.emails,
-    setEmails: handleFunctionalUpdate(setEmails, "mail", "emails"),
+    // Backward compatibility: emails defaults to inbox
+    emails: mail.inbox,
+    setEmails: handleFunctionalUpdate(setEmails, "mail", "inbox"),
+    // Access to all folders/categories
+    mailFolders: {
+      inbox: mail.inbox,
+      starred: mail.starred,
+      snoozed: mail.snoozed,
+      sent: mail.sent,
+      drafts: mail.drafts,
+      important: mail.important,
+      scheduled: mail.scheduled,
+      all: mail.all,
+      spam: mail.spam,
+      trash: mail.trash,
+      primary: mail.primary,
+      promotions: mail.promotions,
+      social: mail.social,
+      updates: mail.updates,
+    },
     recipients: contacts.recipients,
     setRecipients: handleFunctionalUpdate(setRecipients, "contacts", "recipients"),
     recipientLabels: contacts.recipientLabels,
