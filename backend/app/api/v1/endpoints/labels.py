@@ -15,6 +15,8 @@ from typing import Optional, List, Dict, Set, Union
 from uuid import UUID
 import logging
 
+import random
+
 from app.db.session import get_db
 from app.models.label import Label
 from app.models.email import Email
@@ -28,6 +30,17 @@ from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 
 logger = logging.getLogger(__name__)
+
+
+def generate_random_light_color() -> str:
+    """Generate a random light/pastel hex color."""
+    # Generate RGB values in the lighter range (180-255)
+    r = random.randint(180, 255)
+    g = random.randint(180, 255)
+    b = random.randint(180, 255)
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
 router = APIRouter()
 
 
@@ -171,7 +184,7 @@ def create_label(
     
     label = Label(
         name=label_data.name,
-        color=label_data.color,
+        color=generate_random_light_color(),
         parent_id=label_data.parent_id,
         owner_id=current_user.id,
     )
