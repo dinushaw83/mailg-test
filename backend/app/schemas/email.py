@@ -134,7 +134,6 @@ class EmailResponse(BaseModel):
     subject: str
     body: Optional[str] = None
     html_body: Optional[str] = None
-    status: EmailStatus  # Email status: draft, queued, sent, received, archived, cancelled
     folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, starred
     category: Optional[str] = "primary"
     is_read: bool
@@ -165,7 +164,6 @@ class EmailListResponse(BaseModel):
     id: UUID
     subject: str
     snippet: Optional[str] = None  # Preview of body
-    status: EmailStatus  # Email status: draft, queued, sent, received, archived, cancelled
     folder: Optional[FolderType] = FolderType.INBOX
     category: Optional[EmailCategory] = EmailCategory.PRIMARY
     is_read: bool

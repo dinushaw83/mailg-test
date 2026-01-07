@@ -37,7 +37,6 @@ class TestEmailCreate:
         assert response.status_code == 201
         data = response.json()["data"]
         assert data["subject"] == "Test Email"
-        assert data["status"] == "draft"
         assert data["sender_id"] == str(user.id)
 
     def test_create_email_unauthenticated(self, client):
@@ -325,7 +324,6 @@ class TestEmailSendReplyForward:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        assert data["status"] == "sent"
 
     def test_reply_to_email(self, client_with_auth, db_session, sample_email):
         """Test replying to an email."""
@@ -575,7 +573,6 @@ class TestEmailArchive:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        assert data["status"] == "archived"
         assert data["id"] == str(sample_email.id)
 
     def test_archive_email_not_found(self, client_with_auth):
@@ -658,7 +655,6 @@ class TestEmailArchive:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        assert data["status"] == "archived"
 
 
 class TestEmailCategory:
