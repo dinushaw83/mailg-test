@@ -62,6 +62,28 @@ const emailService = {
   },
 
   /**
+   * Fetch a thread by email ID or thread ID
+   * @param {string} threadId - Email UUID or thread UUID
+   * @returns {Promise<Array>} Array of email objects in the thread
+   */
+  getEmail: async (threadId) => {
+    try {
+      const response = await apiClient.get(`v1/emails/thread/${threadId}`);
+      const payload = response?.data?.data ?? response?.data ?? {};
+      
+      // API returns an array of emails in the thread
+      const emailsArray = Array.isArray(payload) ? payload : [payload];
+      
+      // Map all emails using the same mapper
+      const mappedEmails = emailAPIMapper(emailsArray);
+      return mappedEmails;
+    } catch (error) {
+      console.error("Error fetching thread:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Fetch a specific thread by ID
    */
   getThread: async (threadId) => {

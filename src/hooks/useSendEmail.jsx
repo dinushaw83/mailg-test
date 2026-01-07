@@ -387,7 +387,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // Hide the snackbar
     setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
 
-    const threadId = lastSentEmailRef.current?.threadId.split(":")[1];
+    const threadId = lastSentEmailRef.current?.threadId;
 
     // Navigate to the message in the sent items
     navigate(`/sent/${threadId}`);

@@ -22,7 +22,7 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "a" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // treat as "*" then "a"
-      const ids = emails.map((email) => email.threadId.split(":")[1]);
+      const ids = emails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -39,7 +39,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>r
       const readEmails = emails.filter((email) => email.isEmailRead);
-      const ids = readEmails.map((email) => email.threadId.split(":")[1]);
+      const ids = readEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -48,7 +48,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
       const unreadEmails = emails.filter((email) => !email.isEmailRead);
-      const ids = unreadEmails.map((email) => email.threadId.split(":")[1]);
+      const ids = unreadEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -57,7 +57,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
       const starredEmails = emails.filter((email) => email.starred);
-      const ids = starredEmails.map((email) => email.threadId.split(":")[1]);
+      const ids = starredEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -66,7 +66,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
       const unstarredEmails = emails.filter((email) => !email.starred);
-      const ids = unstarredEmails.map((email) => email.threadId.split(":")[1]);
+      const ids = unstarredEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });

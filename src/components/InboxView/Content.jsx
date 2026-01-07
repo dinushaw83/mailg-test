@@ -1,13 +1,14 @@
-import styled from "@emotion/styled";
-import React, { useMemo, useState, useEffect, useCallback } from "react";
-import Avatar from "@mui/material/Avatar";
-import { Icon } from "./ActionBar";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { extractEmbeddedImageIds, getEmbeddedImage, processHtmlForDisplay } from "../../utils/embeddedImages";
+
 import { Attachments } from "./Attachments";
+import Avatar from "@mui/material/Avatar";
 import ContactPopup from "../Contacts/ContactPopup";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import { getEmbeddedImage, processHtmlForDisplay, extractEmbeddedImageIds } from "../../utils/embeddedImages";
-import useMailActions from "../../hooks/useMailActions";
+import { Icon } from "./ActionBar";
 import MoreActions from "./MoreActions";
+import styled from "@emotion/styled";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import useMailActions from "../../hooks/useMailActions";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -72,11 +73,30 @@ const RecipientName = styled.div`
 const Recipient = ({ recipients = [] }) => {
   const { recipients: contacts, loggedInUser } = useGlobalContext();
 
-  // Helper function to get recipient display name from email
-  const getRecipientDisplayName = (email) => {
+  // Helper function to get recipient display name from recipient (can be string or object)
+  const getRecipientDisplayName = (recipient) => {
+    // Handle object format: {email, name, id}
+    let email = recipient;
+    let name = null;
+    
+    if (typeof recipient === "object" && recipient !== null) {
+      email = recipient.email;
+      name = recipient.name;
+    }
+    
+    // Ensure email is a string
+    if (!email || typeof email !== "string") {
+      return "Unknown";
+    }
+    
     // Check if it's the logged-in user - show "me"
     if (email === loggedInUser.email) {
       return "me";
+    }
+
+    // If recipient object has a name, use it (first name only)
+    if (name && typeof name === "string" && name.trim()) {
+      return name.split(" ")[0];
     }
 
     // Check if email is present in contacts
