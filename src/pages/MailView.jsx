@@ -1,7 +1,7 @@
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
 import React, { useEffect, useMemo, useState } from "react";
-import { fetchEmailCounts, fetchEmails } from "../store/slices/mailSlice";
+import { fetchEmailCounts, fetchEmails, fetchLabels } from "../store/slices/mailSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 
@@ -130,12 +130,22 @@ const Inbox = () => {
       });
   }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch]);
 
+  // Fetch labels on mount
+  useEffect(() => {
+    if (!accessToken) return;
+    
+    dispatch(fetchLabels()).catch((error) => {
+      console.error("Failed to fetch labels:", error);
+    });
+  }, [accessToken]);
+
   const direction = panelState.direction;
   const showSplit = direction !== "no-split";
   const panelDirection = direction === "vertical" ? "horizontal" : "vertical";
 
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
+    
     let rows = getThreadRows(emails, { label, folder: activeFolder });
     console.log("rows", { rows });
     console.log("asdadasdasd", { rows });

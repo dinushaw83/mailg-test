@@ -79,8 +79,12 @@ const emailService = {
 
   /**
    * Update labels for specific emails
+   * @param {Array} emailIds - Array of email IDs
+   * @param {Array} labels - Array of label UUIDs (not composite keys)
    */
   updateLabels: async (emailIds, labels) => {
+    // Labels should already be UUIDs at this point
+    // If composite keys are passed, they should be transformed before calling this method
     const response = await apiClient.post("/emails/labels", { emailIds, labels });
     return response.data;
   },

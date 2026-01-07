@@ -1,7 +1,9 @@
 // hooks/useMailActions.js
 import React, { useCallback, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { updateLabelsThunk } from "../store/slices/mailSlice";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ID utilities (thread-aware)
@@ -101,7 +103,11 @@ const withUndo = (ids, setEmails, operation) => {
  * ────────────────────────────────────────────────────────────────────────── */
 
 export default function useMailActions() {
+  const dispatch = useDispatch();
   const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
+  
+  // Get key to ID mapping for transforming composite keys to UUIDs
+  const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
 
   const updateByIds = useCallback(
     (ids, transform) => {
@@ -138,7 +144,30 @@ export default function useMailActions() {
   );
 
   const modifyLabels = useCallback(
-    (ids, { add = [], remove = [] }) =>
+    (ids, { add = [], remove = [] }) => {
+      // Transform composite keys to UUIDs for backend sync
+      const transformToIds = (labelKeys) => {
+        return labelKeys
+          .map((key) => {
+            // If it's already a UUID (matches UUID pattern), keep it
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)) {
+              return key;
+            }
+            // If it's a composite key, look up UUID
+            if (keyToLabelIdMap[key]) {
+              return keyToLabelIdMap[key];
+            }
+            // If it's a system label (Inbox, Sent, etc.), keep as-is for now
+            // System labels might not be in backend yet
+            return key;
+          })
+          .filter(Boolean);
+      };
+
+      const labelIdsToAdd = transformToIds(add);
+      const labelIdsToRemove = transformToIds(remove);
+
+      // Update local state immediately for UI feedback
       updateByIds(ids, (labelSet) => {
         for (const n of add) {
           if (n) labelSet.add(String(n));
@@ -146,8 +175,30 @@ export default function useMailActions() {
         for (const n of remove) {
           if (n) labelSet.delete(String(n));
         }
-      }),
-    [updateByIds]
+      });
+
+      // Sync with backend (only for backend labels, skip system labels)
+      const backendLabelsToAdd = labelIdsToAdd.filter((id) => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
+      const backendLabelsToRemove = labelIdsToRemove.filter((id) => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
+
+      if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
+        // Determine final label state: add new ones, remove old ones
+        // For simplicity, we'll send the full label set, but backend should handle add/remove
+        // This might need adjustment based on actual backend API expectations
+        dispatch(updateLabelsThunk({
+          emailIds: ids.map(String),
+          labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
+        })).catch((error) => {
+          console.error("Failed to sync labels with backend:", error);
+          // Could rollback local changes here if needed
+        });
+      }
+    },
+    [updateByIds, dispatch, keyToLabelIdMap]
   );
 
   const moveToInbox = useCallback(

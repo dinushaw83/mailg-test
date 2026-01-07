@@ -1,15 +1,14 @@
 import React, { useEffect, useRef } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { useHotkeys } from "react-hotkeys-hook";
-
-import useMailActions from "../../hooks/useMailActions";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-
-import Table from "./Table";
-import Footer from "./Footer";
-import { CATEGORIES } from "../../utils/categories";
 import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+
+import { CATEGORIES } from "../../utils/categories";
+import Footer from "./Footer";
+import Table from "./Table";
 import { useComposeModal } from "../../hooks/useComposeModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useHotkeys } from "react-hotkeys-hook";
+import useMailActions from "../../hooks/useMailActions";
 
 const useCustomHotKeys = ({ emails }) => {
   const { selection, keyboardShortcuts } = useGlobalContext();
@@ -204,33 +203,13 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   const getLabelBadges = (email) => {
-    const currentPath = (label || folder || "").toLowerCase();
-    const isAllMail = ["all"].includes(currentPath);
-    const softRemoved = softRemovedLabels[email.id] || [];
-    const curLabels = [...new Set([...email.labels, ...softRemoved])];
-
-    return curLabels
-      .filter((labelKey) => {
-        const lower = labelKey.toLowerCase();
-        const isInbox = lower === "inbox";
-        const isCategory = categoryLabels.map((c) => c.toLowerCase()).includes(lower);
-
-        // hide current folder label
-        if (lower === currentPath) return false;
-
-        // hide category labels except inbox in All Mail
-        if (isCategory && !(isInbox && isAllMail)) return false;
-
-        // hide system labels except inbox
-        if (labels[labelKey]?.system && !isInbox) return false;
-
-        return true;
-      })
-      .map((labelKey) => ({
-        key: labelKey,
-        displayName: getPathLabelFromKey(labels, labelKey),
-        color: labels[labelKey]?.color,
-      }));
+    // Simply return the label objects with their id, name, and color
+    // Labels are already in object format: { id, name, color }
+    return (email.labels || []).map((labelObj) => ({
+      key: labelObj.id || labelObj.name,
+      displayName: labelObj.name,
+      color: labelObj.color,
+    }));
   };
 
   useEffect(() => {
