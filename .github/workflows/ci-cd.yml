@@ -29,8 +29,10 @@ on:
 # Consolidated environment variables
 env:
   REGISTRY: ghcr.io
+  # Optional: Only needed if using GCP Container Registry instead of GHCR
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_ZONE: ${{ secrets.GCP_ZONE }}
+  # Required: SSH connection details for VM deployment
   VM_HOST: ${{ secrets.GCP_VM_HOST }}
   VM_USER: ${{ secrets.GCP_VM_USER }}
   DEPLOY_DIR: ~/mailg-deploy
@@ -314,14 +316,6 @@ jobs:
           OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "owner=${OWNER_LOWER}" >> $GITHUB_OUTPUT
 
-      - name: Set up GCP authentication
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -359,15 +353,26 @@ jobs:
       - name: Pre-deployment checks
         run: |
           echo "Running pre-deployment checks..."
-          if [ -z "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" ]; then
-            echo "❌ GCP_SERVICE_ACCOUNT_KEY secret is not set"
-            exit 1
-          fi
           if [ -z "${{ secrets.GCP_SSH_PRIVATE_KEY }}" ]; then
             echo "❌ GCP_SSH_PRIVATE_KEY secret is not set"
+            echo "Please configure the GCP_SSH_PRIVATE_KEY secret in your repository settings:"
+            echo "  Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+          if [ -z "${{ env.VM_HOST }}" ]; then
+            echo "❌ GCP_VM_HOST secret is not set"
+            echo "Please configure the GCP_VM_HOST secret with your VM IP address or hostname"
+            exit 1
+          fi
+          if [ -z "${{ env.VM_USER }}" ]; then
+            echo "❌ GCP_VM_USER secret is not set"
+            echo "Please configure the GCP_VM_USER secret with your SSH username"
             exit 1
           fi
           echo "✅ Pre-deployment checks passed"
+          echo "  - SSH key: configured"
+          echo "  - VM host: ${{ env.VM_HOST }}"
+          echo "  - VM user: ${{ env.VM_USER }}"
 
       - name: Copy deployment files to VM
         run: |
@@ -384,7 +389,10 @@ jobs:
             # Export image tags from GHCR
             export BACKEND_IMAGE="${{ steps.image-tags.outputs.backend_image }}"
             export FRONTEND_IMAGE="${{ steps.image-tags.outputs.frontend_image }}"
-            export GCP_PROJECT_ID="${{ env.GCP_PROJECT_ID }}"
+            # GCP_PROJECT_ID is optional (only needed if using GCP Container Registry)
+            if [ -n "${{ env.GCP_PROJECT_ID }}" ]; then
+              export GCP_PROJECT_ID="${{ env.GCP_PROJECT_ID }}"
+            fi
             
             # Log in to GHCR on VM
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin || true
