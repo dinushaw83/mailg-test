@@ -33,7 +33,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
-    () => threads.filter((thread) => selectedIds.includes(thread.threadId.split(":")[1])),
+    () => threads.filter((thread) => selectedIds.includes(thread.threadId)),
     [threads, selectedIds]
   );
   const selectedEmails = useMemo(() => {
@@ -78,7 +78,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       // Store original labels before the move
       const originalLabels = {};
       ids.forEach((id) => {
-        const email = emails.find((email) => email.threadId.split(":")[1] === String(id));
+        const email = emails.find((email) => email.threadId === String(id));
         if (email) {
           originalLabels[String(id)] = [...(email.labels || [])];
         }

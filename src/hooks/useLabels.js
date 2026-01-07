@@ -1,15 +1,16 @@
+import { createLabelThunk, deleteLabelThunk, updateLabelThunk } from "../store/slices/mailSlice";
+import { getCompositeKey, getLabelId } from "../utils/labelTransform";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { useGlobalContext } from "../contexts/GlobalContext";
-import { createLabelThunk, updateLabelThunk, deleteLabelThunk } from "../store/slices/mailSlice";
-import { getCompositeKey, getLabelId } from "../utils/labelTransform";
 
 export const ROOT = null;
 
 const getThreadKey = (m) => {
   if (!m) return null;
   if (m.threadId) {
-    return String(m.threadId).replace("#thread-f:", "");
+    return String(m.threadId);
   }
   return m.legacyThreadId || null;
 };
@@ -254,7 +255,7 @@ export default function useLabels() {
 
   const removeLabelFromThread = useCallback(
     (threadId, labelKey) => {
-      const normalizedThreadId = String(threadId).replace(/^#thread-f:/, "");
+      const normalizedThreadId = String(threadId);
       setEmails((prev) =>
         (prev || []).map((m) =>
           getThreadKey(m) === normalizedThreadId ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) } : m
@@ -268,7 +269,7 @@ export default function useLabels() {
     (threadId, labelKey) => {
       setEmails((prev) =>
         (prev || []).map((m) =>
-          getThreadKey(m) === String(threadId).replace("#thread-f:", "")
+          getThreadKey(m) === String(threadId)
             ? {
                 ...m,
                 labels: Array.from(new Set([...(m.labels || []), labelKey])),
@@ -366,7 +367,6 @@ export default function useLabels() {
           m.id,
           m.messageId,
           m.threadId,
-          m.threadId && String(m.threadId).replace("#thread-f:", ""),
           m.legacyThreadId,
           m.legacyLastMessageId,
           m.legacyLastNonDraftMessageId,

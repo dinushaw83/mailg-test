@@ -154,7 +154,7 @@ const ContactDetails = () => {
 
   // Navigate to email details
   const navigateToEmailDetails = (email) => {
-    const threadId = email.threadId.split(":")[1];
+    const threadId = email.threadId;
 
     if (!email.labels.includes("Drafts")) {
       // If compose param is present in the url, include it while navigating

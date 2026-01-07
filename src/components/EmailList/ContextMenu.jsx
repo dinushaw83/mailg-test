@@ -27,7 +27,7 @@ const ContextMenu = ({
   const isRead = contextRow?.read;
   const senderName = contextRow?.from?.name;
   const threadKey = contextRow?.threadId || "";
-  const threadId = threadKey.split(":")[1];
+  const threadId = threadKey;
   const selectedIds = [threadId];
 
   const isSpamFolder = folder === "spam";
@@ -462,7 +462,7 @@ ${email.body || email.preview || ""}
   );
 
   const handleItemClick = ({ id, event, props }) => {
-    const threadId = props.thread.threadId.split(":")[1];
+    const threadId = props.thread.threadId;
     switch (id) {
       case "archive":
         handleArchive([threadId]);

@@ -297,7 +297,7 @@ const SearchBar = () => {
   const handleResultClick = (item) => {
     if (typeof item === "object" && item.id) {
       // Extract threadId from the search result
-      const threadId = item.threadId ? item.threadId.split(":")[1] : item.id;
+      const threadId = item.threadId || item.id;
       navigate(`/inbox/${threadId}`);
     } else {
       // Add search query to history when clicked from suggestions

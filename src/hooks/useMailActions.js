@@ -2,8 +2,8 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { useGlobalContext } from "../contexts/GlobalContext";
 import { updateLabelsThunk } from "../store/slices/mailSlice";
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 /* ────────────────────────────────────────────────────────────────────────────
  * ID utilities (thread-aware)
@@ -20,7 +20,6 @@ const buildIdIndex = (selection) =>
             item.id,
             item.messageId,
             item.threadId,
-            item?.threadId && String(item.threadId).replace("#thread-f:", ""),
             item.legacyThreadId,
             item.legacyLastMessageId,
             item.legacyLastNonDraftMessageId,
@@ -42,7 +41,6 @@ const collectKeysFromMessage = (m) => {
   add(m.id);
   add(m.messageId);
   add(m.threadId);
-  add(m.threadId && String(m.threadId).replace("#thread-f:", ""));
   add(m.legacyThreadId);
   add(m.legacyLastMessageId);
   add(m.legacyLastNonDraftMessageId);
@@ -457,7 +455,7 @@ export default function useMailActions() {
         // Store the previous state for undo functionality
         previousState = prev
           .filter((m) => {
-            const emailThreadId = m.threadId.split(":")[1];
+            const emailThreadId = m.threadId;
             return threadIds.includes(emailThreadId);
           })
           .map((m) => ({
@@ -466,7 +464,7 @@ export default function useMailActions() {
           }));
 
         return prev.map((m) => {
-          const emailThreadId = m.threadId.split(":")[1];
+          const emailThreadId = m.threadId;
           if (threadIds.includes(emailThreadId)) {
             const currentLabels = m.labels || [];
             const isCurrentlyMuted = currentLabels.includes("Muted");
@@ -489,8 +487,8 @@ export default function useMailActions() {
       const undo = () => {
         setEmails((prev) =>
           prev.map((m) => {
-            const emailThreadId = m.threadId.split(":")[1];
-            const previousEmail = previousState.find((p) => p.threadId.split(":")[1] === emailThreadId);
+            const emailThreadId = m.threadId;
+            const previousEmail = previousState.find((p) => p.threadId === emailThreadId);
             if (previousEmail) {
               return { ...m, labels: [...previousEmail.labels] };
             }

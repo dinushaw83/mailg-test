@@ -777,7 +777,7 @@ const ContactDetailsPage = () => {
 
   // Navigate to email details
   const navigateToEmailDetails = (email) => {
-    const threadId = email.threadId.split(":")[1];
+    const threadId = email.threadId;
 
     let url = "";
     if (email.labels.includes("Inbox")) {
