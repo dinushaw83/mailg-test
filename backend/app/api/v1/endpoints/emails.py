@@ -1621,6 +1621,77 @@ def unmark_email_spam(
     return format_email_response(email)
 
 
+@router.post("/emails/{email_id}/restore", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def restore_email_from_trash(
+    email_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Restore an email from trash.
+    
+    Moves the email from trash folder back to its appropriate folder:
+    - Sent emails are restored to the 'sent' folder
+    - Received emails are restored to the 'inbox' folder
+    - Draft emails are restored to the 'drafts' folder
+    
+    Permissions:
+    - Users can only restore their own emails (sent or received)
+    """
+    current_user = auth.user
+    
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        selectinload(Email.labels),
+    ).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
+    ).first()
+    
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    if email.folder != FolderType.TRASH.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is not in trash"
+        )
+    
+    # Determine the appropriate folder based on email status
+    if email.status == EmailStatus.DRAFT.value:
+        email.folder = FolderType.DRAFTS.value
+    elif email.status == EmailStatus.SENT.value or email.status == EmailStatus.QUEUED.value:
+        email.folder = FolderType.SENT.value
+    else:
+        # For received emails or any other status, restore to inbox
+        email.folder = FolderType.INBOX.value
+    
+    try:
+        db.commit()
+        db.refresh(email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Email {email.id} restored from trash to {email.folder} by user {current_user.id}")
+    
+    return format_email_response(email)
+
+
 @router.patch("/emails/{email_id}/category", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def update_email_category(
     email_id: UUID,
