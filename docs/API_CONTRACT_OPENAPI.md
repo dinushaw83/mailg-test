@@ -38,6 +38,8 @@ This document describes the REST API endpoints for the Deskzen application.
 - [Emails API](#emails-api)
   - [List Emails](#list-emails)
   - [Create Email](#create-email)
+  - [Get Email Category Counts](#get-email-category-counts)
+  - [Get Emails By Thread](#get-emails-by-thread)
   - [Delete Email](#delete-email)
   - [Get Email](#get-email)
   - [Update Email](#update-email)
@@ -51,6 +53,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Move Email](#move-email)
   - [Mark Email Read](#mark-email-read)
   - [Reply To Email](#reply-to-email)
+  - [Restore Email From Trash](#restore-email-from-trash)
   - [Send Email](#send-email)
   - [Snooze Email](#snooze-email)
   - [Mark Email Spam](#mark-email-spam)
@@ -1749,6 +1752,7 @@ Permissions:
 - `is_important` (optional, object): Filter by important
 - `include_archived` (optional, object): Include archived emails
 - `search` (optional, object): Search in subject and body
+- `threaded` (optional, boolean): Group by thread and return only latest email from each thread
 
 **Responses**:
 
@@ -1865,6 +1869,144 @@ Permissions:
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Email Category Counts
+
+**GET** `/api/v1/emails/stats/category-counts`
+
+Get count of emails in each category (primary, promotions, social, updates, forums).
+
+Returns the number of emails in each category for the current user.
+Optionally filter by folder, read status, or starred status.
+
+Permissions:
+- Users can only see counts for their own emails (sent or received)
+
+**Query Parameters**:
+
+- `folder` (optional, object): Filter by folder
+- `is_read` (optional, object): Filter by read status
+- `is_starred` (optional, object): Filter by starred
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Emails By Thread
+
+**GET** `/api/v1/emails/thread/{thread_id}`
+
+Get all emails in a thread/conversation.
+
+Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
+
+Permissions:
+- Users can only access threads containing their own emails (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": [
+    {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "subject": "string",
+      "body": "string",
+      "html_body": "string",
+      "folder": "string",
+      "category": "string",
+      "is_read": false,
+      "is_starred": false,
+      "is_important": false,
+      "sender_id": "00000000-0000-0000-0000-000000000000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ]
 }
 ```
 
@@ -2841,6 +2983,82 @@ Reply to an email.
 
 ---
 
+### Restore Email From Trash
+
+**POST** `/api/v1/emails/{email_id}/restore`
+
+Restore an email from trash.
+
+Moves the email from trash folder back to its appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
+
+Permissions:
+- Users can only restore their own emails (sent or received)
+
+**Path Parameters**:
+
+- `email_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Send Email
 
 **POST** `/api/v1/emails/{email_id}/send`
@@ -3435,7 +3653,6 @@ Permissions:
 ```json
 {
   "name": "string",
-  "color": "string",
   "parent_id": "00000000-0000-0000-0000-000000000000"
 }
 ```
@@ -3710,7 +3927,6 @@ Permissions:
 ```json
 {
   "name": "string",
-  "color": "string",
   "parent_id": "00000000-0000-0000-0000-000000000000"
 }
 ```
