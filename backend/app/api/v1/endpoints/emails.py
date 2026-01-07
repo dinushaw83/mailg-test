@@ -28,7 +28,7 @@ from app.schemas.email import (
     EmailReadUpdate, EmailStarUpdate, EmailMoveRequest, EmailLabelRequest,
     EmailReplyRequest, EmailForwardRequest, EmailRecipientResponse,
     AttachmentBriefResponse, LabelBriefResponse, EmailSnoozeRequest,
-    EmailCategoryUpdate
+    EmailCategoryUpdate, EmailCategoryCountsResponse
 )
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
@@ -114,6 +114,7 @@ def format_email_response(email: Email) -> dict:
         "subject": email.subject,
         "body": email.body,
         "html_body": email.html_body,
+        "status": email.status,
         "folder": email.folder or FolderType.INBOX.value,
         "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
@@ -162,6 +163,7 @@ def format_email_list_response(email: Email) -> dict:
         "id": email.id,
         "subject": email.subject,
         "snippet": get_snippet(email.body),
+        "status": email.status,
         "folder": email.folder or FolderType.INBOX.value,
         "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
@@ -1640,5 +1642,63 @@ def update_email_category(
         raise
     
     logger.info(f"Email {email.id} category changed to {category_data.category} by user {current_user.id}")
-    
+
     return format_email_response(email)
+
+
+@router.get("/emails/stats/category-counts", response_model=EmailCategoryCountsResponse, dependencies=[Depends(authorized())])
+def get_email_category_counts(
+    db: Session = Depends(get_db),
+    folder: Optional[FolderType] = Query(None, description="Filter by folder"),
+    is_read: Optional[bool] = Query(None, description="Filter by read status"),
+    is_starred: Optional[bool] = Query(None, description="Filter by starred"),
+) -> dict:
+    """Get count of emails in each category (primary, promotions, social, updates, forums).
+
+    Returns the number of emails in each category for the current user.
+    Optionally filter by folder, read status, or starred status.
+
+    Permissions:
+    - Users can only see counts for their own emails (sent or received)
+    """
+    current_user = auth.user
+
+    # Base query - user's emails (sent by them or received by them)
+    base_query = db.query(
+        Email.category,
+        func.count(Email.id).label('count')
+    ).filter(
+        Email.is_deleted == False,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    )
+
+    # Apply filters
+    if folder:
+        base_query = base_query.filter(Email.folder == folder.value)
+
+    if is_read is not None:
+        base_query = base_query.filter(Email.is_read == is_read)
+
+    if is_starred is not None:
+        base_query = base_query.filter(Email.is_starred == is_starred)
+
+    # Group by category
+    results = base_query.group_by(Email.category).all()
+
+    # Build category counts dictionary dynamically from VALID_EMAIL_CATEGORIES
+    category_counts = {category: 0 for category in VALID_EMAIL_CATEGORIES}
+
+    # Fill in actual counts from query results
+    for category, count in results:
+        category_key = category or EmailCategory.PRIMARY.value
+        if category_key in category_counts:
+            category_counts[category_key] = count
+
+    return category_counts

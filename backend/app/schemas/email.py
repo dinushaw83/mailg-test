@@ -1,12 +1,12 @@
 """Pydantic schemas for Email resource - request/response validation."""
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, RootModel
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
-from app.core.constants import EmailCategory, FolderType
+from app.core.constants import EmailCategory, FolderType, EmailStatus
 
 
 class EmailRecipientSchema(BaseModel):
@@ -134,6 +134,7 @@ class EmailResponse(BaseModel):
     subject: str
     body: Optional[str] = None
     html_body: Optional[str] = None
+    status: EmailStatus  # Email status: draft, queued, sent, received, archived, cancelled
     folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, starred
     category: Optional[str] = "primary"
     is_read: bool
@@ -164,6 +165,7 @@ class EmailListResponse(BaseModel):
     id: UUID
     subject: str
     snippet: Optional[str] = None  # Preview of body
+    status: EmailStatus  # Email status: draft, queued, sent, received, archived, cancelled
     folder: Optional[FolderType] = FolderType.INBOX
     category: Optional[EmailCategory] = EmailCategory.PRIMARY
     is_read: bool
@@ -184,3 +186,14 @@ class EmailListResponse(BaseModel):
 
 
 EmailPaginatedResponse = PaginatedListResponse[EmailListResponse]
+
+
+class EmailCategoryCountsResponse(RootModel[dict[str, int]]):
+    """Dynamic email category counts response.
+
+    Returns counts for each category as key-value pairs.
+    Automatically adapts to new categories added to the system.
+
+    Example: {"primary": 15, "promotions": 8, "social": 12, "updates": 3, "forums": 0}
+    """
+    root: dict[str, int]
