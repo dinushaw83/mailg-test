@@ -21,7 +21,7 @@ A production-ready FastAPI mailg with JWT authentication, RBAC, and sophisticate
 
 ### Email API:
 - **Emails**: Compose, send, receive, read, archive, delete with threading support
-- **Folders**: Inbox, Sent, Drafts, Trash, Spam, Starred, and custom folders
+- **Folders**: Inbox, Sent, Drafts, Trash, Spam, Starred
 - **Labels**: User-defined tags for email organization (hierarchical/nested)
 - **Attachments**: File attachments for emails
 - **Search**: Advanced search with operators (`from:`, `to:`, `is:unread`, `has:attachment`, etc.)
@@ -349,14 +349,6 @@ Note: This mailg uses email-based authentication without passwords. Roles corres
 - `POST /api/v1/emails/{id}/labels` - Add label to email
 - `DELETE /api/v1/emails/{id}/labels/{label_id}` - Remove label
 
-#### Folders
-- `GET /api/v1/folders` - List user's folders with counts
-- `POST /api/v1/folders` - Create custom folder
-- `GET /api/v1/folders/{id}` - Get folder by ID
-- `PUT /api/v1/folders/{id}` - Update folder
-- `DELETE /api/v1/folders/{id}` - Delete folder (custom only)
-- `GET /api/v1/folders/{id}/emails` - List emails in folder
-
 #### Labels (Hierarchical/Nested)
 - `GET /api/v1/labels` - List user's labels (flat or tree structure)
 - `GET /api/v1/labels/tree` - List labels as hierarchical tree
@@ -557,6 +549,7 @@ backend/
 │   │   ├── constants.py         # Application-wide constants and enums
 │   │   ├── openapi.py           # OpenAPI/Swagger customization
 │   │   ├── exceptions.py        # Global exception handlers
+│   │   ├── telemetry.py         # Telemetry configuration
 │   │   └── middleware/          # HTTP middleware
 │   │       ├── cors.py          # CORS configuration
 │   │       ├── auth.py          # JWT parsing and validation
@@ -582,8 +575,8 @@ backend/
 │   │           ├── users.py     # User management
 │   │           ├── db_snapshot.py  # Database inspection tools
 │   │           ├── emails.py    # Email CRUD, snooze, undo-send
-│   │           ├── folders.py   # Folder management
 │   │           ├── labels.py    # Label management (hierarchical)
+│   │           ├── metrics.py   # Metrics endpoint
 │   │           ├── attachments.py  # Attachment handling
 │   │           ├── search.py    # Email search with operators
 │   │           ├── bulk.py      # Bulk email operations
@@ -602,7 +595,6 @@ backend/
 │   │   ├── email.py             # Email model
 │   │   ├── email_recipient.py   # Email recipient (to/cc/bcc)
 │   │   ├── email_template.py    # Email template model
-│   │   ├── folder.py            # Email folder model
 │   │   ├── label.py             # Email label model
 │   │   ├── email_label.py       # Email-label association
 │   │   ├── attachment.py        # Email attachment model
@@ -615,7 +607,7 @@ backend/
 │   │   ├── email.py             # Email request/response schemas
 │   │   ├── email_template.py    # Template schemas
 │   │   ├── bulk.py              # Bulk operation schemas
-│   │   ├── folder.py            # Folder schemas
+│   │   ├── db_snapshot.py       # Database snapshot schemas
 │   │   ├── label.py             # Label schemas
 │   │   ├── attachment.py        # Attachment schemas
 │   │   ├── thread.py            # Thread schemas
@@ -626,14 +618,14 @@ backend/
 │
 ├── fixtures/                    # Seed data
 │   ├── users.json               # Example users (with contact info)
-│   ├── folders.json             # Email folders (system + custom)
 │   ├── labels.json              # User labels
 │   ├── threads.json             # Email threads
 │   ├── emails.json              # Sample emails
 │   ├── email_recipients.json    # Email recipients
 │   ├── email_labels.json        # Email-label associations
 │   ├── email_templates.json     # Email templates
-│   └── attachments.json         # Sample attachments
+│   ├── attachments.json         # Sample attachments
+│   └── saved_searches.json      # Saved search queries
 │
 ├── tests/                       # Test suite
 │   ├── conftest.py              # Pytest configuration
@@ -641,8 +633,8 @@ backend/
 │   ├── test_db_router.py        # Database isolation tests
 │   ├── test_rbac_edge_cases.py  # RBAC permission tests
 │   ├── test_token_manager.py    # Token management tests
+│   ├── test_response_wrapper.py # Response format wrapper tests
 │   ├── test_emails_api.py       # Email endpoint tests
-│   ├── test_folders_api.py      # Folder endpoint tests
 │   ├── test_labels_api.py       # Label endpoint tests
 │   ├── test_attachments_api.py  # Attachment endpoint tests
 │   ├── test_bulk_api.py         # Bulk operations tests
@@ -668,7 +660,7 @@ docker-compose.yaml              # Service orchestration
 When extending the mailg, follow these best practices:
 
 1. **Use Constants**: Always use enums and constants from `app.core.constants` instead of hardcoded strings
-2. **Type Safety**: Import and use `UserRole`, `EmailStatus`, `FolderType` enums for type hints
+2. **Type Safety**: Import and use `UserRole`, `EmailStatus` enums for type hints
 3. **Validation**: Use `VALID_*` lists for input validation
 4. **Consistency**: Follow the established patterns in existing endpoints (emails, users)
 
@@ -845,7 +837,7 @@ from app.core.constants import (
     # Email constants
     EmailStatus,        # Enum: DRAFT, QUEUED, SENT, RECEIVED, ARCHIVED, CANCELLED
     EmailCategory,      # Enum: PRIMARY, PROMOTIONS, SOCIAL, UPDATES, FORUMS
-    FolderType,         # Enum: INBOX, SENT, DRAFTS, TRASH, SPAM, STARRED, CUSTOM
+    FolderType,         # Enum: INBOX, SENT, DRAFTS, TRASH, SPAM
     RecipientType,      # Enum: TO, CC, BCC
     AttachmentType,     # Enum: FILE, IMAGE, DOCUMENT
     VALID_EMAIL_STATUSES,   # List of valid email status strings
@@ -953,7 +945,6 @@ pytest --cov=app --cov-report=html
 - `test_token_manager.py`: Token generation/validation tests
 - `test_response_wrapper.py`: Response format wrapper tests
 - `test_emails_api.py`: Email CRUD, send/reply/forward tests
-- `test_folders_api.py`: Folder management and system folder protection tests
 - `test_labels_api.py`: Label CRUD and email-label association tests
 - `test_attachments_api.py`: Attachment upload/download tests
 - `test_search_api.py`: Search operators, filters, and saved search tests

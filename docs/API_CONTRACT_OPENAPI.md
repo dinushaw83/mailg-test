@@ -13,7 +13,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Get Attachment](#get-attachment)
   - [Download Attachment](#download-attachment)
   - [List Email Attachments](#list-email-attachments)
-  - [Upload Attachment](#upload-attachment)
+  - [Create Attachment](#create-attachment)
 - [Auth API](#auth-api)
   - [Get Current User Info](#get-current-user-info)
   - [Create Token](#create-token)
@@ -26,10 +26,14 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Bulk Move](#bulk-move)
   - [Bulk Mark Read](#bulk-mark-read)
   - [Bulk Snooze](#bulk-snooze)
+  - [Bulk Spam](#bulk-spam)
   - [Bulk Star](#bulk-star)
+  - [Bulk Unarchive](#bulk-unarchive)
   - [Bulk Unsnooze](#bulk-unsnooze)
+  - [Bulk Unspam](#bulk-unspam)
 - [Db Snapshot API](#db-snapshot-api)
   - [Drop Db For Run](#drop-db-for-run)
+  - [Get Db Schema](#get-db-schema)
   - [Get Db Snapshot](#get-db-snapshot)
 - [Emails API](#emails-api)
   - [List Emails](#list-emails)
@@ -37,6 +41,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Delete Email](#delete-email)
   - [Get Email](#get-email)
   - [Update Email](#update-email)
+  - [Archive Email](#archive-email)
   - [Cancel Send](#cancel-send)
   - [Update Email Category](#update-email-category)
   - [Confirm Send](#confirm-send)
@@ -48,15 +53,11 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Reply To Email](#reply-to-email)
   - [Send Email](#send-email)
   - [Snooze Email](#snooze-email)
+  - [Mark Email Spam](#mark-email-spam)
   - [Star Email](#star-email)
+  - [Unarchive Email](#unarchive-email)
   - [Unsnooze Email](#unsnooze-email)
-- [Folders API](#folders-api)
-  - [List Folders](#list-folders)
-  - [Create Folder](#create-folder)
-  - [Delete Folder](#delete-folder)
-  - [Get Folder](#get-folder)
-  - [Update Folder](#update-folder)
-  - [List Folder Emails](#list-folder-emails)
+  - [Unmark Email Spam](#unmark-email-spam)
 - [Labels API](#labels-api)
   - [List Labels](#list-labels)
   - [Create Label](#create-label)
@@ -65,6 +66,12 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Get Label](#get-label)
   - [Update Label](#update-label)
   - [List Label Emails](#list-label-emails)
+- [Metrics API](#metrics-api)
+  - [Metrics Health](#metrics-health)
+  - [Get Label Values](#get-label-values)
+  - [Get Labels](#get-labels)
+  - [Query Instant](#query-instant)
+  - [Query Range](#query-range)
 - [Search API](#search-api)
   - [Search Emails](#search-emails)
   - [List Saved Searches](#list-saved-searches)
@@ -217,10 +224,13 @@ Permissions:
 
 **GET** `/api/v1/attachments/{attachment_id}/download`
 
-Download an attachment.
+Get download URL for an attachment (mock - returns placeholder info).
+
+In a production system, this would return a pre-signed URL for direct download.
+Since this is a mock system without actual file storage, it returns metadata.
 
 Permissions:
-- Users can only download attachments on emails they have access to
+- Users can only access attachments on emails they have access to
 
 **Path Parameters**:
 
@@ -229,6 +239,15 @@ Permissions:
 **Responses**:
 
 - `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
 
 - `422`: Validation Error
 
@@ -328,11 +347,14 @@ Permissions:
 
 ---
 
-### Upload Attachment
+### Create Attachment
 
 **POST** `/api/v1/emails/{email_id}/attachments`
 
-Upload an attachment to an email.
+Create attachment metadata for an email (mock - no actual file storage).
+
+This endpoint accepts attachment metadata only. In a production system,
+actual file upload would be handled separately via pre-signed URLs or similar.
 
 Permissions:
 - Users can only add attachments to their own draft emails
@@ -345,7 +367,9 @@ Permissions:
 
 ```json
 {
-  "file": "string"
+  "filename": "string",
+  "content_type": "string",
+  "size_bytes": 0
 }
 ```
 
@@ -945,7 +969,6 @@ Move multiple emails to a folder.
 
 Permissions:
 - Users can only move their own emails
-- Target folder must belong to the user
 
 **Request Body**:
 
@@ -954,7 +977,7 @@ Permissions:
   "email_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
-  "folder_id": "00000000-0000-0000-0000-000000000000"
+  "folder": "string"
 }
 ```
 
@@ -1166,6 +1189,83 @@ Permissions:
 
 ---
 
+### Bulk Spam
+
+**POST** `/api/v1/bulk/spam`
+
+Mark multiple emails as spam.
+
+Moves emails to the spam folder.
+
+Permissions:
+- Users can only mark their own emails as spam
+
+**Request Body**:
+
+```json
+{
+  "email_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ]
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Bulk Star
 
 **POST** `/api/v1/bulk/star`
@@ -1183,6 +1283,83 @@ Permissions:
     "00000000-0000-0000-0000-000000000000"
   ],
   "is_starred": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Bulk Unarchive
+
+**POST** `/api/v1/bulk/unarchive`
+
+Unarchive multiple emails.
+
+Restores archived emails back to their original status (sent or received).
+
+Permissions:
+- Users can only unarchive their own emails
+
+**Request Body**:
+
+```json
+{
+  "email_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ]
 }
 ```
 
@@ -1317,6 +1494,83 @@ Permissions:
 
 ---
 
+### Bulk Unspam
+
+**POST** `/api/v1/bulk/unspam`
+
+Remove spam mark from multiple emails.
+
+Moves emails from spam folder back to inbox.
+
+Permissions:
+- Users can only unmark their own emails from spam
+
+**Request Body**:
+
+```json
+{
+  "email_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ]
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ## Db Snapshot API
 
 ### Drop Db For Run
@@ -1349,6 +1603,49 @@ Safety:
   }
 }
 ```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Db Schema
+
+**GET** `/api/v1/db_schema`
+
+Return the database schema from the seed database.
+
+This endpoint inspects the seed database and returns the schema in a
+JSON schema-like format. No authentication required since this is
+static metadata used for verification configuration.
+
+Returns:
+    JSON object with database schema in the format:
+    {
+        "properties": {
+            "tables": {
+                "properties": {
+                    "table_name": {
+                        "properties": {
+                            "column_name": {"type": "json_type"}
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+**Responses**:
+
+- `200`: Successful Response
 
 - `401`: Unauthorized
 
@@ -1443,14 +1740,14 @@ Permissions:
 
 - `page` (optional, integer): Page number
 - `page_size` (optional, integer): Items per page
-- `folder_id` (optional, object): Filter by folder ID
-- `folder_type` (optional, object): Filter by folder type
+- `folder` (optional, object): Filter by folder
 - `thread_id` (optional, object): Filter by thread ID to get all emails in a conversation
-- `status` (optional, object): Filter by status
-- `category` (optional, object): Filter by category (primary, promotions, social, updates, forums)
+- `category` (optional, object): Filter by category
 - `is_read` (optional, object): Filter by read status
 - `is_starred` (optional, object): Filter by starred
 - `is_snoozed` (optional, object): Filter by snoozed status (True=snoozed, False=not snoozed)
+- `is_important` (optional, object): Filter by important
+- `include_archived` (optional, object): Include archived emails
 - `search` (optional, object): Search in subject and body
 
 **Responses**:
@@ -1468,7 +1765,7 @@ Permissions:
         "id": null,
         "subject": null,
         "snippet": null,
-        "status": null,
+        "folder": null,
         "category": null,
         "is_read": null,
         "is_starred": null,
@@ -1540,8 +1837,8 @@ Permissions:
       "type": "string"
     }
   ],
-  "folder_id": "00000000-0000-0000-0000-000000000000",
-  "category": "string"
+  "is_draft": false,
+  "scheduled_send_at": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -1559,7 +1856,7 @@ Permissions:
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -1684,7 +1981,7 @@ Permissions:
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -1768,7 +2065,80 @@ Permissions:
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Archive Email
+
+**POST** `/api/v1/emails/{email_id}/archive`
+
+Archive an email.
+
+Sets the email status to 'archived'.
+
+Permissions:
+- Users can only archive their own emails (sent or received)
+
+**Path Parameters**:
+
+- `email_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -1839,7 +2209,7 @@ The email will be moved back to draft status so it can be edited or re-sent.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -1920,7 +2290,7 @@ Permissions:
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -1990,7 +2360,7 @@ Use this if you want to skip the undo send waiting period.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2074,7 +2444,7 @@ Forward an email.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2150,7 +2520,7 @@ Add a label to an email.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2255,7 +2625,7 @@ Move an email to a different folder.
 
 ```json
 {
-  "folder_id": "00000000-0000-0000-0000-000000000000"
+  "folder": "string"
 }
 ```
 
@@ -2273,7 +2643,7 @@ Move an email to a different folder.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2349,7 +2719,7 @@ Mark an email as read or unread.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2427,7 +2797,7 @@ Reply to an email.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2501,7 +2871,7 @@ If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2583,7 +2953,80 @@ Permissions:
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Mark Email Spam
+
+**POST** `/api/v1/emails/{email_id}/spam`
+
+Mark an email as spam.
+
+Moves the email to the spam folder.
+
+Permissions:
+- Users can only mark their own emails as spam (sent or received)
+
+**Path Parameters**:
+
+- `email_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2659,7 +3102,80 @@ Star or unstar an email.
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unarchive Email
+
+**POST** `/api/v1/emails/{email_id}/unarchive`
+
+Unarchive an email.
+
+Restores an archived email back to its original folder (inbox for received, sent for sent emails).
+
+Permissions:
+- Users can only unarchive their own emails (sent or received)
+
+**Path Parameters**:
+
+- `email_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2730,7 +3246,7 @@ Permissions:
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -2774,220 +3290,20 @@ Permissions:
 
 ---
 
-## Folders API
+### Unmark Email Spam
 
-### List Folders
+**POST** `/api/v1/emails/{email_id}/unspam`
 
-**GET** `/api/v1/folders`
+Remove spam mark from an email.
 
-List user's folders with email counts.
-
-Permissions:
-- Users can only see their own folders
-
-**Query Parameters**:
-
-- `include_counts` (optional, boolean): Include email counts
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": [
-    {
-      "id": "00000000-0000-0000-0000-000000000000",
-      "name": "string",
-      "folder_type": "string",
-      "color": "string",
-      "icon": "string",
-      "is_system": false
-    }
-  ]
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Create Folder
-
-**POST** `/api/v1/folders`
-
-Create a new custom folder.
+Moves the email from spam folder back to inbox.
 
 Permissions:
-- All authenticated users can create folders
-
-**Request Body**:
-
-```json
-{
-  "name": "string",
-  "folder_type": "custom",
-  "color": "string",
-  "icon": "string",
-  "parent_folder_id": "00000000-0000-0000-0000-000000000000"
-}
-```
-
-**Responses**:
-
-- `201`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "name": "string",
-    "folder_type": "string",
-    "color": "string",
-    "icon": "string",
-    "owner_id": "00000000-0000-0000-0000-000000000000",
-    "is_system": false,
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Delete Folder
-
-**DELETE** `/api/v1/folders/{folder_id}`
-
-Delete a folder (custom folders only).
-
-Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
-
-Permissions:
-- Users can only delete their own custom folders
-- System folders cannot be deleted
+- Users can only unmark their own emails from spam (sent or received)
 
 **Path Parameters**:
 
-- `folder_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
-
-**Responses**:
-
-- `204`: Successful Response
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Get Folder
-
-**GET** `/api/v1/folders/{folder_id}`
-
-Get a specific folder by ID.
-
-Permissions:
-- Users can only access their own folders
-
-**Path Parameters**:
-
-- `folder_id` (required, string)
+- `email_id` (required, string)
 
 **Responses**:
 
@@ -3000,177 +3316,17 @@ Permissions:
   "statusCode": 0,
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
-    "name": "string",
-    "folder_type": "string",
-    "color": "string",
-    "icon": "string",
-    "owner_id": "00000000-0000-0000-0000-000000000000",
-    "is_system": false,
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Update Folder
-
-**PUT** `/api/v1/folders/{folder_id}`
-
-Update a folder (custom folders only for name changes).
-
-Permissions:
-- Users can only update their own folders
-- System folders can only have color/icon updated
-
-**Path Parameters**:
-
-- `folder_id` (required, string)
-
-**Request Body**:
-
-```json
-{
-  "name": "string",
-  "color": "string",
-  "icon": "string"
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "name": "string",
-    "folder_type": "string",
-    "color": "string",
-    "icon": "string",
-    "owner_id": "00000000-0000-0000-0000-000000000000",
-    "is_system": false,
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### List Folder Emails
-
-**GET** `/api/v1/folders/{folder_id}/emails`
-
-List emails in a specific folder.
-
-Permissions:
-- Users can only access their own folders
-
-**Path Parameters**:
-
-- `folder_id` (required, string)
-
-**Query Parameters**:
-
-- `page` (optional, integer): Page number
-- `page_size` (optional, integer): Items per page
-- `is_read` (optional, object): Filter by read status
-- `is_starred` (optional, object): Filter by starred
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "results": [
-      {
-        "id": null,
-        "subject": null,
-        "snippet": null,
-        "status": null,
-        "category": null,
-        "is_read": null,
-        "is_starred": null,
-        "is_important": null,
-        "sender_id": null,
-        "created_at": null
-      }
-    ],
-    "total": 0,
-    "page": 0,
-    "page_size": 0,
-    "total_pages": 0
   }
 }
 ```
@@ -3646,7 +3802,7 @@ Permissions:
         "id": null,
         "subject": null,
         "snippet": null,
-        "status": null,
+        "folder": null,
         "category": null,
         "is_read": null,
         "is_starred": null,
@@ -3659,6 +3815,274 @@ Permissions:
     "page": 0,
     "page_size": 0,
     "total_pages": 0
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+## Metrics API
+
+### Metrics Health
+
+**GET** `/api/v1/metrics/health`
+
+Check Prometheus connectivity.
+
+Returns:
+    HealthResponse with Prometheus status and connectivity info.
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "status": "string",
+    "prometheus_url": "string",
+    "ready": false,
+    "message": "string"
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Label Values
+
+**GET** `/api/v1/metrics/label/{label_name}/values`
+
+Get all values for a specific label.
+
+Args:
+    label_name: Name of the label to query values for.
+
+Returns:
+    List of all values for the specified label.
+
+**Path Parameters**:
+
+- `label_name` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Labels
+
+**GET** `/api/v1/metrics/labels`
+
+Get all label names from Prometheus.
+
+Returns:
+    List of all label names present in the metrics.
+
+**Responses**:
+
+- `200`: Successful Response
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Query Instant
+
+**GET** `/api/v1/metrics/query`
+
+Execute an instant query against Prometheus.
+
+Args:
+    query: PromQL query expression (e.g., 'up', 'http_server_duration_milliseconds_count')
+    time: Optional evaluation timestamp. If omitted, current server time is used.
+
+Returns:
+    PrometheusResponse with query results.
+
+Example queries:
+    - `up` - Check if targets are up
+    - `sum(http_server_duration_milliseconds_count)` - Total request count
+    - `histogram_quantile(0.95, sum(rate(http_server_duration_milliseconds_bucket[5m])) by (le))` - P95 latency
+
+**Query Parameters**:
+
+- `query` (required, string): PromQL query expression
+- `time` (optional, object): Evaluation timestamp (RFC3339 or Unix timestamp)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "status": "string",
+    "data": {},
+    "errorType": "string",
+    "error": "string"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Query Range
+
+**GET** `/api/v1/metrics/query_range`
+
+Execute a range query against Prometheus.
+
+Args:
+    query: PromQL query expression
+    start: Start timestamp (RFC3339 or Unix timestamp)
+    end: End timestamp (RFC3339 or Unix timestamp)
+    step: Query resolution step width (duration format, e.g., '15s', '1m')
+
+Returns:
+    PrometheusResponse with time-series data.
+
+Example:
+    GET /api/v1/metrics/query_range?query=rate(http_server_duration_milliseconds_count[1m])&start=2024-01-01T00:00:00Z&end=2024-01-01T01:00:00Z&step=1m
+
+**Query Parameters**:
+
+- `query` (required, string): PromQL query expression
+- `start` (required, string): Start timestamp (RFC3339 or Unix timestamp)
+- `end` (required, string): End timestamp (RFC3339 or Unix timestamp)
+- `step` (required, string): Query resolution step (e.g., '15s', '1m', '5m')
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "status": "string",
+    "data": {},
+    "errorType": "string",
+    "error": "string"
   }
 }
 ```
@@ -3723,8 +4147,7 @@ These can be combined: q="from:john subject:report has:attachment"
 - `from` (optional, object): Filter by sender
 - `to` (optional, object): Filter by recipient
 - `subject` (optional, object): Search in subject
-- `folder_id` (optional, object): Filter by folder
-- `folder_type` (optional, object): Filter by folder type
+- `folder` (optional, object): Filter by folder: inbox, sent, drafts, trash, spam, starred
 - `label_id` (optional, object): Filter by label
 - `label_name` (optional, object): Filter by label name
 - `is_read` (optional, object): Filter by read status
@@ -4448,7 +4871,7 @@ Permissions:
     "subject": "string",
     "body": "string",
     "html_body": "string",
-    "status": "string",
+    "folder": "string",
     "category": "string",
     "is_read": false,
     "is_starred": false,
@@ -4897,7 +5320,21 @@ Raises:
 
 ## Common Types
 
-_No enum-style common types were found in the OpenAPI components._
+### EmailCategory
+
+- `primary`
+- `promotions`
+- `social`
+- `updates`
+- `forums`
+
+### FolderType
+
+- `inbox`
+- `sent`
+- `drafts`
+- `trash`
+- `spam`
 
 ---
 
