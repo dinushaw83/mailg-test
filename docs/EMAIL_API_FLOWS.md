@@ -347,6 +347,249 @@ The labels system uses a **UUID-based backend** with **composite key frontend** 
 
 ---
 
+## 🔄 Label Synchronization with Backend
+
+### Overview
+
+The frontend maintains synchronization with the backend through a combination of React Query caching, Redux state management, and automatic cache invalidation/refetching. This ensures the UI always reflects the latest backend state after any label mutation.
+
+### Architecture Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    LABEL SYNC ARCHITECTURE                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Frontend (Composite Keys)              Backend (UUIDs)
+      │                                       │
+      │  CREATE/UPDATE/DELETE                 │
+      │  ───────────────────────────────────► │
+      │  Transform: compositeKey → UUID       │
+      │                                       │
+      │  ◄─────────────────────────────────── │
+      │  Response: UUID-based label           │
+      │                                       │
+      │  1. Invalidate React Query cache      │
+      │  2. Refetch labels from BE            │
+      │  3. Transform UUID → composite keys   │
+      │  4. Update Redux state                │
+      │  5. Rebuild mappings                  │
+      │  6. UI updates automatically          │
+```
+
+---
+
+### CREATE Operation
+
+**What we do:**
+1. User creates label with composite key (e.g., `"Work::Clients"`)
+2. Frontend converts composite key to UUID using `keyToLabelIdMap`:
+   - Parent key `"Work"` → UUID `40000000-0000-0000-0000-000000000002`
+   - Extract label name `"Clients"` from composite key
+3. Send POST request to backend with:
+   ```json
+   {
+     "name": "Clients",
+     "color": "#65a278",
+     "parent_id": "40000000-0000-0000-0000-000000000002"  // UUID from mapping
+   }
+   ```
+4. Backend returns new label with UUID `id`
+5. Frontend listener (`createLabelThunk.fulfilled`):
+   - Invalidates React Query cache for `["labels"]`
+   - Dispatches `fetchLabels()` to refetch all labels
+6. On refetch, transform all labels:
+   - Build `labelIdToKeyMap`: `{ [uuid]: compositeKey }`
+   - Build `keyToLabelIdMap`: `{ [compositeKey]: uuid }`
+   - Store labels in Redux by UUID: `labels[uuid] = { id, name, color, parent_id, parentKey }`
+7. UI automatically updates with new label in correct hierarchy
+
+**Why we do this:**
+- Ensures backend is source of truth
+- Handles parent-child relationships correctly (backend validates parent exists)
+- Automatically handles nested label hierarchy
+- Avoids stale data issues
+
+---
+
+### READ Operation
+
+**What we do:**
+1. On app initialization or when labels cache is stale:
+   - Dispatch `fetchLabels()` thunk
+   - Uses React Query `fetchQuery` with `queryKey: ["labels"]`
+   - Cache duration: 5 minutes (`staleTime`)
+2. Backend returns array of labels (UUID-based):
+   ```json
+   [
+     {
+       "id": "40000000-0000-0000-0000-000000000002",
+       "name": "Work",
+       "color": "#0000FF",
+       "parent_id": null,
+       "email_count": 12
+     },
+     {
+       "id": "0370742d-3a74-4493-969e-94548696baa2",
+       "name": "Clients",
+       "color": "#65a278",
+       "parent_id": "40000000-0000-0000-0000-000000000002",
+       "email_count": 5
+     }
+   ]
+   ```
+3. Transform labels using `transformLabelsArray()`:
+   - **Step 1**: Build `labelIdToKeyMap` by recursively traversing `parent_id`:
+     - `"Work"` (no parent) → `idToKeyMap["4000...002"] = "Work"`
+     - `"Clients"` (parent="Work") → `idToKeyMap["0370...aa2"] = "Work::Clients"`
+   - **Step 2**: Build reverse mapping `keyToLabelIdMap`
+   - **Step 3**: Transform each label to frontend format:
+     ```javascript
+     {
+       id: "0370742d-3a74-4493-969e-94548696baa2",
+       name: "Clients",
+       color: "#65a278",  // Stored as hex string
+       parent_id: "40000000-0000-0000-0000-000000000002",
+       parentKey: "Work",  // Composite key for tree building
+       system: false,
+       email_count: 5
+     }
+     ```
+4. Store in Redux:
+   - Labels stored by UUID: `state.labels[uuid] = transformedLabel`
+   - Mappings stored separately: `state.labelIdToKeyMap` and `state.keyToLabelIdMap`
+5. Build label tree using `buildTree()`:
+   - Uses composite keys for tree structure
+   - Preserves parent-child relationships from `parentKey`
+
+**Why we do this:**
+- React Query caching reduces API calls (5-minute cache)
+- Mapping allows O(1) lookup in both directions (UUID ↔ composite key)
+- Tree structure built on-the-fly from parent relationships
+- Backend remains authoritative source for label structure
+
+---
+
+### UPDATE Operation
+
+**What we do:**
+1. User updates label (rename, change color, move to different parent)
+2. Frontend receives update with composite key (e.g., `"Work::Clients"`)
+3. Convert composite key to UUID:
+   - Lookup in `keyToLabelIdMap`: `"Work::Clients"` → UUID `"0370...aa2"`
+   - If moving parent, convert new parent composite key to UUID
+4. Send PATCH request:
+   ```json
+   {
+     "name": "Important Clients",  // If renaming
+     "color": "#FF0000",           // If changing color
+     "parent_id": "new-parent-uuid" // If moving (null for root)
+   }
+   ```
+5. Backend validates and updates label
+6. Frontend listener (`updateLabelThunk.fulfilled`):
+   - Invalidates React Query cache
+   - Refetches all labels (rebuilds entire mapping)
+   - This ensures child labels get updated composite keys if parent renamed
+7. UI updates automatically with correct hierarchy
+
+**Why we refetch instead of updating in place:**
+- **Parent rename cascades**: If parent is renamed, all children's composite keys change
+  - Example: Rename `"Work"` → `"Business"` means `"Work::Clients"` → `"Business::Clients"`
+- **Moving between parents**: Changes composite key hierarchy
+- **Simplifies sync**: Single source of truth (backend) rather than complex frontend logic
+- **Prevents inconsistencies**: Backend validates parent exists, handles edge cases
+
+---
+
+### DELETE Operation
+
+**What we do:**
+1. User deletes label via composite key
+2. Convert composite key to UUID using `keyToLabelIdMap`
+3. Send DELETE request to backend with UUID
+4. Backend handles cascade deletion:
+   - Deletes the label
+   - Deletes all child labels (recursive)
+   - Removes label from all emails
+5. Frontend listener (`deleteLabelThunk.fulfilled`):
+   - Invalidates React Query cache
+   - Refetches labels to get updated list
+6. UI automatically removes deleted label and all children
+
+**Why we refetch instead of removing in place:**
+- **Cascade deletion**: Backend deletes all children, we need complete updated list
+- **Email cleanup**: Backend removes label from emails, we need fresh email data
+- **Consistency**: Ensures we don't have orphaned references
+
+---
+
+### Key Synchronization Mechanisms
+
+#### 1. React Query Cache Invalidation
+```javascript
+// After any label mutation (create/update/delete)
+queryClient.invalidateQueries({ queryKey: ["labels"] });
+await dispatch(fetchLabels());  // Explicit refetch
+```
+
+**Why**: Ensures cache is marked stale and refetched immediately, not waiting for next query.
+
+#### 2. Automatic Refetch on Mutation
+- All label mutations trigger `fetchLabels()` dispatch
+- Refetch happens automatically via React Query listener
+- No manual state updates needed (except system labels)
+
+**Why**: Backend is always source of truth, frontend should reflect backend state exactly.
+
+#### 3. Mapping Rebuild on Every Fetch
+- `labelIdToKeyMap` and `keyToLabelIdMap` rebuilt from scratch on each fetch
+- Ensures mappings are always correct even after parent renames
+
+**Why**: Parent renames cascade to children's composite keys, mappings must be rebuilt.
+
+#### 4. Color Conversion on Rendering
+- Colors stored as hex strings in Redux: `"#FF0000"`
+- Converted to `{ rgb: "rgb(255,0,0)", text: "rgb(255,255,255)" }` during rendering only
+- Conversion happens in `LabelItem` component via `hexToRgbObject()`
+
+**Why**: Store raw backend data, transform only for display. Keeps data model clean.
+
+#### 5. Composite Key Derivation
+- Composite keys built on-the-fly from parent chain
+- Not stored in backend or Redux (only UUIDs stored)
+- Rebuilt whenever needed using `labelIdToKeyMap`
+
+**Why**: Composite keys are UI convenience, UUIDs are authoritative. If parent renamed, composite keys change automatically.
+
+---
+
+### Example: Complete Create Flow
+
+```
+User Action: Create sublabel "Q4" under "Work::2025"
+
+1. Frontend receives: { name: "Q4", parentKey: "Work::2025" }
+2. Lookup parent UUID: keyToLabelIdMap["Work::2025"] → "uuid-2025"
+3. API Call: POST /labels { name: "Q4", parent_id: "uuid-2025" }
+4. Backend responds: { id: "uuid-q4", name: "Q4", parent_id: "uuid-2025", ... }
+5. Listener invalidates cache: queryClient.invalidateQueries(["labels"])
+6. Refetch all labels: fetchLabels()
+7. Transform all labels:
+   - Build mappings: { "uuid-q4": "Work::2025::Q4", ... }
+   - Store in Redux: labels["uuid-q4"] = { ..., parentKey: "Work::2025" }
+8. Build tree: "Work" → "Work::2025" → "Work::2025::Q4"
+9. UI updates: New label appears under "Work::2025" immediately
+```
+
+**Key Benefits:**
+- ✅ Always in sync with backend
+- ✅ Handles nested hierarchy correctly
+- ✅ Automatically updates UI
+- ✅ No manual state management needed
+
+---
+
 ## 🧪 Complete Request Examples
 
 ### Set Up Variables (PowerShell)
