@@ -1,6 +1,7 @@
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
 import React, { useEffect, useMemo, useState } from "react";
+import { fetchEmailCounts, fetchEmails } from "../store/slices/mailSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 
@@ -12,7 +13,6 @@ import InboxSection from "./InboxSection";
 import LinearProgress from "@mui/material/LinearProgress";
 import SearchResultFilters from "../components/SearchResultFilters";
 import ToolBar from "../components/ToolBar";
-import { fetchEmails } from "../store/slices/mailSlice";
 // switched to thread-based rows derived from raw messages
 import { getThreadRows } from "../utils/emails";
 import { normalizeLabelName } from "../hooks/useLabels";
@@ -58,7 +58,7 @@ const FOLDERS_WITH_UNREAD_COUNT = new Set(["inbox", "starred", "snoozed", "impor
 
 const Inbox = () => {
   const {
-    emails,
+    mailFolders,
     setCurrentPage,
     currentPage,
     inboxType,
@@ -85,21 +85,50 @@ const Inbox = () => {
   const [activeInboxTab, setActiveInboxTab] = useState(CATEGORIES.Primary);
   const [apiPagination, setApiPagination] = useState(null);
 
-  // useEffect(() => {
-  //   const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
-  //   if (!isInboxRoute) return;
-  //   if (!accessToken) return;
+  // Select emails from the appropriate folder/category
+  const emails = useMemo(() => {
+    const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
+    
+    if (isInboxRoute) {
+      // For inbox, use the category-specific emails (primary, promotions, social, updates)
+      const categoryKey = activeInboxTab.toLowerCase();
+      return mailFolders[categoryKey] || [];
+    }
+    
+    // For other folders, use folder-specific emails
+    const folderKey = activeFolder.toLowerCase();
+    return mailFolders[folderKey] || [];
+  }, [mailFolders, activeFolder, activeInboxTab, label]);
 
-  //   dispatch(fetchEmails({ page: currentPage, pageSize: itemsPerPage }))
-  //     .unwrap()
-  //     .then((payload) => {
-  //       setApiPagination(payload?.pagination ?? null);
-  //       if (payload?.pagination?.pageSize && payload.pagination.pageSize !== itemsPerPage) {
-  //         setItemsPerPage(payload.pagination.pageSize);
-  //       }
-  //     })
-  //     .catch(() => {});
-  // }, [activeFolder, currentPage, itemsPerPage]);
+  // Fetch emails with category filter and counts
+  useEffect(() => {
+    const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
+    if (!isInboxRoute) return;
+    if (!accessToken) return;
+
+    // Map category names to API format (e.g., "Primary" → "primary")
+    const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
+
+    Promise.all([
+      dispatch(
+        fetchEmails({
+          page: currentPage,
+          pageSize: itemsPerPage,
+          category: categoryParam,
+        })
+      ).unwrap(),
+      dispatch(fetchEmailCounts()).unwrap(),
+    ])
+      .then(([emailsPayload]) => {
+        setApiPagination(emailsPayload?.pagination ?? null);
+        if (emailsPayload?.pagination?.pageSize && emailsPayload.pagination.pageSize !== itemsPerPage) {
+          setItemsPerPage(emailsPayload.pagination.pageSize);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch emails or counts:", error);
+      });
+  }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch]);
 
   const direction = panelState.direction;
   const showSplit = direction !== "no-split";
@@ -108,6 +137,7 @@ const Inbox = () => {
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
     let rows = getThreadRows(emails, { label, folder: activeFolder });
+    console.log("rows", { rows });
     console.log("asdadasdasd", { rows });
     // Apply URL filter parameters (from SearchResultFilters)
     // Only apply if filters are present
@@ -170,7 +200,16 @@ const Inbox = () => {
   }, [emails, label, activeFolder, searchParams]);
 
   // Filter again by activeInboxTab (Primary, Promotions, Social, Updates)
+  // When using API category filtering, emails are already filtered server-side
   const tabFilteredRows = useMemo(() => {
+    const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
+
+    // If we're in inbox, the API has already filtered by category, so return filteredRows as-is
+    if (isInboxRoute) {
+      return filteredRows;
+    }
+
+    // For non-inbox routes, apply client-side label filtering
     const isInbox = (r) => (r.labels || []).includes("Inbox");
     const has = (r, name) => (r.labels || []).includes(name);
     const NON_PRIMARY = new Set([CATEGORIES.Promotions, CATEGORIES.Social, CATEGORIES.Updates, CATEGORIES.Forums]);
@@ -182,7 +221,7 @@ const Inbox = () => {
 
     // Other tabs
     return filteredRows.filter((r) => isInbox(r) && has(r, activeInboxTab));
-  }, [filteredRows, activeInboxTab]);
+  }, [filteredRows, activeInboxTab, activeFolder, label]);
 
   // Sort and paginate the displayRows
   const baseSource = !label && activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;

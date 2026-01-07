@@ -7,23 +7,42 @@ import { queryClient } from "../../lib/query-client";
 
 /**
  * @param {Object} options - Options for fetching
- * @param {boolean} options.forceRefresh - If true, bypasses the cache and hits the BE
+ * @param {string} options.category - Email category filter (primary, promotions, social, updates)
  */
 export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue }) => {
-  const { forceRefresh = false, page = 1, pageSize = 20 } = options;
+  const { page = 1, pageSize = 20, category = null } = options;
 
   try {
     const data = await queryClient.fetchQuery({
-      queryKey: ["emails", { page, pageSize }],
+      queryKey: ["emails", { category, page, pageSize }],
       queryFn: () => {
-        return emailService.getEmails({ page, pageSize });
+        return emailService.getEmails({ page, pageSize, category });
       },
-      staleTime: forceRefresh ? 0 : undefined,
+      staleTime: 1000 * 60 * 5, 
     });
-    return data;
+    return { ...data, category };
   } catch (error) {
     console.error("❌ Failed to fetch emails:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch emails");
+  }
+});
+
+/**
+ * Fetch email counts for all categories
+ */
+export const fetchEmailCounts = createAsyncThunk("mail/fetchEmailCounts", async (_, { rejectWithValue }) => {
+  try {
+    const data = await queryClient.fetchQuery({
+      queryKey: ["emailCounts"],
+      queryFn: () => {
+        return emailService.getEmailCounts();
+      },
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
+    return data;
+  } catch (error) {
+    console.error("❌ Failed to fetch email counts:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email counts");
   }
 });
 
@@ -62,18 +81,44 @@ export const updateLabelsThunk = createAsyncThunk(
 const mailSlice = createSlice({
   name: "mail",
   initialState: {
-    emails: JSON.parse(JSON.stringify(initialEmails)),
+    // Folder/Category-based email storage
+    inbox: JSON.parse(JSON.stringify(initialEmails)),
+    starred: JSON.parse(JSON.stringify(initialEmails)),
+    snoozed: JSON.parse(JSON.stringify(initialEmails)),
+    sent: JSON.parse(JSON.stringify(initialEmails)),
+    drafts: JSON.parse(JSON.stringify(initialEmails)),
+    important: JSON.parse(JSON.stringify(initialEmails)),
+    scheduled: JSON.parse(JSON.stringify(initialEmails)),
+    all: [],
+    spam: JSON.parse(JSON.stringify(initialEmails)),
+    trash: JSON.parse(JSON.stringify(initialEmails)),
+    // Category-based email storage (for inbox tabs)
+    primary: JSON.parse(JSON.stringify(initialEmails)),
+    promotions: JSON.parse(JSON.stringify(initialEmails)),
+    social: JSON.parse(JSON.stringify(initialEmails)),
+    updates: JSON.parse(JSON.stringify(initialEmails)),
+    // Other state
     labels: JSON.parse(JSON.stringify(initialLabels)),
     selectedEmails: [],
     previewEmailId: null,
     softRemovedLabels: {},
+    emailCounts: {},
+    activeCategory: null,
+    activeFolder: null,
     loading: false,
     mutationLoading: false, // Separate loading for mutations
     error: null,
   },
   reducers: {
     setEmails: (state, action) => {
-      state.emails = action.payload;
+      // Legacy support: set emails to inbox
+      state.inbox = action.payload;
+    },
+    setEmailsForCategory: (state, action) => {
+      const { category, emails } = action.payload;
+      if (state.hasOwnProperty(category)) {
+        state[category] = emails;
+      }
     },
     setLabels: (state, action) => {
       state.labels = action.payload;
@@ -88,7 +133,18 @@ const mailSlice = createSlice({
       state.softRemovedLabels = action.payload;
     },
     refreshEmails: (state) => {
-      state.emails = JSON.parse(JSON.stringify(initialEmails));
+      // Reset inbox to initial emails
+      state.inbox = JSON.parse(JSON.stringify(initialEmails));
+      // Clear other categories
+      state.primary = [];
+      state.promotions = [];
+      state.social = [];
+      state.updates = [];
+      state.starred = [];
+      state.sent = [];
+      state.drafts = [];
+      state.spam = [];
+      state.trash = [];
     },
     clearError: (state) => {
       state.error = null;
@@ -103,10 +159,37 @@ const mailSlice = createSlice({
       })
       .addCase(fetchEmails.fulfilled, (state, action) => {
         state.loading = false;
-        state.emails = action.payload?.results ?? [];
+        const results = action.payload?.results ?? [];
+        const category = action.payload?.category;
+        
+        // Store emails in the appropriate folder/category
+        if (category) {
+          // Map category to state property
+          const categoryKey = category.toLowerCase();
+          if (state.hasOwnProperty(categoryKey)) {
+            state[categoryKey] = results;
+          }
+        } else {
+          // If no category specified, store in inbox
+          state.inbox = results;
+        }
+        
+        state.activeCategory = category ?? null;
       })
       .addCase(fetchEmails.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Fetch Email Counts
+      .addCase(fetchEmailCounts.pending, (state) => {
+        // Don't set loading for counts to avoid UI flicker
+        state.error = null;
+      })
+      .addCase(fetchEmailCounts.fulfilled, (state, action) => {
+        state.emailCounts = action.payload ?? {};
+      })
+      .addCase(fetchEmailCounts.rejected, (state, action) => {
         state.error = action.payload;
       })
 
@@ -136,6 +219,7 @@ const mailSlice = createSlice({
 
 export const {
   setEmails,
+  setEmailsForCategory,
   setLabels,
   setSelectedEmails,
   setPreviewEmailId,

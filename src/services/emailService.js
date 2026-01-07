@@ -5,14 +5,19 @@ const emailService = {
   /**
    * Fetch all emails for the current user
    */
-  getEmails: async ({ page = 1, pageSize = 20 } = {}) => {
+  getEmails: async ({ page = 1, pageSize = 20, category = null } = {}) => {
     try {
-      const response = await apiClient.get("/v1/emails", {
-        params: {
-          page,
-          page_size: pageSize,
-        },
-      });
+      const params = {
+        page,
+        page_size: pageSize,
+      };
+
+      // Add category parameter if provided
+      if (category) {
+        params.category = category;
+      }
+
+      const response = await apiClient.get("/v1/emails", { params });
 
       const payload = response?.data?.data ?? response?.data ?? {};
       const results = Array.isArray(payload?.results) ? payload.results : [];
@@ -29,6 +34,29 @@ const emailService = {
       };
     } catch (error) {
       console.error("Error fetching emails:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Fetch email counts for all categories
+   * Returns mock data for now
+   */
+  getEmailCounts: async () => {
+    try {
+      // TODO: Replace with actual API call when backend is ready
+      // const response = await apiClient.get("/v1/emails/counts");
+      // return response.data;
+
+      // Mock data for now
+      return {
+        primary: 15,
+        promotions: 8,
+        social: 12,
+        updates: 3,
+      };
+    } catch (error) {
+      console.error("Error fetching email counts:", error);
       throw error;
     }
   },
