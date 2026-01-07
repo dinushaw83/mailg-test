@@ -1,5 +1,5 @@
+import { createLabelThunk, deleteLabelThunk, fetchLabels, sendEmailThunk, updateLabelThunk, updateLabelsThunk } from "../slices/mailSlice";
 import { logout, setAuth } from "../slices/userSlice";
-import { sendEmailThunk, updateLabelsThunk } from "../slices/mailSlice";
 
 import { queryClient } from "../../lib/query-client";
 
@@ -24,6 +24,47 @@ export function registerReactQueryListeners(listenerMiddleware) {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       queryClient.invalidateQueries({ queryKey: ["labels"] });
       // Invalidate email counts since label changes can move emails between categories
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  // Label mutation listeners
+  listenerMiddleware.startListening({
+    actionCreator: createLabelThunk.fulfilled,
+    effect: async (action, listenerApi) => {
+      // Invalidate labels cache
+      queryClient.invalidateQueries({ queryKey: ["labels"] });
+      // Explicitly refetch labels by dispatching the thunk
+      await listenerApi.dispatch(fetchLabels());
+      // Invalidate emails since label structure changed
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: updateLabelThunk.fulfilled,
+    effect: async (action, listenerApi) => {
+      // Invalidate labels cache
+      queryClient.invalidateQueries({ queryKey: ["labels"] });
+      // Explicitly refetch labels by dispatching the thunk
+      await listenerApi.dispatch(fetchLabels());
+      // Invalidate emails since label changes may affect email categorization
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since label changes can affect counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: deleteLabelThunk.fulfilled,
+    effect: async (action, listenerApi) => {
+      // Invalidate labels cache
+      queryClient.invalidateQueries({ queryKey: ["labels"] });
+      // Explicitly refetch labels by dispatching the thunk
+      await listenerApi.dispatch(fetchLabels());
+      // Invalidate emails since deleted labels should be removed from emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since label deletion affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
   });

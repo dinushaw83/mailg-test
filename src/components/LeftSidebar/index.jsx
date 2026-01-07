@@ -1,4 +1,6 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailFolders from "../../hooks/useMailFolders";
 import LabelItem from "./LabelItem";
@@ -9,6 +11,7 @@ import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import ShortcutsModal from "./ShortcutsModal";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useNavigate } from "react-router-dom";
+import { fetchLabels } from "../../store/slices/mailSlice";
 
 function findNode(tree, key) {
   for (const node of tree) {
@@ -113,6 +116,7 @@ const useCustomHotKeys = ({
 };
 
 const LeftSidebar = () => {
+  const dispatch = useDispatch();
   const [showLess, setShowLess] = useState(true);
   const {
     emails,
@@ -125,6 +129,14 @@ const LeftSidebar = () => {
   } = useGlobalContext();
   const folders = useMailFolders(emails);
   const { labels, labelTree, labelIndex } = useLabels();
+
+  // Fetch labels on mount using React Query
+  const { isLoading: labelsLoading } = useQuery({
+    queryKey: ["labels"],
+    queryFn: () => dispatch(fetchLabels()).unwrap(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!localStorage.getItem("accessToken"), // Only fetch if authenticated
+  });
   const { addNewComposeWindow, composeWindows, removeComposeWindow } = useComposeModal();
   const [isCreateLabelModalOpen, setIsCreateLabelModalOpen] = useState(false);
   const [isLeftSidebarHovered, setIsLeftSidebarHovered] = useState(false);

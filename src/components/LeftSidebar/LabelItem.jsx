@@ -1,16 +1,19 @@
-import React, { useState, useRef } from "react";
 import { Box, IconButton, Typography } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { NavLink, useMatch } from "react-router-dom";
-import Icon from "../ui/Icon";
-import { MenuItem, ListItemIcon, Divider, ListItemText } from "@mui/material";
-import { Menu } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import useLabels from "../../hooks/useLabels";
 import ChangeLabelColorModal, { SCOPES } from "./ChangeLabelColorModal";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import RemoveLabelModal from "./RemoveLabelModal";
+import { Divider, ListItemIcon, ListItemText, MenuItem } from "@mui/material";
+import { NavLink, useMatch } from "react-router-dom";
+import React, { useMemo, useRef, useState } from "react";
+
 import EditLabelDialog from "../Labels/EditLabelDialog";
+import Icon from "../ui/Icon";
+import { Menu } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import RemoveLabelModal from "./RemoveLabelModal";
+import { hexToRgbObject } from "../../utils/colorUtils";
+import { styled } from "@mui/material/styles";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import useLabels from "../../hooks/useLabels";
+import { useSelector } from "react-redux";
 
 const Swatch = styled("div")(({ theme, rgb, text }) => ({
   height: 20,
@@ -82,8 +85,43 @@ export default function LabelItem({
 }) {
   const { setLabelColor, labels, deleteLabel } = useLabels();
   const { setLabels, setSnackbar } = useGlobalContext();
-  const label = labels[labelKey];
-  const selectedColor = label?.color;
+  
+  // Get mappings to look up label by composite key
+  const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
+  
+  // Look up label: first try by composite key, if not found try by UUID (labelKey might be UUID)
+  const label = useMemo(() => {
+    // If labelKey is a composite key, get the UUID
+    const labelId = keyToLabelIdMap[labelKey] || labelKey;
+    
+    // Try to get label by UUID
+    let foundLabel = labels[labelId];
+    
+    // If still not found, try direct lookup by labelKey (for system labels or legacy)
+    if (!foundLabel && labels[labelKey]) {
+      foundLabel = labels[labelKey];
+    }
+    
+    return foundLabel;
+  }, [labels, labelKey, keyToLabelIdMap]);
+  
+  // Convert hex color to { rgb, text } format if needed
+  const selectedColor = useMemo(() => {
+    const color = label?.color;
+    if (!color) return null;
+    
+    // If color is already in { rgb, text } format, return as-is
+    if (typeof color === "object" && color.rgb && color.text) {
+      return color;
+    }
+    
+    // If color is hex string, convert it
+    if (typeof color === "string" && (color.startsWith("#") || /^[0-9A-Fa-f]{6}$/.test(color))) {
+      return hexToRgbObject(color);
+    }
+    
+    return null;
+  }, [label?.color]);
 
   const isParent = !labelKey?.includes("::");
 

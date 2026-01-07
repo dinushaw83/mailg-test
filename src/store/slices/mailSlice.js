@@ -3,7 +3,9 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import emailService from "../../services/emailService";
 import { initialEmails } from "../../contexts/fixtures/emails";
 import { initialLabels } from "../../contexts/fixtures/labels";
+import labelService from "../../services/labelService";
 import { queryClient } from "../../lib/query-client";
+import { transformLabelsArray } from "../../utils/labelTransform";
 
 /**
  * @param {Object} options - Options for fetching
@@ -78,27 +80,99 @@ export const updateLabelsThunk = createAsyncThunk(
   }
 );
 
+/**
+ * Fetch all labels from backend
+ */
+export const fetchLabels = createAsyncThunk("mail/fetchLabels", async (_, { rejectWithValue }) => {
+  try {
+    const data = await queryClient.fetchQuery({
+      queryKey: ["labels"],
+      queryFn: () => {
+        return labelService.getLabels();
+      },
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
+    return data;
+  } catch (error) {
+    console.error("❌ Failed to fetch labels:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch labels");
+  }
+});
+
+/**
+ * MUTATION THUNK: Create a new label
+ */
+export const createLabelThunk = createAsyncThunk(
+  "mail/createLabel",
+  async ({ name, color, parent_id }, { rejectWithValue }) => {
+    try {
+      const response = await labelService.createLabel({ name, color, parent_id });
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return response;
+    } catch (error) {
+      console.error("❌ Failed to create label:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to create label");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Update an existing label
+ */
+export const updateLabelThunk = createAsyncThunk(
+  "mail/updateLabel",
+  async ({ id, name, color, parent_id }, { rejectWithValue }) => {
+    try {
+      const response = await labelService.updateLabel(id, { name, color, parent_id });
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { id, ...response };
+    } catch (error) {
+      console.error("❌ Failed to update label:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update label");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Delete a label
+ */
+export const deleteLabelThunk = createAsyncThunk(
+  "mail/deleteLabel",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await labelService.deleteLabel(id);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { id, ...response };
+    } catch (error) {
+      console.error("❌ Failed to delete label:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
+    }
+  }
+);
+
 const mailSlice = createSlice({
   name: "mail",
   initialState: {
     // Folder/Category-based email storage
-    inbox: JSON.parse(JSON.stringify(initialEmails)),
-    starred: JSON.parse(JSON.stringify(initialEmails)),
-    snoozed: JSON.parse(JSON.stringify(initialEmails)),
-    sent: JSON.parse(JSON.stringify(initialEmails)),
-    drafts: JSON.parse(JSON.stringify(initialEmails)),
-    important: JSON.parse(JSON.stringify(initialEmails)),
-    scheduled: JSON.parse(JSON.stringify(initialEmails)),
+    inbox: [],
+    starred: [],
+    snoozed: [],
+    sent: [],
+    drafts: [],
+    important: [],
+    scheduled: [],
     all: [],
-    spam: JSON.parse(JSON.stringify(initialEmails)),
-    trash: JSON.parse(JSON.stringify(initialEmails)),
+    spam: [],
+    trash: [],
     // Category-based email storage (for inbox tabs)
-    primary: JSON.parse(JSON.stringify(initialEmails)),
-    promotions: JSON.parse(JSON.stringify(initialEmails)),
-    social: JSON.parse(JSON.stringify(initialEmails)),
-    updates: JSON.parse(JSON.stringify(initialEmails)),
+    primary: [],
+    promotions: [],
+    social: [],
+    updates: [],
     // Other state
-    labels: JSON.parse(JSON.stringify(initialLabels)),
+    labels: [], // Will be replaced with UUID-based labels from BE
+    labelIdToKeyMap: {}, // Map of { [uuid]: compositeKey } for quick lookup
+    keyToLabelIdMap: {}, // Map of { [compositeKey]: uuid } for reverse lookup
     selectedEmails: [],
     previewEmailId: null,
     softRemovedLabels: {},
@@ -107,6 +181,7 @@ const mailSlice = createSlice({
     activeFolder: null,
     loading: false,
     mutationLoading: false, // Separate loading for mutations
+    labelLoading: false, // Separate loading for label operations
     error: null,
   },
   reducers: {
@@ -122,6 +197,12 @@ const mailSlice = createSlice({
     },
     setLabels: (state, action) => {
       state.labels = action.payload;
+    },
+    setLabelIdToKeyMap: (state, action) => {
+      state.labelIdToKeyMap = action.payload;
+    },
+    setKeyToLabelIdMap: (state, action) => {
+      state.keyToLabelIdMap = action.payload;
     },
     setSelectedEmails: (state, action) => {
       state.selectedEmails = action.payload;
@@ -193,6 +274,106 @@ const mailSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Fetch Labels
+      .addCase(fetchLabels.pending, (state) => {
+        state.labelLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchLabels.fulfilled, (state, action) => {
+        state.labelLoading = false;
+        const labelsArray = action.payload ?? [];
+        
+        // Transform backend labels to frontend format
+        const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
+        
+        // Merge with system labels (keep system labels as-is, they use composite keys)
+        const mergedLabels = { ...state.labels };
+        
+        // Add/update backend labels (UUID-based)
+        Object.entries(transformedLabels).forEach(([id, label]) => {
+          mergedLabels[id] = label;
+        });
+        
+        state.labels = mergedLabels;
+        state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
+        state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };
+      })
+      .addCase(fetchLabels.rejected, (state, action) => {
+        state.labelLoading = false;
+        state.error = action.payload;
+      })
+
+      // Create Label
+      // No state update needed - React Query cache invalidation will trigger refetch
+      // which will update state via fetchLabels.fulfilled
+      .addCase(createLabelThunk.fulfilled, (state) => {
+        // Cache invalidation is handled by React Query listeners
+        // Labels will be refetched automatically
+      })
+
+      // Update Label
+      .addCase(updateLabelThunk.fulfilled, (state, action) => {
+        const updatedLabel = action.payload;
+        const labelId = action.payload.id;
+        
+        if (labelId && state.labels[labelId]) {
+          // Re-fetch labels to get updated tree structure (or rebuild mapping)
+          // For now, update the label in place
+          const existingLabel = state.labels[labelId];
+          state.labels[labelId] = {
+            ...existingLabel,
+            name: updatedLabel.name ?? existingLabel.name,
+            color: updatedLabel.color ?? existingLabel.color,
+            parent_id: updatedLabel.parent_id ?? existingLabel.parent_id,
+          };
+          
+          // Rebuild mappings if parent or name changed
+          if (updatedLabel.name !== existingLabel.name || updatedLabel.parent_id !== existingLabel.parent_id) {
+            // Rebuild all mappings by transforming all labels
+            const allLabelsArray = Object.values(state.labels)
+              .filter((l) => l.id && !l.system) // Only backend labels
+              .map((l) => ({
+                id: l.id,
+                name: l.name,
+                color: l.color,
+                parent_id: l.parent_id,
+              }));
+            
+            const { idToKeyMap, keyToIdMap } = transformLabelsArray(allLabelsArray);
+            state.labelIdToKeyMap = { ...idToKeyMap };
+            state.keyToLabelIdMap = { ...keyToIdMap };
+          }
+        }
+      })
+
+      // Delete Label
+      .addCase(deleteLabelThunk.fulfilled, (state, action) => {
+        const deletedId = action.payload.id;
+        if (deletedId) {
+          // Remove label from state
+          delete state.labels[deletedId];
+          
+          // Remove from mappings
+          const compositeKey = state.labelIdToKeyMap[deletedId];
+          if (compositeKey) {
+            delete state.labelIdToKeyMap[deletedId];
+            delete state.keyToLabelIdMap[compositeKey];
+          }
+          
+          // Also remove children (cascade delete)
+          Object.entries(state.labels).forEach(([id, label]) => {
+            if (label.parent_id === deletedId) {
+              delete state.labels[id];
+              const childKey = state.labelIdToKeyMap[id];
+              if (childKey) {
+                delete state.labelIdToKeyMap[id];
+                delete state.keyToLabelIdMap[childKey];
+              }
+            }
+          });
+        }
+      })
+
       // Mutations (Send/Update)
       .addMatcher(
         (action) => action.type.endsWith("/pending") && action.type.includes("Thunk"),
@@ -221,6 +402,8 @@ export const {
   setEmails,
   setEmailsForCategory,
   setLabels,
+  setLabelIdToKeyMap,
+  setKeyToLabelIdMap,
   setSelectedEmails,
   setPreviewEmailId,
   setSoftRemovedLabels,

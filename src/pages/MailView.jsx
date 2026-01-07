@@ -1,7 +1,7 @@
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
 import React, { useEffect, useMemo, useState } from "react";
-import { fetchEmailCounts, fetchEmails } from "../store/slices/mailSlice";
+import { fetchEmailCounts, fetchEmails, fetchLabels } from "../store/slices/mailSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 
@@ -129,6 +129,15 @@ const Inbox = () => {
         console.error("Failed to fetch emails or counts:", error);
       });
   }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch]);
+
+  // Fetch labels on mount
+  useEffect(() => {
+    if (!accessToken) return;
+    
+    dispatch(fetchLabels()).catch((error) => {
+      console.error("Failed to fetch labels:", error);
+    });
+  }, [accessToken]);
 
   const direction = panelState.direction;
   const showSplit = direction !== "no-split";

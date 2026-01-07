@@ -271,6 +271,80 @@ User A (Sender)                                          User B (Recipient)
 | `DELETE` | `/api/v1/folders/{id}` | Delete folder |
 | `GET` | `/api/v1/folders/{id}/emails` | List emails in folder |
 
+### Label Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v1/labels` | List all labels for current user |
+| `POST` | `/api/v1/labels` | Create new label |
+| `PATCH` | `/api/v1/labels/{id}` | Update label (name, color, parent) |
+| `DELETE` | `/api/v1/labels/{id}` | Delete label (cascade deletes children) |
+
+---
+
+## 🏷️ Labels System
+
+### Label Architecture
+
+The labels system uses a **UUID-based backend** with **composite key frontend** mapping:
+
+- **Backend Format**: Labels are stored with UUID `id`, `parent_id` (UUID), `name`, `color` (hex), and `email_count`
+- **Frontend Format**: Labels use composite keys (e.g., `"Work::Clients"`) derived from parent hierarchy
+- **Storage**: Labels are stored in Redux by UUID, with mappings (`labelIdToKeyMap`, `keyToLabelIdMap`) for conversion
+- **Tree Building**: Composite keys are built on-the-fly from parent_id relationships
+
+### Label Data Structure
+
+**Backend Response:**
+```json
+{
+  "success": true,
+  "message": "Success",
+  "statusCode": 200,
+  "data": [
+    {
+      "id": "40000000-0000-0000-0000-000000000001",
+      "name": "Important",
+      "color": "#FF0000",
+      "parent_id": "e34c843e-9e5f-45f9-9007-0a8e9197c40e",
+      "email_count": 8
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000000002",
+      "name": "Work",
+      "color": "#0000FF",
+      "parent_id": null,
+      "email_count": 12
+    },
+    {
+      "id": "0370742d-3a74-4493-969e-94548696baa2",
+      "name": "reason",
+      "color": "#65a278",
+      "parent_id": null,
+      "email_count": 11
+    }
+  ]
+}
+```
+
+**Frontend Mapping:**
+- UUID `40000000-0000-0000-0000-000000000002` → Composite key `"Work"`
+- UUID `0370742d-3a74-4493-969e-94548696baa2` → Composite key `"reason"`
+- If "Work" has a child "Clients", composite key becomes `"Work::Clients"`
+
+### Label Hierarchy
+
+- **Root Labels**: `parent_id = null` → Composite key is just the name (e.g., `"Work"`)
+- **Nested Labels**: `parent_id = <parent-uuid>` → Composite key is `"Parent::Child"` (e.g., `"Work::Clients"`)
+- **Cascade Delete**: Deleting a parent label also deletes all child labels
+- **Color Storage**: Colors stored as hex strings (e.g., `"#FF0000"`), converted to `{rgb, text}` format during rendering
+
+### Email Label Operations
+
+- **Add/Remove Labels**: Emails reference labels by UUID in backend, composite keys in frontend
+- **Label Filtering**: Filter emails by label using composite key in URL (e.g., `/label/Work::Clients`)
+- **Category Labels**: Labels like `"Promotions"`, `"Social"`, `"Updates"`, `"Forums"` determine inbox tab placement
+
 ---
 
 ## 🧪 Complete Request Examples
@@ -654,6 +728,239 @@ curl -X DELETE "${BASE_URL}/emails/{email_id}?permanent=true" \
 
 ---
 
+## 🏷️ Label Operations
+
+### 1️⃣8️⃣ List All Labels
+
+```bash
+curl -X GET "${BASE_URL}/labels" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Success",
+  "statusCode": 200,
+  "data": [
+    {
+      "id": "40000000-0000-0000-0000-000000000001",
+      "name": "Important",
+      "color": "#FF0000",
+      "parent_id": null,
+      "email_count": 8
+    },
+    {
+      "id": "40000000-0000-0000-0000-000000000002",
+      "name": "Work",
+      "color": "#0000FF",
+      "parent_id": null,
+      "email_count": 12
+    },
+    {
+      "id": "0370742d-3a74-4493-969e-94548696baa2",
+      "name": "Clients",
+      "color": "#65a278",
+      "parent_id": "40000000-0000-0000-0000-000000000002",
+      "email_count": 5
+    }
+  ]
+}
+```
+
+### 1️⃣9️⃣ Create Label
+
+#### Create Root Label
+```bash
+curl -X POST "${BASE_URL}/labels" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Important",
+    "color": "#FF0000"
+  }'
+```
+
+#### Create Nested Label (Sublabel)
+```bash
+curl -X POST "${BASE_URL}/labels" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Clients",
+    "color": "#65a278",
+    "parent_id": "40000000-0000-0000-0000-000000000002"
+  }'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "statusCode": 201,
+  "data": {
+    "id": "0370742d-3a74-4493-969e-94548696baa2",
+    "name": "Clients",
+    "color": "#65a278",
+    "parent_id": "40000000-0000-0000-0000-000000000002",
+    "email_count": 0
+  }
+}
+```
+
+### 2️⃣0️⃣ Update Label
+
+#### Update Label Name
+```bash
+curl -X PATCH "${BASE_URL}/labels/{label_id}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Important Tasks"
+  }'
+```
+
+#### Update Label Color
+```bash
+curl -X PATCH "${BASE_URL}/labels/{label_id}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "color": "#00FF00"
+  }'
+```
+
+#### Move Label to Different Parent
+```bash
+curl -X PATCH "${BASE_URL}/labels/{label_id}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parent_id": "new-parent-uuid"
+  }'
+```
+
+### 2️⃣1️⃣ Delete Label
+
+```bash
+curl -X DELETE "${BASE_URL}/labels/{label_id}" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+**Note:** Deleting a label will cascade delete all child labels as well.
+
+**Response:**
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Label deleted successfully"
+}
+```
+
+### 2️⃣2️⃣ Update Email Labels
+
+```bash
+curl -X POST "${BASE_URL}/emails/labels" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "emailIds": ["email-uuid-1", "email-uuid-2"],
+    "labels": {
+      "add": ["label-uuid-1", "label-uuid-2"],
+      "remove": ["label-uuid-3"]
+    }
+  }'
+```
+
+**Note:** Labels are referenced by UUID in the API request. The frontend converts composite keys to UUIDs before sending.
+
+---
+
+## 📧 Email Listing with Category Filters
+
+### Category-Based Email Listing
+
+The frontend uses `category` query parameter to filter emails into inbox tabs:
+
+#### List Primary Emails
+```bash
+curl -X GET "${BASE_URL}/emails?category=primary" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+#### List Promotions
+```bash
+curl -X GET "${BASE_URL}/emails?category=promotions" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+#### List Social Emails
+```bash
+curl -X GET "${BASE_URL}/emails?category=social" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+#### List Updates
+```bash
+curl -X GET "${BASE_URL}/emails?category=updates" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+### Combined Filters
+
+```bash
+# List unread primary emails with pagination
+curl -X GET "${BASE_URL}/emails?category=primary&is_read=false&page=1&page_size=20" \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+### Email Response with Labels
+
+**Response:**
+```json
+{
+  "results": [
+    {
+      "id": "email-uuid-1",
+      "subject": "Hello from Alice!",
+      "snippet": "Hi Bob, this is a test email...",
+      "status": "received",
+      "is_read": false,
+      "is_starred": false,
+      "sender_name": "Alice Smith",
+      "sender_email": "alice@example.com",
+      "created_at": "2026-01-03T15:30:00Z",
+      "has_attachments": false,
+      "labels": [
+        {
+          "id": "label-uuid-1",
+          "name": "Inbox",
+          "color": null
+        },
+        {
+          "id": "label-uuid-2",
+          "name": "Promotions",
+          "color": "#FF0000"
+        }
+      ]
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20,
+  "total_pages": 1
+}
+```
+
+**Important:** The `labels` array in email responses should include:
+- Label objects with `id` (UUID), `name`, and `color` (hex string)
+- Category labels like `"Promotions"`, `"Social"`, `"Updates"`, `"Forums"` for inbox tab filtering
+- System label `"Inbox"` for inbox items
+
+---
+
 ## 🔄 Sender/Receiver Flow Diagrams
 
 ### Complete Multi-User Email Flow
@@ -806,6 +1113,12 @@ curl -X DELETE "${BASE_URL}/emails/{email_id}?permanent=true" \
 6. **Undo send** - Emails can be queued with a delay (5-30 seconds) allowing cancellation before delivery.
 
 7. **Access control** - Users can only access emails where they are sender OR recipient.
+
+8. **Labels system** - UUID-based backend with composite key frontend mapping for hierarchical labels.
+
+9. **Category filtering** - Use `category` query parameter (`primary`, `promotions`, `social`, `updates`) to filter emails for inbox tabs.
+
+10. **Label operations** - Labels support nested hierarchy (parent/child relationships), colors, and cascade deletion.
 
 ---
 
