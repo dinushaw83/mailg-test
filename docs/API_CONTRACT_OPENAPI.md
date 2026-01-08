@@ -22,7 +22,6 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Bulk Update Category](#bulk-update-category)
   - [Bulk Delete](#bulk-delete)
   - [Bulk Add Labels](#bulk-add-labels)
-  - [Bulk Remove Labels](#bulk-remove-labels)
   - [Bulk Move](#bulk-move)
   - [Bulk Mark Read](#bulk-mark-read)
   - [Bulk Snooze](#bulk-snooze)
@@ -811,89 +810,14 @@ Permissions:
 
 **POST** `/api/v1/bulk/labels/add`
 
-Add labels to multiple emails.
+Replace all labels on multiple emails with new ones.
+
+This operation drops all existing labels from the emails and assigns
+the new labels provided in the request.
 
 Permissions:
 - Users can only modify their own emails
 - Labels must belong to the user
-
-**Request Body**:
-
-```json
-{
-  "email_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
-  "label_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ]
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "total_requested": 0,
-    "successful": 0,
-    "failed": 0,
-    "results": [
-      {
-        "id": null,
-        "success": null,
-        "error": null
-      }
-    ]
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Bulk Remove Labels
-
-**POST** `/api/v1/bulk/labels/remove`
-
-Remove labels from multiple emails.
-
-Permissions:
-- Users can only modify their own emails
 
 **Request Body**:
 
