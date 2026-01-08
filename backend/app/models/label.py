@@ -25,6 +25,13 @@ class Label(Base):
     # Hierarchical relationship - self-referential
     parent_id = Column(UUID(as_uuid=True), ForeignKey("labels.id"), nullable=True, index=True)
     
+    # System label properties
+    is_system = Column(Boolean, default=False, nullable=False)
+    is_exclusive = Column(Boolean, default=False, nullable=False)
+    show_in_label_list = Column(Boolean, default=True, nullable=False)
+    show_in_message_list = Column(Boolean, default=True, nullable=False)
+    show_if_unread = Column(Boolean, default=False, nullable=False)
+    
     is_deleted = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

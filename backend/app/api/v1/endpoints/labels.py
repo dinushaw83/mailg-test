@@ -68,6 +68,11 @@ def format_label_response(label: Label, thread_count: int = 0) -> dict:
         "color": label.color,
         "owner_id": label.owner_id,
         "parent_id": label.parent_id,
+        "is_system": label.is_system,
+        "is_exclusive": label.is_exclusive,
+        "show_in_label_list": label.show_in_label_list,
+        "show_in_message_list": label.show_in_message_list,
+        "show_if_unread": label.show_if_unread,
         "is_deleted": label.is_deleted,
         "created_at": label.created_at,
         "updated_at": label.updated_at,
@@ -122,6 +127,11 @@ def build_label_tree(
             "name": label.name,
             "color": label.color,
             "parent_id": label.parent_id,
+            "is_system": label.is_system,
+            "is_exclusive": label.is_exclusive,
+            "show_in_label_list": label.show_in_label_list,
+            "show_in_message_list": label.show_in_message_list,
+            "show_if_unread": label.show_if_unread,
             "thread_count": count,
             "children": [],
         }
@@ -203,6 +213,9 @@ def create_label(
         color=generate_random_light_color(),
         parent_id=label_data.parent_id,
         owner_id=current_user.id,
+        show_in_label_list=label_data.show_in_label_list,
+        show_in_message_list=label_data.show_in_message_list,
+        show_if_unread=label_data.show_if_unread,
     )
     
     try:
@@ -294,6 +307,11 @@ def list_labels(
             "full_name": get_label_hierarchy_name(label),
             "color": label.color,
             "parent_id": label.parent_id,
+            "is_system": label.is_system,
+            "is_exclusive": label.is_exclusive,
+            "show_in_label_list": label.show_in_label_list,
+            "show_in_message_list": label.show_in_message_list,
+            "show_if_unread": label.show_if_unread,
             "thread_count": thread_count,
         }
         for label, thread_count in labels
@@ -420,6 +438,13 @@ def update_label(
             detail=f"Label {label_id} not found"
         )
     
+    # Prevent modification of system labels
+    if label.is_system:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="System labels cannot be modified"
+        )
+    
     update_data = label_data.model_dump(exclude_unset=True)
     
     # Handle parent_id update
@@ -539,6 +564,13 @@ def delete_label(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Label {label_id} not found"
+        )
+    
+    # Prevent deletion of system labels
+    if label.is_system:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="System labels cannot be deleted"
         )
     
     # Get all descendant IDs and delete them all (cascade delete)

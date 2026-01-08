@@ -28,8 +28,44 @@ class FolderType(str, Enum):
     SPAM = "spam"
     SCHEDULED = "scheduled"
 
+class SystemLabel(str, Enum):
+    """System label enumeration - predefined labels created for each user."""
+    INBOX = "Inbox"
+    STARRED = "Starred"
+    SNOOZED = "Snoozed"
+    IMPORTANT = "Important"
+    SENT = "Sent"
+    SCHEDULED = "Scheduled"
+    DRAFTS = "Drafts"
+    ALL_MAIL = "All Mail"
+    SPAM = "Spam"
+    TRASH = "Trash"
+
+
+class CategoryLabel(str, Enum):
+    """Category label enumeration - Gmail-style category labels."""
+    PURCHASES = "Purchases"
+    SOCIAL = "Social"
+    UPDATES = "Updates"
+    FORUMS = "Forums"
+    PROMOTIONS = "Promotions"
+
+
+# Exclusive system labels - email can only be in one at a time (folder-like behavior)
+EXCLUSIVE_SYSTEM_LABELS = {
+    SystemLabel.INBOX,
+    SystemLabel.SENT,
+    SystemLabel.DRAFTS,
+    SystemLabel.TRASH,
+    SystemLabel.SPAM,
+    SystemLabel.SCHEDULED,
+    SystemLabel.ALL_MAIL,
+}
+
+
 class ProhibitedLabels(str, Enum):
-    """Prohibited label enumeration."""
+    """Prohibited label enumeration - these names cannot be used for custom labels."""
+    # System labels (lowercase for case-insensitive comparison)
     SPAM = "spam"
     TRASH = "trash"
     DRAFTS = "drafts"
@@ -38,6 +74,14 @@ class ProhibitedLabels(str, Enum):
     STARRED = "starred"
     IMPORTANT = "important"
     SCHEDULED = "scheduled"
+    SNOOZED = "snoozed"
+    ALL_MAIL = "all mail"
+    # Category labels
+    PURCHASES = "purchases"
+    SOCIAL = "social"
+    UPDATES = "updates"
+    FORUMS = "forums"
+    PROMOTIONS = "promotions"
 
 class RecipientType(str, Enum):
     """Email recipient type enumeration."""
@@ -60,6 +104,7 @@ class EmailCategory(str, Enum):
     SOCIAL = "social"
     UPDATES = "updates"
     FORUMS = "forums"
+    PURCHASES = "purchases"
 
 
 # List versions for validation
