@@ -409,6 +409,7 @@ jobs:
             export GITHUB_ACTOR="${{ github.actor }}"
             export DEPLOY_DIR="${{ env.DEPLOY_DIR }}"
             
+            mkdir -p "\${DEPLOY_DIR}"
             cd "\${DEPLOY_DIR}"
             
             # Validate image tags are set
