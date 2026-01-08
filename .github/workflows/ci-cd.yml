@@ -413,6 +413,7 @@ jobs:
             BACKEND_IMAGE="${BACKEND_IMG}" \
             FRONTEND_IMAGE="${FRONTEND_IMG}" \
             GITHUB_TOKEN="${GITHUB_TOKEN}" \
+            GITHUB_ACTOR="${GITHUB_ACTOR}" \
             ./deploy-from-registry.sh
           EOF
 

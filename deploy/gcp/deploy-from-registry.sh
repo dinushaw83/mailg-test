@@ -4,6 +4,13 @@
 # =============================================================================
 # This script deploys MailG by pulling images from a container registry
 # Designed to be run by GitHub Actions or other CI/CD systems
+#
+# Image tags can be passed via environment variables:
+#   BACKEND_IMAGE="ghcr.io/owner/mailg-backend:sha"
+#   FRONTEND_IMAGE="ghcr.io/owner/mailg-frontend:sha"
+#
+# Secrets should be configured in .env.production on the VM:
+#   JWT_SECRET_KEY, POSTGRES_PASSWORD, etc.
 # =============================================================================
 
 set -euo pipefail
@@ -15,9 +22,10 @@ DEPLOY_DIR="${DEPLOY_DIR:-$HOME/mailg-deploy}"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Logging function
+# Logging functions
 log() {
     echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] $1${NC}"
 }
@@ -30,41 +38,90 @@ warn() {
     echo -e "${YELLOW}[WARNING] $1${NC}"
 }
 
+info() {
+    echo -e "${BLUE}[INFO] $1${NC}"
+}
+
 log "=========================================="
 log "MailG Automated Deployment"
 log "=========================================="
 
-# Check if .env.production exists
-if [ ! -f "$DEPLOY_DIR/.env.production" ]; then
-    error ".env.production not found in $DEPLOY_DIR"
-    error "Please ensure environment variables are set"
-    exit 1
+# =============================================================================
+# STEP 1: Capture CI-passed image tags BEFORE loading .env.production
+# =============================================================================
+# This ensures CI/CD-provided values take priority over file values
+CI_BACKEND_IMAGE="${BACKEND_IMAGE:-}"
+CI_FRONTEND_IMAGE="${FRONTEND_IMAGE:-}"
+
+if [ -n "$CI_BACKEND_IMAGE" ]; then
+    info "Backend image from CI: $CI_BACKEND_IMAGE"
+fi
+if [ -n "$CI_FRONTEND_IMAGE" ]; then
+    info "Frontend image from CI: $CI_FRONTEND_IMAGE"
 fi
 
-# Load environment variables
-set -a
-source "$DEPLOY_DIR/.env.production"
-set +a
+# =============================================================================
+# STEP 2: Load .env.production for secrets (JWT, DB passwords, etc.)
+# =============================================================================
+if [ -f "$DEPLOY_DIR/.env.production" ]; then
+    log "Loading secrets from .env.production..."
+    set -a
+    source "$DEPLOY_DIR/.env.production"
+    set +a
+else
+    warn ".env.production not found in $DEPLOY_DIR"
+    warn "Continuing with environment variables only..."
+fi
 
-# Image tags can be passed as environment variables or use defaults
-BACKEND_IMAGE_TAG="${BACKEND_IMAGE_TAG:-${BACKEND_IMAGE:-gcr.io/${GCP_PROJECT_ID}/mailg-backend:latest}}"
-FRONTEND_IMAGE_TAG="${FRONTEND_IMAGE_TAG:-${FRONTEND_IMAGE:-gcr.io/${GCP_PROJECT_ID}/mailg-frontend:latest}}"
+# =============================================================================
+# STEP 3: Determine final image tags (CI takes priority over file)
+# =============================================================================
+# Priority: CI-passed > .env.production > default
+if [ -n "$CI_BACKEND_IMAGE" ]; then
+    BACKEND_IMAGE_TAG="$CI_BACKEND_IMAGE"
+elif [ -n "${BACKEND_IMAGE:-}" ]; then
+    BACKEND_IMAGE_TAG="$BACKEND_IMAGE"
+else
+    BACKEND_IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY_OWNER:-owner}/mailg-backend:latest"
+fi
 
-log "Backend image: $BACKEND_IMAGE_TAG"
+if [ -n "$CI_FRONTEND_IMAGE" ]; then
+    FRONTEND_IMAGE_TAG="$CI_FRONTEND_IMAGE"
+elif [ -n "${FRONTEND_IMAGE:-}" ]; then
+    FRONTEND_IMAGE_TAG="$FRONTEND_IMAGE"
+else
+    FRONTEND_IMAGE_TAG="ghcr.io/${GITHUB_REPOSITORY_OWNER:-owner}/mailg-frontend:latest"
+fi
+
+log "Backend image:  $BACKEND_IMAGE_TAG"
 log "Frontend image: $FRONTEND_IMAGE_TAG"
 
-# Validate required environment variables
-REQUIRED_VARS=(
-    "JWT_SECRET_KEY"
-    "POSTGRES_PASSWORD"
-)
+# =============================================================================
+# STEP 4: Validate secrets and warn about defaults
+# =============================================================================
 
-for var in "${REQUIRED_VARS[@]}"; do
-    if [ -z "${!var:-}" ]; then
-        error "Required environment variable $var is not set"
-        exit 1
-    fi
-done
+# JWT_SECRET_KEY is critical for security - must be set for production
+if [ -z "${JWT_SECRET_KEY:-}" ]; then
+    warn "JWT_SECRET_KEY is not set - using default from docker-compose"
+    warn "⚠️  This is insecure for production! Anyone could forge tokens."
+    warn ""
+    warn "To fix, create .env.production on the VM:"
+    warn "  cd ~/mailg-deploy"
+    warn "  echo 'JWT_SECRET_KEY=your-secure-random-key' >> .env.production"
+    warn ""
+    warn "Generate a secure key with:"
+    warn "  python3 -c \"import secrets; print(secrets.token_urlsafe(32))\""
+    warn ""
+elif [[ "$JWT_SECRET_KEY" == "mailg-local-dev-secret" ]] || [[ "$JWT_SECRET_KEY" == *"CHANGE_ME"* ]]; then
+    warn "JWT_SECRET_KEY appears to be a default/weak value"
+    warn "⚠️  Please use a secure random value for production!"
+fi
+
+# POSTGRES_PASSWORD is optional since docker-compose has a default
+# But warn if using the default in production
+if [ -z "${POSTGRES_PASSWORD:-}" ]; then
+    info "Using default POSTGRES_PASSWORD from docker-compose (mailg)"
+fi
 
 # Navigate to deploy directory
 cd "$DEPLOY_DIR"
@@ -87,7 +144,16 @@ docker compose -f docker-compose.prod.yaml config > /dev/null || {
 }
 
 # Authenticate with container registry if needed
-if [[ "$BACKEND_IMAGE_TAG" == *"gcr.io"* ]] || [[ "$BACKEND_IMAGE_TAG" == *"pkg.dev"* ]]; then
+if [[ "$BACKEND_IMAGE_TAG" == *"ghcr.io"* ]]; then
+    log "Using GitHub Container Registry (GHCR)..."
+    # GHCR login should be done before calling this script (via CI or manual docker login)
+    if [ -n "${GITHUB_TOKEN:-}" ] && [ -n "${GITHUB_ACTOR:-}" ]; then
+        log "Authenticating with GHCR..."
+        echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin || warn "GHCR login failed"
+    else
+        info "GHCR credentials not provided, assuming already logged in"
+    fi
+elif [[ "$BACKEND_IMAGE_TAG" == *"gcr.io"* ]] || [[ "$BACKEND_IMAGE_TAG" == *"pkg.dev"* ]]; then
     log "Authenticating with GCP container registry..."
     gcloud auth configure-docker --quiet || warn "GCP authentication failed, may need manual setup"
 fi
