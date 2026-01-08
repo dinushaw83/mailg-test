@@ -19,7 +19,7 @@ from app.db.session import get_db
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.label import Label
-from app.models.email_label import EmailLabel
+from app.models.thread_label import ThreadLabel
 from app.models.attachment import Attachment
 from app.models.thread import Thread
 from app.models.user import User
@@ -93,14 +93,16 @@ def format_email_response(email: Email) -> dict:
                 "size_bytes": a.size_bytes,
             })
     
+    # Get labels from the thread (labels are now linked to threads, not emails)
     labels = []
-    for l in email.labels:
-        if not l.is_deleted:
-            labels.append({
-                "id": l.id,
-                "name": get_label_hierarchy_name(l),
-                "color": l.color,
-            })
+    if email.thread and email.thread.labels:
+        for l in email.thread.labels:
+            if not l.is_deleted:
+                labels.append({
+                    "id": l.id,
+                    "name": get_label_hierarchy_name(l),
+                    "color": l.color,
+                })
     
     # Determine if email can be cancelled (undo send)
     can_undo = (
@@ -140,14 +142,16 @@ def format_email_response(email: Email) -> dict:
 
 def format_email_list_response(email: Email, thread_email_count: Optional[int] = None) -> dict:
     """Format email model for list responses."""
+    # Get labels from the thread (labels are now linked to threads, not emails)
     labels = []
-    for l in email.labels:
-        if not l.is_deleted:
-            labels.append({
-                "id": l.id,
-                "name": get_label_hierarchy_name(l),
-                "color": l.color,
-            })
+    if email.thread and email.thread.labels:
+        for l in email.thread.labels:
+            if not l.is_deleted:
+                labels.append({
+                    "id": l.id,
+                    "name": get_label_hierarchy_name(l),
+                    "color": l.color,
+                })
     
     attachment_count = len([a for a in email.attachments if not a.is_deleted])
     
@@ -327,7 +331,7 @@ def list_emails(
     query = db.query(Email).options(
         joinedload(Email.sender),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.is_deleted == False,
         or_(
@@ -392,39 +396,40 @@ def list_emails(
         # Use sent_at for sorting, fallback to created_at if null
         sort_date = func.coalesce(Email.sent_at, Email.created_at)
         
-        # Subquery to get max sent_at per thread_id (for emails with thread_id)
-        latest_per_thread = db.query(
+        # Step 1: Get max dates per thread from the filtered query
+        max_dates = query.filter(
+            Email.thread_id.isnot(None)
+        ).with_entities(
             Email.thread_id,
-            func.max(func.coalesce(Email.sent_at, Email.created_at)).label("max_date")
-        ).filter(
-            Email.is_deleted == False,
-            Email.thread_id.isnot(None),
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            func.max(sort_date).label("max_date")
         ).group_by(Email.thread_id).subquery()
         
-        # Filter to only include:
-        # 1. Emails that match the max date for their thread, OR
-        # 2. Emails without a thread_id (each is its own "thread")
+        # Step 2: Get email IDs that are the latest in their thread
+        # Use explicit join to avoid cross-join performance issues
+        latest_email_ids = db.query(Email.id).join(
+            max_dates,
+            and_(
+                Email.thread_id == max_dates.c.thread_id,
+                sort_date == max_dates.c.max_date
+            )
+        ).subquery()
+        
+        # Step 3: Filter main query using IN clause
+        # Include: latest email per thread OR emails without thread_id
         query = query.filter(
             or_(
-                and_(
-                    Email.thread_id.isnot(None),
-                    Email.thread_id == latest_per_thread.c.thread_id,
-                    sort_date == latest_per_thread.c.max_date
-                ),
+                Email.id.in_(db.query(latest_email_ids.c.id)),
                 Email.thread_id.is_(None)
             )
         )
     
     # Get total count
-    total = query.count()
+    if threaded:
+        # For threaded queries, use subquery to get correct count
+        # This avoids issues with the cross-join in the threaded filter
+        total = db.query(func.count()).select_from(query.with_entities(Email.id).subquery()).scalar()
+    else:
+        total = query.count()
     
     # Calculate pagination
     total_pages = (total + page_size - 1) // page_size if total > 0 else 0
@@ -517,7 +522,7 @@ def get_emails_by_thread(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.thread_id == thread_id,
         Email.is_deleted == False,
@@ -567,7 +572,7 @@ def get_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -844,7 +849,7 @@ def cancel_send(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.sender_id == current_user.id,
@@ -902,7 +907,7 @@ def confirm_send(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.sender_id == current_user.id,
@@ -1291,10 +1296,16 @@ def add_label_to_email(
     label_data: EmailLabelRequest,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Add a label to an email."""
+    """Add a label to an email's thread.
+    
+    Labels are now linked to threads, not individual emails.
+    Adding a label to an email will add it to the email's thread.
+    """
     current_user = auth.user
     
-    email = db.query(Email).filter(
+    email = db.query(Email).options(
+        joinedload(Email.thread).selectinload(Thread.labels),
+    ).filter(
         Email.id == email_id,
         Email.is_deleted == False
     ).first()
@@ -1303,6 +1314,12 @@ def add_label_to_email(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
+        )
+    
+    if not email.thread_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email has no associated thread"
         )
     
     # Verify label belongs to user
@@ -1318,15 +1335,15 @@ def add_label_to_email(
             detail="Invalid label ID"
         )
     
-    # Check if already labeled
-    existing = db.query(EmailLabel).filter(
-        EmailLabel.email_id == email_id,
-        EmailLabel.label_id == label_data.label_id
+    # Check if thread already has this label
+    existing = db.query(ThreadLabel).filter(
+        ThreadLabel.thread_id == email.thread_id,
+        ThreadLabel.label_id == label_data.label_id
     ).first()
     
     if not existing:
-        email_label = EmailLabel(email_id=email_id, label_id=label_data.label_id)
-        db.add(email_label)
+        thread_label = ThreadLabel(thread_id=email.thread_id, label_id=label_data.label_id)
+        db.add(thread_label)
         
         try:
             db.commit()
@@ -1344,16 +1361,29 @@ def remove_label_from_email(
     label_id: UUID,
     db: Session = Depends(get_db),
 ) -> None:
-    """Remove a label from an email."""
+    """Remove a label from an email's thread.
+    
+    Labels are now linked to threads, not individual emails.
+    Removing a label from an email will remove it from the email's thread.
+    """
     current_user = auth.user
     
-    email_label = db.query(EmailLabel).filter(
-        EmailLabel.email_id == email_id,
-        EmailLabel.label_id == label_id
+    # Get the email to find its thread
+    email = db.query(Email).filter(
+        Email.id == email_id,
+        Email.is_deleted == False
     ).first()
     
-    if email_label:
-        db.delete(email_label)
+    if not email or not email.thread_id:
+        return  # Silently succeed if email or thread not found
+    
+    thread_label = db.query(ThreadLabel).filter(
+        ThreadLabel.thread_id == email.thread_id,
+        ThreadLabel.label_id == label_id
+    ).first()
+    
+    if thread_label:
+        db.delete(thread_label)
         try:
             db.commit()
         except Exception:
@@ -1381,7 +1411,7 @@ def snooze_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1441,7 +1471,7 @@ def unsnooze_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1502,7 +1532,7 @@ def archive_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1557,7 +1587,7 @@ def unarchive_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1622,7 +1652,7 @@ def mark_email_spam(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1683,7 +1713,7 @@ def unmark_email_spam(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1748,7 +1778,7 @@ def restore_email_from_trash(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1826,7 +1856,7 @@ def update_email_category(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False

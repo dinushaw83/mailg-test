@@ -32,7 +32,7 @@ class LabelResponse(BaseModel):
     is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
-    email_count: int = 0
+    thread_count: int = 0
 
 
 class LabelListResponse(BaseModel):
@@ -44,7 +44,7 @@ class LabelListResponse(BaseModel):
     full_name: Optional[str] = None  # Hierarchical name (e.g., "parent/child/grandchild")
     color: Optional[str] = None
     parent_id: Optional[UUID] = None
-    email_count: int = 0
+    thread_count: int = 0
 
 
 class LabelTreeResponse(BaseModel):
@@ -55,7 +55,7 @@ class LabelTreeResponse(BaseModel):
     name: str
     color: Optional[str] = None
     parent_id: Optional[UUID] = None
-    email_count: int = 0
+    thread_count: int = 0
     children: List["LabelTreeResponse"] = []
 
 
