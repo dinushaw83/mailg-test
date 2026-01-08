@@ -15,6 +15,11 @@ import { transformLabelsArray } from "../../utils/labelTransform";
  * @param {boolean} options.is_snoozed - Filter by snoozed status
  * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
  * @param {boolean} options.include_archived - Include archived emails (for all mail)
+ * @param {boolean} options.is_starred - Filter by starred status
+ * @param {boolean} options.is_important - Filter by important status
+ * @param {boolean} options.is_snoozed - Filter by snoozed status
+ * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
+ * @param {boolean} options.include_archived - Include archived emails (for all mail)
  */
 export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue }) => {
   const {
@@ -412,7 +417,7 @@ const mailSlice = createSlice({
         const is_snoozed = action.payload?.is_snoozed;
         const folder = action.payload?.folder;
         const include_archived = action.payload?.include_archived;
-        
+
         // Store emails in the appropriate folder/category
         const filterType =
           is_starred === true

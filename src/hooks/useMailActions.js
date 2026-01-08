@@ -407,7 +407,6 @@ export default function useMailActions() {
     (ids, read = true) => {
       const match = makeMatch(ids);
       setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
     },
     [setEmails]
   );

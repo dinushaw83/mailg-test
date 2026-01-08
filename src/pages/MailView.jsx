@@ -97,7 +97,6 @@ const Inbox = () => {
 
     // For other folders, use folder-specific emails
     // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
-    // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
     const folderKey = activeFolder.toLowerCase();
     const stateKeyMap = {
       starred: "is_starred",
@@ -108,7 +107,6 @@ const Inbox = () => {
     return mailFolders[stateKey] || [];
   }, [mailFolders, activeFolder, activeInboxTab, label]);
 
-  // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   useEffect(() => {
     if (!accessToken) return;
@@ -200,7 +198,6 @@ const Inbox = () => {
         }
       })
       .catch((error) => {
-        console.error("Failed to fetch emails:", error);
         console.error("Failed to fetch emails:", error);
       });
   }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch, lastMutationTime]);

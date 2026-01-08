@@ -1390,39 +1390,6 @@ FOLDER_TO_LABEL = {
 }
 
 
-@router.patch("/emails/{email_id}/important", response_model=EmailResponse, dependencies=[Depends(authorized())])
-def important_email(
-    email_id: UUID,
-    important_data: EmailImportantUpdate,
-    db: Session = Depends(get_db),
-) -> dict:
-    """important or un important an email."""
-    current_user = auth.user
-    
-    email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
-    ).first()
-    
-    if not email:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Email {email_id} not found"
-        )
-    
-    email.is_important = important_data.is_important
-    
-    try:
-        db.commit()
-        db.refresh(email)
-    except Exception:
-        db.rollback()
-        raise
-    
-    return format_email_response(email)
-
-
-
 @router.post("/emails/{email_id}/move", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def move_email(
     email_id: UUID,
