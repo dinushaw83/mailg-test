@@ -20,6 +20,10 @@ class BulkStarRequest(BulkEmailIds):
     """Schema for bulk star/unstar."""
     is_starred: bool = Field(..., description="Star (true) or unstar (false)")
 
+class BulkImportantRequest(BulkEmailIds):
+    """Schema for bulk important/un important."""
+    is_important: bool = Field(..., description="Important (true) or un important (false)")
+
 
 class BulkMoveRequest(BulkEmailIds):
     """Schema for bulk move to folder."""

@@ -63,6 +63,11 @@ class EmailStarUpdate(BaseModel):
     is_starred: bool = Field(..., description="Star or unstar email")
 
 
+class EmailImportantUpdate(BaseModel):
+    """Schema for updating important status."""
+    is_important: bool = Field(..., description="Important or un important email")
+
+
 class EmailMoveRequest(BaseModel):
     """Schema for moving email to folder."""
     folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, scheduled")

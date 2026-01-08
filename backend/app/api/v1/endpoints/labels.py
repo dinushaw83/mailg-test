@@ -621,7 +621,7 @@ def list_label_threads(
         ).filter(
             Email.thread_id == thread.id,
             Email.is_deleted == False
-        ).order_by(Email.created_at.desc()).first()
+        ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
         
         if latest_email:
             emails_data.append(format_email_list_response(latest_email, thread.email_count))

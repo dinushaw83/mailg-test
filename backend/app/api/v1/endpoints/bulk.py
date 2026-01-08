@@ -26,7 +26,7 @@ from app.models.label import Label
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.schemas.bulk import (
-    BulkReadRequest, BulkStarRequest, BulkMoveRequest, BulkDeleteRequest,
+    BulkImportantRequest, BulkReadRequest, BulkStarRequest, BulkMoveRequest, BulkDeleteRequest,
     BulkLabelAddRequest, BulkLabelRemoveRequest, BulkSnoozeRequest,
     BulkUnsnoozeRequest, BulkArchiveRequest, BulkCategoryRequest,
     BulkUnarchiveRequest, BulkSpamRequest, BulkUnspamRequest,
@@ -190,6 +190,44 @@ def bulk_star(
         )
     
     logger.info(f"Bulk star: {len(success_ids)} emails {'starred' if request.is_starred else 'unstarred'} by user {current_user.id}")
+    
+    return create_bulk_response(request.email_ids, success_ids, failures)
+
+@router.post("/bulk/important", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
+def bulk_important(
+    request: BulkImportantRequest,
+    db: Session = Depends(get_db),
+) -> BulkOperationResponse:
+    """Important or un important multiple emails.
+    
+    Permissions:
+    - Users can only modify their own emails
+    """
+    current_user = auth.user
+    
+    emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
+    
+    success_ids = []
+    failures = {eid: "Email not found or access denied" for eid in not_found}
+    
+    for email in emails:
+        try:
+            email.is_important = request.is_important
+            success_ids.append(email.id)
+        except Exception as e:
+            failures[email.id] = str(e)
+    
+    try:
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Bulk important operation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Bulk operation failed"
+        )
+    
+    logger.info(f"Bulk important: {len(success_ids)} emails {'important' if request.is_important else 'unimportant'} by user {current_user.id}")
     
     return create_bulk_response(request.email_ids, success_ids, failures)
 
