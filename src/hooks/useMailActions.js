@@ -9,6 +9,16 @@ import {
   moveToTrashThunk,
   moveToSpamThunk,
   deleteEmailThunk,
+  bulkUpdateEmailStarredThunk,
+  bulkUpdateEmailImportantThunk,
+  bulkUpdateEmailReadThunk,
+  bulkMoveToSpamThunk,
+  bulkMoveFromSpamThunk,
+  bulkMoveToTrashThunk,
+  bulkDeleteEmailThunk,
+  bulkArchiveEmailsThunk,
+  bulkSnoozeEmailsThunk,
+  bulkUnsnoozeEmailsThunk,
 } from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
@@ -238,11 +248,23 @@ export default function useMailActions() {
   );
 
   const archive = useCallback(
-    (ids) =>
-      updateByIds(ids, (labels) => {
+    (ids) => {
+      // Extract email IDs for backend sync
+      const match = makeMatch(ids);
+      const emailIds = emails.filter(match).map((email) => email.id);
+
+      // Call bulk backend API
+      if (emailIds.length > 0) {
+        dispatch(bulkArchiveEmailsThunk({ emailIds })).catch((error) => {
+          console.error("Failed to bulk archive emails:", error);
+        });
+      }
+
+      return updateByIds(ids, (labels) => {
         labels.delete("Inbox");
-      }),
-    [updateByIds]
+      });
+    },
+    [updateByIds, emails, dispatch]
   );
 
   const deleteAllSpam = useCallback(() => {
@@ -270,12 +292,12 @@ export default function useMailActions() {
         emailIds = matchingEmails.map((email) => email.id);
       }
 
-      // Call backend API for each email using actual email ID
-      emailIds.forEach((emailId) => {
-        dispatch(moveToSpamThunk({ emailId })).catch((error) => {
-          console.error("Failed to move email to spam:", error);
+      // Call bulk backend API with all email IDs at once
+      if (emailIds.length > 0) {
+        dispatch(bulkMoveToSpamThunk({ emailIds })).catch((error) => {
+          console.error("Failed to bulk move emails to spam:", error);
         });
-      });
+      }
 
       return withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
@@ -288,12 +310,24 @@ export default function useMailActions() {
   );
 
   const notSpam = useCallback(
-    (ids) =>
-      updateByIds(ids, (labels) => {
+    (ids) => {
+      // Extract email IDs for backend sync
+      const match = makeMatch(ids);
+      const emailIds = emails.filter(match).map((email) => email.id);
+
+      // Call bulk backend API
+      if (emailIds.length > 0) {
+        dispatch(bulkMoveFromSpamThunk({ emailIds })).catch((error) => {
+          console.error("Failed to bulk remove spam from emails:", error);
+        });
+      }
+
+      return updateByIds(ids, (labels) => {
         labels.delete("Spam");
         labels.add("Inbox");
-      }),
-    [updateByIds]
+      });
+    },
+    [updateByIds, emails, dispatch]
   );
 
   const moveToTrash = useCallback(
@@ -316,12 +350,12 @@ export default function useMailActions() {
         emailIds = matchingEmails.map((email) => email.id);
       }
 
-      // Call backend API for each email using actual email ID
-      emailIds.forEach((emailId) => {
-        dispatch(moveToTrashThunk({ emailId })).catch((error) => {
-          console.error("Failed to move email to trash:", error);
+      // Call bulk backend API with all email IDs at once
+      if (emailIds.length > 0) {
+        dispatch(bulkMoveToTrashThunk({ emailIds })).catch((error) => {
+          console.error("Failed to bulk move emails to trash:", error);
         });
-      });
+      }
 
       return withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
@@ -348,18 +382,17 @@ export default function useMailActions() {
       // Otherwise, we'll need to look it up (not ideal, but fallback)
       const newState = currentStarredState !== undefined ? !currentStarredState : true;
 
-      console.log("⭐ toggleStar called for ids:", ids, "newState:", newState);
-
-      ids.forEach((id) => {
+      // Call bulk backend API with all email IDs at once
+      if (ids.length > 0) {
         dispatch(
-          updateEmailStarredThunk({
-            emailId: id,
+          bulkUpdateEmailStarredThunk({
+            emailIds: ids,
             is_starred: newState,
           })
         ).catch((error) => {
-          console.error("Failed to sync starred status with backend:", error);
+          console.error("Failed to bulk sync starred status with backend:", error);
         });
-      });
+      }
 
       // Update local state optimistically for immediate feedback
       const match = makeMatch(ids);
@@ -379,25 +412,37 @@ export default function useMailActions() {
     (ids, value = true) => {
       const match = makeMatch(ids);
 
+      // Collect all email IDs for bulk operation
+      const emailIds = [];
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            emailIds.push(m.id);
+          }
+        });
+        return prev;
+      });
+
+      // Call bulk backend API with all email IDs at once
+      if (emailIds.length > 0) {
+        dispatch(
+          bulkUpdateEmailStarredThunk({
+            emailIds,
+            is_starred: value,
+          })
+        ).catch((error) => {
+          console.error("Failed to bulk sync starred status with backend:", error);
+        });
+      }
+
       // Update local state immediately (optimistic update)
       setEmails((prev) => {
-        const updated = prev.map((m) => {
+        return prev.map((m) => {
           if (match(m)) {
-            // Dispatch to backend for each email
-            dispatch(
-              updateEmailStarredThunk({
-                emailId: m.id,
-                is_starred: value,
-              })
-            ).catch((error) => {
-              console.error("Failed to sync starred status with backend:", error);
-            });
-
             return { ...m, is_starred: value };
           }
           return m;
         });
-        return updated;
       });
     },
     [setEmails, dispatch]
@@ -406,9 +451,29 @@ export default function useMailActions() {
   const markRead = useCallback(
     (ids, read = true) => {
       const match = makeMatch(ids);
+
+      // Extract email IDs for backend sync
+      const emailIds = [];
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            emailIds.push(m.id);
+          }
+        });
+        return prev;
+      });
+
+      // Call bulk backend API
+      if (emailIds.length > 0) {
+        dispatch(bulkUpdateEmailReadThunk({ emailIds, is_read: read })).catch((error) => {
+          console.error("Failed to bulk update read status:", error);
+        });
+      }
+
+      // Update local state
       setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
     },
-    [setEmails]
+    [setEmails, dispatch]
   );
 
   const toggleImportant = useCallback(
@@ -416,16 +481,17 @@ export default function useMailActions() {
       // Determine the new state
       const newState = currentImportantState !== undefined ? !currentImportantState : true;
 
-      ids.forEach((id) => {
+      // Call bulk backend API with all email IDs at once
+      if (ids.length > 0) {
         dispatch(
-          updateEmailImportantThunk({
-            emailId: id,
+          bulkUpdateEmailImportantThunk({
+            emailIds: ids,
             is_important: newState,
           })
         ).catch((error) => {
-          console.error("Failed to sync important status with backend:", error);
+          console.error("Failed to bulk sync important status with backend:", error);
         });
-      });
+      }
 
       // Update local state optimistically for immediate feedback
       const match = makeMatch(ids);
@@ -445,25 +511,37 @@ export default function useMailActions() {
     (ids, value = true) => {
       const match = makeMatch(ids);
 
+      // Collect all email IDs for bulk operation
+      const emailIds = [];
+      setEmails((prev) => {
+        prev.forEach((m) => {
+          if (match(m)) {
+            emailIds.push(m.id);
+          }
+        });
+        return prev;
+      });
+
+      // Call bulk backend API with all email IDs at once
+      if (emailIds.length > 0) {
+        dispatch(
+          bulkUpdateEmailImportantThunk({
+            emailIds,
+            is_important: !!value,
+          })
+        ).catch((error) => {
+          console.error("Failed to bulk sync important status with backend:", error);
+        });
+      }
+
       // Update local state immediately (optimistic update)
       setEmails((prev) => {
-        const updated = prev.map((m) => {
+        return prev.map((m) => {
           if (match(m)) {
-            // Dispatch to backend for each email
-            dispatch(
-              updateEmailImportantThunk({
-                emailId: m.id,
-                is_important: !!value,
-              })
-            ).catch((error) => {
-              console.error("Failed to sync important status with backend:", error);
-            });
-
             return { ...m, is_important: !!value };
           }
           return m;
         });
-        return updated;
       });
     },
     [setEmails, dispatch]
@@ -518,14 +596,15 @@ export default function useMailActions() {
         emailIds = matchingEmails.map((email) => email.id);
       }
 
-      // Call backend API for each email using actual email ID
-      emailIds.forEach((emailId) => {
-        dispatch(deleteEmailThunk({ emailId })).catch((error) => {
-          console.error("Failed to delete email permanently:", error);
+      // Call bulk backend API with all email IDs at once
+      if (emailIds.length > 0) {
+        dispatch(bulkDeleteEmailThunk({ emailIds })).catch((error) => {
+          console.error("Failed to bulk delete emails permanently:", error);
         });
-      });
+      }
 
       // Remove from local state
+      const match = makeMatch(ids);
       setEmails((prev) => prev.filter((m) => !match(m)));
     },
     [setEmails, dispatch, emails]
@@ -537,17 +616,17 @@ export default function useMailActions() {
       const removedInboxIds = new Set();
       const snoozeUntilISO = snoozeUntil.toISOString();
 
-      // Call backend API for each email
-      ids.forEach((id) => {
+      // Call bulk backend API with all email IDs at once
+      if (ids.length > 0) {
         dispatch(
-          snoozeEmailThunk({
-            emailId: id,
+          bulkSnoozeEmailsThunk({
+            emailIds: ids,
             snooze_until: snoozeUntilISO,
           })
         ).catch((error) => {
-          console.error("Failed to snooze email:", error);
+          console.error("Failed to bulk snooze emails:", error);
         });
-      });
+      }
 
       setEmails((prev) =>
         prev.map((m) => {

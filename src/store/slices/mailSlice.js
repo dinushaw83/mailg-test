@@ -88,7 +88,7 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
     });
     return { ...data, category, is_starred, is_important, is_snoozed, folder };
   } catch (error) {
-    console.error("❌ Failed to fetch emails:", error);
+    console.error("Failed to fetch emails:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch emails");
   }
 });
@@ -107,7 +107,7 @@ export const fetchEmailCounts = createAsyncThunk("mail/fetchEmailCounts", async 
     });
     return data;
   } catch (error) {
-    console.error("❌ Failed to fetch email counts:", error);
+    console.error("Failed to fetch email counts:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email counts");
   }
 });
@@ -122,7 +122,7 @@ export const sendEmailThunk = createAsyncThunk("mail/sendEmail", async (emailDat
     // React Query cache invalidation is handled by RTK listener middleware.
     return response;
   } catch (error) {
-    console.error("❌ Failed to send email:", error);
+    console.error("Failed to send email:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
   }
 });
@@ -138,7 +138,7 @@ export const updateLabelsThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return response;
     } catch (error) {
-      console.error("❌ Failed to update labels:", error);
+      console.error("Failed to update labels:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to update labels");
     }
   }
@@ -158,7 +158,7 @@ export const fetchLabels = createAsyncThunk("mail/fetchLabels", async (_, { reje
     });
     return data;
   } catch (error) {
-    console.error("❌ Failed to fetch labels:", error);
+    console.error("Failed to fetch labels:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch labels");
   }
 });
@@ -174,7 +174,7 @@ export const createLabelThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return response;
     } catch (error) {
-      console.error("❌ Failed to create label:", error);
+      console.error("Failed to create label:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to create label");
     }
   }
@@ -191,7 +191,7 @@ export const updateLabelThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return { id, ...response };
     } catch (error) {
-      console.error("❌ Failed to update label:", error);
+      console.error("Failed to update label:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to update label");
     }
   }
@@ -206,7 +206,7 @@ export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, 
     // React Query cache invalidation is handled by RTK listener middleware.
     return { id, ...response };
   } catch (error) {
-    console.error("❌ Failed to delete label:", error);
+    console.error("Failed to delete label:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
   }
 });
@@ -222,7 +222,7 @@ export const updateEmailStarredThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return { emailId, is_starred, email: response };
     } catch (error) {
-      console.error("❌ Failed to update email starred status:", error);
+      console.error("Failed to update email starred status:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to update starred status");
     }
   }
@@ -239,7 +239,7 @@ export const updateEmailImportantThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return { emailId, is_important, email: response };
     } catch (error) {
-      console.error("❌ Failed to update email important status:", error);
+      console.error("Failed to update email important status:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to update important status");
     }
   }
@@ -256,7 +256,7 @@ export const bulkUpdateEmailsThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return { emailIds, updates, response };
     } catch (error) {
-      console.error("❌ Failed to bulk update emails:", error);
+      console.error("Failed to bulk update emails:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update emails");
     }
   }
@@ -272,7 +272,7 @@ export const snoozeEmailThunk = createAsyncThunk(
       const response = await emailService.snoozeEmail(emailId, snooze_until);
       return { emailId, snooze_until, email: response };
     } catch (error) {
-      console.error("❌ Failed to snooze email:", error);
+      console.error("Failed to snooze email:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to snooze email");
     }
   }
@@ -286,7 +286,7 @@ export const moveToTrashThunk = createAsyncThunk("mail/moveToTrash", async ({ em
     const response = await emailService.moveToTrash(emailId);
     return { emailId, email: response };
   } catch (error) {
-    console.error("❌ Failed to move email to trash:", error);
+    console.error("Failed to move email to trash:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to move to trash");
   }
 });
@@ -299,7 +299,7 @@ export const moveToSpamThunk = createAsyncThunk("mail/moveToSpam", async ({ emai
     const response = await emailService.moveToSpam(emailId);
     return { emailId, email: response };
   } catch (error) {
-    console.error("❌ Failed to move email to spam:", error);
+    console.error("Failed to move email to spam:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to move to spam");
   }
 });
@@ -312,10 +312,208 @@ export const deleteEmailThunk = createAsyncThunk("mail/deleteEmail", async ({ em
     const response = await emailService.deleteEmail(emailId);
     return { emailId, response };
   } catch (error) {
-    console.error("❌ Failed to delete email:", error);
+    console.error("Failed to delete email:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete email");
   }
 });
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * BULK OPERATION THUNKS
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * BULK MUTATION THUNK: Update multiple emails' starred status
+ */
+export const bulkUpdateEmailStarredThunk = createAsyncThunk(
+  "mail/bulkUpdateEmailStarred",
+  async ({ emailIds, is_starred }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkStarEmails(emailIds, is_starred);
+      return { emailIds, is_starred, response };
+    } catch (error) {
+      console.error("Failed to bulk update email starred status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update starred status");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Update multiple emails' important status
+ */
+export const bulkUpdateEmailImportantThunk = createAsyncThunk(
+  "mail/bulkUpdateEmailImportant",
+  async ({ emailIds, is_important }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkImportantEmails(emailIds, is_important);
+      return { emailIds, is_important, response };
+    } catch (error) {
+      console.error("Failed to bulk update email important status:", error);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to bulk update important status"
+      );
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Update multiple emails' read status
+ */
+export const bulkUpdateEmailReadThunk = createAsyncThunk(
+  "mail/bulkUpdateEmailRead",
+  async ({ emailIds, is_read }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkReadEmails(emailIds, is_read);
+      return { emailIds, is_read, response };
+    } catch (error) {
+      console.error("Failed to bulk update email read status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update read status");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Move multiple emails to spam
+ */
+export const bulkMoveToSpamThunk = createAsyncThunk(
+  "mail/bulkMoveToSpam",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkSpamEmails(emailIds);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk move emails to spam:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk move to spam");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Remove spam mark from multiple emails
+ */
+export const bulkMoveFromSpamThunk = createAsyncThunk(
+  "mail/bulkMoveFromSpam",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUnspamEmails(emailIds);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk remove spam from emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk remove spam");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Move multiple emails to trash
+ */
+export const bulkMoveToTrashThunk = createAsyncThunk(
+  "mail/bulkMoveToTrash",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkDeleteEmails(emailIds, false);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk move emails to trash:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk move to trash");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Permanently delete multiple emails
+ */
+export const bulkDeleteEmailThunk = createAsyncThunk(
+  "mail/bulkDeleteEmail",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkDeleteEmails(emailIds, true);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk delete emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk delete emails");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Archive multiple emails
+ */
+export const bulkArchiveEmailsThunk = createAsyncThunk(
+  "mail/bulkArchiveEmails",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkArchiveEmails(emailIds);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk archive emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk archive emails");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Snooze multiple emails
+ */
+export const bulkSnoozeEmailsThunk = createAsyncThunk(
+  "mail/bulkSnoozeEmails",
+  async ({ emailIds, snooze_until }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkSnoozeEmails(emailIds, snooze_until);
+      return { emailIds, snooze_until, response };
+    } catch (error) {
+      console.error("Failed to bulk snooze emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk snooze emails");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Unsnooze multiple emails
+ */
+export const bulkUnsnoozeEmailsThunk = createAsyncThunk(
+  "mail/bulkUnsnoozeEmails",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUnsnoozeEmails(emailIds);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk unsnooze emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unsnooze emails");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Add labels to multiple emails
+ */
+export const bulkAddLabelsThunk = createAsyncThunk(
+  "mail/bulkAddLabels",
+  async ({ emailIds, labelIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkAddLabels(emailIds, labelIds);
+      return { emailIds, labelIds, response };
+    } catch (error) {
+      console.error("Failed to bulk add labels:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk add labels");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Remove labels from multiple emails
+ */
+export const bulkRemoveLabelsThunk = createAsyncThunk(
+  "mail/bulkRemoveLabels",
+  async ({ emailIds, labelIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkRemoveLabels(emailIds, labelIds);
+      return { emailIds, labelIds, response };
+    } catch (error) {
+      console.error("Failed to bulk remove labels:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk remove labels");
+    }
+  }
+);
 
 const mailSlice = createSlice({
   name: "mail",

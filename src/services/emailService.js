@@ -8,8 +8,8 @@ const emailService = {
   getEmails: async ({ page = 1, pageSize = 20, category = null } = {}) => {
     try {
       const params = {
-          page,
-          page_size: pageSize,
+        page,
+        page_size: pageSize,
       };
 
       // Add category parameter if provided
@@ -290,6 +290,182 @@ const emailService = {
   deleteEmail: async (emailId) => {
     const response = await apiClient.delete(`/v1/emails/${emailId}`, {
       params: { permanent: true },
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /* ────────────────────────────────────────────────────────────────────────────
+   * BULK OPERATIONS
+   * ────────────────────────────────────────────────────────────────────────── */
+
+  /**
+   * Bulk star/unstar emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {boolean} is_starred - Starred status
+   * @returns {Promise<Object>} Response data
+   */
+  bulkStarEmails: async (emailIds, is_starred) => {
+    const response = await apiClient.post("/v1/bulk/star", {
+      email_ids: emailIds,
+      is_starred,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk mark emails as important/unimportant
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {boolean} is_important - Important status
+   * @returns {Promise<Object>} Response data
+   */
+  bulkImportantEmails: async (emailIds, is_important) => {
+    const response = await apiClient.post("/v1/bulk/important", {
+      email_ids: emailIds,
+      is_important,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk mark emails as read/unread
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {boolean} is_read - Read status
+   * @returns {Promise<Object>} Response data
+   */
+  bulkReadEmails: async (emailIds, is_read) => {
+    const response = await apiClient.post("/v1/bulk/read", {
+      email_ids: emailIds,
+      is_read,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk move emails to spam
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkSpamEmails: async (emailIds) => {
+    const response = await apiClient.post("/v1/bulk/spam", {
+      email_ids: emailIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk remove spam mark from emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUnspamEmails: async (emailIds) => {
+    const response = await apiClient.post("/v1/bulk/unspam", {
+      email_ids: emailIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk delete emails (move to trash or permanent delete)
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {boolean} permanent - Whether to permanently delete
+   * @returns {Promise<Object>} Response data
+   */
+  bulkDeleteEmails: async (emailIds, permanent = false) => {
+    const response = await apiClient.post("/v1/bulk/delete", {
+      email_ids: emailIds,
+      permanent,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk move emails to a folder
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {string} folder - Folder name (inbox, trash, spam, etc.)
+   * @returns {Promise<Object>} Response data
+   */
+  bulkMoveEmails: async (emailIds, folder) => {
+    const response = await apiClient.post("/v1/bulk/move", {
+      email_ids: emailIds,
+      folder,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk archive emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkArchiveEmails: async (emailIds) => {
+    const response = await apiClient.post("/v1/bulk/archive", {
+      email_ids: emailIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk unarchive emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUnarchiveEmails: async (emailIds) => {
+    const response = await apiClient.post("/v1/bulk/unarchive", {
+      email_ids: emailIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk snooze emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {string} snooze_until - ISO 8601 datetime string
+   * @returns {Promise<Object>} Response data
+   */
+  bulkSnoozeEmails: async (emailIds, snooze_until) => {
+    const response = await apiClient.post("/v1/bulk/snooze", {
+      email_ids: emailIds,
+      snooze_until,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk unsnooze emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUnsnoozeEmails: async (emailIds) => {
+    const response = await apiClient.post("/v1/bulk/unsnooze", {
+      email_ids: emailIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk add labels to emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {Array<string>} labelIds - Array of label IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkAddLabels: async (emailIds, labelIds) => {
+    const response = await apiClient.post("/v1/bulk/labels/add", {
+      email_ids: emailIds,
+      label_ids: labelIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk remove labels from emails
+   * @param {Array<string>} emailIds - Array of email IDs
+   * @param {Array<string>} labelIds - Array of label IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkRemoveLabels: async (emailIds, labelIds) => {
+    const response = await apiClient.post("/v1/bulk/labels/remove", {
+      email_ids: emailIds,
+      label_ids: labelIds,
     });
     return response?.data?.data ?? response?.data ?? {};
   },
