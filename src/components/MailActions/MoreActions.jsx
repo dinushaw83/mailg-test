@@ -144,7 +144,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
   const markAllAsRead = useCallback(() => {
     const visibleThreadIds = new Set(threads.map((thread) => thread.threadId));
-    const unreadEmails = emails.filter((email) => visibleThreadIds.has(email.threadId) && !email.read);
+    const unreadEmails = emails.filter((email) => visibleThreadIds.has(email.threadId) && !email.is_read);
     const idsToUpdate = unreadEmails.map((email) => email.id);
 
     if (!idsToUpdate.length) {
@@ -190,20 +190,20 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const onlyOneItemSelected = selectedIds.length === 1;
 
   const anyStarred = useMemo(() => {
-    return selectedEmails.some((email) => email.starred);
+    return selectedEmails.some((email) => email.is_starred);
   }, [selectedEmails]);
 
   const allImportant = useMemo(() => {
     if (!selectedEmails.length) return false;
-    return selectedEmails.every((email) => email.important);
+    return selectedEmails.every((email) => email.is_important);
   }, [selectedEmails]);
 
   const anyImportant = useMemo(() => {
-    return selectedEmails.some((email) => email.important);
+    return selectedEmails.some((email) => email.is_important);
   }, [selectedEmails]);
 
   const anyNotImportant = useMemo(() => {
-    return selectedEmails.some((email) => !email.important);
+    return selectedEmails.some((email) => !email.is_important);
   }, [selectedEmails]);
 
   const allMuted = useMemo(() => {
@@ -212,7 +212,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   }, [selectedEmails]);
 
   const anyReadEmails = useMemo(() => {
-    return selectedEmails.some((email) => email.read);
+    return selectedEmails.some((email) => email.is_read);
   }, [selectedEmails]);
 
   const handleStar = useCallback(
@@ -224,7 +224,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const previousStates = selectedEmails.map((email) => ({
         id: email.id,
-        starred: !!email.starred,
+        starred: !!email.is_starred,
       }));
       const idsToUpdate = previousStates.filter((state) => state.starred !== value).map((state) => state.id);
 
@@ -237,8 +237,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const changedThreadCount =
         (value
-          ? selectedThreads.filter((thread) => !thread.starred)
-          : selectedThreads.filter((thread) => thread.starred)
+          ? selectedThreads.filter((thread) => !thread.is_starred)
+          : selectedThreads.filter((thread) => thread.is_starred)
         ).length ||
         selectedThreads.length ||
         1;
@@ -293,7 +293,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const previousStates = selectedEmails.map((email) => ({
         id: email.id,
-        important: !!email.important,
+        important: !!email.is_important,
       }));
       const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
 
@@ -306,8 +306,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const changedThreadCount =
         (value
-          ? selectedThreads.filter((thread) => !thread.important)
-          : selectedThreads.filter((thread) => thread.important)
+          ? selectedThreads.filter((thread) => !thread.is_important)
+          : selectedThreads.filter((thread) => thread.is_important)
         ).length ||
         selectedThreads.length ||
         1;
@@ -423,7 +423,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     const previousStates = selectedEmails.map((email) => ({
       id: email.id,
       threadId: email.threadId,
-      read: !!email.read,
+      read: !!email.is_read,
     }));
     const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
 

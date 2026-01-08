@@ -56,7 +56,7 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "s" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
-      const starredEmails = emails.filter((email) => email.starred);
+      const starredEmails = emails.filter((email) => email.is_starred);
       const ids = starredEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
@@ -65,7 +65,7 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "t" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
-      const unstarredEmails = emails.filter((email) => !email.starred);
+      const unstarredEmails = emails.filter((email) => !email.is_starred);
       const ids = unstarredEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
@@ -150,18 +150,18 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   const getImportantAriaLabel = (email) => {
-    return email.important ? "Important according to Google magic." : "Not important";
+    return email.is_important ? "Important according to Google magic." : "Not important";
   };
 
   const getImportantClassName = (email) => {
-    return email.important ? "pH a9q" : "pH-A7 a9q";
+    return email.is_important ? "pH a9q" : "pH-A7 a9q";
   };
 
   const getAccessibilityText = (email) => {
     const status = [];
-    if (email.starred) status.push("starred");
+    if (email.is_starred) status.push("starred");
     if (!email.isEmailRead) status.push("unread");
-    if (email.important) status.push("Important");
+    if (email.is_important) status.push("Important");
     status.push(email.from.name);
     status.push(email.subject);
     status.push(formatDate(email.timestamp));
@@ -209,7 +209,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
       key: labelObj.id || labelObj.name,
       displayName: labelObj.name,
       color: labelObj.color,
-    }));
+      }));
   };
 
   useEffect(() => {

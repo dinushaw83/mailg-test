@@ -96,37 +96,109 @@ const Inbox = () => {
     }
     
     // For other folders, use folder-specific emails
+    // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
     const folderKey = activeFolder.toLowerCase();
-    return mailFolders[folderKey] || [];
+    const stateKeyMap = {
+      starred: "is_starred",
+      important: "is_important",
+      snoozed: "is_snoozed",
+    };
+    const stateKey = stateKeyMap[folderKey] || folderKey;
+    return mailFolders[stateKey] || [];
   }, [mailFolders, activeFolder, activeInboxTab, label]);
 
-  // Fetch emails with category filter and counts
+  // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   useEffect(() => {
-    const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
-    if (!isInboxRoute) return;
     if (!accessToken) return;
+    if (label) return; // Skip if viewing a label route
 
-    // Map category names to API format (e.g., "Primary" → "primary")
-    const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
+    const folderKey = String(activeFolder).toLowerCase();
+    const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts"];
+    if (!validRoutes.includes(folderKey)) return;
 
-    Promise.all([
-      dispatch(
-        fetchEmails({
-          page: currentPage,
-          pageSize: itemsPerPage,
-          category: categoryParam,
-        })
-      ).unwrap(),
-      dispatch(fetchEmailCounts()).unwrap(),
-    ])
-      .then(([emailsPayload]) => {
+    const promises = [];
+
+    switch (folderKey) {
+      case "starred":
+        // Fetch starred emails
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_starred: true,
+            })
+          ).unwrap()
+        );
+        break;
+      case "important":
+        // Fetch important emails
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_important: true,
+            })
+          ).unwrap()
+        );
+        break;
+      case "snoozed":
+        // Fetch snoozed emails
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_snoozed: true,
+            })
+          ).unwrap()
+        );
+        break;
+      case "sent":
+      case "trash":
+      case "spam":
+      case "drafts":
+        // Fetch folder-based emails (sent, trash, spam, drafts)
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              folder: folderKey,
+            })
+          ).unwrap()
+        );
+        break;
+      case "inbox":
+        // Fetch inbox emails with category filter and counts
+        const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              category: categoryParam,
+            })
+          ).unwrap(),
+          dispatch(fetchEmailCounts()).unwrap()
+        );
+        break;
+      default:
+        return;
+    }
+
+    Promise.all(promises)
+      .then((results) => {
+        // First result is always the emails payload
+        const emailsPayload = results[0];
         setApiPagination(emailsPayload?.pagination ?? null);
         if (emailsPayload?.pagination?.pageSize && emailsPayload.pagination.pageSize !== itemsPerPage) {
           setItemsPerPage(emailsPayload.pagination.pageSize);
         }
       })
       .catch((error) => {
-        console.error("Failed to fetch emails or counts:", error);
+        console.error("Failed to fetch emails:", error);
       });
   }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch]);
 
@@ -243,20 +315,20 @@ const Inbox = () => {
   const sortedBase = useMemo(() => sortRows(baseSource), [baseSource]);
 
   // ────────── Split rows based on inboxType
-  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.important), [sortedBase]);
+  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.is_important), [sortedBase]);
 
   const sortedUnread = useMemo(() => sortedBase.filter((r) => r.unreadCount > 0), [sortedBase]);
 
-  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.starred), [sortedBase]);
+  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.is_starred), [sortedBase]);
 
   const everythingElse = useMemo(() => {
     switch (inboxType) {
       case INBOX_TYPE.IMPORTANT_FIRST:
-        return sortedBase.filter((r) => !r.important);
+        return sortedBase.filter((r) => !r.is_important);
       case INBOX_TYPE.UNREAD_FIRST:
         return sortedBase.filter((r) => r.unreadCount === 0);
       case INBOX_TYPE.STARRED_FIRST:
-        return sortedBase.filter((r) => !r.starred);
+        return sortedBase.filter((r) => !r.is_starred);
       default:
         return sortedBase;
     }

@@ -297,7 +297,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
   ]);
 
   const hasUnreadEmails = useMemo(() => {
-    return selectedEmails.some((email) => !email.read);
+    return selectedEmails.some((email) => !email.is_read);
   }, [selectedEmails]);
 
   const handleReadAction = useCallback(() => {
@@ -309,7 +309,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
     const previousStates = selectedEmails.map((email) => ({
       id: email.id,
       threadId: email.threadId,
-      read: !!email.read,
+      read: !!email.is_read,
     }));
 
     const unread = previousStates.filter((state) => !state.read);
