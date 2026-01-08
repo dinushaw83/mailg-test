@@ -670,7 +670,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   }, [selectedEmails]);
 
   const hasUnreadEmails = useMemo(() => {
-    return selectedEmails.some((email) => !email.read);
+    return selectedEmails.some((email) => !email.is_read);
   }, [selectedEmails]);
 
   const handleReadAction = useCallback(() => {
@@ -682,7 +682,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     const previousStates = selectedEmails.map((email) => ({
       id: email.id,
       threadId: email.threadId,
-      read: !!email.read,
+      read: !!email.is_read,
     }));
 
     const unread = previousStates.filter((state) => !state.read);

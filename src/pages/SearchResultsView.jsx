@@ -83,7 +83,7 @@ const SearchResultsView = () => {
 
       // Apply "Is unread" filter from filter chip
       if (searchParams.get("is_unread") === "true") {
-        results = results.filter((email) => !email.read);
+        results = results.filter((email) => !email.is_read);
       }
 
       // Apply date range filter from filter chips
@@ -190,7 +190,7 @@ const SearchResultsView = () => {
     let threadRows = getThreadRows(searchResultEmails, { folder: null });
 
     // If filtering by "is unread", ensure thread has unread messages
-    // (thread.read is based on last message, but we want threads with ANY unread messages)
+    // (thread.is_read is based on last message, but we want threads with ANY unread messages)
     if (searchParams.get("is_unread") === "true") {
       threadRows = threadRows.filter((thread) => thread.unreadCount > 0);
     }

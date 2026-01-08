@@ -28,12 +28,12 @@ const shouldNotify = (email, settings) => {
 
   // For "new" type, notify for all new emails in inbox
   if (settings.type === "new") {
-    return email.folder === "inbox" && !email.read;
+    return email.folder === "inbox" && !email.is_read;
   }
 
   // For "important" type, only notify for important emails
   if (settings.type === "important") {
-    return email.folder === "inbox" && !email.read && email.important;
+    return email.folder === "inbox" && !email.is_read && email.is_important;
   }
 
   return false;
@@ -50,7 +50,7 @@ export const notifyNewEmail = async (email) => {
   const sender = email.from?.name || email.from?.email || "Unknown sender";
   const subject = email.subject || "No subject";
 
-  if (settings.type === "important" && email.important) {
+  if (settings.type === "important" && email.is_important) {
     return await notificationManager.showImportantMailNotification(subject, sender, settings.sound);
   } else {
     return await notificationManager.showNewMailNotification(subject, sender, settings.sound);
@@ -76,7 +76,7 @@ export const notifyNewEmails = async (emails) => {
   }
 
   // For multiple emails, show a summary notification
-  const importantCount = relevantEmails.filter((email) => email.important).length;
+  const importantCount = relevantEmails.filter((email) => email.is_important).length;
   const totalCount = relevantEmails.length;
 
   let title = `${totalCount} new messages`;
@@ -85,7 +85,7 @@ export const notifyNewEmails = async (emails) => {
   if (settings.type === "important" && importantCount > 0) {
     title = importantCount === 1 ? "1 new important message" : `${importantCount} new important messages`;
     body = relevantEmails
-      .filter((email) => email.important)
+      .filter((email) => email.is_important)
       .slice(0, 3)
       .map((email) => `${email.from?.name || email.from?.email}: ${email.subject}`)
       .join("\n");
@@ -118,8 +118,8 @@ export const testNotification = async () => {
     from: { name: "Test Sender", email: "test@example.com" },
     subject: "Test Email Notification",
     folder: "inbox",
-    read: false,
-    important: false,
+    is_read: false,
+    is_important: false,
   };
 
   return await notifyNewEmail(testEmail);

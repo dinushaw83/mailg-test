@@ -256,7 +256,7 @@ const InboxView = () => {
   const markUnreadEmailsAsRead = useCallback(
     (messages) => {
       // Get the unread emails ids
-      const unreadEmailsIds = messages.filter((email) => !email.read).map((email) => email.id);
+      const unreadEmailsIds = messages.filter((email) => !email.is_read).map((email) => email.id);
 
       // If there are unread emails, mark them as read
       if (unreadEmailsIds.length > 0) {

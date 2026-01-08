@@ -65,11 +65,8 @@ export const emailAPIMapper = (emails) => {
         body: email?.html_body || email?.body || "",
         preview: email?.snippet || email?.preview || email?.body?.substring(0, 100),
         status: email?.status || "inbox",
-        read: email?.is_read !== undefined ? email.is_read : email?.read,
-        is_read: email?.is_read !== undefined ? email.is_read : email?.read,
-        starred: email?.is_starred || false,
+        is_read: email?.is_read !== undefined ? email.is_read : false,
         is_starred: email?.is_starred || false,
-        important: email?.is_important || false,
         is_important: email?.is_important || false,
         scheduled_send_at: email?.scheduled_send_at,
         snooze_until: email?.snooze_until,
@@ -147,10 +144,10 @@ export function normalizeEmails(messages) {
     
     // Handle string format (legacy): just email address
     if (typeof address === "string") {
-      return {
-        email: address,
-        name: emailToUsernameMap[address] || address,
-      };
+    return {
+      email: address,
+      name: emailToUsernameMap[address] || address,
+    };
     }
     
     return null;
@@ -219,7 +216,7 @@ export function normalizeEmails(messages) {
 
     thread.messageIds.push(id);
     thread.updatedAt = Math.max(thread.updatedAt, ts);
-    if (!m.read) thread.unreadCount += 1;
+    if (!m.is_read) thread.unreadCount += 1;
     // Add label objects to thread (use Set to deduplicate by name)
     enrichedLabels.forEach((labelObj) => {
       // Check if label with same name already exists in thread
@@ -603,9 +600,9 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
       preview: last.preview,
 
       // Read/star/important from last message (as requested)
-      read: !!last.read,
-      starred: !!last.starred,
-      important: !!last.important,
+      is_read: !!last.is_read,
+      is_starred: !!last.is_starred,
+      is_important: !!last.is_important,
 
       // Display info
       timestamp: last.timestamp,
@@ -649,19 +646,21 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
         // The emails are already filtered by category (primary, promotions, social, updates)
         break;
       case "starred":
-        filtered = filtered.filter((r) => r.starred && !has(r, "Spam") && !has(r, "Trash"));
+        filtered = filtered.filter((r) => r.is_starred && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "snoozed":
         filtered = filtered.filter((r) => has(r, "Snoozed") && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "sent":
-        filtered = filtered.filter((r) => has(r, "Sent"));
+        // Backend already filters by folder=sent, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Sent"));
         break;
       case "drafts":
-        filtered = filtered.filter((r) => has(r, "Drafts"));
+        // Backend already filters by folder=drafts, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Drafts"));
         break;
       case "important":
-        filtered = filtered.filter((r) => r.important && !has(r, "Spam") && !has(r, "Trash"));
+        filtered = filtered.filter((r) => r.is_important && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "chats":
         filtered = filtered.filter((r) => has(r, "Chats"));
@@ -670,10 +669,12 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
         filtered = filtered.filter((r) => has(r, "Scheduled"));
         break;
       case "spam":
-        filtered = filtered.filter((r) => has(r, "Spam"));
+        // Backend already filters by folder=spam, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Spam"));
         break;
       case "trash":
-        filtered = filtered.filter((r) => has(r, "Trash"));
+        // Backend already filters by folder=trash, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Trash"));
         break;
       case "categories":
         filtered = filtered.filter((r) => has(r, "Categories"));
@@ -722,9 +723,9 @@ console.log({threadsById}, "----------threadsById----------")
     preview: last.preview,
 
     // Read/star/important from last message (as requested)
-    read: !!last.read,
-    starred: !!last.starred,
-    important: !!last.important,
+    is_read: !!last.is_read,
+    is_starred: !!last.is_starred,
+    is_important: !!last.is_important,
 
     // Display info
     timestamp: last.timestamp,
