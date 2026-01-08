@@ -269,7 +269,10 @@ def bulk_add_labels(
     request: BulkLabelAddRequest,
     db: Session = Depends(get_db),
 ) -> BulkOperationResponse:
-    """Add labels to multiple emails.
+    """Replace all labels on multiple emails with new ones.
+    
+    This operation drops all existing labels from the emails and assigns
+    the new labels provided in the request.
     
     Permissions:
     - Users can only modify their own emails
@@ -295,29 +298,26 @@ def bulk_add_labels(
     
     emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
     
-    success_ids = []
     failures = {eid: "Email not found or access denied" for eid in not_found}
+    success_ids = [email.id for email in emails]
     
-    for email in emails:
-        try:
-            # Get existing labels for this email
-            existing_labels = db.query(EmailLabel.label_id).filter(
-                EmailLabel.email_id == email.id,
-                EmailLabel.label_id.in_(request.label_ids)
-            ).all()
-            existing_label_ids = {el.label_id for el in existing_labels}
-            
-            # Add only new labels
-            for label_id in request.label_ids:
-                if label_id not in existing_label_ids:
-                    email_label = EmailLabel(email_id=email.id, label_id=label_id)
-                    db.add(email_label)
-            
-            success_ids.append(email.id)
-        except Exception as e:
-            failures[email.id] = str(e)
+    if not success_ids:
+        return create_bulk_response(request.email_ids, success_ids, failures)
     
     try:
+        # Bulk delete all existing labels for these emails
+        db.query(EmailLabel).filter(
+            EmailLabel.email_id.in_(success_ids)
+        ).delete(synchronize_session=False)
+        
+        # Bulk insert new labels for all emails
+        new_email_labels = [
+            EmailLabel(email_id=email_id, label_id=label_id)
+            for email_id in success_ids
+            for label_id in request.label_ids
+        ]
+        db.bulk_save_objects(new_email_labels)
+        
         db.commit()
     except Exception as e:
         db.rollback()
@@ -327,51 +327,7 @@ def bulk_add_labels(
             detail="Bulk operation failed"
         )
     
-    logger.info(f"Bulk add labels: {len(success_ids)} emails labeled by user {current_user.id}")
-    
-    return create_bulk_response(request.email_ids, success_ids, failures)
-
-
-@router.post("/bulk/labels/remove", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
-def bulk_remove_labels(
-    request: BulkLabelRemoveRequest,
-    db: Session = Depends(get_db),
-) -> BulkOperationResponse:
-    """Remove labels from multiple emails.
-    
-    Permissions:
-    - Users can only modify their own emails
-    """
-    current_user = auth.user
-    
-    emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
-    
-    success_ids = []
-    failures = {eid: "Email not found or access denied" for eid in not_found}
-    
-    for email in emails:
-        try:
-            # Remove the specified labels
-            db.query(EmailLabel).filter(
-                EmailLabel.email_id == email.id,
-                EmailLabel.label_id.in_(request.label_ids)
-            ).delete(synchronize_session=False)
-            
-            success_ids.append(email.id)
-        except Exception as e:
-            failures[email.id] = str(e)
-    
-    try:
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Bulk remove labels operation failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Bulk operation failed"
-        )
-    
-    logger.info(f"Bulk remove labels: {len(success_ids)} emails unlabeled by user {current_user.id}")
+    logger.info(f"Bulk assign labels: {len(success_ids)} emails re-labeled by user {current_user.id}")
     
     return create_bulk_response(request.email_ids, success_ids, failures)
 
