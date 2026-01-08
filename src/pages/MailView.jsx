@@ -317,22 +317,18 @@ const Inbox = () => {
 
   // ────────── Split rows based on inboxType
   const sortedImportant = useMemo(() => sortedBase.filter((r) => r.is_important), [sortedBase]);
-  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.is_important), [sortedBase]);
 
   const sortedUnread = useMemo(() => sortedBase.filter((r) => r.unreadCount > 0), [sortedBase]);
 
-  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.is_starred), [sortedBase]);
   const sortedStarred = useMemo(() => sortedBase.filter((r) => r.is_starred), [sortedBase]);
 
   const everythingElse = useMemo(() => {
     switch (inboxType) {
       case INBOX_TYPE.IMPORTANT_FIRST:
         return sortedBase.filter((r) => !r.is_important);
-        return sortedBase.filter((r) => !r.is_important);
       case INBOX_TYPE.UNREAD_FIRST:
         return sortedBase.filter((r) => r.unreadCount === 0);
       case INBOX_TYPE.STARRED_FIRST:
-        return sortedBase.filter((r) => !r.is_starred);
         return sortedBase.filter((r) => !r.is_starred);
       default:
         return sortedBase;

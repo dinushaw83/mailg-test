@@ -142,7 +142,6 @@ const MoreActions = ({
       const previousStates = threadEmails.map((email) => ({
         id: email.id,
         important: !!email.is_important,
-        important: !!email.is_important,
       }));
       const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
 
@@ -236,7 +235,6 @@ const MoreActions = ({
 
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      read: !!email.is_read,
       read: !!email.is_read,
     }));
     const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
