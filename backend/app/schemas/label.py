@@ -47,19 +47,23 @@ class LabelResponse(BaseModel):
 
 
 class LabelListResponse(BaseModel):
-    """Brief label info for list responses."""
+    """Label info for list responses."""
     model_config = {"from_attributes": True}
     
     id: UUID
     name: str
     full_name: Optional[str] = None  # Hierarchical name (e.g., "parent/child/grandchild")
     color: Optional[str] = None
+    owner_id: UUID
     parent_id: Optional[UUID] = None
     is_system: bool = False
     is_exclusive: bool = False
     show_in_label_list: bool = True
     show_in_message_list: bool = True
     show_if_unread: bool = False
+    is_deleted: bool = False
+    created_at: datetime
+    updated_at: datetime
     thread_count: int = 0
 
 
@@ -70,12 +74,16 @@ class LabelTreeResponse(BaseModel):
     id: UUID
     name: str
     color: Optional[str] = None
+    owner_id: UUID
     parent_id: Optional[UUID] = None
     is_system: bool = False
     is_exclusive: bool = False
     show_in_label_list: bool = True
     show_in_message_list: bool = True
     show_if_unread: bool = False
+    is_deleted: bool = False
+    created_at: datetime
+    updated_at: datetime
     thread_count: int = 0
     children: List["LabelTreeResponse"] = []
 

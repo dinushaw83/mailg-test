@@ -115,6 +115,11 @@ def format_email_response(email: Email, user_id: Optional[UUID] = None) -> dict:
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
                     "color": l.color,
+                    "owner_id": l.owner_id,
+                    "parent_id": l.parent_id,
+                    "is_system": l.is_system,
+                    "is_exclusive": l.is_exclusive,
+                    "is_deleted": l.is_deleted
                 })
     
     # Determine if email can be cancelled (undo send)
@@ -171,6 +176,11 @@ def format_email_list_response(email: Email, thread_email_count: Optional[int] =
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
                     "color": l.color,
+                    "owner_id": l.owner_id,
+                    "parent_id": l.parent_id,
+                    "is_system": l.is_system,
+                    "is_exclusive": l.is_exclusive,
+                    "is_deleted": l.is_deleted
                 })
     
     attachment_count = len([a for a in email.attachments if not a.is_deleted])

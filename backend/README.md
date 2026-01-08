@@ -300,14 +300,11 @@ curl -X GET http://localhost:8766/api/v1/emails \
 
 ### Available Users (from fixtures)
 
-| Email                   | Name           | Role (UserRole)   | Use Case           |
-|-------------------------|----------------|-------------------|--------------------|
-| admin@example.com       | Admin User     | `UserRole.ADMIN`  | Full access        |
-| john@example.com        | John Smith     | `UserRole.USER`   | Regular access     |
-| jane@example.com        | Jane Doe       | `UserRole.USER`   | Regular access     |
-| bob@example.com         | Bob Wilson     | `UserRole.USER`   | Regular access     |
-| emily.davis@example.com | Emily Davis    | `UserRole.USER`   | Regular access     |
-| inactive@example.com    | Inactive User  | `UserRole.USER`   | Inactive account   |
+| Email                    | Name          | Role (UserRole)   | Use Case           |
+|--------------------------|---------------|-------------------|--------------------|
+| john.doe@example.com     | John Doe      | `UserRole.ADMIN`  | Full access        |
+| jane.smith@example.com   | Jane Smith    | `UserRole.USER`   | Regular access     |
+| mike.johnson@example.com | Mike Johnson  | `UserRole.USER`   | Regular access     |
 
 Note: This mailg uses email-based authentication without passwords. Roles correspond to `UserRole` enum in `app.core.constants`. Extend as needed for production.
 
