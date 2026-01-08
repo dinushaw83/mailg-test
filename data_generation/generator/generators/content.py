@@ -159,12 +159,25 @@ class BodyGenerator(BaseGenerator):
 
 @generator(SemanticType.BODY_HTML, priority=80)
 class HtmlBodyGenerator(BaseGenerator):
-    """Generates HTML formatted body content."""
+    """Generates HTML formatted body content.
+
+    If plain body already exists in context, converts it to HTML.
+    Otherwise generates new content as HTML.
+    """
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.05):
             return None
 
+        # Check if plain body already exists
+        plain_body = context.get_field_value("body")
+        if plain_body:
+            # Convert plain text to HTML
+            paragraphs = plain_body.split("\n\n")
+            html_parts = [f"<p>{p.strip()}</p>" for p in paragraphs if p.strip()]
+            return "\n".join(html_parts)
+
+        # Generate new HTML content
         paragraphs = context.random().randint(1, 3)
         html_parts = []
 

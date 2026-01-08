@@ -9,149 +9,724 @@ default_rows: 100
 
 # Seed users - always included in generated data
 seed_users:
+  # Admin users
   - id: 00000000-0000-0000-0000-000000000001
     first_name: John
     last_name: Doe
     email: john.doe@example.com
     role: admin
+    company: Acme Corp
+    job_title: CEO
+    phone: "+1-555-0101"
+    phone_country_code: "+1"
+    phone_label: "Work"
     undo_send_delay_seconds: 10
     active: true
+    is_deleted: false
   - id: 00000000-0000-0000-0000-000000000002
+    first_name: Sarah
+    last_name: Williams
+    email: sarah.williams@example.com
+    role: admin
+    company: Acme Corp
+    job_title: CTO
+    phone: "+1-555-0102"
+    phone_country_code: "+1"
+    phone_label: "Work"
+    undo_send_delay_seconds: 15
+    active: true
+    is_deleted: false
+  - id: 00000000-0000-0000-0000-000000000003
+    first_name: Michael
+    last_name: Chen
+    email: michael.chen@example.com
+    role: admin
+    company: Acme Corp
+    job_title: VP Engineering
+    phone: "+1-555-0103"
+    phone_country_code: "+1"
+    phone_label: "Work"
+    undo_send_delay_seconds: 10
+    active: true
+    is_deleted: false
+
+  # Regular users
+  - id: 00000000-0000-0000-0000-000000000004
     first_name: Jane
     last_name: Smith
     email: jane.smith@example.com
     role: user
+    company: Acme Corp
+    job_title: Product Manager
+    phone: "+1-555-0104"
+    phone_country_code: "+1"
+    phone_label: "Mobile"
     undo_send_delay_seconds: 15
     active: true
-  - id: 00000000-0000-0000-0000-000000000003
-    first_name: Mike
-    last_name: Johnson
-    email: mike.johnson@example.com
+    is_deleted: false
+  - id: 00000000-0000-0000-0000-000000000005
+    first_name: David
+    last_name: Brown
+    email: david.brown@example.com
     role: user
+    company: Acme Corp
+    job_title: Senior Developer
+    phone: "+1-555-0105"
+    phone_country_code: "+1"
+    phone_label: "Mobile"
     undo_send_delay_seconds: 10
     active: true
+    is_deleted: false
+  - id: 00000000-0000-0000-0000-000000000006
+    first_name: Emily
+    last_name: Davis
+    email: emily.davis@example.com
+    role: user
+    company: Acme Corp
+    job_title: UX Designer
+    phone: "+1-555-0106"
+    phone_country_code: "+1"
+    phone_label: "Mobile"
+    undo_send_delay_seconds: 15
+    active: true
+    is_deleted: false
 
-# Seed folders - system folders for seed users
-seed_folders:
-  # User 1 folders
-  - id: 10000000-0000-0000-0000-000000000001
-    owner_id: 00000000-0000-0000-0000-000000000001
-    name: Inbox
-    folder_type: inbox
-    is_system: true
-  - id: 10000000-0000-0000-0000-000000000002
-    owner_id: 00000000-0000-0000-0000-000000000001
-    name: Sent
-    folder_type: sent
-    is_system: true
-  - id: 10000000-0000-0000-0000-000000000003
-    owner_id: 00000000-0000-0000-0000-000000000001
-    name: Drafts
-    folder_type: drafts
-    is_system: true
-  - id: 10000000-0000-0000-0000-000000000004
-    owner_id: 00000000-0000-0000-0000-000000000001
-    name: Trash
-    folder_type: trash
-    is_system: true
-  - id: 10000000-0000-0000-0000-000000000005
-    owner_id: 00000000-0000-0000-0000-000000000001
-    name: Spam
-    folder_type: spam
-    is_system: true
-  - id: 10000000-0000-0000-0000-000000000006
-    owner_id: 00000000-0000-0000-0000-000000000001
-    name: Starred
-    folder_type: starred
-    is_system: true
-  # User 2 folders
-  - id: 20000000-0000-0000-0000-000000000001
-    owner_id: 00000000-0000-0000-0000-000000000002
-    name: Inbox
-    folder_type: inbox
-    is_system: true
-  - id: 20000000-0000-0000-0000-000000000002
-    owner_id: 00000000-0000-0000-0000-000000000002
-    name: Sent
-    folder_type: sent
-    is_system: true
-  - id: 20000000-0000-0000-0000-000000000003
-    owner_id: 00000000-0000-0000-0000-000000000002
-    name: Drafts
-    folder_type: drafts
-    is_system: true
-  - id: 20000000-0000-0000-0000-000000000004
-    owner_id: 00000000-0000-0000-0000-000000000002
-    name: Trash
-    folder_type: trash
-    is_system: true
-  - id: 20000000-0000-0000-0000-000000000005
-    owner_id: 00000000-0000-0000-0000-000000000002
-    name: Spam
-    folder_type: spam
-    is_system: true
-  - id: 20000000-0000-0000-0000-000000000006
-    owner_id: 00000000-0000-0000-0000-000000000002
-    name: Starred
-    folder_type: starred
-    is_system: true
-  # User 3 folders
-  - id: 30000000-0000-0000-0000-000000000001
-    owner_id: 00000000-0000-0000-0000-000000000003
-    name: Inbox
-    folder_type: inbox
-    is_system: true
-  - id: 30000000-0000-0000-0000-000000000002
-    owner_id: 00000000-0000-0000-0000-000000000003
-    name: Sent
-    folder_type: sent
-    is_system: true
-  - id: 30000000-0000-0000-0000-000000000003
-    owner_id: 00000000-0000-0000-0000-000000000003
-    name: Drafts
-    folder_type: drafts
-    is_system: true
-  - id: 30000000-0000-0000-0000-000000000004
-    owner_id: 00000000-0000-0000-0000-000000000003
-    name: Trash
-    folder_type: trash
-    is_system: true
-  - id: 30000000-0000-0000-0000-000000000005
-    owner_id: 00000000-0000-0000-0000-000000000003
-    name: Spam
-    folder_type: spam
-    is_system: true
-  - id: 30000000-0000-0000-0000-000000000006
-    owner_id: 00000000-0000-0000-0000-000000000003
-    name: Starred
-    folder_type: starred
-    is_system: true
-
-# Seed labels - common labels shared across users
+# Seed labels - hierarchical labels with 3 levels
 seed_labels:
+  # Level 1: Root labels
   - id: 40000000-0000-0000-0000-000000000001
     owner_id: 00000000-0000-0000-0000-000000000001
-    name: Important
-    color: "#FF0000"
+    name: Work
+    color: "#b4c7ff"
+    parent_id: null
+    is_deleted: false
   - id: 40000000-0000-0000-0000-000000000002
     owner_id: 00000000-0000-0000-0000-000000000001
-    name: Work
-    color: "#0000FF"
+    name: Personal
+    color: "#b4ffb4"
+    parent_id: null
+    is_deleted: false
   - id: 40000000-0000-0000-0000-000000000003
     owner_id: 00000000-0000-0000-0000-000000000001
-    name: Personal
-    color: "#00FF00"
+    name: Projects
+    color: "#ffd7b4"
+    parent_id: null
+    is_deleted: false
+
+  # Level 2: Children of Work
+  - id: 40000000-0000-0000-0000-000000000004
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Urgent
+    color: "#ffb4b4"
+    parent_id: 40000000-0000-0000-0000-000000000001
+    is_deleted: false
+  - id: 40000000-0000-0000-0000-000000000005
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Meetings
+    color: "#c7d7ff"
+    parent_id: 40000000-0000-0000-0000-000000000001
+    is_deleted: false
+  - id: 40000000-0000-0000-0000-000000000006
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Reports
+    color: "#b4e6ff"
+    parent_id: 40000000-0000-0000-0000-000000000001
+    is_deleted: false
+
+  # Level 2: Children of Personal
+  - id: 40000000-0000-0000-0000-000000000007
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Family
+    color: "#c7ffc7"
+    parent_id: 40000000-0000-0000-0000-000000000002
+    is_deleted: false
+  - id: 40000000-0000-0000-0000-000000000008
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Friends
+    color: "#d7ffd7"
+    parent_id: 40000000-0000-0000-0000-000000000002
+    is_deleted: false
+
+  # Level 2: Children of Projects
+  - id: 40000000-0000-0000-0000-000000000009
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Client A
+    color: "#ffeab4"
+    parent_id: 40000000-0000-0000-0000-000000000003
+    is_deleted: false
+  - id: 40000000-0000-0000-0000-000000000010
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Client B
+    color: "#fff3c7"
+    parent_id: 40000000-0000-0000-0000-000000000003
+    is_deleted: false
+
+  # Level 3: Children of Urgent (Work > Urgent)
+  - id: 40000000-0000-0000-0000-000000000011
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Critical
+    color: "#ffcaca"
+    parent_id: 40000000-0000-0000-0000-000000000004
+    is_deleted: false
+  - id: 40000000-0000-0000-0000-000000000012
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: High Priority
+    color: "#ffd4b4"
+    parent_id: 40000000-0000-0000-0000-000000000004
+    is_deleted: false
+
+  # Level 3: Children of Meetings (Work > Meetings)
+  - id: 40000000-0000-0000-0000-000000000013
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Team Meetings
+    color: "#d4e0ff"
+    parent_id: 40000000-0000-0000-0000-000000000005
+    is_deleted: false
+  - id: 40000000-0000-0000-0000-000000000014
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Client Meetings
+    color: "#b4d4ff"
+    parent_id: 40000000-0000-0000-0000-000000000005
+    is_deleted: false
+
+  # Level 3: Children of Client A (Projects > Client A)
+  - id: 40000000-0000-0000-0000-000000000015
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Phase 1
+    color: "#ffdeb4"
+    parent_id: 40000000-0000-0000-0000-000000000009
+    is_deleted: false
+  - id: 40000000-0000-0000-0000-000000000016
+    owner_id: 00000000-0000-0000-0000-000000000001
+    name: Phase 2
+    color: "#ffe8c7"
+    parent_id: 40000000-0000-0000-0000-000000000009
+    is_deleted: false
+
+# Seed threads
+seed_threads:
+  - id: 50000000-0000-0000-0000-000000000001
+    subject: "Q1 Project Planning Discussion"
+    owner_id: 00000000-0000-0000-0000-000000000001
+    participant_count: 3
+    email_count: 2
+    last_email_at: "2025-12-15T10:30:00"
+  - id: 50000000-0000-0000-0000-000000000002
+    subject: "Team Sync - Weekly Update"
+    owner_id: 00000000-0000-0000-0000-000000000002
+    participant_count: 4
+    email_count: 3
+    last_email_at: "2025-12-14T15:45:00"
+  - id: 50000000-0000-0000-0000-000000000003
+    subject: "Product Roadmap Review"
+    owner_id: 00000000-0000-0000-0000-000000000004
+    participant_count: 2
+    email_count: 1
+    last_email_at: "2025-12-13T09:00:00"
+  - id: 50000000-0000-0000-0000-000000000004
+    subject: "Draft: New feature proposal"
+    owner_id: 00000000-0000-0000-0000-000000000001
+    participant_count: 1
+    email_count: 1
+    last_email_at: "2025-12-10T08:00:00"
+  - id: 50000000-0000-0000-0000-000000000005
+    subject: "Scheduled: Reminder for tomorrow's meeting"
+    owner_id: 00000000-0000-0000-0000-000000000002
+    participant_count: 1
+    email_count: 1
+    last_email_at: "2025-12-15T18:00:00"
+  - id: 50000000-0000-0000-0000-000000000006
+    subject: "Special offer: 50% off this week only!"
+    owner_id: 00000000-0000-0000-0000-000000000004
+    participant_count: 2
+    email_count: 2
+    last_email_at: "2025-12-14T12:00:00"
+  - id: 50000000-0000-0000-0000-000000000007
+    subject: "Emily Davis liked your post"
+    owner_id: 00000000-0000-0000-0000-000000000006
+    participant_count: 2
+    email_count: 2
+    last_email_at: "2025-12-13T16:30:00"
+  - id: 50000000-0000-0000-0000-000000000008
+    subject: "Your order #12345 has shipped"
+    owner_id: 00000000-0000-0000-0000-000000000005
+    participant_count: 2
+    email_count: 2
+    last_email_at: "2025-12-12T10:15:00"
+  - id: 50000000-0000-0000-0000-000000000009
+    subject: "[Dev Forum] New discussion: Best practices for API design"
+    owner_id: 00000000-0000-0000-0000-000000000003
+    participant_count: 2
+    email_count: 2
+    last_email_at: "2025-12-11T14:20:00"
+  - id: 50000000-0000-0000-0000-000000000010
+    subject: "Old conversation - archived"
+    owner_id: 00000000-0000-0000-0000-000000000002
+    participant_count: 2
+    email_count: 1
+    last_email_at: "2025-11-10T09:00:00"
+  - id: 50000000-0000-0000-0000-000000000011
+    subject: "Cancelled: Meeting invitation"
+    owner_id: 00000000-0000-0000-0000-000000000001
+    participant_count: 1
+    email_count: 1
+    last_email_at: "2025-12-09T11:00:00"
+
+# Seed emails - covering all status and category combinations
+seed_emails:
+  # DRAFT emails
+  - id: 60000000-0000-0000-0000-000000000001
+    subject: "Draft: New feature proposal"
+    body: "This is a draft email about a new feature we should consider implementing."
+    html_body: "<p>This is a draft email about a new feature we should consider implementing.</p>"
+    status: draft
+    folder: drafts
+    category: primary
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000001
+    thread_id: 50000000-0000-0000-0000-000000000004
+    created_at: "2025-12-10T08:00:00"
+    updated_at: "2025-12-10T08:00:00"
+
+  # QUEUED email
+  - id: 60000000-0000-0000-0000-000000000002
+    subject: "Scheduled: Reminder for tomorrow's meeting"
+    body: "Don't forget about tomorrow's team meeting at 10 AM."
+    html_body: "<p>Don't forget about tomorrow's team meeting at 10 AM.</p>"
+    status: queued
+    folder: drafts
+    category: primary
+    is_read: true
+    is_starred: false
+    is_important: true
+    sender_id: 00000000-0000-0000-0000-000000000002
+    thread_id: 50000000-0000-0000-0000-000000000005
+    scheduled_send_at: "2025-12-16T08:00:00"
+    created_at: "2025-12-15T18:00:00"
+    updated_at: "2025-12-15T18:00:00"
+
+  # SENT emails - PRIMARY category (sender copy)
+  - id: 60000000-0000-0000-0000-000000000003
+    subject: "Q1 Project Planning Discussion"
+    body: "Hi team,\n\nLet's discuss the Q1 project planning. I've prepared an initial draft of the roadmap.\n\nBest regards,\nJohn"
+    html_body: "<p>Hi team,</p><p>Let's discuss the Q1 project planning. I've prepared an initial draft of the roadmap.</p><p>Best regards,<br>John</p>"
+    status: sent
+    folder: sent
+    category: primary
+    is_read: true
+    is_starred: false
+    is_important: true
+    sender_id: 00000000-0000-0000-0000-000000000001
+    thread_id: 50000000-0000-0000-0000-000000000001
+    sent_at: "2025-12-15T10:00:00"
+    created_at: "2025-12-15T10:00:00"
+    updated_at: "2025-12-15T10:00:00"
+
+  # RECEIVED emails - receiver copies
+  - id: 60000000-0000-0000-0000-000000000004
+    subject: "Q1 Project Planning Discussion"
+    body: "Hi team,\n\nLet's discuss the Q1 project planning. I've prepared an initial draft of the roadmap.\n\nBest regards,\nJohn"
+    html_body: "<p>Hi team,</p><p>Let's discuss the Q1 project planning. I've prepared an initial draft of the roadmap.</p><p>Best regards,<br>John</p>"
+    status: received
+    folder: inbox
+    category: primary
+    is_read: false
+    is_starred: false
+    is_important: true
+    sender_id: 00000000-0000-0000-0000-000000000001
+    thread_id: 50000000-0000-0000-0000-000000000001
+    received_at: "2025-12-15T10:00:00"
+    created_at: "2025-12-15T10:00:00"
+    updated_at: "2025-12-15T10:00:00"
+
+  - id: 60000000-0000-0000-0000-000000000005
+    subject: "Q1 Project Planning Discussion"
+    body: "Hi team,\n\nLet's discuss the Q1 project planning. I've prepared an initial draft of the roadmap.\n\nBest regards,\nJohn"
+    html_body: "<p>Hi team,</p><p>Let's discuss the Q1 project planning. I've prepared an initial draft of the roadmap.</p><p>Best regards,<br>John</p>"
+    status: received
+    folder: inbox
+    category: primary
+    is_read: true
+    is_starred: true
+    is_important: true
+    sender_id: 00000000-0000-0000-0000-000000000001
+    thread_id: 50000000-0000-0000-0000-000000000001
+    received_at: "2025-12-15T10:00:00"
+    created_at: "2025-12-15T10:00:00"
+    updated_at: "2025-12-15T10:15:00"
+
+  # SENT - PROMOTIONS category (sender copy)
+  - id: 60000000-0000-0000-0000-000000000006
+    subject: "Special offer: 50% off this week only!"
+    body: "Don't miss out on our exclusive deals. Shop now and save big!"
+    html_body: "<p>Don't miss out on our exclusive deals. Shop now and save big!</p>"
+    status: sent
+    folder: sent
+    category: promotions
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000004
+    thread_id: 50000000-0000-0000-0000-000000000006
+    sent_at: "2025-12-14T12:00:00"
+    created_at: "2025-12-14T12:00:00"
+    updated_at: "2025-12-14T12:00:00"
+
+  # RECEIVED - PROMOTIONS category
+  - id: 60000000-0000-0000-0000-000000000007
+    subject: "Special offer: 50% off this week only!"
+    body: "Don't miss out on our exclusive deals. Shop now and save big!"
+    html_body: "<p>Don't miss out on our exclusive deals. Shop now and save big!</p>"
+    status: received
+    folder: inbox
+    category: promotions
+    is_read: false
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000004
+    thread_id: 50000000-0000-0000-0000-000000000006
+    received_at: "2025-12-14T12:00:00"
+    created_at: "2025-12-14T12:00:00"
+    updated_at: "2025-12-14T12:00:00"
+
+  # SENT - SOCIAL category (sender copy)
+  - id: 60000000-0000-0000-0000-000000000008
+    subject: "Emily Davis liked your post"
+    body: "Emily Davis and 5 others liked your recent post."
+    html_body: "<p>Emily Davis and 5 others liked your recent post.</p>"
+    status: sent
+    folder: sent
+    category: social
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000006
+    thread_id: 50000000-0000-0000-0000-000000000007
+    sent_at: "2025-12-13T16:30:00"
+    created_at: "2025-12-13T16:30:00"
+    updated_at: "2025-12-13T16:30:00"
+
+  # RECEIVED - SOCIAL category
+  - id: 60000000-0000-0000-0000-000000000009
+    subject: "Emily Davis liked your post"
+    body: "Emily Davis and 5 others liked your recent post."
+    html_body: "<p>Emily Davis and 5 others liked your recent post.</p>"
+    status: received
+    folder: inbox
+    category: social
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000006
+    thread_id: 50000000-0000-0000-0000-000000000007
+    received_at: "2025-12-13T16:30:00"
+    created_at: "2025-12-13T16:30:00"
+    updated_at: "2025-12-13T16:35:00"
+
+  # SENT - UPDATES category (sender copy)
+  - id: 60000000-0000-0000-0000-000000000010
+    subject: "Your order #12345 has shipped"
+    body: "Your order is on its way! Track your package using the link below."
+    html_body: "<p>Your order is on its way! Track your package using the link below.</p>"
+    status: sent
+    folder: sent
+    category: updates
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000005
+    thread_id: 50000000-0000-0000-0000-000000000008
+    sent_at: "2025-12-12T10:15:00"
+    created_at: "2025-12-12T10:15:00"
+    updated_at: "2025-12-12T10:15:00"
+
+  # RECEIVED - UPDATES category
+  - id: 60000000-0000-0000-0000-000000000011
+    subject: "Your order #12345 has shipped"
+    body: "Your order is on its way! Track your package using the link below."
+    html_body: "<p>Your order is on its way! Track your package using the link below.</p>"
+    status: received
+    folder: inbox
+    category: updates
+    is_read: false
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000005
+    thread_id: 50000000-0000-0000-0000-000000000008
+    received_at: "2025-12-12T10:15:00"
+    created_at: "2025-12-12T10:15:00"
+    updated_at: "2025-12-12T10:15:00"
+
+  # SENT - FORUMS category (sender copy)
+  - id: 60000000-0000-0000-0000-000000000012
+    subject: "[Dev Forum] New discussion: Best practices for API design"
+    body: "Join the discussion about API design best practices in our developer forum."
+    html_body: "<p>Join the discussion about API design best practices in our developer forum.</p>"
+    status: sent
+    folder: sent
+    category: forums
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000003
+    thread_id: 50000000-0000-0000-0000-000000000009
+    sent_at: "2025-12-11T14:20:00"
+    created_at: "2025-12-11T14:20:00"
+    updated_at: "2025-12-11T14:20:00"
+
+  # RECEIVED - FORUMS category
+  - id: 60000000-0000-0000-0000-000000000013
+    subject: "[Dev Forum] New discussion: Best practices for API design"
+    body: "Join the discussion about API design best practices in our developer forum."
+    html_body: "<p>Join the discussion about API design best practices in our developer forum.</p>"
+    status: received
+    folder: inbox
+    category: forums
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000003
+    thread_id: 50000000-0000-0000-0000-000000000009
+    received_at: "2025-12-11T14:20:00"
+    created_at: "2025-12-11T14:20:00"
+    updated_at: "2025-12-11T14:25:00"
+
+  # ARCHIVED email
+  - id: 60000000-0000-0000-0000-000000000014
+    subject: "Old conversation - archived"
+    body: "This is an archived email from last month."
+    html_body: "<p>This is an archived email from last month.</p>"
+    status: archived
+    folder: inbox
+    category: primary
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000002
+    thread_id: 50000000-0000-0000-0000-000000000010
+    received_at: "2025-11-10T09:00:00"
+    created_at: "2025-11-10T09:00:00"
+    updated_at: "2025-12-01T10:00:00"
+
+  # CANCELLED email
+  - id: 60000000-0000-0000-0000-000000000015
+    subject: "Cancelled: Meeting invitation"
+    body: "This email was cancelled during the undo send period."
+    html_body: "<p>This email was cancelled during the undo send period.</p>"
+    status: cancelled
+    folder: drafts
+    category: primary
+    is_read: true
+    is_starred: false
+    is_important: false
+    sender_id: 00000000-0000-0000-0000-000000000001
+    thread_id: 50000000-0000-0000-0000-000000000011
+    created_at: "2025-12-09T11:00:00"
+    updated_at: "2025-12-09T11:01:00"
+
+# Seed email recipients
+seed_email_recipients:
+  # Recipients for email 60000000-0000-0000-0000-000000000003 (sender copy)
+  - id: 70000000-0000-0000-0000-000000000001
+    email_id: 60000000-0000-0000-0000-000000000003
+    recipient_id: 00000000-0000-0000-0000-000000000002
+    recipient_email: sarah.williams@example.com
+    recipient_name: Sarah Williams
+    recipient_type: to
+  - id: 70000000-0000-0000-0000-000000000002
+    email_id: 60000000-0000-0000-0000-000000000003
+    recipient_id: 00000000-0000-0000-0000-000000000004
+    recipient_email: jane.smith@example.com
+    recipient_name: Jane Smith
+    recipient_type: to
+
+  # Recipient for email 60000000-0000-0000-0000-000000000004 (receiver copy)
+  - id: 70000000-0000-0000-0000-000000000003
+    email_id: 60000000-0000-0000-0000-000000000004
+    recipient_id: 00000000-0000-0000-0000-000000000002
+    recipient_email: sarah.williams@example.com
+    recipient_name: Sarah Williams
+    recipient_type: to
+
+  # Recipient for email 60000000-0000-0000-0000-000000000005 (receiver copy)
+  - id: 70000000-0000-0000-0000-000000000004
+    email_id: 60000000-0000-0000-0000-000000000005
+    recipient_id: 00000000-0000-0000-0000-000000000004
+    recipient_email: jane.smith@example.com
+    recipient_name: Jane Smith
+    recipient_type: to
+
+  # Recipients for email 60000000-0000-0000-0000-000000000006 (sender copy)
+  - id: 70000000-0000-0000-0000-000000000005
+    email_id: 60000000-0000-0000-0000-000000000006
+    recipient_id: 00000000-0000-0000-0000-000000000005
+    recipient_email: david.brown@example.com
+    recipient_name: David Brown
+    recipient_type: to
+
+  # Recipient for email 60000000-0000-0000-0000-000000000007 (receiver copy)
+  - id: 70000000-0000-0000-0000-000000000006
+    email_id: 60000000-0000-0000-0000-000000000007
+    recipient_id: 00000000-0000-0000-0000-000000000005
+    recipient_email: david.brown@example.com
+    recipient_name: David Brown
+    recipient_type: to
+
+  # Recipients for email 60000000-0000-0000-0000-000000000008 (sender copy)
+  - id: 70000000-0000-0000-0000-000000000007
+    email_id: 60000000-0000-0000-0000-000000000008
+    recipient_id: 00000000-0000-0000-0000-000000000001
+    recipient_email: john.doe@example.com
+    recipient_name: John Doe
+    recipient_type: to
+
+  # Recipient for email 60000000-0000-0000-0000-000000000009 (receiver copy)
+  - id: 70000000-0000-0000-0000-000000000008
+    email_id: 60000000-0000-0000-0000-000000000009
+    recipient_id: 00000000-0000-0000-0000-000000000001
+    recipient_email: john.doe@example.com
+    recipient_name: John Doe
+    recipient_type: to
+
+  # Recipients for email 60000000-0000-0000-0000-000000000010 (sender copy)
+  - id: 70000000-0000-0000-0000-000000000009
+    email_id: 60000000-0000-0000-0000-000000000010
+    recipient_id: 00000000-0000-0000-0000-000000000006
+    recipient_email: emily.davis@example.com
+    recipient_name: Emily Davis
+    recipient_type: to
+
+  # Recipient for email 60000000-0000-0000-0000-000000000011 (receiver copy)
+  - id: 70000000-0000-0000-0000-000000000010
+    email_id: 60000000-0000-0000-0000-000000000011
+    recipient_id: 00000000-0000-0000-0000-000000000006
+    recipient_email: emily.davis@example.com
+    recipient_name: Emily Davis
+    recipient_type: to
+
+  # Recipients for email 60000000-0000-0000-0000-000000000012 (sender copy)
+  - id: 70000000-0000-0000-0000-000000000011
+    email_id: 60000000-0000-0000-0000-000000000012
+    recipient_id: 00000000-0000-0000-0000-000000000005
+    recipient_email: david.brown@example.com
+    recipient_name: David Brown
+    recipient_type: to
+
+  # Recipient for email 60000000-0000-0000-0000-000000000013 (receiver copy)
+  - id: 70000000-0000-0000-0000-000000000012
+    email_id: 60000000-0000-0000-0000-000000000013
+    recipient_id: 00000000-0000-0000-0000-000000000005
+    recipient_email: david.brown@example.com
+    recipient_name: David Brown
+    recipient_type: to
+
+  # Recipient for email 60000000-0000-0000-0000-000000000014 (archived email)
+  - id: 70000000-0000-0000-0000-000000000013
+    email_id: 60000000-0000-0000-0000-000000000014
+    recipient_id: 00000000-0000-0000-0000-000000000001
+    recipient_email: john.doe@example.com
+    recipient_name: John Doe
+    recipient_type: to
+
+# Seed thread labels - linking threads with labels
+seed_thread_labels:
+  # Thread 50000000-0000-0000-0000-000000000001 (Q1 Project Planning Discussion)
+  - id: 80000000-0000-0000-0000-000000000001
+    thread_id: 50000000-0000-0000-0000-000000000001
+    label_id: 40000000-0000-0000-0000-000000000001  # Work
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000002
+    thread_id: 50000000-0000-0000-0000-000000000001
+    label_id: 40000000-0000-0000-0000-000000000003  # Projects
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000003
+    thread_id: 50000000-0000-0000-0000-000000000001
+    label_id: 40000000-0000-0000-0000-000000000005  # Meetings
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000004
+    thread_id: 50000000-0000-0000-0000-000000000001
+    label_id: 40000000-0000-0000-0000-000000000004  # Urgent
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000005
+    thread_id: 50000000-0000-0000-0000-000000000001
+    label_id: 40000000-0000-0000-0000-000000000013  # Team Meetings
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000002 (Team Sync - Weekly Update)
+  - id: 80000000-0000-0000-0000-000000000006
+    thread_id: 50000000-0000-0000-0000-000000000002
+    label_id: 40000000-0000-0000-0000-000000000001  # Work
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000007
+    thread_id: 50000000-0000-0000-0000-000000000002
+    label_id: 40000000-0000-0000-0000-000000000005  # Meetings
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000003 (Product Roadmap Review)
+  - id: 80000000-0000-0000-0000-000000000008
+    thread_id: 50000000-0000-0000-0000-000000000003
+    label_id: 40000000-0000-0000-0000-000000000003  # Projects
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000004 (Draft: New feature proposal)
+  - id: 80000000-0000-0000-0000-000000000009
+    thread_id: 50000000-0000-0000-0000-000000000004
+    label_id: 40000000-0000-0000-0000-000000000001  # Work
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000010
+    thread_id: 50000000-0000-0000-0000-000000000004
+    label_id: 40000000-0000-0000-0000-000000000009  # Client A
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000006 (Special offer: 50% off this week only!)
+  - id: 80000000-0000-0000-0000-000000000011
+    thread_id: 50000000-0000-0000-0000-000000000006
+    label_id: 40000000-0000-0000-0000-000000000002  # Personal
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000007 (Emily Davis liked your post)
+  - id: 80000000-0000-0000-0000-000000000012
+    thread_id: 50000000-0000-0000-0000-000000000007
+    label_id: 40000000-0000-0000-0000-000000000002  # Personal
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000013
+    thread_id: 50000000-0000-0000-0000-000000000007
+    label_id: 40000000-0000-0000-0000-000000000008  # Friends
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000008 (Your order #12345 has shipped)
+  - id: 80000000-0000-0000-0000-000000000014
+    thread_id: 50000000-0000-0000-0000-000000000008
+    label_id: 40000000-0000-0000-0000-000000000002  # Personal
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000009 ([Dev Forum] New discussion)
+  - id: 80000000-0000-0000-0000-000000000015
+    thread_id: 50000000-0000-0000-0000-000000000009
+    label_id: 40000000-0000-0000-0000-000000000001  # Work
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+
+  # Thread 50000000-0000-0000-0000-000000000010 (Old conversation - archived)
+  - id: 80000000-0000-0000-0000-000000000016
+    thread_id: 50000000-0000-0000-0000-000000000010
+    label_id: 40000000-0000-0000-0000-000000000001  # Work
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
+  - id: 80000000-0000-0000-0000-000000000017
+    thread_id: 50000000-0000-0000-0000-000000000010
+    label_id: 40000000-0000-0000-0000-000000000006  # Reports
+    user_id: 00000000-0000-0000-0000-000000000001  # John Doe (label owner)
 
 # Table-specific default row counts
 table_defaults:
   users: 50
-  folders: 150  # Custom folders (6 system folders per user already seeded)
   threads: 200
   emails: 1000
-  email_recipients: 2500  # Multiple recipients per email
+  email_recipients: 0  # Generated automatically by _create_email_sender_receiver_structure
   attachments: 300
-  labels: 80
-  email_labels: 800
+  labels: 40
+  thread_labels: 500
   email_templates: 30
   saved_searches: 50
   api_logs: 0  # Generated by application at runtime, not seed data
@@ -178,10 +753,6 @@ distributions:
       updates: 10
       forums: 5
 
-  folders:
-    folder_type:
-      custom: 100  # System folders are seeded separately
-
   email_recipients:
     recipient_type:
       to: 70
@@ -203,9 +774,6 @@ enums:
     status: [draft, queued, sent, received, archived, cancelled]
     category: [primary, promotions, social, updates, forums]
 
-  folders:
-    folder_type: [inbox, sent, drafts, trash, spam, starred, custom]
-
   email_recipients:
     recipient_type: [to, cc, bcc]
 
@@ -217,41 +785,36 @@ enums:
     operation: [CREATE, READ, UPDATE, DELETE, RESTORE]
 
 # Null probability overrides for specific fields
+# Lower values = more fields populated with data
 null_probabilities:
   users:
-    photo: 0.60
-    email_label: 0.20
-    company: 0.40
-    job_title: 0.45
-    phone: 0.30
-    phone_country_code: 0.30
-    phone_label: 0.30
-    address: 0.50
-    birthday_month: 0.70
-    birthday_day: 0.70
-    birthday_year: 0.70
-    significant_dates: 0.80
-    website: 0.60
-    related_persons: 0.70
-    labels: 0.50
-    custom_fields: 0.80
-    notes: 0.60
+    photo: 0.30                # 70% will have photos
+    email_label: 0.10          # 90% will have email labels
+    company: 0.15              # 85% will have company
+    job_title: 0.20            # 80% will have job title
+    phone: 0.10                # 90% will have phone
+    phone_country_code: 0.10   # 90% will have phone country code
+    phone_label: 0.10          # 90% will have phone label
+    address: 0.40              # 60% will have address
+    birthday_month: 0.50       # 50% will have birthday month
+    birthday_day: 0.50         # 50% will have birthday day
+    birthday_year: 0.50        # 50% will have birthday year
+    significant_dates: 0.70    # 30% will have significant dates
+    website: 0.50              # 50% will have website
+    related_persons: 0.60      # 40% will have related persons
+    labels: 0.40               # 60% will have labels
+    custom_fields: 0.70        # 30% will have custom fields
+    notes: 0.50                # 50% will have notes
 
   emails:
-    body: 0.10
-    html_body: 0.40
-    thread_id: 0.20
-    folder_id: 0.10
-    parent_email_id: 0.70  # Most emails are not replies
-    sent_at: 0.50  # Depends on status
-    received_at: 0.55  # Depends on status
-    snooze_until: 0.95
-    scheduled_send_at: 0.98  # Only for queued emails
-
-  folders:
-    parent_folder_id: 0.80  # Most folders are top-level
-    color: 0.50
-    icon: 0.50
+    body: 0.0                 # 100% will have body
+    html_body: 0.0            # 100% will have html_body
+    thread_id: 0.0             # 100% will have thread_id (required field)
+    parent_email_id: 0.70      # Most emails are not replies
+    sent_at: 0.50              # Depends on status
+    received_at: 0.55          # Depends on status
+    snooze_until: 0.95         # 5% will be snoozed
+    scheduled_send_at: 0.98    # Only for queued emails
 
   labels:
     parent_id: 0.80  # Most labels are top-level
@@ -293,8 +856,6 @@ id_registration_attributes:
   emails:
     - status
     - category
-  folders:
-    - folder_type
 
 # Assignment constraints
 # Limits how many times a single entity can be referenced
@@ -308,11 +869,6 @@ assignment_constraints:
     # No single user should own more than 25% of threads
     owner_id:
       max_percentage: 25
-
-  folders:
-    # Distribute custom folders evenly among users
-    owner_id:
-      max_percentage: 30
 
   labels:
     # Distribute labels evenly among users
@@ -415,25 +971,8 @@ templates:
     - "Good morning"
     - "Hey"
 
-  # Folder names (custom folders)
-  folders:
-    - Work
-    - Personal
-    - Family
-    - Travel
-    - Projects
-    - Clients
-    - Archive
-    - Important
-    - Follow-up
-    - Read Later
-    - Newsletters
-    - Receipts
-    - Invoices
-
   # Label names
   labels:
-    - Important
     - Urgent
     - Follow-up
     - Work
@@ -598,6 +1137,72 @@ samples:
     - Thompson
     - White
 
+  # Label names for organizing emails (Gmail-style)
+  label_names:
+    # Work-related
+    - Work
+    - Business
+    - Important
+    - Urgent
+    - Action Required
+    - Follow Up
+    - To Do
+    - Waiting
+    - Review
+    - Archive
+    # Projects & Clients
+    - Projects
+    - Clients
+    - Contractors
+    - Vendors
+    - Partners
+    - Sales
+    - Marketing
+    - Support
+    # Personal
+    - Personal
+    - Family
+    - Friends
+    - Travel
+    - Shopping
+    - Finance
+    - Bills
+    - Receipts
+    - Newsletters
+    - Subscriptions
+    # Team & Meetings
+    - Team
+    - Meetings
+    - Events
+    - Calendar
+    - Reminders
+    # Documents & Files
+    - Documents
+    - Reports
+    - Invoices
+    - Contracts
+    - Proposals
+    # Priority & Status
+    - High Priority
+    - Low Priority
+    - In Progress
+    - Completed
+    - Pending
+    - On Hold
+    # Categories
+    - Ideas
+    - Notes
+    - Reference
+    - Learning
+    - Resources
+    - Bookmarks
+    # Communication
+    - Feedback
+    - Questions
+    - Announcements
+    - Updates
+    - News
+
   # IP addresses for api_logs
   ip_addresses:
     - 192.168.1.100
@@ -611,7 +1216,6 @@ samples:
   api_endpoints:
     - /api/v1/emails
     - /api/v1/emails/{id}
-    - /api/v1/folders
     - /api/v1/labels
     - /api/v1/threads
     - /api/v1/attachments
@@ -621,7 +1225,6 @@ samples:
   # API resources for api_logs
   api_resources:
     - email
-    - folder
     - label
     - thread
     - attachment
@@ -663,14 +1266,6 @@ consistency_rules:
         sent_at: null
         received_at: null
         scheduled_send_at: null
-
-  folders:
-    # System folders cannot be deleted
-    - condition:
-        field: is_system
-        equals: true
-      set:
-        is_deleted: false
 
   # email_recipients: no post-generation rules needed
   # (at least one 'to' recipient is enforced during generation)

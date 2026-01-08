@@ -440,8 +440,8 @@ class TestLabelOperations:
         """Test removing a label from an email's thread."""
         client, token, user = client_with_auth
         
-        # Add label to the thread first (labels are now linked to threads)
-        thread_label = ThreadLabel(thread_id=sample_email.thread_id, label_id=sample_label.id)
+        # Add label to the thread first (labels are now linked to threads with user_id)
+        thread_label = ThreadLabel(thread_id=sample_email.thread_id, label_id=sample_label.id, user_id=user.id)
         db_session.add(thread_label)
         db_session.commit()
         
@@ -504,7 +504,7 @@ class TestHierarchicalLabelNames:
         db_session.add(email)
         db_session.commit()
         
-        thread_label = ThreadLabel(thread_id=thread.id, label_id=year_2025.id)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=year_2025.id, user_id=user.id)
         db_session.add(thread_label)
         db_session.commit()
         
@@ -552,7 +552,7 @@ class TestHierarchicalLabelNames:
         db_session.add(email)
         db_session.commit()
         
-        thread_label = ThreadLabel(thread_id=thread.id, label_id=family.id)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=family.id, user_id=user.id)
         db_session.add(thread_label)
         db_session.commit()
         
@@ -599,7 +599,7 @@ class TestHierarchicalLabelNames:
         db_session.add(email)
         db_session.commit()
         
-        thread_label = ThreadLabel(thread_id=thread.id, label_id=important.id)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=important.id, user_id=user.id)
         db_session.add(thread_label)
         db_session.commit()
         

@@ -92,7 +92,7 @@
               "nullable": true
             },
             "significant_dates": {
-              "type": "object",
+              "type": "array",
               "nullable": true
             },
             "website": {
@@ -100,15 +100,15 @@
               "nullable": true
             },
             "related_persons": {
-              "type": "object",
+              "type": "array",
               "nullable": true
             },
             "labels": {
-              "type": "object",
+              "type": "array",
               "nullable": true
             },
             "custom_fields": {
-              "type": "object",
+              "type": "array",
               "nullable": true
             },
             "notes": {
@@ -153,90 +153,6 @@
             "email",
             "role",
             "active",
-            "is_deleted",
-            "created_at",
-            "updated_at"
-          ]
-        },
-        "folders": {
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "primaryKey": true,
-              "indexed": true
-            },
-            "name": {
-              "type": "string",
-              "nullable": false
-            },
-            "folder_type": {
-              "type": "string",
-              "nullable": false,
-              "default": "custom",
-              "indexed": true,
-              "enum": [
-                "inbox",
-                "sent",
-                "drafts",
-                "trash",
-                "spam",
-                "starred",
-                "custom"
-              ]
-            },
-            "color": {
-              "type": "string",
-              "nullable": true
-            },
-            "icon": {
-              "type": "string",
-              "nullable": true
-            },
-            "owner_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "foreignKey": "users.id",
-              "indexed": true
-            },
-            "parent_folder_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": true,
-              "foreignKey": "folders.id"
-            },
-            "is_system": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false
-            },
-            "is_deleted": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false,
-              "indexed": true
-            },
-            "created_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            },
-            "updated_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            }
-          },
-          "required": [
-            "id",
-            "name",
-            "folder_type",
-            "owner_id",
-            "is_system",
             "is_deleted",
             "created_at",
             "updated_at"
@@ -376,6 +292,20 @@
                 "forums"
               ]
             },
+            "folder": {
+              "type": "string",
+              "nullable": false,
+              "maxLength": 20,
+              "default": "inbox",
+              "indexed": true,
+              "enum": [
+                "inbox",
+                "sent",
+                "drafts",
+                "trash",
+                "spam"
+              ]
+            },
             "snooze_until": {
               "type": "string",
               "nullable": true,
@@ -400,13 +330,6 @@
               "format": "uuid",
               "nullable": true,
               "foreignKey": "threads.id",
-              "indexed": true
-            },
-            "folder_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": true,
-              "foreignKey": "folders.id",
               "indexed": true
             },
             "parent_email_id": {
@@ -448,6 +371,7 @@
             "id",
             "subject",
             "status",
+            "folder",
             "is_read",
             "is_starred",
             "is_important",
@@ -633,7 +557,7 @@
             "updated_at"
           ]
         },
-        "email_labels": {
+        "thread_labels": {
           "properties": {
             "id": {
               "type": "string",
@@ -641,11 +565,11 @@
               "nullable": false,
               "primaryKey": true
             },
-            "email_id": {
+            "thread_id": {
               "type": "string",
               "format": "uuid",
               "nullable": false,
-              "foreignKey": "emails.id",
+              "foreignKey": "threads.id",
               "onDelete": "CASCADE",
               "indexed": true
             },
@@ -654,6 +578,14 @@
               "format": "uuid",
               "nullable": false,
               "foreignKey": "labels.id",
+              "onDelete": "CASCADE",
+              "indexed": true
+            },
+            "user_id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": false,
+              "foreignKey": "users.id",
               "onDelete": "CASCADE",
               "indexed": true
             },
@@ -666,15 +598,40 @@
           },
           "required": [
             "id",
-            "email_id",
+            "thread_id",
             "label_id",
+            "user_id",
             "created_at"
           ],
           "uniqueConstraints": [
-            [
-              "email_id",
-              "label_id"
-            ]
+            {
+              "name": "uq_thread_labels_user",
+              "columns": [
+                "thread_id",
+                "label_id",
+                "user_id"
+              ]
+            }
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_thread_labels_composite",
+              "columns": [
+                "thread_id",
+                "label_id"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "ix_thread_labels_user",
+              "columns": [
+                "user_id",
+                "thread_id"
+              ],
+              "unique": false,
+              "type": "btree"
+            }
           ]
         },
         "email_templates": {
@@ -933,22 +890,6 @@
       "type": "array",
       "default": [
         {
-          "from_table": "folders",
-          "from_column": "owner_id",
-          "to_table": "users",
-          "to_column": "id",
-          "onUpdate": "NO ACTION",
-          "onDelete": "NO ACTION"
-        },
-        {
-          "from_table": "folders",
-          "from_column": "parent_folder_id",
-          "to_table": "folders",
-          "to_column": "id",
-          "onUpdate": "NO ACTION",
-          "onDelete": "NO ACTION"
-        },
-        {
           "from_table": "threads",
           "from_column": "owner_id",
           "to_table": "users",
@@ -968,14 +909,6 @@
           "from_table": "emails",
           "from_column": "thread_id",
           "to_table": "threads",
-          "to_column": "id",
-          "onUpdate": "NO ACTION",
-          "onDelete": "NO ACTION"
-        },
-        {
-          "from_table": "emails",
-          "from_column": "folder_id",
-          "to_table": "folders",
           "to_column": "id",
           "onUpdate": "NO ACTION",
           "onDelete": "NO ACTION"
@@ -1029,15 +962,15 @@
           "onDelete": "NO ACTION"
         },
         {
-          "from_table": "email_labels",
-          "from_column": "email_id",
-          "to_table": "emails",
+          "from_table": "thread_labels",
+          "from_column": "thread_id",
+          "to_table": "threads",
           "to_column": "id",
           "onUpdate": "NO ACTION",
           "onDelete": "CASCADE"
         },
         {
-          "from_table": "email_labels",
+          "from_table": "thread_labels",
           "from_column": "label_id",
           "to_table": "labels",
           "to_column": "id",

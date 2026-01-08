@@ -233,7 +233,7 @@ def search_emails(
     # Build base query - user's emails
     query = db.query(Email).options(
         joinedload(Email.sender),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),  # Labels are on threads, not emails
         selectinload(Email.attachments),
     ).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
@@ -277,11 +277,12 @@ def search_emails(
         query = query.filter(Email.folder == folder)
     
     if label_id:
-        # Labels are now linked to threads, so filter by thread's labels
+        # Labels are user-specific on shared threads - filter by user_id
         query = query.join(Thread, Email.thread_id == Thread.id).join(
             ThreadLabel, Thread.id == ThreadLabel.thread_id
         ).filter(
-            ThreadLabel.label_id == label_id
+            ThreadLabel.label_id == label_id,
+            ThreadLabel.user_id == current_user.id  # Only this user's label associations
         )
     
     if label_name:
@@ -290,11 +291,12 @@ def search_emails(
             Label.name.ilike(f"%{label_name}%"),
             Label.is_deleted == False
         ).subquery()
-        # Labels are now linked to threads, so filter by thread's labels
+        # Labels are user-specific on shared threads - filter by user_id
         query = query.join(Thread, Email.thread_id == Thread.id).join(
             ThreadLabel, Thread.id == ThreadLabel.thread_id
         ).filter(
-            ThreadLabel.label_id.in_(label_subq)
+            ThreadLabel.label_id.in_(label_subq),
+            ThreadLabel.user_id == current_user.id  # Only this user's label associations
         )
     
     if is_read is not None:
@@ -350,7 +352,11 @@ def search_emails(
     results = []
     for email in emails:
         recipients = [r.recipient_email for r in email.recipients] if hasattr(email, 'recipients') else []
-        labels = [get_label_hierarchy_name(l) for l in email.labels if not l.is_deleted]
+        # Labels are on threads - filter by user ownership for user-specific isolation
+        labels = []
+        if email.thread and email.thread.labels:
+            labels = [get_label_hierarchy_name(l) for l in email.thread.labels 
+                      if not l.is_deleted and l.owner_id == current_user.id]
         attachments = [a for a in email.attachments if not a.is_deleted]
         
         results.append({

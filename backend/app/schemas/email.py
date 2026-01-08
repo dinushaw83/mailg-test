@@ -123,12 +123,17 @@ class AttachmentBriefResponse(BaseModel):
 
 
 class LabelBriefResponse(BaseModel):
-    """Brief label info for email response."""
+    """Label info for email response."""
     model_config = {"from_attributes": True}
     
     id: UUID
     name: str
     color: Optional[str] = None
+    owner_id: UUID
+    parent_id: Optional[UUID] = None
+    is_system: bool = False
+    is_exclusive: bool = False
+    is_deleted: bool = False
 
 
 class EmailResponse(BaseModel):

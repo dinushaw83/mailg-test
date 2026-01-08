@@ -12,13 +12,28 @@ import logging
 
 from app.db.session import get_db
 from app.models.user import User
+from app.models.label import Label
 from app.schemas.user import UserResponse, UserCreate, UserUpdate
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import VALID_USER_ROLES, UserRole
+from app.core.constants import (
+    VALID_USER_ROLES, UserRole, SystemLabel, CategoryLabel, EXCLUSIVE_SYSTEM_LABELS
+)
 
 logger = logging.getLogger(__name__)
+
+# System labels to create for each new user (using enums)
+SYSTEM_LABELS = [
+    # System labels - check if exclusive using the EXCLUSIVE_SYSTEM_LABELS set
+    {"label": sl, "is_exclusive": sl in EXCLUSIVE_SYSTEM_LABELS}
+    for sl in SystemLabel
+] + [
+    # Category labels (never exclusive)
+    {"label": cl, "is_exclusive": False}
+    for cl in CategoryLabel
+]
+
 router = APIRouter()
 
 
@@ -223,6 +238,22 @@ def create_user(
         db.add(user)
         db.commit()
         db.refresh(user)
+        
+        # Create system labels for new user
+        for label_def in SYSTEM_LABELS:
+            system_label = Label(
+                owner_id=user.id,
+                name=label_def["label"].value,  # Get string value from enum
+                color="#e1e3e1",  # Default system label color
+                is_system=True,
+                is_exclusive=label_def["is_exclusive"],
+                show_in_label_list=True,
+                show_in_message_list=True,
+                show_if_unread=False,
+            )
+            db.add(system_label)
+        db.commit()
+        
     except Exception:
         db.rollback()
         raise

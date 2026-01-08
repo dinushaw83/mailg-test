@@ -652,19 +652,18 @@ class PostgresWriter(OutputWriter):
             "api_logs",
 
             # Level 1: Depends on users (with self-references)
-            "folders",          # FK: users (owner_id), folders (parent_folder_id - self-ref)
             "labels",           # FK: users (owner_id), labels (parent_id - self-ref)
             "threads",          # FK: users (owner_id)
             "email_templates",  # FK: users (owner_id)
             "saved_searches",   # FK: users (owner_id)
 
             # Level 2: Depends on level 1
-            "emails",           # FK: users (sender_id), threads (thread_id), folders (folder_id), emails (parent_email_id - self-ref)
+            "emails",           # FK: users (sender_id), threads (thread_id), emails (parent_email_id - self-ref)
 
             # Level 3: Depends on level 2
             "email_recipients", # FK: emails (email_id), users (recipient_id)
             "attachments",      # FK: emails (email_id)
-            "email_labels",     # FK: emails (email_id), labels (label_id)
+            "thread_labels",    # FK: threads (thread_id), labels (label_id)
         ]
 
         # Sort tables by insertion order to avoid FK constraint violations

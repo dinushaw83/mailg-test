@@ -8,8 +8,8 @@ const emailService = {
   getEmails: async ({ page = 1, pageSize = 20, category = null } = {}) => {
     try {
       const params = {
-        page,
-        page_size: pageSize,
+          page,
+          page_size: pageSize,
       };
 
       // Add category parameter if provided
