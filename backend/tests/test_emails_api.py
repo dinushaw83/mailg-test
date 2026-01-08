@@ -179,6 +179,325 @@ class TestEmailList:
             assert email["thread_id"] == str(thread.id)
 
 
+class TestGetEmailsByThread:
+    """Test get emails by thread endpoint with background read marking."""
+
+    def test_get_emails_by_thread_success(self, client_with_auth, db_session):
+        """Test fetching all emails in a thread."""
+        client, token, user = client_with_auth
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=2,
+            email_count=3,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create emails in the thread
+        email1 = Email(subject="Thread Email 1", body="First message", status="received",
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        email2 = Email(subject="Re: Thread Email 1", body="Reply", status="sent",
+                       sender_id=user.id, folder=FolderType.SENT.value, thread_id=thread.id)
+        db_session.add_all([email1, email2])
+        db_session.commit()
+        
+        response = client.get(
+            f"/api/v1/emails/thread/{thread.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert len(data) == 2
+
+    def test_get_emails_by_thread_marks_as_read(self, client_with_auth, db_session):
+        """Test that fetching a thread schedules background task to mark unread emails as read."""
+        from unittest.mock import patch, MagicMock
+        
+        client, token, user = client_with_auth
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=3,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create unread emails in the thread
+        email1 = Email(subject="Unread 1", body="First", status="received", is_read=False,
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        email2 = Email(subject="Unread 2", body="Second", status="received", is_read=False,
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        email3 = Email(subject="Already Read", body="Third", status="received", is_read=True,
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        db_session.add_all([email1, email2, email3])
+        db_session.commit()
+        
+        email1_id, email2_id = email1.id, email2.id
+        
+        # Mock the background task function to verify it's called with correct args
+        with patch('app.api.v1.endpoints.emails._mark_emails_as_read_background') as mock_mark_read:
+            response = client.get(
+                f"/api/v1/emails/thread/{thread.id}",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            
+            assert response.status_code == 200
+            data = response.json()["data"]
+            assert len(data) == 3
+            
+            # Verify background task was called with unread email IDs
+            mock_mark_read.assert_called_once()
+            call_args = mock_mark_read.call_args
+            called_email_ids = call_args[0][0]
+            called_user_id = call_args[0][1]
+            
+            # Should contain only the unread emails
+            assert len(called_email_ids) == 2
+            assert email1_id in called_email_ids
+            assert email2_id in called_email_ids
+            assert called_user_id == user.id
+
+    def test_get_emails_by_thread_no_background_task_when_all_read(self, client_with_auth, db_session):
+        """Test that no background task is scheduled when all emails are already read."""
+        from unittest.mock import patch
+        
+        client, token, user = client_with_auth
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=2,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create already read emails
+        email1 = Email(subject="Read 1", body="First", status="received", is_read=True,
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        email2 = Email(subject="Read 2", body="Second", status="received", is_read=True,
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        db_session.add_all([email1, email2])
+        db_session.commit()
+        
+        with patch('app.api.v1.endpoints.emails._mark_emails_as_read_background') as mock_mark_read:
+            response = client.get(
+                f"/api/v1/emails/thread/{thread.id}",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            
+            assert response.status_code == 200
+            data = response.json()["data"]
+            assert len(data) == 2
+            
+            # Background task should NOT be called since all emails are already read
+            mock_mark_read.assert_not_called()
+
+    def test_get_emails_by_thread_all_already_read(self, client_with_auth, db_session):
+        """Test fetching a thread where all emails are already read."""
+        client, token, user = client_with_auth
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=2,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create already read emails
+        email1 = Email(subject="Read 1", body="First", status="received", is_read=True,
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        email2 = Email(subject="Read 2", body="Second", status="received", is_read=True,
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        db_session.add_all([email1, email2])
+        db_session.commit()
+        
+        response = client.get(
+            f"/api/v1/emails/thread/{thread.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert len(data) == 2
+
+    def test_get_emails_by_thread_not_found(self, client_with_auth):
+        """Test fetching a non-existent thread returns 404."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            f"/api/v1/emails/thread/{NON_EXISTENT_UUID}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 404
+
+    def test_get_emails_by_thread_unauthenticated(self, client, db_session, sample_user):
+        """Test fetching thread without authentication fails."""
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=sample_user.id,
+            participant_count=1,
+            email_count=1,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        
+        response = client.get(f"/api/v1/emails/thread/{thread.id}")
+        
+        assert response.status_code == 401
+
+    def test_get_emails_by_thread_only_accessible_emails(self, client_with_auth, db_session):
+        """Test that users can only see emails they have access to in a thread."""
+        client, token, user = client_with_auth
+        
+        # Create another user
+        other_user = User(
+            first_name="Other",
+            last_name="User",
+            email="other@example.com",
+            role="user"
+        )
+        db_session.add(other_user)
+        db_session.commit()
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=2,
+            email_count=2,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Email sent by current user (accessible)
+        email1 = Email(subject="My Email", body="Sent by me", status="sent",
+                       sender_id=user.id, folder=FolderType.SENT.value, thread_id=thread.id)
+        # Email sent by other user to current user (accessible via recipient)
+        email2 = Email(subject="Their Email", body="Sent to me", status="received",
+                       sender_id=other_user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        db_session.add_all([email1, email2])
+        db_session.commit()
+        
+        # Add current user as recipient of email2
+        recipient = EmailRecipient(
+            email_id=email2.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        response = client.get(
+            f"/api/v1/emails/thread/{thread.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # User should see both emails (one as sender, one as recipient)
+        assert len(data) == 2
+
+    def test_get_emails_by_thread_returns_ordered_by_date(self, client_with_auth, db_session):
+        """Test that emails in thread are returned ordered by sent_at/created_at."""
+        client, token, user = client_with_auth
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=3,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create emails with different timestamps
+        email1 = Email(subject="First", body="First message", status="received",
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
+                       sent_at=datetime.utcnow() - timedelta(hours=2))
+        email2 = Email(subject="Second", body="Second message", status="received",
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
+                       sent_at=datetime.utcnow() - timedelta(hours=1))
+        email3 = Email(subject="Third", body="Third message", status="received",
+                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
+                       sent_at=datetime.utcnow())
+        db_session.add_all([email3, email1, email2])  # Add in wrong order
+        db_session.commit()
+        
+        response = client.get(
+            f"/api/v1/emails/thread/{thread.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Should be ordered by sent_at ascending
+        assert data[0]["subject"] == "First"
+        assert data[1]["subject"] == "Second"
+        assert data[2]["subject"] == "Third"
+
+    def test_mark_emails_as_read_background_function(self, db_session, sample_user):
+        """Test the background function that marks emails as read."""
+        from unittest.mock import patch, MagicMock
+        from app.api.v1.endpoints.emails import _mark_emails_as_read_background
+        
+        # Create test emails
+        email1 = Email(subject="Email 1", body="Content", status="received", is_read=False,
+                       sender_id=sample_user.id, folder=FolderType.INBOX.value)
+        email2 = Email(subject="Email 2", body="Content", status="received", is_read=False,
+                       sender_id=sample_user.id, folder=FolderType.INBOX.value)
+        db_session.add_all([email1, email2])
+        db_session.commit()
+        
+        email_ids = [email1.id, email2.id]
+        
+        # Mock get_db_session to return our test session
+        mock_session = MagicMock()
+        mock_query = MagicMock()
+        mock_filter = MagicMock()
+        mock_session.query.return_value = mock_query
+        mock_query.filter.return_value = mock_filter
+        mock_filter.update.return_value = 2
+        
+        # The function imports get_db_session inside, so we patch where it's used
+        with patch('app.db.session.get_db_session', return_value=mock_session):
+            _mark_emails_as_read_background(email_ids, sample_user.id, "test-run-id")
+            
+            # Verify the session was used correctly
+            mock_session.query.assert_called_once()
+            mock_session.commit.assert_called_once()
+            mock_session.close.assert_called_once()
+
+
 class TestEmailOperations:
     """Test email operations (read, star, move, delete)."""
 

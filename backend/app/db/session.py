@@ -104,6 +104,26 @@ def get_seed_db():
         db.close()
 
 
+def get_db_session(run_id: str = None):
+    """Get a database session for use in background tasks.
+    
+    Unlike get_db(), this doesn't require a FastAPI request context.
+    Caller is responsible for closing the session.
+    
+    Args:
+        run_id: The run ID to get the database for. If None, uses 'default'.
+        
+    Returns:
+        Database session instance.
+    """
+    if run_id is None:
+        run_id = "default"
+    
+    engine = get_engine(run_id)
+    SessionLocal = sessionmaker(bind=engine)
+    return SessionLocal()
+
+
 # For backward compatibility with initialization scripts
 # Lazy initialization using __getattr__ to avoid creating engine on import
 def __getattr__(name):

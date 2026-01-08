@@ -7,7 +7,7 @@ This module provides:
 - Label management for emails
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_
 from typing import Optional
@@ -447,14 +447,38 @@ def list_emails(
     )
 
 
+def _mark_emails_as_read_background(email_ids: list[UUID], user_id: UUID, run_id: str = None) -> None:
+    """Background task to mark emails as read.
+    
+    Uses a fresh database session since the original request session may be closed.
+    """
+    from app.db.session import get_db_session
+    
+    try:
+        db = get_db_session(run_id=run_id)
+        db.query(Email).filter(
+            Email.id.in_(email_ids),
+            Email.is_read == False
+        ).update({Email.is_read: True}, synchronize_session=False)
+        db.commit()
+        logger.debug(f"Marked {len(email_ids)} emails as read for user {user_id}")
+    except Exception as e:
+        logger.warning(f"Failed to mark emails as read in background: {e}")
+    finally:
+        db.close()
+
+
 @router.get("/emails/thread/{thread_id}", response_model=list[EmailResponse], dependencies=[Depends(authorized())])
 def get_emails_by_thread(
     thread_id: UUID,
+    request: Request,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ) -> list[dict]:
     """Get all emails in a thread/conversation.
     
     Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
+    Emails are automatically marked as read in the background.
     
     Permissions:
     - Users can only access threads containing their own emails (sent or received)
@@ -484,6 +508,17 @@ def get_emails_by_thread(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"No emails found for thread {thread_id}"
+        )
+    
+    # Mark unread emails as read in background
+    unread_email_ids = [email.id for email in emails if not email.is_read]
+    if unread_email_ids:
+        run_id = getattr(request.state, "run_id", None)
+        background_tasks.add_task(
+            _mark_emails_as_read_background,
+            unread_email_ids,
+            current_user.id,
+            run_id
         )
     
     return [format_email_response(email) for email in emails]
