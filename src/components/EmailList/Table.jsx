@@ -439,7 +439,11 @@ const Table = ({
         return;
       }
 
-      const undo = moveToTrash(threadIds);
+      // Extract email IDs from threadIds
+      const matchingEmails = emails.filter((email) => threadIds.includes(email.threadId));
+      const emailIds = matchingEmails.map((email) => email.id);
+
+      const undo = moveToTrash(emailIds);
       setSnackbar({
         open: true,
         message:
@@ -453,7 +457,7 @@ const Table = ({
               if (typeof undo === "function") {
                 undo();
               } else {
-                moveToInbox(threadIds);
+                moveToInbox(emailIds);
               }
               // Follow-up confirmation snackbar
               setSnackbar({
@@ -469,7 +473,7 @@ const Table = ({
         ),
       });
     },
-    [moveToTrash, setSnackbar, moveToInbox, showNoConversationsSelectedSnackbar]
+    [moveToTrash, setSnackbar, moveToInbox, showNoConversationsSelectedSnackbar, emails]
   );
 
   const bulkMarkRead = useCallback(
@@ -997,22 +1001,22 @@ const Table = ({
                                   const textColor = badge?.color?.text || "#444746";
 
                                   return (
-                                  <div
-                                    key={`Badge-${badge.key}`}
-                                    style={{
+                                    <div
+                                      key={`Badge-${badge.key}`}
+                                      style={{
                                         backgroundColor: bgColor,
                                         color: textColor,
-                                      fontSize: "0.75rem",
-                                      padding: "0 4px",
-                                      textDecoration: "none",
-                                      width: "fit-content",
-                                      borderRadius: "4px",
-                                      marginRight: "6px",
-                                      display: "inline-block",
-                                    }}
-                                  >
-                                    {badge.displayName}
-                                  </div>
+                                        fontSize: "0.75rem",
+                                        padding: "0 4px",
+                                        textDecoration: "none",
+                                        width: "fit-content",
+                                        borderRadius: "4px",
+                                        marginRight: "6px",
+                                        display: "inline-block",
+                                      }}
+                                    >
+                                      {badge.displayName}
+                                    </div>
                                   );
                                 })}
                                 <span

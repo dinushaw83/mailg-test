@@ -90,9 +90,12 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
   const anchorRef = useRef(null);
 
-  const { emails, selection, setSnackbar, setEmails, setComposeWindows } = useGlobalContext();
+  const { selection, setSnackbar, setEmails, setComposeWindows } = useGlobalContext();
   const { ids } = selection;
   const { labels, labelTree } = useLabels();
+
+  // Use threads prop (displayed emails) instead of global emails
+  const emails = threads;
 
   const setCreateOpen = useCallback(
     (val) =>
@@ -1064,7 +1067,11 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         open={spamModalOpen}
         onClose={toggleSpamModal}
         onReportSpam={() => {
-          const undo = moveToSpam(selectedIds);
+          // Extract email IDs from selected threadIds
+          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
+          const emailIds = matchingEmails.map((email) => email.id);
+
+          const undo = moveToSpam(emailIds);
           toggleSpamModal();
           selection.clear();
           showUndoSnackbar(
@@ -1075,7 +1082,11 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           );
         }}
         onUnsubscribe={() => {
-          moveToSpam(selectedIds);
+          // Extract email IDs from selected threadIds
+          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
+          const emailIds = matchingEmails.map((email) => email.id);
+
+          moveToSpam(emailIds);
           toggleSpamModal();
           selection.clear();
           showUndoSnackbar("We'll try to unsubscribe you from these emails.", () => {});

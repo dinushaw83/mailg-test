@@ -111,7 +111,6 @@ const Inbox = () => {
   // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   useEffect(() => {
-    console.log("📬 MailView useEffect triggered. lastMutationTime:", lastMutationTime, "activeFolder:", activeFolder);
     if (!accessToken) return;
     if (label) return; // Skip if viewing a label route
 

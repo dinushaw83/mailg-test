@@ -696,14 +696,22 @@ ${email.body || email.preview || ""}
           }));
         }}
         onReportSpam={() => {
-          moveToSpam(selectedIds);
+          // Extract email IDs from threadId
+          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
+          const emailIds = matchingEmails.map((email) => email.id);
+
+          moveToSpam(emailIds);
           setState((prev) => ({
             ...prev,
             spamModalOpen: false,
           }));
         }}
         onUnsubscribe={() => {
-          moveToSpam(selectedIds);
+          // Extract email IDs from threadId
+          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
+          const emailIds = matchingEmails.map((email) => email.id);
+
+          moveToSpam(emailIds);
           setState((prev) => ({
             ...prev,
             spamModalOpen: false,
