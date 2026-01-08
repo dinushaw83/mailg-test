@@ -85,6 +85,7 @@ const OneColumnData = ({
   index,
   formatDate,
   toggleStar,
+  toggleImportant,
   density,
   height = "60px",
 }) => {
@@ -163,29 +164,54 @@ const OneColumnData = ({
           <Box className="y2">
             <span id={`:ps${index}`}>{email.preview}</span>
           </Box>
-          <IconButton
-            aria-label={email.is_starred ? "Unstar" : "Star"}
-            aria-pressed={email.is_starred}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleStar([email.id]);
-            }}
-            sx={{
-              color: email.is_starred ? "#FBBC04" : "rgba(0,0,0,.54)",
-              ...(density === "compact" ? { padding: "1px" } : {}),
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 18,
-                verticalAlign: "middle",
-                fontVariationSettings: `'FILL' ${email.is_starred ? 1 : 0}`,
+          <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <IconButton
+              aria-label={email.is_important ? "Mark as not important" : "Mark as important"}
+              aria-pressed={email.is_important}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleImportant();
+              }}
+              sx={{
+                color: email.is_important ? "#FBBC04" : "rgba(0,0,0,.54)",
+                ...(density === "compact" ? { padding: "1px" } : {}),
               }}
             >
-              star
-            </span>
-          </IconButton>
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 18,
+                  verticalAlign: "middle",
+                  fontVariationSettings: `'FILL' ${email.is_important ? 1 : 0}`,
+                }}
+              >
+                label_important
+              </span>
+            </IconButton>
+            <IconButton
+              aria-label={email.is_starred ? "Unstar" : "Star"}
+              aria-pressed={email.is_starred}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStar();
+              }}
+              sx={{
+                color: email.is_starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+                ...(density === "compact" ? { padding: "1px" } : {}),
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 18,
+                  verticalAlign: "middle",
+                  fontVariationSettings: `'FILL' ${email.is_starred ? 1 : 0}`,
+                }}
+              >
+                star
+              </span>
+            </IconButton>
+          </Box>
         </Box>
       </Box>
     </td>
@@ -488,7 +514,7 @@ const Table = ({
 
   const handleImportant = useCallback(
     (ids, currentlyImportant) => {
-      toggleImportant(ids);
+      toggleImportant(ids, currentlyImportant);
 
       const message = currentlyImportant
         ? "Conversation marked as not important."
@@ -502,7 +528,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleImportant(ids);
+              toggleImportant(ids, !currentlyImportant); // Pass opposite state for undo
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -695,7 +721,7 @@ const Table = ({
 
   const handleStar = useCallback(
     (ids, isStarred) => {
-      toggleStar(ids);
+      toggleStar(ids, isStarred);
 
       const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
       setSnackbar({
@@ -706,7 +732,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleStar(ids);
+              toggleStar(ids, !isStarred); // Pass opposite state for undo
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -835,6 +861,7 @@ const Table = ({
                     index={index}
                     formatDate={formatDate}
                     toggleStar={() => handleStar([email.id], email.is_starred)}
+                    toggleImportant={() => toggleImportant([email.id], email.is_important)}
                     density={density}
                   />
                 ) : (
@@ -968,24 +995,24 @@ const Table = ({
                                   // Handle color format: could be string, null, or object with rgb/text
                                   const bgColor = badge?.color?.rgb || badge?.color || "#e1e3e1";
                                   const textColor = badge?.color?.text || "#444746";
-                                  
+
                                   return (
-                                  <div
-                                    key={`Badge-${badge.key}`}
-                                    style={{
+                                    <div
+                                      key={`Badge-${badge.key}`}
+                                      style={{
                                         backgroundColor: bgColor,
                                         color: textColor,
-                                      fontSize: "0.75rem",
-                                      padding: "0 4px",
-                                      textDecoration: "none",
-                                      width: "fit-content",
-                                      borderRadius: "4px",
-                                      marginRight: "6px",
-                                      display: "inline-block",
-                                    }}
-                                  >
-                                    {badge.displayName}
-                                  </div>
+                                        fontSize: "0.75rem",
+                                        padding: "0 4px",
+                                        textDecoration: "none",
+                                        width: "fit-content",
+                                        borderRadius: "4px",
+                                        marginRight: "6px",
+                                        display: "inline-block",
+                                      }}
+                                    >
+                                      {badge.displayName}
+                                    </div>
                                   );
                                 })}
                                 <span

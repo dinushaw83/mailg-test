@@ -74,13 +74,19 @@ const MoreActions = ({
   const open = Boolean(anchorEl);
   const id = open ? "more-actions-popover" : undefined;
 
+  // Compute starred status from actual emails, not from thread prop (which may be stale)
   const starred = useMemo(() => {
-    return thread.is_starred;
-  }, [thread]);
+    if (!threadEmails.length) return false;
+    // A thread is starred if ALL emails in it are starred
+    return threadEmails.every((email) => email.is_starred);
+  }, [threadEmails]);
 
+  // Compute important status from actual emails, not from thread prop (which may be stale)
   const important = useMemo(() => {
-    return thread.is_important;
-  }, [thread]);
+    if (!threadEmails.length) return false;
+    // A thread is important if ALL emails in it are important
+    return threadEmails.every((email) => email.is_important);
+  }, [threadEmails]);
 
   const handleStar = useCallback(() => {
     if (!threadEmails.length) {
@@ -91,7 +97,7 @@ const MoreActions = ({
     const nextValue = !starred;
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      starred: !!email.starred,
+      starred: !!email.is_starred,
     }));
     const idsToUpdate = previousStates.filter((state) => state.starred !== nextValue).map((state) => state.id);
 

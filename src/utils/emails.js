@@ -30,21 +30,27 @@ export const emailAPIMapper = (emails) => {
     .map((email) => {
       // Transform recipients array into to, cc, bcc arrays
       const recipients = email?.recipients || [];
-      const to = recipients.filter((r) => r.type === "to").map((r) => ({
-        email: r.email,
-        name: r.name || null,
-        id: r.id || null,
-      }));
-      const cc = recipients.filter((r) => r.type === "cc").map((r) => ({
-        email: r.email,
-        name: r.name || null,
-        id: r.id || null,
-      }));
-      const bcc = recipients.filter((r) => r.type === "bcc").map((r) => ({
-        email: r.email,
-        name: r.name || null,
-        id: r.id || null,
-      }));
+      const to = recipients
+        .filter((r) => r.type === "to")
+        .map((r) => ({
+          email: r.email,
+          name: r.name || null,
+          id: r.id || null,
+        }));
+      const cc = recipients
+        .filter((r) => r.type === "cc")
+        .map((r) => ({
+          email: r.email,
+          name: r.name || null,
+          id: r.id || null,
+        }));
+      const bcc = recipients
+        .filter((r) => r.type === "bcc")
+        .map((r) => ({
+          email: r.email,
+          name: r.name || null,
+          id: r.id || null,
+        }));
 
       return {
         ...email,
@@ -70,8 +76,8 @@ export const emailAPIMapper = (emails) => {
         is_important: email?.is_important || false,
         scheduled_send_at: email?.scheduled_send_at,
         snooze_until: email?.snooze_until,
-        attachment_count: email?.attachment_count || (email?.attachments?.length || 0),
-        has_attachments: email?.has_attachments !== undefined ? email.has_attachments : (email?.attachments?.length > 0),
+        attachment_count: email?.attachment_count || email?.attachments?.length || 0,
+        has_attachments: email?.has_attachments !== undefined ? email.has_attachments : email?.attachments?.length > 0,
         attachments: email?.attachments || [],
         system_labels: email?.system_labels,
         can_undo_send: email?.can_undo_send,
@@ -132,7 +138,7 @@ export function normalizeEmails(messages) {
   };
   const toParticipant = (address) => {
     if (!address) return null;
-    
+
     // Handle object format (from API): {email, name, id}
     if (typeof address === "object" && address.email) {
       return {
@@ -141,15 +147,15 @@ export function normalizeEmails(messages) {
         id: address.id || null,
       };
     }
-    
+
     // Handle string format (legacy): just email address
     if (typeof address === "string") {
-    return {
-      email: address,
-      name: emailToUsernameMap[address] || address,
-    };
+      return {
+        email: address,
+        name: emailToUsernameMap[address] || address,
+      };
     }
-    
+
     return null;
   };
   const collectParticipantsForMessage = (message) => {
@@ -175,14 +181,16 @@ export function normalizeEmails(messages) {
 
     // Preserve full label objects with id, name, and color
     // Convert string labels to objects for consistency
-    let enrichedLabels = (m.labels || []).map((l) => {
-      if (typeof l === "string") {
-        // Convert string to object format
-        return { name: l, color: null, id: null };
-      }
-      // Keep object format with id, name, color
-      return { id: l.id || null, name: l.name, color: l.color || null };
-    }).filter((l) => l.name);
+    let enrichedLabels = (m.labels || [])
+      .map((l) => {
+        if (typeof l === "string") {
+          // Convert string to object format
+          return { name: l, color: null, id: null };
+        }
+        // Keep object format with id, name, color
+        return { id: l.id || null, name: l.name, color: l.color || null };
+      })
+      .filter((l) => l.name);
 
     const msg = {
       ...m,
@@ -534,9 +542,7 @@ export const getLabel = (participants, { includePersonal = true } = {}) => {
 // - Subject comes from the first message in the thread
 // - Labels are the union of all labels within the thread
 export function getThreadRows(messages, { label = null, folder = "inbox" } = {}) {
-  console.log("BEFORE NORMALIZE", { messages, label, folder });
   const { messagesById, threadsById, threadIds } = normalizeEmails(messages);
-  console.log("getThreadRows", { messagesById, threadsById, threadIds });
 
   // Build a label for the Sent folder that lists only recipient first names
   // - Excludes the sender (john.doe@example.com)
@@ -697,8 +703,6 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 // get a single thread row
 export const getThread = (messages, { threadId }) => {
   const { messagesById, threadsById } = normalizeEmails(messages);
-console.log({messagesById}, "----------messagesById----------")
-console.log({threadsById}, "----------threadsById----------")
   const thread = threadsById[threadId];
   if (!thread) {
     return null;

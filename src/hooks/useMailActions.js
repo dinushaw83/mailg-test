@@ -1,8 +1,15 @@
-// hooks/useMailActions.js
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { updateLabelsThunk } from "../store/slices/mailSlice";
+import {
+  updateLabelsThunk,
+  updateEmailStarredThunk,
+  updateEmailImportantThunk,
+  snoozeEmailThunk,
+  moveToTrashThunk,
+  moveToSpamThunk,
+  deleteEmailThunk,
+} from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -103,7 +110,7 @@ const withUndo = (ids, setEmails, operation) => {
 export default function useMailActions() {
   const dispatch = useDispatch();
   const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
-  
+
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
 
@@ -176,10 +183,10 @@ export default function useMailActions() {
       });
 
       // Sync with backend (only for backend labels, skip system labels)
-      const backendLabelsToAdd = labelIdsToAdd.filter((id) => 
+      const backendLabelsToAdd = labelIdsToAdd.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
-      const backendLabelsToRemove = labelIdsToRemove.filter((id) => 
+      const backendLabelsToRemove = labelIdsToRemove.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
 
@@ -187,10 +194,12 @@ export default function useMailActions() {
         // Determine final label state: add new ones, remove old ones
         // For simplicity, we'll send the full label set, but backend should handle add/remove
         // This might need adjustment based on actual backend API expectations
-        dispatch(updateLabelsThunk({
-          emailIds: ids.map(String),
-          labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
-        })).catch((error) => {
+        dispatch(
+          updateLabelsThunk({
+            emailIds: ids.map(String),
+            labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
+          })
+        ).catch((error) => {
           console.error("Failed to sync labels with backend:", error);
           // Could rollback local changes here if needed
         });
@@ -242,14 +251,22 @@ export default function useMailActions() {
   }, [updateByIds]);
 
   const moveToSpam = useCallback(
-    (ids) =>
-      withUndo(ids, setEmails, () => {
+    (ids) => {
+      // Call backend API for each email
+      ids.forEach((id) => {
+        dispatch(moveToSpamThunk({ emailId: id })).catch((error) => {
+          console.error("Failed to move email to spam:", error);
+        });
+      });
+
+      return withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
           removeSystemLabels(labelSet, labels, ["Spam"]);
           labelSet.add("Spam");
         });
-      }),
-    [updateByIds, setEmails, labels]
+      });
+    },
+    [updateByIds, setEmails, labels, dispatch]
   );
 
   const notSpam = useCallback(
@@ -262,14 +279,22 @@ export default function useMailActions() {
   );
 
   const moveToTrash = useCallback(
-    (ids) =>
-      withUndo(ids, setEmails, () => {
+    (ids) => {
+      // Call backend API for each email
+      ids.forEach((id) => {
+        dispatch(moveToTrashThunk({ emailId: id })).catch((error) => {
+          console.error("Failed to move email to trash:", error);
+        });
+      });
+
+      return withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
           removeSystemLabels(labelSet, labels, ["Trash"]);
           labelSet.add("Trash");
         });
-      }),
-    [updateByIds, setEmails, labels]
+      });
+    },
+    [updateByIds, setEmails, labels, dispatch]
   );
 
   const restoreFromTrash = useCallback(
@@ -282,19 +307,64 @@ export default function useMailActions() {
   );
 
   const toggleStar = useCallback(
-    (ids) => {
+    (ids, currentStarredState) => {
+      // Determine the new state - if currentStarredState is provided, use opposite
+      // Otherwise, we'll need to look it up (not ideal, but fallback)
+      const newState = currentStarredState !== undefined ? !currentStarredState : true;
+
+      console.log("⭐ toggleStar called for ids:", ids, "newState:", newState);
+
+      ids.forEach((id) => {
+        dispatch(
+          updateEmailStarredThunk({
+            emailId: id,
+            is_starred: newState,
+          })
+        ).catch((error) => {
+          console.error("Failed to sync starred status with backend:", error);
+        });
+      });
+
+      // Update local state optimistically for immediate feedback
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_starred: !m.is_starred } : m)));
+      setEmails((prev) => {
+        return prev.map((m) => {
+          if (match(m)) {
+            return { ...m, is_starred: newState };
+          }
+          return m;
+        });
+      });
     },
-    [setEmails]
+    [setEmails, dispatch]
   );
 
   const setStar = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_starred: value } : m)));
+
+      // Update local state immediately (optimistic update)
+      setEmails((prev) => {
+        const updated = prev.map((m) => {
+          if (match(m)) {
+            // Dispatch to backend for each email
+            dispatch(
+              updateEmailStarredThunk({
+                emailId: m.id,
+                is_starred: value,
+              })
+            ).catch((error) => {
+              console.error("Failed to sync starred status with backend:", error);
+            });
+
+            return { ...m, is_starred: value };
+          }
+          return m;
+        });
+        return updated;
+      });
     },
-    [setEmails]
+    [setEmails, dispatch]
   );
 
   const markRead = useCallback(
@@ -306,19 +376,61 @@ export default function useMailActions() {
   );
 
   const toggleImportant = useCallback(
-    (ids) => {
+    (ids, currentImportantState) => {
+      // Determine the new state
+      const newState = currentImportantState !== undefined ? !currentImportantState : true;
+
+      ids.forEach((id) => {
+        dispatch(
+          updateEmailImportantThunk({
+            emailId: id,
+            is_important: newState,
+          })
+        ).catch((error) => {
+          console.error("Failed to sync important status with backend:", error);
+        });
+      });
+
+      // Update local state optimistically for immediate feedback
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_important: !m.is_important } : m)));
+      setEmails((prev) => {
+        return prev.map((m) => {
+          if (match(m)) {
+            return { ...m, is_important: newState };
+          }
+          return m;
+        });
+      });
     },
-    [setEmails]
+    [setEmails, dispatch]
   );
 
   const setImportant = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_important: !!value } : m)));
+
+      // Update local state immediately (optimistic update)
+      setEmails((prev) => {
+        const updated = prev.map((m) => {
+          if (match(m)) {
+            // Dispatch to backend for each email
+            dispatch(
+              updateEmailImportantThunk({
+                emailId: m.id,
+                is_important: !!value,
+              })
+            ).catch((error) => {
+              console.error("Failed to sync important status with backend:", error);
+            });
+
+            return { ...m, is_important: !!value };
+          }
+          return m;
+        });
+        return updated;
+      });
     },
-    [setEmails]
+    [setEmails, dispatch]
   );
 
   const moveToLabel = useCallback(
@@ -353,15 +465,37 @@ export default function useMailActions() {
   const deleteForever = useCallback(
     (ids) => {
       const match = makeMatch(ids);
+
+      // Call backend API for each email
+      ids.forEach((id) => {
+        dispatch(deleteEmailThunk({ emailId: id })).catch((error) => {
+          console.error("Failed to delete email permanently:", error);
+        });
+      });
+
+      // Remove from local state
       setEmails((prev) => prev.filter((m) => !match(m)));
     },
-    [setEmails]
+    [setEmails, dispatch]
   );
 
   const snooze = useCallback(
     (ids, snoozeUntil) => {
       const match = makeMatch(ids);
       const removedInboxIds = new Set();
+      const snoozeUntilISO = snoozeUntil.toISOString();
+
+      // Call backend API for each email
+      ids.forEach((id) => {
+        dispatch(
+          snoozeEmailThunk({
+            emailId: id,
+            snooze_until: snoozeUntilISO,
+          })
+        ).catch((error) => {
+          console.error("Failed to snooze email:", error);
+        });
+      });
 
       setEmails((prev) =>
         prev.map((m) => {
@@ -376,7 +510,7 @@ export default function useMailActions() {
             removedInboxIds.add(String(m.id));
           }
 
-          return { ...m, labels: labelsWithoutInbox, snoozeUntil: snoozeUntil.toISOString() };
+          return { ...m, labels: labelsWithoutInbox, snoozeUntil: snoozeUntilISO };
         })
       );
 
@@ -565,6 +699,7 @@ export default function useMailActions() {
     [
       addLabels,
       removeLabels,
+      modifyLabels,
       moveToInbox,
       archive,
       moveToSpam,

@@ -8,8 +8,8 @@ const emailService = {
   getEmails: async ({ page = 1, pageSize = 20, category = null } = {}) => {
     try {
       const params = {
-          page,
-          page_size: pageSize,
+        page,
+        page_size: pageSize,
       };
 
       // Add category parameter if provided
@@ -48,7 +48,14 @@ const emailService = {
    * @param {boolean} options.is_snoozed - Filter by snoozed status
    * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts)
    */
-  getEmailsByFilter: async ({ page = 1, pageSize = 20, is_starred = null, is_important = null, is_snoozed = null, folder = null } = {}) => {
+  getEmailsByFilter: async ({
+    page = 1,
+    pageSize = 20,
+    is_starred = null,
+    is_important = null,
+    is_snoozed = null,
+    folder = null,
+  } = {}) => {
     try {
       const params = {
         page,
@@ -128,10 +135,10 @@ const emailService = {
     try {
       const response = await apiClient.get(`v1/emails/thread/${threadId}`);
       const payload = response?.data?.data ?? response?.data ?? {};
-      
+
       // API returns an array of emails in the thread
       const emailsArray = Array.isArray(payload) ? payload : [payload];
-      
+
       // Map all emails using the same mapper
       const mappedEmails = emailAPIMapper(emailsArray);
       return mappedEmails;
@@ -167,6 +174,104 @@ const emailService = {
     // If composite keys are passed, they should be transformed before calling this method
     const response = await apiClient.post("/emails/labels", { emailIds, labels });
     return response.data;
+  },
+
+  /**
+   * Update email starred status
+   * @param {string} emailId - Email ID
+   * @param {boolean} is_starred - Starred status
+   * @returns {Promise<Object>} Updated email object
+   */
+  updateEmailStarred: async (emailId, is_starred) => {
+    const response = await apiClient.patch(`/v1/emails/${emailId}/star`, { is_starred });
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    // Map the response using emailAPIMapper to normalize
+    const mapped = emailAPIMapper([payload]);
+    return mapped[0] || payload;
+  },
+
+  /**
+   * Update email important status
+   * @param {string} emailId - Email ID
+   * @param {boolean} is_important - Important status
+   * @returns {Promise<Object>} Updated email object
+   */
+  updateEmailImportant: async (emailId, is_important) => {
+    const response = await apiClient.patch(`/v1/emails/${emailId}`, { is_important });
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    // Map the response using emailAPIMapper to normalize
+    const mapped = emailAPIMapper([payload]);
+    return mapped[0] || payload;
+  },
+
+  /**
+   * Bulk update emails (starred, important, etc.)
+   * @param {Array} emailIds - Array of email IDs
+   * @param {Object} updates - Updates to apply { is_starred, is_important, etc. }
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUpdateEmails: async (emailIds, updates) => {
+    const response = await apiClient.patch("/v1/emails/bulk", {
+      email_ids: emailIds,
+      ...updates,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Snooze email until a specific date/time
+   * @param {string} emailId - Email ID
+   * @param {string} snooze_until - ISO 8601 datetime string
+   * @returns {Promise<Object>} Updated email object
+   */
+  snoozeEmail: async (emailId, snooze_until) => {
+    const response = await apiClient.patch(`/v1/emails/${emailId}`, { snooze_until });
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    const mapped = emailAPIMapper([payload]);
+    return mapped[0] || payload;
+  },
+
+  /**
+   * Move email to trash
+   * @param {string} emailId - Email ID
+   * @returns {Promise<Object>} Updated email object
+   */
+  moveToTrash: async (emailId) => {
+    const response = await apiClient.delete(`/v1/emails/${emailId}`, {
+      params: { permanent: false },
+    });
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    const mapped = emailAPIMapper([payload]);
+    return mapped[0] || payload;
+  },
+
+  /**
+   * Move email to spam
+   * @param {string} emailId - Email ID
+   * @returns {Promise<Object>} Updated email object
+   */
+  moveToSpam: async (emailId) => {
+    const response = await apiClient.patch(`/v1/emails/${emailId}`, { folder: "spam" });
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    const mapped = emailAPIMapper([payload]);
+    return mapped[0] || payload;
+  },
+
+  /**
+   * Permanently delete email
+   * @param {string} emailId - Email ID
+   * @returns {Promise<void>}
+   */
+  deleteEmail: async (emailId) => {
+    const response = await apiClient.delete(`/v1/emails/${emailId}`, {
+      params: { permanent: true },
+    });
+    return response?.data?.data ?? response?.data ?? {};
   },
 };
 

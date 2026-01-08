@@ -78,17 +78,17 @@ const Recipient = ({ recipients = [] }) => {
     // Handle object format: {email, name, id}
     let email = recipient;
     let name = null;
-    
+
     if (typeof recipient === "object" && recipient !== null) {
       email = recipient.email;
       name = recipient.name;
     }
-    
+
     // Ensure email is a string
     if (!email || typeof email !== "string") {
       return "Unknown";
     }
-    
+
     // Check if it's the logged-in user - show "me"
     if (email === loggedInUser.email) {
       return "me";
@@ -222,8 +222,16 @@ const Time = ({ timestamp }) => {
 };
 
 const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, onReply, responseViewRef }) => {
-  const { recipients: contacts, loggedInUser, setComposeWindows } = useGlobalContext();
+  const { recipients: contacts, loggedInUser, setComposeWindows, emails } = useGlobalContext();
   const [moreActionsAnchor, setMoreActionsAnchor] = useState(null);
+
+  // Manage starred state locally since the email might not be in global emails array
+  const [isStarred, setIsStarred] = useState(email?.is_starred || false);
+
+  // Sync local starred state when email prop changes
+  useEffect(() => {
+    setIsStarred(email?.is_starred || false);
+  }, [email?.id, email?.is_starred]);
 
   const senderContact = useMemo(() => {
     // Check if sender email is of logged in user
@@ -254,10 +262,13 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
     (e) => {
       e?.stopPropagation();
       if (email?.id) {
-        toggleStar([email.id]);
+        // Optimistically update local state immediately
+        setIsStarred((prev) => !prev);
+        // Then sync with backend
+        toggleStar([email.id], isStarred);
       }
     },
-    [email, toggleStar]
+    [email, toggleStar, isStarred]
   );
 
   const handleReply = useCallback(
@@ -302,8 +313,6 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
   const handleCloseMoreActions = useCallback(() => {
     setMoreActionsAnchor(null);
   }, []);
-
-  const isStarred = email?.is_starred || false;
 
   return (
     <>

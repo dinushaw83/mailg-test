@@ -1,4 +1,18 @@
-import { createLabelThunk, deleteLabelThunk, fetchLabels, sendEmailThunk, updateLabelThunk, updateLabelsThunk } from "../slices/mailSlice";
+import {
+  createLabelThunk,
+  deleteLabelThunk,
+  fetchLabels,
+  sendEmailThunk,
+  updateLabelThunk,
+  updateLabelsThunk,
+  updateEmailStarredThunk,
+  updateEmailImportantThunk,
+  bulkUpdateEmailsThunk,
+  snoozeEmailThunk,
+  moveToTrashThunk,
+  moveToSpamThunk,
+  deleteEmailThunk,
+} from "../slices/mailSlice";
 import { logout, setAuth } from "../slices/userSlice";
 
 import { queryClient } from "../../lib/query-client";
@@ -65,6 +79,70 @@ export function registerReactQueryListeners(listenerMiddleware) {
       // Invalidate emails since deleted labels should be removed from emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       // Invalidate email counts since label deletion affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  // Email starred/important mutation listeners
+  listenerMiddleware.startListening({
+    actionCreator: updateEmailStarredThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh starred emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since starring affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: updateEmailImportantThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh important emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since importance affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUpdateEmailsThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh all affected emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since bulk updates affect counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  // Snooze, trash, spam, delete mutation listeners
+  listenerMiddleware.startListening({
+    actionCreator: snoozeEmailThunk.fulfilled,
+    effect: async () => {
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: moveToTrashThunk.fulfilled,
+    effect: async () => {
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: moveToSpamThunk.fulfilled,
+    effect: async () => {
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: deleteEmailThunk.fulfilled,
+    effect: async () => {
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
   });

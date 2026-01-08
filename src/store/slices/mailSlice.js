@@ -16,7 +16,15 @@ import { transformLabelsArray } from "../../utils/labelTransform";
  * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts)
  */
 export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue }) => {
-  const { page = 1, pageSize = 20, category = null, is_starred = null, is_important = null, is_snoozed = null, folder = null } = options;
+  const {
+    page = 1,
+    pageSize = 20,
+    category = null,
+    is_starred = null,
+    is_important = null,
+    is_snoozed = null,
+    folder = null,
+  } = options;
 
   try {
     // Structure query key for separate cache invalidation:
@@ -27,12 +35,18 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
     // - ["emails", "folder", "sent", page, pageSize] for folders (sent, trash, spam, drafts)
     // - ["emails", "inbox", page, pageSize] for inbox (no filter)
     let queryKey;
-    const filterType = is_starred === true ? "is_starred" 
-      : is_important === true ? "is_important"
-      : is_snoozed === true ? "is_snoozed"
-      : folder ? "folder"
-      : category ? "category"
-      : "inbox";
+    const filterType =
+      is_starred === true
+        ? "is_starred"
+        : is_important === true
+          ? "is_important"
+          : is_snoozed === true
+            ? "is_snoozed"
+            : folder
+              ? "folder"
+              : category
+                ? "category"
+                : "inbox";
 
     switch (filterType) {
       case "is_starred":
@@ -64,7 +78,7 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
         }
         return emailService.getEmails({ page, pageSize, category });
       },
-      staleTime: 1000 * 60 * 5, 
+      staleTime: 1000 * 60 * 5,
     });
     return { ...data, category, is_starred, is_important, is_snoozed, folder };
   } catch (error) {
@@ -180,19 +194,122 @@ export const updateLabelThunk = createAsyncThunk(
 /**
  * MUTATION THUNK: Delete a label
  */
-export const deleteLabelThunk = createAsyncThunk(
-  "mail/deleteLabel",
-  async (id, { rejectWithValue }) => {
+export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, { rejectWithValue }) => {
+  try {
+    const response = await labelService.deleteLabel(id);
+    // React Query cache invalidation is handled by RTK listener middleware.
+    return { id, ...response };
+  } catch (error) {
+    console.error("❌ Failed to delete label:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
+  }
+});
+
+/**
+ * MUTATION THUNK: Update email starred status
+ */
+export const updateEmailStarredThunk = createAsyncThunk(
+  "mail/updateEmailStarred",
+  async ({ emailId, is_starred }, { rejectWithValue }) => {
     try {
-      const response = await labelService.deleteLabel(id);
+      const response = await emailService.updateEmailStarred(emailId, is_starred);
       // React Query cache invalidation is handled by RTK listener middleware.
-      return { id, ...response };
+      return { emailId, is_starred, email: response };
     } catch (error) {
-      console.error("❌ Failed to delete label:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
+      console.error("❌ Failed to update email starred status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update starred status");
     }
   }
 );
+
+/**
+ * MUTATION THUNK: Update email important status
+ */
+export const updateEmailImportantThunk = createAsyncThunk(
+  "mail/updateEmailImportant",
+  async ({ emailId, is_important }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateEmailImportant(emailId, is_important);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { emailId, is_important, email: response };
+    } catch (error) {
+      console.error("❌ Failed to update email important status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update important status");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Bulk update emails (starred, important, etc.)
+ */
+export const bulkUpdateEmailsThunk = createAsyncThunk(
+  "mail/bulkUpdateEmails",
+  async ({ emailIds, updates }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUpdateEmails(emailIds, updates);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { emailIds, updates, response };
+    } catch (error) {
+      console.error("❌ Failed to bulk update emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update emails");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Snooze email
+ */
+export const snoozeEmailThunk = createAsyncThunk(
+  "mail/snoozeEmail",
+  async ({ emailId, snooze_until }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.snoozeEmail(emailId, snooze_until);
+      return { emailId, snooze_until, email: response };
+    } catch (error) {
+      console.error("❌ Failed to snooze email:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to snooze email");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Move email to trash
+ */
+export const moveToTrashThunk = createAsyncThunk("mail/moveToTrash", async ({ emailId }, { rejectWithValue }) => {
+  try {
+    const response = await emailService.moveToTrash(emailId);
+    return { emailId, email: response };
+  } catch (error) {
+    console.error("❌ Failed to move email to trash:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to move to trash");
+  }
+});
+
+/**
+ * MUTATION THUNK: Move email to spam
+ */
+export const moveToSpamThunk = createAsyncThunk("mail/moveToSpam", async ({ emailId }, { rejectWithValue }) => {
+  try {
+    const response = await emailService.moveToSpam(emailId);
+    return { emailId, email: response };
+  } catch (error) {
+    console.error("❌ Failed to move email to spam:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to move to spam");
+  }
+});
+
+/**
+ * MUTATION THUNK: Permanently delete email
+ */
+export const deleteEmailThunk = createAsyncThunk("mail/deleteEmail", async ({ emailId }, { rejectWithValue }) => {
+  try {
+    const response = await emailService.deleteEmail(emailId);
+    return { emailId, response };
+  } catch (error) {
+    console.error("❌ Failed to delete email:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete email");
+  }
+});
 
 const mailSlice = createSlice({
   name: "mail",
@@ -227,6 +344,7 @@ const mailSlice = createSlice({
     mutationLoading: false, // Separate loading for mutations
     labelLoading: false, // Separate loading for label operations
     error: null,
+    lastMutationTime: null, // Timestamp of last mutation to trigger refetch
   },
   reducers: {
     setEmails: (state, action) => {
@@ -292,14 +410,20 @@ const mailSlice = createSlice({
         const is_important = action.payload?.is_important;
         const is_snoozed = action.payload?.is_snoozed;
         const folder = action.payload?.folder;
-        
+
         // Store emails in the appropriate folder/category
-        const filterType = is_starred === true ? "is_starred"
-          : is_important === true ? "is_important"
-          : is_snoozed === true ? "is_snoozed"
-          : folder ? "folder"
-          : category ? "category"
-          : "inbox";
+        const filterType =
+          is_starred === true
+            ? "is_starred"
+            : is_important === true
+              ? "is_important"
+              : is_snoozed === true
+                ? "is_snoozed"
+                : folder
+                  ? "folder"
+                  : category
+                    ? "category"
+                    : "inbox";
 
         switch (filterType) {
           case "is_starred":
@@ -333,7 +457,7 @@ const mailSlice = createSlice({
             state.inbox = results;
             break;
         }
-        
+
         state.activeCategory = category ?? null;
       })
       .addCase(fetchEmails.rejected, (state, action) => {
@@ -361,18 +485,18 @@ const mailSlice = createSlice({
       .addCase(fetchLabels.fulfilled, (state, action) => {
         state.labelLoading = false;
         const labelsArray = action.payload ?? [];
-        
+
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-        
+
         // Merge with system labels (keep system labels as-is, they use composite keys)
         const mergedLabels = { ...state.labels };
-        
+
         // Add/update backend labels (UUID-based)
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
-        
+
         state.labels = mergedLabels;
         state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
         state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };
@@ -394,7 +518,7 @@ const mailSlice = createSlice({
       .addCase(updateLabelThunk.fulfilled, (state, action) => {
         const updatedLabel = action.payload;
         const labelId = action.payload.id;
-        
+
         if (labelId && state.labels[labelId]) {
           // Re-fetch labels to get updated tree structure (or rebuild mapping)
           // For now, update the label in place
@@ -405,7 +529,7 @@ const mailSlice = createSlice({
             color: updatedLabel.color ?? existingLabel.color,
             parent_id: updatedLabel.parent_id ?? existingLabel.parent_id,
           };
-          
+
           // Rebuild mappings if parent or name changed
           if (updatedLabel.name !== existingLabel.name || updatedLabel.parent_id !== existingLabel.parent_id) {
             // Rebuild all mappings by transforming all labels
@@ -417,7 +541,7 @@ const mailSlice = createSlice({
                 color: l.color,
                 parent_id: l.parent_id,
               }));
-            
+
             const { idToKeyMap, keyToIdMap } = transformLabelsArray(allLabelsArray);
             state.labelIdToKeyMap = { ...idToKeyMap };
             state.keyToLabelIdMap = { ...keyToIdMap };
@@ -431,14 +555,14 @@ const mailSlice = createSlice({
         if (deletedId) {
           // Remove label from state
           delete state.labels[deletedId];
-          
+
           // Remove from mappings
           const compositeKey = state.labelIdToKeyMap[deletedId];
           if (compositeKey) {
             delete state.labelIdToKeyMap[deletedId];
             delete state.keyToLabelIdMap[compositeKey];
           }
-          
+
           // Also remove children (cascade delete)
           Object.entries(state.labels).forEach(([id, label]) => {
             if (label.parent_id === deletedId) {
@@ -459,6 +583,28 @@ const mailSlice = createSlice({
         (state) => {
           state.mutationLoading = true;
           state.error = null;
+        }
+      )
+      .addMatcher(
+        (action) => {
+          // Only update lastMutationTime for actual mutation operations, not fetches
+          const mutationActions = [
+            "mail/updateEmailStarred/fulfilled",
+            "mail/updateEmailImportant/fulfilled",
+            "mail/bulkUpdateEmails/fulfilled",
+            "mail/snoozeEmail/fulfilled",
+            "mail/moveToTrash/fulfilled",
+            "mail/moveToSpam/fulfilled",
+            "mail/deleteEmail/fulfilled",
+          ];
+          return mutationActions.includes(action.type);
+        },
+        (state, action) => {
+          state.mutationLoading = false;
+          // Update mutation timestamp to trigger refetch in components
+          const timestamp = Date.now();
+          state.lastMutationTime = timestamp;
+          console.log("🔄 Mutation completed, updating lastMutationTime:", timestamp, "Action:", action.type);
         }
       )
       .addMatcher(

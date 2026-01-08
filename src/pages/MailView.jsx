@@ -73,7 +73,7 @@ const Inbox = () => {
   } = useGlobalContext();
   const dispatch = useDispatch();
   const { accessToken } = useSelector((state) => state.user);
-  const { loading: isEmailsLoading } = useSelector((state) => state.mail);
+  const { loading: isEmailsLoading, lastMutationTime } = useSelector((state) => state.mail);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -88,13 +88,13 @@ const Inbox = () => {
   // Select emails from the appropriate folder/category
   const emails = useMemo(() => {
     const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
-    
+
     if (isInboxRoute) {
       // For inbox, use the category-specific emails (primary, promotions, social, updates)
       const categoryKey = activeInboxTab.toLowerCase();
       return mailFolders[categoryKey] || [];
     }
-    
+
     // For other folders, use folder-specific emails
     // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
     const folderKey = activeFolder.toLowerCase();
@@ -109,6 +109,7 @@ const Inbox = () => {
 
   // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   useEffect(() => {
+    console.log("📬 MailView useEffect triggered. lastMutationTime:", lastMutationTime, "activeFolder:", activeFolder);
     if (!accessToken) return;
     if (label) return; // Skip if viewing a label route
 
@@ -200,12 +201,12 @@ const Inbox = () => {
       .catch((error) => {
         console.error("Failed to fetch emails:", error);
       });
-  }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch]);
+  }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch, lastMutationTime]);
 
   // Fetch labels on mount
   useEffect(() => {
     if (!accessToken) return;
-    
+
     dispatch(fetchLabels()).catch((error) => {
       console.error("Failed to fetch labels:", error);
     });
@@ -217,10 +218,7 @@ const Inbox = () => {
 
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
-    
     let rows = getThreadRows(emails, { label, folder: activeFolder });
-    console.log("rows", { rows });
-    console.log("asdadasdasd", { rows });
     // Apply URL filter parameters (from SearchResultFilters)
     // Only apply if filters are present
     if (
