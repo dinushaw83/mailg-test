@@ -437,9 +437,9 @@ class TestBulkLabels:
             threads.append(thread)
         db_session.commit()
         
-        # Add labels to threads
+        # Add labels to threads (include user_id for user-specific label isolation)
         for thread in threads:
-            thread_label = ThreadLabel(thread_id=thread.id, label_id=sample_label.id)
+            thread_label = ThreadLabel(thread_id=thread.id, label_id=sample_label.id, user_id=user.id)
             db_session.add(thread_label)
         db_session.commit()
         

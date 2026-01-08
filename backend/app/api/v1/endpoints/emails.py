@@ -72,8 +72,13 @@ def get_label_hierarchy_name(label) -> str:
     return "/".join(parts)
 
 
-def format_email_response(email: Email) -> dict:
-    """Format email model to response dict."""
+def format_email_response(email: Email, user_id: Optional[UUID] = None) -> dict:
+    """Format email model to response dict.
+    
+    Args:
+        email: The email model instance
+        user_id: Current user's ID - used to filter labels to only show user's own labels
+    """
     recipients = []
     for r in email.recipients:
         recipients.append({
@@ -93,11 +98,12 @@ def format_email_response(email: Email) -> dict:
                 "size_bytes": a.size_bytes,
             })
     
-    # Get labels from the thread (labels are now linked to threads, not emails)
+    # Get labels from the thread - filter by user's ownership for isolation on shared threads
     labels = []
     if email.thread and email.thread.labels:
         for l in email.thread.labels:
-            if not l.is_deleted:
+            # Only include labels owned by the current user (user-specific label isolation)
+            if not l.is_deleted and (user_id is None or l.owner_id == user_id):
                 labels.append({
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
@@ -140,13 +146,20 @@ def format_email_response(email: Email) -> dict:
     }
 
 
-def format_email_list_response(email: Email, thread_email_count: Optional[int] = None) -> dict:
-    """Format email model for list responses."""
-    # Get labels from the thread (labels are now linked to threads, not emails)
+def format_email_list_response(email: Email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None) -> dict:
+    """Format email model for list responses.
+    
+    Args:
+        email: The email model instance
+        thread_email_count: Optional count of emails in the thread
+        user_id: Current user's ID - used to filter labels to only show user's own labels
+    """
+    # Get labels from the thread - filter by user's ownership for isolation on shared threads
     labels = []
     if email.thread and email.thread.labels:
         for l in email.thread.labels:
-            if not l.is_deleted:
+            # Only include labels owned by the current user (user-specific label isolation)
+            if not l.is_deleted and (user_id is None or l.owner_id == user_id):
                 labels.append({
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
@@ -301,7 +314,7 @@ def create_email(
     
     logger.info(f"Email {email.id} created by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.get("/emails", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
@@ -464,9 +477,9 @@ def list_emails(
         
         thread_counts = {tid: cnt for tid, cnt in count_results}
     
-    # Format response with thread counts
+    # Format response with thread counts and user_id for label filtering
     emails_data = [
-        format_email_list_response(email, thread_counts.get(email.thread_id))
+        format_email_list_response(email, thread_counts.get(email.thread_id), current_user.id)
         for email in emails
     ]
     
@@ -553,7 +566,7 @@ def get_emails_by_thread(
             run_id
         )
     
-    return [format_email_response(email) for email in emails]
+    return [format_email_response(email, current_user.id) for email in emails]
 
 
 @router.get("/emails/{email_id}", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -595,7 +608,7 @@ def get_email(
             detail=f"Email {email_id} not found"
         )
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.put("/emails/{email_id}", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -653,7 +666,7 @@ def update_email(
     
     logger.info(f"Email {email.id} updated by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.delete("/emails/{email_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
@@ -777,7 +790,7 @@ def send_email(
             raise
         
         logger.info(f"Email {email.id} queued for send in {undo_delay}s by user {current_user.id}")
-        return format_email_response(email)
+        return format_email_response(email, current_user.id)
     
     # Immediate send (undo send disabled)
     email.status = EmailStatus.SENT.value
@@ -796,7 +809,7 @@ def send_email(
     
     logger.info(f"Email {email.id} sent by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 def _deliver_email_to_recipients(db: Session, email: Email, sender) -> None:
@@ -889,7 +902,7 @@ def cancel_send(
     
     logger.info(f"Email {email.id} send cancelled (undo send) by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/confirm-send", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -944,7 +957,7 @@ def confirm_send(
     
     logger.info(f"Email {email.id} confirmed and sent immediately by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/reply", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -1083,7 +1096,7 @@ def reply_to_email(
     
     logger.info(f"Reply {reply_email.id} to email {email_id} by user {current_user.id}")
     
-    return format_email_response(reply_email)
+    return format_email_response(reply_email, current_user.id)
 
 
 @router.post("/emails/{email_id}/forward", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -1184,7 +1197,7 @@ def forward_email(
     
     logger.info(f"Forward {forward_email_obj.id} of email {email_id} by user {current_user.id}")
     
-    return format_email_response(forward_email_obj)
+    return format_email_response(forward_email_obj, current_user.id)
 
 
 @router.patch("/emails/{email_id}/read", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1216,7 +1229,7 @@ def mark_email_read(
         db.rollback()
         raise
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.patch("/emails/{email_id}/star", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1248,7 +1261,7 @@ def star_email(
         db.rollback()
         raise
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.patch("/emails/{email_id}/important", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1280,7 +1293,7 @@ def important_email(
         db.rollback()
         raise
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 
@@ -1320,7 +1333,7 @@ def move_email(
         db.rollback()
         raise
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/labels", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1368,14 +1381,19 @@ def add_label_to_email(
             detail="Invalid label ID"
         )
     
-    # Check if thread already has this label
+    # Check if user already applied this label to the thread
     existing = db.query(ThreadLabel).filter(
         ThreadLabel.thread_id == email.thread_id,
-        ThreadLabel.label_id == label_data.label_id
+        ThreadLabel.label_id == label_data.label_id,
+        ThreadLabel.user_id == current_user.id
     ).first()
     
     if not existing:
-        thread_label = ThreadLabel(thread_id=email.thread_id, label_id=label_data.label_id)
+        thread_label = ThreadLabel(
+            thread_id=email.thread_id,
+            label_id=label_data.label_id,
+            user_id=current_user.id
+        )
         db.add(thread_label)
         
         try:
@@ -1385,7 +1403,7 @@ def add_label_to_email(
             raise
     
     db.refresh(email)
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.delete("/emails/{email_id}/labels/{label_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(authorized())])
@@ -1394,10 +1412,10 @@ def remove_label_from_email(
     label_id: UUID,
     db: Session = Depends(get_db),
 ) -> None:
-    """Remove a label from an email's thread.
+    """Remove a label from an email's thread for the current user.
     
-    Labels are now linked to threads, not individual emails.
-    Removing a label from an email will remove it from the email's thread.
+    Labels are user-specific on shared threads. Removing a label only affects
+    the current user's view of the thread.
     """
     current_user = auth.user
     
@@ -1410,9 +1428,11 @@ def remove_label_from_email(
     if not email or not email.thread_id:
         return  # Silently succeed if email or thread not found
     
+    # Only remove the label association for this specific user
     thread_label = db.query(ThreadLabel).filter(
         ThreadLabel.thread_id == email.thread_id,
-        ThreadLabel.label_id == label_id
+        ThreadLabel.label_id == label_id,
+        ThreadLabel.user_id == current_user.id
     ).first()
     
     if thread_label:
@@ -1485,7 +1505,7 @@ def snooze_email(
     
     logger.info(f"Email {email.id} snoozed until {snooze_data.snooze_until} by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/unsnooze", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1544,7 +1564,7 @@ def unsnooze_email(
     
     logger.info(f"Email {email.id} unsnoozed by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/archive", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1599,7 +1619,7 @@ def archive_email(
     
     logger.info(f"Email {email.id} archived by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/unarchive", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1664,7 +1684,7 @@ def unarchive_email(
     
     logger.info(f"Email {email.id} unarchived by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/spam", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1725,7 +1745,7 @@ def mark_email_spam(
     
     logger.info(f"Email {email.id} marked as spam by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/unspam", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1786,7 +1806,7 @@ def unmark_email_spam(
     
     logger.info(f"Email {email.id} removed from spam by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.post("/emails/{email_id}/restore", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1860,7 +1880,7 @@ def restore_email_from_trash(
     
     logger.info(f"Email {email.id} restored from trash to {email.folder} by user {current_user.id}")
     
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.patch("/emails/{email_id}/category", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1923,7 +1943,7 @@ def update_email_category(
     
     logger.info(f"Email {email.id} category changed to {category_data.category} by user {current_user.id}")
 
-    return format_email_response(email)
+    return format_email_response(email, current_user.id)
 
 
 @router.get("/emails/stats/category-counts", response_model=EmailCategoryCountsResponse, dependencies=[Depends(authorized())])

@@ -242,14 +242,17 @@ def list_labels(
     current_user = auth.user
     
     if include_counts:
-        # Subquery for thread counts
+        # Subquery for thread counts - filter by user_id for user-specific label associations
         thread_count_subq = (
             db.query(
                 ThreadLabel.label_id,
                 func.count(ThreadLabel.thread_id).label("thread_count")
             )
             .join(Thread, Thread.id == ThreadLabel.thread_id)
-            .filter(Thread.is_deleted == False)
+            .filter(
+                Thread.is_deleted == False,
+                ThreadLabel.user_id == current_user.id  # Only count this user's label associations
+            )
             .group_by(ThreadLabel.label_id)
             .subquery()
         )
@@ -312,14 +315,17 @@ def list_labels_tree(
     current_user = auth.user
     
     if include_counts:
-        # Subquery for thread counts
+        # Subquery for thread counts - filter by user_id for user-specific label associations
         thread_count_subq = (
             db.query(
                 ThreadLabel.label_id,
                 func.count(ThreadLabel.thread_id).label("thread_count")
             )
             .join(Thread, Thread.id == ThreadLabel.thread_id)
-            .filter(Thread.is_deleted == False)
+            .filter(
+                Thread.is_deleted == False,
+                ThreadLabel.user_id == current_user.id  # Only count this user's label associations
+            )
             .group_by(ThreadLabel.label_id)
             .subquery()
         )
@@ -374,11 +380,12 @@ def get_label(
             detail=f"Label {label_id} not found"
         )
     
-    # Get thread count
+    # Get thread count - filter by user_id for user-specific label associations
     thread_count = db.query(func.count(ThreadLabel.thread_id)).join(
         Thread, Thread.id == ThreadLabel.thread_id
     ).filter(
         ThreadLabel.label_id == label_id,
+        ThreadLabel.user_id == current_user.id,  # Only count this user's label associations
         Thread.is_deleted == False
     ).scalar() or 0
     
@@ -537,8 +544,11 @@ def delete_label(
     # Get all descendant IDs and delete them all (cascade delete)
     all_ids_to_delete = {label_id} | get_all_descendant_ids(db, label_id)
     
-    # Remove all thread associations for labels being deleted
-    db.query(ThreadLabel).filter(ThreadLabel.label_id.in_(all_ids_to_delete)).delete(synchronize_session=False)
+    # Remove all thread associations for labels being deleted (only this user's associations)
+    db.query(ThreadLabel).filter(
+        ThreadLabel.label_id.in_(all_ids_to_delete),
+        ThreadLabel.user_id == current_user.id
+    ).delete(synchronize_session=False)
     
     if permanent:
         # Permanently delete from database
@@ -592,13 +602,14 @@ def list_label_threads(
             detail=f"Label {label_id} not found"
         )
     
-    # Get threads with this label
+    # Get threads with this label - filter by user_id for user-specific label associations
     threads_with_label = db.query(Thread).options(
         selectinload(Thread.labels),
     ).join(
         ThreadLabel, Thread.id == ThreadLabel.thread_id
     ).filter(
         ThreadLabel.label_id == label_id,
+        ThreadLabel.user_id == current_user.id,  # Only this user's label associations
         Thread.is_deleted == False
     )
     
@@ -624,7 +635,7 @@ def list_label_threads(
         ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
         
         if latest_email:
-            emails_data.append(format_email_list_response(latest_email, thread.email_count))
+            emails_data.append(format_email_list_response(latest_email, thread.email_count, current_user.id))
     
     return PaginatedListResponse[EmailListResponse](
         results=emails_data,

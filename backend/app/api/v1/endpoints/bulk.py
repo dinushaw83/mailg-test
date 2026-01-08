@@ -367,14 +367,15 @@ def bulk_add_labels(
         return create_bulk_response(request.thread_ids, success_ids, failures)
     
     try:
-        # Bulk delete all existing labels for these threads
+        # Bulk delete all existing labels for these threads (only this user's label associations)
         db.query(ThreadLabel).filter(
-            ThreadLabel.thread_id.in_(success_ids)
+            ThreadLabel.thread_id.in_(success_ids),
+            ThreadLabel.user_id == current_user.id
         ).delete(synchronize_session=False)
         
-        # Bulk insert new labels for all threads
+        # Bulk insert new labels for all threads (with user_id for user-specific isolation)
         new_thread_labels = [
-            ThreadLabel(thread_id=thread_id, label_id=label_id)
+            ThreadLabel(thread_id=thread_id, label_id=label_id, user_id=current_user.id)
             for thread_id in success_ids
             for label_id in request.label_ids
         ]
@@ -432,10 +433,11 @@ def bulk_remove_labels(
         return create_bulk_response(request.thread_ids, success_ids, failures)
     
     try:
-        # Bulk delete specified labels for these threads
+        # Bulk delete specified labels for these threads (only this user's label associations)
         db.query(ThreadLabel).filter(
             ThreadLabel.thread_id.in_(success_ids),
-            ThreadLabel.label_id.in_(request.label_ids)
+            ThreadLabel.label_id.in_(request.label_ids),
+            ThreadLabel.user_id == current_user.id
         ).delete(synchronize_session=False)
         
         db.commit()

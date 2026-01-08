@@ -181,7 +181,7 @@ class TestSearchLabelHierarchy:
         db_session.add(email)
         db_session.commit()
         
-        thread_label = ThreadLabel(thread_id=thread.id, label_id=child.id)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=child.id, user_id=user.id)
         db_session.add(thread_label)
         db_session.commit()
         
