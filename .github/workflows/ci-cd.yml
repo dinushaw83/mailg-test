@@ -379,9 +379,10 @@ jobs:
           # Create deploy directory on remote VM (use $HOME for proper expansion)
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p $HOME/mailg-deploy'
           
-          # Copy all deployment scripts and docker-compose file
+          # Copy all deployment scripts and production docker-compose
+          # Note: deploy/gcp/ already contains docker-compose.prod.yaml configured for production
+          # (uses image: instead of build:, so no source code needed on VM)
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
-          scp docker-compose.yaml ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/docker-compose.prod.yaml
           
           # Verify files were copied successfully
           echo "Verifying files on remote VM..."

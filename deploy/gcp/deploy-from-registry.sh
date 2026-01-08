@@ -132,14 +132,27 @@ if [ ! -f "docker-compose.prod.yaml" ]; then
     exit 1
 fi
 
-# Export image tags for docker-compose
+# =============================================================================
+# STEP 5: Export image tags for docker-compose
+# =============================================================================
+# The production docker-compose.prod.yaml uses environment variables:
+#   image: ${BACKEND_IMAGE:-gcr.io/.../mailg-backend:latest}
+#   image: ${FRONTEND_IMAGE:-gcr.io/.../mailg-frontend:latest}
+# We export these so docker-compose picks up the CI-passed values
+
 export BACKEND_IMAGE="$BACKEND_IMAGE_TAG"
 export FRONTEND_IMAGE="$FRONTEND_IMAGE_TAG"
+
+log "Exported image tags for docker-compose:"
+log "  BACKEND_IMAGE=${BACKEND_IMAGE}"
+log "  FRONTEND_IMAGE=${FRONTEND_IMAGE}"
 
 # Validate docker-compose configuration
 log "Validating docker-compose configuration..."
 docker compose -f docker-compose.prod.yaml config > /dev/null || {
     error "docker-compose configuration is invalid"
+    error "Showing docker-compose.prod.yaml content:"
+    cat docker-compose.prod.yaml
     exit 1
 }
 
