@@ -29,6 +29,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.label import Label
 from app.models.email import Email
+from app.models.thread import Thread
 from app.models.email_recipient import EmailRecipient
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
@@ -186,7 +187,16 @@ def mock_request():
 
 @pytest.fixture
 def sample_email(db_session, sample_user):
-    """Create a sample email for testing."""
+    """Create a sample email for testing (with a thread for label support)."""
+    # Create a thread first since labels are now linked to threads
+    thread = Thread(
+        subject="Test Email Subject",
+        owner_id=sample_user.id,
+        email_count=1
+    )
+    db_session.add(thread)
+    db_session.flush()
+    
     email = Email(
         subject="Test Email Subject",
         body="Test email body content",
@@ -195,6 +205,7 @@ def sample_email(db_session, sample_user):
         is_read=False,
         is_starred=False,
         sender_id=sample_user.id,
+        thread_id=thread.id,
     )
     db_session.add(email)
     db_session.commit()
@@ -204,13 +215,23 @@ def sample_email(db_session, sample_user):
 
 @pytest.fixture
 def sample_draft_email(db_session, sample_user):
-    """Create a sample draft email for testing."""
+    """Create a sample draft email for testing (with a thread for label support)."""
+    # Create a thread first since labels are now linked to threads
+    thread = Thread(
+        subject="Draft Email",
+        owner_id=sample_user.id,
+        email_count=1
+    )
+    db_session.add(thread)
+    db_session.flush()
+    
     email = Email(
         subject="Draft Email",
         body="Draft content",
         status="draft",
         folder=FolderType.DRAFTS.value,
         sender_id=sample_user.id,
+        thread_id=thread.id,
     )
     db_session.add(email)
     db_session.commit()

@@ -97,6 +97,7 @@ const Inbox = () => {
 
     // For other folders, use folder-specific emails
     // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
+    // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
     const folderKey = activeFolder.toLowerCase();
     const stateKeyMap = {
       starred: "is_starred",
@@ -107,6 +108,7 @@ const Inbox = () => {
     return mailFolders[stateKey] || [];
   }, [mailFolders, activeFolder, activeInboxTab, label]);
 
+  // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
   useEffect(() => {
     console.log("📬 MailView useEffect triggered. lastMutationTime:", lastMutationTime, "activeFolder:", activeFolder);
@@ -199,6 +201,7 @@ const Inbox = () => {
         }
       })
       .catch((error) => {
+        console.error("Failed to fetch emails:", error);
         console.error("Failed to fetch emails:", error);
       });
   }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch, lastMutationTime]);
@@ -314,18 +317,22 @@ const Inbox = () => {
 
   // ────────── Split rows based on inboxType
   const sortedImportant = useMemo(() => sortedBase.filter((r) => r.is_important), [sortedBase]);
+  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.is_important), [sortedBase]);
 
   const sortedUnread = useMemo(() => sortedBase.filter((r) => r.unreadCount > 0), [sortedBase]);
 
+  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.is_starred), [sortedBase]);
   const sortedStarred = useMemo(() => sortedBase.filter((r) => r.is_starred), [sortedBase]);
 
   const everythingElse = useMemo(() => {
     switch (inboxType) {
       case INBOX_TYPE.IMPORTANT_FIRST:
         return sortedBase.filter((r) => !r.is_important);
+        return sortedBase.filter((r) => !r.is_important);
       case INBOX_TYPE.UNREAD_FIRST:
         return sortedBase.filter((r) => r.unreadCount === 0);
       case INBOX_TYPE.STARRED_FIRST:
+        return sortedBase.filter((r) => !r.is_starred);
         return sortedBase.filter((r) => !r.is_starred);
       default:
         return sortedBase;

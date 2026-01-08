@@ -28,6 +28,7 @@ class Thread(Base):
     owner = relationship("User", foreign_keys=[owner_id], lazy="joined")
     emails = relationship("Email", back_populates="thread", lazy="dynamic",
                          order_by="Email.created_at")
+    labels = relationship("Label", secondary="thread_labels", back_populates="threads", lazy="selectin")
     
     # Composite indexes
     __table_args__ = (

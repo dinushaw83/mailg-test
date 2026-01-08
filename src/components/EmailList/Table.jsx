@@ -997,22 +997,22 @@ const Table = ({
                                   const textColor = badge?.color?.text || "#444746";
 
                                   return (
-                                    <div
-                                      key={`Badge-${badge.key}`}
-                                      style={{
+                                  <div
+                                    key={`Badge-${badge.key}`}
+                                    style={{
                                         backgroundColor: bgColor,
                                         color: textColor,
-                                        fontSize: "0.75rem",
-                                        padding: "0 4px",
-                                        textDecoration: "none",
-                                        width: "fit-content",
-                                        borderRadius: "4px",
-                                        marginRight: "6px",
-                                        display: "inline-block",
-                                      }}
-                                    >
-                                      {badge.displayName}
-                                    </div>
+                                      fontSize: "0.75rem",
+                                      padding: "0 4px",
+                                      textDecoration: "none",
+                                      width: "fit-content",
+                                      borderRadius: "4px",
+                                      marginRight: "6px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    {badge.displayName}
+                                  </div>
                                   );
                                 })}
                                 <span

@@ -150,10 +150,10 @@ export function normalizeEmails(messages) {
 
     // Handle string format (legacy): just email address
     if (typeof address === "string") {
-      return {
-        email: address,
-        name: emailToUsernameMap[address] || address,
-      };
+    return {
+      email: address,
+      name: emailToUsernameMap[address] || address,
+    };
     }
 
     return null;

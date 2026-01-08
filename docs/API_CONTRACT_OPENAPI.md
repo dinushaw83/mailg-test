@@ -21,6 +21,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Bulk Archive](#bulk-archive)
   - [Bulk Update Category](#bulk-update-category)
   - [Bulk Delete](#bulk-delete)
+  - [Bulk Important](#bulk-important)
   - [Bulk Add Labels](#bulk-add-labels)
   - [Bulk Remove Labels](#bulk-remove-labels)
   - [Bulk Move](#bulk-move)
@@ -48,6 +49,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Update Email Category](#update-email-category)
   - [Confirm Send](#confirm-send)
   - [Forward Email](#forward-email)
+  - [Important Email](#important-email)
   - [Add Label To Email](#add-label-to-email)
   - [Remove Label From Email](#remove-label-from-email)
   - [Move Email](#move-email)
@@ -68,7 +70,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Delete Label](#delete-label)
   - [Get Label](#get-label)
   - [Update Label](#update-label)
-  - [List Label Emails](#list-label-emails)
+  - [List Label Threads](#list-label-threads)
 - [Metrics API](#metrics-api)
   - [Metrics Health](#metrics-health)
   - [Get Label Values](#get-label-values)
@@ -807,21 +809,100 @@ Permissions:
 
 ---
 
-### Bulk Add Labels
+### Bulk Important
 
-**POST** `/api/v1/bulk/labels/add`
+**POST** `/api/v1/bulk/important`
 
-Add labels to multiple emails.
+Important or un important multiple emails.
 
 Permissions:
 - Users can only modify their own emails
-- Labels must belong to the user
 
 **Request Body**:
 
 ```json
 {
   "email_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "is_important": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Bulk Add Labels
+
+**POST** `/api/v1/bulk/labels/add`
+
+Replace all labels on multiple threads with new ones.
+
+This operation drops all existing labels from the threads and assigns
+the new labels provided in the request.
+
+Permissions:
+- Users can only modify their own threads
+- Labels must belong to the user
+
+**Request Body**:
+
+```json
+{
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "label_ids": [
@@ -890,16 +971,17 @@ Permissions:
 
 **POST** `/api/v1/bulk/labels/remove`
 
-Remove labels from multiple emails.
+Remove specified labels from multiple threads.
 
 Permissions:
-- Users can only modify their own emails
+- Users can only modify their own threads
+- Labels must belong to the user
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "label_ids": [
@@ -1974,6 +2056,7 @@ Permissions:
 Get all emails in a thread/conversation.
 
 Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
+Emails are automatically marked as read in the background.
 
 Permissions:
 - Users can only access threads containing their own emails (sent or received)
@@ -2630,11 +2713,90 @@ Forward an email.
 
 ---
 
+### Important Email
+
+**PATCH** `/api/v1/emails/{email_id}/important`
+
+important or un important an email.
+
+**Path Parameters**:
+
+- `email_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "is_important": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Add Label To Email
 
 **POST** `/api/v1/emails/{email_id}/labels`
 
-Add a label to an email.
+Add a label to an email's thread.
+
+Labels are now linked to threads, not individual emails.
+Adding a label to an email will add it to the email's thread.
 
 **Path Parameters**:
 
@@ -2710,7 +2872,10 @@ Add a label to an email.
 
 **DELETE** `/api/v1/emails/{email_id}/labels/{label_id}`
 
-Remove a label from an email.
+Remove a label from an email's thread.
+
+Labels are now linked to threads, not individual emails.
+Removing a label from an email will remove it from the email's thread.
 
 **Path Parameters**:
 
@@ -2991,6 +3156,7 @@ Restore an email from trash.
 
 Moves the email from trash folder back to its appropriate folder:
 - Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
 - Received emails are restored to the 'inbox' folder
 - Draft emails are restored to the 'drafts' folder
 
@@ -3587,10 +3753,10 @@ Permissions:
 
 **GET** `/api/v1/labels`
 
-List user's labels with email counts.
+List user's labels with thread counts.
 
 Args:
-    include_counts: Include email counts for each label
+    include_counts: Include thread counts for each label
     flat: If True, returns flat list. If False, returns hierarchical tree structure.
 
 Permissions:
@@ -3598,7 +3764,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include email counts
+- `include_counts` (optional, boolean): Include thread counts
 - `flat` (optional, boolean): Return flat list (True) or hierarchical tree (False)
 
 **Responses**:
@@ -3724,7 +3890,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include email counts
+- `include_counts` (optional, boolean): Include thread counts
 
 **Responses**:
 
@@ -3741,7 +3907,7 @@ Permissions:
       "name": "string",
       "color": "string",
       "parent_id": "00000000-0000-0000-0000-000000000000",
-      "email_count": 0,
+      "thread_count": 0,
       "children": []
     }
   ]
@@ -3985,11 +4151,13 @@ Permissions:
 
 ---
 
-### List Label Emails
+### List Label Threads
 
-**GET** `/api/v1/labels/{label_id}/emails`
+**GET** `/api/v1/labels/{label_id}/threads`
 
-List emails with a specific label.
+List threads with a specific label.
+
+Returns the latest email from each thread that has this label.
 
 Permissions:
 - Users can only access their own labels
@@ -5551,6 +5719,7 @@ Raises:
 - `drafts`
 - `trash`
 - `spam`
+- `scheduled`
 
 ---
 

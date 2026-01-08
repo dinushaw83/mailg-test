@@ -179,6 +179,270 @@ class TestEmailList:
             assert email["thread_id"] == str(thread.id)
 
 
+class TestThreadEmailCount:
+    """Test thread email count in list responses."""
+
+    def test_list_emails_includes_thread_email_count(self, client_with_auth, db_session):
+        """Test that list emails response includes thread_email_count field."""
+        client, token, user = client_with_auth
+        
+        # Create a thread with multiple emails
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=3,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create 3 emails in the thread
+        for i in range(3):
+            email = Email(
+                subject=f"Thread Email {i}",
+                body=f"Content {i}",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread.id
+            )
+            db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # All emails in the thread should have thread_email_count = 3
+        for email in data["results"]:
+            if email["thread_id"] == str(thread.id):
+                assert email["thread_email_count"] == 3
+
+    def test_list_emails_thread_count_null_for_no_thread(self, client_with_auth, db_session):
+        """Test that emails without a thread have null thread_email_count."""
+        client, token, user = client_with_auth
+        
+        # Create an email without a thread
+        email = Email(
+            subject="No Thread Email",
+            body="Content",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=None
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Find our email and check thread_email_count is null
+        for result in data["results"]:
+            if result["subject"] == "No Thread Email":
+                assert result["thread_email_count"] is None
+
+    def test_list_emails_threaded_mode_includes_count(self, client_with_auth, db_session):
+        """Test that threaded mode includes correct thread_email_count."""
+        client, token, user = client_with_auth
+        
+        # Create a thread with 5 emails
+        thread = Thread(
+            subject="Big Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=5,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create 5 emails in the thread
+        for i in range(5):
+            email = Email(
+                subject=f"Thread Email {i}",
+                body=f"Content {i}",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread.id,
+                sent_at=datetime.utcnow() - timedelta(hours=5-i)
+            )
+            db_session.add(email)
+        db_session.commit()
+        
+        # Use threaded mode to get only latest email per thread
+        response = client.get(
+            "/api/v1/emails?threaded=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Should return 1 email (latest from the thread)
+        thread_emails = [e for e in data["results"] if e["thread_id"] == str(thread.id)]
+        assert len(thread_emails) == 1
+        # The thread_email_count should be 5
+        assert thread_emails[0]["thread_email_count"] == 5
+
+    def test_list_emails_thread_count_only_accessible_emails(self, client_with_auth, db_session):
+        """Test that thread_email_count only counts emails accessible to the user."""
+        client, token, user = client_with_auth
+        
+        # Create another user
+        other_user = User(
+            first_name="Other",
+            last_name="User",
+            email="other@example.com",
+            role="user"
+        )
+        db_session.add(other_user)
+        db_session.commit()
+        
+        # Create a thread
+        thread = Thread(
+            subject="Shared Thread",
+            owner_id=user.id,
+            participant_count=2,
+            email_count=4,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create 2 emails by current user
+        email1 = Email(
+            subject="User Email 1",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=user.id,
+            thread_id=thread.id
+        )
+        email2 = Email(
+            subject="User Email 2",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=user.id,
+            thread_id=thread.id
+        )
+        
+        # Create 2 emails by other user (not accessible to current user)
+        email3 = Email(
+            subject="Other User Email 1",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=other_user.id,
+            thread_id=thread.id
+        )
+        email4 = Email(
+            subject="Other User Email 2",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=other_user.id,
+            thread_id=thread.id
+        )
+        
+        db_session.add_all([email1, email2, email3, email4])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # thread_email_count should be 2 (only user's emails, not other user's)
+        for email in data["results"]:
+            if email["thread_id"] == str(thread.id):
+                assert email["thread_email_count"] == 2
+
+    def test_list_emails_multiple_threads_different_counts(self, client_with_auth, db_session):
+        """Test that different threads show correct individual counts."""
+        client, token, user = client_with_auth
+        
+        # Create thread 1 with 2 emails
+        thread1 = Thread(
+            subject="Thread 1",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=2,
+            last_email_at=datetime.utcnow()
+        )
+        # Create thread 2 with 4 emails
+        thread2 = Thread(
+            subject="Thread 2",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=4,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add_all([thread1, thread2])
+        db_session.commit()
+        db_session.refresh(thread1)
+        db_session.refresh(thread2)
+        
+        # Create 2 emails in thread 1
+        for i in range(2):
+            email = Email(
+                subject=f"Thread1 Email {i}",
+                body="Content",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread1.id
+            )
+            db_session.add(email)
+        
+        # Create 4 emails in thread 2
+        for i in range(4):
+            email = Email(
+                subject=f"Thread2 Email {i}",
+                body="Content",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread2.id
+            )
+            db_session.add(email)
+        
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Check each email has correct thread count
+        for email in data["results"]:
+            if email["thread_id"] == str(thread1.id):
+                assert email["thread_email_count"] == 2
+            elif email["thread_id"] == str(thread2.id):
+                assert email["thread_email_count"] == 4
+
+
 class TestGetEmailsByThread:
     """Test get emails by thread endpoint with background read marking."""
 
@@ -1585,3 +1849,175 @@ class TestEmailCategoryCounts:
         for key, value in data.items():
             assert isinstance(value, int)
             assert value >= 0  # Counts should be non-negative
+
+
+class TestScheduledFolder:
+    """Test scheduled folder functionality for emails waiting to be sent."""
+
+    def test_list_emails_filter_by_scheduled_folder(self, client_with_auth, db_session):
+        """Test filtering emails by scheduled folder."""
+        client, token, user = client_with_auth
+        
+        # Create emails in different folders
+        scheduled_email = Email(
+            subject="Scheduled Email",
+            body="Content",
+            status="queued",
+            folder=FolderType.SCHEDULED.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        inbox_email = Email(
+            subject="Inbox Email",
+            body="Content",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id
+        )
+        db_session.add_all([scheduled_email, inbox_email])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails?folder=scheduled",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # All returned emails should be in scheduled folder
+        for email in data["results"]:
+            assert email["folder"] == "scheduled"
+
+    def test_queued_email_goes_to_scheduled_folder(self, client_with_auth, db_session, sample_draft_email):
+        """Test that sending a draft with undo_send enabled puts email in scheduled folder."""
+        client, token, user = client_with_auth
+        
+        # Enable undo send (10 second delay)
+        user.undo_send_delay_seconds = 10
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_draft_email.id}/send",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should be in scheduled folder when queued
+        assert data["folder"] == "scheduled"
+        assert data["can_undo_send"] == True
+        assert data["scheduled_send_at"] is not None
+
+    def test_confirm_send_moves_from_scheduled_to_sent(self, client_with_auth, db_session):
+        """Test that confirming send moves email from scheduled to sent folder."""
+        client, token, user = client_with_auth
+        
+        # Create a queued email in scheduled folder
+        email = Email(
+            subject="Queued Email",
+            body="Content",
+            status="queued",
+            folder=FolderType.SCHEDULED.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Add a recipient (required for sending)
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="test@example.com",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{email.id}/confirm-send",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should now be in sent folder
+        assert data["folder"] == "sent"
+        assert data["can_undo_send"] == False
+        assert data["scheduled_send_at"] is None
+
+    def test_cancel_send_moves_from_scheduled_to_drafts(self, client_with_auth, db_session):
+        """Test that cancelling send moves email from scheduled to drafts folder."""
+        client, token, user = client_with_auth
+        
+        # Create a queued email in scheduled folder
+        email = Email(
+            subject="Queued Email",
+            body="Content",
+            status="queued",
+            folder=FolderType.SCHEDULED.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{email.id}/cancel-send",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should be back in drafts folder
+        assert data["folder"] == "drafts"
+        assert data["can_undo_send"] == False
+
+    def test_restore_queued_email_from_trash_to_scheduled(self, client_with_auth, db_session):
+        """Test restoring a queued email from trash returns it to scheduled folder."""
+        client, token, user = client_with_auth
+        
+        # Create a queued email that was moved to trash
+        email = Email(
+            subject="Queued Email in Trash",
+            body="Content",
+            status="queued",
+            folder=FolderType.TRASH.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{email.id}/restore",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should be restored to scheduled folder
+        assert data["folder"] == "scheduled"
+
+    def test_move_email_to_scheduled_folder(self, client_with_auth, db_session, sample_email):
+        """Test moving an email to scheduled folder."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_email.id}/move",
+            json={"folder": "scheduled"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+
+    def test_scheduled_folder_in_valid_folder_types(self):
+        """Test that scheduled is a valid folder type."""
+        from app.core.constants import VALID_FOLDER_TYPES
+        
+        assert "scheduled" in VALID_FOLDER_TYPES
+
+    def test_scheduled_in_prohibited_labels(self):
+        """Test that scheduled is a prohibited label name."""
+        from app.core.constants import ProhibitedLabels
+        
+        assert ProhibitedLabels.SCHEDULED.value == "scheduled"
