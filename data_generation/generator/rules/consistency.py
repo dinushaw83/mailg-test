@@ -59,9 +59,13 @@ class ConsistencyRules:
             if self._evaluate_condition(rule.get("condition", {}), record):
                 record = self._apply_set_values(rule.get("set", {}), record, table_name)
 
-        # Apply body consistency for conversations (non-configurable)
-        if table_name == "conversations":
+        # Apply body consistency for emails (non-configurable)
+        if table_name == "emails":
             record = self._apply_body_consistency(record)
+
+        # Apply birthday field consistency for users (non-configurable)
+        if table_name == "users":
+            record = self._apply_birthday_consistency(record)
 
         return record
 
@@ -212,21 +216,82 @@ class ConsistencyRules:
 
     def _apply_body_consistency(self, record: dict[str, Any]) -> dict[str, Any]:
         """
-        Apply body field consistency for conversations.
+        Apply body field consistency for emails.
 
-        This ensures html_body and plain_body are set if body exists.
+        This ensures body and html_body have the same content in different formats.
+        For emails table, only body and html_body fields exist.
         """
+        import re
+
         body = record.get("body")
         html_body = record.get("html_body")
-        plain_body = record.get("plain_body")
 
-        # If we have body but not html_body, create simple HTML
-        if body and not html_body:
-            record["html_body"] = f"<p>{body}</p>"
+        # If we have html_body but not body, strip HTML to create plain text
+        if html_body and not body:
+            # Replace closing paragraph tags with double newlines first
+            plain_text = re.sub(r'</p>\s*<p>', '\n\n', html_body)
+            # Now strip all remaining HTML tags
+            plain_text = re.sub(r'<[^>]+>', '', plain_text)
+            # Clean up extra whitespace
+            plain_text = re.sub(r'\n{3,}', '\n\n', plain_text)  # Max 2 newlines
+            plain_text = plain_text.strip()
+            record["body"] = plain_text
 
-        # If we have body but not plain_body, use body
-        if body and not plain_body:
-            record["plain_body"] = body
+        # If we have body but not html_body, convert to HTML
+        elif body and not html_body:
+            # Convert plain text paragraphs to HTML
+            paragraphs = body.split("\n\n")
+            html_parts = [f"<p>{p.strip()}</p>" for p in paragraphs if p.strip()]
+            record["html_body"] = "\n".join(html_parts)
+
+        return record
+
+    def _apply_birthday_consistency(self, record: dict[str, Any]) -> dict[str, Any]:
+        """
+        Apply birthday field consistency for users.
+
+        Ensures birthday_month, birthday_day, and birthday_year are either:
+        - All null (no birthday data), OR
+        - All populated with valid values
+
+        If any one field is set, all three will be generated with valid values.
+        """
+        birthday_month = record.get("birthday_month")
+        birthday_day = record.get("birthday_day")
+        birthday_year = record.get("birthday_year")
+
+        # Check if at least one birthday field is populated
+        has_any_birthday = any(
+            field is not None
+            for field in [birthday_month, birthday_day, birthday_year]
+        )
+
+        if has_any_birthday:
+            # Generate missing fields to ensure all three are populated
+            if birthday_month is None:
+                birthday_month = random.randint(1, 12)
+                record["birthday_month"] = birthday_month
+
+            if birthday_year is None:
+                # Generate a reasonable birth year (18-80 years old)
+                current_year = datetime.now().year
+                birthday_year = random.randint(current_year - 80, current_year - 18)
+                record["birthday_year"] = birthday_year
+
+            if birthday_day is None:
+                # Generate a valid day for the given month and year
+                days_in_month = {
+                    1: 31, 2: 29 if (birthday_year % 4 == 0 and (birthday_year % 100 != 0 or birthday_year % 400 == 0)) else 28,
+                    3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31
+                }
+                max_day = days_in_month.get(birthday_month, 31)
+                birthday_day = random.randint(1, max_day)
+                record["birthday_day"] = birthday_day
+        else:
+            # All are null - ensure they stay null (consistency)
+            record["birthday_month"] = None
+            record["birthday_day"] = None
+            record["birthday_year"] = None
 
         return record
 

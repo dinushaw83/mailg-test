@@ -9,7 +9,6 @@ from ..core.analyzer import FieldSemantics, SemanticType
 from ..core.context import GenerationContext
 from ..core.registry import generator
 
-
 @generator(SemanticType.PERSON_NAME, priority=80)
 class PersonNameGenerator(BaseGenerator):
     """Generates realistic person names."""
@@ -208,21 +207,11 @@ class ColorGenerator(BaseGenerator):
         if self.maybe_null(semantics, context, 0.1):
             return None
 
-        max_length = semantics.field_schema.get("maxLength", 7)
-
-        # Generate appropriate format based on maxLength
-        if max_length >= 7:
-            # Full hex color: #RRGGBB (7 chars)
-            return fake.hex_color()
-        elif max_length >= 4:
-            # Short hex color: #RGB (4 chars)
-            r = context.random().randint(0, 15)
-            g = context.random().randint(0, 15)
-            b = context.random().randint(0, 15)
-            return f"#{r:x}{g:x}{b:x}"
-        else:
-            # Just return a short color code
-            return fake.hex_color()[:max_length]
+        # Generate RGB values in the lighter range (180-255)
+        r = context.random().randint(180, 255)
+        g = context.random().randint(180, 255)
+        b = context.random().randint(180, 255)
+        return f"#{r:02x}{g:02x}{b:02x}"
 
 
 @generator(SemanticType.GROUP_NAME, priority=85)

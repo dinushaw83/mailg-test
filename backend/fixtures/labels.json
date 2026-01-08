@@ -1,802 +1,402 @@
 [
   {
-    "id": "e34c843e-9e5f-45f9-9007-0a8e9197c40e",
-    "name": "stock",
-    "color": "#e4d6d4",
+    "id": "40000000-0000-0000-0000-000000000001",
+    "name": "Work",
+    "color": "#b4c7ff",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_deleted": false,
-    "created_at": "2025-02-04T12:44:34.643480",
-    "updated_at": "2025-02-13T12:44:34.643480"
-  },
-  {
-    "id": "40000000-0000-0000-0000-000000000001",
-    "name": "Important",
-    "color": "#ede0d3",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": "e34c843e-9e5f-45f9-9007-0a8e9197c40e",
-    "is_deleted": false,
-    "created_at": "2025-01-28T20:21:34.644169",
-    "updated_at": "2025-02-08T10:21:34.644169"
+    "created_at": "2025-11-05T17:10:42.764665",
+    "updated_at": "2025-11-09T08:10:42.764665"
   },
   {
     "id": "40000000-0000-0000-0000-000000000002",
-    "name": "Work",
-    "color": "#d5b5cb",
+    "name": "Personal",
+    "color": "#b4ffb4",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_deleted": false,
-    "created_at": "2025-10-26T00:39:34.644201",
-    "updated_at": "2025-11-19T17:39:34.644201"
+    "created_at": "2025-01-28T00:35:42.764682",
+    "updated_at": "2025-02-04T03:35:42.764682"
   },
   {
     "id": "40000000-0000-0000-0000-000000000003",
+    "name": "Projects",
+    "color": "#ffd7b4",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-02-14T01:53:42.764698",
+    "updated_at": "2025-03-06T15:53:42.764698"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000004",
+    "name": "Urgent",
+    "color": "#ffb4b4",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000001",
+    "is_deleted": false,
+    "created_at": "2025-09-23T07:46:42.764713",
+    "updated_at": "2025-10-05T22:46:42.764713"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000005",
+    "name": "Meetings",
+    "color": "#c7d7ff",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000001",
+    "is_deleted": false,
+    "created_at": "2025-10-28T03:41:42.764728",
+    "updated_at": "2025-11-18T15:41:42.764728"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000006",
+    "name": "Reports",
+    "color": "#b4e6ff",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000001",
+    "is_deleted": false,
+    "created_at": "2025-08-19T16:15:42.764746",
+    "updated_at": "2025-09-15T15:15:42.764746"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000007",
+    "name": "Family",
+    "color": "#c7ffc7",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000002",
+    "is_deleted": false,
+    "created_at": "2025-01-12T10:47:42.764765",
+    "updated_at": "2025-01-28T13:47:42.764765"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000008",
+    "name": "Friends",
+    "color": "#d7ffd7",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000002",
+    "is_deleted": false,
+    "created_at": "2025-07-11T20:48:42.764781",
+    "updated_at": "2025-07-30T16:48:42.764781"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000009",
+    "name": "Client A",
+    "color": "#ffeab4",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000003",
+    "is_deleted": false,
+    "created_at": "2025-06-24T06:39:42.764796",
+    "updated_at": "2025-07-02T17:39:42.764796"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000010",
+    "name": "Client B",
+    "color": "#fff3c7",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000003",
+    "is_deleted": false,
+    "created_at": "2025-08-22T05:44:42.764811",
+    "updated_at": "2025-09-15T02:44:42.764811"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000011",
+    "name": "Critical",
+    "color": "#ffcaca",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000004",
+    "is_deleted": false,
+    "created_at": "2025-05-07T22:55:42.764826",
+    "updated_at": "2025-06-01T01:55:42.764826"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000012",
+    "name": "High Priority",
+    "color": "#ffd4b4",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000004",
+    "is_deleted": false,
+    "created_at": "2025-10-16T07:11:42.764841",
+    "updated_at": "2025-10-22T22:11:42.764841"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000013",
+    "name": "Team Meetings",
+    "color": "#d4e0ff",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000005",
+    "is_deleted": false,
+    "created_at": "2025-03-14T11:29:42.764857",
+    "updated_at": "2025-03-15T10:29:42.764857"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000014",
+    "name": "Client Meetings",
+    "color": "#b4d4ff",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000005",
+    "is_deleted": false,
+    "created_at": "2025-07-10T13:17:42.764872",
+    "updated_at": "2025-07-28T00:17:42.764872"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000015",
+    "name": "Phase 1",
+    "color": "#ffdeb4",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000009",
+    "is_deleted": false,
+    "created_at": "2025-09-20T05:10:42.764887",
+    "updated_at": "2025-09-27T17:10:42.764887"
+  },
+  {
+    "id": "40000000-0000-0000-0000-000000000016",
+    "name": "Phase 2",
+    "color": "#ffe8c7",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": "40000000-0000-0000-0000-000000000009",
+    "is_deleted": false,
+    "created_at": "2025-06-14T09:47:42.764902",
+    "updated_at": "2025-06-15T23:47:42.764902"
+  },
+  {
+    "id": "81e3e473-6542-45f1-9290-229ecb3f9b30",
+    "name": "Bills",
+    "color": null,
+    "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-02-04T21:44:42.763083",
+    "updated_at": "2025-02-28T11:44:42.763083"
+  },
+  {
+    "id": "cc47c5db-5915-44a3-867e-cb1806314eb5",
+    "name": "Sales",
+    "color": "#d7e9ba",
+    "owner_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-06-16T15:08:42.763161",
+    "updated_at": "2025-06-17T01:08:42.763161"
+  },
+  {
+    "id": "97fc8334-a2e6-474b-ac4a-60fa8f7eaf05",
+    "name": "Friends",
+    "color": null,
+    "owner_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-05-05T04:57:42.763229",
+    "updated_at": "2025-05-06T17:57:42.763229"
+  },
+  {
+    "id": "59aeb220-3770-4b14-96bc-3870dd54806f",
+    "name": "Work",
+    "color": null,
+    "owner_id": "550edc94-240f-4527-b278-a40eec589ed7",
+    "parent_id": "40000000-0000-0000-0000-000000000001",
+    "is_deleted": false,
+    "created_at": "2025-08-11T18:01:42.763295",
+    "updated_at": "2025-08-13T04:01:42.763295"
+  },
+  {
+    "id": "d643789b-7408-4be9-8000-c29e89d1081f",
+    "name": "Urgent",
+    "color": "#cdf5be",
+    "owner_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
+    "parent_id": null,
+    "is_deleted": true,
+    "created_at": "2025-05-16T14:44:42.763362",
+    "updated_at": "2025-06-13T16:44:42.763362"
+  },
+  {
+    "id": "caad7112-3f7e-47d1-8fac-10b8ba66c425",
+    "name": "Documents",
+    "color": "#dac3c1",
+    "owner_id": "85b578fa-18b2-41b4-8026-675eceb78662",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-10-25T15:18:42.763430",
+    "updated_at": "2025-11-04T10:18:42.763430"
+  },
+  {
+    "id": "d0e37750-52f3-4bed-93ac-63fe1283d088",
+    "name": "Newsletters",
+    "color": "#ece0ba",
+    "owner_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-08-06T01:50:42.763496",
+    "updated_at": "2025-08-22T02:50:42.763496"
+  },
+  {
+    "id": "a318f1a1-2c7f-49e9-98fa-45e309d25aa6",
+    "name": "Bills",
+    "color": "#bdc2ca",
+    "owner_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
+    "parent_id": "81e3e473-6542-45f1-9290-229ecb3f9b30",
+    "is_deleted": false,
+    "created_at": "2025-07-30T18:12:42.763562",
+    "updated_at": "2025-08-18T01:12:42.763562"
+  },
+  {
+    "id": "1db61900-3f63-4f07-b885-056a2a1cadfa",
+    "name": "Marketing",
+    "color": null,
+    "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
+    "parent_id": "40000000-0000-0000-0000-000000000007",
+    "is_deleted": false,
+    "created_at": "2025-05-28T19:22:42.763644",
+    "updated_at": "2025-06-13T17:22:42.763644"
+  },
+  {
+    "id": "eaf4fd89-7275-48ad-a5da-02e980f9eef4",
+    "name": "Follow Up",
+    "color": "#dfc9ea",
+    "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
+    "parent_id": "40000000-0000-0000-0000-000000000015",
+    "is_deleted": false,
+    "created_at": "2025-12-06T06:49:42.763716",
+    "updated_at": "2025-12-27T11:49:42.763716"
+  },
+  {
+    "id": "302d41d4-72af-4fc7-bebd-2f703291d239",
+    "name": "Review",
+    "color": null,
+    "owner_id": "fe44b541-81ef-441c-ad73-4bd4a454abca",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-04-13T23:25:42.763781",
+    "updated_at": "2025-05-10T12:25:42.763781"
+  },
+  {
+    "id": "e57ee784-f892-4a00-ba51-d0ff5f5600af",
+    "name": "Notes",
+    "color": "#c4f1ee",
+    "owner_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-03-31T14:51:42.763845",
+    "updated_at": "2025-04-05T22:51:42.763845"
+  },
+  {
+    "id": "96bab219-01c4-4aef-8e59-07d6ca51e92d",
+    "name": "Work",
+    "color": "#bde9d2",
+    "owner_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-11-18T18:06:42.763910",
+    "updated_at": "2025-11-22T05:06:42.763910"
+  },
+  {
+    "id": "80b01063-f8df-4759-aa08-db6eddba90ad",
+    "name": "Feedback",
+    "color": null,
+    "owner_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
+    "parent_id": "caad7112-3f7e-47d1-8fac-10b8ba66c425",
+    "is_deleted": false,
+    "created_at": "2025-01-19T21:34:42.763974",
+    "updated_at": "2025-02-14T07:34:42.763974"
+  },
+  {
+    "id": "87aa24ce-6b9b-476b-a1d7-fb93d038b24e",
+    "name": "Reports",
+    "color": null,
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-10-02T04:09:42.764036",
+    "updated_at": "2025-10-08T02:09:42.764036"
+  },
+  {
+    "id": "c57acc9f-41c5-40e9-8f6c-f4dbb96fc07f",
+    "name": "Partners",
+    "color": null,
+    "owner_id": "3a049f02-9d61-4988-8bf4-4b65a3d7c553",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-08-18T19:19:42.764099",
+    "updated_at": "2025-09-08T16:19:42.764099"
+  },
+  {
+    "id": "0a034a8e-fbc3-4de7-afda-6968da09731f",
+    "name": "Family",
+    "color": null,
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-06-20T08:48:42.764161",
+    "updated_at": "2025-06-28T10:48:42.764161"
+  },
+  {
+    "id": "c523e21c-358a-43e2-a958-043c749ff3cc",
+    "name": "Family",
+    "color": "#f2e3df",
+    "owner_id": "85b578fa-18b2-41b4-8026-675eceb78662",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-04-11T23:55:42.764224",
+    "updated_at": "2025-04-27T05:55:42.764224"
+  },
+  {
+    "id": "3e5c6860-baf4-4f49-9083-2d3bfe5ef964",
+    "name": "Follow Up",
+    "color": "#deb9f4",
+    "owner_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
+    "parent_id": "40000000-0000-0000-0000-000000000011",
+    "is_deleted": false,
+    "created_at": "2025-01-30T15:16:42.764289",
+    "updated_at": "2025-02-13T04:16:42.764289"
+  },
+  {
+    "id": "96444546-2101-4df3-a99d-91a412a5c28a",
+    "name": "Waiting",
+    "color": null,
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-01-30T04:26:42.764351",
+    "updated_at": "2025-02-20T04:26:42.764351"
+  },
+  {
+    "id": "fa598ba0-f8bf-4ef6-a095-82f32b367f57",
+    "name": "Reminders",
+    "color": null,
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "parent_id": null,
+    "is_deleted": false,
+    "created_at": "2025-06-16T11:23:42.764413",
+    "updated_at": "2025-06-26T03:23:42.764413"
+  },
+  {
+    "id": "9d105436-04d0-4060-97e5-3e79644fba53",
     "name": "Personal",
-    "color": "#f2ddd7",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "color": null,
+    "owner_id": "00000000-0000-0000-0000-000000000006",
     "parent_id": null,
-    "is_deleted": true,
-    "created_at": "2025-06-21T17:08:34.644235",
-    "updated_at": "2025-06-28T22:08:34.644235"
-  },
-  {
-    "id": "b45ed0e5-6daa-4d1b-a948-38351dcf53c8",
-    "name": "line",
-    "color": "#f8d1ec",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-12-18T12:08:34.638445",
-    "updated_at": "2026-01-05T16:15:34.638454"
-  },
-  {
-    "id": "e775082b-7138-45b4-8f1c-ab985ae6eabf",
-    "name": "something",
-    "color": "#f8eeee",
-    "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-05-24T14:20:34.638526",
-    "updated_at": "2025-05-27T16:20:34.638526"
-  },
-  {
-    "id": "eec73dad-4a4e-4d81-90d9-85c8cda9bc49",
-    "name": "perhaps",
-    "color": "#fbb8f1",
-    "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-03-15T05:23:34.638602",
-    "updated_at": "2025-03-20T03:23:34.638602"
-  },
-  {
-    "id": "1c6ccd0c-aeb6-41e3-9d1a-3fc3ea1cb3d7",
-    "name": "hard",
-    "color": "#ffc4d3",
-    "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-13T14:09:34.638677",
-    "updated_at": "2025-02-04T17:09:34.638677"
-  },
-  {
-    "id": "a9e4224b-e20d-4ee2-8a03-5067d8141d7e",
-    "name": "senior",
-    "color": "#f2c4f9",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": "b45ed0e5-6daa-4d1b-a948-38351dcf53c8",
-    "is_deleted": false,
-    "created_at": "2025-04-04T02:11:34.638752",
-    "updated_at": "2025-04-06T11:11:34.638752"
-  },
-  {
-    "id": "974c7125-c37b-4637-8b93-e8b718d5d73e",
-    "name": "camera",
-    "color": "#bec6fb",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-08-12T21:25:34.638831",
-    "updated_at": "2025-09-04T10:25:34.638831"
-  },
-  {
-    "id": "f95d1e0a-2a4a-4e5a-8ad9-b6fc8309487d",
-    "name": "check",
-    "color": "#d7fbe9",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-06T05:21:34.638915",
-    "updated_at": "2025-01-12T10:21:34.638915"
-  },
-  {
-    "id": "4184e17d-2c3d-4884-b893-49e9c7efaf2f",
-    "name": "avoid",
-    "color": "#bbdbdc",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": true,
-    "created_at": "2025-10-12T22:48:34.638991",
-    "updated_at": "2025-10-14T18:48:34.638991"
-  },
-  {
-    "id": "38fcf4e2-0cd1-486f-abb7-891fd4bf63f8",
-    "name": "physical",
-    "color": "#d2f6cc",
-    "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-07-07T19:27:34.639069",
-    "updated_at": "2025-08-01T22:27:34.639069"
-  },
-  {
-    "id": "4cdbb50b-d7b1-405d-a7c8-76e03e5fe8e1",
-    "name": "single",
-    "color": "#d3b4e6",
-    "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-07-07T13:05:34.639150",
-    "updated_at": "2025-07-30T12:05:34.639150"
-  },
-  {
-    "id": "360175fe-fa0a-431f-a5bf-bc7297e6ce6a",
-    "name": "try",
-    "color": "#d4cfd7",
-    "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-10-24T12:09:34.639231",
-    "updated_at": "2025-10-25T05:09:34.639231"
-  },
-  {
-    "id": "d8bcafd6-44ff-4f30-ab3a-d6e0ae3483ec",
-    "name": "international",
-    "color": "#f4b7f8",
-    "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-09-06T11:49:34.639308",
-    "updated_at": "2025-09-08T06:49:34.639308"
-  },
-  {
-    "id": "f135e865-bd85-4726-85fa-f4a261872077",
-    "name": "sea",
-    "color": "#cff1f9",
-    "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
-    "parent_id": "974c7125-c37b-4637-8b93-e8b718d5d73e",
-    "is_deleted": false,
-    "created_at": "2025-02-18T20:07:34.639381",
-    "updated_at": "2025-03-01T00:07:34.639381"
-  },
-  {
-    "id": "ec51ece6-ab5a-4ebd-a110-6808c45386cf",
-    "name": "sort",
-    "color": "#dad2d3",
-    "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-03-16T04:41:34.639455",
-    "updated_at": "2025-03-20T18:41:34.639455"
-  },
-  {
-    "id": "cc5532f7-ce28-46af-8f9e-7defc40fdf27",
-    "name": "always",
-    "color": "#b4dac8",
-    "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-05-25T13:40:34.639533",
-    "updated_at": "2025-06-02T15:40:34.639533"
-  },
-  {
-    "id": "422c8d10-8b1f-4abe-b880-bc95b02ea3fb",
-    "name": "prove",
-    "color": "#c6d7f6",
-    "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-12-22T19:00:34.639605",
-    "updated_at": "2026-01-03T23:00:34.639605"
-  },
-  {
-    "id": "681ef171-4eac-4e8f-a429-187206d69dc3",
-    "name": "buy",
-    "color": "#fbcad7",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-06-11T23:33:34.639677",
-    "updated_at": "2025-07-03T11:33:34.639677"
-  },
-  {
-    "id": "76afe0fd-8dc9-413d-8287-4eb75843bd98",
-    "name": "seat",
-    "color": "#cff5d3",
-    "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-10-28T20:27:34.639750",
-    "updated_at": "2025-11-05T17:27:34.639750"
-  },
-  {
-    "id": "c160052c-c57e-48cf-b65a-e194fb7d2d9f",
-    "name": "do",
-    "color": "#d9ddfd",
-    "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-12-30T09:31:34.639822",
-    "updated_at": "2026-01-05T16:15:34.639831"
-  },
-  {
-    "id": "ed9ef866-7eaa-4b5c-a4ba-c032f1019106",
-    "name": "treatment",
-    "color": "#bfbbdc",
-    "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
-    "parent_id": "d8bcafd6-44ff-4f30-ab3a-d6e0ae3483ec",
-    "is_deleted": false,
-    "created_at": "2025-12-01T06:59:34.639906",
-    "updated_at": "2025-12-17T21:59:34.639906"
-  },
-  {
-    "id": "7c9fe410-fb25-4ef1-b056-d85f6d5f228d",
-    "name": "voice",
-    "color": "#dabdfb",
-    "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-11-01T13:10:34.639991",
-    "updated_at": "2025-12-01T00:10:34.639991"
-  },
-  {
-    "id": "9d331b3e-4879-4327-a052-53ef14967ad0",
-    "name": "give",
-    "color": "#eed8d9",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-09-27T16:05:34.640068",
-    "updated_at": "2025-10-04T15:05:34.640068"
-  },
-  {
-    "id": "cab1ed47-e069-462e-92a9-b751ee9790ec",
-    "name": "face",
-    "color": "#b9fab8",
-    "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-02-16T04:39:34.640153",
-    "updated_at": "2025-02-16T11:39:34.640153"
-  },
-  {
-    "id": "b7707771-ad26-4f14-980d-5b619eaab23d",
-    "name": "letter",
-    "color": "#ceefdf",
-    "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-11T02:40:34.640226",
-    "updated_at": "2025-01-23T16:40:34.640226"
-  },
-  {
-    "id": "314422da-c946-4a07-9ede-c63ff99dd283",
-    "name": "suffer",
-    "color": "#b7c8c1",
-    "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-09-22T14:21:34.640299",
-    "updated_at": "2025-10-02T01:21:34.640299"
-  },
-  {
-    "id": "5b8d381f-3c37-4825-8056-2071df2605e4",
-    "name": "pull",
-    "color": "#d9ebe2",
-    "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-12-29T22:20:34.640372",
-    "updated_at": "2025-12-30T15:20:34.640372"
-  },
-  {
-    "id": "a309263a-a223-4fe5-885b-3fd8e898500f",
-    "name": "science",
-    "color": "#ebf7cf",
-    "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-06-22T10:40:34.640444",
-    "updated_at": "2025-07-10T00:40:34.640444"
-  },
-  {
-    "id": "af4bb97b-0daa-490d-ae58-872d7535a17f",
-    "name": "responsibility",
-    "color": "#c2b8f1",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-03-13T01:21:34.640516",
-    "updated_at": "2025-03-21T01:21:34.640516"
-  },
-  {
-    "id": "47200c6f-b69e-4713-a34d-ae5d65c0fef6",
-    "name": "difference",
-    "color": "#ffcdc7",
-    "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-08-22T16:51:34.640590",
-    "updated_at": "2025-09-10T21:51:34.640590"
-  },
-  {
-    "id": "16fa482a-cbce-4a33-b2f9-3432ab67aaca",
-    "name": "brother",
-    "color": "#d7d1ef",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-03-27T19:44:34.640662",
-    "updated_at": "2025-04-05T22:44:34.640662"
-  },
-  {
-    "id": "084328a5-c1ee-4c58-b1df-ef4d0b437bc1",
-    "name": "finish",
-    "color": "#b9bcf6",
-    "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-05-02T20:02:34.640735",
-    "updated_at": "2025-05-10T18:02:34.640735"
-  },
-  {
-    "id": "064d90cd-6a8e-4a87-9541-52f48582c4d0",
-    "name": "attention",
-    "color": "#f3bbdc",
-    "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-10-11T10:29:34.640807",
-    "updated_at": "2025-10-23T22:29:34.640807"
-  },
-  {
-    "id": "f560f23b-4b57-4d83-ac20-36c8743fad36",
-    "name": "low",
-    "color": "#c8cdf0",
-    "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-07-16T21:36:34.640879",
-    "updated_at": "2025-07-28T04:36:34.640879"
-  },
-  {
-    "id": "9a1b16b5-cf2f-479a-862b-009711ce954b",
-    "name": "list",
-    "color": "#fad0ec",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-09-29T20:51:34.640952",
-    "updated_at": "2025-10-14T21:51:34.640952"
-  },
-  {
-    "id": "9d878624-5ac6-467a-976c-2212b0f3f6fa",
-    "name": "term",
-    "color": "#c0e6f5",
-    "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-04-03T21:44:34.641025",
-    "updated_at": "2025-05-01T05:44:34.641025"
-  },
-  {
-    "id": "82462f1a-e773-48c9-bbe3-41e2906a9de0",
-    "name": "own",
-    "color": "#d8b6e3",
-    "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
-    "parent_id": "360175fe-fa0a-431f-a5bf-bc7297e6ce6a",
-    "is_deleted": false,
-    "created_at": "2025-09-21T13:54:34.641098",
-    "updated_at": "2025-10-14T14:54:34.641098"
-  },
-  {
-    "id": "8769f246-b80a-487e-9f6b-68efa6997017",
-    "name": "as",
-    "color": "#dcbac7",
-    "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-19T10:09:34.641171",
-    "updated_at": "2025-02-10T17:09:34.641171"
-  },
-  {
-    "id": "1093da83-4790-49f4-b308-0f5b2bc9eb11",
-    "name": "example",
-    "color": "#f5c6e1",
-    "owner_id": "00000000-0000-0000-0000-000000000002",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-06-25T22:36:34.641244",
-    "updated_at": "2025-06-28T21:36:34.641244"
-  },
-  {
-    "id": "347f21b3-0448-49f3-965f-c576f780a36b",
-    "name": "positive",
-    "color": "#ece6f9",
-    "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-08-28T18:54:34.641316",
-    "updated_at": "2025-08-29T01:54:34.641316"
-  },
-  {
-    "id": "dcd148f1-3875-4550-87aa-d506b9e330c7",
-    "name": "alone",
-    "color": "#facdb5",
-    "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-12-23T01:14:34.641388",
-    "updated_at": "2026-01-05T16:15:34.641396"
-  },
-  {
-    "id": "b936de01-fe87-41c9-9ea5-8ff0f0c9ee18",
-    "name": "relate",
-    "color": "#fbdfcc",
-    "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-07T02:34:34.641461",
-    "updated_at": "2025-02-03T05:34:34.641461"
-  },
-  {
-    "id": "d3e09461-d6a6-48df-8055-1c8be419d869",
-    "name": "possible",
-    "color": "#ced1b5",
-    "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-04-20T04:18:34.641537",
-    "updated_at": "2025-05-19T01:18:34.641537"
-  },
-  {
-    "id": "b02d2449-fba2-4705-a298-679a801e3291",
-    "name": "environment",
-    "color": "#d3e0ca",
-    "owner_id": "00000000-0000-0000-0000-000000000002",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-08-20T11:19:34.641610",
-    "updated_at": "2025-08-22T04:19:34.641610"
-  },
-  {
-    "id": "b3b36520-b697-421e-b3aa-c07b45d37da4",
-    "name": "heart",
-    "color": "#b6cefe",
-    "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-07-10T05:08:34.641682",
-    "updated_at": "2025-07-22T23:08:34.641682"
-  },
-  {
-    "id": "0370742d-3a74-4493-969e-94548696baa2",
-    "name": "reason",
-    "color": "#d7cbbb",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-02-15T23:48:34.641759",
-    "updated_at": "2025-02-16T12:48:34.641759"
-  },
-  {
-    "id": "8259ba76-f912-4cb9-a751-27b5e16f830c",
-    "name": "page",
-    "color": "#e0e8c2",
-    "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-08-29T00:29:34.641837",
-    "updated_at": "2025-09-17T17:29:34.641837"
-  },
-  {
-    "id": "fbf5968c-cc88-49ca-bac4-31eca2ffee07",
-    "name": "sister",
-    "color": "#eebdc6",
-    "owner_id": "00000000-0000-0000-0000-000000000002",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-11-07T16:18:34.641907",
-    "updated_at": "2025-11-15T17:18:34.641907"
-  },
-  {
-    "id": "ecbbeb7b-a79d-489e-87dc-adf9fe88741f",
-    "name": "offer",
-    "color": "#fdcfde",
-    "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-07-09T21:24:34.641980",
-    "updated_at": "2025-08-03T08:24:34.641980"
-  },
-  {
-    "id": "d565838e-bf74-42f0-b890-9a76c8b2485d",
-    "name": "money",
-    "color": "#fac1ba",
-    "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-11-04T10:02:34.642056",
-    "updated_at": "2025-11-06T11:02:34.642056"
-  },
-  {
-    "id": "07051d3c-1aa1-409e-8c6f-85d0ca9ac78f",
-    "name": "remain",
-    "color": "#d3d3bb",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-06-10T21:57:34.642129",
-    "updated_at": "2025-06-13T17:57:34.642129"
-  },
-  {
-    "id": "8d3b1d49-3c15-4941-80ff-24cd93845b65",
-    "name": "instead",
-    "color": "#deecbf",
-    "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-04-12T15:16:34.642202",
-    "updated_at": "2025-04-18T01:16:34.642202"
-  },
-  {
-    "id": "0f0a71ee-1e28-4abe-8b31-da10a5fc6d22",
-    "name": "heart",
-    "color": "#e3dffe",
-    "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-08T17:11:34.642272",
-    "updated_at": "2025-02-07T09:11:34.642272"
-  },
-  {
-    "id": "556de9b3-5a5e-46fb-9727-87b50f5451a1",
-    "name": "they",
-    "color": "#effad8",
-    "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-21T08:29:34.642345",
-    "updated_at": "2025-02-11T02:29:34.642345"
-  },
-  {
-    "id": "d4dc2293-a0bd-41fa-9e71-bf7da6521024",
-    "name": "not",
-    "color": "#ffc1e2",
-    "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-05-08T19:59:34.642418",
-    "updated_at": "2025-05-29T13:59:34.642418"
-  },
-  {
-    "id": "8c3bd188-f4e5-440f-9e4d-6e4ca60fe2e8",
-    "name": "answer",
-    "color": "#e4cfbf",
-    "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-04-11T09:09:34.642490",
-    "updated_at": "2025-04-22T23:09:34.642490"
-  },
-  {
-    "id": "8e1a2353-2533-472a-ad52-45d9601ee5b0",
-    "name": "usually",
-    "color": "#b8e1f5",
-    "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-09-23T02:03:34.642560",
-    "updated_at": "2025-10-16T10:03:34.642560"
-  },
-  {
-    "id": "675cf912-a672-4b07-a91e-6d1bf8a330ec",
-    "name": "special",
-    "color": "#cffdbc",
-    "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
-    "parent_id": null,
-    "is_deleted": true,
-    "created_at": "2025-03-16T22:57:34.642630",
-    "updated_at": "2025-03-25T21:57:34.642630"
-  },
-  {
-    "id": "643e545d-97a3-4235-b18e-ca4bec1cbc25",
-    "name": "politics",
-    "color": "#d3c2e4",
-    "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-11-29T23:43:34.642701",
-    "updated_at": "2025-12-02T02:43:34.642701"
-  },
-  {
-    "id": "df4febc0-2703-4fb6-ad47-a74456481bad",
-    "name": "nothing",
-    "color": "#d9e9c7",
-    "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-01-19T10:25:34.642771",
-    "updated_at": "2025-02-07T14:25:34.642771"
-  },
-  {
-    "id": "acb6dec9-46e8-41b1-bab3-2a9d890e2c89",
-    "name": "home",
-    "color": "#d9c6b5",
-    "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
-    "parent_id": "d3e09461-d6a6-48df-8055-1c8be419d869",
-    "is_deleted": false,
-    "created_at": "2025-05-15T16:10:34.642842",
-    "updated_at": "2025-06-14T07:10:34.642842"
-  },
-  {
-    "id": "da670a36-0ce5-48b4-9906-8568ba2bf52a",
-    "name": "around",
-    "color": "#c9eee6",
-    "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
-    "parent_id": "0370742d-3a74-4493-969e-94548696baa2",
-    "is_deleted": false,
-    "created_at": "2025-01-13T20:48:34.642913",
-    "updated_at": "2025-02-05T14:48:34.642913"
-  },
-  {
-    "id": "9817c39b-3491-403b-9ff1-adfae0fcf90b",
-    "name": "hotel",
-    "color": "#e1cdc0",
-    "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-04-02T23:05:34.642983",
-    "updated_at": "2025-04-11T19:05:34.642983"
-  },
-  {
-    "id": "a6c98bd0-491b-41ed-8293-5444cf603a31",
-    "name": "nature",
-    "color": "#dde0ce",
-    "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
-    "parent_id": "643e545d-97a3-4235-b18e-ca4bec1cbc25",
-    "is_deleted": false,
-    "created_at": "2025-01-19T17:19:34.643054",
-    "updated_at": "2025-01-25T05:19:34.643054"
-  },
-  {
-    "id": "bd949ad3-7582-4f60-96c3-2c12d0dd3812",
-    "name": "individual",
-    "color": "#e0bcfa",
-    "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
-    "parent_id": "9d331b3e-4879-4327-a052-53ef14967ad0",
-    "is_deleted": false,
-    "created_at": "2025-06-20T10:58:34.643123",
-    "updated_at": "2025-06-25T15:58:34.643123"
-  },
-  {
-    "id": "41f8eeb5-ec81-47b5-920f-f6c7a1e20852",
-    "name": "dark",
-    "color": "#ffe8f1",
-    "owner_id": "00000000-0000-0000-0000-000000000002",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-10-11T17:39:34.643195",
-    "updated_at": "2025-10-24T06:39:34.643195"
-  },
-  {
-    "id": "c5cf29e9-80c8-4c28-a482-a88b2c81f7c5",
-    "name": "direction",
-    "color": "#dbbdfb",
-    "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-10-23T05:32:34.643269",
-    "updated_at": "2025-11-13T23:32:34.643269"
-  },
-  {
-    "id": "01f885e6-9af1-41a8-bbe5-c55512ee7a56",
-    "name": "huge",
-    "color": "#f7f4f8",
-    "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-08-15T07:27:34.643340",
-    "updated_at": "2025-09-04T14:27:34.643340"
-  },
-  {
-    "id": "48710022-468d-410c-89cc-cfb16122a733",
-    "name": "major",
-    "color": "#b6b6e2",
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-12-04T00:39:34.643410",
-    "updated_at": "2025-12-19T03:39:34.643410"
-  },
-  {
-    "id": "e54fbaf6-c3b0-434b-bd26-b5c469322a31",
-    "name": "I",
-    "color": "#d7e3e0",
-    "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
-    "parent_id": "b936de01-fe87-41c9-9ea5-8ff0f0c9ee18",
-    "is_deleted": false,
-    "created_at": "2025-06-08T02:31:34.643549",
-    "updated_at": "2025-06-18T23:31:34.643549"
-  },
-  {
-    "id": "06aeac93-1f4b-49ab-887b-ae456fedc7ef",
-    "name": "and",
-    "color": "#eaf0e0",
-    "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
-    "parent_id": "7c9fe410-fb25-4ef1-b056-d85f6d5f228d",
-    "is_deleted": false,
-    "created_at": "2025-10-02T12:35:34.643621",
-    "updated_at": "2025-10-11T18:35:34.643621"
-  },
-  {
-    "id": "735c6dee-20c0-4acb-baaa-22c0d3a4abce",
-    "name": "various",
-    "color": "#feebb9",
-    "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-11-13T22:18:34.643692",
-    "updated_at": "2025-11-16T20:18:34.643692"
-  },
-  {
-    "id": "57202cbf-6856-4cf2-9f9c-116261ca5557",
-    "name": "former",
-    "color": "#e8bef7",
-    "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
-    "parent_id": "82462f1a-e773-48c9-bbe3-41e2906a9de0",
     "is_deleted": false,
-    "created_at": "2025-04-22T00:02:34.643779",
-    "updated_at": "2025-05-10T20:02:34.643779"
+    "created_at": "2025-01-27T07:05:42.764476",
+    "updated_at": "2025-02-20T04:05:42.764476"
   },
   {
-    "id": "61fcf19f-6dda-4676-ade2-0458cecfca84",
-    "name": "bag",
-    "color": "#d1b9d0",
-    "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-07-13T13:56:34.643853",
-    "updated_at": "2025-08-07T13:56:34.643853"
-  },
-  {
-    "id": "46e01c68-3782-4785-92b7-ad2a9ee40ef0",
-    "name": "particular",
-    "color": "#fde2ff",
-    "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
-    "parent_id": null,
-    "is_deleted": false,
-    "created_at": "2025-06-03T18:06:34.643924",
-    "updated_at": "2025-06-28T13:06:34.643924"
-  },
-  {
-    "id": "e948bad1-a61a-47e9-9ab0-cc8e462a3c57",
-    "name": "again",
-    "color": "#e7ebc8",
-    "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
-    "parent_id": null,
+    "id": "3d4e673d-945c-4e07-ba12-94eab169f2ce",
+    "name": "Bookmarks",
+    "color": null,
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "parent_id": "0a034a8e-fbc3-4de7-afda-6968da09731f",
     "is_deleted": false,
-    "created_at": "2025-05-03T04:18:34.643994",
-    "updated_at": "2025-05-17T08:18:34.643994"
+    "created_at": "2025-08-07T20:30:42.764538",
+    "updated_at": "2025-09-05T17:30:42.764538"
   },
   {
-    "id": "714054b7-e5e9-4260-aab7-2d0ee87ba435",
-    "name": "interest",
-    "color": "#d1ebf4",
-    "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
+    "id": "d739fc63-d1f0-4d02-ab43-17289b958c7e",
+    "name": "Bookmarks",
+    "color": "#c7dee6",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "parent_id": null,
     "is_deleted": false,
-    "created_at": "2025-03-23T06:21:34.644069",
-    "updated_at": "2025-03-30T08:21:34.644069"
+    "created_at": "2025-03-13T08:57:42.764603",
+    "updated_at": "2025-03-18T21:57:42.764603"
   }
 ]
