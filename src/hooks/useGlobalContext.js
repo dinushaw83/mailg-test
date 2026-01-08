@@ -149,11 +149,11 @@ export const useGlobalContext = () => {
     // Access to all folders/categories
     mailFolders: {
       inbox: mail.inbox,
-      starred: mail.starred,
-      snoozed: mail.snoozed,
+      is_starred: mail.is_starred,
+      is_snoozed: mail.is_snoozed,
       sent: mail.sent,
       drafts: mail.drafts,
-      important: mail.important,
+      is_important: mail.is_important,
       scheduled: mail.scheduled,
       all: mail.all,
       spam: mail.spam,

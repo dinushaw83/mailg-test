@@ -55,7 +55,7 @@ const ImportantMarker = styled.span`
 
 export const Subject = ({ subject, message }) => {
   const { toggleImportant } = useMailActions();
-  const isImportant = message?.important || false;
+  const isImportant = message?.is_important || false;
 
   const handleImportant = useCallback(
     (e) => {

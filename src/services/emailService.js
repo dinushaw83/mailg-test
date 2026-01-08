@@ -8,8 +8,8 @@ const emailService = {
   getEmails: async ({ page = 1, pageSize = 20, category = null } = {}) => {
     try {
       const params = {
-        page,
-        page_size: pageSize,
+          page,
+          page_size: pageSize,
       };
 
       // Add category parameter if provided
@@ -34,6 +34,70 @@ const emailService = {
       };
     } catch (error) {
       console.error("Error fetching emails:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Fetch emails by filter (e.g., is_starred, is_important, is_snoozed, folder, include_archived)
+   * @param {Object} options - Options for fetching
+   * @param {number} options.page - Page number (default: 1)
+   * @param {number} options.pageSize - Page size (default: 20)
+   * @param {boolean} options.is_starred - Filter by starred status
+   * @param {boolean} options.is_important - Filter by important status
+   * @param {boolean} options.is_snoozed - Filter by snoozed status
+   * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
+   * @param {boolean} options.include_archived - Include archived emails (for all mail)
+   */
+  getEmailsByFilter: async ({ page = 1, pageSize = 20, is_starred = null, is_important = null, is_snoozed = null, folder = null, include_archived = null } = {}) => {
+    try {
+      const params = {
+        page,
+        page_size: pageSize,
+      };
+
+      // Add is_starred parameter if provided
+      if (is_starred !== null) {
+        params.is_starred = is_starred;
+      }
+
+      // Add is_important parameter if provided
+      if (is_important !== null) {
+        params.is_important = is_important;
+      }
+
+      // Add is_snoozed parameter if provided
+      if (is_snoozed !== null) {
+        params.is_snoozed = is_snoozed;
+      }
+
+      // Add folder parameter if provided
+      if (folder !== null) {
+        params.folder = folder;
+      }
+
+      // Add include_archived parameter if provided
+      if (include_archived !== null) {
+        params.include_archived = include_archived;
+      }
+
+      const response = await apiClient.get("/v1/emails", { params });
+
+      const payload = response?.data?.data ?? response?.data ?? {};
+      const results = Array.isArray(payload?.results) ? payload.results : [];
+
+      let mappedResults = emailAPIMapper(results);
+      return {
+        results: mappedResults,
+        pagination: {
+          total: payload?.total ?? results.length,
+          page: payload?.page ?? page,
+          pageSize: payload?.page_size ?? pageSize,
+          totalPages: payload?.total_pages ?? 1,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching emails by filter:", error);
       throw error;
     }
   },

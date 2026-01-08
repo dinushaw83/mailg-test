@@ -356,10 +356,10 @@ const MailActions = ({ thread }) => {
   const handleStar = useCallback(() => {
     if (!threadEmails.length) return;
 
-    const nextValue = !thread.starred;
+    const nextValue = !thread.is_starred;
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      starred: !!email.starred,
+      starred: !!email.is_starred,
     }));
     const idsToUpdate = previousStates.filter((state) => state.starred !== nextValue).map((state) => state.id);
 
@@ -400,7 +400,7 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [threadEmails, thread.starred, setStar, setSnackbar]);
+  }, [threadEmails, thread.is_starred, setStar, setSnackbar]);
 
   const showUndoSnackbar = useCallback(
     (matchKeys, fromKey, toKey, inCustomLabel, isMoving = true, snapshot = null) => {
@@ -494,7 +494,7 @@ const MailActions = ({ thread }) => {
   useEffect(() => {
     if (hasRunOnceRef.current) return;
 
-    const unreadIds = threadEmails.filter((email) => !email.read).map((email) => email.id);
+    const unreadIds = threadEmails.filter((email) => !email.is_read).map((email) => email.id);
     if (unreadIds.length) {
       markRead(unreadIds, true);
     }
@@ -506,7 +506,7 @@ const MailActions = ({ thread }) => {
 
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      read: !!email.read,
+      read: !!email.is_read,
     }));
     const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
 
@@ -722,7 +722,7 @@ const MailActions = ({ thread }) => {
 
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      important: !!email.important,
+      important: !!email.is_important,
     }));
     const idsToUpdate = previousStates.filter((state) => !state.important).map((state) => state.id);
 

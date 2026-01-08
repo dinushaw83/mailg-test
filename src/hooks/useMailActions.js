@@ -284,7 +284,7 @@ export default function useMailActions() {
   const toggleStar = useCallback(
     (ids) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: !m.starred } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_starred: !m.is_starred } : m)));
     },
     [setEmails]
   );
@@ -292,7 +292,7 @@ export default function useMailActions() {
   const setStar = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: value } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_starred: value } : m)));
     },
     [setEmails]
   );
@@ -300,7 +300,7 @@ export default function useMailActions() {
   const markRead = useCallback(
     (ids, read = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, read } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
     },
     [setEmails]
   );
@@ -308,7 +308,7 @@ export default function useMailActions() {
   const toggleImportant = useCallback(
     (ids) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, important: !m.important } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_important: !m.is_important } : m)));
     },
     [setEmails]
   );
@@ -316,7 +316,7 @@ export default function useMailActions() {
   const setImportant = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, important: !!value } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_important: !!value } : m)));
     },
     [setEmails]
   );

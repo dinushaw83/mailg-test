@@ -103,13 +103,13 @@ const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, 
   };
 
   const handleSelectStarred = () => {
-    const starredThreadIds = threads.filter((email) => email.starred).map((email) => email.threadId);
+    const starredThreadIds = threads.filter((email) => email.is_starred).map((email) => email.threadId);
     selection.setMany(starredThreadIds);
     handleMenuClose();
   };
 
   const handleSelectUnstarred = () => {
-    const unstarredThreadIds = threads.filter((email) => !email.starred).map((email) => email.threadId);
+    const unstarredThreadIds = threads.filter((email) => !email.is_starred).map((email) => email.threadId);
     selection.setMany(unstarredThreadIds);
     handleMenuClose();
   };

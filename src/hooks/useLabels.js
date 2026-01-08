@@ -288,7 +288,7 @@ export default function useLabels() {
       for (const key of m.labels || []) {
         if (!map[key]) map[key] = { total: 0, unread: 0, items: [] };
         map[key].total += 1;
-        if (!m.read) map[key].unread += 1;
+        if (!m.is_read) map[key].unread += 1;
         map[key].items.push(m);
       }
     }

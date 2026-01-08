@@ -164,14 +164,14 @@ const OneColumnData = ({
             <span id={`:ps${index}`}>{email.preview}</span>
           </Box>
           <IconButton
-            aria-label={email.starred ? "Unstar" : "Star"}
-            aria-pressed={email.starred}
+            aria-label={email.is_starred ? "Unstar" : "Star"}
+            aria-pressed={email.is_starred}
             onClick={(e) => {
               e.stopPropagation();
               toggleStar([email.id]);
             }}
             sx={{
-              color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+              color: email.is_starred ? "#FBBC04" : "rgba(0,0,0,.54)",
               ...(density === "compact" ? { padding: "1px" } : {}),
             }}
           >
@@ -180,7 +180,7 @@ const OneColumnData = ({
               style={{
                 fontSize: 18,
                 verticalAlign: "middle",
-                fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`,
+                fontVariationSettings: `'FILL' ${email.is_starred ? 1 : 0}`,
               }}
             >
               star
@@ -249,7 +249,7 @@ const useCustomHotKeys = ({
   useHotkeys(shortcutsOn ? "s" : "", () => {
     if (focusedRowIndex >= 0 && Date.now() - lastStarAt.current > 1000 && Date.now() - lastGAt.current > 1000) {
       const threadId = emails[focusedRowIndex].threadId;
-      handleStar([threadId], emails[focusedRowIndex].starred);
+      handleStar([threadId], emails[focusedRowIndex].is_starred);
     }
   });
 
@@ -834,28 +834,28 @@ const Table = ({
                     getSenderClassName={getSenderClassName}
                     index={index}
                     formatDate={formatDate}
-                    toggleStar={() => handleStar([email.id], email.starred)}
+                    toggleStar={() => handleStar([email.id], email.is_starred)}
                     density={density}
                   />
                 ) : (
                   <>
                     {/* Star */}
-                    <td className={`apU ${email.starred ? "" : "xY"}`}>
+                    <td className={`apU ${email.is_starred ? "" : "xY"}`}>
                       <button
                         type="button"
-                        aria-label={email.starred ? "Unstar" : "Star"}
-                        aria-pressed={email.starred}
+                        aria-label={email.is_starred ? "Unstar" : "Star"}
+                        aria-pressed={email.is_starred}
                         className="T-Jo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleStar([email.id], email.starred);
+                          handleStar([email.id], email.is_starred);
                         }}
                         style={{
                           background: "transparent",
                           border: 0,
                           padding: 0,
                           cursor: "pointer",
-                          color: email.starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+                          color: email.is_starred ? "#FBBC04" : "rgba(0,0,0,.54)",
                         }}
                       >
                         <span
@@ -863,7 +863,7 @@ const Table = ({
                           style={{
                             fontSize: 18,
                             verticalAlign: "middle",
-                            fontVariationSettings: `'FILL' ${email.starred ? 1 : 0}`,
+                            fontVariationSettings: `'FILL' ${email.is_starred ? 1 : 0}`,
                           }}
                         >
                           star
@@ -879,16 +879,16 @@ const Table = ({
                         data-tooltip-delay={1500}
                         aria-label={getImportantAriaLabel(email)}
                         role="switch"
-                        aria-checked={email.important.toString()}
+                        aria-checked={email.is_important.toString()}
                         id={`:pn${index}`}
-                        data-is-important={email.important.toString()}
+                        data-is-important={email.is_important.toString()}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleImportant && handleImportant([email.id], email.important);
+                          handleImportant && handleImportant([email.id], email.is_important);
                         }}
                       >
                         <div className="T-ays-a45 sf-hidden">
-                          {email.important && "Important according to Google magic."}
+                          {email.is_important && "Important according to Google magic."}
                         </div>
                         <div className={getImportantClassName(email)} />
                         <div className="bnj" />
@@ -970,22 +970,22 @@ const Table = ({
                                   const textColor = badge?.color?.text || "#444746";
                                   
                                   return (
-                                    <div
-                                      key={`Badge-${badge.key}`}
-                                      style={{
+                                  <div
+                                    key={`Badge-${badge.key}`}
+                                    style={{
                                         backgroundColor: bgColor,
                                         color: textColor,
-                                        fontSize: "0.75rem",
-                                        padding: "0 4px",
-                                        textDecoration: "none",
-                                        width: "fit-content",
-                                        borderRadius: "4px",
-                                        marginRight: "6px",
-                                        display: "inline-block",
-                                      }}
-                                    >
-                                      {badge.displayName}
-                                    </div>
+                                      fontSize: "0.75rem",
+                                      padding: "0 4px",
+                                      textDecoration: "none",
+                                      width: "fit-content",
+                                      borderRadius: "4px",
+                                      marginRight: "6px",
+                                      display: "inline-block",
+                                    }}
+                                  >
+                                    {badge.displayName}
+                                  </div>
                                   );
                                 })}
                                 <span
