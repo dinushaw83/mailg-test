@@ -234,21 +234,21 @@ const useCustomHotKeys = ({
 
   useHotkeys(shortcutsOn ? "Enter" : "", () => {
     if (focusedRowIndex >= 0) {
-      const threadId = emails[focusedRowIndex].threadId.split(":")[1];
+      const threadId = emails[focusedRowIndex].threadId;
       handleClickRow(emails[focusedRowIndex], threadId);
     }
   });
 
   useHotkeys(shortcutsOn ? "x" : "", () => {
     if (focusedRowIndex >= 0) {
-      const threadId = emails[focusedRowIndex].threadId.split(":")[1];
+      const threadId = emails[focusedRowIndex].threadId;
       selection.toggle(threadId);
     }
   });
 
   useHotkeys(shortcutsOn ? "s" : "", () => {
     if (focusedRowIndex >= 0 && Date.now() - lastStarAt.current > 1000 && Date.now() - lastGAt.current > 1000) {
-      const threadId = emails[focusedRowIndex].threadId.split(":")[1];
+      const threadId = emails[focusedRowIndex].threadId;
       handleStar([threadId], emails[focusedRowIndex].starred);
     }
   });
@@ -598,7 +598,7 @@ const Table = ({
   });
 
   function handleContextMenu(event, thread) {
-    const threadId = thread.threadId.split(":")[1];
+    const threadId = thread.threadId;
     selection.setMany([threadId]);
     setContextRow(thread);
     show({
@@ -784,7 +784,7 @@ const Table = ({
       >
         <tbody>
           {emails.map((email, index) => {
-            const threadId = email.threadId.split(":")[1] || email.threadId;
+            const threadId = email.threadId;
             const isActive = showSnoozePopover && snoozeId === email.id;
             const selected = selection.isSelected(threadId);
 

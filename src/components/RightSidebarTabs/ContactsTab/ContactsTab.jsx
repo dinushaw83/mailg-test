@@ -70,17 +70,13 @@ const ContactsTab = () => {
       // Pattern: /:folder/:threadId
       const [folder, threadId] = pathSegments;
       return emails.some((email) => {
-        // Extract numeric part from email threadId (e.g., "#thread-f:1842139573356840007" -> "1842139573356840007")
-        const emailThreadId = email.threadId.replace("#thread-f:", "");
-        return emailThreadId === threadId;
+        return email.threadId === threadId;
       });
     } else if (pathSegments.length === 3 && pathSegments[0] === "label") {
       // Pattern: /label/:label/:threadId
       const [labelPrefix, label, threadId] = pathSegments;
       return emails.some((email) => {
-        // Extract numeric part from email threadId (e.g., "#thread-f:1842139573356840007" -> "1842139573356840007")
-        const emailThreadId = email.threadId.replace("#thread-f:", "");
-        return emailThreadId === threadId;
+        return email.threadId === threadId;
       });
     }
 
@@ -111,8 +107,7 @@ const ContactsTab = () => {
 
     // Find all emails with this threadId
     const threadEmails = emails.filter((email) => {
-      const emailThreadId = email.threadId.replace("#thread-f:", "");
-      return emailThreadId === threadId;
+      return email.threadId === threadId;
     });
 
     // Collect all unique email addresses from from, to, cc, bcc

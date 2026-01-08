@@ -28,6 +28,24 @@ const categoryToLabel = (category) => {
 export const emailAPIMapper = (emails) => {
   return emails
     .map((email) => {
+      // Transform recipients array into to, cc, bcc arrays
+      const recipients = email?.recipients || [];
+      const to = recipients.filter((r) => r.type === "to").map((r) => ({
+        email: r.email,
+        name: r.name || null,
+        id: r.id || null,
+      }));
+      const cc = recipients.filter((r) => r.type === "cc").map((r) => ({
+        email: r.email,
+        name: r.name || null,
+        id: r.id || null,
+      }));
+      const bcc = recipients.filter((r) => r.type === "bcc").map((r) => ({
+        email: r.email,
+        name: r.name || null,
+        id: r.id || null,
+      }));
+
       return {
         ...email,
         id: email?.id,
@@ -36,21 +54,32 @@ export const emailAPIMapper = (emails) => {
           email: email?.sender_email,
           id: email.sender_id,
         },
+        to,
+        cc,
+        bcc,
         beFormattedEMailLabels: email?.labels,
         folderId: email?.folder_id,
-        threadId: email?.thread_id,
-        timestamp: email?.sent_at || email?.created_at,
-        preview: email?.snippet || email?.preview,
+        threadId: email?.thread_id || null,
+        timestamp: email?.sent_at || email?.received_at || email?.created_at,
+        // Use html_body if available (for display), fallback to body
+        body: email?.html_body || email?.body || "",
+        preview: email?.snippet || email?.preview || email?.body?.substring(0, 100),
         status: email?.status || "inbox",
-        is_read: email?.is_read || email?.read,
+        read: email?.is_read !== undefined ? email.is_read : email?.read,
+        is_read: email?.is_read !== undefined ? email.is_read : email?.read,
+        starred: email?.is_starred || false,
         is_starred: email?.is_starred || false,
+        important: email?.is_important || false,
         is_important: email?.is_important || false,
         scheduled_send_at: email?.scheduled_send_at,
         snooze_until: email?.snooze_until,
-        attachment_count: email?.attachment_count,
-        has_attachments: email?.has_attachments,
+        attachment_count: email?.attachment_count || (email?.attachments?.length || 0),
+        has_attachments: email?.has_attachments !== undefined ? email.has_attachments : (email?.attachments?.length > 0),
+        attachments: email?.attachments || [],
         system_labels: email?.system_labels,
         can_undo_send: email?.can_undo_send,
+        // Preserve parent_email_id for thread hierarchy
+        parent_email_id: email?.parent_email_id,
       };
     })
     .filter((email) => email.thread_id);
@@ -59,7 +88,15 @@ export const emailAPIMapper = (emails) => {
 export function normalizeEmails(messages) {
   const messagesById = {};
   const threadsById = {};
-  const normalizeEmailAddress = (value) => (value || "").toLowerCase();
+  const normalizeEmailAddress = (value) => {
+    if (!value) return "";
+    // Handle string
+    if (typeof value === "string") return value.toLowerCase();
+    // Handle object with email property
+    if (typeof value === "object" && value.email) return String(value.email || "").toLowerCase();
+    // Fallback: convert to string
+    return String(value).toLowerCase();
+  };
   const isLikelyEmail = (value = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   const getParticipantScore = (participant) => {
     if (!participant) return 0;
@@ -98,10 +135,25 @@ export function normalizeEmails(messages) {
   };
   const toParticipant = (address) => {
     if (!address) return null;
-    return {
-      email: address,
-      name: emailToUsernameMap[address] || address,
-    };
+    
+    // Handle object format (from API): {email, name, id}
+    if (typeof address === "object" && address.email) {
+      return {
+        email: address.email,
+        name: address.name || emailToUsernameMap[address.email] || address.email,
+        id: address.id || null,
+      };
+    }
+    
+    // Handle string format (legacy): just email address
+    if (typeof address === "string") {
+      return {
+        email: address,
+        name: emailToUsernameMap[address] || address,
+      };
+    }
+    
+    return null;
   };
   const collectParticipantsForMessage = (message) => {
     const list = [];
@@ -644,7 +696,8 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 // get a single thread row
 export const getThread = (messages, { threadId }) => {
   const { messagesById, threadsById } = normalizeEmails(messages);
-
+console.log({messagesById}, "----------messagesById----------")
+console.log({threadsById}, "----------threadsById----------")
   const thread = threadsById[threadId];
   if (!thread) {
     return null;

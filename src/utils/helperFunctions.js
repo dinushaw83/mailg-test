@@ -55,7 +55,7 @@ export const generateRandomId = () => {
 
 // Generate a random thread ID
 export const generateThreadId = () => {
-  return `#thread-f:${generateRandomId()}`;
+  return generateRandomId();
 };
 
 // Generate a random legacy thread ID

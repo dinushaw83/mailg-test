@@ -1,25 +1,24 @@
-import Box from "@mui/material/Box";
-import { Icon } from "../InboxView/ActionBar";
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import Divider from "@mui/material/Divider";
-import MoveToMenu from "./MoveToMenu";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import useMailActions from "../../hooks/useMailActions";
-import { useParams, useLocation } from "react-router-dom";
-import Button from "@mui/material/Button";
-import SpamOrUnsubModal from "./SpamOrUnsubModal";
-
-import { SnoozePopover } from "./Snooze";
-import { Labels } from "./Labels";
-
 import useLabels, {
   flattenTreeForSelect,
   getPathLabelFromKey,
   makeKey,
   normalizeLabelName,
 } from "../../hooks/useLabels";
+import { useLocation, useParams } from "react-router-dom";
+
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import Divider from "@mui/material/Divider";
+import { Icon } from "../InboxView/ActionBar";
+import { Labels } from "./Labels";
+import MoveToMenu from "./MoveToMenu";
+import { SnoozePopover } from "./Snooze";
+import SpamOrUnsubModal from "./SpamOrUnsubModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
+import useMailActions from "../../hooks/useMailActions";
 
 const buildMatchKeysForEmail = (email = {}) => {
   const keys = [];
@@ -31,9 +30,6 @@ const buildMatchKeysForEmail = (email = {}) => {
   add(email.id);
   add(email.messageId);
   add(email.threadId);
-  if (email.threadId) {
-    add(String(email.threadId).replace("#thread-f:", ""));
-  }
   add(email.legacyThreadId);
   add(email.legacyLastMessageId);
   add(email.legacyLastNonDraftMessageId);
@@ -118,13 +114,13 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
-    () => threads.filter((email) => selectedIds.includes(email.threadId.split(":")[1])),
+    () => threads.filter((email) => selectedIds.includes(email.threadId)),
     [threads, selectedIds]
   );
   const selectedEmails = useMemo(() => {
     if (!selectedIds.length) return [];
     const idSet = new Set(selectedIds.map(String));
-    return emails.filter((email) => idSet.has(email.threadId.split(":")[1]));
+    return emails.filter((email) => idSet.has(email.threadId));
   }, [emails, selectedIds]);
   const selectedThreadIdSet = useMemo(() => new Set(selectedEmails.map((email) => email.threadId)), [selectedEmails]);
   const selectedConversationCount = useMemo(() => {
@@ -539,7 +535,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       // Store original labels before the move
       const originalLabels = {};
       ids.forEach((id) => {
-        const email = emails.find((email) => email.threadId.split(":")[1] === id);
+        const email = emails.find((email) => email.threadId === id);
         if (email) {
           originalLabels[id] = [...(email.labels || [])];
         }
@@ -574,7 +570,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
                 // Restore original labels for each email
                 setEmails((prevEmails) =>
                   prevEmails.map((email) => {
-                    const emailThreadId = email.threadId.split(":")[1];
+                    const emailThreadId = email.threadId;
                     if (ids.includes(emailThreadId) && originalLabels[emailThreadId]) {
                       return { ...email, labels: originalLabels[emailThreadId] };
                     }
@@ -808,7 +804,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           return true;
         }
 
-        const emailThreadId = email.threadId.split(":")[1];
+        const emailThreadId = email.threadId;
 
         if (selectedIds.includes(emailThreadId)) {
           deletedEmails.push(email);
@@ -853,7 +849,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     // Update the selected emails to remove Inbox label if it exists
     setEmails((prevEmails) =>
       prevEmails.map((email) => {
-        const emailThreadId = email.threadId.split(":")[1];
+        const emailThreadId = email.threadId;
         if (selectedIds.includes(emailThreadId) && email.labels.includes("Drafts")) {
           return { ...email, labels: email.labels.filter((label) => label !== "Inbox") };
         }
@@ -878,7 +874,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
     // Check if the selected emails already have the Inbox label
     const emailsAlreadyInInbox = emails.some((email) => {
-      const emailThreadId = email.threadId.split(":")[1];
+      const emailThreadId = email.threadId;
       return selectedIds.includes(emailThreadId) && email.labels.includes("Inbox");
     });
 
@@ -899,7 +895,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     // Update emails to include Inbox label
     setEmails((prevEmails) =>
       prevEmails.map((email) => {
-        const emailThreadId = email.threadId.split(":")[1];
+        const emailThreadId = email.threadId;
         if (email.labels.includes("Drafts") && selectedIds.includes(emailThreadId) && !email.labels.includes("Inbox")) {
           return { ...email, labels: [...email.labels, "Inbox"] };
         }
