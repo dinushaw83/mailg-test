@@ -374,41 +374,47 @@ jobs:
           echo "  - VM host: ${{ env.VM_HOST }}"
           echo "  - VM user: ${{ env.VM_USER }}"
 
-      - name: Ensure Deploy Directory Exists on VM
+      - name: Prepare and copy deployment files to VM
         run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "mkdir -p ${DEPLOY_DIR}"
-
-      - name: Copy deployment files to VM
-        run: |
-          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/
-          scp docker-compose.yaml ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/docker-compose.prod.yaml
-
-      - name: Ensure Deploy Directory Exists on VM
-        run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "mkdir -p ${DEPLOY_DIR}"
-
-      - name: Copy deployment files to VM
-        run: |
-          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/
-          scp docker-compose.yaml ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/docker-compose.prod.yaml
+          # Create deploy directory on remote VM (use $HOME for proper expansion)
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p $HOME/mailg-deploy'
+          
+          # Copy all deployment scripts and docker-compose file
+          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
+          scp docker-compose.yaml ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/docker-compose.prod.yaml
+          
+          # Verify files were copied successfully
+          echo "Verifying files on remote VM..."
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'ls -la $HOME/mailg-deploy/'
 
       - name: Deploy to VM
         id: deploy
-        env:
-          BACKEND_IMG: ${{ steps.image-tags.outputs.backend_image }}
-          FRONTEND_IMG: ${{ steps.image-tags.outputs.frontend_image }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEPLOY_DIR: ${{ env.DEPLOY_DIR }}
         run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "
+          BACKEND_IMG="${{ steps.image-tags.outputs.backend_image }}"
+          FRONTEND_IMG="${{ steps.image-tags.outputs.frontend_image }}"
+          GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_ACTOR="${{ github.actor }}"
+          
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
             set -e
-            cd \"${DEPLOY_DIR:-$HOME/mailg-deploy}\"
+            cd \$HOME/mailg-deploy
+            
+            echo "Current directory: \$(pwd)"
+            echo "Files in deploy directory:"
+            ls -la
+            
+            # Make script executable
             chmod +x deploy-from-registry.sh
-            BACKEND_IMAGE=\"$BACKEND_IMG\" \
-            FRONTEND_IMAGE=\"$FRONTEND_IMG\" \
-            GITHUB_TOKEN=\"$GITHUB_TOKEN\" \
+            
+            # Login to GHCR on the VM
+            echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin || echo "GHCR login failed, continuing..."
+            
+            # Run deployment script with image tags
+            BACKEND_IMAGE="${BACKEND_IMG}" \
+            FRONTEND_IMAGE="${FRONTEND_IMG}" \
+            GITHUB_TOKEN="${GITHUB_TOKEN}" \
             ./deploy-from-registry.sh
-          "
+          EOF
 
 
       - name: Verify deployment with retries
