@@ -22,8 +22,7 @@ class TestLabelCreate:
         response = client.post(
             "/api/v1/labels",
             json={
-                "name": "Work",
-                "color": "#ea4335"
+                "name": "Work"
             },
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -31,7 +30,6 @@ class TestLabelCreate:
         assert response.status_code == 201
         data = response.json()["data"]
         assert data["name"] == "Work"
-        assert data["color"] == "#ea4335"
         assert data["parent_id"] is None
 
     def test_create_nested_label(self, client_with_auth, db_session):
@@ -48,7 +46,6 @@ class TestLabelCreate:
             "/api/v1/labels",
             json={
                 "name": "2025",
-                "color": "#34a853",
                 "parent_id": str(parent.id)
             },
             headers={"Authorization": f"Bearer {token}"}
@@ -106,7 +103,7 @@ class TestLabelCreate:
         # Try to create duplicate at root
         response = client.post(
             "/api/v1/labels",
-            json={"name": "Work", "color": "#ff0000"},
+            json={"name": "Work"},
             headers={"Authorization": f"Bearer {token}"}
         )
         

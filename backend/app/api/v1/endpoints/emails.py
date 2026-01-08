@@ -735,7 +735,7 @@ def send_email(
         from datetime import timedelta
         email.status = EmailStatus.QUEUED.value
         email.scheduled_send_at = datetime.utcnow() + timedelta(seconds=undo_delay)
-        email.folder = FolderType.SENT.value
+        email.folder = FolderType.SCHEDULED.value
         
         try:
             db.commit()
@@ -898,6 +898,7 @@ def confirm_send(
     email.status = EmailStatus.SENT.value
     email.sent_at = datetime.utcnow()
     email.scheduled_send_at = None
+    email.folder = FolderType.SENT.value
     
     # Deliver to recipients
     _deliver_email_to_recipients(db, email, current_user)
@@ -1707,6 +1708,7 @@ def restore_email_from_trash(
     
     Moves the email from trash folder back to its appropriate folder:
     - Sent emails are restored to the 'sent' folder
+    - Scheduled/queued emails are restored to the 'scheduled' folder
     - Received emails are restored to the 'inbox' folder
     - Draft emails are restored to the 'drafts' folder
     
@@ -1751,7 +1753,9 @@ def restore_email_from_trash(
     # Determine the appropriate folder based on email status
     if email.status == EmailStatus.DRAFT.value:
         email.folder = FolderType.DRAFTS.value
-    elif email.status == EmailStatus.SENT.value or email.status == EmailStatus.QUEUED.value:
+    elif email.status == EmailStatus.QUEUED.value:
+        email.folder = FolderType.SCHEDULED.value
+    elif email.status == EmailStatus.SENT.value:
         email.folder = FolderType.SENT.value
     else:
         # For received emails or any other status, restore to inbox

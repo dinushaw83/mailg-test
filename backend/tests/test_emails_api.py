@@ -1585,3 +1585,175 @@ class TestEmailCategoryCounts:
         for key, value in data.items():
             assert isinstance(value, int)
             assert value >= 0  # Counts should be non-negative
+
+
+class TestScheduledFolder:
+    """Test scheduled folder functionality for emails waiting to be sent."""
+
+    def test_list_emails_filter_by_scheduled_folder(self, client_with_auth, db_session):
+        """Test filtering emails by scheduled folder."""
+        client, token, user = client_with_auth
+        
+        # Create emails in different folders
+        scheduled_email = Email(
+            subject="Scheduled Email",
+            body="Content",
+            status="queued",
+            folder=FolderType.SCHEDULED.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        inbox_email = Email(
+            subject="Inbox Email",
+            body="Content",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id
+        )
+        db_session.add_all([scheduled_email, inbox_email])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails?folder=scheduled",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # All returned emails should be in scheduled folder
+        for email in data["results"]:
+            assert email["folder"] == "scheduled"
+
+    def test_queued_email_goes_to_scheduled_folder(self, client_with_auth, db_session, sample_draft_email):
+        """Test that sending a draft with undo_send enabled puts email in scheduled folder."""
+        client, token, user = client_with_auth
+        
+        # Enable undo send (10 second delay)
+        user.undo_send_delay_seconds = 10
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_draft_email.id}/send",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should be in scheduled folder when queued
+        assert data["folder"] == "scheduled"
+        assert data["can_undo_send"] == True
+        assert data["scheduled_send_at"] is not None
+
+    def test_confirm_send_moves_from_scheduled_to_sent(self, client_with_auth, db_session):
+        """Test that confirming send moves email from scheduled to sent folder."""
+        client, token, user = client_with_auth
+        
+        # Create a queued email in scheduled folder
+        email = Email(
+            subject="Queued Email",
+            body="Content",
+            status="queued",
+            folder=FolderType.SCHEDULED.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Add a recipient (required for sending)
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="test@example.com",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{email.id}/confirm-send",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should now be in sent folder
+        assert data["folder"] == "sent"
+        assert data["can_undo_send"] == False
+        assert data["scheduled_send_at"] is None
+
+    def test_cancel_send_moves_from_scheduled_to_drafts(self, client_with_auth, db_session):
+        """Test that cancelling send moves email from scheduled to drafts folder."""
+        client, token, user = client_with_auth
+        
+        # Create a queued email in scheduled folder
+        email = Email(
+            subject="Queued Email",
+            body="Content",
+            status="queued",
+            folder=FolderType.SCHEDULED.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{email.id}/cancel-send",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should be back in drafts folder
+        assert data["folder"] == "drafts"
+        assert data["can_undo_send"] == False
+
+    def test_restore_queued_email_from_trash_to_scheduled(self, client_with_auth, db_session):
+        """Test restoring a queued email from trash returns it to scheduled folder."""
+        client, token, user = client_with_auth
+        
+        # Create a queued email that was moved to trash
+        email = Email(
+            subject="Queued Email in Trash",
+            body="Content",
+            status="queued",
+            folder=FolderType.TRASH.value,
+            sender_id=user.id,
+            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.post(
+            f"/api/v1/emails/{email.id}/restore",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Email should be restored to scheduled folder
+        assert data["folder"] == "scheduled"
+
+    def test_move_email_to_scheduled_folder(self, client_with_auth, db_session, sample_email):
+        """Test moving an email to scheduled folder."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/emails/{sample_email.id}/move",
+            json={"folder": "scheduled"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+
+    def test_scheduled_folder_in_valid_folder_types(self):
+        """Test that scheduled is a valid folder type."""
+        from app.core.constants import VALID_FOLDER_TYPES
+        
+        assert "scheduled" in VALID_FOLDER_TYPES
+
+    def test_scheduled_in_prohibited_labels(self):
+        """Test that scheduled is a prohibited label name."""
+        from app.core.constants import ProhibitedLabels
+        
+        assert ProhibitedLabels.SCHEDULED.value == "scheduled"

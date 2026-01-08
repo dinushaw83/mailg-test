@@ -21,7 +21,7 @@ A production-ready FastAPI mailg with JWT authentication, RBAC, and sophisticate
 
 ### Email API:
 - **Emails**: Compose, send, receive, read, archive, delete with threading support
-- **Folders**: Inbox, Sent, Drafts, Trash, Spam, Starred
+- **Folders**: Inbox, Sent, Drafts, Trash, Spam, Scheduled
 - **Labels**: User-defined tags for email organization (hierarchical/nested)
 - **Attachments**: File attachments for emails
 - **Search**: Advanced search with operators (`from:`, `to:`, `is:unread`, `has:attachment`, etc.)
@@ -837,7 +837,7 @@ from app.core.constants import (
     # Email constants
     EmailStatus,        # Enum: DRAFT, QUEUED, SENT, RECEIVED, ARCHIVED, CANCELLED
     EmailCategory,      # Enum: PRIMARY, PROMOTIONS, SOCIAL, UPDATES, FORUMS
-    FolderType,         # Enum: INBOX, SENT, DRAFTS, TRASH, SPAM
+    FolderType,         # Enum: INBOX, SENT, DRAFTS, TRASH, SPAM, SCHEDULED
     RecipientType,      # Enum: TO, CC, BCC
     AttachmentType,     # Enum: FILE, IMAGE, DOCUMENT
     VALID_EMAIL_STATUSES,   # List of valid email status strings

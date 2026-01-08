@@ -49,7 +49,7 @@ class EmailUpdate(BaseModel):
     is_read: Optional[bool] = None
     is_starred: Optional[bool] = None
     is_important: Optional[bool] = None
-    folder: Optional[str] = Field(None, description="Folder: inbox, sent, drafts, trash, spam, starred")
+    folder: Optional[str] = Field(None, description="Folder: inbox, sent, drafts, trash, spam, scheduled")
     category: Optional[str] = Field(None, description="Email category: primary, promotions, social, updates, forums")
 
 
@@ -65,7 +65,7 @@ class EmailStarUpdate(BaseModel):
 
 class EmailMoveRequest(BaseModel):
     """Schema for moving email to folder."""
-    folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, starred")
+    folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, scheduled")
 
 
 class EmailLabelRequest(BaseModel):
@@ -134,7 +134,7 @@ class EmailResponse(BaseModel):
     subject: str
     body: Optional[str] = None
     html_body: Optional[str] = None
-    folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, starred
+    folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, scheduled
     category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool

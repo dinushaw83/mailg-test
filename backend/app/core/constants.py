@@ -26,6 +26,7 @@ class FolderType(str, Enum):
     DRAFTS = "drafts"
     TRASH = "trash"
     SPAM = "spam"
+    SCHEDULED = "scheduled"
 
 class ProhibitedLabels(str, Enum):
     """Prohibited label enumeration."""
@@ -36,6 +37,7 @@ class ProhibitedLabels(str, Enum):
     INBOX = "inbox"
     STARRED = "starred"
     IMPORTANT = "important"
+    SCHEDULED = "scheduled"
 
 class RecipientType(str, Enum):
     """Email recipient type enumeration."""

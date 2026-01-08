@@ -1974,6 +1974,7 @@ Permissions:
 Get all emails in a thread/conversation.
 
 Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
+Emails are automatically marked as read in the background.
 
 Permissions:
 - Users can only access threads containing their own emails (sent or received)
@@ -2991,6 +2992,7 @@ Restore an email from trash.
 
 Moves the email from trash folder back to its appropriate folder:
 - Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
 - Received emails are restored to the 'inbox' folder
 - Draft emails are restored to the 'drafts' folder
 
@@ -5551,6 +5553,7 @@ Raises:
 - `drafts`
 - `trash`
 - `spam`
+- `scheduled`
 
 ---
 
