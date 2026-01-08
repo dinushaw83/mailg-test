@@ -13,10 +13,11 @@ import { transformLabelsArray } from "../../utils/labelTransform";
  * @param {boolean} options.is_starred - Filter by starred status
  * @param {boolean} options.is_important - Filter by important status
  * @param {boolean} options.is_snoozed - Filter by snoozed status
- * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts)
+ * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
+ * @param {boolean} options.include_archived - Include archived emails (for all mail)
  */
 export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue }) => {
-  const { page = 1, pageSize = 20, category = null, is_starred = null, is_important = null, is_snoozed = null, folder = null } = options;
+  const { page = 1, pageSize = 20, category = null, is_starred = null, is_important = null, is_snoozed = null, folder = null, include_archived = null } = options;
 
   try {
     // Structure query key for separate cache invalidation:
@@ -25,11 +26,13 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
     // - ["emails", "is_important", true, page, pageSize] for important
     // - ["emails", "is_snoozed", true, page, pageSize] for snoozed
     // - ["emails", "folder", "sent", page, pageSize] for folders (sent, trash, spam, drafts)
+    // - ["emails", "all", page, pageSize] for all mail (folder=inbox&include_archived=true)
     // - ["emails", "inbox", page, pageSize] for inbox (no filter)
     let queryKey;
     const filterType = is_starred === true ? "is_starred" 
       : is_important === true ? "is_important"
       : is_snoozed === true ? "is_snoozed"
+      : include_archived === true ? "all"
       : folder ? "folder"
       : category ? "category"
       : "inbox";
@@ -43,6 +46,9 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
         break;
       case "is_snoozed":
         queryKey = ["emails", "is_snoozed", true, page, pageSize];
+        break;
+      case "all":
+        queryKey = ["emails", "all", page, pageSize];
         break;
       case "folder":
         queryKey = ["emails", "folder", folder, page, pageSize];
@@ -58,15 +64,15 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
     const data = await queryClient.fetchQuery({
       queryKey,
       queryFn: () => {
-        // Use getEmailsByFilter if is_starred, is_important, is_snoozed, or folder is provided, otherwise use getEmails
-        if (is_starred !== null || is_important !== null || is_snoozed !== null || folder !== null) {
-          return emailService.getEmailsByFilter({ page, pageSize, is_starred, is_important, is_snoozed, folder });
+        // Use getEmailsByFilter if is_starred, is_important, is_snoozed, folder, or include_archived is provided, otherwise use getEmails
+        if (is_starred !== null || is_important !== null || is_snoozed !== null || folder !== null || include_archived !== null) {
+          return emailService.getEmailsByFilter({ page, pageSize, is_starred, is_important, is_snoozed, folder, include_archived });
         }
         return emailService.getEmails({ page, pageSize, category });
       },
       staleTime: 1000 * 60 * 5, 
     });
-    return { ...data, category, is_starred, is_important, is_snoozed, folder };
+    return { ...data, category, is_starred, is_important, is_snoozed, folder, include_archived };
   } catch (error) {
     console.error("❌ Failed to fetch emails:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch emails");
@@ -292,11 +298,13 @@ const mailSlice = createSlice({
         const is_important = action.payload?.is_important;
         const is_snoozed = action.payload?.is_snoozed;
         const folder = action.payload?.folder;
+        const include_archived = action.payload?.include_archived;
         
         // Store emails in the appropriate folder/category
         const filterType = is_starred === true ? "is_starred"
           : is_important === true ? "is_important"
           : is_snoozed === true ? "is_snoozed"
+          : include_archived === true ? "all"
           : folder ? "folder"
           : category ? "category"
           : "inbox";
@@ -313,6 +321,10 @@ const mailSlice = createSlice({
           case "is_snoozed":
             // Store snoozed emails in is_snoozed state
             state.is_snoozed = results;
+            break;
+          case "all":
+            // Store all mail (inbox + archived) in all state
+            state.all = results;
             break;
           case "folder":
             // Store folder-based emails (sent, trash, spam, drafts)

@@ -113,7 +113,7 @@ const Inbox = () => {
     if (label) return; // Skip if viewing a label route
 
     const folderKey = String(activeFolder).toLowerCase();
-    const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts"];
+    const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "all"];
     if (!validRoutes.includes(folderKey)) return;
 
     const promises = [];
@@ -166,6 +166,19 @@ const Inbox = () => {
               page: currentPage,
               pageSize: itemsPerPage,
               folder: folderKey,
+            })
+          ).unwrap()
+        );
+        break;
+      case "all":
+        // Fetch all mail (inbox + archived)
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              folder: "inbox",
+              include_archived: true,
             })
           ).unwrap()
         );
