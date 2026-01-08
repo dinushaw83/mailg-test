@@ -34,7 +34,13 @@ from app.schemas.bulk import (
 )
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import FolderType, EmailStatus, VALID_EMAIL_CATEGORIES, VALID_FOLDER_TYPES
+from app.core.constants import FolderType, EmailStatus, EmailCategory, SystemLabel, VALID_EMAIL_CATEGORIES, VALID_FOLDER_TYPES
+from app.api.v1.endpoints.label_utils import (
+    add_system_label_to_thread,
+    remove_system_label_from_thread,
+    replace_exclusive_labels,
+    sync_category_labels,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -232,6 +238,17 @@ def bulk_important(
     return create_bulk_response(request.email_ids, success_ids, failures)
 
 
+# Mapping from folder type to system label enum
+FOLDER_TO_LABEL = {
+    FolderType.INBOX.value: SystemLabel.INBOX,
+    FolderType.SENT.value: SystemLabel.SENT,
+    FolderType.DRAFTS.value: SystemLabel.DRAFTS,
+    FolderType.TRASH.value: SystemLabel.TRASH,
+    FolderType.SPAM.value: SystemLabel.SPAM,
+    FolderType.SCHEDULED.value: SystemLabel.SCHEDULED,
+}
+
+
 @router.post("/bulk/move", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
 def bulk_move(
     request: BulkMoveRequest,
@@ -256,9 +273,15 @@ def bulk_move(
     success_ids = []
     failures = {eid: "Email not found or access denied" for eid in not_found}
     
+    # Get target label name
+    target_label = FOLDER_TO_LABEL.get(request.folder)
+    
     for email in emails:
         try:
             email.folder = request.folder
+            # Update labels to match folder change
+            if email.thread_id and target_label:
+                replace_exclusive_labels(db, email.thread_id, current_user.id, target_label)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -306,6 +329,9 @@ def bulk_delete(
             else:
                 # Move to trash
                 email.folder = FolderType.TRASH.value
+                # Update labels: Replace with Trash
+                if email.thread_id:
+                    replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.TRASH)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -481,6 +507,9 @@ def bulk_snooze(
     for email in emails:
         try:
             email.snooze_until = request.snooze_until
+            # Add Snoozed label
+            if email.thread_id:
+                add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -520,6 +549,10 @@ def bulk_unsnooze(
     for email in emails:
         try:
             email.snooze_until = None
+            # Remove Snoozed label and add Inbox back
+            if email.thread_id:
+                remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+                add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -561,6 +594,9 @@ def bulk_archive(
     for email in emails:
         try:
             email.status = EmailStatus.ARCHIVED.value
+            # Remove Inbox label (email stays in All Mail)
+            if email.thread_id:
+                remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -606,9 +642,15 @@ def bulk_update_category(
     success_ids = []
     failures = {eid: "Email not found or access denied" for eid in not_found}
     
+    new_category = EmailCategory(request.category)
+    
     for email in emails:
         try:
+            old_category = EmailCategory(email.category) if email.category else None
             email.category = request.category
+            # Sync category labels
+            if email.thread_id:
+                sync_category_labels(db, email.thread_id, current_user.id, old_category, new_category)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -656,8 +698,14 @@ def bulk_unarchive(
             # Restore to original status based on whether user sent or received it
             if email.sender_id == current_user.id:
                 email.status = EmailStatus.SENT.value
+                # Add Sent label back
+                if email.thread_id:
+                    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
             else:
                 email.status = EmailStatus.RECEIVED.value
+                # Add Inbox label back
+                if email.thread_id:
+                    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -703,6 +751,9 @@ def bulk_spam(
                 continue
             
             email.folder = FolderType.SPAM.value
+            # Update labels: Replace with Spam
+            if email.thread_id:
+                replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.SPAM)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -748,6 +799,9 @@ def bulk_unspam(
                 continue
             
             email.folder = FolderType.INBOX.value
+            # Update labels: Replace Spam with Inbox
+            if email.thread_id:
+                replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.INBOX)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)

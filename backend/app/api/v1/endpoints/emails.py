@@ -35,7 +35,14 @@ from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import (
     VALID_EMAIL_STATUSES, VALID_RECIPIENT_TYPES, VALID_EMAIL_CATEGORIES,
-    VALID_FOLDER_TYPES, EmailStatus, FolderType, EmailCategory
+    VALID_FOLDER_TYPES, EmailStatus, FolderType, EmailCategory, SystemLabel
+)
+from app.api.v1.endpoints.label_utils import (
+    add_system_label_to_thread,
+    remove_system_label_from_thread,
+    replace_exclusive_labels,
+    add_category_label_to_thread,
+    sync_category_labels,
 )
 
 logger = logging.getLogger(__name__)
@@ -108,6 +115,11 @@ def format_email_response(email: Email, user_id: Optional[UUID] = None) -> dict:
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
                     "color": l.color,
+                    "owner_id": l.owner_id,
+                    "parent_id": l.parent_id,
+                    "is_system": l.is_system,
+                    "is_exclusive": l.is_exclusive,
+                    "is_deleted": l.is_deleted
                 })
     
     # Determine if email can be cancelled (undo send)
@@ -164,6 +176,11 @@ def format_email_list_response(email: Email, thread_email_count: Optional[int] =
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
                     "color": l.color,
+                    "owner_id": l.owner_id,
+                    "parent_id": l.parent_id,
+                    "is_system": l.is_system,
+                    "is_exclusive": l.is_exclusive,
+                    "is_deleted": l.is_deleted
                 })
     
     attachment_count = len([a for a in email.attachments if not a.is_deleted])
@@ -307,6 +324,30 @@ def create_email(
         
         db.commit()
         db.refresh(email)
+        
+        # Assign system labels based on email type
+        if email_data.is_draft:
+            # Draft: Add Drafts label
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
+        else:
+            # Sent email: Add Sent label for sender
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
+            # Add category label if applicable
+            if email.category:
+                add_category_label_to_thread(db, email.thread_id, current_user.id, EmailCategory(email.category))
+            
+            # For recipients who are users: Add Inbox label + category
+            for recipient in email_data.recipients:
+                recipient_user = db.query(User).filter(
+                    User.email == recipient.email,
+                    User.is_deleted == False
+                ).first()
+                if recipient_user and not scheduled_send_at:
+                    add_system_label_to_thread(db, email.thread_id, recipient_user.id, SystemLabel.INBOX)
+                    if email.category:
+                        add_category_label_to_thread(db, email.thread_id, recipient_user.id, EmailCategory(email.category))
+        
+        db.commit()
         
     except Exception:
         db.rollback()
@@ -782,6 +823,10 @@ def send_email(
         email.scheduled_send_at = datetime.utcnow() + timedelta(seconds=undo_delay)
         email.folder = FolderType.SCHEDULED.value
         
+        # Update labels: Remove Drafts, add Scheduled
+        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
+        
         try:
             db.commit()
             db.refresh(email)
@@ -796,6 +841,12 @@ def send_email(
     email.status = EmailStatus.SENT.value
     email.sent_at = datetime.utcnow()
     email.folder = FolderType.SENT.value
+    
+    # Update labels: Remove Drafts, add Sent + category
+    remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
+    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
+    if email.category:
+        add_category_label_to_thread(db, email.thread_id, current_user.id, EmailCategory(email.category))
     
     # Create received copies for recipients who are users
     _deliver_email_to_recipients(db, email, current_user)
@@ -844,6 +895,12 @@ def _deliver_email_to_recipients(db: Session, email: Email, sender) -> None:
                     recipient_type=recipient.recipient_type,
                 )
                 db.add(recv_recipient)
+                
+                # Add Inbox label for recipient
+                add_system_label_to_thread(db, email.thread_id, recipient_user.id, SystemLabel.INBOX)
+                # Add category label if applicable
+                if email.category:
+                    add_category_label_to_thread(db, email.thread_id, recipient_user.id, EmailCategory(email.category))
 
 
 @router.post("/emails/{email_id}/cancel-send", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1086,6 +1143,12 @@ def reply_to_email(
                     recipient_type=recipient["type"],
                 )
                 db.add(recv_recipient)
+                
+                # Add Inbox label for recipient
+                add_system_label_to_thread(db, thread_id, recipient_user.id, SystemLabel.INBOX)
+        
+        # Add Sent label for sender
+        add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.SENT)
         
         db.commit()
         db.refresh(reply_email)
@@ -1131,20 +1194,32 @@ def forward_email(
     if forward_data.html_body or original_email.html_body:
         html_body = (forward_data.html_body or "") + "<hr><p>---------- Forwarded message ---------</p>" + (original_email.html_body or "")
     
-    # Create forward email
-    forward_email_obj = Email(
+    # Create a new thread for the forwarded email
+    thread = Thread(
         subject=subject,
-        body=body,
-        html_body=html_body,
-        status=EmailStatus.SENT.value,
-        folder=FolderType.SENT.value,
-        sender_id=current_user.id,
-        parent_email_id=email_id,
-        is_read=True,
-        sent_at=datetime.utcnow(),
+        owner_id=current_user.id,
+        participant_count=len(forward_data.recipients) + 1,
+        email_count=1,
+        last_email_at=datetime.utcnow(),
     )
     
     try:
+        db.add(thread)
+        db.flush()
+        
+        # Create forward email
+        forward_email_obj = Email(
+            subject=subject,
+            body=body,
+            html_body=html_body,
+            status=EmailStatus.SENT.value,
+            folder=FolderType.SENT.value,
+            sender_id=current_user.id,
+            thread_id=thread.id,
+            parent_email_id=email_id,
+            is_read=True,
+            sent_at=datetime.utcnow(),
+        )
         db.add(forward_email_obj)
         db.flush()
         
@@ -1173,6 +1248,7 @@ def forward_email(
                     status=EmailStatus.RECEIVED.value,
                     folder=FolderType.INBOX.value,
                     sender_id=current_user.id,
+                    thread_id=thread.id,
                     is_read=False,
                     received_at=datetime.utcnow(),
                 )
@@ -1187,6 +1263,12 @@ def forward_email(
                     recipient_type=recipient.type,
                 )
                 db.add(recv_recipient)
+                
+                # Add Inbox label for recipient
+                add_system_label_to_thread(db, thread.id, recipient_user.id, SystemLabel.INBOX)
+        
+        # Add Sent label for sender
+        add_system_label_to_thread(db, thread.id, current_user.id, SystemLabel.SENT)
         
         db.commit()
         db.refresh(forward_email_obj)
@@ -1297,6 +1379,17 @@ def important_email(
 
 
 
+# Mapping from folder type to system label enum
+FOLDER_TO_LABEL = {
+    FolderType.INBOX.value: SystemLabel.INBOX,
+    FolderType.SENT.value: SystemLabel.SENT,
+    FolderType.DRAFTS.value: SystemLabel.DRAFTS,
+    FolderType.TRASH.value: SystemLabel.TRASH,
+    FolderType.SPAM.value: SystemLabel.SPAM,
+    FolderType.SCHEDULED.value: SystemLabel.SCHEDULED,
+}
+
+
 @router.post("/emails/{email_id}/move", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def move_email(
     email_id: UUID,
@@ -1325,6 +1418,12 @@ def move_email(
         )
     
     email.folder = move_data.folder
+    
+    # Update labels to match folder change
+    if email.thread_id:
+        new_label = FOLDER_TO_LABEL.get(move_data.folder)
+        if new_label:
+            replace_exclusive_labels(db, email.thread_id, current_user.id, new_label)
     
     try:
         db.commit()
@@ -1496,6 +1595,10 @@ def snooze_email(
     
     email.snooze_until = snooze_data.snooze_until
     
+    # Add Snoozed label
+    if email.thread_id:
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+    
     try:
         db.commit()
         db.refresh(email)
@@ -1555,6 +1658,11 @@ def unsnooze_email(
     
     email.snooze_until = None
     
+    # Remove Snoozed label and add Inbox back
+    if email.thread_id:
+        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+    
     try:
         db.commit()
         db.refresh(email)
@@ -1609,6 +1717,10 @@ def archive_email(
         )
     
     email.status = EmailStatus.ARCHIVED.value
+    
+    # Remove Inbox label (email stays in All Mail)
+    if email.thread_id:
+        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
     
     try:
         db.commit()
@@ -1672,8 +1784,14 @@ def unarchive_email(
     # Restore to original status based on whether user sent or received it
     if email.sender_id == current_user.id:
         email.status = EmailStatus.SENT.value
+        # Add Sent label back
+        if email.thread_id:
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
     else:
         email.status = EmailStatus.RECEIVED.value
+        # Add Inbox label back
+        if email.thread_id:
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
     
     try:
         db.commit()
@@ -1736,6 +1854,10 @@ def mark_email_spam(
     
     email.folder = FolderType.SPAM.value
     
+    # Update labels: Replace with Spam
+    if email.thread_id:
+        replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.SPAM)
+    
     try:
         db.commit()
         db.refresh(email)
@@ -1796,6 +1918,10 @@ def unmark_email_spam(
         )
     
     email.folder = FolderType.INBOX.value
+    
+    # Update labels: Replace Spam with Inbox
+    if email.thread_id:
+        replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.INBOX)
     
     try:
         db.commit()
@@ -1863,13 +1989,21 @@ def restore_email_from_trash(
     # Determine the appropriate folder based on email status
     if email.status == EmailStatus.DRAFT.value:
         email.folder = FolderType.DRAFTS.value
+        target_label = SystemLabel.DRAFTS
     elif email.status == EmailStatus.QUEUED.value:
         email.folder = FolderType.SCHEDULED.value
+        target_label = SystemLabel.SCHEDULED
     elif email.status == EmailStatus.SENT.value:
         email.folder = FolderType.SENT.value
+        target_label = SystemLabel.SENT
     else:
         # For received emails or any other status, restore to inbox
         email.folder = FolderType.INBOX.value
+        target_label = SystemLabel.INBOX
+    
+    # Update labels: Replace Trash with the appropriate label
+    if email.thread_id:
+        replace_exclusive_labels(db, email.thread_id, current_user.id, target_label)
     
     try:
         db.commit()
@@ -1932,7 +2066,14 @@ def update_email_category(
             detail=f"Email {email_id} not found"
         )
     
+    old_category = EmailCategory(email.category) if email.category else None
+    new_category = EmailCategory(category_data.category)
+    
     email.category = category_data.category
+    
+    # Sync category labels
+    if email.thread_id:
+        sync_category_labels(db, email.thread_id, current_user.id, old_category, new_category)
     
     try:
         db.commit()

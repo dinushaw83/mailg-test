@@ -2872,10 +2872,10 @@ Adding a label to an email will add it to the email's thread.
 
 **DELETE** `/api/v1/emails/{email_id}/labels/{label_id}`
 
-Remove a label from an email's thread.
+Remove a label from an email's thread for the current user.
 
-Labels are now linked to threads, not individual emails.
-Removing a label from an email will remove it from the email's thread.
+Labels are user-specific on shared threads. Removing a label only affects
+the current user's view of the thread.
 
 **Path Parameters**:
 
@@ -3819,7 +3819,10 @@ Permissions:
 ```json
 {
   "name": "string",
-  "parent_id": "00000000-0000-0000-0000-000000000000"
+  "parent_id": "00000000-0000-0000-0000-000000000000",
+  "show_in_label_list": true,
+  "show_in_message_list": true,
+  "show_if_unread": false
 }
 ```
 
@@ -3838,7 +3841,7 @@ Permissions:
     "color": "string",
     "owner_id": "00000000-0000-0000-0000-000000000000",
     "parent_id": "00000000-0000-0000-0000-000000000000",
-    "is_deleted": false,
+    "is_system": false,
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
@@ -3906,9 +3909,11 @@ Permissions:
       "id": "00000000-0000-0000-0000-000000000000",
       "name": "string",
       "color": "string",
+      "owner_id": "00000000-0000-0000-0000-000000000000",
       "parent_id": "00000000-0000-0000-0000-000000000000",
-      "thread_count": 0,
-      "children": []
+      "is_system": false,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
     }
   ]
 }
@@ -4033,7 +4038,7 @@ Permissions:
     "color": "string",
     "owner_id": "00000000-0000-0000-0000-000000000000",
     "parent_id": "00000000-0000-0000-0000-000000000000",
-    "is_deleted": false,
+    "is_system": false,
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
@@ -4093,7 +4098,10 @@ Permissions:
 ```json
 {
   "name": "string",
-  "parent_id": "00000000-0000-0000-0000-000000000000"
+  "parent_id": "00000000-0000-0000-0000-000000000000",
+  "show_in_label_list": false,
+  "show_in_message_list": false,
+  "show_if_unread": false
 }
 ```
 
@@ -4112,7 +4120,7 @@ Permissions:
     "color": "string",
     "owner_id": "00000000-0000-0000-0000-000000000000",
     "parent_id": "00000000-0000-0000-0000-000000000000",
-    "is_deleted": false,
+    "is_system": false,
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
@@ -5711,6 +5719,7 @@ Raises:
 - `social`
 - `updates`
 - `forums`
+- `purchases`
 
 ### FolderType
 
