@@ -382,40 +382,103 @@ jobs:
       - name: Deploy to VM
         id: deploy
         run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} << EOF
+          BACKEND_IMG="${{ steps.image-tags.outputs.backend_image }}"
+          FRONTEND_IMG="${{ steps.image-tags.outputs.frontend_image }}"
+          
+          # Validate image tags before deployment
+          if [ -z "${BACKEND_IMG}" ] || [ -z "${FRONTEND_IMG}" ]; then
+            echo "Error: Image tags are not set"
+            echo "Backend: ${BACKEND_IMG:-empty}"
+            echo "Frontend: ${FRONTEND_IMG:-empty}"
+            exit 1
+          fi
+          
+          echo "Deploying with images:"
+          echo "  Backend: ${BACKEND_IMG}"
+          echo "  Frontend: ${FRONTEND_IMG}"
+          
+          # Deploy via SSH - pass variables in the heredoc
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash << REMOTE_SCRIPT
             set -e
-            cd ${{ env.DEPLOY_DIR }}
             
-            # Export image tags from GHCR
-            export BACKEND_IMAGE="${{ steps.image-tags.outputs.backend_image }}"
-            export FRONTEND_IMAGE="${{ steps.image-tags.outputs.frontend_image }}"
-            # GCP_PROJECT_ID is optional (only needed if using GCP Container Registry)
-            if [ -n "${{ env.GCP_PROJECT_ID }}" ]; then
-              export GCP_PROJECT_ID="${{ env.GCP_PROJECT_ID }}"
+            # Set variables from GitHub Actions
+            export BACKEND_IMAGE="${BACKEND_IMG}"
+            export FRONTEND_IMAGE="${FRONTEND_IMG}"
+            export GCP_PROJECT_ID="${{ env.GCP_PROJECT_ID }}"
+            export GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+            export GITHUB_ACTOR="${{ github.actor }}"
+            export DEPLOY_DIR="${{ env.DEPLOY_DIR }}"
+            
+            cd "\${DEPLOY_DIR}"
+            
+            # Validate image tags are set
+            if [ -z "\${BACKEND_IMAGE}" ] || [ -z "\${FRONTEND_IMAGE}" ]; then
+              echo "Error: Image tags are not set on remote server"
+              echo "Backend: \${BACKEND_IMAGE:-empty}"
+              echo "Frontend: \${FRONTEND_IMAGE:-empty}"
+              exit 1
             fi
             
+            echo "Backend image: \${BACKEND_IMAGE}"
+            echo "Frontend image: \${FRONTEND_IMAGE}"
+            
             # Log in to GHCR on VM
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin || true
+            echo "\${GITHUB_TOKEN}" | docker login ghcr.io -u "\${GITHUB_ACTOR}" --password-stdin || true
             
             # Make scripts executable
             chmod +x deploy-from-registry.sh || true
             
             # Update docker-compose.prod.yaml with actual image tags
-            # Use the exported BACKEND_IMAGE and FRONTEND_IMAGE variables
             if [ -f docker-compose.prod.yaml ]; then
-              sed -i "s|image:.*mailg-backend.*|image: ${BACKEND_IMAGE}|g" docker-compose.prod.yaml || true
-              sed -i "s|image:.*mailg-frontend.*|image: ${FRONTEND_IMAGE}|g" docker-compose.prod.yaml || true
+              # Escape special characters in image tags for sed
+              BACKEND_ESC=\$(printf '%s\n' "\${BACKEND_IMAGE}" | sed 's/[[\.*^$()+?{|]/\\&/g')
+              FRONTEND_ESC=\$(printf '%s\n' "\${FRONTEND_IMAGE}" | sed 's/[[\.*^$()+?{|]/\\&/g')
+              
+              # Replace image lines - match any line with image: and service identifier
+              # Match lines like: image: \${BACKEND_IMAGE:-...} or image: ...mailg-backend...
+              sed -i "s|^[[:space:]]*image:[[:space:]]*\${BACKEND_IMAGE.*|    image: \${BACKEND_ESC}|g" docker-compose.prod.yaml
+              sed -i "s|^[[:space:]]*image:[[:space:]]*.*mailg-backend.*|    image: \${BACKEND_ESC}|g" docker-compose.prod.yaml
+              sed -i "s|^[[:space:]]*image:[[:space:]]*\${FRONTEND_IMAGE.*|    image: \${FRONTEND_ESC}|g" docker-compose.prod.yaml
+              sed -i "s|^[[:space:]]*image:[[:space:]]*.*mailg-frontend.*|    image: \${FRONTEND_ESC}|g" docker-compose.prod.yaml
+              
+              echo "Updated docker-compose.prod.yaml with image tags"
+              echo "Verifying update - backend image:"
+              grep -A 1 "backend:" docker-compose.prod.yaml | grep "image:" || true
+              echo "Verifying update - frontend image:"
+              grep -A 1 "mailg:" docker-compose.prod.yaml | grep "image:" || true
+            else
+              echo "Error: docker-compose.prod.yaml not found in \${DEPLOY_DIR}"
+              exit 1
             fi
             
             # Pull images from GHCR
-            docker pull "${BACKEND_IMAGE}" || echo "Warning: Failed to pull backend image"
-            docker pull "${FRONTEND_IMAGE}" || echo "Warning: Failed to pull frontend image"
+            echo "Pulling backend image..."
+            docker pull "\${BACKEND_IMAGE}" || {
+              echo "Error: Failed to pull backend image: \${BACKEND_IMAGE}"
+              exit 1
+            }
+            
+            echo "Pulling frontend image..."
+            docker pull "\${FRONTEND_IMAGE}" || {
+              echo "Error: Failed to pull frontend image: \${FRONTEND_IMAGE}"
+              exit 1
+            }
+            
+            # Validate docker-compose file
+            docker compose -f docker-compose.prod.yaml config > /dev/null || {
+              echo "Error: docker-compose.prod.yaml is invalid"
+              docker compose -f docker-compose.prod.yaml config
+              exit 1
+            }
             
             # Stop existing containers
             docker compose -f docker-compose.prod.yaml down --timeout 30 || true
             
-            # Start services with new images (no need to pass env vars since they're in the file now)
+            # Start services with new images
             docker compose -f docker-compose.prod.yaml up -d
+            
+            echo "Deployment completed successfully"
+          REMOTE_SCRIPT
             
             # Wait for services to start
             sleep 15
