@@ -37,18 +37,6 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
 
     token_data = require_token_data(request)
 
-<<<<<<< HEAD
-    # Convert string UUID to UUID object for comparison
-    try:
-        user_id_uuid = uuid.UUID(token_data.user_id)
-    except (ValueError, TypeError) as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid user ID in token: {e}",
-        )
-
-    user = db.query(User).filter(User.id == user_id_uuid).first()
-=======
     # Convert string user_id to UUID for database query
     try:
         user_id = UUID(token_data.user_id) if isinstance(token_data.user_id, str) else token_data.user_id
@@ -59,7 +47,6 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
         )
 
     user = db.query(User).filter(User.id == user_id).first()
->>>>>>> dev
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
