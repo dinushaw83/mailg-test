@@ -244,6 +244,7 @@ def create_user(
             system_label = Label(
                 owner_id=user.id,
                 name=label_def["label"].value,  # Get string value from enum
+                color="#e1e3e1",  # Default system label color
                 is_system=True,
                 is_exclusive=label_def["is_exclusive"],
                 show_in_label_list=True,

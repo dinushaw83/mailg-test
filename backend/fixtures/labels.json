@@ -802,7 +802,7 @@
   {
     "id": "86f87550-2d0b-4306-bd1f-12c32d5c6f7f",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -817,7 +817,7 @@
   {
     "id": "6ab4c86a-cbd6-4587-a0f3-4e462609dfe0",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -832,7 +832,7 @@
   {
     "id": "3c14f6f7-31a7-42dc-8cbe-5941c71d742c",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -847,7 +847,7 @@
   {
     "id": "9e0774c8-f99e-40e8-80a8-8a8ec261efd7",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -862,7 +862,7 @@
   {
     "id": "a34cb3bb-a4f8-4bbc-8466-c9ac95c4512c",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -877,7 +877,7 @@
   {
     "id": "6689b582-7f8a-48b2-a6a7-cdd9780cea0a",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -892,22 +892,7 @@
   {
     "id": "7e524d04-bca6-49e3-b7f7-aea88a18fbad",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "00000000-0000-0000-0000-000000000001",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "c4f5e7cb-cfa9-4f46-942f-a50c63c7bbbc",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -922,7 +907,7 @@
   {
     "id": "28d4947c-73bd-40b2-8610-be462fdccf29",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -937,7 +922,7 @@
   {
     "id": "305548e7-d45d-43ea-a28e-c017a03acfc1",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -952,7 +937,7 @@
   {
     "id": "c67a5eae-931f-4ec4-9701-7dfe170f0164",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -967,7 +952,7 @@
   {
     "id": "3626fb40-eff6-4ed4-81fe-54de86f5ac2c",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -982,7 +967,7 @@
   {
     "id": "3d10ab43-f980-4739-ba18-0e0ecb65a6bd",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -997,7 +982,7 @@
   {
     "id": "ef9e4253-2d66-4ec5-9b7e-9854768a2207",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -1012,7 +997,7 @@
   {
     "id": "6cb54ba1-427c-4253-8333-a19522f2e6ed",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "parent_id": null,
     "is_system": true,
@@ -1027,7 +1012,7 @@
   {
     "id": "19238135-1631-4d1c-b958-c4a873467397",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1042,7 +1027,7 @@
   {
     "id": "4d3ca4ec-1b26-4e58-b0fb-d46b0eb2e523",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1057,7 +1042,7 @@
   {
     "id": "abc53c78-e348-49af-aeb6-3d4848efe379",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1072,7 +1057,7 @@
   {
     "id": "a5cdde6c-d67b-41b8-a464-67812c4854db",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1087,7 +1072,7 @@
   {
     "id": "602d028c-9db0-44ef-ba42-52a958932075",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1102,7 +1087,7 @@
   {
     "id": "cb960b38-49aa-4efb-96d8-efcc89a56a1d",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1117,22 +1102,7 @@
   {
     "id": "3c320d3b-e387-4e2a-ad61-a8b26edf1fad",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "00000000-0000-0000-0000-000000000002",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "6a5b1d0c-9f03-4352-9eff-a774ee812ff6",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1147,7 +1117,7 @@
   {
     "id": "e3f4a845-0b9a-41b8-bea5-ef592f80195b",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1162,7 +1132,7 @@
   {
     "id": "db3017ee-3377-4ee5-84d7-3a80dc095a07",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1177,7 +1147,7 @@
   {
     "id": "b61e6083-1364-4546-8c7b-9c987c09b967",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1192,7 +1162,7 @@
   {
     "id": "a21dbb8f-fb66-44d3-aed2-eb4b4e8367ca",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1207,7 +1177,7 @@
   {
     "id": "b39f4d68-d6d5-4b8a-8a1a-9a603578a3b0",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1222,7 +1192,7 @@
   {
     "id": "789b2350-36cf-46d3-8865-75a01676083d",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1237,7 +1207,7 @@
   {
     "id": "a3be3033-6ac0-4167-abf3-4509a5751aa4",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "parent_id": null,
     "is_system": true,
@@ -1252,7 +1222,7 @@
   {
     "id": "f3dd74f1-0c37-4153-b403-580d316ec881",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1267,7 +1237,7 @@
   {
     "id": "9013030a-6afd-4950-960f-8127337c2ed9",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1282,7 +1252,7 @@
   {
     "id": "03936234-cceb-4a58-9726-21d2572f31af",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1297,7 +1267,7 @@
   {
     "id": "84a8c0bd-ba59-49db-8d8e-9f6cd1a70b8c",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1312,7 +1282,7 @@
   {
     "id": "f96605c8-240a-4d64-b2fd-fa52678636aa",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1327,7 +1297,7 @@
   {
     "id": "147d4b00-2c42-4772-958f-1bd37e38cdfc",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1342,22 +1312,7 @@
   {
     "id": "4bf9b7d1-828c-465f-bb0f-ab9b7e93c0cd",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "00000000-0000-0000-0000-000000000003",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "9ed5c0ad-694a-45fa-9427-b274974c6f39",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1372,7 +1327,7 @@
   {
     "id": "124dbaa7-e392-4b7a-a81d-19e9da7800e8",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1387,7 +1342,7 @@
   {
     "id": "c82cc563-b029-4456-a91d-ee7609138196",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1402,7 +1357,7 @@
   {
     "id": "9748b420-bece-4ecd-86a6-2232f4a1eba8",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1417,7 +1372,7 @@
   {
     "id": "d5925624-1138-4086-af66-bd593fc13a9b",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1432,7 +1387,7 @@
   {
     "id": "48d7307c-a2b8-45e9-82b2-e14c6f1e5196",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1447,7 +1402,7 @@
   {
     "id": "6919972b-586b-45ba-9319-4f13e689e5ae",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1462,7 +1417,7 @@
   {
     "id": "b81cdfb1-71cc-464c-9c33-6dc959f96ba4",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "parent_id": null,
     "is_system": true,
@@ -1477,7 +1432,7 @@
   {
     "id": "7a17fd0a-e680-440b-b09c-f0e9060b422d",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1492,7 +1447,7 @@
   {
     "id": "f7420abf-5ed4-47bd-a268-b2a22d7bc019",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1507,7 +1462,7 @@
   {
     "id": "17df1d1d-502b-4685-aca4-2ba952c5ddf8",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1522,7 +1477,7 @@
   {
     "id": "5cd85006-2ab6-4460-a581-94938452440d",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1537,7 +1492,7 @@
   {
     "id": "6717124e-c489-4af1-ae4a-cb3770e25e86",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1552,7 +1507,7 @@
   {
     "id": "8ac17b65-62b1-462f-908a-fb8b80372e7a",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1567,22 +1522,7 @@
   {
     "id": "d772bd11-000a-41fc-8c3a-0f246f5ad1b2",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "a3989bcb-68f7-4a9f-a10b-cec912124cd5",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1597,7 +1537,7 @@
   {
     "id": "bb964acf-f83a-4716-b782-c5794ce4da98",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1612,7 +1552,7 @@
   {
     "id": "ce072cad-4df9-4f52-98d7-a53a76ed590d",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1627,7 +1567,7 @@
   {
     "id": "63112b45-99c1-4603-92f0-0dc98cff8b8b",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1642,7 +1582,7 @@
   {
     "id": "fd2335a4-0a22-4606-a1ff-f50db8123a99",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1657,7 +1597,7 @@
   {
     "id": "8d03d641-8080-46ed-b2fc-1bb5e8c0a98a",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1672,7 +1612,7 @@
   {
     "id": "51e9808b-d222-4623-99b7-467972b8e803",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1687,7 +1627,7 @@
   {
     "id": "880082a2-4b33-4a85-8f7e-679df7e4f993",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "da13bde6-27d5-4813-9f9a-b92533c30af4",
     "parent_id": null,
     "is_system": true,
@@ -1702,7 +1642,7 @@
   {
     "id": "78c1c971-6846-4dbf-bce4-065b09c7658b",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1717,7 +1657,7 @@
   {
     "id": "abc52ee3-1e17-4934-ba8d-a370bc538427",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1732,7 +1672,7 @@
   {
     "id": "53f16dd9-2187-4bbc-bf00-b1a6569a8949",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1747,7 +1687,7 @@
   {
     "id": "175a8cad-f839-4e97-8654-0203055e2085",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1762,7 +1702,7 @@
   {
     "id": "39361f01-5e7b-430b-b10e-5ec2d47fa6cf",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1777,7 +1717,7 @@
   {
     "id": "2797c4c8-9fc3-4f55-b10d-7976fef8c598",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1792,22 +1732,7 @@
   {
     "id": "a0548f09-d396-4d37-8079-20b3fac98cf6",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "5e0cba47-f09a-48ed-900e-c547669b5aa9",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1822,7 +1747,7 @@
   {
     "id": "f26ffeb0-98a3-4191-b40e-c04273a6c159",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1837,7 +1762,7 @@
   {
     "id": "97b4886a-4004-4424-abb4-b6da92b00256",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1852,7 +1777,7 @@
   {
     "id": "99147c67-2af5-4dc6-aadc-29279f0222bf",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1867,7 +1792,7 @@
   {
     "id": "554aeeaf-d84e-43ff-bc93-b9003ca2cd8a",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1882,7 +1807,7 @@
   {
     "id": "5de71b6a-750d-46bb-8a0b-9c74d2587f04",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1897,7 +1822,7 @@
   {
     "id": "c1397aaf-0065-4568-adaa-12e31fbf6e85",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1912,7 +1837,7 @@
   {
     "id": "de9b9e5e-5441-4231-bd3b-eaf700c4e3ad",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fb22819e-e80a-48fd-a380-ee699323e6d5",
     "parent_id": null,
     "is_system": true,
@@ -1927,7 +1852,7 @@
   {
     "id": "7462948c-75b9-4b2d-b755-a9ff43c61204",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -1942,7 +1867,7 @@
   {
     "id": "f2880175-68ba-41a4-b774-b1d17d0e23f1",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -1957,7 +1882,7 @@
   {
     "id": "1e19eb3c-0813-4259-85ad-35703bb68933",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -1972,7 +1897,7 @@
   {
     "id": "2b2209b9-fa37-4418-aa56-ed29110e7f26",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -1987,7 +1912,7 @@
   {
     "id": "f07e61db-3223-4df1-bb06-af482f90a22d",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2002,7 +1927,7 @@
   {
     "id": "1685fb8e-540d-4f7c-870c-91cbac111565",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2017,22 +1942,7 @@
   {
     "id": "058a999d-f8d5-414a-a0be-fee164e3d8fd",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "d4688b90-3214-4793-9943-4f115814a7aa",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2047,7 +1957,7 @@
   {
     "id": "1ec0bb1f-b858-4d1c-b59d-b4cc47a96a2b",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2062,7 +1972,7 @@
   {
     "id": "24ca8f5b-b62a-4138-b367-1823eed8de5e",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2077,7 +1987,7 @@
   {
     "id": "e1976125-feb0-449e-a8d9-5821fd790a1f",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2092,7 +2002,7 @@
   {
     "id": "ab0f44de-65d5-4f3e-beef-7b324a8bdcb8",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2107,7 +2017,7 @@
   {
     "id": "607002e4-d1f4-45db-a47c-09836396a42f",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2122,7 +2032,7 @@
   {
     "id": "f7591de1-aaa1-4f91-a203-0b02fd96675a",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2137,7 +2047,7 @@
   {
     "id": "3f4d140c-ea83-4bf9-874d-039804396f2c",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e72155e8-412c-4c25-b34a-808f3366d010",
     "parent_id": null,
     "is_system": true,
@@ -2152,7 +2062,7 @@
   {
     "id": "7967484a-0aac-409c-b0a3-618a95176fe9",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2167,7 +2077,7 @@
   {
     "id": "e4c7fe86-c327-4af9-9767-0c6546ce6ba3",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2182,7 +2092,7 @@
   {
     "id": "0a5277d0-22de-4dee-a70e-7da6e8cd5fb6",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2197,7 +2107,7 @@
   {
     "id": "43041fe7-b3c6-4149-9b85-1017d0249802",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2212,7 +2122,7 @@
   {
     "id": "450383bc-2614-4a1c-bd0a-f1d7d4effee9",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2227,7 +2137,7 @@
   {
     "id": "99d6cece-b951-41e2-9e67-0f08bd16dc9b",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2242,22 +2152,7 @@
   {
     "id": "f69dc8ba-0e3e-434f-b59d-4296b01a6918",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "67bd940a-a216-4542-9002-3f3b611295c7",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2272,7 +2167,7 @@
   {
     "id": "4ea8a1e6-9275-4db0-9033-b8022b4d0267",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2287,7 +2182,7 @@
   {
     "id": "f8e0f729-ea5c-4ede-8042-3d093091d975",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2302,7 +2197,7 @@
   {
     "id": "04094128-1681-4801-a570-f6e479ea8103",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2317,7 +2212,7 @@
   {
     "id": "3f3d7e27-31c9-4854-8842-c192f6b92fd5",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2332,7 +2227,7 @@
   {
     "id": "090decc6-4282-4004-a0b4-ba5adab032c0",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2347,7 +2242,7 @@
   {
     "id": "96a14915-d19c-445b-9d53-7c1378568321",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2362,7 +2257,7 @@
   {
     "id": "cf4917d0-58fa-4bfe-a944-2ac117ce5b47",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3876fdd5-6e8c-4a24-8fa4-1417902e219e",
     "parent_id": null,
     "is_system": true,
@@ -2377,7 +2272,7 @@
   {
     "id": "0c4583d7-53b7-4601-80ca-85ca12bfc269",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2392,7 +2287,7 @@
   {
     "id": "cff1efe5-c60b-485a-87d9-b32b2e9bac8a",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2407,7 +2302,7 @@
   {
     "id": "b48c9bae-8fa5-4131-b31b-2a987f4967e0",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2422,7 +2317,7 @@
   {
     "id": "b22ecd9b-1c35-4e62-b3f3-0089066a0230",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2437,7 +2332,7 @@
   {
     "id": "46adcf33-54fe-4030-8747-fff249f7f8d5",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2452,7 +2347,7 @@
   {
     "id": "c318abf3-4d0a-4c77-90a0-b4884510fcbe",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2467,22 +2362,7 @@
   {
     "id": "1a647aa2-8e4f-4e33-9c1e-9fc621e3ec55",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "81babdbf-2746-465f-96ab-d11754c902da",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2497,7 +2377,7 @@
   {
     "id": "ea4b8df8-749b-45d5-8428-62ec50ed6080",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2512,7 +2392,7 @@
   {
     "id": "43cdd53f-8c88-4459-ab82-c36863fdf8ba",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2527,7 +2407,7 @@
   {
     "id": "b93636d0-200a-4048-98d7-1e5dd534ef23",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2542,7 +2422,7 @@
   {
     "id": "9d6a7dd4-9c5b-4317-bde6-330b1fe42bb7",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2557,7 +2437,7 @@
   {
     "id": "cd84bd53-94d2-41ca-98c6-c4b2e0aae9cf",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2572,7 +2452,7 @@
   {
     "id": "1c5fef24-de96-46a1-916c-6bb4ad809279",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2587,7 +2467,7 @@
   {
     "id": "720376f8-5474-4a10-bb6a-2b10f6b6a0ec",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0b3d8659-b197-48d9-b381-4fbaec27f16a",
     "parent_id": null,
     "is_system": true,
@@ -2602,7 +2482,7 @@
   {
     "id": "a4b15b80-db52-4a6d-bc94-381125ccc25d",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2617,7 +2497,7 @@
   {
     "id": "b5e535ad-114b-4768-8735-381bb0c874d7",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2632,7 +2512,7 @@
   {
     "id": "950dc38b-b866-41ac-a95a-7f6a2699e67b",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2647,7 +2527,7 @@
   {
     "id": "14804b31-7186-451f-8c14-154d165acb27",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2662,7 +2542,7 @@
   {
     "id": "6adb87dd-e1bd-47f2-8ed6-16361cc7cfe1",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2677,7 +2557,7 @@
   {
     "id": "3ed018aa-5baf-4816-a0b4-3f34536fdf7a",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2692,22 +2572,7 @@
   {
     "id": "7ed75277-7c8f-4b66-8b73-3ad200914572",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "67c54210-6fa7-4be2-991a-c85eba8515ef",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2722,7 +2587,7 @@
   {
     "id": "64063922-a7cc-45da-89bf-fbceb440eaec",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2737,7 +2602,7 @@
   {
     "id": "bf7df90f-288e-4f34-a048-fdee08855fc2",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2752,7 +2617,7 @@
   {
     "id": "f05ba714-2a9a-4416-93f8-8fec2bccb695",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2767,7 +2632,7 @@
   {
     "id": "81683b15-1e81-495b-91d5-62fb8bbfb8ab",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2782,7 +2647,7 @@
   {
     "id": "ee3b3fd2-8a2f-4f30-9cce-dfe26bdd3eee",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2797,7 +2662,7 @@
   {
     "id": "95fccf75-5352-4fa4-80e0-da82c86192f5",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2812,7 +2677,7 @@
   {
     "id": "b296076f-71ad-486a-90ae-f8c8e13a2ef7",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "d2feca79-059c-482c-a32c-70ff7d84524b",
     "parent_id": null,
     "is_system": true,
@@ -2827,7 +2692,7 @@
   {
     "id": "7dcb06e1-b4cb-42a8-80ae-090ec188484b",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2842,7 +2707,7 @@
   {
     "id": "f922023d-fb04-4c54-96f3-473aba6fb7a7",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2857,7 +2722,7 @@
   {
     "id": "8c9d00c9-c960-4b9c-9bd3-cb58a69a6301",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2872,7 +2737,7 @@
   {
     "id": "6c0082e2-8858-48f0-8763-fa298e3fcbfa",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2887,7 +2752,7 @@
   {
     "id": "a45ceb6c-c4c5-4d1f-9579-8e73b561f446",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2902,7 +2767,7 @@
   {
     "id": "c2ab55f4-c0fb-4db6-bca9-981c49fb7afc",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2917,22 +2782,7 @@
   {
     "id": "b640ff52-f589-48da-bd2f-56bb19ca9049",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "8c4e0cab-ac8f-43f6-9eea-3735a24531da",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2947,7 +2797,7 @@
   {
     "id": "32d569c9-a41b-4de6-a3ae-326f0c87bf7e",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2962,7 +2812,7 @@
   {
     "id": "742c0b67-9804-44e1-a269-342b11b77a0b",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2977,7 +2827,7 @@
   {
     "id": "200069f8-8d72-4f84-a723-33f1de187d10",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -2992,7 +2842,7 @@
   {
     "id": "ce034ad6-1200-4614-8c47-8539d39a8d89",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -3007,7 +2857,7 @@
   {
     "id": "2edd2d50-a6f7-45e9-8357-04cd4bfa4d20",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -3022,7 +2872,7 @@
   {
     "id": "1846627d-3074-4de4-bde5-9287c7553f6f",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -3037,7 +2887,7 @@
   {
     "id": "86aa82ab-0323-4cad-8dfb-5ac0e43ad564",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e0792f61-370f-46ac-ae83-f6fd3060345e",
     "parent_id": null,
     "is_system": true,
@@ -3052,7 +2902,7 @@
   {
     "id": "63f9db15-6e09-4ebd-9645-3b8d1e859570",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3067,7 +2917,7 @@
   {
     "id": "1ce986fa-cdf7-4c21-ac30-10b223468938",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3082,7 +2932,7 @@
   {
     "id": "e47740c5-94c6-48e8-8547-acc2bdb80ef1",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3097,7 +2947,7 @@
   {
     "id": "0d69c690-e9c3-4bac-9375-8cf8cf7105b7",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3112,7 +2962,7 @@
   {
     "id": "265cb74d-13f6-437a-8fda-317dad6997f4",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3127,7 +2977,7 @@
   {
     "id": "aa98fbc1-3eb1-4c78-800a-04957f6f0c18",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3142,22 +2992,7 @@
   {
     "id": "19b86297-fa03-48ab-abd0-70a0c5ecf251",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "bb1895ee-dd05-4ef2-a8cb-820e0b3aff0b",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3172,7 +3007,7 @@
   {
     "id": "e64a1a7e-dbd3-4467-8738-258a3c8fec5c",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3187,7 +3022,7 @@
   {
     "id": "f3b964aa-bd24-4a5d-964e-b86ff67027a5",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3202,7 +3037,7 @@
   {
     "id": "59a726c2-b314-4b46-8fc4-23ceeed3d133",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3217,7 +3052,7 @@
   {
     "id": "ee0c76e3-af85-4281-b31f-8973c5deafda",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3232,7 +3067,7 @@
   {
     "id": "d26bf656-8254-4f2d-bc81-cb21785f806d",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3247,7 +3082,7 @@
   {
     "id": "74845ca1-eddf-4b80-811d-173208f33599",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3262,7 +3097,7 @@
   {
     "id": "97b7672a-46ec-49ad-be37-2b8369f613fc",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0986ccb0-1ece-4286-bee4-48130dd47b96",
     "parent_id": null,
     "is_system": true,
@@ -3277,7 +3112,7 @@
   {
     "id": "0c977f5b-38f3-4976-9db1-9349a1dee319",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3292,7 +3127,7 @@
   {
     "id": "18f1c54d-edd4-4cdc-b2c4-929dd7e835c1",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3307,7 +3142,7 @@
   {
     "id": "055f4aeb-71fe-4948-925a-f12b4a824e17",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3322,7 +3157,7 @@
   {
     "id": "3b263c3c-4da8-4ad3-9cb0-01a7006b59f3",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3337,7 +3172,7 @@
   {
     "id": "7b442b77-28c6-4fab-b9be-95830200eadb",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3352,7 +3187,7 @@
   {
     "id": "364dbfac-87b8-4f78-be09-2c9013695cec",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3367,22 +3202,7 @@
   {
     "id": "c88e1474-5b26-4f07-95f6-87983a460eb7",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "f91474c7-747b-47a5-a78c-aacd62eca010",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3397,7 +3217,7 @@
   {
     "id": "59e5634d-9337-422d-8d3d-9a954cf14f60",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3412,7 +3232,7 @@
   {
     "id": "64e90427-ac96-436f-ad39-aadefda3f541",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3427,7 +3247,7 @@
   {
     "id": "23b438ee-7df2-4fb0-ad3a-51e0b40d7741",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3442,7 +3262,7 @@
   {
     "id": "e3d0cd93-5e34-4980-bf33-b32fb7927f1a",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3457,7 +3277,7 @@
   {
     "id": "dac6cf5e-0617-45d3-873e-bd2ced58d1b6",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3472,7 +3292,7 @@
   {
     "id": "03ff6869-b36a-4063-8845-3a1f2e4a1dec",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3487,7 +3307,7 @@
   {
     "id": "f58a93d3-4480-4ce3-987b-9b9d7f1928ad",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "954d6f08-af53-456e-baa8-35ac82b0ad21",
     "parent_id": null,
     "is_system": true,
@@ -3502,7 +3322,7 @@
   {
     "id": "0ba14578-aefe-45ff-9160-40d14b4cb8a8",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3517,7 +3337,7 @@
   {
     "id": "f6182d00-0c87-436b-b710-95cb35e3f85a",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3532,7 +3352,7 @@
   {
     "id": "d7d70ac2-3480-44c4-9b31-213c5ae1874d",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3547,7 +3367,7 @@
   {
     "id": "69c5722a-1a1a-4c2a-af18-3cbe40576d61",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3562,7 +3382,7 @@
   {
     "id": "adac272c-4f99-497a-aad4-2da6a4316789",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3577,7 +3397,7 @@
   {
     "id": "ea0c672d-0cd5-4a1b-8144-d06941b7b1e8",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3592,22 +3412,7 @@
   {
     "id": "44a16b42-0e1b-44dc-9372-fc42dec5cd50",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "aeb59cc5-cca1-4057-9253-749061c30f48",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3622,7 +3427,7 @@
   {
     "id": "7a8d4b81-625b-4767-8141-1e7421544258",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3637,7 +3442,7 @@
   {
     "id": "750ddc6f-50bb-4983-9646-263584da25c1",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3652,7 +3457,7 @@
   {
     "id": "b9bb23a7-7415-4dc3-8c20-ebc616dcb40c",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3667,7 +3472,7 @@
   {
     "id": "dc660a39-3862-4616-8bcd-ed79164cfed0",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3682,7 +3487,7 @@
   {
     "id": "dec77309-6cc0-4c46-a508-3340e323c80b",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3697,7 +3502,7 @@
   {
     "id": "8949733b-0572-43b8-811b-f88044c3d1e0",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3712,7 +3517,7 @@
   {
     "id": "c8b5e9d9-d012-4193-8de6-1b6ce7a05f02",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "30aac442-9ea7-4fc6-918e-677838d53b9e",
     "parent_id": null,
     "is_system": true,
@@ -3727,7 +3532,7 @@
   {
     "id": "a86ff49c-98b3-484a-a228-b0918b53b854",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3742,7 +3547,7 @@
   {
     "id": "d260b681-377d-49f7-abf2-9e030cffc766",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3757,7 +3562,7 @@
   {
     "id": "3052dc87-5d5d-4492-832b-7c237f333e36",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3772,7 +3577,7 @@
   {
     "id": "699828ab-5292-4ae4-b4ac-12962e95a3f2",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3787,7 +3592,7 @@
   {
     "id": "bef90b19-7b42-4c40-9cb6-bc990e347b24",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3802,7 +3607,7 @@
   {
     "id": "35f9fa40-9d49-44dc-b78a-04b1eeda5aad",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3817,22 +3622,7 @@
   {
     "id": "7743f86f-76c9-4e54-b203-2acf62116c82",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "863ad70d-a3d4-4461-8f17-7a501f18fe80",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3847,7 +3637,7 @@
   {
     "id": "2fcebf66-4c53-40b1-9946-21d4783e5230",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3862,7 +3652,7 @@
   {
     "id": "5765fde0-daf2-46a0-bd86-a5fb73d57465",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3877,7 +3667,7 @@
   {
     "id": "ec0abe2d-c01c-4880-bc38-7c4806b05a2b",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3892,7 +3682,7 @@
   {
     "id": "e4024efc-53b8-4d0b-ac9d-12f7785bb206",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3907,7 +3697,7 @@
   {
     "id": "d88cd173-50a7-40fe-b420-c8166e7a5778",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3922,7 +3712,7 @@
   {
     "id": "db182d76-e35e-44be-a2dc-b36192e14844",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3937,7 +3727,7 @@
   {
     "id": "9cb55eff-24e3-48ce-a3c7-23f6dd5a0e0b",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f6c63837-e574-4dbd-bac2-880574651eff",
     "parent_id": null,
     "is_system": true,
@@ -3952,7 +3742,7 @@
   {
     "id": "4a83cf7a-bc7b-4f1d-9edb-1839283f0afb",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -3967,7 +3757,7 @@
   {
     "id": "2bddddb3-f5bb-4d5c-9b40-ac5145a53dc4",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -3982,7 +3772,7 @@
   {
     "id": "8e917959-05e7-4fc5-b02f-d39ce980cda8",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -3997,7 +3787,7 @@
   {
     "id": "b8c1d44c-f8b8-4326-a2ed-e719cd6d7f65",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4012,7 +3802,7 @@
   {
     "id": "fbbb18a0-c6e7-462b-b36f-bb5b53e96717",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4027,7 +3817,7 @@
   {
     "id": "020feb8c-3d56-4533-a91e-ed1d89168367",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4042,22 +3832,7 @@
   {
     "id": "1209e2a2-e911-45c6-8ef3-804afa0adff8",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "ea001b93-def0-4235-aefe-f60746d4a6fc",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4072,7 +3847,7 @@
   {
     "id": "ce5628c6-7743-4c66-aa19-9021cc6f1955",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4087,7 +3862,7 @@
   {
     "id": "10ad4a8e-3d5f-40f9-96cf-9c6f1e3cf7eb",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4102,7 +3877,7 @@
   {
     "id": "368cc018-91fc-4080-9ea7-4576c55f18d6",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4117,7 +3892,7 @@
   {
     "id": "c24fcdb6-9cd8-43ac-af17-574c3e71fa65",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4132,7 +3907,7 @@
   {
     "id": "b0f09760-7ba8-4b0c-9ff9-5de45a9e8501",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4147,7 +3922,7 @@
   {
     "id": "5a544395-685b-4f3f-a73c-3e5b76e2d784",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4162,7 +3937,7 @@
   {
     "id": "20c84d34-c3bc-46c0-b24f-b6c2082ac8a9",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dc21514d-3d57-434b-aafb-6588c3f7f209",
     "parent_id": null,
     "is_system": true,
@@ -4177,7 +3952,7 @@
   {
     "id": "850ae99a-d4ef-41ff-83af-f984badf4e2b",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4192,7 +3967,7 @@
   {
     "id": "42e331fd-4947-4bff-b703-581b3adf7163",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4207,7 +3982,7 @@
   {
     "id": "6ab9bbdc-7ac4-449d-b204-e8714deac45e",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4222,7 +3997,7 @@
   {
     "id": "b6733bd6-e230-4037-98e4-225d1827544e",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4237,7 +4012,7 @@
   {
     "id": "7c586136-1586-4f74-aa79-facc564303c1",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4252,7 +4027,7 @@
   {
     "id": "680047c7-d421-444e-8c9d-eeab6447566b",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4267,22 +4042,7 @@
   {
     "id": "bf6bf734-5587-46cc-abfe-a0c9d6057974",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "898e3490-6651-42e5-be45-a9a89f603845",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4297,7 +4057,7 @@
   {
     "id": "447583f2-bb23-4f14-8ec9-7caa27c3d6e5",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4312,7 +4072,7 @@
   {
     "id": "31e4c2b3-5a2f-4add-a52a-f77519fb7387",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4327,7 +4087,7 @@
   {
     "id": "f7395c9b-7d1d-4758-8c60-5f208d0a044b",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4342,7 +4102,7 @@
   {
     "id": "00f77500-1fed-433c-b849-303ab6747a7e",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4357,7 +4117,7 @@
   {
     "id": "b58b15ed-aa3d-4cb5-96ec-d778d44dcecc",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4372,7 +4132,7 @@
   {
     "id": "f91c91b1-7767-4256-b230-10b8259f2196",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4387,7 +4147,7 @@
   {
     "id": "f31f7cd8-ab46-4f8e-9739-88347ce2b823",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "68f16e6c-854b-452b-8194-9d1d89cb18b3",
     "parent_id": null,
     "is_system": true,
@@ -4402,7 +4162,7 @@
   {
     "id": "b391ffba-a74e-46ff-8e94-c1b25c784714",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4417,7 +4177,7 @@
   {
     "id": "343927bf-5f36-4efe-90f4-1de2086b8a7b",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4432,7 +4192,7 @@
   {
     "id": "58c755ab-7ae8-4f69-b940-e59a7cb570af",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4447,7 +4207,7 @@
   {
     "id": "0e19b01d-7dd0-4c48-a229-eccc1c19f7ab",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4462,7 +4222,7 @@
   {
     "id": "bf92409a-4c88-4ef2-9578-ff04af7dfd12",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4477,7 +4237,7 @@
   {
     "id": "6ad31c37-3254-4dc7-912c-5d0ae46596d6",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4492,22 +4252,7 @@
   {
     "id": "92307e09-510e-4648-8202-6f49b44c8d94",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "9cef54ed-e841-41c2-bb0d-9dd8cb232730",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4522,7 +4267,7 @@
   {
     "id": "1375b491-1d5d-46c7-b7ea-696bed807f30",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4537,7 +4282,7 @@
   {
     "id": "911c1338-294d-4592-a88b-0348300aa123",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4552,7 +4297,7 @@
   {
     "id": "4738968d-aacd-4d61-ba36-673d91be942e",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4567,7 +4312,7 @@
   {
     "id": "8c4cb964-806f-40e6-a255-a9c806546e86",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4582,7 +4327,7 @@
   {
     "id": "38c7e466-d6ea-489e-9591-58dc755a7c3c",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4597,7 +4342,7 @@
   {
     "id": "491f0204-632d-4c13-9e6d-c77f1aeb2776",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4612,7 +4357,7 @@
   {
     "id": "0f914adc-4230-4f6e-9bf2-7e21b83a7102",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fd5a5c92-c2ff-4fc9-9a5d-fbc1fd09aaaa",
     "parent_id": null,
     "is_system": true,
@@ -4627,7 +4372,7 @@
   {
     "id": "9e47ea99-1e01-4e04-855e-2068c93aabda",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4642,7 +4387,7 @@
   {
     "id": "0f3a3011-7d3d-4234-9a5d-00b2e5ffaf85",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4657,7 +4402,7 @@
   {
     "id": "eaaf47ca-2a24-4f69-a62b-fda48072085e",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4672,7 +4417,7 @@
   {
     "id": "f43687ec-97b6-4598-bec8-b7dd02e77836",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4687,7 +4432,7 @@
   {
     "id": "ef30e5a6-a73f-4a1a-bc1a-aac7454abffa",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4702,7 +4447,7 @@
   {
     "id": "47257198-54d3-4657-8849-977c242b945c",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4717,22 +4462,7 @@
   {
     "id": "a597e7ae-ae32-4b78-87e6-124e65332ba0",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "75c21abb-738e-4378-87c5-77264f4c41b6",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4747,7 +4477,7 @@
   {
     "id": "0dc2148b-3554-4106-b6aa-b97bc687d0a5",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4762,7 +4492,7 @@
   {
     "id": "d3dde022-fce0-424e-89fb-2b754b2c0820",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4777,7 +4507,7 @@
   {
     "id": "e872ce59-e8da-412a-9f6e-3e4af5f6cb61",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4792,7 +4522,7 @@
   {
     "id": "5255077a-3cbf-4064-a850-2277432b1d96",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4807,7 +4537,7 @@
   {
     "id": "c04a2d03-2ce2-4b38-970a-ba97804873d9",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4822,7 +4552,7 @@
   {
     "id": "5649844e-9343-4a87-85e5-5917ac3d9a60",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4837,7 +4567,7 @@
   {
     "id": "e93cc34b-ee2e-4e2a-98b0-b78a238aa362",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8658563c-5322-4963-b571-4266e1dcad90",
     "parent_id": null,
     "is_system": true,
@@ -4852,7 +4582,7 @@
   {
     "id": "db514249-ab54-4b6c-8c0a-bd2c3e8c082a",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4867,7 +4597,7 @@
   {
     "id": "43a28a20-a549-4743-8363-bf0dd9c8c54b",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4882,7 +4612,7 @@
   {
     "id": "57af8f32-8c33-40c8-b2e3-46e2e0ae9d9d",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4897,7 +4627,7 @@
   {
     "id": "d040dc6e-c706-4a56-9ddb-2c6d9956bbe8",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4912,7 +4642,7 @@
   {
     "id": "b1c709e9-743f-441a-b7ee-a9a4563bd028",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4927,7 +4657,7 @@
   {
     "id": "4dc89f8d-29fb-4a09-9047-403bb8f7372f",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4942,22 +4672,7 @@
   {
     "id": "25ebe1f3-4901-4f78-97fa-19cc9fe2c9a2",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "5720e1a3-83c2-4e20-9bbb-fc5b6c92640e",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4972,7 +4687,7 @@
   {
     "id": "833a7dbf-3b65-4d2e-ba7f-5d3447f4495a",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -4987,7 +4702,7 @@
   {
     "id": "290a4ecc-cc60-42a1-b635-bc6af7e2ca49",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -5002,7 +4717,7 @@
   {
     "id": "18591719-fe1b-44ec-ac95-802590a7c1b9",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -5017,7 +4732,7 @@
   {
     "id": "614129db-01c0-48c4-91e5-cb1c03df0bf2",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -5032,7 +4747,7 @@
   {
     "id": "bc60b463-84d0-4aaf-b19f-8fe494fc7c70",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -5047,7 +4762,7 @@
   {
     "id": "f2fa8778-3ea8-42c8-b21f-37e7e63c038d",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -5062,7 +4777,7 @@
   {
     "id": "be81b17f-5a33-446f-a78a-3a3240c25abe",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "bbad333c-2c30-4a06-ad13-e36874cd9bc0",
     "parent_id": null,
     "is_system": true,
@@ -5077,7 +4792,7 @@
   {
     "id": "580c9ce3-8f7a-486a-a83d-75f3d6881af9",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5092,7 +4807,7 @@
   {
     "id": "9c2dffe0-5a55-4f40-af24-c5e17659d228",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5107,7 +4822,7 @@
   {
     "id": "3fd6f7ad-1ea5-40f4-a791-fd28b3c4222d",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5122,7 +4837,7 @@
   {
     "id": "9b3fa4a7-ce63-436a-8d63-d45a56f530cb",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5137,7 +4852,7 @@
   {
     "id": "70f54950-07f1-4acb-9c64-56d5bafc3ec7",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5152,7 +4867,7 @@
   {
     "id": "93f281d4-905a-48ac-8ac0-e63675031148",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5167,22 +4882,7 @@
   {
     "id": "a3b9ffe7-a129-429d-aaca-0d7db75147b7",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "f027cf9e-6e0c-4459-87f8-5d5337aab78e",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5197,7 +4897,7 @@
   {
     "id": "b136cb21-6f72-42a9-bf47-e60004342f61",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5212,7 +4912,7 @@
   {
     "id": "9bfc0ffc-7bee-4a1c-8162-7ade19a96475",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5227,7 +4927,7 @@
   {
     "id": "d61de194-df4e-4a21-9570-bdeb9116992b",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5242,7 +4942,7 @@
   {
     "id": "5d571871-3783-4a3c-be97-d9d9530523aa",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5257,7 +4957,7 @@
   {
     "id": "97496320-17b3-41d6-b7f7-3e28f4a8c565",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5272,7 +4972,7 @@
   {
     "id": "7a14b983-e857-4289-9769-ca1fbdb4c14e",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5287,7 +4987,7 @@
   {
     "id": "d29f148e-2f8f-468f-8c9a-c0332cb1f2ae",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24fabce0-8dfa-460b-b136-04f3c0bf8055",
     "parent_id": null,
     "is_system": true,
@@ -5302,7 +5002,7 @@
   {
     "id": "26379f13-3fbd-455d-9257-d1a3f5f3af2a",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5317,7 +5017,7 @@
   {
     "id": "ba0efc00-95bd-4d94-a321-4f84276e0f9c",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5332,7 +5032,7 @@
   {
     "id": "2cb01b26-0cf3-4f31-99c8-15cc5743f28d",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5347,7 +5047,7 @@
   {
     "id": "67b81302-c39d-48b8-9c8a-9ddfb062738e",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5362,7 +5062,7 @@
   {
     "id": "6231afa9-f98a-4c9f-85fe-3c1f726df4b9",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5377,7 +5077,7 @@
   {
     "id": "0821251e-0c7c-427b-a9b0-ca31cbeeac9c",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5392,22 +5092,7 @@
   {
     "id": "b3e40d36-044c-4f11-8bd0-647dbdb942d3",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "8e7ccf27-01d1-4bc4-9507-65c74f815635",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5422,7 +5107,7 @@
   {
     "id": "b09f1fb8-2eef-45e4-b859-c74c145b4a3d",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5437,7 +5122,7 @@
   {
     "id": "236ae402-759c-463e-8a0c-21bc5492a817",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5452,7 +5137,7 @@
   {
     "id": "3c0fae17-5b30-4a25-ad52-51e626e68956",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5467,7 +5152,7 @@
   {
     "id": "1b314038-4fdb-45a6-98f8-4c2348ee01af",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5482,7 +5167,7 @@
   {
     "id": "1dade59e-9ae2-4821-849b-fb9f507b4f7b",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5497,7 +5182,7 @@
   {
     "id": "448ef71a-32fa-495a-ae74-77f3eb73596a",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5512,7 +5197,7 @@
   {
     "id": "a58c9df9-3b9f-4cd9-a8c0-49c691c22205",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8edbabfd-85c3-43df-8e1d-07c1f55f7ba4",
     "parent_id": null,
     "is_system": true,
@@ -5527,7 +5212,7 @@
   {
     "id": "39d08f84-5b63-44df-b1c1-7b2902acd062",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5542,7 +5227,7 @@
   {
     "id": "63bb6fd6-40f5-4e00-8919-7b68d69f5be8",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5557,7 +5242,7 @@
   {
     "id": "9e1485df-fc91-428d-bf2f-04bbaf5f9a92",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5572,7 +5257,7 @@
   {
     "id": "573d01a1-2d2d-41f2-9f76-c52a2ef00631",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5587,7 +5272,7 @@
   {
     "id": "4e5e4bf0-4c3d-482d-b062-505f8e74ba1b",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5602,7 +5287,7 @@
   {
     "id": "17d3a157-8816-4654-838e-948d96899f36",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5617,22 +5302,7 @@
   {
     "id": "0f936576-a996-4a94-af9d-0053c06c21c9",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "547703d0-10b2-4e2f-b5a1-688b903f1ffc",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5647,7 +5317,7 @@
   {
     "id": "b416bd14-b340-4e58-ab35-6b0a8ee09de9",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5662,7 +5332,7 @@
   {
     "id": "a1275067-022c-4db0-a795-5ed1ce0a005d",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5677,7 +5347,7 @@
   {
     "id": "872da81e-d632-4b31-9e9b-5d142387dac6",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5692,7 +5362,7 @@
   {
     "id": "46c8270f-1eec-43e1-8075-7ab6dc98f06f",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5707,7 +5377,7 @@
   {
     "id": "8c3ead8c-c99a-4bfd-b51e-9bdc9daf759a",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5722,7 +5392,7 @@
   {
     "id": "694da7e0-9f05-4002-b389-9b04e517775a",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5737,7 +5407,7 @@
   {
     "id": "cfac1b0b-863b-43a6-a7a1-6d1dafa7f5dc",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "66361a3c-b2da-4eca-8b6c-211af70418b8",
     "parent_id": null,
     "is_system": true,
@@ -5752,7 +5422,7 @@
   {
     "id": "5181b273-189b-48c5-bca2-f6a88a9e1b0f",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5767,7 +5437,7 @@
   {
     "id": "d89cc5d9-a87e-45a6-843c-b224b4e777d6",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5782,7 +5452,7 @@
   {
     "id": "7210846c-cf89-4551-989b-f091155d9251",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5797,7 +5467,7 @@
   {
     "id": "7de64b63-9c8e-444c-92a3-780ef44fb30b",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5812,7 +5482,7 @@
   {
     "id": "7420de2f-3645-4d1c-ab4e-6382296688f0",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5827,7 +5497,7 @@
   {
     "id": "ef72f68a-73ef-4801-9aa1-9a80ad59e3a3",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5842,22 +5512,7 @@
   {
     "id": "94218781-ffaf-4b6f-ba44-88dd09b76d21",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "4fa9fb0a-af8f-48ac-944e-2fecaf748478",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5872,7 +5527,7 @@
   {
     "id": "8c09c35c-9e9a-4ff8-a46f-1a57b7181b74",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5887,7 +5542,7 @@
   {
     "id": "058d1b0f-30e3-4122-8b06-797420c67703",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5902,7 +5557,7 @@
   {
     "id": "858ee56e-a8e4-42f6-9434-dc33c38c79a4",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5917,7 +5572,7 @@
   {
     "id": "c6f6ead7-d010-425b-b8af-9404be444dd5",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5932,7 +5587,7 @@
   {
     "id": "64ee964e-9643-48c3-999f-1ee7dc2ae884",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5947,7 +5602,7 @@
   {
     "id": "4f4f1e7f-9d02-4fde-bf0b-7763b64f8aca",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5962,7 +5617,7 @@
   {
     "id": "f0c73c88-3af7-408e-857e-8a2415c5f030",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "82f82425-e0a9-487b-941d-20614c132dd8",
     "parent_id": null,
     "is_system": true,
@@ -5977,7 +5632,7 @@
   {
     "id": "ed8733bc-c09d-4f69-91aa-48bb61173f0f",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -5992,7 +5647,7 @@
   {
     "id": "d6b55f77-8619-4416-b7fd-2cc88c59e2e3",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6007,7 +5662,7 @@
   {
     "id": "bb9a4283-e5a6-4ab0-9cef-379d205c94a5",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6022,7 +5677,7 @@
   {
     "id": "24e34bc3-3199-4e9f-8a49-91fe5ef4e7d7",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6037,7 +5692,7 @@
   {
     "id": "75c8e172-78ee-4f57-9bd1-e91286265294",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6052,7 +5707,7 @@
   {
     "id": "96dc2032-e8d1-4c21-8bb0-377db35b367e",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6067,22 +5722,7 @@
   {
     "id": "9ab5f972-3293-44e2-a426-6b963013a5e5",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "de38d00a-0187-4c7f-924d-d210a7f41328",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6097,7 +5737,7 @@
   {
     "id": "27be258d-dc46-4a2d-9f3b-30fc5885db97",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6112,7 +5752,7 @@
   {
     "id": "11b47668-6fdb-4208-a7d0-16faa9b74926",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6127,7 +5767,7 @@
   {
     "id": "845cb3e6-69c8-46d3-8554-70f8c2bdc91c",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6142,7 +5782,7 @@
   {
     "id": "794e13c0-9895-4e04-bcba-45385a67a649",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6157,7 +5797,7 @@
   {
     "id": "a145bac4-2c47-45b1-8954-ee194dee4b49",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6172,7 +5812,7 @@
   {
     "id": "2f022355-2e33-4e73-bb3d-4f41e5a5563c",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6187,7 +5827,7 @@
   {
     "id": "53af87d6-2901-4752-8cd7-8de6840a62c6",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2e5705-6202-4818-80bd-f2adb02253f5",
     "parent_id": null,
     "is_system": true,
@@ -6202,7 +5842,7 @@
   {
     "id": "44135ee8-e3ee-4bfa-b4bc-2c7c71233518",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6217,7 +5857,7 @@
   {
     "id": "b31262ca-5e02-4d26-89aa-d21d1c3f0589",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6232,7 +5872,7 @@
   {
     "id": "440425a0-c91b-4409-a6ab-5f18e677470e",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6247,7 +5887,7 @@
   {
     "id": "41b4e1ad-e581-4ec9-a72d-ef15403cb1c6",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6262,7 +5902,7 @@
   {
     "id": "0487b4ff-d694-4e47-86b4-d6ce5448d6ee",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6277,7 +5917,7 @@
   {
     "id": "566dd03a-ae6f-42dc-aad1-c9bb293f6109",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6292,22 +5932,7 @@
   {
     "id": "d35ca160-f8c6-44c4-af71-9270348d5ed2",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "873fc70b-5d60-499b-8361-9e8976c93c2f",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6322,7 +5947,7 @@
   {
     "id": "6d3051d5-3902-41b8-8cbd-5df96df8fd79",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6337,7 +5962,7 @@
   {
     "id": "a81bf68f-798c-49fa-8954-a7c5df8fe5ab",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6352,7 +5977,7 @@
   {
     "id": "67004ee9-954c-4bf8-8956-8f48ffe78fb8",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6367,7 +5992,7 @@
   {
     "id": "447c3d0f-7bad-4cae-ac58-90baa3439aa1",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6382,7 +6007,7 @@
   {
     "id": "049bf9e9-920f-432f-a8ac-902c61cedf95",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6397,7 +6022,7 @@
   {
     "id": "8918c3fa-03ca-488f-b7b4-0d7b4b6a1d29",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6412,7 +6037,7 @@
   {
     "id": "77e6ca87-51ef-4fcb-94b9-317922c6eab9",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7ec71efe-7172-448e-8be5-96066be3b2f9",
     "parent_id": null,
     "is_system": true,
@@ -6427,7 +6052,7 @@
   {
     "id": "7130fc49-966f-46d6-9aaf-24eb8a6fd9cb",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6442,7 +6067,7 @@
   {
     "id": "a88e91f5-8956-47a3-a928-b98cd55b33e4",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6457,7 +6082,7 @@
   {
     "id": "077e6410-c678-4a48-8eeb-9f1448943a03",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6472,7 +6097,7 @@
   {
     "id": "380ea904-fe13-4e7e-a472-54c08e8db6e5",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6487,7 +6112,7 @@
   {
     "id": "79a4d646-7e88-478c-830b-32e98bfcedfb",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6502,7 +6127,7 @@
   {
     "id": "e53ef58b-4ce9-4939-9ddc-26132a818174",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6517,22 +6142,7 @@
   {
     "id": "22fba384-cc0d-45e6-aecf-f795d483cfcc",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "07747090-a7c5-40c0-ac9f-ddf322b49c99",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6547,7 +6157,7 @@
   {
     "id": "dd5d0ce6-0091-4483-8285-b6a4ddcf49aa",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6562,7 +6172,7 @@
   {
     "id": "85428d8e-2a6c-4086-ba34-8a8863422669",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6577,7 +6187,7 @@
   {
     "id": "24c7db7e-313b-44e7-82c6-e8a13bba0f1a",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6592,7 +6202,7 @@
   {
     "id": "4c3bf62d-4c62-4972-8009-238038d49e51",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6607,7 +6217,7 @@
   {
     "id": "016202f1-5cd6-4471-9c10-024f84eb463f",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6622,7 +6232,7 @@
   {
     "id": "c80a1182-7693-4e52-9dc8-db08a8f58a65",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6637,7 +6247,7 @@
   {
     "id": "60830fec-fbe4-4f62-8f82-26e2879083b4",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ced61153-0479-49f1-9b21-375ec7c1d466",
     "parent_id": null,
     "is_system": true,
@@ -6652,7 +6262,7 @@
   {
     "id": "b9fa89e2-5014-464c-849b-27b8c16f922f",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6667,7 +6277,7 @@
   {
     "id": "43206304-8222-4d1c-8b1d-c311d407e166",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6682,7 +6292,7 @@
   {
     "id": "9706916c-fd68-4b9b-98ba-1a9b4bf121c0",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6697,7 +6307,7 @@
   {
     "id": "dc1faae4-db5b-4b69-9f69-15626675c7ec",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6712,7 +6322,7 @@
   {
     "id": "935f101b-7933-4356-b991-b68e36a637bf",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6727,7 +6337,7 @@
   {
     "id": "5ed9efce-5b80-4164-ad55-fa7c23c41565",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6742,22 +6352,7 @@
   {
     "id": "590ee032-cc0c-4392-8e75-f39c4d9f2d6b",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "4f251b25-bd07-4def-b26e-9558fb771729",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6772,7 +6367,7 @@
   {
     "id": "a6f48a63-6927-4259-a249-4fcc2e6fbfae",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6787,7 +6382,7 @@
   {
     "id": "cce7c14d-9750-4417-bfd1-d5ed1b868e08",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6802,7 +6397,7 @@
   {
     "id": "f03feead-e546-4d9b-8cc8-51d0f439e190",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6817,7 +6412,7 @@
   {
     "id": "36075835-ab81-4024-aad3-4bf7165871b5",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6832,7 +6427,7 @@
   {
     "id": "f679acff-6708-4e0d-b68f-571fb4d47f13",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6847,7 +6442,7 @@
   {
     "id": "ddf5c98c-1582-41b4-bc86-1bf93e1a6cfa",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6862,7 +6457,7 @@
   {
     "id": "9bbc2051-9cae-47b7-bb84-a05e9d2474e9",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "f8c9b5aa-5291-4550-b5e7-3a6afa151237",
     "parent_id": null,
     "is_system": true,
@@ -6877,7 +6472,7 @@
   {
     "id": "9202d1d1-06c4-4264-bd5d-79998b3a0556",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -6892,7 +6487,7 @@
   {
     "id": "20ec0a89-0a12-4a64-902d-ec546a98bb43",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -6907,7 +6502,7 @@
   {
     "id": "1bc07db9-9aef-4f19-bd76-d2e96db0b7b0",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -6922,7 +6517,7 @@
   {
     "id": "7d355d14-0b12-4842-8a34-5f4eb41fbd6a",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -6937,7 +6532,7 @@
   {
     "id": "d280ffea-60c1-41d1-a1f8-e91894038730",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -6952,7 +6547,7 @@
   {
     "id": "ce5b08d6-deae-4de2-93fd-14638aa7d773",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -6967,22 +6562,7 @@
   {
     "id": "9b135aed-3ac8-4b49-bdb1-ae6e559eb4da",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "c511246f-3b55-4a67-8032-ea6c2d6b944f",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -6997,7 +6577,7 @@
   {
     "id": "976b7708-d25d-478d-8197-ae22b9028e43",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -7012,7 +6592,7 @@
   {
     "id": "ab0983fc-2dbb-405e-93d0-2d2402b9fa30",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -7027,7 +6607,7 @@
   {
     "id": "2ca6fb0d-bae9-49e9-a769-96f889579c89",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -7042,7 +6622,7 @@
   {
     "id": "1508f58f-5ac3-40c7-b9fa-4f9259d10f88",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -7057,7 +6637,7 @@
   {
     "id": "5f5e3a9b-1e89-4c88-9354-623c39a23742",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -7072,7 +6652,7 @@
   {
     "id": "68637d4a-fa13-49b2-929d-858b59be3bb7",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -7087,7 +6667,7 @@
   {
     "id": "e130df6d-9a06-454f-af14-803d46f4b771",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "544bd74c-25d4-408c-b4fb-5941cc67d1e2",
     "parent_id": null,
     "is_system": true,
@@ -7102,7 +6682,7 @@
   {
     "id": "51d6a1e4-b2ba-44ae-bc68-14f6a363a63c",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7117,7 +6697,7 @@
   {
     "id": "0e689f1f-b745-4d57-a7c6-5e4e14b8121b",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7132,7 +6712,7 @@
   {
     "id": "a77c0e5e-0d7e-49f0-ad24-902300d47ed6",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7147,7 +6727,7 @@
   {
     "id": "cc082098-8356-49f6-86c4-1f6e53e73d12",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7162,7 +6742,7 @@
   {
     "id": "70f5d276-424a-4e9f-a09f-922e6d160af3",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7177,7 +6757,7 @@
   {
     "id": "ada70f91-b545-4d7c-b4ad-1896243b7db2",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7192,22 +6772,7 @@
   {
     "id": "997b7a58-13a3-41e9-9e44-0ff1cf4fd247",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "a5fb54d9-7f09-4f27-b39d-1e072ab4d0fd",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7222,7 +6787,7 @@
   {
     "id": "4dd6220f-7e59-4e8d-b158-37967cb6e55e",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7237,7 +6802,7 @@
   {
     "id": "5f284ce9-8461-4bb5-9ce4-8ca335c6a58a",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7252,7 +6817,7 @@
   {
     "id": "4182b656-c298-4f0a-b908-4d3d2f0534a5",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7267,7 +6832,7 @@
   {
     "id": "bc9387f4-595f-4c28-974b-d1bb569a8d77",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7282,7 +6847,7 @@
   {
     "id": "5536c44b-bb23-4720-ad47-d65d0ce4f1f6",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7297,7 +6862,7 @@
   {
     "id": "1f32e006-50fa-4b93-b4f5-b3bc7b610cc7",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7312,7 +6877,7 @@
   {
     "id": "460d5eb0-85ee-4ff0-90b3-978b5d59bb70",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "3f379db9-9d28-4cb4-941e-721b90d2e038",
     "parent_id": null,
     "is_system": true,
@@ -7327,7 +6892,7 @@
   {
     "id": "fb528751-a4c0-4107-b1af-cea5c0ac99c3",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7342,7 +6907,7 @@
   {
     "id": "5aad38bc-e72e-46a5-9657-ea6a94061983",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7357,7 +6922,7 @@
   {
     "id": "8e567993-6844-4b58-87b5-b18d9fdfbb03",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7372,7 +6937,7 @@
   {
     "id": "3ea571cb-edf9-47df-ad70-23aad6c3dc5a",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7387,7 +6952,7 @@
   {
     "id": "b659c774-ba44-48af-acee-338d4455fef3",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7402,7 +6967,7 @@
   {
     "id": "1646f702-8ae5-4884-ba63-637aa4f54603",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7417,22 +6982,7 @@
   {
     "id": "4c4c3120-ff09-4d49-accc-a860a120e98e",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "ee424f61-3eb2-47ef-a4ab-7e38e2a49a19",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7447,7 +6997,7 @@
   {
     "id": "894e5ee5-c80d-4841-9d59-dbe3a730818b",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7462,7 +7012,7 @@
   {
     "id": "a26432e1-4fc7-46d0-bf95-920c8b4588bd",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7477,7 +7027,7 @@
   {
     "id": "dfbeb5cc-8363-4fcd-955d-71aab85cb7a0",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7492,7 +7042,7 @@
   {
     "id": "ee0f5ed4-bf19-4191-abc4-ea45789f12d5",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7507,7 +7057,7 @@
   {
     "id": "452b37c0-5c6c-4430-b85a-67f76054e78d",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7522,7 +7072,7 @@
   {
     "id": "d521ec6d-1dc7-4dbd-9b95-2e69a2a9f698",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7537,7 +7087,7 @@
   {
     "id": "e5d6c883-b233-488c-b6b9-48633ff5f323",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "24320a3e-f3e1-4289-a026-875217224dd9",
     "parent_id": null,
     "is_system": true,
@@ -7552,7 +7102,7 @@
   {
     "id": "cecbcef3-37a3-4f8c-95cc-c239ad807401",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7567,7 +7117,7 @@
   {
     "id": "db1b0eb5-2e33-4671-89b4-4ce447b42d06",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7582,7 +7132,7 @@
   {
     "id": "84584797-da4a-4b48-a3b1-5194744ef051",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7597,7 +7147,7 @@
   {
     "id": "a227b670-b773-4ac2-bf24-b7ee46b41535",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7612,7 +7162,7 @@
   {
     "id": "a60de33d-5653-4f9d-9cd0-435904842e79",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7627,7 +7177,7 @@
   {
     "id": "e1e0d997-9e88-42cd-be7b-e64bd4ad9373",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7642,22 +7192,7 @@
   {
     "id": "8e823deb-bedc-40fc-a93d-63eca9a44c55",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "ec8b2b8e-c8c2-4bd0-9e9c-fdf9b6a93f99",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7672,7 +7207,7 @@
   {
     "id": "8bce7065-7d65-4971-a2d4-fc3f472fcb92",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7687,7 +7222,7 @@
   {
     "id": "54eb7a01-939a-4f51-8e56-a4c81d8c0a97",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7702,7 +7237,7 @@
   {
     "id": "09ba6385-22e1-4277-a801-03713406a10a",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7717,7 +7252,7 @@
   {
     "id": "1e1924dd-5108-4102-a3bd-696b66b53b7c",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7732,7 +7267,7 @@
   {
     "id": "ba8b39c6-315c-434f-b2b4-be865c16c18e",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7747,7 +7282,7 @@
   {
     "id": "fa6bc730-af6f-40da-88c8-9e0417a3fe5a",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7762,7 +7297,7 @@
   {
     "id": "3ca52834-adf8-4a2a-b129-b94fa41291bf",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "c465d871-36e1-4a64-98a9-e761ab2b2ac3",
     "parent_id": null,
     "is_system": true,
@@ -7777,7 +7312,7 @@
   {
     "id": "b8408a93-aef0-4d39-ae08-24debb53b22c",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7792,7 +7327,7 @@
   {
     "id": "bac8838d-ec39-4914-80d5-80627abb715d",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7807,7 +7342,7 @@
   {
     "id": "d807d173-313f-4554-9cc6-fd539332069c",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7822,7 +7357,7 @@
   {
     "id": "125d9af6-cebf-4de8-9f2c-94f138a30d69",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7837,7 +7372,7 @@
   {
     "id": "179c5051-2fe8-4b07-bb8a-e06e8b7990aa",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7852,7 +7387,7 @@
   {
     "id": "a50571b9-de5e-4df5-8ed5-628c7a076eda",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7867,22 +7402,7 @@
   {
     "id": "a2cc818e-f9a6-4da3-89f9-414aec2b97b0",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "c5cb809b-3964-4c46-b28a-ab1d256e9360",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7897,7 +7417,7 @@
   {
     "id": "25bd89e4-b007-4649-85a1-2b2917df9413",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7912,7 +7432,7 @@
   {
     "id": "00df60b5-eadf-4625-9607-9f5ff4de3e66",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7927,7 +7447,7 @@
   {
     "id": "47fb8aae-51ef-4a73-ab11-62bca474a22b",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7942,7 +7462,7 @@
   {
     "id": "13b8ad62-d7ec-42bd-bec5-cd4559dd3166",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7957,7 +7477,7 @@
   {
     "id": "12d86ad0-fce9-4034-9496-e0ae1faa0dbf",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7972,7 +7492,7 @@
   {
     "id": "02a582ac-8b68-4539-b3a6-4d097eae3116",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -7987,7 +7507,7 @@
   {
     "id": "ca991288-9ddb-4d39-bde8-88a649af54bf",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "858fa61a-7594-4163-9bb4-52f7ff1a8fdf",
     "parent_id": null,
     "is_system": true,
@@ -8002,7 +7522,7 @@
   {
     "id": "0a22fb1c-dfe6-4679-ae33-1f41e9bc2886",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8017,7 +7537,7 @@
   {
     "id": "9198e8c5-31ee-496f-901c-267ef566e8fc",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8032,7 +7552,7 @@
   {
     "id": "89579c8e-e6b6-414a-b450-7a4f0ced1141",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8047,7 +7567,7 @@
   {
     "id": "525c418f-cc08-4205-83a2-adcb1a1cd528",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8062,7 +7582,7 @@
   {
     "id": "e4f7afcc-e760-48b9-94c7-82a43b8c4405",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8077,7 +7597,7 @@
   {
     "id": "7059638b-842b-4288-8b74-74c8364e2886",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8092,22 +7612,7 @@
   {
     "id": "15241781-c8d7-4279-847e-a6c77ef9aa6d",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "c9aee5d5-d320-459a-a715-82b8abef4ae5",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8122,7 +7627,7 @@
   {
     "id": "488df482-1958-40b7-bbeb-571fcb62d8ae",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8137,7 +7642,7 @@
   {
     "id": "0b07713a-e200-4787-9151-e77b26fed280",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8152,7 +7657,7 @@
   {
     "id": "9969e8ba-5bf6-4b15-bdaa-a81453e2e037",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8167,7 +7672,7 @@
   {
     "id": "b82d64db-cb10-4cf9-972d-81846125b601",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8182,7 +7687,7 @@
   {
     "id": "75962e32-64b1-4445-8b26-abbdd9a6c198",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8197,7 +7702,7 @@
   {
     "id": "7451114e-ca22-4f73-b2a2-4b7f82698b6f",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8212,7 +7717,7 @@
   {
     "id": "ddc287ef-e7ed-481e-b5bf-7b5b1dc4bde4",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "1e5aa78f-67f8-404e-aa4e-f58f3983d29b",
     "parent_id": null,
     "is_system": true,
@@ -8227,7 +7732,7 @@
   {
     "id": "066e9c91-fa20-4b70-8ea5-0268b08c2db2",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8242,7 +7747,7 @@
   {
     "id": "3eccfb21-ee2c-4216-8211-5cb192bc00ae",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8257,7 +7762,7 @@
   {
     "id": "9ab667c8-a657-404e-affe-2e26b1e6ada2",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8272,7 +7777,7 @@
   {
     "id": "bfa80885-48be-4ef0-8e21-9fc8d2d1b956",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8287,7 +7792,7 @@
   {
     "id": "3e234e23-b46c-4c82-a36c-d7c354f994fb",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8302,7 +7807,7 @@
   {
     "id": "ac017308-143c-4102-9200-97dbfb09f783",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8317,22 +7822,7 @@
   {
     "id": "4b7773e0-539a-4b78-bed4-05e6c5116d34",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "1933dc98-6ddb-4e04-8063-98dc55b5ffef",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8347,7 +7837,7 @@
   {
     "id": "257f16b3-2bcd-4a9a-ac46-7df1cffdd4b0",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8362,7 +7852,7 @@
   {
     "id": "4ecd0a79-9259-422f-9beb-0b205ccdf61e",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8377,7 +7867,7 @@
   {
     "id": "2125aab7-1e72-49ca-b974-f896cc830fdb",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8392,7 +7882,7 @@
   {
     "id": "45e7f983-2665-4ce2-95b1-3e1ab20ee8da",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8407,7 +7897,7 @@
   {
     "id": "9ee09471-91cc-4354-80e4-ca8f8db7c350",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8422,7 +7912,7 @@
   {
     "id": "e1c2659c-0865-48d6-9e24-e0d71d98b6b0",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8437,7 +7927,7 @@
   {
     "id": "c9cb3615-d006-4834-9374-45f2b4d47a2c",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e008ab22-7543-45e2-88b3-562930a44ce0",
     "parent_id": null,
     "is_system": true,
@@ -8452,7 +7942,7 @@
   {
     "id": "0b55778d-f555-4433-a1cd-a0812ba27a58",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8467,7 +7957,7 @@
   {
     "id": "d99f9915-2503-4698-99b8-17fe93244a09",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8482,7 +7972,7 @@
   {
     "id": "56d1f39d-7be1-4f05-81f8-030a2633ec8d",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8497,7 +7987,7 @@
   {
     "id": "d539980b-ffc5-45db-ab8f-c46980541188",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8512,7 +8002,7 @@
   {
     "id": "0d175403-196d-46be-8758-5cc3b8938dda",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8527,7 +8017,7 @@
   {
     "id": "ca20563d-32db-4ad4-8544-a42bee352321",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8542,22 +8032,7 @@
   {
     "id": "ed2f879e-9f19-4771-af89-90a798b93178",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "198af641-7ebb-4013-a690-f72bdf93ed30",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8572,7 +8047,7 @@
   {
     "id": "dbb9fac1-12f0-4064-a9a5-a627e7e6e2d8",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8587,7 +8062,7 @@
   {
     "id": "403563d4-0df7-4e1e-a589-d484b0dd6bdf",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8602,7 +8077,7 @@
   {
     "id": "9551e1f4-68e7-4f55-92ec-5495a72eeb73",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8617,7 +8092,7 @@
   {
     "id": "12c9252e-5c7e-4867-866b-40b756ac6455",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8632,7 +8107,7 @@
   {
     "id": "71984387-3dcf-4757-8d8f-c0cc0c6ae3f3",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8647,7 +8122,7 @@
   {
     "id": "40ae3308-05a7-46d1-8913-5afa63ed3aa3",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8662,7 +8137,7 @@
   {
     "id": "173eaba5-0099-4879-ae69-f0575d0b65c8",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "cde8246b-0927-40d3-a9b2-32770748584a",
     "parent_id": null,
     "is_system": true,
@@ -8677,7 +8152,7 @@
   {
     "id": "d2689ab3-3e08-46ab-9402-defb17a58dc6",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8692,7 +8167,7 @@
   {
     "id": "dfad0bb7-67d4-4db7-8f3f-22db52776bdb",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8707,7 +8182,7 @@
   {
     "id": "fbeefb53-a460-4102-abce-0d33676f2e8f",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8722,7 +8197,7 @@
   {
     "id": "3947aba3-ef03-4e30-8185-fe83e00a7de1",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8737,7 +8212,7 @@
   {
     "id": "45204805-8aa8-463c-b4ac-79c574746a2b",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8752,7 +8227,7 @@
   {
     "id": "a482d66c-8687-4bd1-9b18-eceffa6a9532",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8767,22 +8242,7 @@
   {
     "id": "3213b7ba-108e-432e-8c97-b8eca029854a",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "b65c355e-cecf-4935-b6cb-433cbfa65820",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8797,7 +8257,7 @@
   {
     "id": "0482c902-2cd1-4994-993b-78d3f1d50011",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8812,7 +8272,7 @@
   {
     "id": "a6a85c68-c357-45b7-8dcb-d96d053df91a",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8827,7 +8287,7 @@
   {
     "id": "711c08dc-da59-4cc0-afca-af5d73ce1509",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8842,7 +8302,7 @@
   {
     "id": "fd200ec1-bdf5-4d3b-a7e9-0d6567620a4a",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8857,7 +8317,7 @@
   {
     "id": "094528d4-8798-4410-aee6-bfe930bcd407",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8872,7 +8332,7 @@
   {
     "id": "213fe248-aeee-4bc4-aecc-e64afa62233f",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8887,7 +8347,7 @@
   {
     "id": "5362855a-a50e-46f8-a89a-d916ed464a87",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "e4c83834-772c-44d2-bb7b-dca913bda75f",
     "parent_id": null,
     "is_system": true,
@@ -8902,7 +8362,7 @@
   {
     "id": "2a9ca3c3-8282-43bd-995f-c94cedc74854",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -8917,7 +8377,7 @@
   {
     "id": "544f54a4-b480-49a2-9848-d7f69a91a11c",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -8932,7 +8392,7 @@
   {
     "id": "9e50612f-6517-4e1f-94ba-cd293c4a5fb1",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -8947,7 +8407,7 @@
   {
     "id": "3404392a-c0ea-4ff2-8c41-cfd5e5ccf17c",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -8962,7 +8422,7 @@
   {
     "id": "20bc8e58-1032-4889-a985-dfe504d1ac07",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -8977,7 +8437,7 @@
   {
     "id": "ab1f6c99-c47c-4797-a089-21dff874656e",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -8992,22 +8452,7 @@
   {
     "id": "f6c8dedd-3946-4bab-a91b-e56c1f989c72",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "29e6885c-f5d0-4e95-9593-147cd44ca34d",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9022,7 +8467,7 @@
   {
     "id": "7ccd7059-1a95-46ca-ba54-d6373f227e82",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9037,7 +8482,7 @@
   {
     "id": "bce21c0e-bd19-4f15-a84b-e4ff302861d4",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9052,7 +8497,7 @@
   {
     "id": "a62002dd-243a-4866-af0e-ac0c7ebe959d",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9067,7 +8512,7 @@
   {
     "id": "a102120f-43ae-44b6-a72a-467035bc4c8a",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9082,7 +8527,7 @@
   {
     "id": "e14ca464-7ea0-43b9-914f-f5840dacfde3",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9097,7 +8542,7 @@
   {
     "id": "2e9281c0-9253-48b1-b270-eb8722128ad9",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9112,7 +8557,7 @@
   {
     "id": "8b45ed5d-3599-4f9d-9d2b-ef150bbb161a",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "6ef5aab5-f7cc-4678-a8a0-604f6d663e3f",
     "parent_id": null,
     "is_system": true,
@@ -9127,7 +8572,7 @@
   {
     "id": "fc39bf8b-b201-499f-83b2-af8358c3e9cd",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9142,7 +8587,7 @@
   {
     "id": "e930070b-9993-42e6-8138-4ff20cf098fa",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9157,7 +8602,7 @@
   {
     "id": "147f874c-5844-4ac9-91ba-88bf0e7b5838",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9172,7 +8617,7 @@
   {
     "id": "5a070965-5b05-4c4c-919a-d1f77036763c",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9187,7 +8632,7 @@
   {
     "id": "5354bd50-a831-48ce-beda-537fa897b1a0",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9202,7 +8647,7 @@
   {
     "id": "408fad35-ada6-4464-bcd7-d7e286e9f8cd",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9217,22 +8662,7 @@
   {
     "id": "e68e1d72-4429-4816-97bd-fc468ffca95d",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "7e48f9fd-ffaa-4453-ab39-4cff7b2b86aa",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9247,7 +8677,7 @@
   {
     "id": "6a7e85ad-649f-4627-b050-12d278cf5176",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9262,7 +8692,7 @@
   {
     "id": "5ca21c0f-4551-42a4-81b2-bbad057be188",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9277,7 +8707,7 @@
   {
     "id": "87d50a56-eda1-4242-b92c-9f1a40a1f0f1",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9292,7 +8722,7 @@
   {
     "id": "6d497825-ddb9-4937-a599-bf889f5f6ff1",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9307,7 +8737,7 @@
   {
     "id": "4cd18d79-f1d6-4421-b04b-61279443a67e",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9322,7 +8752,7 @@
   {
     "id": "1050c7d9-fde3-45b1-bca1-0789c60e9298",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9337,7 +8767,7 @@
   {
     "id": "75fac672-db6e-4136-b1e4-61b51dff0cae",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8b787ed8-bc61-4a08-8a18-4e12d25ded5d",
     "parent_id": null,
     "is_system": true,
@@ -9352,7 +8782,7 @@
   {
     "id": "a16d6292-b3b0-4fbe-8406-02be9a5bf652",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9367,7 +8797,7 @@
   {
     "id": "117eeafe-ae97-41d7-9391-f476bcd04290",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9382,7 +8812,7 @@
   {
     "id": "42907afd-1064-432d-bd4a-a5c5a3e367b8",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9397,7 +8827,7 @@
   {
     "id": "31a36001-4fcf-43ea-bc85-b4336593874b",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9412,7 +8842,7 @@
   {
     "id": "126c1e0b-01f8-4be8-a9f6-1cbb31d42a3c",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9427,7 +8857,7 @@
   {
     "id": "1fe7dd3f-9a74-4f3d-89f4-03853f411130",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9442,22 +8872,7 @@
   {
     "id": "1efbb8a1-6a05-44e8-b5b1-52e875269a91",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "043cfa03-0980-49ac-98c2-dc8cbaaecca3",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9472,7 +8887,7 @@
   {
     "id": "60c2a141-2507-4eb6-8fdd-87084e1f6aae",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9487,7 +8902,7 @@
   {
     "id": "d6337884-4f88-4ca5-8862-72f0e9cfe705",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9502,7 +8917,7 @@
   {
     "id": "2898c781-0934-468a-9bf4-abf9cd8572b1",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9517,7 +8932,7 @@
   {
     "id": "565de397-e307-4fa5-841c-706599ddb719",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9532,7 +8947,7 @@
   {
     "id": "9943d60c-3abb-4bc8-a1ae-e499e1d8703d",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9547,7 +8962,7 @@
   {
     "id": "67937f45-3c39-4b2b-92d8-40a8e9b6e465",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9562,7 +8977,7 @@
   {
     "id": "94e72482-afab-49c4-b05c-0e75b9739969",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "8a5e33f5-ad18-4888-b009-3f6f0a8774bd",
     "parent_id": null,
     "is_system": true,
@@ -9577,7 +8992,7 @@
   {
     "id": "dc7db110-0da5-4be9-ade3-f0ff5ba3e4fc",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9592,7 +9007,7 @@
   {
     "id": "31dd34e3-884c-42eb-945f-42a78df19ab9",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9607,7 +9022,7 @@
   {
     "id": "c5eadc42-9417-4c8e-b001-7bca90907e30",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9622,7 +9037,7 @@
   {
     "id": "4b5d4892-c97c-4bb7-93e6-676be59e9ff5",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9637,7 +9052,7 @@
   {
     "id": "cce1ff98-d223-4886-8eec-d134f5b627f5",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9652,7 +9067,7 @@
   {
     "id": "64ae1c3e-f184-42e8-a841-be76032d62bc",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9667,22 +9082,7 @@
   {
     "id": "596af558-817c-4229-9a12-ae86deb4751c",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "9a550fd2-db7c-41f5-adab-3336f5b770cf",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9697,7 +9097,7 @@
   {
     "id": "f2ab451c-4bdf-42fa-83ca-73baef8c5ffe",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9712,7 +9112,7 @@
   {
     "id": "496b5243-abb5-4222-93b3-7b327d51ac34",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9727,7 +9127,7 @@
   {
     "id": "691e5f98-32df-4b13-9d18-be15804ea6ed",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9742,7 +9142,7 @@
   {
     "id": "28e1fbcd-82d8-4a92-88a9-d0f3e9dee8fc",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9757,7 +9157,7 @@
   {
     "id": "bacebb75-b9f3-4bc5-a8f3-f9048cf637e7",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9772,7 +9172,7 @@
   {
     "id": "01b381ce-db92-41ba-8d28-f02079c5f6ef",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9787,7 +9187,7 @@
   {
     "id": "348a45cf-c689-49c0-8e60-4e453e117c4e",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "369bea16-30b6-4065-96e5-5f6628b9f2f4",
     "parent_id": null,
     "is_system": true,
@@ -9802,7 +9202,7 @@
   {
     "id": "9cba3ec5-9bdb-4bb1-888e-e25a7402a522",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9817,7 +9217,7 @@
   {
     "id": "536f17f9-6b3c-4cb4-9dbb-a02b0bff3b20",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9832,7 +9232,7 @@
   {
     "id": "f703475d-78b2-40b8-ade7-dd3d22b7cdff",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9847,7 +9247,7 @@
   {
     "id": "0a35ebab-38eb-49ee-bf4f-50e8dca303a7",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9862,7 +9262,7 @@
   {
     "id": "5478be7a-2d35-43a8-b339-d8bc99250e58",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9877,7 +9277,7 @@
   {
     "id": "36cf381b-4697-41f4-8b99-555e3d7a495c",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9892,22 +9292,7 @@
   {
     "id": "ffc5aa36-4d47-46ba-8cec-e2a481fba3a4",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "1d61b7ee-e1bf-4639-80e9-81ff3da77c5f",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9922,7 +9307,7 @@
   {
     "id": "9e46ca88-0b68-490e-bad2-a60f11d0e16c",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9937,7 +9322,7 @@
   {
     "id": "ebee7da3-8525-439a-90a6-d3e61f845cf7",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9952,7 +9337,7 @@
   {
     "id": "14411083-d98f-4403-ada2-3045a0a17851",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9967,7 +9352,7 @@
   {
     "id": "18ac7a36-0f4f-41ae-893f-c13748867aa3",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9982,7 +9367,7 @@
   {
     "id": "417ef975-76fe-4be0-851f-d649838043f9",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -9997,7 +9382,7 @@
   {
     "id": "5966bd99-1913-4f4c-ad52-63a70c5adb78",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -10012,7 +9397,7 @@
   {
     "id": "50ea49b3-d3de-4e1f-a5ed-11255c34943c",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "2fd3f5c0-74b8-43dd-ac42-e0df79e1ec7a",
     "parent_id": null,
     "is_system": true,
@@ -10027,7 +9412,7 @@
   {
     "id": "645f92c6-3203-4d1f-baf6-0af6ac72851b",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10042,7 +9427,7 @@
   {
     "id": "d8a8a8b8-315d-44fa-abd4-b04c2279d6e3",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10057,7 +9442,7 @@
   {
     "id": "596b122b-12c2-436e-95f5-fe519900ceca",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10072,7 +9457,7 @@
   {
     "id": "9d3a7fee-4f4a-42bc-bdd6-3a0fa686fae6",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10087,7 +9472,7 @@
   {
     "id": "c253464f-9fa2-44e9-b852-c9fa33428bac",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10102,7 +9487,7 @@
   {
     "id": "42302a32-9faa-4adb-819b-738feab6beee",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10117,22 +9502,7 @@
   {
     "id": "468ee232-08e6-46c8-a768-0c52e83aed9f",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "5aec39d5-11cc-472a-9aac-620bdf730971",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10147,7 +9517,7 @@
   {
     "id": "5eea8312-1efe-4b23-a6f8-cf40643ac305",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10162,7 +9532,7 @@
   {
     "id": "7c539070-335d-4e1b-934b-86a7dcd9c301",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10177,7 +9547,7 @@
   {
     "id": "e51d5314-c6cd-44da-a52f-cf7e4ccbd23e",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10192,7 +9562,7 @@
   {
     "id": "a5a22e89-a76d-4781-b841-ca6ef819b735",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10207,7 +9577,7 @@
   {
     "id": "56014b06-e88c-48d2-ba83-110fa8d5ffc1",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10222,7 +9592,7 @@
   {
     "id": "fdf55813-c992-4189-adf7-450b6e77943b",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10237,7 +9607,7 @@
   {
     "id": "da66cc11-8430-4a84-b15a-5dab98170e91",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "761eeb0b-08b9-456c-bf93-52e4359d36d8",
     "parent_id": null,
     "is_system": true,
@@ -10252,7 +9622,7 @@
   {
     "id": "3cd984ef-0ce0-414b-91e0-691a96174ab8",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10267,7 +9637,7 @@
   {
     "id": "caaadc7a-3c85-43ff-a626-4e9361be2ae2",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10282,7 +9652,7 @@
   {
     "id": "f9d7c71c-d4f5-4849-b535-1c673bdefb75",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10297,7 +9667,7 @@
   {
     "id": "e2514e42-bb8a-426d-bfe5-5b9e3c7109f2",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10312,7 +9682,7 @@
   {
     "id": "f8b8f15a-24b3-4af4-aa77-f831bd7170c2",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10327,7 +9697,7 @@
   {
     "id": "398ba4ae-da65-4553-86ec-ae0734e66314",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10342,22 +9712,7 @@
   {
     "id": "595d3409-bdab-4219-ab9d-bca26f9d09fd",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "e85d4023-d45a-49a1-b45f-fdf8456d947d",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10372,7 +9727,7 @@
   {
     "id": "75fc7f7e-a8f3-440f-892d-aee8dfefc6a5",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10387,7 +9742,7 @@
   {
     "id": "50f2d22d-5fa6-4669-b1e2-fb3139e8c07b",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10402,7 +9757,7 @@
   {
     "id": "eda14b97-0a0c-4788-8b79-968d36922f65",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10417,7 +9772,7 @@
   {
     "id": "eac18061-6072-4d70-bf40-f1e717fc88d4",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10432,7 +9787,7 @@
   {
     "id": "a3cc3e89-4ef8-443a-9b11-34f175dbe3dc",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10447,7 +9802,7 @@
   {
     "id": "1ff5d824-e3d5-4cf5-b01e-bae53cc8bab3",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10462,7 +9817,7 @@
   {
     "id": "800c372e-0bfa-44e1-9b36-f345d899b88c",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "dd3d2341-1ff4-4703-95a0-4e906ba9bdf3",
     "parent_id": null,
     "is_system": true,
@@ -10477,7 +9832,7 @@
   {
     "id": "125417f4-34a9-4123-9072-0efb6de4e1bb",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10492,7 +9847,7 @@
   {
     "id": "dc1c04a8-c306-4d26-b7ca-6afca8c5d0bb",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10507,7 +9862,7 @@
   {
     "id": "f1abfaa4-d06b-4dc4-a2b6-2b1137a0d2a2",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10522,7 +9877,7 @@
   {
     "id": "f913277a-485d-4cb0-80d8-8fde3965dfa1",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10537,7 +9892,7 @@
   {
     "id": "560fb02a-2e7d-4344-82a0-62c4911af882",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10552,7 +9907,7 @@
   {
     "id": "7d4c9721-9921-46ed-a937-7cb0bf5ce0f9",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10567,22 +9922,7 @@
   {
     "id": "763a2dec-0566-4e56-a12d-3cd285313983",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "a933cc9c-5801-4ccb-aa80-8ed105432ddc",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10597,7 +9937,7 @@
   {
     "id": "bebde2b0-f322-48f8-b891-13b76124466d",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10612,7 +9952,7 @@
   {
     "id": "7dc8e17d-d4e6-4d2f-bc87-3f3ee6de1300",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10627,7 +9967,7 @@
   {
     "id": "f3dd9740-7c3f-44c0-99f9-50041a9777ff",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10642,7 +9982,7 @@
   {
     "id": "b978d780-344a-445d-b8cb-92e0e1f62d1c",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10657,7 +9997,7 @@
   {
     "id": "7f894c3d-0869-438b-84c5-43e8cd16f3ec",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10672,7 +10012,7 @@
   {
     "id": "e15246d1-672a-4964-b40e-aff257725208",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10687,7 +10027,7 @@
   {
     "id": "c285ecba-a12e-40ef-b1a2-035779a135e4",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "7486fd65-0f23-4d73-8052-6e614da355b9",
     "parent_id": null,
     "is_system": true,
@@ -10702,7 +10042,7 @@
   {
     "id": "024c390f-1dee-4dd6-9200-9b928b3bc102",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10717,7 +10057,7 @@
   {
     "id": "1f66a267-cf0e-4efd-808d-b0caf1696124",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10732,7 +10072,7 @@
   {
     "id": "76c90a6e-d27e-4ec9-ba11-22ca92cdc1ec",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10747,7 +10087,7 @@
   {
     "id": "8d843a80-3ac1-4c23-9dfb-c09fffd555b4",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10762,7 +10102,7 @@
   {
     "id": "30c3a75c-343b-4be5-9f6f-1617d7e2a51f",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10777,7 +10117,7 @@
   {
     "id": "5f2df637-6250-4a48-a709-c51b1c42d7ba",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10792,22 +10132,7 @@
   {
     "id": "bfd5ec87-8b20-45f8-85ef-67f7d59b55ca",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "0b94c4d0-3ee2-47d2-8bed-6372cccc2f28",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10822,7 +10147,7 @@
   {
     "id": "2bd2f750-7c2e-44b2-bbf4-107a52ebb473",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10837,7 +10162,7 @@
   {
     "id": "5fd98e0b-8a75-467c-abf0-3abe1f100628",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10852,7 +10177,7 @@
   {
     "id": "b64377e0-ac1d-4660-971e-9742db6cf78a",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10867,7 +10192,7 @@
   {
     "id": "b7cebf7c-6854-44b1-b846-7845d59d2e4c",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10882,7 +10207,7 @@
   {
     "id": "a46e4bdd-0e8d-41fc-a399-b1ac3682b13f",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10897,7 +10222,7 @@
   {
     "id": "7fce70b6-2636-4325-8535-16fe09c85722",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10912,7 +10237,7 @@
   {
     "id": "c432ef39-7de6-49b0-9da2-c931e97dd827",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ff2d0b4a-3437-418d-bff3-97fa3f52ccf7",
     "parent_id": null,
     "is_system": true,
@@ -10927,7 +10252,7 @@
   {
     "id": "a92e10f4-cb74-40d0-a57e-f8c4af15576e",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -10942,7 +10267,7 @@
   {
     "id": "2ab489d3-08c4-4765-bc7e-ab01deb2aa5e",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -10957,7 +10282,7 @@
   {
     "id": "25b03d65-e57b-4e55-8c2a-bfdd27403274",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -10972,7 +10297,7 @@
   {
     "id": "3c837e52-cb89-4ca4-b3ea-32869695510d",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -10987,7 +10312,7 @@
   {
     "id": "727bac69-bb05-472f-88da-b57b932f6821",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11002,7 +10327,7 @@
   {
     "id": "f6b7aa48-f363-4f3f-b0e3-e0731122b59c",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11017,22 +10342,7 @@
   {
     "id": "74533576-88ab-4d48-8728-26e3aa409b9a",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "1ba92023-2667-4bc8-8a2a-9663f317d891",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11047,7 +10357,7 @@
   {
     "id": "2bd443a2-e742-4587-b153-9a3d0430f380",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11062,7 +10372,7 @@
   {
     "id": "316b408a-e659-4062-b6a0-857fa2f5a1a1",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11077,7 +10387,7 @@
   {
     "id": "587f881d-9af7-48b0-81b1-d091806b2921",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11092,7 +10402,7 @@
   {
     "id": "06d60b83-0d42-4dd9-bc85-5abf8d86eb0c",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11107,7 +10417,7 @@
   {
     "id": "545fa4b3-b025-4f1d-93c6-cece7b1a1968",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11122,7 +10432,7 @@
   {
     "id": "16906095-bf51-4520-8310-56075bb698b9",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11137,7 +10447,7 @@
   {
     "id": "724989eb-ae17-4dfa-9eda-5cbf6d5efb5d",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "fc504ce6-1db5-4201-9db2-c0b3e29cf937",
     "parent_id": null,
     "is_system": true,
@@ -11152,7 +10462,7 @@
   {
     "id": "ea5cd442-d49c-4d87-945b-c85039c037bf",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11167,7 +10477,7 @@
   {
     "id": "ed771afd-327b-428c-a18f-996cad4c2bfa",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11182,7 +10492,7 @@
   {
     "id": "2a905768-f6ed-4a48-9e9f-ae074e633bbf",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11197,7 +10507,7 @@
   {
     "id": "fa6aada4-dd7d-4ddc-b9dd-e3fb36559cd6",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11212,7 +10522,7 @@
   {
     "id": "dba01f5c-a51c-4cc1-ab01-992bf858f7f3",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11227,7 +10537,7 @@
   {
     "id": "4feacd77-463c-4942-a61a-3ae384949864",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11242,22 +10552,7 @@
   {
     "id": "511a7276-d098-4594-a4d8-ef6f8a4b381f",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "db14e555-6389-4ebe-8d6e-2a195259d433",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11272,7 +10567,7 @@
   {
     "id": "c0746f44-5d86-441d-b68a-f77a59a9e3b7",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11287,7 +10582,7 @@
   {
     "id": "991fef21-1094-4cfe-b975-d7818689c2fe",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11302,7 +10597,7 @@
   {
     "id": "d3ac3d03-7202-4409-a970-134f4b21558b",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11317,7 +10612,7 @@
   {
     "id": "ed43f578-0173-419c-8718-bf09091caad2",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11332,7 +10627,7 @@
   {
     "id": "5a5bfc0b-0949-43a5-96c4-6cab3a0c5be2",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11347,7 +10642,7 @@
   {
     "id": "cf523870-29ea-42dd-8fed-819f1bfd1f3e",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11362,7 +10657,7 @@
   {
     "id": "67e8fbe1-2d75-4393-9b93-9172fba8ee1c",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "39af83aa-054e-4f1f-aa55-0d59a3a30eb4",
     "parent_id": null,
     "is_system": true,
@@ -11377,7 +10672,7 @@
   {
     "id": "09c530eb-9f10-40de-80bd-71cfe181635e",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11392,7 +10687,7 @@
   {
     "id": "245775d7-ccfc-4454-a73d-7540e812a211",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11407,7 +10702,7 @@
   {
     "id": "7bd8e6ae-ab20-4a5d-b343-cb5d8cdb992a",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11422,7 +10717,7 @@
   {
     "id": "134974a1-c588-4316-a00a-a8a6ac1f81bb",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11437,7 +10732,7 @@
   {
     "id": "6055aadb-d01a-4f31-ad6b-61d9201f13bc",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11452,7 +10747,7 @@
   {
     "id": "d907994c-3ff2-424a-ab98-eaf491857420",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11467,22 +10762,7 @@
   {
     "id": "1b9b1fee-ac81-4b10-a8b2-150e89e81908",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "590d9ee6-c5a8-4da7-acb2-a246c37de809",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11497,7 +10777,7 @@
   {
     "id": "da60567d-cee9-4f2b-9524-17ae5f7df7c8",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11512,7 +10792,7 @@
   {
     "id": "bc161727-7317-4ea7-ba64-7070d7b66e5b",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11527,7 +10807,7 @@
   {
     "id": "7a8b551e-c242-4473-8f22-8bf44afbb30c",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11542,7 +10822,7 @@
   {
     "id": "7da18a64-aa98-4d99-a5c6-2425b5cadc84",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11557,7 +10837,7 @@
   {
     "id": "d183bee7-bb85-4c39-a4f9-e00158b88fd6",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11572,7 +10852,7 @@
   {
     "id": "561e3af1-512a-4747-b280-8f2e616648cc",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11587,7 +10867,7 @@
   {
     "id": "66b6e981-af5f-4914-b2b8-0eb3e59fe3ea",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "887e8d19-d673-4213-baa7-d9b005dc86b3",
     "parent_id": null,
     "is_system": true,
@@ -11602,7 +10882,7 @@
   {
     "id": "cf72cfc3-64f3-4612-965a-a32c95dbe831",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11617,7 +10897,7 @@
   {
     "id": "cc7fbaed-c730-4504-bbf7-8f3a34a6d0fb",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11632,7 +10912,7 @@
   {
     "id": "efbf8726-4017-4dc6-b0f6-fa4ce78e5f0c",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11647,7 +10927,7 @@
   {
     "id": "ba9848f4-13f8-4431-a3d4-c7857bdacfe3",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11662,7 +10942,7 @@
   {
     "id": "0f89e711-d117-4dd4-8bc5-a2c076f9c882",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11677,7 +10957,7 @@
   {
     "id": "06334a77-2f38-43c3-b88b-3faed3146a0a",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11692,22 +10972,7 @@
   {
     "id": "4bdfb199-b955-4817-8d16-7eaae2a1c449",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "b105039d-420b-426c-9cb8-8da6c3b42a63",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11722,7 +10987,7 @@
   {
     "id": "607182ef-867d-4aa6-a4c2-6f67117cbed9",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11737,7 +11002,7 @@
   {
     "id": "652c6960-a599-402a-8db8-1797b42ce571",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11752,7 +11017,7 @@
   {
     "id": "9060f5ac-3688-45e8-ae51-62df0fe24c58",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11767,7 +11032,7 @@
   {
     "id": "fe813967-fac0-48ef-8afb-94d646cb5283",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11782,7 +11047,7 @@
   {
     "id": "021f988d-de74-412f-846c-d8ec011cf131",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11797,7 +11062,7 @@
   {
     "id": "c84088b3-3b3a-4a27-b646-77f63936a0b2",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11812,7 +11077,7 @@
   {
     "id": "418ed089-a700-488a-b885-d60a756d1a8c",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "0d36ecc8-201c-4730-b857-eed2be39bdd8",
     "parent_id": null,
     "is_system": true,
@@ -11827,7 +11092,7 @@
   {
     "id": "55f39ea4-7504-4f32-99e9-1d9a315ef1e9",
     "name": "Inbox",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11842,7 +11107,7 @@
   {
     "id": "ba83b096-595d-46f4-82e7-39d4a62c8e24",
     "name": "Starred",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11857,7 +11122,7 @@
   {
     "id": "0ba1a790-a956-4b80-8259-f126182ad5b9",
     "name": "Snoozed",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11872,7 +11137,7 @@
   {
     "id": "26e34600-fc46-4690-a2e3-19a559ddb0d9",
     "name": "Important",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11887,7 +11152,7 @@
   {
     "id": "b6881664-f482-4b8f-834a-bd5c9c8ee2ec",
     "name": "Sent",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11902,7 +11167,7 @@
   {
     "id": "16648d16-4209-48a1-83ee-9d8589401f17",
     "name": "Scheduled",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11917,22 +11182,7 @@
   {
     "id": "e9bd4c1b-e795-4560-a8e3-0a06ac8fabdd",
     "name": "Drafts",
-    "color": null,
-    "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
-    "parent_id": null,
-    "is_system": true,
-    "is_exclusive": true,
-    "show_in_label_list": true,
-    "show_in_message_list": true,
-    "show_if_unread": false,
-    "is_deleted": false,
-    "created_at": "2026-01-08T17:53:16.009988",
-    "updated_at": "2026-01-08T17:53:16.009988"
-  },
-  {
-    "id": "a416be57-78fd-475e-ade3-daf943f736e3",
-    "name": "All Mail",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11947,7 +11197,7 @@
   {
     "id": "e4719ab5-ea2d-413a-9d71-4ff2058a1bb6",
     "name": "Spam",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11962,7 +11212,7 @@
   {
     "id": "8369996e-14d1-4e05-a055-514a7314129b",
     "name": "Trash",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11977,7 +11227,7 @@
   {
     "id": "05f8dd2d-0510-4793-aece-1e1969149fff",
     "name": "Purchases",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -11992,7 +11242,7 @@
   {
     "id": "b7536372-4168-44a4-b5f7-13ce86cd5b18",
     "name": "Social",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -12007,7 +11257,7 @@
   {
     "id": "ef3a72c8-f36e-4a9b-8b0b-8f2ab921186d",
     "name": "Updates",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -12022,7 +11272,7 @@
   {
     "id": "764b3658-a218-44c5-9738-fac503407ceb",
     "name": "Forums",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
@@ -12037,7 +11287,7 @@
   {
     "id": "c7723288-0a95-4494-add5-8c154e15dddf",
     "name": "Promotions",
-    "color": null,
+    "color": "#e1e3e1",
     "owner_id": "ae4c9490-f305-418d-a8c9-4be13979cc1a",
     "parent_id": null,
     "is_system": true,
