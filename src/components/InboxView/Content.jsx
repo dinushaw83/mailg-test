@@ -303,7 +303,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
     setMoreActionsAnchor(null);
   }, []);
 
-  const isStarred = email?.starred || false;
+  const isStarred = email?.is_starred || false;
 
   return (
     <>
@@ -329,7 +329,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
       </TopBarContainer>
       {email && (
         <MoreActions
-          thread={{ threadId: email.threadId, starred: isStarred, important: email.important }}
+          thread={{ threadId: email.threadId, starred: isStarred, important: email.is_important }}
           showAdvancedMenu={false}
           toggleShowAdvancedMenu={() => {}}
           anchorEl={moreActionsAnchor}

@@ -75,11 +75,11 @@ const MoreActions = ({
   const id = open ? "more-actions-popover" : undefined;
 
   const starred = useMemo(() => {
-    return thread.starred;
+    return thread.is_starred;
   }, [thread]);
 
   const important = useMemo(() => {
-    return thread.important;
+    return thread.is_important;
   }, [thread]);
 
   const handleStar = useCallback(() => {
@@ -135,7 +135,7 @@ const MoreActions = ({
 
       const previousStates = threadEmails.map((email) => ({
         id: email.id,
-        important: !!email.important,
+        important: !!email.is_important,
       }));
       const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
 
@@ -229,7 +229,7 @@ const MoreActions = ({
 
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      read: !!email.read,
+      read: !!email.is_read,
     }));
     const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
 
