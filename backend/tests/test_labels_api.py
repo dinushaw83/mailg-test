@@ -4,7 +4,8 @@ import pytest
 import uuid
 from app.models.label import Label
 from app.models.email import Email
-from app.models.email_label import EmailLabel
+from app.models.thread import Thread
+from app.models.thread_label import ThreadLabel
 from app.core.constants import FolderType
 
 
@@ -436,12 +437,12 @@ class TestLabelOperations:
         assert response.status_code == 200
 
     def test_remove_label_from_email(self, client_with_auth, db_session, sample_email, sample_label):
-        """Test removing a label from an email."""
+        """Test removing a label from an email's thread."""
         client, token, user = client_with_auth
         
-        # Add label first
-        email_label = EmailLabel(email_id=sample_email.id, label_id=sample_label.id)
-        db_session.add(email_label)
+        # Add label to the thread first (labels are now linked to threads)
+        thread_label = ThreadLabel(thread_id=sample_email.thread_id, label_id=sample_label.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         response = client.delete(
@@ -451,12 +452,12 @@ class TestLabelOperations:
         
         assert response.status_code == 204
 
-    def test_list_emails_with_label(self, client_with_auth, db_session, sample_label):
-        """Test listing emails that have a specific label."""
+    def test_list_threads_with_label(self, client_with_auth, db_session, sample_label):
+        """Test listing threads that have a specific label."""
         client, token, user = client_with_auth
         
         response = client.get(
-            f"/api/v1/labels/{sample_label.id}/emails",
+            f"/api/v1/labels/{sample_label.id}/threads",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -483,19 +484,28 @@ class TestHierarchicalLabelNames:
         db_session.add(year_2025)
         db_session.commit()
         
-        # Create email and add the nested label
+        # Create thread and email, then add the nested label to the thread
+        thread = Thread(
+            subject="Project Update",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Project Update",
             body="Content",
             status="received",
             folder=FolderType.INBOX.value,
             sender_id=user.id,
+            thread_id=thread.id,
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=year_2025.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=year_2025.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # Get email and check label name includes full hierarchy
@@ -522,19 +532,28 @@ class TestHierarchicalLabelNames:
         db_session.add(family)
         db_session.commit()
         
-        # Create email with nested label
+        # Create thread and email with nested label (labels are linked to threads)
+        thread = Thread(
+            subject="Family Reunion",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Family Reunion",
             body="Content",
             status="received",
             folder=FolderType.INBOX.value,
             sender_id=user.id,
+            thread_id=thread.id,
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=family.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=family.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # List emails and check label hierarchy
@@ -560,19 +579,28 @@ class TestHierarchicalLabelNames:
         db_session.add(important)
         db_session.commit()
         
-        # Create email with root label
+        # Create thread and email with root label (labels are linked to threads)
+        thread = Thread(
+            subject="Important Email",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Important Email",
             body="Content",
             status="received",
             folder=FolderType.INBOX.value,
             sender_id=user.id,
+            thread_id=thread.id,
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=important.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=important.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # Get email and check label name is simple

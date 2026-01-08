@@ -6,7 +6,7 @@ from datetime import datetime
 from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
-from app.schemas.email import EmailListResponse
+from app.schemas.email import EmailListResponse, LabelBriefResponse
 
 
 class ThreadResponse(BaseModel):
@@ -23,6 +23,7 @@ class ThreadResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     emails: List[EmailListResponse] = []
+    labels: List[LabelBriefResponse] = []
 
 
 class ThreadListResponse(BaseModel):
@@ -39,6 +40,7 @@ class ThreadListResponse(BaseModel):
     has_unread: bool = False
     has_attachments: bool = False
     latest_sender_name: Optional[str] = None
+    labels: List[LabelBriefResponse] = []
 
 
 ThreadPaginatedResponse = PaginatedListResponse[ThreadListResponse]

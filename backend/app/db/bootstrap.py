@@ -20,7 +20,7 @@ from app.models.label import Label
 from app.models.thread import Thread
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.email_label import EmailLabel
+from app.models.thread_label import ThreadLabel
 from app.models.attachment import Attachment
 from app.models.email_template import EmailTemplate
 
@@ -34,7 +34,7 @@ UUID_FIELDS = {
     'Thread': ['id', 'owner_id'],
     'Email': ['id', 'sender_id', 'thread_id', 'parent_email_id'],
     'EmailRecipient': ['id', 'email_id', 'recipient_id'],
-    'EmailLabel': ['id', 'email_id', 'label_id'],
+    'ThreadLabel': ['id', 'thread_id', 'label_id'],
     'Attachment': ['id', 'email_id'],
     'EmailTemplate': ['id', 'owner_id'],
 }
@@ -177,12 +177,12 @@ def initialize_template_database_schema_and_fixtures():
         )
         logger.info(f"Loaded {count} new email recipients from fixtures")
         
-        # Load email labels (depends on emails, labels)
+        # Load thread labels (depends on threads, labels)
         count = load_fixture(
-            session, EmailLabel,
-            fixtures_dir / "email_labels.json"
+            session, ThreadLabel,
+            fixtures_dir / "thread_labels.json"
         )
-        logger.info(f"Loaded {count} new email labels from fixtures")
+        logger.info(f"Loaded {count} new thread labels from fixtures")
         
         # Load attachments (depends on emails)
         count = load_fixture(

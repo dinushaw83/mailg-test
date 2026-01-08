@@ -56,7 +56,8 @@ class Email(Base):
                              cascade="all, delete-orphan")
     attachments = relationship("Attachment", back_populates="email", lazy="selectin",
                               cascade="all, delete-orphan")
-    labels = relationship("Label", secondary="email_labels", back_populates="emails", lazy="selectin")
+    # Labels are now linked to threads, not emails directly
+    # Access labels via email.thread.labels
     
     # Composite indexes for common query patterns
     __table_args__ = (

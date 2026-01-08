@@ -4,9 +4,10 @@ import pytest
 import uuid
 from datetime import datetime, timedelta
 from app.models.email import Email
+from app.models.thread import Thread
 from app.core.constants import FolderType
 from app.models.label import Label
-from app.models.email_label import EmailLabel
+from app.models.thread_label import ThreadLabel
 from app.models.user import User
 
 
@@ -356,7 +357,7 @@ class TestBulkLabels:
     """Test bulk label add/remove operations."""
 
     def test_bulk_add_labels_success(self, client_with_auth, db_session, sample_label):
-        """Test adding labels to multiple emails."""
+        """Test adding labels to multiple threads."""
         client, token, user = client_with_auth
         
         # Create another label
@@ -368,25 +369,23 @@ class TestBulkLabels:
         db_session.add(label2)
         db_session.commit()
         
-        # Create multiple emails
-        emails = []
+        # Create multiple threads
+        threads = []
         for i in range(3):
-            email = Email(
-                subject=f"Email {i}",
-                body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
+            thread = Thread(
+                subject=f"Thread {i}",
+                owner_id=user.id,
+                email_count=1
             )
-            db_session.add(email)
-            emails.append(email)
+            db_session.add(thread)
+            threads.append(thread)
         db_session.commit()
         
-        email_ids = [str(e.id) for e in emails]
+        thread_ids = [str(t.id) for t in threads]
         
         response = client.post(
             "/api/v1/bulk/labels/add",
-            json={"email_ids": email_ids, "label_ids": [str(sample_label.id), str(label2.id)]},
+            json={"thread_ids": thread_ids, "label_ids": [str(sample_label.id), str(label2.id)]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -394,65 +393,61 @@ class TestBulkLabels:
         data = response.json()["data"]
         assert data["successful"] == 3
         
-        # Verify labels are added
-        for email in emails:
-            email_labels = db_session.query(EmailLabel).filter(
-                EmailLabel.email_id == email.id
+        # Verify labels are added to threads
+        for thread in threads:
+            thread_labels = db_session.query(ThreadLabel).filter(
+                ThreadLabel.thread_id == thread.id
             ).all()
-            assert len(email_labels) == 2
+            assert len(thread_labels) == 2
 
     def test_bulk_add_labels_invalid_label(self, client_with_auth, db_session):
         """Test adding invalid labels fails."""
         client, token, user = client_with_auth
         
-        # Create an email
-        email = Email(
-            subject="Test Email",
-            body="Body",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
+        # Create a thread
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            email_count=1
         )
-        db_session.add(email)
+        db_session.add(thread)
         db_session.commit()
         
         response = client.post(
             "/api/v1/bulk/labels/add",
-            json={"email_ids": [str(email.id)], "label_ids": [NON_EXISTENT_UUID]},
+            json={"thread_ids": [str(thread.id)], "label_ids": [NON_EXISTENT_UUID]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 400
 
     def test_bulk_remove_labels_success(self, client_with_auth, db_session, sample_label):
-        """Test removing labels from multiple emails."""
+        """Test removing labels from multiple threads."""
         client, token, user = client_with_auth
         
-        # Create multiple emails with labels
-        emails = []
+        # Create multiple threads with labels
+        threads = []
         for i in range(3):
-            email = Email(
-                subject=f"Email {i}",
-                body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
+            thread = Thread(
+                subject=f"Thread {i}",
+                owner_id=user.id,
+                email_count=1
             )
-            db_session.add(email)
-            emails.append(email)
+            db_session.add(thread)
+            threads.append(thread)
         db_session.commit()
         
-        # Add labels to emails
-        for email in emails:
-            email_label = EmailLabel(email_id=email.id, label_id=sample_label.id)
-            db_session.add(email_label)
+        # Add labels to threads
+        for thread in threads:
+            thread_label = ThreadLabel(thread_id=thread.id, label_id=sample_label.id)
+            db_session.add(thread_label)
         db_session.commit()
         
-        email_ids = [str(e.id) for e in emails]
+        thread_ids = [str(t.id) for t in threads]
         
         response = client.post(
             "/api/v1/bulk/labels/remove",
-            json={"email_ids": email_ids, "label_ids": [str(sample_label.id)]},
+            json={"thread_ids": thread_ids, "label_ids": [str(sample_label.id)]},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -460,12 +455,12 @@ class TestBulkLabels:
         data = response.json()["data"]
         assert data["successful"] == 3
         
-        # Verify labels are removed
-        for email in emails:
-            email_labels = db_session.query(EmailLabel).filter(
-                EmailLabel.email_id == email.id
+        # Verify labels are removed from threads
+        for thread in threads:
+            thread_labels = db_session.query(ThreadLabel).filter(
+                ThreadLabel.thread_id == thread.id
             ).all()
-            assert len(email_labels) == 0
+            assert len(thread_labels) == 0
 
 
 class TestBulkSnooze:

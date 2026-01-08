@@ -3,9 +3,10 @@
 import pytest
 import uuid
 from app.models.email import Email
+from app.models.thread import Thread
 from app.core.constants import FolderType
 from app.models.label import Label
-from app.models.email_label import EmailLabel
+from app.models.thread_label import ThreadLabel
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 
@@ -160,19 +161,28 @@ class TestSearchLabelHierarchy:
         db_session.add(child)
         db_session.commit()
         
-        # Create email with nested label
+        # Create email with nested label (labels are linked to threads)
+        thread = Thread(
+            subject="Project Update",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Project Update",
             body="Status report",
             status="received",
             sender_id=user.id,
-            folder=FolderType.INBOX.value
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=child.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=child.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # Search and check label names

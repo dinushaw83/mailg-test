@@ -31,7 +31,7 @@ class Label(Base):
     
     # Relationships
     owner = relationship("User", foreign_keys=[owner_id], lazy="joined")
-    emails = relationship("Email", secondary="email_labels", back_populates="labels", lazy="dynamic")
+    threads = relationship("Thread", secondary="thread_labels", back_populates="labels", lazy="dynamic")
     
     # Self-referential relationships for hierarchy
     parent = relationship(

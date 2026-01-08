@@ -20,7 +20,8 @@ from app.db.session import get_db
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.label import Label
-from app.models.email_label import EmailLabel
+from app.models.thread_label import ThreadLabel
+from app.models.thread import Thread
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 from app.models.user import User
@@ -276,8 +277,11 @@ def search_emails(
         query = query.filter(Email.folder == folder)
     
     if label_id:
-        query = query.join(EmailLabel, Email.id == EmailLabel.email_id).filter(
-            EmailLabel.label_id == label_id
+        # Labels are now linked to threads, so filter by thread's labels
+        query = query.join(Thread, Email.thread_id == Thread.id).join(
+            ThreadLabel, Thread.id == ThreadLabel.thread_id
+        ).filter(
+            ThreadLabel.label_id == label_id
         )
     
     if label_name:
@@ -286,8 +290,11 @@ def search_emails(
             Label.name.ilike(f"%{label_name}%"),
             Label.is_deleted == False
         ).subquery()
-        query = query.join(EmailLabel, Email.id == EmailLabel.email_id).filter(
-            EmailLabel.label_id.in_(label_subq)
+        # Labels are now linked to threads, so filter by thread's labels
+        query = query.join(Thread, Email.thread_id == Thread.id).join(
+            ThreadLabel, Thread.id == ThreadLabel.thread_id
+        ).filter(
+            ThreadLabel.label_id.in_(label_subq)
         )
     
     if is_read is not None:
