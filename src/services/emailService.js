@@ -8,8 +8,8 @@ const emailService = {
   getEmails: async ({ page = 1, pageSize = 20, category = null } = {}) => {
     try {
       const params = {
-          page,
-          page_size: pageSize,
+        page,
+        page_size: pageSize,
       };
 
       // Add category parameter if provided
@@ -49,7 +49,15 @@ const emailService = {
    * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
    * @param {boolean} options.include_archived - Include archived emails (for all mail)
    */
-  getEmailsByFilter: async ({ page = 1, pageSize = 20, is_starred = null, is_important = null, is_snoozed = null, folder = null, include_archived = null } = {}) => {
+  getEmailsByFilter: async ({
+    page = 1,
+    pageSize = 20,
+    is_starred = null,
+    is_important = null,
+    is_snoozed = null,
+    folder = null,
+    include_archived = null,
+  } = {}) => {
     try {
       const params = {
         page,
@@ -197,7 +205,7 @@ const emailService = {
    * @returns {Promise<Object>} Updated email object
    */
   updateEmailImportant: async (emailId, is_important) => {
-    const response = await apiClient.patch(`/v1/emails/${emailId}`, { is_important });
+    const response = await apiClient.patch(`/v1/emails/${emailId}/important`, { is_important });
     const payload = response?.data?.data ?? response?.data ?? {};
 
     // Map the response using emailAPIMapper to normalize
@@ -254,7 +262,20 @@ const emailService = {
    * @returns {Promise<Object>} Updated email object
    */
   moveToSpam: async (emailId) => {
-    const response = await apiClient.patch(`/v1/emails/${emailId}`, { folder: "spam" });
+    const response = await apiClient.post(`/v1/emails/${emailId}/spam`);
+    const payload = response?.data?.data ?? response?.data ?? {};
+
+    const mapped = emailAPIMapper([payload]);
+    return mapped[0] || payload;
+  },
+
+  /**
+   * Remove spam mark from email (move from spam back to inbox)
+   * @param {string} emailId - Email ID
+   * @returns {Promise<Object>} Updated email object
+   */
+  moveFromSpam: async (emailId) => {
+    const response = await apiClient.post(`/v1/emails/${emailId}/unspam`);
     const payload = response?.data?.data ?? response?.data ?? {};
 
     const mapped = emailAPIMapper([payload]);

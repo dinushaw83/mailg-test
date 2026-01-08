@@ -109,7 +109,7 @@ const withUndo = (ids, setEmails, operation) => {
 
 export default function useMailActions() {
   const dispatch = useDispatch();
-  const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
+  const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
 
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
@@ -252,9 +252,27 @@ export default function useMailActions() {
 
   const moveToSpam = useCallback(
     (ids) => {
-      // Call backend API for each email
-      ids.forEach((id) => {
-        dispatch(moveToSpamThunk({ emailId: id })).catch((error) => {
+      // If ids are already email UUIDs (from ActionBar), use them directly
+      // Otherwise, find matching emails by thread ID or other keys
+      let emailIds;
+
+      // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
+      const firstId = String(ids[0] || "");
+      const isUUID = firstId.includes("-") && firstId.length >= 32;
+
+      if (isUUID) {
+        // Already email IDs, use directly
+        emailIds = ids;
+      } else {
+        // Find matching emails by thread/message IDs
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+        emailIds = matchingEmails.map((email) => email.id);
+      }
+
+      // Call backend API for each email using actual email ID
+      emailIds.forEach((emailId) => {
+        dispatch(moveToSpamThunk({ emailId })).catch((error) => {
           console.error("Failed to move email to spam:", error);
         });
       });
@@ -266,7 +284,7 @@ export default function useMailActions() {
         });
       });
     },
-    [updateByIds, setEmails, labels, dispatch]
+    [updateByIds, setEmails, labels, dispatch, emails]
   );
 
   const notSpam = useCallback(
@@ -280,9 +298,27 @@ export default function useMailActions() {
 
   const moveToTrash = useCallback(
     (ids) => {
-      // Call backend API for each email
-      ids.forEach((id) => {
-        dispatch(moveToTrashThunk({ emailId: id })).catch((error) => {
+      // If ids are already email UUIDs (from ActionBar), use them directly
+      // Otherwise, find matching emails by thread ID or other keys
+      let emailIds;
+
+      // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
+      const firstId = String(ids[0] || "");
+      const isUUID = firstId.includes("-") && firstId.length >= 32;
+
+      if (isUUID) {
+        // Already email IDs, use directly
+        emailIds = ids;
+      } else {
+        // Find matching emails by thread/message IDs
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+        emailIds = matchingEmails.map((email) => email.id);
+      }
+
+      // Call backend API for each email using actual email ID
+      emailIds.forEach((emailId) => {
+        dispatch(moveToTrashThunk({ emailId })).catch((error) => {
           console.error("Failed to move email to trash:", error);
         });
       });
@@ -294,7 +330,7 @@ export default function useMailActions() {
         });
       });
     },
-    [updateByIds, setEmails, labels, dispatch]
+    [updateByIds, setEmails, labels, dispatch, emails]
   );
 
   const restoreFromTrash = useCallback(
@@ -465,11 +501,27 @@ export default function useMailActions() {
 
   const deleteForever = useCallback(
     (ids) => {
-      const match = makeMatch(ids);
+      // If ids are already email UUIDs (from ActionBar), use them directly
+      // Otherwise, find matching emails by thread ID or other keys
+      let emailIds;
 
-      // Call backend API for each email
-      ids.forEach((id) => {
-        dispatch(deleteEmailThunk({ emailId: id })).catch((error) => {
+      // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
+      const firstId = String(ids[0] || "");
+      const isUUID = firstId.includes("-") && firstId.length >= 32;
+
+      if (isUUID) {
+        // Already email IDs, use directly
+        emailIds = ids;
+      } else {
+        // Find matching emails by thread/message IDs
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+        emailIds = matchingEmails.map((email) => email.id);
+      }
+
+      // Call backend API for each email using actual email ID
+      emailIds.forEach((emailId) => {
+        dispatch(deleteEmailThunk({ emailId })).catch((error) => {
           console.error("Failed to delete email permanently:", error);
         });
       });
@@ -477,7 +529,7 @@ export default function useMailActions() {
       // Remove from local state
       setEmails((prev) => prev.filter((m) => !match(m)));
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, emails]
   );
 
   const snooze = useCallback(

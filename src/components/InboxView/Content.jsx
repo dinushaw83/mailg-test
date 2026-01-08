@@ -228,10 +228,18 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
   // Manage starred state locally since the email might not be in global emails array
   const [isStarred, setIsStarred] = useState(email?.is_starred || false);
 
+  // Manage important state locally as well
+  const [isImportant, setIsImportant] = useState(email?.is_important || false);
+
   // Sync local starred state when email prop changes
   useEffect(() => {
     setIsStarred(email?.is_starred || false);
   }, [email?.id, email?.is_starred]);
+
+  // Sync local important state when email prop changes
+  useEffect(() => {
+    setIsImportant(email?.is_important || false);
+  }, [email?.id, email?.is_important]);
 
   const senderContact = useMemo(() => {
     // Check if sender email is of logged in user
@@ -338,7 +346,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
       </TopBarContainer>
       {email && (
         <MoreActions
-          thread={{ threadId: email.threadId, starred: isStarred, important: email.is_important }}
+          thread={{ threadId: email.threadId, starred: isStarred, important: isImportant }}
           showAdvancedMenu={false}
           toggleShowAdvancedMenu={() => {}}
           anchorEl={moreActionsAnchor}

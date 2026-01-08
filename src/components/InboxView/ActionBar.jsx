@@ -459,9 +459,11 @@ const MailActions = ({ thread }) => {
   );
 
   const handleDelete = useCallback(() => {
-    if (!conversationMatchKeys.length) return;
+    if (!threadEmails.length) return;
 
-    const undo = moveToTrash(conversationMatchKeys);
+    // Use actual email IDs instead of conversationMatchKeys
+    const emailIds = threadEmails.map((email) => email.id);
+    const undo = moveToTrash(emailIds);
 
     setSnackbar({
       open: true,
@@ -475,7 +477,7 @@ const MailActions = ({ thread }) => {
             if (typeof undo === "function") {
               undo();
             } else {
-              moveToInbox(conversationMatchKeys);
+              moveToInbox(emailIds);
             }
             setSnackbar({
               open: true,
@@ -489,7 +491,7 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [conversationMatchKeys, moveToTrash, moveToInbox, setSnackbar]);
+  }, [threadEmails, moveToTrash, moveToInbox, setSnackbar]);
 
   useEffect(() => {
     if (hasRunOnceRef.current) return;
@@ -827,7 +829,11 @@ const MailActions = ({ thread }) => {
   });
 
   const handleReportSpam = useCallback(() => {
-    const undo = moveToSpam(conversationMatchKeys);
+    if (!threadEmails.length) return;
+
+    // Use actual email IDs instead of conversationMatchKeys
+    const emailIds = threadEmails.map((email) => email.id);
+    const undo = moveToSpam(emailIds);
     toggleSpamModal();
     setSnackbar({
       open: true,
@@ -851,7 +857,7 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [conversationMatchKeys, moveToSpam, toggleSpamModal, showUndoSnackbar]);
+  }, [threadEmails, moveToSpam, toggleSpamModal, setSnackbar]);
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
