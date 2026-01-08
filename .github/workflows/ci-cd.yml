@@ -374,10 +374,18 @@ jobs:
           echo "  - VM host: ${{ env.VM_HOST }}"
           echo "  - VM user: ${{ env.VM_USER }}"
 
+      - name: Ensure Deploy Directory Exists on VM
+        run: |
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "mkdir -p ${DEPLOY_DIR}"
+
       - name: Copy deployment files to VM
         run: |
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/
           scp docker-compose.yaml ${{ env.VM_USER }}@${{ env.VM_HOST }}:${{ env.DEPLOY_DIR }}/docker-compose.prod.yaml
+
+      - name: Ensure Deploy Directory Exists on VM
+        run: |
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "mkdir -p ${DEPLOY_DIR}"
 
       - name: Copy deployment files to VM
         run: |
