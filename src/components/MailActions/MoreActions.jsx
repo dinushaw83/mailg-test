@@ -33,13 +33,13 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
-    () => threads.filter((thread) => selectedIds.includes(thread.threadId)),
+    () => threads.filter((thread) => selectedIds.includes(thread.thread_id)),
     [threads, selectedIds]
   );
   const selectedEmails = useMemo(() => {
     if (!selectedThreads.length) return [];
-    const threadIdSet = new Set(selectedThreads.map((thread) => thread.threadId));
-    return emails.filter((email) => threadIdSet.has(email.threadId));
+    const thread_idSet = new Set(selectedThreads.map((thread) => thread.thread_id));
+    return emails.filter((email) => thread_idSet.has(email.thread_id));
   }, [selectedThreads, emails]);
   const moreVertRef = useRef(null);
 
@@ -78,7 +78,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       // Store original labels before the move
       const originalLabels = {};
       ids.forEach((id) => {
-        const email = emails.find((email) => email.threadId === String(id));
+        const email = emails.find((email) => email.thread_id === String(id));
         if (email) {
           originalLabels[String(id)] = [...(email.labels || [])];
         }
@@ -143,8 +143,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const id = open ? "more-actions-popover" : undefined;
 
   const markAllAsRead = useCallback(() => {
-    const visibleThreadIds = new Set(threads.map((thread) => thread.threadId));
-    const unreadEmails = emails.filter((email) => visibleThreadIds.has(email.threadId) && !email.is_read);
+    const visibleThreadIds = new Set(threads.map((thread) => thread.thread_id));
+    const unreadEmails = emails.filter((email) => visibleThreadIds.has(email.thread_id) && !email.is_read);
     const idsToUpdate = unreadEmails.map((email) => email.id);
 
     if (!idsToUpdate.length) {
@@ -170,7 +170,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       });
     };
 
-    const unreadThreadCount = new Set(unreadEmails.map((email) => email.threadId)).size;
+    const unreadThreadCount = new Set(unreadEmails.map((email) => email.thread_id)).size;
 
     setSnackbar({
       open: true,
@@ -399,7 +399,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
     const action = nextValue ? "muted" : "unmuted";
     const conversationCount =
-      new Set(selectedEmails.map((email) => email.threadId)).size || selectedThreads.length || 1;
+      new Set(selectedEmails.map((email) => email.thread_id)).size || selectedThreads.length || 1;
     const message = conversationCount > 1 ? `${conversationCount} conversations ${action}.` : `Conversation ${action}.`;
 
     setSnackbar({
@@ -422,7 +422,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
     const previousStates = selectedEmails.map((email) => ({
       id: email.id,
-      threadId: email.threadId,
+      thread_id: email.thread_id,
       read: !!email.is_read,
     }));
     const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
@@ -454,7 +454,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       });
     };
 
-    const affectedThreadCount = new Set(previousStates.filter((state) => state.read).map((state) => state.threadId))
+    const affectedThreadCount = new Set(previousStates.filter((state) => state.read).map((state) => state.thread_id))
       .size;
     const conversations = affectedThreadCount || selectedThreads.length || 1;
 

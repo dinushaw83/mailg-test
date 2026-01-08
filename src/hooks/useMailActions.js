@@ -19,7 +19,7 @@ const buildIdIndex = (selection) =>
           return [
             item.id,
             item.messageId,
-            item.threadId,
+            item.thread_id,
             item.legacyThreadId,
             item.legacyLastMessageId,
             item.legacyLastNonDraftMessageId,
@@ -40,7 +40,7 @@ const collectKeysFromMessage = (m) => {
   };
   add(m.id);
   add(m.messageId);
-  add(m.threadId);
+  add(m.thread_id);
   add(m.legacyThreadId);
   add(m.legacyLastMessageId);
   add(m.legacyLastNonDraftMessageId);
@@ -448,24 +448,24 @@ export default function useMailActions() {
   );
 
   const toggleMuted = useCallback(
-    (threadIds) => {
+    (thread_ids) => {
       let previousState = [];
 
       setEmails((prev) => {
         // Store the previous state for undo functionality
         previousState = prev
           .filter((m) => {
-            const emailThreadId = m.threadId;
-            return threadIds.includes(emailThreadId);
+            const emailThreadId = m.thread_id;
+            return thread_ids.includes(emailThreadId);
           })
           .map((m) => ({
-            threadId: m.threadId,
+            thread_id: m.thread_id,
             labels: [...(m.labels || [])],
           }));
 
         return prev.map((m) => {
-          const emailThreadId = m.threadId;
-          if (threadIds.includes(emailThreadId)) {
+          const emailThreadId = m.thread_id;
+          if (thread_ids.includes(emailThreadId)) {
             const currentLabels = m.labels || [];
             const isCurrentlyMuted = currentLabels.includes("Muted");
 
@@ -487,8 +487,8 @@ export default function useMailActions() {
       const undo = () => {
         setEmails((prev) =>
           prev.map((m) => {
-            const emailThreadId = m.threadId;
-            const previousEmail = previousState.find((p) => p.threadId === emailThreadId);
+            const emailThreadId = m.thread_id;
+            const previousEmail = previousState.find((p) => p.thread_id === emailThreadId);
             if (previousEmail) {
               return { ...m, labels: [...previousEmail.labels] };
             }

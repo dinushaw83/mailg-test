@@ -20,7 +20,7 @@ const buildMatchKeysForEmail = (email = {}) => {
 
   add(email.id);
   add(email.messageId);
-  add(email.threadId);
+  add(email.thread_id);
   add(email.legacyThreadId);
   add(email.legacyLastMessageId);
   add(email.legacyLastNonDraftMessageId);
@@ -37,7 +37,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
   const selectedEmails = useMemo(() => {
     if (!selectedIds.length) return [];
     const idSet = new Set(selectedIds.map(String));
-    return emails.filter((email) => idSet.has(email.threadId));
+    return emails.filter((email) => idSet.has(email.thread_id));
   }, [emails, selectedIds]);
   const selectionMatchKeys = useMemo(() => {
     const keys = new Set();
@@ -51,8 +51,8 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
     return [...keys];
   }, [selectedIds, selectedEmails]);
   const selectedConversationCount = useMemo(() => {
-    const threadIds = new Set(selectedEmails.map((email) => email.threadId));
-    return threadIds.size || selectedIds.length;
+    const thread_ids = new Set(selectedEmails.map((email) => email.thread_id));
+    return thread_ids.size || selectedIds.length;
   }, [selectedEmails, selectedIds]);
 
   const collectLabelSnapshot = useCallback(
@@ -308,7 +308,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
 
     const previousStates = selectedEmails.map((email) => ({
       id: email.id,
-      threadId: email.threadId,
+      thread_id: email.thread_id,
       read: !!email.is_read,
     }));
 
@@ -332,7 +332,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
     selection.clear();
 
     const affectedConversations =
-      new Set(targetStates.map((state) => state.threadId)).size || selectedConversationCount || 1;
+      new Set(targetStates.map((state) => state.thread_id)).size || selectedConversationCount || 1;
 
     setSnackbar({
       open: true,
@@ -388,7 +388,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
       // Store original labels before the move
       const originalLabels = {};
       ids.forEach((id) => {
-        const email = emails.find((email) => email.threadId === id);
+        const email = emails.find((email) => email.thread_id === id);
         if (email) {
           originalLabels[id] = [...(email.labels || [])];
         }
@@ -423,7 +423,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
                 // Restore original labels for each email
                 setEmails((prevEmails) =>
                   prevEmails.map((email) => {
-                    const emailThreadId = email.threadId;
+                    const emailThreadId = email.thread_id;
                     if (ids.includes(emailThreadId) && originalLabels[emailThreadId]) {
                       return { ...email, labels: originalLabels[emailThreadId] };
                     }

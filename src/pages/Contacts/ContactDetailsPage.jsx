@@ -1,28 +1,29 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  Box,
-  Button,
-  Avatar,
-  Typography,
-  Menu,
-  MenuItem,
-  ListItemText,
-  ListItemIcon,
-  Chip,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
-import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
-import { format, isThisYear, isToday, isYesterday, isThisWeek, isThisYear as isCurrentYear } from "date-fns";
 import {
   ActionIconButton,
-  LabelsDropdown,
   ContactDetailRow,
+  LabelsDropdown,
 } from "../../components/RightSidebarTabs/ContactsTab/ContactComponents";
-import InfoModal from "../../components/ComposeEmail/InfoModal";
-import { useGlobalContext } from "../../contexts/GlobalContext";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { format, isThisYear as isCurrentYear, isThisWeek, isThisYear, isToday, isYesterday } from "date-fns";
 import { generateAvatarColor, getFormattedWebsiteURL } from "../../utils/helperFunctions";
+
+import InfoModal from "../../components/ComposeEmail/InfoModal";
 import styles from "./ContactDetails.module.css";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 // Snackbar style for this screen
 const snackbarStyle = {
@@ -777,15 +778,15 @@ const ContactDetailsPage = () => {
 
   // Navigate to email details
   const navigateToEmailDetails = (email) => {
-    const threadId = email.threadId;
+    const thread_id = email.thread_id;
 
     let url = "";
     if (email.labels.includes("Inbox")) {
-      url = `/inbox/${threadId}`;
+      url = `/inbox/${thread_id}`;
     } else if (email.labels.includes("Sent")) {
-      url = `/sent/${threadId}`;
+      url = `/sent/${thread_id}`;
     } else if (email.labels.length > 0) {
-      url = `/label/${email.labels[0]}/${threadId}`;
+      url = `/label/${email.labels[0]}/${thread_id}`;
     }
 
     // Open url in new tab

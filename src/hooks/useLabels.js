@@ -9,8 +9,8 @@ export const ROOT = null;
 
 const getThreadKey = (m) => {
   if (!m) return null;
-  if (m.threadId) {
-    return String(m.threadId);
+  if (m.thread_id) {
+    return String(m.thread_id);
   }
   return m.legacyThreadId || null;
 };
@@ -254,8 +254,8 @@ export default function useLabels() {
   );
 
   const removeLabelFromThread = useCallback(
-    (threadId, labelKey) => {
-      const normalizedThreadId = String(threadId);
+    (thread_id, labelKey) => {
+      const normalizedThreadId = String(thread_id);
       setEmails((prev) =>
         (prev || []).map((m) =>
           getThreadKey(m) === normalizedThreadId ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) } : m
@@ -266,10 +266,10 @@ export default function useLabels() {
   );
 
   const addLabelToThread = useCallback(
-    (threadId, labelKey) => {
+    (thread_id, labelKey) => {
       setEmails((prev) =>
         (prev || []).map((m) =>
-          getThreadKey(m) === String(threadId)
+          getThreadKey(m) === String(thread_id)
             ? {
                 ...m,
                 labels: Array.from(new Set([...(m.labels || []), labelKey])),
@@ -366,7 +366,7 @@ export default function useLabels() {
         const keys = [
           m.id,
           m.messageId,
-          m.threadId,
+          m.thread_id,
           m.legacyThreadId,
           m.legacyLastMessageId,
           m.legacyLastNonDraftMessageId,

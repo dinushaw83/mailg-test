@@ -547,7 +547,7 @@ const Inbox = () => {
               }}
             >
               <EmailContent
-                threadId={previewEmailId}
+                thread_id={previewEmailId}
                 folder={activeFolder}
                 label={label}
                 showActionBar={false}

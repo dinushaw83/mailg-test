@@ -114,7 +114,7 @@ const NotFoundContainer = styled.div`
 `;
 
 export const EmailContent = ({
-  threadId,
+  thread_id,
   folder,
   label,
   showActionBar = true,
@@ -123,7 +123,7 @@ export const EmailContent = ({
   emails,
   normalizedEmails,
 }) => {
-  console.log({threadId, folder, label, emails, normalizedEmails})
+  console.log({thread_id, folder, label, emails, normalizedEmails})
   const responseViewRef = React.useRef();
   const { markRead } = useMailActions();
 
@@ -131,20 +131,20 @@ export const EmailContent = ({
 
   const thread = useMemo(() => {
     if (!emails || emails.length === 0) return null;
-    return getThread(emails, { threadId });
-  }, [emails, threadId]);
+    return getThread(emails, { thread_id });
+  }, [emails, thread_id]);
 
   useEffect(() => {
     if (!markAsReadAfter) return undefined;
 
     const timeoutId = setTimeout(() => {
-      markRead([threadId], true);
+      markRead([thread_id], true);
     }, markAsReadAfter);
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [markAsReadAfter, threadId, markRead]);
+  }, [markAsReadAfter, thread_id, markRead]);
 
   if (!thread) {
     return (
@@ -217,16 +217,16 @@ export const EmailContent = ({
 };
 
 const InboxView = () => {
-  const { threadId, folder, label } = useParams();
+  const { thread_id, folder, label } = useParams();
   const { loggedInUser } = useGlobalContext();
   const { markRead } = useMailActions();
   const [shouldMarkUnreadEmailsAsRead, setShouldMarkUnreadEmailsAsRead] = useState(true);
 
-  // Always fetch thread from API when threadId exists
+  // Always fetch thread from API when thread_id exists
   const { data: fetchedThreadEmails, isLoading: isEmailLoading } = useQuery({
-    queryKey: ["email", threadId],
-    queryFn: () => emailService.getEmail(threadId),
-    enabled: !!threadId, // Always fetch if threadId exists
+    queryKey: ["email", thread_id],
+    queryFn: () => emailService.getEmail(thread_id),
+    enabled: !!thread_id, // Always fetch if thread_id exists
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
@@ -241,16 +241,16 @@ const InboxView = () => {
   // Normalize emails from API
   const normalizedEmailsFromAPI = useMemo(() => {
     if (!allEmails || allEmails.length === 0) {
-      return { messagesById: {}, threadsById: {}, threadIds: [] };
+      return { messagesById: {}, threadsById: {}, thread_ids: [] };
     }
     return normalizeEmails(allEmails);
   }, [allEmails]);
 
   // Get thread from API emails
   const thread = useMemo(() => {
-    if (!threadId || !allEmails || allEmails.length === 0) return null;
-    return getThread(allEmails, { threadId });
-  }, [allEmails, threadId]);
+    if (!thread_id || !allEmails || allEmails.length === 0) return null;
+    return getThread(allEmails, { thread_id });
+  }, [allEmails, thread_id]);
 
   // Mark unread emails as read
   const markUnreadEmailsAsRead = useCallback(
@@ -308,8 +308,8 @@ const InboxView = () => {
   // }, [messageIds.length, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email, folder, label, thread]);
 
   // const thread = useMemo(() => {
-  //   return getThread(emails, { threadId: `#thread-f:${threadId}` });
-  // }, [emails, threadId]);
+  //   return getThread(emails, { thread_id: `#thread-f:${thread_id}` });
+  // }, [emails, thread_id]);
 
   // const { messageIds } = thread;
   useEffect(() => {
@@ -374,7 +374,7 @@ const InboxView = () => {
   return (
     <DetailContainer>
       <EmailContent
-        threadId={threadId}
+        thread_id={thread_id}
         folder={folder}
         label={label}
         emails={allEmails}

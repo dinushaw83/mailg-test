@@ -147,7 +147,7 @@ const OneColumnData = ({
                 <span id={`:pr${index}`} className="bog">
                   <span
                     className={email.isEmailRead ? "" : "bqe"}
-                    data-thread-id={email.threadId}
+                    data-thread-id={email.thread_id}
                     data-legacy-thread-id={email.legacyThreadId}
                     data-legacy-last-message-id={email.legacyLastMessageId}
                     data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
@@ -234,22 +234,22 @@ const useCustomHotKeys = ({
 
   useHotkeys(shortcutsOn ? "Enter" : "", () => {
     if (focusedRowIndex >= 0) {
-      const threadId = emails[focusedRowIndex].threadId;
-      handleClickRow(emails[focusedRowIndex], threadId);
+      const thread_id = emails[focusedRowIndex].thread_id;
+      handleClickRow(emails[focusedRowIndex], thread_id);
     }
   });
 
   useHotkeys(shortcutsOn ? "x" : "", () => {
     if (focusedRowIndex >= 0) {
-      const threadId = emails[focusedRowIndex].threadId;
-      selection.toggle(threadId);
+      const thread_id = emails[focusedRowIndex].thread_id;
+      selection.toggle(thread_id);
     }
   });
 
   useHotkeys(shortcutsOn ? "s" : "", () => {
     if (focusedRowIndex >= 0 && Date.now() - lastStarAt.current > 1000 && Date.now() - lastGAt.current > 1000) {
-      const threadId = emails[focusedRowIndex].threadId;
-      handleStar([threadId], emails[focusedRowIndex].is_starred);
+      const thread_id = emails[focusedRowIndex].thread_id;
+      handleStar([thread_id], emails[focusedRowIndex].is_starred);
     }
   });
 
@@ -352,11 +352,11 @@ const Table = ({
 
   const showSplit = panelState.direction !== "no-split";
 
-  const handleClickRow = (email, threadId) => {
+  const handleClickRow = (email, thread_id) => {
     if (showSplit) {
-      setPreviewEmailId(threadId);
+      setPreviewEmailId(thread_id);
     } else {
-      navigateToEmailDetails(email, threadId);
+      navigateToEmailDetails(email, thread_id);
     }
   };
 
@@ -369,14 +369,14 @@ const Table = ({
   }, []);
 
   const handleArchive = useCallback(
-    (threadIds) => {
-      if (!threadIds.length) {
+    (thread_ids) => {
+      if (!thread_ids.length) {
         showNoConversationsSelectedSnackbar();
         return;
       }
       try {
-        archive(threadIds);
-        const message = threadIds.length > 1 ? `${threadIds.length} Conversations archived` : "Conversation archived.";
+        archive(thread_ids);
+        const message = thread_ids.length > 1 ? `${thread_ids.length} Conversations archived` : "Conversation archived.";
         setSnackbar({
           open: true,
           message,
@@ -386,7 +386,7 @@ const Table = ({
               sx={{ textTransform: "none" }}
               size="small"
               onClick={() => {
-                moveToInbox(threadIds);
+                moveToInbox(thread_ids);
                 setSnackbar({
                   open: true,
                   message: "Action undone.",
@@ -407,17 +407,17 @@ const Table = ({
   );
 
   const handleDelete = useCallback(
-    (threadIds) => {
-      if (!threadIds.length) {
+    (thread_ids) => {
+      if (!thread_ids.length) {
         showNoConversationsSelectedSnackbar();
         return;
       }
 
-      const undo = moveToTrash(threadIds);
+      const undo = moveToTrash(thread_ids);
       setSnackbar({
         open: true,
         message:
-          threadIds.length > 1 ? `${threadIds.length} Conversations moved to Trash` : "Conversation moved to Trash.",
+          thread_ids.length > 1 ? `${thread_ids.length} Conversations moved to Trash` : "Conversation moved to Trash.",
         autoHideDuration: 10000,
         action: (
           <Button
@@ -427,7 +427,7 @@ const Table = ({
               if (typeof undo === "function") {
                 undo();
               } else {
-                moveToInbox(threadIds);
+                moveToInbox(thread_ids);
               }
               // Follow-up confirmation snackbar
               setSnackbar({
@@ -447,18 +447,18 @@ const Table = ({
   );
 
   const bulkMarkRead = useCallback(
-    (threadIds, read = true) => {
-      if (!threadIds.length) {
+    (thread_ids, read = true) => {
+      if (!thread_ids.length) {
         showNoConversationsSelectedSnackbar();
         return;
       }
-      markRead(threadIds, read);
+      markRead(thread_ids, read);
 
       const markedAs = read ? "read" : "unread";
 
       const message =
-        threadIds.size > 1
-          ? `${threadIds.length} Conversations marked as ${markedAs}`
+        thread_ids.size > 1
+          ? `${thread_ids.length} Conversations marked as ${markedAs}`
           : `Conversation marked as ${markedAs}.`;
 
       setSnackbar({
@@ -469,7 +469,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              markRead(threadIds, !read);
+              markRead(thread_ids, !read);
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -520,19 +520,19 @@ const Table = ({
   );
 
   const bulkMarkImportant = useCallback(
-    (threadIds, important = true) => {
-      if (!threadIds.length) {
+    (thread_ids, important = true) => {
+      if (!thread_ids.length) {
         showNoConversationsSelectedSnackbar();
         return;
       }
 
-      setImportant(threadIds, important);
+      setImportant(thread_ids, important);
 
       const markedAs = important ? "important" : "not important";
 
       const message =
-        threadIds.length > 1
-          ? `${threadIds.length} Conversations marked as ${markedAs}`
+        thread_ids.length > 1
+          ? `${thread_ids.length} Conversations marked as ${markedAs}`
           : `Conversation marked as ${markedAs}.`;
 
       setSnackbar({
@@ -543,7 +543,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              setImportant(threadIds, !important);
+              setImportant(thread_ids, !important);
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -598,8 +598,8 @@ const Table = ({
   });
 
   function handleContextMenu(event, thread) {
-    const threadId = thread.threadId;
-    selection.setMany([threadId]);
+    const thread_id = thread.thread_id;
+    selection.setMany([thread_id]);
     setContextRow(thread);
     show({
       event,
@@ -609,8 +609,8 @@ const Table = ({
     });
   }
 
-  const handleSnoozeAction = useCallback((threadIds) => {
-    if (!threadIds.length) {
+  const handleSnoozeAction = useCallback((thread_ids) => {
+    if (!thread_ids.length) {
       showNoConversationsSelectedSnackbar();
       return;
     }
@@ -627,15 +627,15 @@ const Table = ({
   }, []);
 
   const handleMuteAction = useCallback(
-    (threadIds) => {
-      if (!threadIds.length) {
+    (thread_ids) => {
+      if (!thread_ids.length) {
         showNoConversationsSelectedSnackbar();
         return;
       }
 
-      const undo = toggleMuted(threadIds);
+      const undo = toggleMuted(thread_ids);
 
-      const message = threadIds.length > 1 ? `${threadIds.length} Conversations muted` : "Conversation muted.";
+      const message = thread_ids.length > 1 ? `${thread_ids.length} Conversations muted` : "Conversation muted.";
 
       setSnackbar({
         open: true,
@@ -784,22 +784,22 @@ const Table = ({
       >
         <tbody>
           {emails.map((email, index) => {
-            const threadId = email.threadId;
+            const thread_id = email.thread_id;
             const isActive = showSnoozePopover && snoozeId === email.id;
-            const selected = selection.isSelected(threadId);
+            const selected = selection.isSelected(thread_id);
 
             const isFocused = focusedRowIndex === index;
 
             return (
               <tr
-                key={threadId}
+                key={thread_id}
                 className={getRowClassName(email, isActive)}
                 id={`:pi${index}`}
                 tabIndex={isFocused ? 0 : -1}
                 role="row"
                 aria-labelledby={`:pj${index}`}
                 draggable="false"
-                onClick={(e) => handleClickRow(email, threadId)}
+                onClick={(e) => handleClickRow(email, thread_id)}
                 data-read={email.isEmailRead}
                 style={{
                   ...(density === "compact"
@@ -821,10 +821,10 @@ const Table = ({
                 <td className="PF xY" />
                 <td id={`:pk${index}`} className="oZ-x3 xY" data-tooltip="Select">
                   <CheckBox
-                    id={`:pl${threadId}`}
-                    labelledBy={`:pj${threadId}`}
-                    checked={selection.isSelected(threadId)}
-                    onChange={() => selection.toggle(threadId)}
+                    id={`:pl${thread_id}`}
+                    labelledBy={`:pj${thread_id}`}
+                    checked={selection.isSelected(thread_id)}
+                    onChange={() => selection.toggle(thread_id)}
                   />
                 </td>
                 {renderOneColumn ? (
@@ -929,12 +929,12 @@ const Table = ({
                     <td id={`:pp${index}`} tabIndex={-1} className="xY a4W" role="gridcell">
                       <div className="a4X">
                         <Link
-                          to={`${location.pathname}/${threadId}`}
+                          to={`${location.pathname}/${thread_id}`}
                           onClick={(e) => {
                             if (showSplit) {
                               e.preventDefault();
                               e.stopPropagation();
-                              handleClickRow(email, threadId);
+                              handleClickRow(email, thread_id);
                             }
                           }}
                           className="xS"
@@ -990,7 +990,7 @@ const Table = ({
                                 })}
                                 <span
                                   className={email.isEmailRead ? "" : "bqe"}
-                                  data-thread-id={email.threadId}
+                                  data-thread-id={email.thread_id}
                                   data-legacy-thread-id={email.legacyThreadId}
                                   data-legacy-last-message-id={email.legacyLastMessageId}
                                   data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
@@ -1089,7 +1089,7 @@ const Table = ({
                           marginRight="3px"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleArchive([email.threadId]);
+                            handleArchive([email.thread_id]);
                           }}
                           style={{}}
                           disabled={false}
@@ -1101,7 +1101,7 @@ const Table = ({
                           marginRight="3px"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDelete([email.threadId]);
+                            handleDelete([email.thread_id]);
                           }}
                           style={{}}
                           disabled={false}

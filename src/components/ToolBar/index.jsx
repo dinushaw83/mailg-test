@@ -76,8 +76,8 @@ const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, 
   };
 
   const handleSelectAll = () => {
-    const threadIds = threads.map((email) => email.threadId);
-    selection.setMany(threadIds);
+    const thread_ids = threads.map((email) => email.thread_id);
+    selection.setMany(thread_ids);
     handleMenuClose();
   };
 
@@ -89,7 +89,7 @@ const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, 
   const handleSelectRead = () => {
     const readThreadIds = threads
       .filter((email) => email.unreadCount === 0)
-      .map((email) => email.threadId);
+      .map((email) => email.thread_id);
     selection.setMany(readThreadIds);
     handleMenuClose();
   };
@@ -97,19 +97,19 @@ const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, 
   const handleSelectUnread = () => {
     const unreadThreadIds = threads
       .filter((email) => email.unreadCount > 0)
-      .map((email) => email.threadId);
+      .map((email) => email.thread_id);
     selection.setMany(unreadThreadIds);
     handleMenuClose();
   };
 
   const handleSelectStarred = () => {
-    const starredThreadIds = threads.filter((email) => email.is_starred).map((email) => email.threadId);
+    const starredThreadIds = threads.filter((email) => email.is_starred).map((email) => email.thread_id);
     selection.setMany(starredThreadIds);
     handleMenuClose();
   };
 
   const handleSelectUnstarred = () => {
-    const unstarredThreadIds = threads.filter((email) => !email.is_starred).map((email) => email.threadId);
+    const unstarredThreadIds = threads.filter((email) => !email.is_starred).map((email) => email.thread_id);
     selection.setMany(unstarredThreadIds);
     handleMenuClose();
   };
@@ -389,18 +389,18 @@ const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvance
     setTimeout(() => setIsManualSyncing(false), 2500);
   }, [setManualSyncCount]);
 
-  const threadIds = threads.map((email) => email.threadId);
+  const thread_ids = threads.map((email) => email.thread_id);
   const { ids } = selection;
-  const allSelected = threadIds.length > 0 && threadIds.every((threadId) => ids.has(threadId));
-  const partialSelected = threadIds.length > 0 && threadIds.some((threadId) => ids.has(threadId));
+  const allSelected = thread_ids.length > 0 && thread_ids.every((thread_id) => ids.has(thread_id));
+  const partialSelected = thread_ids.length > 0 && thread_ids.some((thread_id) => ids.has(thread_id));
 
   const toggleAllSelected = useCallback(() => {
     if (allSelected || partialSelected) {
       selection.clear();
     } else {
-      selection.setMany(threadIds);
+      selection.setMany(thread_ids);
     }
-  }, [allSelected, threadIds, selection]);
+  }, [allSelected, thread_ids, selection]);
 
   const hasItemsSelected = allSelected || selection.hasSelection;
 

@@ -103,7 +103,7 @@ export default function EmailLabelChips({ message }) {
   };
 
   const handleRemoveLabel = (label) => {
-    removeLabelFromThread(message.threadId, label);
+    removeLabelFromThread(message.thread_id, label);
 
     setSnackbar({
       open: true,
@@ -114,7 +114,7 @@ export default function EmailLabelChips({ message }) {
           size="small"
           sx={{ textTransform: "none" }}
           onClick={() => {
-            addLabelToThread(message.threadId, label);
+            addLabelToThread(message.thread_id, label);
             setSnackbar({
               open: true,
               message: "Action undone.",
