@@ -179,6 +179,270 @@ class TestEmailList:
             assert email["thread_id"] == str(thread.id)
 
 
+class TestThreadEmailCount:
+    """Test thread email count in list responses."""
+
+    def test_list_emails_includes_thread_email_count(self, client_with_auth, db_session):
+        """Test that list emails response includes thread_email_count field."""
+        client, token, user = client_with_auth
+        
+        # Create a thread with multiple emails
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=3,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create 3 emails in the thread
+        for i in range(3):
+            email = Email(
+                subject=f"Thread Email {i}",
+                body=f"Content {i}",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread.id
+            )
+            db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # All emails in the thread should have thread_email_count = 3
+        for email in data["results"]:
+            if email["thread_id"] == str(thread.id):
+                assert email["thread_email_count"] == 3
+
+    def test_list_emails_thread_count_null_for_no_thread(self, client_with_auth, db_session):
+        """Test that emails without a thread have null thread_email_count."""
+        client, token, user = client_with_auth
+        
+        # Create an email without a thread
+        email = Email(
+            subject="No Thread Email",
+            body="Content",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=None
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Find our email and check thread_email_count is null
+        for result in data["results"]:
+            if result["subject"] == "No Thread Email":
+                assert result["thread_email_count"] is None
+
+    def test_list_emails_threaded_mode_includes_count(self, client_with_auth, db_session):
+        """Test that threaded mode includes correct thread_email_count."""
+        client, token, user = client_with_auth
+        
+        # Create a thread with 5 emails
+        thread = Thread(
+            subject="Big Thread",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=5,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create 5 emails in the thread
+        for i in range(5):
+            email = Email(
+                subject=f"Thread Email {i}",
+                body=f"Content {i}",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread.id,
+                sent_at=datetime.utcnow() - timedelta(hours=5-i)
+            )
+            db_session.add(email)
+        db_session.commit()
+        
+        # Use threaded mode to get only latest email per thread
+        response = client.get(
+            "/api/v1/emails?threaded=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Should return 1 email (latest from the thread)
+        thread_emails = [e for e in data["results"] if e["thread_id"] == str(thread.id)]
+        assert len(thread_emails) == 1
+        # The thread_email_count should be 5
+        assert thread_emails[0]["thread_email_count"] == 5
+
+    def test_list_emails_thread_count_only_accessible_emails(self, client_with_auth, db_session):
+        """Test that thread_email_count only counts emails accessible to the user."""
+        client, token, user = client_with_auth
+        
+        # Create another user
+        other_user = User(
+            first_name="Other",
+            last_name="User",
+            email="other@example.com",
+            role="user"
+        )
+        db_session.add(other_user)
+        db_session.commit()
+        
+        # Create a thread
+        thread = Thread(
+            subject="Shared Thread",
+            owner_id=user.id,
+            participant_count=2,
+            email_count=4,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add(thread)
+        db_session.commit()
+        db_session.refresh(thread)
+        
+        # Create 2 emails by current user
+        email1 = Email(
+            subject="User Email 1",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=user.id,
+            thread_id=thread.id
+        )
+        email2 = Email(
+            subject="User Email 2",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=user.id,
+            thread_id=thread.id
+        )
+        
+        # Create 2 emails by other user (not accessible to current user)
+        email3 = Email(
+            subject="Other User Email 1",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=other_user.id,
+            thread_id=thread.id
+        )
+        email4 = Email(
+            subject="Other User Email 2",
+            body="Content",
+            status="sent",
+            folder=FolderType.SENT.value,
+            sender_id=other_user.id,
+            thread_id=thread.id
+        )
+        
+        db_session.add_all([email1, email2, email3, email4])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # thread_email_count should be 2 (only user's emails, not other user's)
+        for email in data["results"]:
+            if email["thread_id"] == str(thread.id):
+                assert email["thread_email_count"] == 2
+
+    def test_list_emails_multiple_threads_different_counts(self, client_with_auth, db_session):
+        """Test that different threads show correct individual counts."""
+        client, token, user = client_with_auth
+        
+        # Create thread 1 with 2 emails
+        thread1 = Thread(
+            subject="Thread 1",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=2,
+            last_email_at=datetime.utcnow()
+        )
+        # Create thread 2 with 4 emails
+        thread2 = Thread(
+            subject="Thread 2",
+            owner_id=user.id,
+            participant_count=1,
+            email_count=4,
+            last_email_at=datetime.utcnow()
+        )
+        db_session.add_all([thread1, thread2])
+        db_session.commit()
+        db_session.refresh(thread1)
+        db_session.refresh(thread2)
+        
+        # Create 2 emails in thread 1
+        for i in range(2):
+            email = Email(
+                subject=f"Thread1 Email {i}",
+                body="Content",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread1.id
+            )
+            db_session.add(email)
+        
+        # Create 4 emails in thread 2
+        for i in range(4):
+            email = Email(
+                subject=f"Thread2 Email {i}",
+                body="Content",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread2.id
+            )
+            db_session.add(email)
+        
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/emails",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Check each email has correct thread count
+        for email in data["results"]:
+            if email["thread_id"] == str(thread1.id):
+                assert email["thread_email_count"] == 2
+            elif email["thread_id"] == str(thread2.id):
+                assert email["thread_email_count"] == 4
+
+
 class TestGetEmailsByThread:
     """Test get emails by thread endpoint with background read marking."""
 

@@ -44,6 +44,21 @@ def generate_random_light_color() -> str:
 router = APIRouter()
 
 
+def get_label_hierarchy_name(label: Label) -> str:
+    """Build full hierarchical name for a label (e.g., 'grand/parent/child').
+    
+    Traverses up the parent chain to construct the full path.
+    """
+    parts = []
+    current = label
+    while current:
+        parts.append(current.name)
+        current = current.parent
+    # Reverse to get grand -> parent -> child order
+    parts.reverse()
+    return "/".join(parts)
+
+
 def format_label_response(label: Label, email_count: int = 0) -> dict:
     """Format label model to response dict."""
     return {
@@ -267,11 +282,12 @@ def list_labels(
         # Return hierarchical tree structure
         return build_label_tree(labels, email_counts)
     
-    # Return flat list
+    # Return flat list with hierarchical names
     return [
         {
             "id": label.id,
             "name": label.name,
+            "full_name": get_label_hierarchy_name(label),
             "color": label.color,
             "parent_id": label.parent_id,
             "email_count": email_count,

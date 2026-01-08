@@ -173,6 +173,7 @@ class EmailListResponse(BaseModel):
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
     thread_id: Optional[UUID] = None
+    thread_email_count: Optional[int] = None  # Number of emails in the thread
     sent_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
     snooze_until: Optional[datetime] = None

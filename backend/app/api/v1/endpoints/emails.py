@@ -138,7 +138,7 @@ def format_email_response(email: Email) -> dict:
     }
 
 
-def format_email_list_response(email: Email) -> dict:
+def format_email_list_response(email: Email, thread_email_count: Optional[int] = None) -> dict:
     """Format email model for list responses."""
     labels = []
     for l in email.labels:
@@ -171,6 +171,7 @@ def format_email_list_response(email: Email) -> dict:
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
         "thread_id": email.thread_id,
+        "thread_email_count": thread_email_count,
         "sent_at": email.sent_at,
         "scheduled_send_at": email.scheduled_send_at,
         "snooze_until": email.snooze_until,
@@ -435,8 +436,34 @@ def list_emails(
     else:
         emails = query.order_by(Email.created_at.desc()).offset(offset).limit(page_size).all()
     
-    # Format response
-    emails_data = [format_email_list_response(email) for email in emails]
+    # Get thread email counts for all threads in the result set
+    thread_ids = [email.thread_id for email in emails if email.thread_id]
+    thread_counts = {}
+    if thread_ids:
+        # Query count of emails per thread (accessible to this user)
+        count_results = db.query(
+            Email.thread_id,
+            func.count(Email.id).label('count')
+        ).filter(
+            Email.thread_id.in_(thread_ids),
+            Email.is_deleted == False,
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        ).group_by(Email.thread_id).all()
+        
+        thread_counts = {tid: cnt for tid, cnt in count_results}
+    
+    # Format response with thread counts
+    emails_data = [
+        format_email_list_response(email, thread_counts.get(email.thread_id))
+        for email in emails
+    ]
     
     return PaginatedListResponse[EmailListResponse](
         results=emails_data,

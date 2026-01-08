@@ -223,6 +223,164 @@ class TestLabelList:
         assert any(c["name"] == "2025" for c in projects["children"])
 
 
+class TestLabelFullName:
+    """Test full_name hierarchical field in label list responses."""
+
+    def test_list_labels_includes_full_name(self, client_with_auth, db_session):
+        """Test that flat list response includes full_name field."""
+        client, token, user = client_with_auth
+        
+        label = Label(name="Work", owner_id=user.id)
+        db_session.add(label)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Find our label and check full_name exists
+        work_label = next((l for l in data if l["name"] == "Work"), None)
+        assert work_label is not None
+        assert "full_name" in work_label
+
+    def test_root_label_full_name_equals_name(self, client_with_auth, db_session):
+        """Test that root-level labels have full_name equal to name."""
+        client, token, user = client_with_auth
+        
+        label = Label(name="Important", owner_id=user.id)
+        db_session.add(label)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        important_label = next((l for l in data if l["name"] == "Important"), None)
+        assert important_label is not None
+        assert important_label["name"] == "Important"
+        assert important_label["full_name"] == "Important"
+
+    def test_nested_label_full_name_shows_hierarchy(self, client_with_auth, db_session):
+        """Test that nested labels show full hierarchy path in full_name."""
+        client, token, user = client_with_auth
+        
+        # Create hierarchy: Work -> Projects
+        work = Label(name="Work", owner_id=user.id)
+        db_session.add(work)
+        db_session.commit()
+        
+        projects = Label(name="Projects", parent_id=work.id, owner_id=user.id)
+        db_session.add(projects)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Parent label
+        work_label = next((l for l in data if l["name"] == "Work"), None)
+        assert work_label is not None
+        assert work_label["full_name"] == "Work"
+        
+        # Nested label
+        projects_label = next((l for l in data if l["name"] == "Projects"), None)
+        assert projects_label is not None
+        assert projects_label["full_name"] == "Work/Projects"
+
+    def test_deeply_nested_label_full_name(self, client_with_auth, db_session):
+        """Test that deeply nested labels show complete hierarchy path."""
+        client, token, user = client_with_auth
+        
+        # Create hierarchy: Work -> Projects -> 2025 -> Q1
+        work = Label(name="Work", owner_id=user.id)
+        db_session.add(work)
+        db_session.commit()
+        
+        projects = Label(name="Projects", parent_id=work.id, owner_id=user.id)
+        db_session.add(projects)
+        db_session.commit()
+        
+        year_2025 = Label(name="2025", parent_id=projects.id, owner_id=user.id)
+        db_session.add(year_2025)
+        db_session.commit()
+        
+        q1 = Label(name="Q1", parent_id=year_2025.id, owner_id=user.id)
+        db_session.add(q1)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Check each level
+        work_label = next((l for l in data if l["name"] == "Work"), None)
+        assert work_label["full_name"] == "Work"
+        
+        projects_label = next((l for l in data if l["name"] == "Projects"), None)
+        assert projects_label["full_name"] == "Work/Projects"
+        
+        year_label = next((l for l in data if l["name"] == "2025"), None)
+        assert year_label["full_name"] == "Work/Projects/2025"
+        
+        q1_label = next((l for l in data if l["name"] == "Q1"), None)
+        assert q1_label["full_name"] == "Work/Projects/2025/Q1"
+
+    def test_multiple_hierarchies_full_name(self, client_with_auth, db_session):
+        """Test that multiple separate hierarchies have correct full_names."""
+        client, token, user = client_with_auth
+        
+        # Create two separate hierarchies
+        # Work -> Clients
+        work = Label(name="Work", owner_id=user.id)
+        db_session.add(work)
+        db_session.commit()
+        
+        clients = Label(name="Clients", parent_id=work.id, owner_id=user.id)
+        db_session.add(clients)
+        db_session.commit()
+        
+        # Personal -> Family
+        personal = Label(name="Personal", owner_id=user.id)
+        db_session.add(personal)
+        db_session.commit()
+        
+        family = Label(name="Family", parent_id=personal.id, owner_id=user.id)
+        db_session.add(family)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Check Work hierarchy
+        clients_label = next((l for l in data if l["name"] == "Clients"), None)
+        assert clients_label["full_name"] == "Work/Clients"
+        
+        # Check Personal hierarchy
+        family_label = next((l for l in data if l["name"] == "Family"), None)
+        assert family_label["full_name"] == "Personal/Family"
+
+
 class TestLabelOperations:
     """Test label operations."""
 

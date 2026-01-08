@@ -41,6 +41,7 @@ class LabelListResponse(BaseModel):
     
     id: UUID
     name: str
+    full_name: Optional[str] = None  # Hierarchical name (e.g., "parent/child/grandchild")
     color: Optional[str] = None
     parent_id: Optional[UUID] = None
     email_count: int = 0
