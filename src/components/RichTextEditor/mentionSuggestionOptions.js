@@ -54,9 +54,7 @@ export const mentionSuggestionOptions = {
         .map((name, index) => ({ mentionLabel: name, id: index.toString() }))
         // Find matching entries based on what the user has typed so far (after
         // the @ symbol)
-        .filter((item) =>
-          item.mentionLabel.toLowerCase().startsWith(query.toLowerCase())
-        )
+        .filter((item) => item.mentionLabel.toLowerCase().startsWith(query.toLowerCase()))
         .slice(0, 5)
     ),
 
@@ -72,8 +70,7 @@ export const mentionSuggestionOptions = {
         });
 
         popup = tippy("body", {
-          getReferenceClientRect: () =>
-            props.clientRect?.() ?? DOM_RECT_FALLBACK,
+          getReferenceClientRect: () => props.clientRect?.() ?? DOM_RECT_FALLBACK,
           appendTo: () => document.body,
           content: component.element,
           showOnCreate: true,
@@ -87,8 +84,7 @@ export const mentionSuggestionOptions = {
         component?.updateProps(props);
 
         popup?.setProps({
-          getReferenceClientRect: () =>
-            props.clientRect?.() ?? DOM_RECT_FALLBACK,
+          getReferenceClientRect: () => props.clientRect?.() ?? DOM_RECT_FALLBACK,
         });
       },
 

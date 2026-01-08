@@ -22,18 +22,22 @@ export default function SidebarItem({ item, expanded }) {
   };
 
   return (
-    <Tooltip title={item.label} placement="right" slotProps={{
-      popper: {
-        modifiers: [
-          {
-            name: 'offset',
-            options: {
-              offset: [0, -13],
+    <Tooltip
+      title={item.label}
+      placement="right"
+      slotProps={{
+        popper: {
+          modifiers: [
+            {
+              name: "offset",
+              options: {
+                offset: [0, -13],
+              },
             },
-          },
-        ],
-      },
-    }}>
+          ],
+        },
+      }}
+    >
       <NavLink
         to={`/${item.key}`}
         end
@@ -62,11 +66,7 @@ export default function SidebarItem({ item, expanded }) {
               style={{ marginLeft: 0, ...(expanded ? {} : { paddingLeft: "6px" }) }}
             >
               <span
-                className={
-                  isActive
-                    ? "material-symbols-filled"
-                    : "material-symbols-outlined"
-                }
+                className={isActive ? "material-symbols-filled" : "material-symbols-outlined"}
                 style={{
                   alignItems: "center",
                   display: "flex",
@@ -81,7 +81,7 @@ export default function SidebarItem({ item, expanded }) {
               </span>
 
               <div className="aio UKr6le">
-                <span 
+                <span
                   className={`nU ${isActive ? "n1" : ""}`}
                   style={item.key === "drafts" && item.count > 0 ? { fontWeight: 600 } : {}}
                 >

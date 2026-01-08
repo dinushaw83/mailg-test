@@ -3,9 +3,10 @@
 import pytest
 import uuid
 from app.models.email import Email
-from app.models.folder import Folder
+from app.models.thread import Thread
+from app.core.constants import FolderType
 from app.models.label import Label
-from app.models.email_label import EmailLabel
+from app.models.thread_label import ThreadLabel
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 
@@ -17,18 +18,18 @@ NON_EXISTENT_UUID = "00000000-0000-0000-0000-000000099999"
 class TestSearchBasic:
     """Test basic search functionality."""
 
-    def test_search_emails_by_query(self, client_with_auth, db_session, sample_folder):
+    def test_search_emails_by_query(self, client_with_auth, db_session):
         """Test searching emails with a query string."""
         client, token, user = client_with_auth
         
         # Create emails with searchable content
         emails = [
             Email(subject="Project meeting notes", body="Discussing timeline", 
-                  status="received", sender_id=user.id, folder_id=sample_folder.id),
+                  status="received", sender_id=user.id, folder=FolderType.INBOX.value),
             Email(subject="Budget report Q4", body="Financial summary", 
-                  status="received", sender_id=user.id, folder_id=sample_folder.id),
+                  status="received", sender_id=user.id, folder=FolderType.INBOX.value),
             Email(subject="Team meeting agenda", body="Weekly sync", 
-                  status="received", sender_id=user.id, folder_id=sample_folder.id),
+                  status="received", sender_id=user.id, folder=FolderType.INBOX.value),
         ]
         for email in emails:
             db_session.add(email)
@@ -64,7 +65,7 @@ class TestSearchBasic:
 class TestSearchOperators:
     """Test Gmail-style search operators."""
 
-    def test_search_subject_operator(self, client_with_auth, db_session, sample_folder):
+    def test_search_subject_operator(self, client_with_auth, db_session):
         """Test subject: search operator."""
         client, token, user = client_with_auth
         
@@ -73,7 +74,7 @@ class TestSearchOperators:
             body="Different content here",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(email)
         db_session.commit()
@@ -85,7 +86,7 @@ class TestSearchOperators:
         
         assert response.status_code == 200
 
-    def test_search_is_unread_operator(self, client_with_auth, db_session, sample_folder):
+    def test_search_is_unread_operator(self, client_with_auth, db_session):
         """Test is:unread search operator."""
         client, token, user = client_with_auth
         
@@ -95,7 +96,7 @@ class TestSearchOperators:
             status="received",
             is_read=True,
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         unread_email = Email(
             subject="Unread email",
@@ -103,7 +104,7 @@ class TestSearchOperators:
             status="received",
             is_read=False,
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add_all([read_email, unread_email])
         db_session.commit()
@@ -118,7 +119,7 @@ class TestSearchOperators:
         for result in data["results"]:
             assert result["is_read"] == False
 
-    def test_search_is_starred_operator(self, client_with_auth, db_session, sample_folder):
+    def test_search_is_starred_operator(self, client_with_auth, db_session):
         """Test is:starred search operator."""
         client, token, user = client_with_auth
         
@@ -128,7 +129,7 @@ class TestSearchOperators:
             status="received",
             is_starred=True,
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value
         )
         db_session.add(starred_email)
         db_session.commit()
@@ -147,7 +148,7 @@ class TestSearchOperators:
 class TestSearchLabelHierarchy:
     """Test hierarchical label names in search results."""
 
-    def test_search_results_show_hierarchical_label_names(self, client_with_auth, db_session, sample_folder):
+    def test_search_results_show_hierarchical_label_names(self, client_with_auth, db_session):
         """Test that search results show full label hierarchy path."""
         client, token, user = client_with_auth
         
@@ -160,19 +161,28 @@ class TestSearchLabelHierarchy:
         db_session.add(child)
         db_session.commit()
         
-        # Create email with nested label
+        # Create email with nested label (labels are linked to threads)
+        thread = Thread(
+            subject="Project Update",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Project Update",
             body="Status report",
             status="received",
             sender_id=user.id,
-            folder_id=sample_folder.id
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=child.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=child.id, user_id=user.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # Search and check label names
@@ -192,7 +202,7 @@ class TestSearchLabelHierarchy:
 class TestSearchPagination:
     """Test search pagination and sorting."""
 
-    def test_search_pagination(self, client_with_auth, db_session, sample_folder):
+    def test_search_pagination(self, client_with_auth, db_session):
         """Test search results pagination."""
         client, token, user = client_with_auth
         
@@ -203,7 +213,7 @@ class TestSearchPagination:
                 body=f"Content {i}",
                 status="received",
                 sender_id=user.id,
-                folder_id=sample_folder.id
+                folder=FolderType.INBOX.value
             )
             db_session.add(email)
         db_session.commit()

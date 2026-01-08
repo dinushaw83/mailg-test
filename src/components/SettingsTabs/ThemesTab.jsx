@@ -33,8 +33,7 @@ const ThemesTab = () => {
           position: "relative",
           zIndex: 0,
           WebkitFontSmoothing: "antialiased",
-          fontFamily:
-            '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+          fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
           fontSize: "0.875rem",
           letterSpacing: "normal",
           cursor: "pointer",

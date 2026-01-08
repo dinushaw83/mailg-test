@@ -640,7 +640,7 @@ const CreateMultipleContactsModal = ({ open, onClose }) => {
               </Typography>
 
               {/* Labels List */}
-              {recipientLabels
+              {[...recipientLabels]
                 .sort((a, b) => a.label.localeCompare(b.label))
                 .map((label) => {
                   const isSelected = tempLabels.has(label.label);

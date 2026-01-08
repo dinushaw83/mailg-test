@@ -112,7 +112,7 @@
 .birthdaySection {
   display: flex;
   align-items: flex-start;
-  marginBottom: 1rem;
+  marginbottom: 1rem;
 }
 
 .birthdaySection:hover .closeButton,

@@ -11704,14 +11704,7 @@
       {
         "code": "FC",
         "name": "Abuja Federal Capital Territory",
-        "subdivision": [
-          "Abaji",
-          "Abuja Municipal",
-          "Bwari",
-          "Gwagwalada",
-          "Kuje",
-          "Kwali"
-        ]
+        "subdivision": ["Abaji", "Abuja Municipal", "Bwari", "Gwagwalada", "Kuje", "Kwali"]
       },
       {
         "code": "AD",
@@ -11832,16 +11825,7 @@
       {
         "code": "BY",
         "name": "Bayelsa",
-        "subdivision": [
-          "Brass",
-          "Ekeremor",
-          "Kolokuma/Opokuma",
-          "Nembe",
-          "Ogbia",
-          "Sagbama",
-          "Southern Jaw",
-          "Yenegoa"
-        ]
+        "subdivision": ["Brass", "Ekeremor", "Kolokuma/Opokuma", "Nembe", "Ogbia", "Sagbama", "Southern Jaw", "Yenegoa"]
       },
       {
         "code": "BE",

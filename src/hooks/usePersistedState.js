@@ -1,10 +1,6 @@
 import { useState, useEffect } from "react";
 
-export const usePersistedState = (
-  key,
-  initialValue,
-  addToWindowObject = false
-) => {
+export const usePersistedState = (key, initialValue, addToWindowObject = false) => {
   const [state, setState] = useState(() => {
     const persistedValue = localStorage.getItem(key);
     return persistedValue ? JSON.parse(persistedValue) : initialValue;

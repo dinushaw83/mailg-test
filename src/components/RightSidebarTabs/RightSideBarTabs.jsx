@@ -2,7 +2,7 @@ import React from "react";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import ContactsTab from "./ContactsTab/ContactsTab";
-import { useGlobalContext } from '../../contexts/GlobalContext';
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const TabPanel = ({ children, value, tabName, ...other }) => {
   return (

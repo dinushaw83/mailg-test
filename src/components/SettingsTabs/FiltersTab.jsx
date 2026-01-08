@@ -40,8 +40,7 @@ const FiltersTab = () => {
             role="listitem"
             style={{
               WebkitFontSmoothing: "antialiased",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
               fontSize: "0.875rem",
               letterSpacing: "normal",
             }}
@@ -55,9 +54,7 @@ const FiltersTab = () => {
                 lineHeight: "40px",
               }}
             >
-              <b>
-                The following filters are applied to all incoming mail:
-              </b>
+              <b>The following filters are applied to all incoming mail:</b>
             </td>
           </tr>
 
@@ -67,8 +64,7 @@ const FiltersTab = () => {
             role="listitem"
             style={{
               WebkitFontSmoothing: "antialiased",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
               fontSize: "0.875rem",
               letterSpacing: "normal",
               display: "none",
@@ -96,8 +92,8 @@ const FiltersTab = () => {
               >
                 Inbox setting for important messages
               </span>{" "}
-              is set to "Override filters." That means "Skip Inbox" filter
-              rules will be ignored for messages that are important.
+              is set to "Override filters." That means "Skip Inbox" filter rules will be ignored for messages that are
+              important.
             </td>
           </tr>
 
@@ -167,8 +163,7 @@ const FiltersTab = () => {
                 className="qR"
                 disabled
                 style={{
-                  fontFamily:
-                    '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                  fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                   margin: "0px 8px",
                   cursor: "default",
                 }}
@@ -179,8 +174,7 @@ const FiltersTab = () => {
                 className="qR"
                 disabled
                 style={{
-                  fontFamily:
-                    '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                  fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                   margin: "0px 8px",
                   cursor: "default",
                 }}
@@ -242,8 +236,7 @@ const FiltersTab = () => {
             role="listitem"
             style={{
               WebkitFontSmoothing: "antialiased",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
               fontSize: "0.875rem",
               letterSpacing: "normal",
             }}
@@ -257,10 +250,7 @@ const FiltersTab = () => {
                 lineHeight: "40px",
               }}
             >
-              <b>
-                The following email addresses are blocked. Messages from these
-                addresses will appear in Spam:
-              </b>
+              <b>The following email addresses are blocked. Messages from these addresses will appear in Spam:</b>
             </td>
           </tr>
 
@@ -284,8 +274,7 @@ const FiltersTab = () => {
             role="listitem"
             style={{
               WebkitFontSmoothing: "antialiased",
-              fontFamily:
-                '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+              fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
               fontSize: "0.875rem",
               letterSpacing: "normal",
             }}
@@ -355,8 +344,7 @@ const FiltersTab = () => {
                 className="qR"
                 disabled
                 style={{
-                  fontFamily:
-                    '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                  fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                   margin: "0px 8px",
                   cursor: "default",
                 }}

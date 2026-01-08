@@ -1,13 +1,14 @@
-import styled from "@emotion/styled";
-import React, { useMemo, useState, useEffect, useCallback } from "react";
-import Avatar from "@mui/material/Avatar";
-import { Icon } from "./ActionBar";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { extractEmbeddedImageIds, getEmbeddedImage, processHtmlForDisplay } from "../../utils/embeddedImages";
+
 import { Attachments } from "./Attachments";
+import Avatar from "@mui/material/Avatar";
 import ContactPopup from "../Contacts/ContactPopup";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import { getEmbeddedImage, processHtmlForDisplay, extractEmbeddedImageIds } from "../../utils/embeddedImages";
-import useMailActions from "../../hooks/useMailActions";
+import { Icon } from "./ActionBar";
 import MoreActions from "./MoreActions";
+import styled from "@emotion/styled";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import useMailActions from "../../hooks/useMailActions";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -72,11 +73,30 @@ const RecipientName = styled.div`
 const Recipient = ({ recipients = [] }) => {
   const { recipients: contacts, loggedInUser } = useGlobalContext();
 
-  // Helper function to get recipient display name from email
-  const getRecipientDisplayName = (email) => {
+  // Helper function to get recipient display name from recipient (can be string or object)
+  const getRecipientDisplayName = (recipient) => {
+    // Handle object format: {email, name, id}
+    let email = recipient;
+    let name = null;
+    
+    if (typeof recipient === "object" && recipient !== null) {
+      email = recipient.email;
+      name = recipient.name;
+    }
+    
+    // Ensure email is a string
+    if (!email || typeof email !== "string") {
+      return "Unknown";
+    }
+    
     // Check if it's the logged-in user - show "me"
     if (email === loggedInUser.email) {
       return "me";
+    }
+
+    // If recipient object has a name, use it (first name only)
+    if (name && typeof name === "string" && name.trim()) {
+      return name.split(" ")[0];
     }
 
     // Check if email is present in contacts
@@ -230,43 +250,49 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
 
   const { toggleStar } = useMailActions();
 
-  const handleStar = useCallback((e) => {
-    e?.stopPropagation();
-    if (email?.id) {
-      toggleStar([email.id]);
-    }
-  }, [email, toggleStar]);
+  const handleStar = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (email?.id) {
+        toggleStar([email.id]);
+      }
+    },
+    [email, toggleStar]
+  );
 
-  const handleReply = useCallback((e) => {
-    e?.stopPropagation();
-    if (onReply) {
-      onReply();
-    } else if (responseViewRef?.current?.handleReply) {
-      responseViewRef.current.handleReply();
-      // Scroll to reply container
-      setTimeout(() => {
-        const replyContainer = document.querySelector('[data-testid="email-response-view"]');
-        if (replyContainer) {
-          replyContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    } else if (email) {
-      // Fallback: open compose window
-      const replySubject = email.subject?.startsWith("Re: ") ? email.subject : `Re: ${email.subject || ""}`;
-      setComposeWindows((prev) => [
-        ...prev,
-        {
-          id: `reply-${Date.now()}`,
-          fields: {
-            to: [email.from.email],
-            subject: replySubject,
-            replyingTo: email,
-            replyType: "reply",
+  const handleReply = useCallback(
+    (e) => {
+      e?.stopPropagation();
+      if (onReply) {
+        onReply();
+      } else if (responseViewRef?.current?.handleReply) {
+        responseViewRef.current.handleReply();
+        // Scroll to reply container
+        setTimeout(() => {
+          const replyContainer = document.querySelector('[data-testid="email-response-view"]');
+          if (replyContainer) {
+            replyContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 100);
+      } else if (email) {
+        // Fallback: open compose window
+        const replySubject = email.subject?.startsWith("Re: ") ? email.subject : `Re: ${email.subject || ""}`;
+        setComposeWindows((prev) => [
+          ...prev,
+          {
+            id: `reply-${Date.now()}`,
+            fields: {
+              to: [email.from.email],
+              subject: replySubject,
+              replyingTo: email,
+              replyType: "reply",
+            },
           },
-        },
-      ]);
-    }
-  }, [email, onReply, responseViewRef, setComposeWindows]);
+        ]);
+      }
+    },
+    [email, onReply, responseViewRef, setComposeWindows]
+  );
 
   const handleMoreActions = useCallback((e) => {
     e?.stopPropagation();
@@ -277,7 +303,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
     setMoreActionsAnchor(null);
   }, []);
 
-  const isStarred = email?.starred || false;
+  const isStarred = email?.is_starred || false;
 
   return (
     <>
@@ -290,9 +316,9 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
         </div>
         <ActionsContainer>
           <Time timestamp={timestamp} />
-          <Icon 
-            name={isStarred ? "star" : "star_border"} 
-            label={isStarred ? "Starred" : "Not starred"} 
+          <Icon
+            name={isStarred ? "star" : "star_border"}
+            label={isStarred ? "Starred" : "Not starred"}
             onClick={handleStar}
             color={isStarred ? "#f4b400" : "rgb(68, 68, 68)"}
           />
@@ -303,7 +329,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
       </TopBarContainer>
       {email && (
         <MoreActions
-          thread={{ threadId: email.threadId, starred: isStarred, important: email.important }}
+          thread={{ threadId: email.threadId, starred: isStarred, important: email.is_important }}
           showAdvancedMenu={false}
           toggleShowAdvancedMenu={() => {}}
           anchorEl={moreActionsAnchor}
@@ -529,10 +555,10 @@ export const Content = React.memo(
           <Avatar>{senderName.charAt(0)}</Avatar>
         </ProfileImageContainer>
         <BodyContainer>
-          <TopBar 
-            timestamp={timestamp} 
-            senderName={senderName} 
-            senderEmail={senderEmail} 
+          <TopBar
+            timestamp={timestamp}
+            senderName={senderName}
+            senderEmail={senderEmail}
             recipients={recipients}
             email={email}
             responseViewRef={responseViewRef}

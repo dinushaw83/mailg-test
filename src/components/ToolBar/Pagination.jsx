@@ -17,11 +17,7 @@ const useCustomHotKeys = ({ handlePreviousPage, handleNextPage }) => {
   });
 };
 
-const Pagination = ({
-  totalFilteredItems,
-  overwriteItemsPerPage = null,
-  showNavigationButtons = true,
-}) => {
+const Pagination = ({ totalFilteredItems, overwriteItemsPerPage = null, showNavigationButtons = true }) => {
   const { currentPage, setCurrentPage, itemsPerPage, setSortOrder } = useGlobalContext();
   const anchorRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);

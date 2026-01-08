@@ -54,32 +54,32 @@ export class NotificationManager {
       if (this.audioContext) {
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
-        
+
         // Different frequencies for different sounds
         const frequencies = {
-          1: 800,  // Welcome
-          2: 600,  // Piggyback
+          1: 800, // Welcome
+          2: 600, // Piggyback
           3: 1000, // Tones
-          4: 500,  // Music box
-          5: 900,  // Sweet
-          6: 700,  // Treasure
-          7: 400,  // Calm
+          4: 500, // Music box
+          5: 900, // Sweet
+          6: 700, // Treasure
+          7: 400, // Calm
           8: 1200, // Whistle
-          9: 800,  // Tennis
+          9: 800, // Tennis
           10: 1100, // Snappy
           11: 1300, // Shrink ray
-          12: 650,  // Nudge
+          12: 650, // Nudge
         };
-        
+
         oscillator.frequency.setValueAtTime(frequencies[soundId] || 800, this.audioContext.currentTime);
-        oscillator.type = 'sine';
-        
+        oscillator.type = "sine";
+
         gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
-        
+
         oscillator.start(this.audioContext.currentTime);
         oscillator.stop(this.audioContext.currentTime + 0.3);
       }
@@ -90,7 +90,7 @@ export class NotificationManager {
 
   async showNotification(title, options = {}, soundId = null) {
     const hasPermission = await this.requestPermission();
-    
+
     if (!hasPermission) {
       console.warn("Notification permission denied");
       return null;
@@ -101,12 +101,12 @@ export class NotificationManager {
       badge: "/favicon.svg",
       tag: "mailg-notification",
       requireInteraction: false,
-      ...options
+      ...options,
     };
 
     try {
       const notification = new Notification(title, defaultOptions);
-      
+
       // Play sound if specified
       if (soundId) {
         await this.playSound(soundId);
@@ -130,7 +130,7 @@ export class NotificationManager {
       {
         body: "This is how notifications will appear when you receive new mail.",
         icon: "/favicon.svg",
-        tag: "mailg-demo"
+        tag: "mailg-demo",
       },
       soundId
     );
@@ -142,7 +142,7 @@ export class NotificationManager {
       {
         body: subject,
         icon: "/favicon.svg",
-        tag: "mailg-new-mail"
+        tag: "mailg-new-mail",
       },
       soundId
     );
@@ -154,7 +154,7 @@ export class NotificationManager {
       {
         body: subject,
         icon: "/favicon.svg",
-        tag: "mailg-important-mail"
+        tag: "mailg-important-mail",
       },
       soundId
     );

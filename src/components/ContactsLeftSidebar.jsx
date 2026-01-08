@@ -322,91 +322,91 @@ const ContactsLeftSidebar = () => {
     try {
       // Create import label with current date in DD/MM format
       const today = new Date();
-      const day = String(today.getDate()).padStart(2, '0');
-      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, "0");
+      const month = String(today.getMonth() + 1).padStart(2, "0");
       const baseImportLabelName = `Imported on ${day}/${month}`;
-      
+
       // Find the next available counter for this date
       let counter = 1;
       let importLabelName = baseImportLabelName;
-      
+
       // Check if any labels with this base name exist and find the highest counter
-      const existingLabels = recipientLabels.filter(label => {
+      const existingLabels = recipientLabels.filter((label) => {
         // Match "Imported on 22/10" or "Imported on 22/10 1", "Imported on 22/10 2", etc.
-        const regex = new RegExp(`^${baseImportLabelName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s+(\\d+))?$`);
+        const regex = new RegExp(`^${baseImportLabelName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(\\s+(\\d+))?$`);
         return regex.test(label.label);
       });
-      
+
       if (existingLabels.length > 0) {
         // Find the highest counter
-        const counters = existingLabels.map(label => {
+        const counters = existingLabels.map((label) => {
           const match = label.label.match(/\s+(\d+)$/);
           return match ? parseInt(match[1]) : 0; // Return 0 for labels without counter
         });
         counter = Math.max(...counters) + 1;
       }
-      
+
       // Always append counter if there are existing labels with this date
       if (existingLabels.length > 0) {
         importLabelName = `${baseImportLabelName} ${counter}`;
       }
-      
+
       // Create the new label
       const importLabel = {
         id: `label_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         label: importLabelName,
-        color: '#039be5', // Blue color for import labels
+        color: "#039be5", // Blue color for import labels
       };
       setRecipientLabels((prev) => [...prev, importLabel]);
-      
+
       // Add the import label to all imported contacts
-      const contactsWithLabel = importedContacts.map(contact => ({
+      const contactsWithLabel = importedContacts.map((contact) => ({
         ...contact,
         labels: contact.labels ? [...contact.labels, importLabelName] : [importLabelName],
       }));
-      
-      console.log('Import Debug:', {
+
+      console.log("Import Debug:", {
         importLabelName,
         importLabel,
         importedContactsCount: importedContacts.length,
         contactsWithLabelCount: contactsWithLabel.length,
         firstContact: contactsWithLabel[0],
       });
-      
+
       // Store the previous recipients for undo functionality
       const previousRecipients = [...recipients];
       const previousLabels = [...recipientLabels];
-      
+
       // Add imported contacts to recipients
       setRecipients((prev) => [...prev, ...contactsWithLabel]);
-      
+
       // Use setTimeout to ensure state updates before navigation
       setTimeout(() => {
         // Navigate to the imported label view
         navigate(`/contacts/label/${importLabel.id}`);
       }, 100);
-      
+
       // Prepare undo action
       const undoAction = () => {
         // Restore previous recipients and labels
         setRecipients(previousRecipients);
         setRecipientLabels(previousLabels);
-        
+
         // Navigate back to contacts list
-        navigate('/contacts');
+        navigate("/contacts");
       };
 
       // Show custom import notification popup (bottom-right)
       setImportPopup({ open: true, fileName: uploadedFileName, undo: undoAction });
     } catch (error) {
-      console.error('Error importing contacts:', error);
+      console.error("Error importing contacts:", error);
       setSnackbar({
         open: true,
-        message: 'Error importing contacts. Please try again.',
+        message: "Error importing contacts. Please try again.",
         autoHideDuration: 3000,
         hideClose: true,
         style: snackbarStyle,
-        severity: 'error',
+        severity: "error",
       });
     }
   };
@@ -634,10 +634,10 @@ const ContactsLeftSidebar = () => {
               onEdit={() => {}}
               onDelete={() => {}}
             />
-            <MenuItem 
-              to="/contacts/frequent" 
-              selected={activeItem === "frequent"} 
-              icon="history" 
+            <MenuItem
+              to="/contacts/frequent"
+              selected={activeItem === "frequent"}
+              icon="history"
               text="Frequent"
               chip=""
               infoIcon={false}
@@ -697,13 +697,13 @@ const ContactsLeftSidebar = () => {
               onEdit={() => {}}
               onDelete={() => {}}
             />
-            <MenuItem 
-              to="/contacts/trash" 
-              selected={activeItem === "trash"} 
-              icon="delete" 
+            <MenuItem
+              to="/contacts/trash"
+              selected={activeItem === "trash"}
+              icon="delete"
               text="Trash"
               chip={(() => {
-                const deletedCount = recipients.filter(r => r.isDeleted === true).length;
+                const deletedCount = recipients.filter((r) => r.isDeleted === true).length;
                 return deletedCount === 0 ? "" : deletedCount;
               })()}
               infoIcon={false}
@@ -743,7 +743,7 @@ const ContactsLeftSidebar = () => {
           </Box>
           <List disablePadding>
             {/* Sort labels on alphabetical order and display them */}
-            {recipientLabels
+            {[...recipientLabels]
               .sort((a, b) => a.label.localeCompare(b.label))
               .map((label) => (
                 <MenuItem
@@ -793,11 +793,7 @@ const ContactsLeftSidebar = () => {
       )}
 
       {/* Import Contacts Modal */}
-      <ImportContactsModal
-        open={importModalOpen}
-        onClose={handleCloseImportModal}
-        onImport={handleImportContacts}
-      />
+      <ImportContactsModal open={importModalOpen} onClose={handleCloseImportModal} onImport={handleImportContacts} />
       {/* Import Notification Popup */}
       {importPopup?.open && (
         <ImportNotification

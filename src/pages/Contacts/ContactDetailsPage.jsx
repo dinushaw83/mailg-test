@@ -48,7 +48,7 @@ const ContactDetailsPage = () => {
     setHiddenRecipients,
     setDeletedRecipients,
   } = useGlobalContext();
-const { contactId } = useParams();
+  const { contactId } = useParams();
   const [disableHeader, setDisableHeader] = useState(false);
   const [emailMenuAnchor, setEmailMenuAnchor] = useState(null);
   const [labelsMenuAnchor, setLabelsMenuAnchor] = useState(null);
@@ -74,9 +74,9 @@ const { contactId } = useParams();
   });
 
   // Get the contact from the recipients
-const contact = [...recipients, ...hiddenRecipients].find(
-  (recipient) => recipient.id?.toString() === contactId?.toString()
-);
+  const contact = [...recipients, ...hiddenRecipients].find(
+    (recipient) => recipient.id?.toString() === contactId?.toString()
+  );
   const isFavorite = contact?.isFavorite;
   const isHiddenContact = contact ? hiddenRecipients.some((recipient) => recipient.id === contact.id) : false;
 
@@ -723,9 +723,9 @@ const contact = [...recipients, ...hiddenRecipients].find(
   // Format date for recent interactions
   const formatRecentDate = (timestamp) => {
     if (!timestamp) return "";
-    
+
     const date = new Date(timestamp);
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return "";
@@ -743,9 +743,9 @@ const contact = [...recipients, ...hiddenRecipients].find(
   // Format date for history section
   const formatHistoryDate = (timestamp) => {
     if (!timestamp) return "";
-    
+
     const date = new Date(timestamp);
-    
+
     // Check if date is valid
     if (isNaN(date.getTime())) {
       return "";
@@ -777,7 +777,7 @@ const contact = [...recipients, ...hiddenRecipients].find(
 
   // Navigate to email details
   const navigateToEmailDetails = (email) => {
-    const threadId = email.threadId.split(":")[1];
+    const threadId = email.threadId;
 
     let url = "";
     if (email.labels.includes("Inbox")) {
@@ -2113,4 +2113,3 @@ const contact = [...recipients, ...hiddenRecipients].find(
 };
 
 export default ContactDetailsPage;
- 

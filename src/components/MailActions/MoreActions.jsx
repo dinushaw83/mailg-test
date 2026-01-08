@@ -33,7 +33,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
-    () => threads.filter((thread) => selectedIds.includes(thread.threadId.split(":")[1])),
+    () => threads.filter((thread) => selectedIds.includes(thread.threadId)),
     [threads, selectedIds]
   );
   const selectedEmails = useMemo(() => {
@@ -78,7 +78,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       // Store original labels before the move
       const originalLabels = {};
       ids.forEach((id) => {
-        const email = emails.find((email) => email.threadId.split(":")[1] === String(id));
+        const email = emails.find((email) => email.threadId === String(id));
         if (email) {
           originalLabels[String(id)] = [...(email.labels || [])];
         }
@@ -144,7 +144,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
   const markAllAsRead = useCallback(() => {
     const visibleThreadIds = new Set(threads.map((thread) => thread.threadId));
-    const unreadEmails = emails.filter((email) => visibleThreadIds.has(email.threadId) && !email.read);
+    const unreadEmails = emails.filter((email) => visibleThreadIds.has(email.threadId) && !email.is_read);
     const idsToUpdate = unreadEmails.map((email) => email.id);
 
     if (!idsToUpdate.length) {
@@ -190,20 +190,20 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const onlyOneItemSelected = selectedIds.length === 1;
 
   const anyStarred = useMemo(() => {
-    return selectedEmails.some((email) => email.starred);
+    return selectedEmails.some((email) => email.is_starred);
   }, [selectedEmails]);
 
   const allImportant = useMemo(() => {
     if (!selectedEmails.length) return false;
-    return selectedEmails.every((email) => email.important);
+    return selectedEmails.every((email) => email.is_important);
   }, [selectedEmails]);
 
   const anyImportant = useMemo(() => {
-    return selectedEmails.some((email) => email.important);
+    return selectedEmails.some((email) => email.is_important);
   }, [selectedEmails]);
 
   const anyNotImportant = useMemo(() => {
-    return selectedEmails.some((email) => !email.important);
+    return selectedEmails.some((email) => !email.is_important);
   }, [selectedEmails]);
 
   const allMuted = useMemo(() => {
@@ -212,7 +212,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   }, [selectedEmails]);
 
   const anyReadEmails = useMemo(() => {
-    return selectedEmails.some((email) => email.read);
+    return selectedEmails.some((email) => email.is_read);
   }, [selectedEmails]);
 
   const handleStar = useCallback(
@@ -224,7 +224,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const previousStates = selectedEmails.map((email) => ({
         id: email.id,
-        starred: !!email.starred,
+        starred: !!email.is_starred,
       }));
       const idsToUpdate = previousStates.filter((state) => state.starred !== value).map((state) => state.id);
 
@@ -237,16 +237,19 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const changedThreadCount =
         (value
-          ? selectedThreads.filter((thread) => !thread.starred)
-          : selectedThreads.filter((thread) => thread.starred)).length || selectedThreads.length || 1;
+          ? selectedThreads.filter((thread) => !thread.is_starred)
+          : selectedThreads.filter((thread) => thread.is_starred)
+        ).length ||
+        selectedThreads.length ||
+        1;
 
       const message = value
         ? changedThreadCount > 1
           ? `${changedThreadCount} conversations starred.`
           : "Conversation starred."
         : changedThreadCount > 1
-        ? `${changedThreadCount} conversations unstarred.`
-        : "Conversation unstarred.";
+          ? `${changedThreadCount} conversations unstarred.`
+          : "Conversation unstarred.";
 
       const undo = () => {
         const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
@@ -290,7 +293,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const previousStates = selectedEmails.map((email) => ({
         id: email.id,
-        important: !!email.important,
+        important: !!email.is_important,
       }));
       const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
 
@@ -303,16 +306,19 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const changedThreadCount =
         (value
-          ? selectedThreads.filter((thread) => !thread.important)
-          : selectedThreads.filter((thread) => thread.important)).length || selectedThreads.length || 1;
+          ? selectedThreads.filter((thread) => !thread.is_important)
+          : selectedThreads.filter((thread) => thread.is_important)
+        ).length ||
+        selectedThreads.length ||
+        1;
 
       const message = value
         ? changedThreadCount > 1
           ? `${changedThreadCount} conversations marked as important.`
           : "Conversation marked as important."
         : changedThreadCount > 1
-        ? `${changedThreadCount} conversations marked as not important.`
-        : "Conversation marked as not important.";
+          ? `${changedThreadCount} conversations marked as not important.`
+          : "Conversation marked as not important.";
 
       const undo = () => {
         const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
@@ -357,9 +363,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       return;
     }
 
-    const labelSnapshot = new Map(
-      selectedEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])
-    );
+    const labelSnapshot = new Map(selectedEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]]));
 
     const wasMuted = selectedEmails.every((email) => (email.labels || []).includes("Muted"));
     const nextValue = !wasMuted;
@@ -396,8 +400,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     const action = nextValue ? "muted" : "unmuted";
     const conversationCount =
       new Set(selectedEmails.map((email) => email.threadId)).size || selectedThreads.length || 1;
-    const message =
-      conversationCount > 1 ? `${conversationCount} conversations ${action}.` : `Conversation ${action}.`;
+    const message = conversationCount > 1 ? `${conversationCount} conversations ${action}.` : `Conversation ${action}.`;
 
     setSnackbar({
       open: true,
@@ -420,7 +423,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     const previousStates = selectedEmails.map((email) => ({
       id: email.id,
       threadId: email.threadId,
-      read: !!email.read,
+      read: !!email.is_read,
     }));
     const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
 
@@ -451,9 +454,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       });
     };
 
-    const affectedThreadCount = new Set(
-      previousStates.filter((state) => state.read).map((state) => state.threadId)
-    ).size;
+    const affectedThreadCount = new Set(previousStates.filter((state) => state.read).map((state) => state.threadId))
+      .size;
     const conversations = affectedThreadCount || selectedThreads.length || 1;
 
     setSnackbar({

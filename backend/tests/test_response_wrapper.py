@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.models.email import Email
-from app.models.folder import Folder
+from app.core.constants import FolderType
 
 
 class TestResponseWrapperFormat:
@@ -78,9 +78,8 @@ class TestErrorResponseWrapping:
         client, token, user = client_with_auth
         
         # Use a valid UUID format that doesn't exist
-        non_existent_uuid = "00000000-0000-0000-0000-000000000001"
         response = client.get(
-            f"/api/v1/emails/{non_existent_uuid}",
+            "/api/v1/emails/00000000-0000-0000-0000-000000099999",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -122,16 +121,6 @@ class TestCRUDResponseWrapping:
         """Test POST create response is wrapped."""
         client, token, user = client_with_auth
         
-        # Create a folder first
-        folder = Folder(
-            name="Test Drafts",
-            folder_type="drafts",
-            owner_id=user.id,
-            is_system=True
-        )
-        db_session.add(folder)
-        db_session.commit()
-        
         response = client.post(
             "/api/v1/emails",
             json={
@@ -153,24 +142,14 @@ class TestCRUDResponseWrapping:
         """Test GET list response is wrapped."""
         client, token, user = client_with_auth
         
-        # Create folder
-        folder = Folder(
-            name="Test Inbox",
-            folder_type="inbox",
-            owner_id=user.id,
-            is_system=True
-        )
-        db_session.add(folder)
-        db_session.commit()
-        
         # Create some emails
         for i in range(3):
             email = Email(
                 subject=f"Email {i}",
                 body=f"Body {i}",
                 status="received",
+                folder=FolderType.INBOX.value,
                 sender_id=user.id,
-                folder_id=folder.id
             )
             db_session.add(email)
         db_session.commit()
@@ -192,22 +171,12 @@ class TestCRUDResponseWrapping:
         """Test GET single email response is wrapped."""
         client, token, user = client_with_auth
         
-        # Create folder
-        folder = Folder(
-            name="Test Inbox",
-            folder_type="inbox",
-            owner_id=user.id,
-            is_system=True
-        )
-        db_session.add(folder)
-        db_session.commit()
-        
         email = Email(
             subject="Test Email",
             body="Test body",
             status="received",
+            folder=FolderType.INBOX.value,
             sender_id=user.id,
-            folder_id=folder.id
         )
         db_session.add(email)
         db_session.commit()

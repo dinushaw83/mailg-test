@@ -40,11 +40,14 @@ const ContactSearchDropdown = ({
   }, [initialQuery]);
 
   // Cleanup timeout on unmount
-  useEffect(() => () => {
-    if (blurTimeoutRef.current) {
-      clearTimeout(blurTimeoutRef.current);
-    }
-  }, []);
+  useEffect(
+    () => () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    },
+    []
+  );
 
   // Filter contacts that have both name and email
   const validContacts = [...recipients, ...hiddenRecipients].filter(

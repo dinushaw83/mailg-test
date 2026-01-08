@@ -1,4 +1,8 @@
+import { createLabelThunk, deleteLabelThunk, updateLabelThunk } from "../store/slices/mailSlice";
+import { getCompositeKey, getLabelId } from "../utils/labelTransform";
 import { useCallback, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 export const ROOT = null;
@@ -6,7 +10,7 @@ export const ROOT = null;
 const getThreadKey = (m) => {
   if (!m) return null;
   if (m.threadId) {
-    return String(m.threadId).replace("#thread-f:", "");
+    return String(m.threadId);
   }
   return m.legacyThreadId || null;
 };
@@ -23,20 +27,31 @@ export function splitKey(key) {
   return { parentKey: key.slice(0, idx), name: key.slice(idx + 2) };
 }
 
-function buildTree(labels) {
+function buildTree(labels, idToKeyMap = {}) {
   const nodes = Object.entries(labels || {}).map(([key, meta]) => {
-    // fallback to composite parsing when fields are missing
     let name = meta?.name;
     let parentKey = meta?.parentKey;
+    let compositeKey = key;
 
-    if (!name || !parentKey) {
-      const parsed = splitKey(key);        // "__ROOT__::Parent::Child"
-      name = name ?? parsed.name;
-      parentKey = parentKey ?? parsed.parentKey ?? ROOT;
+    // Check if this is a UUID-based label (from backend)
+    if (meta?.id && idToKeyMap[meta.id]) {
+      // This is a backend label: use derived composite key
+      compositeKey = idToKeyMap[meta.id];
+      name = meta.name;
+      parentKey = meta.parentKey || ROOT;
+    } else {
+      // This is a system label or legacy label: use composite key directly
+      if (!name || parentKey === undefined) {
+        const parsed = splitKey(key);
+        name = name ?? parsed.name;
+        parentKey = parentKey ?? parsed.parentKey ?? ROOT;
+      }
+      compositeKey = key; // System labels use composite keys as-is
     }
 
     return {
-      key,
+      key: compositeKey, // Use composite key for tree structure
+      id: meta?.id, // Keep UUID for backend labels
       name,
       parentKey,
       system: !!meta?.system,
@@ -44,13 +59,16 @@ function buildTree(labels) {
     };
   });
 
-  const byKey = Object.fromEntries(nodes.map(n => [n.key, n]));
+  const byKey = Object.fromEntries(nodes.map((n) => [n.key, n]));
   const roots = [];
   for (const n of nodes) {
     if (n.parentKey && byKey[n.parentKey]) byKey[n.parentKey].children.push(n);
     else roots.push(n);
   }
-  const sortRec = arr => { arr.sort((a, b) => a.name.localeCompare(b.name)); arr.forEach(c => sortRec(c.children)); };
+  const sortRec = (arr) => {
+    arr.sort((a, b) => a.name.localeCompare(b.name));
+    arr.forEach((c) => sortRec(c.children));
+  };
   sortRec(roots);
   return roots;
 }
@@ -63,7 +81,7 @@ export function flattenTreeForSelect(roots, depth = 0, out = []) {
       name: node.name,
       depth,
       system: node.system,
-      children: node.children?.map(c => c.key) ?? [], // keep child keys
+      children: node.children?.map((c) => c.key) ?? [], // keep child keys
     });
     if (node.children?.length) flattenTreeForSelect(node.children, depth + 1, out);
   }
@@ -75,185 +93,172 @@ export function getPathLabelFromKey(labelsMap, key) {
   const parts = key.split("::");
   const paths = [];
   for (let i = 0; i < parts.length; i++) {
-    const k = parts.slice(0, i + 1).join("::");       // cumulative key
-    const nm = labelsMap?.[k]?.name ?? parts[i];      // fallback to raw segment
+    const k = parts.slice(0, i + 1).join("::"); // cumulative key
+    const nm = labelsMap?.[k]?.name ?? parts[i]; // fallback to raw segment
     paths.push(nm);
   }
   return paths.join("/");
 }
 
 export default function useLabels() {
+  const dispatch = useDispatch();
   const { emails, setEmails, labels, setLabels } = useGlobalContext();
+  
+  // Get mappings from Redux mail state
+  const labelIdToKeyMap = useSelector((state) => state.mail.labelIdToKeyMap || {});
+  const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
 
   const createLabel = useCallback(
-    (name, { parentKey = ROOT, ...meta } = {}) => {
+    async (name, { parentKey = ROOT, color = null, ...meta } = {}) => {
       const nm = String(name || "").trim();
       if (!nm) return;
 
-      setLabels(prev => {
-        const cur = prev || {};
-
-        // sibling uniqueness: check names under same parentKey (fallback to key parsing)
-        const isDup = Object.entries(cur).some(([key, v]) => {
-          let nm = v?.name, pk = v?.parentKey;
-          if (nm == null || pk === undefined) {
-            const parsed = splitKey(key);
-            nm = nm ?? parsed.name;
-            pk = pk ?? (parsed.parentKey ?? ROOT);
-          }
-          return (pk ?? ROOT) === parentKey && (nm || "").toLowerCase() === name.toLowerCase();
-        });
-        if (isDup) return cur;
-
-        const key = makeKey(name, parentKey);
-        if (cur[key]) return cur;
-
-        return {
-          ...cur,
-          [key]: { name, parentKey, system: false, color: null, ...meta },
-        };
+      // Check for duplicates
+      const cur = labels || {};
+      const isDup = Object.entries(cur).some(([key, v]) => {
+        let labelName = v?.name;
+        let pk = v?.parentKey;
+        if (labelName == null || pk === undefined) {
+          const parsed = splitKey(key);
+          labelName = labelName ?? parsed.name;
+          pk = pk ?? parsed.parentKey ?? ROOT;
+        }
+        return (pk ?? ROOT) === parentKey && (labelName || "").toLowerCase() === name.toLowerCase();
       });
+      
+      if (isDup) {
+        throw new Error("Label with this name already exists");
+      }
+
+      // Convert parentKey (composite key) to parent_id (UUID) if it's a backend label
+      let parent_id = null;
+      if (parentKey && keyToLabelIdMap[parentKey]) {
+        parent_id = keyToLabelIdMap[parentKey];
+      }
+
+      // Dispatch thunk to create label in backend
+      try {
+        await dispatch(createLabelThunk({ name: nm, color, parent_id })).unwrap();
+      } catch (error) {
+        console.error("Failed to create label:", error);
+        throw error;
+      }
     },
-    [setLabels]
+    [dispatch, labels, keyToLabelIdMap]
   );
 
-  const renameLabel = useCallback((key, newName, newParentKey = undefined) => {
-    console.log("renameLabel", key, newName, newParentKey);
+  const renameLabel = useCallback(
+    async (key, newName, newParentKey = undefined) => {
+      console.log("renameLabel", key, newName, newParentKey);
 
-    const nm = String(newName || "").trim();
-    if (!nm) return;
+      const nm = String(newName || "").trim();
+      if (!nm) return;
 
-    let oldToNew = new Map();
+      const cur = labels || {};
+      
+      // Find the label - could be by composite key or UUID
+      let labelId = null;
+      let label = null;
+      
+      if (keyToLabelIdMap[key]) {
+        // Key is a composite key, get UUID
+        labelId = keyToLabelIdMap[key];
+        label = cur[labelId];
+      } else if (cur[key]?.id) {
+        // Key is already a UUID
+        labelId = key;
+        label = cur[key];
+      } else if (cur[key]) {
+        // Key is a composite key for a system label (legacy)
+        label = cur[key];
+        // System labels can't be renamed via backend, handle differently
+        console.warn("Cannot rename system label via backend");
+        return;
+      }
 
-    setLabels(prev => {
-      const cur = { ...(prev || {}) };
-      const lbl = cur[key];
-      if (!lbl) return prev;
+      if (!label || !labelId) {
+        console.warn("Label not found:", key);
+        return;
+      }
 
       // Determine target parent (explicit override or existing)
-      const targetParent =
-        newParentKey === undefined ? lbl.parentKey ?? null : newParentKey;
+      const targetParent = newParentKey === undefined ? (label.parentKey ?? null) : newParentKey;
 
-      // Prevent circular nesting (self or descendant)
+      // Convert parentKey (composite key) to parent_id (UUID) if it's a backend label
+      let parent_id = null;
+      if (targetParent && keyToLabelIdMap[targetParent]) {
+        parent_id = keyToLabelIdMap[targetParent];
+      }
+
+      // Prevent circular nesting
       if (targetParent === key || (targetParent && targetParent.startsWith(key + "::"))) {
         console.warn("Invalid move: cannot nest label under its own descendant");
-        return prev;
+        throw new Error("Cannot nest label under its own descendant");
       }
 
-      // New key for renamed/moved label
-      const newKey = targetParent ? `${targetParent}::${nm}` : nm;
-      if (newKey === key) return prev;
-
-      // --- Build children index ---
-      const childrenByParent = {};
-      for (const [k, v] of Object.entries(cur)) {
-        const parsed = splitKey(k);
-        const p = (v.parentKey ?? parsed.parentKey ?? ROOT);
-        (childrenByParent[p] ||= []).push(k);
+      // Dispatch thunk to update label in backend
+      try {
+        await dispatch(updateLabelThunk({ id: labelId, name: nm, parent_id })).unwrap();
+      } catch (error) {
+        console.error("Failed to rename label:", error);
+        throw error;
       }
-
-      // --- BFS collect subtree ---
-      oldToNew = new Map();
-      const queue = [key];
-      oldToNew.set(key, newKey);
-
-      while (queue.length) {
-        const oldK = queue.shift();
-        const mappedParent = oldToNew.get(oldK);
-        const childKeys = childrenByParent[oldK] || [];
-        for (const ck of childKeys) {
-          const child = cur[ck];
-          const childName = (child?.name ?? splitKey(ck).name);
-          const childNewKey = `${mappedParent}::${childName}`;
-          oldToNew.set(ck, childNewKey);
-          queue.push(ck);
-        }
-      }
-
-      // --- Prevent collisions with existing labels outside the moved subtree ---
-      for (const [, newK] of oldToNew.entries()) {
-        if (cur[newK] && !oldToNew.has(newK)) {
-          console.warn("Invalid move: target path collides with an existing label", newK);
-          return prev;
-        }
-      }
-
-      // --- Rebuild map with corrected parent references ---
-      const next = { ...cur };
-      for (const [oldK, newK] of oldToNew.entries()) {
-        const node = cur[oldK];
-        if (!node) continue;
-        const oldParent = node.parentKey;
-        const newParent =
-          oldK === key
-            ? targetParent || null
-            : oldToNew.get(oldParent) || node.parentKey || null;
-
-        next[newK] = {
-          ...node,
-          name: oldK === key ? nm : node.name,
-          parentKey: newParent,
-        };
-      }
-
-      // Clean out the old keys
-      for (const oldK of oldToNew.keys()) delete next[oldK];
-
-      return next;
-    });
-
-    // --- Sync email labels ---
-    setEmails(prevEmails =>
-      (prevEmails || []).map(m => ({
-        ...m,
-        labels: (m.labels || []).map(l => oldToNew.get(l) || l),
-      }))
-    );
-  }, [setLabels, setEmails]);
+    },
+    [dispatch, labels, keyToLabelIdMap]
+  );
 
   const deleteLabel = useCallback(
-    (key) => {
-      setLabels(prev => {
-        const cur = { ...(prev || {}) };
-        const lbl = cur[key];
-        if (!lbl || lbl.system) return prev;
-
-        // collect subtree by parentKey (cascade delete)
-        const toDelete = new Set([key]);
-        let changed = true;
-        while (changed) {
-          changed = false;
-          for (const [k, v] of Object.entries(cur)) {
-            if (toDelete.has(v.parentKey) && !toDelete.has(k)) {
-              toDelete.add(k);
-              changed = true;
-            }
-          }
+    async (key) => {
+      const cur = labels || {};
+      
+      // Find the label - could be by composite key or UUID
+      let labelId = null;
+      let label = null;
+      
+      if (keyToLabelIdMap[key]) {
+        // Key is a composite key, get UUID
+        labelId = keyToLabelIdMap[key];
+        label = cur[labelId];
+      } else if (cur[key]?.id) {
+        // Key is already a UUID
+        labelId = key;
+        label = cur[key];
+      } else if (cur[key]) {
+        // System label (legacy) - cannot delete
+        label = cur[key];
+        if (label.system) {
+          console.warn("Cannot delete system label");
+          throw new Error("Cannot delete system label");
         }
+      }
 
-        for (const k of toDelete) delete cur[k];
+      if (!label || !labelId) {
+        console.warn("Label not found:", key);
+        throw new Error("Label not found");
+      }
 
-        setEmails(prevEmails =>
-          (prevEmails || []).map(m => ({
-            ...m,
-            labels: (m.labels || []).filter(l => !toDelete.has(l)),
-          }))
-        );
+      if (label.system) {
+        console.warn("Cannot delete system label");
+        throw new Error("Cannot delete system label");
+      }
 
-        return cur;
-      });
+      // Dispatch thunk to delete label in backend (cascade delete handled by backend)
+      try {
+        await dispatch(deleteLabelThunk(labelId)).unwrap();
+      } catch (error) {
+        console.error("Failed to delete label:", error);
+        throw error;
+      }
     },
-    [setLabels, setEmails]
+    [dispatch, labels, keyToLabelIdMap]
   );
 
   const removeLabelFromThread = useCallback(
     (threadId, labelKey) => {
-      const normalizedThreadId = String(threadId).replace(/^#thread-f:/, "");
+      const normalizedThreadId = String(threadId);
       setEmails((prev) =>
         (prev || []).map((m) =>
-          getThreadKey(m) === normalizedThreadId
-            ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) }
-            : m
+          getThreadKey(m) === normalizedThreadId ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) } : m
         )
       );
     },
@@ -262,13 +267,13 @@ export default function useLabels() {
 
   const addLabelToThread = useCallback(
     (threadId, labelKey) => {
-      setEmails(prev =>
-        (prev || []).map(m =>
-          getThreadKey(m) === String(threadId).replace("#thread-f:", "")
+      setEmails((prev) =>
+        (prev || []).map((m) =>
+          getThreadKey(m) === String(threadId)
             ? {
-              ...m,
-              labels: Array.from(new Set([...(m.labels || []), labelKey])),
-            }
+                ...m,
+                labels: Array.from(new Set([...(m.labels || []), labelKey])),
+              }
             : m
         )
       );
@@ -283,76 +288,114 @@ export default function useLabels() {
       for (const key of m.labels || []) {
         if (!map[key]) map[key] = { total: 0, unread: 0, items: [] };
         map[key].total += 1;
-        if (!m.read) map[key].unread += 1;
+        if (!m.is_read) map[key].unread += 1;
         map[key].items.push(m);
       }
     }
     return map;
   }, [emails]);
 
-  const setLabelColor = (key, color, { withSublabels = false } = {}) => {
-    setLabels(prev => {
-      const next = { ...prev };
-      const update = (k) => {
-        if (next[k]) {
-          next[k] = { ...next[k], color };
-          if (withSublabels) {
-            Object.entries(next)
-              .filter(([_, v]) => v.parentKey === k)
-              .forEach(([childKey]) => update(childKey));
+  const setLabelColor = useCallback(
+    async (key, color, { withSublabels = false } = {}) => {
+      const cur = labels || {};
+      
+      // Find the label - could be by composite key or UUID
+      let labelId = null;
+      let label = null;
+      
+      if (keyToLabelIdMap[key]) {
+        // Key is a composite key, get UUID
+        labelId = keyToLabelIdMap[key];
+        label = cur[labelId];
+      } else if (cur[key]?.id) {
+        // Key is already a UUID
+        labelId = key;
+        label = cur[key];
+      } else if (cur[key]) {
+        // System label (legacy) - handle locally
+        setLabels((prev) => {
+          const next = { ...prev };
+          const update = (k) => {
+            if (next[k]) {
+              next[k] = { ...next[k], color };
+              if (withSublabels) {
+                Object.entries(next)
+                  .filter(([_, v]) => v.parentKey === k)
+                  .forEach(([childKey]) => update(childKey));
+              }
+            }
+          };
+          update(key);
+          return next;
+        });
+        return;
+      }
+
+      if (!label || !labelId) {
+        console.warn("Label not found:", key);
+        throw new Error("Label not found");
+      }
+
+      // Dispatch thunk to update label color in backend
+      try {
+        await dispatch(updateLabelThunk({ id: labelId, color })).unwrap();
+        
+        // If withSublabels, update children (this would need to be handled by backend or multiple calls)
+        if (withSublabels) {
+          // Find and update all children
+          const children = Object.entries(cur).filter(([_, v]) => v.parent_id === labelId);
+          for (const [childId] of children) {
+            await dispatch(updateLabelThunk({ id: childId, color })).unwrap();
           }
         }
-      };
-      update(key);
-      return next;
-    });
-  };
-
-  const labelTree = useMemo(() => buildTree(labels || {}), [labels]);
-
-  const getSelectionLabels = useCallback((selectedIds) => {
-    const ids = new Set(Array.from(selectedIds ?? []).map(String));
-
-    const hasAnyId = (m) => {
-      const keys = [
-        m.id,
-        m.messageId,
-        m.threadId,
-        m.threadId && String(m.threadId).replace("#thread-f:", ""),
-        m.legacyThreadId,
-        m.legacyLastMessageId,
-        m.legacyLastNonDraftMessageId,
-      ]
-        .map((v) => String(v ?? "").trim())
-        .filter(Boolean);
-
-      return keys.some((k) => ids.has(k));
-    };
-
-    const selectedList = (emails || []).filter(hasAnyId);
-    const nSel = selectedList.length;
-
-    // count labels across selected
-    const labelCounts = new Map();
-    for (const m of selectedList) {
-      for (const l of m.labels ?? []) {
-        labelCounts.set(l, (labelCounts.get(l) || 0) + 1);
+      } catch (error) {
+        console.error("Failed to update label color:", error);
+        throw error;
       }
-    }
+    },
+    [dispatch, labels, keyToLabelIdMap, setLabels]
+  );
 
-    // intersection (labels on ALL selected)
-    const currentLabels =
-      nSel === 0
-        ? new Set()
-        : new Set(
-          [...labelCounts.entries()]
-            .filter(([_, c]) => c === nSel)
-            .map(([l]) => l)
-        );
+  const labelTree = useMemo(() => buildTree(labels || {}, labelIdToKeyMap), [labels, labelIdToKeyMap]);
 
-    return { currentLabels, labelCounts, nSel };
-  }, [emails]);
+  const getSelectionLabels = useCallback(
+    (selectedIds) => {
+      const ids = new Set(Array.from(selectedIds ?? []).map(String));
 
+      const hasAnyId = (m) => {
+        const keys = [
+          m.id,
+          m.messageId,
+          m.threadId,
+          m.legacyThreadId,
+          m.legacyLastMessageId,
+          m.legacyLastNonDraftMessageId,
+        ]
+          .map((v) => String(v ?? "").trim())
+          .filter(Boolean);
+
+        return keys.some((k) => ids.has(k));
+      };
+
+      const selectedList = (emails || []).filter(hasAnyId);
+      const nSel = selectedList.length;
+
+      // count labels across selected
+      const labelCounts = new Map();
+      for (const m of selectedList) {
+        for (const l of m.labels ?? []) {
+          labelCounts.set(l, (labelCounts.get(l) || 0) + 1);
+        }
+      }
+
+      // intersection (labels on ALL selected)
+      const currentLabels =
+        nSel === 0 ? new Set() : new Set([...labelCounts.entries()].filter(([_, c]) => c === nSel).map(([l]) => l));
+
+      return { currentLabels, labelCounts, nSel };
+    },
+    [emails]
+  );
 
   return {
     labels,

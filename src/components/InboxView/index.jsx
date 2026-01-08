@@ -1,12 +1,20 @@
-import React, { useMemo, useEffect, useCallback, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import ActionBar from "./ActionBar";
-import styled from "@emotion/styled";
-import { Content } from "./Content";
-import { Subject } from "./Subject";
 import { Box, Divider } from "@mui/material";
-import { getThread, getThreadRows } from "../../utils/emails";
+import { Link, useParams } from "react-router-dom";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { getThread, getThreadRows, normalizeEmails } from "../../utils/emails";
+
+import ActionBar from "./ActionBar";
+import ComposeReply from "../ComposeReply/ComposeReply";
+import { Content } from "./Content";
+import { PanelFooter } from "../EmailList/Footer";
+import QuickSettings from "../QuickSettings";
+import { Subject } from "./Subject";
+import emailService from "../../services/emailService";
+import { normalizeLabelName } from "../../hooks/useLabels";
+import styled from "@emotion/styled";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import useMailActions from "../../hooks/useMailActions";
+import { useQuery } from "@tanstack/react-query";
 
 // Mapping of folder keys to display names for document title
 const FOLDER_DISPLAY_NAMES = {
@@ -25,11 +33,15 @@ const FOLDER_DISPLAY_NAMES = {
 
 // Folders that should display unread count in document title
 const FOLDERS_WITH_UNREAD_COUNT = new Set(["inbox", "starred", "snoozed", "important", "chats", "all"]);
-import ComposeReply from "../ComposeReply/ComposeReply";
-import { PanelFooter } from "../EmailList/Footer";
-import useMailActions from "../../hooks/useMailActions";
-import QuickSettings from "../QuickSettings";
-import { normalizeLabelName } from "../../hooks/useLabels";
+
+// Helper function to check if a label exists in labels array (handles both string and object formats)
+const hasLabel = (labels, labelName) => {
+  if (!Array.isArray(labels)) return false;
+  return labels.some((l) => {
+    const name = typeof l === "string" ? l : l?.name;
+    return name === labelName;
+  });
+};
 
 const InboxViewContainer = styled.div`
   display: flex;
@@ -108,15 +120,18 @@ export const EmailContent = ({
   showActionBar = true,
   isPreview = false,
   markAsReadAfter = 3000,
+  emails,
+  normalizedEmails,
 }) => {
-  const { emails, normalizedEmails } = useGlobalContext();
+  console.log({threadId, folder, label, emails, normalizedEmails})
   const responseViewRef = React.useRef();
   const { markRead } = useMailActions();
 
   const { messagesById } = normalizedEmails;
 
   const thread = useMemo(() => {
-    return getThread(emails, { threadId: `#thread-f:${threadId}` });
+    if (!emails || emails.length === 0) return null;
+    return getThread(emails, { threadId });
   }, [emails, threadId]);
 
   useEffect(() => {
@@ -156,8 +171,8 @@ export const EmailContent = ({
   const { messageIds } = thread;
   const messages = messageIds.map((id) => messagesById[id]);
   const lastMessage = messages[messages.length - 1];
-  const isLastDraft = lastMessage?.labels?.includes("Drafts");
-  const isLastScheduled = lastMessage?.labels?.includes("Scheduled");
+  const isLastDraft = hasLabel(lastMessage?.labels, "Drafts");
+  const isLastScheduled = hasLabel(lastMessage?.labels, "Scheduled");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
@@ -168,26 +183,30 @@ export const EmailContent = ({
       <ScrollableContent>
         <InnerContainer>
           <Subject subject={messages[0].subject} message={messages[0]} />
-          {displayedMessages.map((message, index) => (
-            <React.Fragment key={message.id}>
-              <Content
-                body={message.body}
-                timestamp={message.timestamp}
-                senderName={message.from.name}
-                senderEmail={message.from.email}
-                recipients={message.to}
-                attachments={message.attachments}
-                embeddedImages={message.embeddedImages}
-                isScheduled={message.labels?.includes("Scheduled")}
-                scheduledDate={message.scheduledDate}
-                scheduledTime={message.scheduledTime}
-                emailId={message.id}
-                email={message}
-                responseViewRef={responseViewRef}
-              />
-              {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
-            </React.Fragment>
-          ))}
+          {displayedMessages.map((message, index) => {
+            // Combine to and cc recipients for display
+            const recipients = [...(message.to || []), ...(message.cc || [])];
+            return (
+              <React.Fragment key={message.id}>
+                <Content
+                  body={message.body}
+                  timestamp={message.timestamp}
+                  senderName={message.from.name}
+                  senderEmail={message.from.email}
+                  recipients={recipients}
+                  attachments={message.attachments}
+                  embeddedImages={message.embeddedImages}
+                  isScheduled={hasLabel(message.labels, "Scheduled")}
+                  scheduledDate={message.scheduledDate}
+                  scheduledTime={message.scheduledTime}
+                  emailId={message.id}
+                  email={message}
+                  responseViewRef={responseViewRef}
+                />
+                {index < displayedMessages.length - 1 && <Divider sx={{ marginTop: 3, marginBottom: 3 }} />}
+              </React.Fragment>
+            );
+          })}
           {/* <Actions /> */}
           {!isLastScheduled && <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />}
         </InnerContainer>
@@ -199,16 +218,45 @@ export const EmailContent = ({
 
 const InboxView = () => {
   const { threadId, folder, label } = useParams();
-  const { emails, normalizedEmails, loggedInUser } = useGlobalContext();
+  const { loggedInUser } = useGlobalContext();
   const { markRead } = useMailActions();
-  const { messagesById } = normalizedEmails;
   const [shouldMarkUnreadEmailsAsRead, setShouldMarkUnreadEmailsAsRead] = useState(true);
+
+  // Always fetch thread from API when threadId exists
+  const { data: fetchedThreadEmails, isLoading: isEmailLoading } = useQuery({
+    queryKey: ["email", threadId],
+    queryFn: () => emailService.getEmail(threadId),
+    enabled: !!threadId, // Always fetch if threadId exists
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+
+  // Use only fetched emails from API
+  const allEmails = useMemo(() => {
+    if (!fetchedThreadEmails || !Array.isArray(fetchedThreadEmails) || fetchedThreadEmails.length === 0) {
+      return [];
+    }
+    return fetchedThreadEmails;
+  }, [fetchedThreadEmails]);
+
+  // Normalize emails from API
+  const normalizedEmailsFromAPI = useMemo(() => {
+    if (!allEmails || allEmails.length === 0) {
+      return { messagesById: {}, threadsById: {}, threadIds: [] };
+    }
+    return normalizeEmails(allEmails);
+  }, [allEmails]);
+
+  // Get thread from API emails
+  const thread = useMemo(() => {
+    if (!threadId || !allEmails || allEmails.length === 0) return null;
+    return getThread(allEmails, { threadId });
+  }, [allEmails, threadId]);
 
   // Mark unread emails as read
   const markUnreadEmailsAsRead = useCallback(
     (messages) => {
       // Get the unread emails ids
-      const unreadEmailsIds = messages.filter((email) => !email.read).map((email) => email.id);
+      const unreadEmailsIds = messages.filter((email) => !email.is_read).map((email) => email.id);
 
       // If there are unread emails, mark them as read
       if (unreadEmailsIds.length > 0) {
@@ -218,52 +266,93 @@ const InboxView = () => {
     [markRead]
   );
 
-  const thread = useMemo(() => {
-    return getThread(emails, { threadId: `#thread-f:${threadId}` });
-  }, [emails, threadId]);
 
-  const { messageIds } = thread;
+  // useEffect(() => {
+  //   if (!shouldMarkUnreadEmailsAsRead) return;
 
+  //   // Build document title with email subject and folder/label context
+  //   if (thread && messageIds.length > 0) {
+  //     const messages = messageIds.map((id) => messagesById[id]);
+  //     const subject = messages[0]?.subject || "No Subject";
+
+  //     // Get folder or label display name with unread count
+  //     let context = "";
+  //     if (label) {
+  //       // Handle label routes
+  //       const threads = getThreadRows(emails, { label });
+  //       const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
+  //       const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
+  //       context = ` - "${normalizeLabelName(label)}"${unreadText}`;
+  //     } else if (folder) {
+  //       // Handle folder routes
+  //       const folderDisplayName = FOLDER_DISPLAY_NAMES[folder] || folder;
+
+  //       // Add unread count if applicable
+  //       if (FOLDERS_WITH_UNREAD_COUNT.has(folder)) {
+  //         const threads = getThreadRows(emails, { folder });
+  //         const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
+  //         const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
+  //         context = ` - ${folderDisplayName}${unreadText}`;
+  //       } else {
+  //         context = ` - ${folderDisplayName}`;
+  //       }
+  //     }
+
+  //     document.title = `${subject}${context} - ${loggedInUser.email} - MailG`;
+
+  //     // Mark unread emails in the email thread as read
+  //     markUnreadEmailsAsRead(messages);
+  //   }
+
+  //   setShouldMarkUnreadEmailsAsRead(false);
+  // }, [messageIds.length, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email, folder, label, thread]);
+
+  // const thread = useMemo(() => {
+  //   return getThread(emails, { threadId: `#thread-f:${threadId}` });
+  // }, [emails, threadId]);
+
+  // const { messageIds } = thread;
   useEffect(() => {
     if (!shouldMarkUnreadEmailsAsRead) return;
-
     // Build document title with email subject and folder/label context
-    if (thread && messageIds.length > 0) {
-      const messages = messageIds.map((id) => messagesById[id]);
-      const subject = messages[0]?.subject || "No Subject";
+    if (thread) {
+      const messageIds = thread.messageIds || [];
+      if (messageIds.length > 0) {
+        const messages = messageIds.map((id) => normalizedEmailsFromAPI.messagesById[id]);
+        const subject = messages[0]?.subject || "No Subject";
 
-      // Get folder or label display name with unread count
-      let context = "";
-      if (label) {
-        // Handle label routes
-        const threads = getThreadRows(emails, { label });
-        const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
-        const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
-        context = ` - "${normalizeLabelName(label)}"${unreadText}`;
-      } else if (folder) {
-        // Handle folder routes
-        const folderDisplayName = FOLDER_DISPLAY_NAMES[folder] || folder;
-
-        // Add unread count if applicable
-        if (FOLDERS_WITH_UNREAD_COUNT.has(folder)) {
-          const threads = getThreadRows(emails, { folder });
-          const unreadCount = threads.filter((thread) => thread.unreadCount > 0).length;
-          const unreadText = unreadCount > 0 ? ` (${unreadCount})` : "";
-          context = ` - ${folderDisplayName}${unreadText}`;
-        } else {
+        // Get folder or label display name
+        let context = "";
+        if (label) {
+          context = ` - "${normalizeLabelName(label)}"`;
+        } else if (folder) {
+          const folderDisplayName = FOLDER_DISPLAY_NAMES[folder] || folder;
           context = ` - ${folderDisplayName}`;
         }
+
+        document.title = `${subject}${context} - ${loggedInUser.email} - MailG`;
+
+        // Mark unread emails in the email thread as read
+        markUnreadEmailsAsRead(messages);
       }
-
-      document.title = `${subject}${context} - ${loggedInUser.email} - MailG`;
-
-      // Mark unread emails in the email thread as read
-      markUnreadEmailsAsRead(messages);
     }
 
     setShouldMarkUnreadEmailsAsRead(false);
-  }, [messageIds.length, messagesById, markUnreadEmailsAsRead, emails, loggedInUser.email, folder, label, thread]);
+  }, [thread, normalizedEmailsFromAPI.messagesById, loggedInUser.email, folder, label, markUnreadEmailsAsRead, shouldMarkUnreadEmailsAsRead]);
 
+  // Show loading state while fetching email
+  if (!thread && isEmailLoading) {
+    return (
+      <DetailContainer>
+        <NotFoundContainer>
+          <h2 style={{ margin: 0 }}>Loading email...</h2>
+        </NotFoundContainer>
+        <QuickSettings />
+      </DetailContainer>
+    );
+  }
+
+  // Show not found if thread still doesn't exist after fetch
   if (!thread) {
     // Determine the back link based on current context
     const backLink = label ? `/label/${encodeURIComponent(label)}` : `/${folder || "inbox"}`;
@@ -284,7 +373,13 @@ const InboxView = () => {
 
   return (
     <DetailContainer>
-      <EmailContent threadId={threadId} folder={folder} label={label} />
+      <EmailContent
+        threadId={threadId}
+        folder={folder}
+        label={label}
+        emails={allEmails}
+        normalizedEmails={normalizedEmailsFromAPI}
+      />
       <QuickSettings />
     </DetailContainer>
   );

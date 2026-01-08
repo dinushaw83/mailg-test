@@ -1,6 +1,8 @@
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
 import React, { useEffect, useMemo, useState } from "react";
+import { fetchEmailCounts, fetchEmails, fetchLabels } from "../store/slices/mailSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 
 import Banner from "../components/Banners";
@@ -8,6 +10,7 @@ import { CATEGORIES } from "../utils/categories";
 import { EmailContent } from "../components/InboxView";
 import EmailList from "../components/EmailList";
 import InboxSection from "./InboxSection";
+import LinearProgress from "@mui/material/LinearProgress";
 import SearchResultFilters from "../components/SearchResultFilters";
 import ToolBar from "../components/ToolBar";
 // switched to thread-based rows derived from raw messages
@@ -55,11 +58,12 @@ const FOLDERS_WITH_UNREAD_COUNT = new Set(["inbox", "starred", "snoozed", "impor
 
 const Inbox = () => {
   const {
-    emails,
+    mailFolders,
     setCurrentPage,
     currentPage,
     inboxType,
     itemsPerPage,
+    setItemsPerPage,
     loggedInUser,
     vacationResponder,
     setSortOrder,
@@ -67,6 +71,9 @@ const Inbox = () => {
     setPreviewEmailId,
     panelState,
   } = useGlobalContext();
+  const dispatch = useDispatch();
+  const { accessToken } = useSelector((state) => state.user);
+  const { loading: isEmailsLoading } = useSelector((state) => state.mail);
 
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
@@ -76,6 +83,146 @@ const Inbox = () => {
 
   const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
   const [activeInboxTab, setActiveInboxTab] = useState(CATEGORIES.Primary);
+  const [apiPagination, setApiPagination] = useState(null);
+
+  // Select emails from the appropriate folder/category
+  const emails = useMemo(() => {
+    const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
+    
+    if (isInboxRoute) {
+      // For inbox, use the category-specific emails (primary, promotions, social, updates)
+      const categoryKey = activeInboxTab.toLowerCase();
+      return mailFolders[categoryKey] || [];
+    }
+    
+    // For other folders, use folder-specific emails
+    // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
+    const folderKey = activeFolder.toLowerCase();
+    const stateKeyMap = {
+      starred: "is_starred",
+      important: "is_important",
+      snoozed: "is_snoozed",
+    };
+    const stateKey = stateKeyMap[folderKey] || folderKey;
+    return mailFolders[stateKey] || [];
+  }, [mailFolders, activeFolder, activeInboxTab, label]);
+
+  // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
+  useEffect(() => {
+    if (!accessToken) return;
+    if (label) return; // Skip if viewing a label route
+
+    const folderKey = String(activeFolder).toLowerCase();
+    const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "all"];
+    if (!validRoutes.includes(folderKey)) return;
+
+    const promises = [];
+
+    switch (folderKey) {
+      case "starred":
+        // Fetch starred emails
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_starred: true,
+            })
+          ).unwrap()
+        );
+        break;
+      case "important":
+        // Fetch important emails
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_important: true,
+            })
+          ).unwrap()
+        );
+        break;
+      case "snoozed":
+        // Fetch snoozed emails
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_snoozed: true,
+            })
+          ).unwrap()
+        );
+        break;
+      case "sent":
+      case "trash":
+      case "spam":
+      case "drafts":
+        // Fetch folder-based emails (sent, trash, spam, drafts)
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              folder: folderKey,
+            })
+          ).unwrap()
+        );
+        break;
+      case "all":
+        // Fetch all mail (inbox + archived)
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              folder: "inbox",
+              include_archived: true,
+            })
+          ).unwrap()
+        );
+        break;
+      case "inbox":
+        // Fetch inbox emails with category filter and counts
+        const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
+        promises.push(
+          dispatch(
+            fetchEmails({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              category: categoryParam,
+            })
+          ).unwrap(),
+          dispatch(fetchEmailCounts()).unwrap()
+        );
+        break;
+      default:
+        return;
+    }
+
+    Promise.all(promises)
+      .then((results) => {
+        // First result is always the emails payload
+        const emailsPayload = results[0];
+        setApiPagination(emailsPayload?.pagination ?? null);
+        if (emailsPayload?.pagination?.pageSize && emailsPayload.pagination.pageSize !== itemsPerPage) {
+          setItemsPerPage(emailsPayload.pagination.pageSize);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch emails:", error);
+      });
+  }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch]);
+
+  // Fetch labels on mount
+  useEffect(() => {
+    if (!accessToken) return;
+    
+    dispatch(fetchLabels()).catch((error) => {
+      console.error("Failed to fetch labels:", error);
+    });
+  }, [accessToken]);
 
   const direction = panelState.direction;
   const showSplit = direction !== "no-split";
@@ -83,8 +230,10 @@ const Inbox = () => {
 
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
+    
     let rows = getThreadRows(emails, { label, folder: activeFolder });
-
+    console.log("rows", { rows });
+    console.log("asdadasdasd", { rows });
     // Apply URL filter parameters (from SearchResultFilters)
     // Only apply if filters are present
     if (
@@ -146,7 +295,16 @@ const Inbox = () => {
   }, [emails, label, activeFolder, searchParams]);
 
   // Filter again by activeInboxTab (Primary, Promotions, Social, Updates)
+  // When using API category filtering, emails are already filtered server-side
   const tabFilteredRows = useMemo(() => {
+    const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
+
+    // If we're in inbox, the API has already filtered by category, so return filteredRows as-is
+    if (isInboxRoute) {
+      return filteredRows;
+    }
+
+    // For non-inbox routes, apply client-side label filtering
     const isInbox = (r) => (r.labels || []).includes("Inbox");
     const has = (r, name) => (r.labels || []).includes(name);
     const NON_PRIMARY = new Set([CATEGORIES.Promotions, CATEGORIES.Social, CATEGORIES.Updates, CATEGORIES.Forums]);
@@ -158,10 +316,11 @@ const Inbox = () => {
 
     // Other tabs
     return filteredRows.filter((r) => isInbox(r) && has(r, activeInboxTab));
-  }, [filteredRows, activeInboxTab]);
+  }, [filteredRows, activeInboxTab, activeFolder, label]);
 
   // Sort and paginate the displayRows
   const baseSource = !label && activeFolder.toLowerCase() === "inbox" ? tabFilteredRows : filteredRows;
+  const useServerPagination = !!apiPagination;
 
   // ────────── Helper to sort threads
   const sortRows = (arr) => [...arr].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -169,20 +328,20 @@ const Inbox = () => {
   const sortedBase = useMemo(() => sortRows(baseSource), [baseSource]);
 
   // ────────── Split rows based on inboxType
-  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.important), [sortedBase]);
+  const sortedImportant = useMemo(() => sortedBase.filter((r) => r.is_important), [sortedBase]);
 
   const sortedUnread = useMemo(() => sortedBase.filter((r) => r.unreadCount > 0), [sortedBase]);
 
-  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.starred), [sortedBase]);
+  const sortedStarred = useMemo(() => sortedBase.filter((r) => r.is_starred), [sortedBase]);
 
   const everythingElse = useMemo(() => {
     switch (inboxType) {
       case INBOX_TYPE.IMPORTANT_FIRST:
-        return sortedBase.filter((r) => !r.important);
+        return sortedBase.filter((r) => !r.is_important);
       case INBOX_TYPE.UNREAD_FIRST:
         return sortedBase.filter((r) => r.unreadCount === 0);
       case INBOX_TYPE.STARRED_FIRST:
-        return sortedBase.filter((r) => !r.starred);
+        return sortedBase.filter((r) => !r.is_starred);
       default:
         return sortedBase;
     }
@@ -190,16 +349,18 @@ const Inbox = () => {
 
   // ────────── Paginate only the "everything else" section
   const paginatedOthers = useMemo(() => {
+    if (useServerPagination) return everythingElse;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return everythingElse.slice(startIndex, endIndex);
-  }, [everythingElse, currentPage, itemsPerPage]);
+  }, [everythingElse, currentPage, itemsPerPage, useServerPagination]);
 
   const rows = useMemo(() => {
+    if (useServerPagination) return sortedBase;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return sortedBase.slice(startIndex, endIndex);
-  }, [sortedBase, currentPage, itemsPerPage]);
+  }, [sortedBase, currentPage, itemsPerPage, useServerPagination]);
 
   const showMailBanner = useMemo(() => {
     return inboxType === INBOX_TYPE.DEFAULT;
@@ -261,6 +422,13 @@ const Inbox = () => {
     setPreviewEmailId(null);
   }, [activeFolder, label]);
 
+  console.log({ tabFilteredRows });
+  console.log("filteredRows", filteredRows);
+  console.log("sortedImportant", sortedImportant);
+  console.log("sortedUnread", sortedUnread);
+  console.log("sortedStarred", sortedStarred);
+  console.log("paginatedOthers", paginatedOthers);
+  console.log("rows", rows);
   const renderEmailListPanel = () => (
     <>
       {inboxType !== INBOX_TYPE.DEFAULT && activeFolder.toLowerCase() === "inbox" && (
@@ -320,9 +488,19 @@ const Inbox = () => {
   return (
     <Container id="cont-123">
       <EmailListContainer role="main" vacationResponderEnabled={vacationResponder.enabled}>
+        {isEmailsLoading && (
+          <LinearProgress
+            sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: 5,
+            }}
+          />
+        )}
         {showFilters && <SearchResultFilters pt={2} pb={1} activeFolder={activeFolder} />}
         <ToolBar
-          totalFilteredItems={baseSource.length}
+          // If server pagination is available, use server "total" so the toolbar shows correct "1–20 of N".
+          totalFilteredItems={apiPagination?.total ?? baseSource.length}
           threads={rows}
           showAdvancedMenu={showAdvancedMenu}
           setShowAdvancedMenu={setShowAdvancedMenu}

@@ -6,17 +6,11 @@ export default function OfflineTab() {
   // Track changes in form inputs
   useEffect(() => {
     const handleInputChange = () => setHasChanges(true);
-    const inputs = document.querySelectorAll(
-      '#offline-tab input, #offline-tab select'
-    );
-    inputs.forEach((input) =>
-      input.addEventListener('change', handleInputChange)
-    );
+    const inputs = document.querySelectorAll("#offline-tab input, #offline-tab select");
+    inputs.forEach((input) => input.addEventListener("change", handleInputChange));
 
     return () => {
-      inputs.forEach((input) =>
-        input.removeEventListener('change', handleInputChange)
-      );
+      inputs.forEach((input) => input.removeEventListener("change", handleInputChange));
     };
   }, []);
 
@@ -56,8 +50,7 @@ export default function OfflineTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -121,8 +114,7 @@ export default function OfflineTab() {
                   name="enable-offline"
                   type="checkbox"
                   style={{
-                    fontFamily:
-                      '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                    fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     margin: "0px",
                     fontSize: "100%",
                     marginRight: "8px",
@@ -146,8 +138,7 @@ export default function OfflineTab() {
               className="r7"
               style={{
                 WebkitFontSmoothing: "antialiased",
-                fontFamily:
-                  '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                 fontSize: "0.875rem",
                 letterSpacing: "normal",
               }}
@@ -169,8 +160,7 @@ export default function OfflineTab() {
                       WebkitFontSmoothing: "antialiased",
                       fontSize: "0.875rem",
                       letterSpacing: "normal",
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     }}
                   >
                     Save Changes
@@ -184,8 +174,7 @@ export default function OfflineTab() {
                       WebkitFontSmoothing: "antialiased",
                       fontSize: "0.875rem",
                       letterSpacing: "normal",
-                      fontFamily:
-                        '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
+                      fontFamily: '"Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif',
                     }}
                   >
                     Cancel

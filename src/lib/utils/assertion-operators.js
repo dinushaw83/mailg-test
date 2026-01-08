@@ -4,13 +4,25 @@ export const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFO
 // Import judges.json
 // Vite handles this automatically. For Node.js contexts that require 'with', 
 // we handle it via other means or use a fallback.
-import judgesDataRaw from '../../data/judges.json' assert { type: 'json' };
+import judgesDataRaw from '../../data/judges.json' with { type: 'json' };
 
 // Handle both default export and named export formats
 const judgesData = judgesDataRaw.default || judgesDataRaw;
 
 // Handle new RDT framework assertions
 const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
+  // Load judges.json if not already loaded
+  if (!judgesData) {
+    try {
+      const judgesDataRaw = await import('../../data/judges.json');
+      judgesData = judgesDataRaw.default || judgesDataRaw;
+    } catch (e) {
+      // Fallback for environments where dynamic import of JSON is not supported without attributes
+      // (like Node.js v22+ if this were ever called from the server side)
+      console.error('Failed to load judges.json via import:', e);
+      throw e;
+    }
+  }
   const judges = judgesData;
 
   // Use import.meta.env for client-side (Vite), fallback to process.env for server-side

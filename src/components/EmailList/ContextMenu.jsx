@@ -27,7 +27,7 @@ const ContextMenu = ({
   const isRead = contextRow?.read;
   const senderName = contextRow?.from?.name;
   const threadKey = contextRow?.threadId || "";
-  const threadId = threadKey.split(":")[1];
+  const threadId = threadKey;
   const selectedIds = [threadId];
 
   const isSpamFolder = folder === "spam";
@@ -462,7 +462,7 @@ ${email.body || email.preview || ""}
   );
 
   const handleItemClick = ({ id, event, props }) => {
-    const threadId = props.thread.threadId.split(":")[1];
+    const threadId = props.thread.threadId;
     switch (id) {
       case "archive":
         handleArchive([threadId]);
@@ -527,12 +527,12 @@ ${email.body || email.preview || ""}
     isSpamFolder
       ? { id: "not_spam", label: "Not Spam", icon: "report_off" }
       : isThreadNotInInbox
-      ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
-      : {
-          id: "archive",
-          label: "Archive",
-          icon: "archive",
-        },
+        ? { id: "move_to_inbox", label: "Move to inbox", icon: "move_to_inbox" }
+        : {
+            id: "archive",
+            label: "Archive",
+            icon: "archive",
+          },
     isSpamFolder
       ? { id: "delete_forever", label: "Delete forever", icon: "delete" }
       : {

@@ -4,8 +4,9 @@ import pytest
 import uuid
 from app.models.label import Label
 from app.models.email import Email
-from app.models.email_label import EmailLabel
-from app.models.folder import Folder
+from app.models.thread import Thread
+from app.models.thread_label import ThreadLabel
+from app.core.constants import FolderType
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -22,16 +23,14 @@ class TestLabelCreate:
         response = client.post(
             "/api/v1/labels",
             json={
-                "name": "Important",
-                "color": "#ea4335"
+                "name": "Work"
             },
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 201
         data = response.json()["data"]
-        assert data["name"] == "Important"
-        assert data["color"] == "#ea4335"
+        assert data["name"] == "Work"
         assert data["parent_id"] is None
 
     def test_create_nested_label(self, client_with_auth, db_session):
@@ -48,7 +47,6 @@ class TestLabelCreate:
             "/api/v1/labels",
             json={
                 "name": "2025",
-                "color": "#34a853",
                 "parent_id": str(parent.id)
             },
             headers={"Authorization": f"Bearer {token}"}
@@ -106,7 +104,7 @@ class TestLabelCreate:
         # Try to create duplicate at root
         response = client.post(
             "/api/v1/labels",
-            json={"name": "Work", "color": "#ff0000"},
+            json={"name": "Work"},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -226,6 +224,164 @@ class TestLabelList:
         assert any(c["name"] == "2025" for c in projects["children"])
 
 
+class TestLabelFullName:
+    """Test full_name hierarchical field in label list responses."""
+
+    def test_list_labels_includes_full_name(self, client_with_auth, db_session):
+        """Test that flat list response includes full_name field."""
+        client, token, user = client_with_auth
+        
+        label = Label(name="Work", owner_id=user.id)
+        db_session.add(label)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Find our label and check full_name exists
+        work_label = next((l for l in data if l["name"] == "Work"), None)
+        assert work_label is not None
+        assert "full_name" in work_label
+
+    def test_root_label_full_name_equals_name(self, client_with_auth, db_session):
+        """Test that root-level labels have full_name equal to name."""
+        client, token, user = client_with_auth
+        
+        label = Label(name="Important", owner_id=user.id)
+        db_session.add(label)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        important_label = next((l for l in data if l["name"] == "Important"), None)
+        assert important_label is not None
+        assert important_label["name"] == "Important"
+        assert important_label["full_name"] == "Important"
+
+    def test_nested_label_full_name_shows_hierarchy(self, client_with_auth, db_session):
+        """Test that nested labels show full hierarchy path in full_name."""
+        client, token, user = client_with_auth
+        
+        # Create hierarchy: Work -> Projects
+        work = Label(name="Work", owner_id=user.id)
+        db_session.add(work)
+        db_session.commit()
+        
+        projects = Label(name="Projects", parent_id=work.id, owner_id=user.id)
+        db_session.add(projects)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Parent label
+        work_label = next((l for l in data if l["name"] == "Work"), None)
+        assert work_label is not None
+        assert work_label["full_name"] == "Work"
+        
+        # Nested label
+        projects_label = next((l for l in data if l["name"] == "Projects"), None)
+        assert projects_label is not None
+        assert projects_label["full_name"] == "Work/Projects"
+
+    def test_deeply_nested_label_full_name(self, client_with_auth, db_session):
+        """Test that deeply nested labels show complete hierarchy path."""
+        client, token, user = client_with_auth
+        
+        # Create hierarchy: Work -> Projects -> 2025 -> Q1
+        work = Label(name="Work", owner_id=user.id)
+        db_session.add(work)
+        db_session.commit()
+        
+        projects = Label(name="Projects", parent_id=work.id, owner_id=user.id)
+        db_session.add(projects)
+        db_session.commit()
+        
+        year_2025 = Label(name="2025", parent_id=projects.id, owner_id=user.id)
+        db_session.add(year_2025)
+        db_session.commit()
+        
+        q1 = Label(name="Q1", parent_id=year_2025.id, owner_id=user.id)
+        db_session.add(q1)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Check each level
+        work_label = next((l for l in data if l["name"] == "Work"), None)
+        assert work_label["full_name"] == "Work"
+        
+        projects_label = next((l for l in data if l["name"] == "Projects"), None)
+        assert projects_label["full_name"] == "Work/Projects"
+        
+        year_label = next((l for l in data if l["name"] == "2025"), None)
+        assert year_label["full_name"] == "Work/Projects/2025"
+        
+        q1_label = next((l for l in data if l["name"] == "Q1"), None)
+        assert q1_label["full_name"] == "Work/Projects/2025/Q1"
+
+    def test_multiple_hierarchies_full_name(self, client_with_auth, db_session):
+        """Test that multiple separate hierarchies have correct full_names."""
+        client, token, user = client_with_auth
+        
+        # Create two separate hierarchies
+        # Work -> Clients
+        work = Label(name="Work", owner_id=user.id)
+        db_session.add(work)
+        db_session.commit()
+        
+        clients = Label(name="Clients", parent_id=work.id, owner_id=user.id)
+        db_session.add(clients)
+        db_session.commit()
+        
+        # Personal -> Family
+        personal = Label(name="Personal", owner_id=user.id)
+        db_session.add(personal)
+        db_session.commit()
+        
+        family = Label(name="Family", parent_id=personal.id, owner_id=user.id)
+        db_session.add(family)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Check Work hierarchy
+        clients_label = next((l for l in data if l["name"] == "Clients"), None)
+        assert clients_label["full_name"] == "Work/Clients"
+        
+        # Check Personal hierarchy
+        family_label = next((l for l in data if l["name"] == "Family"), None)
+        assert family_label["full_name"] == "Personal/Family"
+
+
 class TestLabelOperations:
     """Test label operations."""
 
@@ -281,12 +437,12 @@ class TestLabelOperations:
         assert response.status_code == 200
 
     def test_remove_label_from_email(self, client_with_auth, db_session, sample_email, sample_label):
-        """Test removing a label from an email."""
+        """Test removing a label from an email's thread."""
         client, token, user = client_with_auth
         
-        # Add label first
-        email_label = EmailLabel(email_id=sample_email.id, label_id=sample_label.id)
-        db_session.add(email_label)
+        # Add label to the thread first (labels are now linked to threads with user_id)
+        thread_label = ThreadLabel(thread_id=sample_email.thread_id, label_id=sample_label.id, user_id=user.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         response = client.delete(
@@ -296,12 +452,12 @@ class TestLabelOperations:
         
         assert response.status_code == 204
 
-    def test_list_emails_with_label(self, client_with_auth, db_session, sample_label):
-        """Test listing emails that have a specific label."""
+    def test_list_threads_with_label(self, client_with_auth, db_session, sample_label):
+        """Test listing threads that have a specific label."""
         client, token, user = client_with_auth
         
         response = client.get(
-            f"/api/v1/labels/{sample_label.id}/emails",
+            f"/api/v1/labels/{sample_label.id}/threads",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -314,11 +470,6 @@ class TestHierarchicalLabelNames:
     def test_email_label_shows_hierarchy_name(self, client_with_auth, db_session):
         """Test that labels on emails show full hierarchy path (grand/parent/child)."""
         client, token, user = client_with_auth
-        
-        # Create folder for email
-        folder = Folder(name="Inbox", folder_type="inbox", owner_id=user.id, is_system=True)
-        db_session.add(folder)
-        db_session.commit()
         
         # Create hierarchical labels: Work -> Projects -> 2025
         work = Label(name="Work", owner_id=user.id)
@@ -333,19 +484,28 @@ class TestHierarchicalLabelNames:
         db_session.add(year_2025)
         db_session.commit()
         
-        # Create email and add the nested label
+        # Create thread and email, then add the nested label to the thread
+        thread = Thread(
+            subject="Project Update",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Project Update",
             body="Content",
             status="received",
+            folder=FolderType.INBOX.value,
             sender_id=user.id,
-            folder_id=folder.id
+            thread_id=thread.id,
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=year_2025.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=year_2025.id, user_id=user.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # Get email and check label name includes full hierarchy
@@ -363,11 +523,6 @@ class TestHierarchicalLabelNames:
         """Test that labels in email list responses show full hierarchy path."""
         client, token, user = client_with_auth
         
-        # Create folder for email
-        folder = Folder(name="Inbox", folder_type="inbox", owner_id=user.id, is_system=True)
-        db_session.add(folder)
-        db_session.commit()
-        
         # Create hierarchical labels: Personal -> Family
         personal = Label(name="Personal", owner_id=user.id)
         db_session.add(personal)
@@ -377,19 +532,28 @@ class TestHierarchicalLabelNames:
         db_session.add(family)
         db_session.commit()
         
-        # Create email with nested label
+        # Create thread and email with nested label (labels are linked to threads)
+        thread = Thread(
+            subject="Family Reunion",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Family Reunion",
             body="Content",
             status="received",
+            folder=FolderType.INBOX.value,
             sender_id=user.id,
-            folder_id=folder.id
+            thread_id=thread.id,
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=family.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=family.id, user_id=user.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # List emails and check label hierarchy
@@ -410,29 +574,33 @@ class TestHierarchicalLabelNames:
         """Test that root-level labels show just their name (no slash)."""
         client, token, user = client_with_auth
         
-        # Create folder for email
-        folder = Folder(name="Inbox", folder_type="inbox", owner_id=user.id, is_system=True)
-        db_session.add(folder)
-        db_session.commit()
-        
         # Create root label (no parent)
         important = Label(name="Important", owner_id=user.id)
         db_session.add(important)
         db_session.commit()
         
-        # Create email with root label
+        # Create thread and email with root label (labels are linked to threads)
+        thread = Thread(
+            subject="Important Email",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Important Email",
             body="Content",
             status="received",
+            folder=FolderType.INBOX.value,
             sender_id=user.id,
-            folder_id=folder.id
+            thread_id=thread.id,
         )
         db_session.add(email)
         db_session.commit()
         
-        email_label = EmailLabel(email_id=email.id, label_id=important.id)
-        db_session.add(email_label)
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=important.id, user_id=user.id)
+        db_session.add(thread_label)
         db_session.commit()
         
         # Get email and check label name is simple

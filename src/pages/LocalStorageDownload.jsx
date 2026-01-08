@@ -43,10 +43,7 @@ export default function LocalStorageDownload() {
   return (
     <div style={{ padding: "24px", fontFamily: "sans-serif" }}>
       <h1>Preparing download…</h1>
-      <p>
-        Collecting localStorage data and starting a download. You can close this
-        tab once the download finishes.
-      </p>
+      <p>Collecting localStorage data and starting a download. You can close this tab once the download finishes.</p>
     </div>
   );
 }

@@ -20,10 +20,14 @@ class BulkStarRequest(BulkEmailIds):
     """Schema for bulk star/unstar."""
     is_starred: bool = Field(..., description="Star (true) or unstar (false)")
 
+class BulkImportantRequest(BulkEmailIds):
+    """Schema for bulk important/un important."""
+    is_important: bool = Field(..., description="Important (true) or un important (false)")
+
 
 class BulkMoveRequest(BulkEmailIds):
     """Schema for bulk move to folder."""
-    folder_id: UUID = Field(..., description="Target folder ID")
+    folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, starred")
 
 
 class BulkDeleteRequest(BulkEmailIds):
@@ -31,13 +35,18 @@ class BulkDeleteRequest(BulkEmailIds):
     permanent: bool = Field(False, description="Permanently delete (true) or move to trash (false)")
 
 
-class BulkLabelAddRequest(BulkEmailIds):
-    """Schema for bulk add labels."""
+class BulkThreadIds(BaseModel):
+    """Base schema for bulk operations with thread IDs."""
+    thread_ids: List[UUID] = Field(..., min_length=1, max_length=100, description="List of thread IDs to operate on")
+
+
+class BulkLabelAddRequest(BulkThreadIds):
+    """Schema for bulk add labels to threads."""
     label_ids: List[UUID] = Field(..., min_length=1, description="Label IDs to add")
 
 
-class BulkLabelRemoveRequest(BulkEmailIds):
-    """Schema for bulk remove labels."""
+class BulkLabelRemoveRequest(BulkThreadIds):
+    """Schema for bulk remove labels from threads."""
     label_ids: List[UUID] = Field(..., min_length=1, description="Label IDs to remove")
 
 
@@ -59,6 +68,21 @@ class BulkArchiveRequest(BulkEmailIds):
 class BulkCategoryRequest(BulkEmailIds):
     """Schema for bulk update email category."""
     category: str = Field(..., description="Email category: primary, promotions, social, updates, forums")
+
+
+class BulkUnarchiveRequest(BulkEmailIds):
+    """Schema for bulk unarchive emails."""
+    pass
+
+
+class BulkSpamRequest(BulkEmailIds):
+    """Schema for bulk mark as spam."""
+    pass
+
+
+class BulkUnspamRequest(BulkEmailIds):
+    """Schema for bulk unmark as spam."""
+    pass
 
 
 class BulkOperationResult(BaseModel):

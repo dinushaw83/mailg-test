@@ -276,6 +276,14 @@ class GenericStringGenerator(BaseGenerator):
             ]
             return context.random().choice(names)
 
+        # Mailg-specific: labels.name
+        if table_name == "labels" and field_name == "name":
+            label_names = context.config.get("samples", {}).get("label_names", [
+                "Work", "Personal", "Important", "Projects", "Follow Up",
+                "Clients", "Team", "Archive", "Reference", "To Do"
+            ])
+            return context.random().choice(label_names)
+
         # Mailg-specific: attachments.filename
         if table_name == "attachments" and field_name == "filename":
             filenames = context.config.get("samples", {}).get("attachments", [])

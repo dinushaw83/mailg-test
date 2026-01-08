@@ -1,98 +1,94 @@
 import React, { useState, useEffect } from "react";
-import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
-    Button,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
 import { useGlobalContext } from "../../../../contexts/GlobalContext";
 
 const dialogHeadlineStyle = {
-    color: "var(--gm3-dialog-headline-color, var(--gm3-sys-color-on-surface, #1f1f1f))",
-    lineHeight: "var(--gm3-dialog-headline-line-height, 2rem)",
-    fontSize: "var(--gm3-dialog-headline-size, 1.5rem)",
-    letterSpacing: "var(--gm3-dialog-headline-tracking, 0)",
-    fontWeight: "var(--gm3-dialog-headline-weight, 400)",
+  color: "var(--gm3-dialog-headline-color, var(--gm3-sys-color-on-surface, #1f1f1f))",
+  lineHeight: "var(--gm3-dialog-headline-line-height, 2rem)",
+  fontSize: "var(--gm3-dialog-headline-size, 1.5rem)",
+  letterSpacing: "var(--gm3-dialog-headline-tracking, 0)",
+  fontWeight: "var(--gm3-dialog-headline-weight, 400)",
 };
 
-
 export default function DeleteSignatureDialog({
-    open,
-    onClose,
-    onAfterDelete,
-    editingSignatureIndex,
-    editingSignatureData,
+  open,
+  onClose,
+  onAfterDelete,
+  editingSignatureIndex,
+  editingSignatureData,
 }) {
-    const { setSnackbar } = useGlobalContext();
-    const [name, setName] = useState(editingSignatureData?.name ?? "");
+  const { setSnackbar } = useGlobalContext();
+  const [name, setName] = useState(editingSignatureData?.name ?? "");
 
-    const reset = () => setName(editingSignatureData?.name ?? "");
+  const reset = () => setName(editingSignatureData?.name ?? "");
 
-    const handleClose = () => {
-        reset();
-        onClose?.();
-    };
+  const handleClose = () => {
+    reset();
+    onClose?.();
+  };
 
-    const handleDelete = () => {
-        if (!name.trim()) {
-            setSnackbar({ open: true, message: "Signature name cannot be empty" });
-            return;
-        }
-        onAfterDelete?.(name.trim(), editingSignatureIndex);
-        handleClose();
-    };
+  const handleDelete = () => {
+    if (!name.trim()) {
+      setSnackbar({ open: true, message: "Signature name cannot be empty" });
+      return;
+    }
+    onAfterDelete?.(name.trim(), editingSignatureIndex);
+    handleClose();
+  };
 
-    useEffect(() => {
-        setName(editingSignatureData?.name ?? "");
-    }, [editingSignatureData]);
+  useEffect(() => {
+    setName(editingSignatureData?.name ?? "");
+  }, [editingSignatureData]);
 
-    return (
-        <Dialog
-            open={open}
-            onClose={handleClose}
-            maxWidth={false}
-            slotProps={{
-                paper: {
-                    sx: {
-                        width: 420,
-                        maxWidth: "90%",
-                        borderRadius: "12px",
-                    },
-                },
-            }}
+  return (
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth={false}
+      slotProps={{
+        paper: {
+          sx: {
+            width: 420,
+            maxWidth: "90%",
+            borderRadius: "12px",
+          },
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          px: 3,
+          pt: 3,
+          pb: 1.5,
+        }}
+        style={dialogHeadlineStyle}
+      >
+        Delete '{editingSignatureData?.name}'?
+      </DialogTitle>
+
+      <DialogContent sx={{ px: 3, pt: 0, pb: 1 }}>
+        Are you sure that you want to delete the signature ‘{editingSignatureData?.name}’?
+      </DialogContent>
+
+      <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button sx={{ borderRadius: "20px", textTransform: "none", px: 3 }} onClick={handleClose}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleDelete}
+          sx={{
+            borderRadius: "20px",
+            textTransform: "none",
+            px: 3,
+            backgroundColor: "#0b57d0",
+            color: "#fff",
+            "&:hover": { backgroundColor: "#0b57d0", opacity: 0.9 },
+          }}
         >
-            <DialogTitle sx={{
-                px: 3, pt: 3, pb: 1.5,
-            }} style={dialogHeadlineStyle}>Delete '{editingSignatureData?.name}'?</DialogTitle>
-
-            <DialogContent sx={{ px: 3, pt: 0, pb: 1 }}>
-                Are you sure that you want to delete the signature ‘{editingSignatureData?.name}’?
-            </DialogContent>
-
-            <DialogActions sx={{ px: 3, py: 2 }}>
-                <Button
-                    sx={{ borderRadius: "20px", textTransform: "none", px: 3 }}
-                    onClick={handleClose}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    variant="contained"
-                    onClick={handleDelete}
-                    sx={{
-                        borderRadius: "20px",
-                        textTransform: "none",
-                        px: 3,
-                        backgroundColor: "#0b57d0",
-                        color: "#fff",
-                        "&:hover": { backgroundColor: "#0b57d0", opacity: 0.9 },
-                    }}
-                >
-                   Delete
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 }

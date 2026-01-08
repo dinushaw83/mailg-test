@@ -11,14 +11,12 @@ from app.schemas.pagination import PaginatedListResponse
 class LabelCreate(BaseModel):
     """Schema for creating a new label."""
     name: str = Field(..., min_length=1, max_length=100, description="Label name")
-    color: Optional[str] = Field(None, description="Hex color")
     parent_id: Optional[UUID] = Field(None, description="Parent label ID for nesting")
 
 
 class LabelUpdate(BaseModel):
     """Schema for updating a label."""
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    color: Optional[str] = None
     parent_id: Optional[UUID] = Field(None, description="Parent label ID (use null to move to root)")
 
 
@@ -34,7 +32,7 @@ class LabelResponse(BaseModel):
     is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
-    email_count: int = 0
+    thread_count: int = 0
 
 
 class LabelListResponse(BaseModel):
@@ -43,9 +41,10 @@ class LabelListResponse(BaseModel):
     
     id: UUID
     name: str
+    full_name: Optional[str] = None  # Hierarchical name (e.g., "parent/child/grandchild")
     color: Optional[str] = None
     parent_id: Optional[UUID] = None
-    email_count: int = 0
+    thread_count: int = 0
 
 
 class LabelTreeResponse(BaseModel):
@@ -56,7 +55,7 @@ class LabelTreeResponse(BaseModel):
     name: str
     color: Optional[str] = None
     parent_id: Optional[UUID] = None
-    email_count: int = 0
+    thread_count: int = 0
     children: List["LabelTreeResponse"] = []
 
 

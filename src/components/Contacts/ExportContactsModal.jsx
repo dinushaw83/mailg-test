@@ -284,13 +284,13 @@ const ExportContactsModal = ({
                               },
                             }
                         : option.disabled
-                        ? {
-                            color: "#9aa0a6",
-                            "&.Mui-disabled": {
-                              opacity: 0.6,
-                            },
-                          }
-                        : {}
+                          ? {
+                              color: "#9aa0a6",
+                              "&.Mui-disabled": {
+                                opacity: 0.6,
+                              },
+                            }
+                          : {}
                     }
                   >
                     {option.label}

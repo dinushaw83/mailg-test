@@ -141,8 +141,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
     const isReplyMode = replyType === "reply" || replyType === "replyAll";
-    const shouldReuseThread =
-      originalEmail && (isReplyMode || replyType === "forward");
+    const shouldReuseThread = originalEmail && (isReplyMode || replyType === "forward");
     const threadId = shouldReuseThread ? originalEmail.threadId : generateThreadId();
     const legacyThreadId = shouldReuseThread ? originalEmail.legacyThreadId : generateLegacyThreadId();
     const timestamp = new Date().toISOString();
@@ -389,7 +388,7 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
     // Hide the snackbar
     setSnackbar({ open: false, action: null, autoHideDuration: null, message: "" });
 
-    const threadId = lastScheduledEmailRef.current?.threadId.split(":")[1];
+    const threadId = lastScheduledEmailRef.current?.threadId;
 
     // Navigate to the message in the scheduled items
     navigate(`/scheduled/${threadId}`);

@@ -9,10 +9,10 @@ from app.schemas.pagination import PaginatedListResponse
 
 
 class AttachmentCreate(BaseModel):
-    """Schema for creating an attachment (metadata only, file handled separately)."""
+    """Schema for creating attachment metadata (mock - no actual file storage)."""
     filename: str = Field(..., min_length=1, max_length=255, description="File name")
-    content_type: Optional[str] = Field(None, description="MIME type")
-    size_bytes: Optional[int] = Field(None, ge=0, description="File size in bytes")
+    content_type: Optional[str] = Field(default="application/octet-stream", description="MIME type")
+    size_bytes: Optional[int] = Field(default=0, ge=0, description="File size in bytes (mock value)")
 
 
 class AttachmentResponse(BaseModel):

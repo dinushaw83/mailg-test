@@ -1,6 +1,8 @@
 // hooks/useMailActions.js
 import React, { useCallback, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
+import { updateLabelsThunk } from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -18,7 +20,6 @@ const buildIdIndex = (selection) =>
             item.id,
             item.messageId,
             item.threadId,
-            item?.threadId && String(item.threadId).replace("#thread-f:", ""),
             item.legacyThreadId,
             item.legacyLastMessageId,
             item.legacyLastNonDraftMessageId,
@@ -40,7 +41,6 @@ const collectKeysFromMessage = (m) => {
   add(m.id);
   add(m.messageId);
   add(m.threadId);
-  add(m.threadId && String(m.threadId).replace("#thread-f:", ""));
   add(m.legacyThreadId);
   add(m.legacyLastMessageId);
   add(m.legacyLastNonDraftMessageId);
@@ -101,7 +101,11 @@ const withUndo = (ids, setEmails, operation) => {
  * ────────────────────────────────────────────────────────────────────────── */
 
 export default function useMailActions() {
+  const dispatch = useDispatch();
   const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
+  
+  // Get key to ID mapping for transforming composite keys to UUIDs
+  const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
 
   const updateByIds = useCallback(
     (ids, transform) => {
@@ -138,7 +142,30 @@ export default function useMailActions() {
   );
 
   const modifyLabels = useCallback(
-    (ids, { add = [], remove = [] }) =>
+    (ids, { add = [], remove = [] }) => {
+      // Transform composite keys to UUIDs for backend sync
+      const transformToIds = (labelKeys) => {
+        return labelKeys
+          .map((key) => {
+            // If it's already a UUID (matches UUID pattern), keep it
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)) {
+              return key;
+            }
+            // If it's a composite key, look up UUID
+            if (keyToLabelIdMap[key]) {
+              return keyToLabelIdMap[key];
+            }
+            // If it's a system label (Inbox, Sent, etc.), keep as-is for now
+            // System labels might not be in backend yet
+            return key;
+          })
+          .filter(Boolean);
+      };
+
+      const labelIdsToAdd = transformToIds(add);
+      const labelIdsToRemove = transformToIds(remove);
+
+      // Update local state immediately for UI feedback
       updateByIds(ids, (labelSet) => {
         for (const n of add) {
           if (n) labelSet.add(String(n));
@@ -146,8 +173,30 @@ export default function useMailActions() {
         for (const n of remove) {
           if (n) labelSet.delete(String(n));
         }
-      }),
-    [updateByIds]
+      });
+
+      // Sync with backend (only for backend labels, skip system labels)
+      const backendLabelsToAdd = labelIdsToAdd.filter((id) => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
+      const backendLabelsToRemove = labelIdsToRemove.filter((id) => 
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      );
+
+      if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
+        // Determine final label state: add new ones, remove old ones
+        // For simplicity, we'll send the full label set, but backend should handle add/remove
+        // This might need adjustment based on actual backend API expectations
+        dispatch(updateLabelsThunk({
+          emailIds: ids.map(String),
+          labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
+        })).catch((error) => {
+          console.error("Failed to sync labels with backend:", error);
+          // Could rollback local changes here if needed
+        });
+      }
+    },
+    [updateByIds, dispatch, keyToLabelIdMap]
   );
 
   const moveToInbox = useCallback(
@@ -235,7 +284,7 @@ export default function useMailActions() {
   const toggleStar = useCallback(
     (ids) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: !m.starred } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_starred: !m.is_starred } : m)));
     },
     [setEmails]
   );
@@ -243,7 +292,7 @@ export default function useMailActions() {
   const setStar = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, starred: value } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_starred: value } : m)));
     },
     [setEmails]
   );
@@ -251,7 +300,7 @@ export default function useMailActions() {
   const markRead = useCallback(
     (ids, read = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, read } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
     },
     [setEmails]
   );
@@ -259,7 +308,7 @@ export default function useMailActions() {
   const toggleImportant = useCallback(
     (ids) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, important: !m.important } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_important: !m.is_important } : m)));
     },
     [setEmails]
   );
@@ -267,7 +316,7 @@ export default function useMailActions() {
   const setImportant = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, important: !!value } : m)));
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_important: !!value } : m)));
     },
     [setEmails]
   );
@@ -406,7 +455,7 @@ export default function useMailActions() {
         // Store the previous state for undo functionality
         previousState = prev
           .filter((m) => {
-            const emailThreadId = m.threadId.split(":")[1];
+            const emailThreadId = m.threadId;
             return threadIds.includes(emailThreadId);
           })
           .map((m) => ({
@@ -415,7 +464,7 @@ export default function useMailActions() {
           }));
 
         return prev.map((m) => {
-          const emailThreadId = m.threadId.split(":")[1];
+          const emailThreadId = m.threadId;
           if (threadIds.includes(emailThreadId)) {
             const currentLabels = m.labels || [];
             const isCurrentlyMuted = currentLabels.includes("Muted");
@@ -438,8 +487,8 @@ export default function useMailActions() {
       const undo = () => {
         setEmails((prev) =>
           prev.map((m) => {
-            const emailThreadId = m.threadId.split(":")[1];
-            const previousEmail = previousState.find((p) => p.threadId.split(":")[1] === emailThreadId);
+            const emailThreadId = m.threadId;
+            const previousEmail = previousState.find((p) => p.threadId === emailThreadId);
             if (previousEmail) {
               return { ...m, labels: [...previousEmail.labels] };
             }

@@ -130,7 +130,7 @@ export default function EditorMenuControls({ editor, useCompactFormatting = fals
   const handleMoreClose = () => {
     setMoreAnchorEl(null);
   };
-  
+
   if (!editor) {
     return null;
   }
@@ -144,7 +144,7 @@ export default function EditorMenuControls({ editor, useCompactFormatting = fals
       <MenuSelectFontFamily
         style={{
           width: "80px",
-          outline: "none"
+          outline: "none",
         }}
         options={[
           { label: "Sans Serif", value: "Arial, Helvetica, sans-serif" },
@@ -212,7 +212,7 @@ export default function EditorMenuControls({ editor, useCompactFormatting = fals
                 />
               </div>
               <div>
-                <Typography variant="caption" sx={{ display: "block", mb: 2,  fontSize: 14 }}>
+                <Typography variant="caption" sx={{ display: "block", mb: 2, fontSize: 14 }}>
                   Text color
                 </Typography>
                 <ColorPicker
@@ -231,7 +231,7 @@ export default function EditorMenuControls({ editor, useCompactFormatting = fals
 
       <MenuDivider />
 
-      <MenuSelectTextAlign/>
+      <MenuSelectTextAlign />
       {useCompactFormatting ? (
         <>
           <MenuButton
@@ -276,7 +276,6 @@ export default function EditorMenuControls({ editor, useCompactFormatting = fals
           <MenuButtonRemoveFormatting />
         </>
       )}
-
     </MenuControlsContainer>
   );
 }

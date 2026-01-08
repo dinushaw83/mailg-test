@@ -442,7 +442,7 @@ class TestTemplateOperations:
 class TestTemplateApply:
     """Test applying templates to create emails."""
 
-    def test_apply_template_success(self, client_with_auth, sample_template, sample_drafts_folder):
+    def test_apply_template_success(self, client_with_auth, sample_template):
         """Test applying a template to create a draft email."""
         client, token, user = client_with_auth
         
@@ -456,9 +456,8 @@ class TestTemplateApply:
         data = response.json()["data"]
         assert data["subject"] == sample_template.subject
         assert data["body"] == sample_template.body
-        assert data["status"] == "draft"
 
-    def test_apply_template_with_recipients(self, client_with_auth, sample_template, sample_drafts_folder):
+    def test_apply_template_with_recipients(self, client_with_auth, sample_template):
         """Test applying a template with recipients."""
         client, token, user = client_with_auth
         
@@ -478,7 +477,7 @@ class TestTemplateApply:
         assert len(data["recipients"]) == 1
         assert data["recipients"][0]["email"] == "recipient@example.com"
 
-    def test_apply_template_with_additional_body(self, client_with_auth, sample_template, sample_drafts_folder):
+    def test_apply_template_with_additional_body(self, client_with_auth, sample_template):
         """Test applying a template with additional content."""
         client, token, user = client_with_auth
         
@@ -495,7 +494,7 @@ class TestTemplateApply:
         data = response.json()["data"]
         assert "Additional message" in data["body"]
 
-    def test_apply_shared_template(self, client_with_auth, sample_shared_template, sample_drafts_folder):
+    def test_apply_shared_template(self, client_with_auth, sample_shared_template):
         """Test applying a shared template from another context."""
         client, token, user = client_with_auth
         
@@ -507,7 +506,7 @@ class TestTemplateApply:
         
         assert response.status_code == 201
 
-    def test_apply_template_not_found(self, client_with_auth, sample_drafts_folder):
+    def test_apply_template_not_found(self, client_with_auth):
         """Test applying a non-existent template."""
         client, token, user = client_with_auth
         

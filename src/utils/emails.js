@@ -2,12 +2,98 @@ import { emailToUsernameMap } from "../contexts/fixtures/emails.js";
 
 const PERSONAL_EMAIL = "john.doe@example.com";
 
+const normalizeLabelKey = (label) => {
+  const name = typeof label === "string" ? label : label?.name;
+  if (!name) return null;
+  return String(name).trim().replace(/\//g, "::");
+};
+
+const titleCase = (value) => {
+  const s = String(value || "").trim();
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const categoryToLabel = (category) => {
+  const c = String(category || "").toLowerCase();
+  if (!c) return null;
+  if (c === "primary") return "Primary";
+  if (c === "promotions") return "Promotions";
+  if (c === "updates") return "Updates";
+  if (c === "social") return "Social";
+  if (c === "forums") return "Forums";
+  return titleCase(c);
+};
+
+export const emailAPIMapper = (emails) => {
+  return emails
+    .map((email) => {
+      // Transform recipients array into to, cc, bcc arrays
+      const recipients = email?.recipients || [];
+      const to = recipients.filter((r) => r.type === "to").map((r) => ({
+        email: r.email,
+        name: r.name || null,
+        id: r.id || null,
+      }));
+      const cc = recipients.filter((r) => r.type === "cc").map((r) => ({
+        email: r.email,
+        name: r.name || null,
+        id: r.id || null,
+      }));
+      const bcc = recipients.filter((r) => r.type === "bcc").map((r) => ({
+        email: r.email,
+        name: r.name || null,
+        id: r.id || null,
+      }));
+
+      return {
+        ...email,
+        id: email?.id,
+        from: {
+          name: email?.sender_name,
+          email: email?.sender_email,
+          id: email.sender_id,
+        },
+        to,
+        cc,
+        bcc,
+        beFormattedEMailLabels: email?.labels,
+        folderId: email?.folder_id,
+        threadId: email?.thread_id || null,
+        timestamp: email?.sent_at || email?.received_at || email?.created_at,
+        // Use html_body if available (for display), fallback to body
+        body: email?.html_body || email?.body || "",
+        preview: email?.snippet || email?.preview || email?.body?.substring(0, 100),
+        status: email?.status || "inbox",
+        is_read: email?.is_read !== undefined ? email.is_read : false,
+        is_starred: email?.is_starred || false,
+        is_important: email?.is_important || false,
+        scheduled_send_at: email?.scheduled_send_at,
+        snooze_until: email?.snooze_until,
+        attachment_count: email?.attachment_count || (email?.attachments?.length || 0),
+        has_attachments: email?.has_attachments !== undefined ? email.has_attachments : (email?.attachments?.length > 0),
+        attachments: email?.attachments || [],
+        system_labels: email?.system_labels,
+        can_undo_send: email?.can_undo_send,
+        // Preserve parent_email_id for thread hierarchy
+        parent_email_id: email?.parent_email_id,
+      };
+    })
+    .filter((email) => email.thread_id);
+};
 // src/contexts/normalize.js
 export function normalizeEmails(messages) {
   const messagesById = {};
   const threadsById = {};
-
-  const normalizeEmailAddress = (value) => (value || "").toLowerCase();
+  const normalizeEmailAddress = (value) => {
+    if (!value) return "";
+    // Handle string
+    if (typeof value === "string") return value.toLowerCase();
+    // Handle object with email property
+    if (typeof value === "object" && value.email) return String(value.email || "").toLowerCase();
+    // Fallback: convert to string
+    return String(value).toLowerCase();
+  };
   const isLikelyEmail = (value = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   const getParticipantScore = (participant) => {
     if (!participant) return 0;
@@ -46,10 +132,25 @@ export function normalizeEmails(messages) {
   };
   const toParticipant = (address) => {
     if (!address) return null;
+    
+    // Handle object format (from API): {email, name, id}
+    if (typeof address === "object" && address.email) {
+      return {
+        email: address.email,
+        name: address.name || emailToUsernameMap[address.email] || address.email,
+        id: address.id || null,
+      };
+    }
+    
+    // Handle string format (legacy): just email address
+    if (typeof address === "string") {
     return {
       email: address,
       name: emailToUsernameMap[address] || address,
     };
+    }
+    
+    return null;
   };
   const collectParticipantsForMessage = (message) => {
     const list = [];
@@ -72,9 +173,16 @@ export function normalizeEmails(messages) {
     const threadId = String(m.threadId);
     const ts = new Date(m.timestamp).getTime();
 
-    let enrichedLabels = (m.labels || []).slice();
-
-    // Categories are now set directly in the email fixtures
+    // Preserve full label objects with id, name, and color
+    // Convert string labels to objects for consistency
+    let enrichedLabels = (m.labels || []).map((l) => {
+      if (typeof l === "string") {
+        // Convert string to object format
+        return { name: l, color: null, id: null };
+      }
+      // Keep object format with id, name, color
+      return { id: l.id || null, name: l.name, color: l.color || null };
+    }).filter((l) => l.name);
 
     const msg = {
       ...m,
@@ -82,7 +190,6 @@ export function normalizeEmails(messages) {
       threadId,
       timestampMs: ts,
       labels: enrichedLabels,
-      // keep body as-is; optionally split into {html, text}
     };
     messagesById[id] = msg;
 
@@ -109,9 +216,18 @@ export function normalizeEmails(messages) {
 
     thread.messageIds.push(id);
     thread.updatedAt = Math.max(thread.updatedAt, ts);
-    if (!m.read) thread.unreadCount += 1;
-    enrichedLabels.forEach((l) => thread.labels.add(l));
-    const messageIsDraft = (m.labels || []).some((label) => label.toLowerCase() === "drafts");
+    if (!m.is_read) thread.unreadCount += 1;
+    // Add label objects to thread (use Set to deduplicate by name)
+    enrichedLabels.forEach((labelObj) => {
+      // Check if label with same name already exists in thread
+      const existing = Array.from(thread.labels).find((l) => l.name === labelObj.name);
+      if (!existing) {
+        thread.labels.add(labelObj);
+      }
+    });
+    const messageIsDraft = (m.labels || []).some(
+      (label) => (label?.name?.toLowerCase?.() || label?.toLowerCase?.()) === "drafts"
+    );
     if (!thread.personalEmailSent && !messageIsDraft && (m.from?.email || "").toLowerCase() === PERSONAL_EMAIL) {
       thread.personalEmailSent = true;
     }
@@ -418,7 +534,9 @@ export const getLabel = (participants, { includePersonal = true } = {}) => {
 // - Subject comes from the first message in the thread
 // - Labels are the union of all labels within the thread
 export function getThreadRows(messages, { label = null, folder = "inbox" } = {}) {
+  console.log("BEFORE NORMALIZE", { messages, label, folder });
   const { messagesById, threadsById, threadIds } = normalizeEmails(messages);
+  console.log("getThreadRows", { messagesById, threadsById, threadIds });
 
   // Build a label for the Sent folder that lists only recipient first names
   // - Excludes the sender (john.doe@example.com)
@@ -442,7 +560,7 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     // Find the last non-draft message sent by PERSONAL_EMAIL
     for (let i = thread.messageIds.length - 1; i >= 0; i -= 1) {
       const msg = messagesById[thread.messageIds[i]];
-      const isDraft = (msg.labels || []).some((l) => l.toLowerCase() === "drafts");
+      const isDraft = (msg.labels || []).some((l) => (l?.name?.toLowerCase?.() || l?.toLowerCase?.()) === "drafts");
       const fromPersonal = (msg.from?.email || "").toLowerCase() === PERSONAL_EMAIL;
       if (!isDraft && fromPersonal) {
         const toList = Array.isArray(msg.to) ? msg.to : [];
@@ -482,9 +600,9 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
       preview: last.preview,
 
       // Read/star/important from last message (as requested)
-      read: !!last.read,
-      starred: !!last.starred,
-      important: !!last.important,
+      is_read: !!last.is_read,
+      is_starred: !!last.is_starred,
+      is_important: !!last.is_important,
 
       // Display info
       timestamp: last.timestamp,
@@ -507,14 +625,16 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 
   // Filter by label or folder semantics
   const has = (row, name) => {
-    // Handle both Sets and Arrays
+    // Labels are now objects with { id, name, color }
     const labels = row.labels;
-    if (labels instanceof Set) {
-      return labels.has(name);
+    if (Array.isArray(labels)) {
+      return labels.some((l) => l.name === name);
     }
-    return (labels || []).includes(name);
+    if (labels instanceof Set) {
+      return Array.from(labels).some((l) => l.name === name);
+    }
+    return false;
   };
-
   let filtered = rows;
   if (label) {
     // Filter by label, but exclude Spam and Trash
@@ -522,22 +642,25 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
   } else if (folder) {
     switch (folder) {
       case "inbox":
-        filtered = filtered.filter((r) => has(r, "Inbox"));
+        // Skip filtering for inbox since API already returns category-specific emails
+        // The emails are already filtered by category (primary, promotions, social, updates)
         break;
       case "starred":
-        filtered = filtered.filter((r) => r.starred && !has(r, "Spam") && !has(r, "Trash"));
+        filtered = filtered.filter((r) => r.is_starred && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "snoozed":
         filtered = filtered.filter((r) => has(r, "Snoozed") && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "sent":
-        filtered = filtered.filter((r) => has(r, "Sent"));
+        // Backend already filters by folder=sent, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Sent"));
         break;
       case "drafts":
-        filtered = filtered.filter((r) => has(r, "Drafts"));
+        // Backend already filters by folder=drafts, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Drafts"));
         break;
       case "important":
-        filtered = filtered.filter((r) => r.important && !has(r, "Spam") && !has(r, "Trash"));
+        filtered = filtered.filter((r) => r.is_important && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "chats":
         filtered = filtered.filter((r) => has(r, "Chats"));
@@ -546,10 +669,12 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
         filtered = filtered.filter((r) => has(r, "Scheduled"));
         break;
       case "spam":
-        filtered = filtered.filter((r) => has(r, "Spam"));
+        // Backend already filters by folder=spam, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Spam"));
         break;
       case "trash":
-        filtered = filtered.filter((r) => has(r, "Trash"));
+        // Backend already filters by folder=trash, so skip client-side label filtering
+        // filtered = filtered.filter((r) => has(r, "Trash"));
         break;
       case "categories":
         filtered = filtered.filter((r) => has(r, "Categories"));
@@ -572,7 +697,8 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 // get a single thread row
 export const getThread = (messages, { threadId }) => {
   const { messagesById, threadsById } = normalizeEmails(messages);
-
+console.log({messagesById}, "----------messagesById----------")
+console.log({threadsById}, "----------threadsById----------")
   const thread = threadsById[threadId];
   if (!thread) {
     return null;
@@ -597,9 +723,9 @@ export const getThread = (messages, { threadId }) => {
     preview: last.preview,
 
     // Read/star/important from last message (as requested)
-    read: !!last.read,
-    starred: !!last.starred,
-    important: !!last.important,
+    is_read: !!last.is_read,
+    is_starred: !!last.is_starred,
+    is_important: !!last.is_important,
 
     // Display info
     timestamp: last.timestamp,

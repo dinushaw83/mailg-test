@@ -6,6 +6,7 @@ This module provides:
 - Email listing per label
 """
 
+from app.core.constants import ProhibitedLabels
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func
@@ -14,10 +15,13 @@ from typing import Optional, List, Dict, Set, Union
 from uuid import UUID
 import logging
 
+import random
+
 from app.db.session import get_db
 from app.models.label import Label
 from app.models.email import Email
-from app.models.email_label import EmailLabel
+from app.models.thread import Thread
+from app.models.thread_label import ThreadLabel
 from app.schemas.label import (
     LabelCreate, LabelUpdate, LabelResponse, LabelListResponse, LabelTreeResponse
 )
@@ -27,10 +31,36 @@ from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 
 logger = logging.getLogger(__name__)
+
+
+def generate_random_light_color() -> str:
+    """Generate a random light/pastel hex color."""
+    # Generate RGB values in the lighter range (180-255)
+    r = random.randint(180, 255)
+    g = random.randint(180, 255)
+    b = random.randint(180, 255)
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
 router = APIRouter()
 
 
-def format_label_response(label: Label, email_count: int = 0) -> dict:
+def get_label_hierarchy_name(label: Label) -> str:
+    """Build full hierarchical name for a label (e.g., 'grand/parent/child').
+    
+    Traverses up the parent chain to construct the full path.
+    """
+    parts = []
+    current = label
+    while current:
+        parts.append(current.name)
+        current = current.parent
+    # Reverse to get grand -> parent -> child order
+    parts.reverse()
+    return "/".join(parts)
+
+
+def format_label_response(label: Label, thread_count: int = 0) -> dict:
     """Format label model to response dict."""
     return {
         "id": label.id,
@@ -41,7 +71,7 @@ def format_label_response(label: Label, email_count: int = 0) -> dict:
         "is_deleted": label.is_deleted,
         "created_at": label.created_at,
         "updated_at": label.updated_at,
-        "email_count": email_count,
+        "thread_count": thread_count,
     }
 
 
@@ -80,7 +110,7 @@ def would_create_cycle(db: Session, label_id: UUID, new_parent_id: UUID) -> bool
 
 def build_label_tree(
     labels_with_counts: List[tuple],
-    email_counts: Dict[UUID, int]
+    thread_counts: Dict[UUID, int]
 ) -> List[dict]:
     """Build hierarchical tree from flat label list."""
     # Create lookup dict
@@ -92,7 +122,7 @@ def build_label_tree(
             "name": label.name,
             "color": label.color,
             "parent_id": label.parent_id,
-            "email_count": count,
+            "thread_count": count,
             "children": [],
         }
     
@@ -133,6 +163,13 @@ def create_label(
     """
     current_user = auth.user
     
+    # Validate label name
+    if label_data.name.strip().lower() in {pl.value for pl in ProhibitedLabels}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Label name {label_data.name} is prohibited"
+        )
+    
     # Validate parent_id if provided
     if label_data.parent_id is not None:
         parent = db.query(Label).filter(
@@ -163,7 +200,7 @@ def create_label(
     
     label = Label(
         name=label_data.name,
-        color=label_data.color,
+        color=generate_random_light_color(),
         parent_id=label_data.parent_id,
         owner_id=current_user.id,
     )
@@ -190,13 +227,13 @@ def create_label(
 @router.get("/labels", dependencies=[Depends(authorized())])
 def list_labels(
     db: Session = Depends(get_db),
-    include_counts: bool = Query(True, description="Include email counts"),
+    include_counts: bool = Query(True, description="Include thread counts"),
     flat: bool = Query(True, description="Return flat list (True) or hierarchical tree (False)"),
 ):
-    """List user's labels with email counts.
+    """List user's labels with thread counts.
     
     Args:
-        include_counts: Include email counts for each label
+        include_counts: Include thread counts for each label
         flat: If True, returns flat list. If False, returns hierarchical tree structure.
     
     Permissions:
@@ -205,15 +242,18 @@ def list_labels(
     current_user = auth.user
     
     if include_counts:
-        # Subquery for email counts
-        email_count_subq = (
+        # Subquery for thread counts - filter by user_id for user-specific label associations
+        thread_count_subq = (
             db.query(
-                EmailLabel.label_id,
-                func.count(EmailLabel.email_id).label("email_count")
+                ThreadLabel.label_id,
+                func.count(ThreadLabel.thread_id).label("thread_count")
             )
-            .join(Email, Email.id == EmailLabel.email_id)
-            .filter(Email.is_deleted == False)
-            .group_by(EmailLabel.label_id)
+            .join(Thread, Thread.id == ThreadLabel.thread_id)
+            .filter(
+                Thread.is_deleted == False,
+                ThreadLabel.user_id == current_user.id  # Only count this user's label associations
+            )
+            .group_by(ThreadLabel.label_id)
             .subquery()
         )
         
@@ -221,9 +261,9 @@ def list_labels(
         labels = (
             db.query(
                 Label,
-                func.coalesce(email_count_subq.c.email_count, 0).label("email_count")
+                func.coalesce(thread_count_subq.c.thread_count, 0).label("thread_count")
             )
-            .outerjoin(email_count_subq, Label.id == email_count_subq.c.label_id)
+            .outerjoin(thread_count_subq, Label.id == thread_count_subq.c.label_id)
             .filter(
                 Label.owner_id == current_user.id,
                 Label.is_deleted == False
@@ -232,7 +272,7 @@ def list_labels(
             .all()
         )
         
-        email_counts = {label.id: count for label, count in labels}
+        thread_counts = {label.id: count for label, count in labels}
     else:
         labels = db.query(Label).filter(
             Label.owner_id == current_user.id,
@@ -240,29 +280,30 @@ def list_labels(
         ).order_by(Label.name).all()
         
         labels = [(label, 0) for label in labels]
-        email_counts = {}
+        thread_counts = {}
     
     if not flat:
         # Return hierarchical tree structure
-        return build_label_tree(labels, email_counts)
+        return build_label_tree(labels, thread_counts)
     
-    # Return flat list
+    # Return flat list with hierarchical names
     return [
         {
             "id": label.id,
             "name": label.name,
+            "full_name": get_label_hierarchy_name(label),
             "color": label.color,
             "parent_id": label.parent_id,
-            "email_count": email_count,
+            "thread_count": thread_count,
         }
-        for label, email_count in labels
+        for label, thread_count in labels
     ]
 
 
 @router.get("/labels/tree", response_model=List[LabelTreeResponse], dependencies=[Depends(authorized())])
 def list_labels_tree(
     db: Session = Depends(get_db),
-    include_counts: bool = Query(True, description="Include email counts"),
+    include_counts: bool = Query(True, description="Include thread counts"),
 ) -> List[dict]:
     """List user's labels as hierarchical tree structure.
     
@@ -274,24 +315,27 @@ def list_labels_tree(
     current_user = auth.user
     
     if include_counts:
-        # Subquery for email counts
-        email_count_subq = (
+        # Subquery for thread counts - filter by user_id for user-specific label associations
+        thread_count_subq = (
             db.query(
-                EmailLabel.label_id,
-                func.count(EmailLabel.email_id).label("email_count")
+                ThreadLabel.label_id,
+                func.count(ThreadLabel.thread_id).label("thread_count")
             )
-            .join(Email, Email.id == EmailLabel.email_id)
-            .filter(Email.is_deleted == False)
-            .group_by(EmailLabel.label_id)
+            .join(Thread, Thread.id == ThreadLabel.thread_id)
+            .filter(
+                Thread.is_deleted == False,
+                ThreadLabel.user_id == current_user.id  # Only count this user's label associations
+            )
+            .group_by(ThreadLabel.label_id)
             .subquery()
         )
         
         labels = (
             db.query(
                 Label,
-                func.coalesce(email_count_subq.c.email_count, 0).label("email_count")
+                func.coalesce(thread_count_subq.c.thread_count, 0).label("thread_count")
             )
-            .outerjoin(email_count_subq, Label.id == email_count_subq.c.label_id)
+            .outerjoin(thread_count_subq, Label.id == thread_count_subq.c.label_id)
             .filter(
                 Label.owner_id == current_user.id,
                 Label.is_deleted == False
@@ -299,7 +343,7 @@ def list_labels_tree(
             .all()
         )
         
-        email_counts = {label.id: count for label, count in labels}
+        thread_counts = {label.id: count for label, count in labels}
     else:
         labels_raw = db.query(Label).filter(
             Label.owner_id == current_user.id,
@@ -307,9 +351,9 @@ def list_labels_tree(
         ).all()
         
         labels = [(label, 0) for label in labels_raw]
-        email_counts = {}
+        thread_counts = {}
     
-    return build_label_tree(labels, email_counts)
+    return build_label_tree(labels, thread_counts)
 
 
 @router.get("/labels/{label_id}", response_model=LabelResponse, dependencies=[Depends(authorized())])
@@ -336,15 +380,16 @@ def get_label(
             detail=f"Label {label_id} not found"
         )
     
-    # Get email count
-    email_count = db.query(func.count(EmailLabel.email_id)).join(
-        Email, Email.id == EmailLabel.email_id
+    # Get thread count - filter by user_id for user-specific label associations
+    thread_count = db.query(func.count(ThreadLabel.thread_id)).join(
+        Thread, Thread.id == ThreadLabel.thread_id
     ).filter(
-        EmailLabel.label_id == label_id,
-        Email.is_deleted == False
+        ThreadLabel.label_id == label_id,
+        ThreadLabel.user_id == current_user.id,  # Only count this user's label associations
+        Thread.is_deleted == False
     ).scalar() or 0
     
-    return format_label_response(label, email_count=email_count)
+    return format_label_response(label, thread_count=thread_count)
 
 
 @router.put("/labels/{label_id}", response_model=LabelResponse, dependencies=[Depends(authorized())])
@@ -380,6 +425,12 @@ def update_label(
     # Handle parent_id update
     if "parent_id" in update_data:
         new_parent_id = update_data["parent_id"]
+        
+        # Treat zero UUID as null (move to root)
+        zero_uuid = UUID("00000000-0000-0000-0000-000000000000")
+        if new_parent_id == zero_uuid:
+            new_parent_id = None
+            update_data["parent_id"] = None
         
         if new_parent_id is not None:
             # Validate parent exists and belongs to user
@@ -493,8 +544,11 @@ def delete_label(
     # Get all descendant IDs and delete them all (cascade delete)
     all_ids_to_delete = {label_id} | get_all_descendant_ids(db, label_id)
     
-    # Remove all email associations for labels being deleted
-    db.query(EmailLabel).filter(EmailLabel.label_id.in_(all_ids_to_delete)).delete(synchronize_session=False)
+    # Remove all thread associations for labels being deleted (only this user's associations)
+    db.query(ThreadLabel).filter(
+        ThreadLabel.label_id.in_(all_ids_to_delete),
+        ThreadLabel.user_id == current_user.id
+    ).delete(synchronize_session=False)
     
     if permanent:
         # Permanently delete from database
@@ -517,14 +571,16 @@ def delete_label(
     logger.info(f"Label {label_id} {'permanently ' if permanent else ''}deleted by user {current_user.id} (deleted {deleted_count} labels)")
 
 
-@router.get("/labels/{label_id}/emails", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
-def list_label_emails(
+@router.get("/labels/{label_id}/threads", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
+def list_label_threads(
     label_id: UUID,
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
 ) -> dict:
-    """List emails with a specific label.
+    """List threads with a specific label.
+    
+    Returns the latest email from each thread that has this label.
     
     Permissions:
     - Users can only access their own labels
@@ -546,31 +602,40 @@ def list_label_emails(
             detail=f"Label {label_id} not found"
         )
     
-    # Base query
-    query = db.query(Email).options(
-        joinedload(Email.sender),
-        joinedload(Email.folder),
-        selectinload(Email.attachments),
-        selectinload(Email.labels),
+    # Get threads with this label - filter by user_id for user-specific label associations
+    threads_with_label = db.query(Thread).options(
+        selectinload(Thread.labels),
     ).join(
-        EmailLabel, Email.id == EmailLabel.email_id
+        ThreadLabel, Thread.id == ThreadLabel.thread_id
     ).filter(
-        EmailLabel.label_id == label_id,
-        Email.is_deleted == False
+        ThreadLabel.label_id == label_id,
+        ThreadLabel.user_id == current_user.id,  # Only this user's label associations
+        Thread.is_deleted == False
     )
     
     # Get total count
-    total = query.count()
+    total = threads_with_label.count()
     
     # Calculate pagination
     total_pages = (total + page_size - 1) // page_size if total > 0 else 0
     offset = (page - 1) * page_size
     
-    # Get results
-    emails = query.order_by(Email.created_at.desc()).offset(offset).limit(page_size).all()
+    # Get threads with pagination
+    threads = threads_with_label.order_by(Thread.last_email_at.desc()).offset(offset).limit(page_size).all()
     
-    # Format response
-    emails_data = [format_email_list_response(email) for email in emails]
+    # For each thread, get the latest email
+    emails_data = []
+    for thread in threads:
+        latest_email = db.query(Email).options(
+            joinedload(Email.sender),
+            selectinload(Email.attachments),
+        ).filter(
+            Email.thread_id == thread.id,
+            Email.is_deleted == False
+        ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
+        
+        if latest_email:
+            emails_data.append(format_email_list_response(latest_email, thread.email_count, current_user.id))
     
     return PaginatedListResponse[EmailListResponse](
         results=emails_data,

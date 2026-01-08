@@ -103,13 +103,13 @@ export const useComposeModal = () => {
   const addNewComposeWindow = useCallback(
     (draftId = null, fields = {}, autoFocusInput = true) => {
       // If draftId is an object (like a React event), ignore it
-      const finalDraftId = (draftId && typeof draftId === 'object') ? null : draftId;
-      
+      const finalDraftId = draftId && typeof draftId === "object" ? null : draftId;
+
       // Ensure fields is an object
-      const finalFields = (fields && typeof fields === 'object') ? fields : {};
-      
+      const finalFields = fields && typeof fields === "object" ? fields : {};
+
       // Ensure autoFocus is a boolean and handle cases where an event might be passed
-      const autoFocus = typeof autoFocusInput === 'boolean' ? autoFocusInput : true;
+      const autoFocus = typeof autoFocusInput === "boolean" ? autoFocusInput : true;
 
       const windowWidth = window.innerWidth;
       const availableSpace = windowWidth - TOTAL_MARGINS - TOTAL_GAPS;

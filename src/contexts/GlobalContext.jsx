@@ -1,4 +1,4 @@
-import { useGlobalContext } from '../hooks/useGlobalContext';
+import { useGlobalContext } from "../hooks/useGlobalContext";
 
 // For backward compatibility with any files still importing from here
 export { useGlobalContext };

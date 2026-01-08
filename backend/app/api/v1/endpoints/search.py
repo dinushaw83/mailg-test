@@ -19,12 +19,13 @@ import logging
 from app.db.session import get_db
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
-from app.models.folder import Folder
 from app.models.label import Label
-from app.models.email_label import EmailLabel
+from app.models.thread_label import ThreadLabel
+from app.models.thread import Thread
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 from app.models.user import User
+from app.core.constants import VALID_FOLDER_TYPES
 from app.schemas.search import (
     SearchQuery, SearchResult, SearchResponse,
     SearchSuggestion, SearchSuggestionsResponse,
@@ -160,8 +161,7 @@ def search_emails(
     from_email: Optional[str] = Query(None, alias="from", description="Filter by sender"),
     to_email: Optional[str] = Query(None, alias="to", description="Filter by recipient"),
     subject: Optional[str] = Query(None, description="Search in subject"),
-    folder_id: Optional[UUID] = Query(None, description="Filter by folder"),
-    folder_type: Optional[str] = Query(None, description="Filter by folder type"),
+    folder: Optional[str] = Query(None, description="Filter by folder: inbox, sent, drafts, trash, spam, starred"),
     label_id: Optional[UUID] = Query(None, description="Filter by label"),
     label_name: Optional[str] = Query(None, description="Filter by label name"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
@@ -205,8 +205,8 @@ def search_emails(
         to_email = parsed_filters['to_email']
     if 'subject' in parsed_filters and not subject:
         subject = parsed_filters['subject']
-    if 'folder_type' in parsed_filters and not folder_type:
-        folder_type = parsed_filters['folder_type']
+    if 'folder_type' in parsed_filters and not folder:
+        folder = parsed_filters['folder_type']
     if 'label_name' in parsed_filters and not label_name:
         label_name = parsed_filters['label_name']
     if 'is_read' in parsed_filters and is_read is None:
@@ -233,8 +233,7 @@ def search_emails(
     # Build base query - user's emails
     query = db.query(Email).options(
         joinedload(Email.sender),
-        joinedload(Email.folder),
-        selectinload(Email.labels),
+        joinedload(Email.thread).selectinload(Thread.labels),  # Labels are on threads, not emails
         selectinload(Email.attachments),
     ).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
@@ -269,20 +268,21 @@ def search_emails(
             )
         )
     
-    if folder_id:
-        query = query.filter(Email.folder_id == folder_id)
-    
-    if folder_type:
-        folder_subq = db.query(Folder.id).filter(
-            Folder.owner_id == current_user.id,
-            Folder.folder_type == folder_type,
-            Folder.is_deleted == False
-        ).subquery()
-        query = query.filter(Email.folder_id.in_(folder_subq))
+    if folder:
+        if folder not in VALID_FOLDER_TYPES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
+            )
+        query = query.filter(Email.folder == folder)
     
     if label_id:
-        query = query.join(EmailLabel, Email.id == EmailLabel.email_id).filter(
-            EmailLabel.label_id == label_id
+        # Labels are user-specific on shared threads - filter by user_id
+        query = query.join(Thread, Email.thread_id == Thread.id).join(
+            ThreadLabel, Thread.id == ThreadLabel.thread_id
+        ).filter(
+            ThreadLabel.label_id == label_id,
+            ThreadLabel.user_id == current_user.id  # Only this user's label associations
         )
     
     if label_name:
@@ -291,8 +291,12 @@ def search_emails(
             Label.name.ilike(f"%{label_name}%"),
             Label.is_deleted == False
         ).subquery()
-        query = query.join(EmailLabel, Email.id == EmailLabel.email_id).filter(
-            EmailLabel.label_id.in_(label_subq)
+        # Labels are user-specific on shared threads - filter by user_id
+        query = query.join(Thread, Email.thread_id == Thread.id).join(
+            ThreadLabel, Thread.id == ThreadLabel.thread_id
+        ).filter(
+            ThreadLabel.label_id.in_(label_subq),
+            ThreadLabel.user_id == current_user.id  # Only this user's label associations
         )
     
     if is_read is not None:
@@ -348,7 +352,11 @@ def search_emails(
     results = []
     for email in emails:
         recipients = [r.recipient_email for r in email.recipients] if hasattr(email, 'recipients') else []
-        labels = [get_label_hierarchy_name(l) for l in email.labels if not l.is_deleted]
+        # Labels are on threads - filter by user ownership for user-specific isolation
+        labels = []
+        if email.thread and email.thread.labels:
+            labels = [get_label_hierarchy_name(l) for l in email.thread.labels 
+                      if not l.is_deleted and l.owner_id == current_user.id]
         attachments = [a for a in email.attachments if not a.is_deleted]
         
         results.append({
@@ -358,8 +366,7 @@ def search_emails(
             "sender_email": email.sender.email if email.sender else "",
             "sender_name": email.sender.name if email.sender else None,
             "recipients": recipients,
-            "folder_id": email.folder_id,
-            "folder_name": email.folder.name if email.folder else None,
+            "folder": email.folder or "inbox",
             "labels": labels,
             "is_read": email.is_read,
             "is_starred": email.is_starred,

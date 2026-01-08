@@ -1,7 +1,7 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const mailGAccountSlice = createSlice({
-  name: 'mailGAccount',
+  name: "mailGAccount",
   initialState: {
     mailGAccountPersonalInfo: {
       name: "John Doe",
@@ -48,11 +48,51 @@ const mailGAccountSlice = createSlice({
       signInPromptsEnabled: true,
     },
     thirdPartyApps: [
-      { id: "cursor-ai", name: "Cursor", icon: "cursor", access: "Sign in with Google", accessCount: 12, description: "Access to Any account access", lastAccessed: "2 days ago" },
-      { id: "evernote", name: "Evernote", icon: "evernote", access: "Sign in with Google", accessCount: 12, description: "Access to Any account access", lastAccessed: "1 week ago" },
-      { id: "jibble", name: "Jibble 2.0", icon: "jibble", access: "Sign in with Google", accessCount: 12, description: "Access to Any account access", lastAccessed: "3 weeks ago" },
-      { id: "openai", name: "OpenAI", icon: "openai", access: "Sign in with Google", accessCount: 12, description: "Access to Any account access", lastAccessed: "1 month ago" },
-      { id: "slack", name: "Slack", icon: "slack", access: "Sign in with Google", accessCount: 12, description: "Access to Any account access", lastAccessed: "2 months ago" },
+      {
+        id: "cursor-ai",
+        name: "Cursor",
+        icon: "cursor",
+        access: "Sign in with Google",
+        accessCount: 12,
+        description: "Access to Any account access",
+        lastAccessed: "2 days ago",
+      },
+      {
+        id: "evernote",
+        name: "Evernote",
+        icon: "evernote",
+        access: "Sign in with Google",
+        accessCount: 12,
+        description: "Access to Any account access",
+        lastAccessed: "1 week ago",
+      },
+      {
+        id: "jibble",
+        name: "Jibble 2.0",
+        icon: "jibble",
+        access: "Sign in with Google",
+        accessCount: 12,
+        description: "Access to Any account access",
+        lastAccessed: "3 weeks ago",
+      },
+      {
+        id: "openai",
+        name: "OpenAI",
+        icon: "openai",
+        access: "Sign in with Google",
+        accessCount: 12,
+        description: "Access to Any account access",
+        lastAccessed: "1 month ago",
+      },
+      {
+        id: "slack",
+        name: "Slack",
+        icon: "slack",
+        access: "Sign in with Google",
+        accessCount: 12,
+        description: "Access to Any account access",
+        lastAccessed: "2 months ago",
+      },
     ],
     manualSyncCount: 0,
   },
@@ -84,4 +124,3 @@ export const {
 } = mailGAccountSlice.actions;
 
 export default mailGAccountSlice.reducer;
-

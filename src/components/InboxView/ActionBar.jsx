@@ -27,9 +27,6 @@ const buildMatchKeysForEmail = (email = {}) => {
   add(email.id);
   add(email.messageId);
   add(email.threadId);
-  if (email.threadId) {
-    add(String(email.threadId).replace("#thread-f:", ""));
-  }
   add(email.legacyThreadId);
   add(email.legacyLastMessageId);
   add(email.legacyLastNonDraftMessageId);
@@ -195,7 +192,7 @@ const useCustomHotKeys = ({
 
 const MailActions = ({ thread }) => {
   const navigate = useNavigate();
-  const threadId = thread.threadId.split(":")[1];
+  const threadId = thread.threadId;
   const [state, dispatch] = useReducer(reducer, initialState);
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
@@ -359,10 +356,10 @@ const MailActions = ({ thread }) => {
   const handleStar = useCallback(() => {
     if (!threadEmails.length) return;
 
-    const nextValue = !thread.starred;
+    const nextValue = !thread.is_starred;
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      starred: !!email.starred,
+      starred: !!email.is_starred,
     }));
     const idsToUpdate = previousStates.filter((state) => state.starred !== nextValue).map((state) => state.id);
 
@@ -403,7 +400,7 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [threadEmails, thread.starred, setStar, setSnackbar]);
+  }, [threadEmails, thread.is_starred, setStar, setSnackbar]);
 
   const showUndoSnackbar = useCallback(
     (matchKeys, fromKey, toKey, inCustomLabel, isMoving = true, snapshot = null) => {
@@ -497,7 +494,7 @@ const MailActions = ({ thread }) => {
   useEffect(() => {
     if (hasRunOnceRef.current) return;
 
-    const unreadIds = threadEmails.filter((email) => !email.read).map((email) => email.id);
+    const unreadIds = threadEmails.filter((email) => !email.is_read).map((email) => email.id);
     if (unreadIds.length) {
       markRead(unreadIds, true);
     }
@@ -509,7 +506,7 @@ const MailActions = ({ thread }) => {
 
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      read: !!email.read,
+      read: !!email.is_read,
     }));
     const idsToUpdate = previousStates.filter((state) => state.read).map((state) => state.id);
 
@@ -725,7 +722,7 @@ const MailActions = ({ thread }) => {
 
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      important: !!email.important,
+      important: !!email.is_important,
     }));
     const idsToUpdate = previousStates.filter((state) => !state.important).map((state) => state.id);
 
@@ -1046,7 +1043,7 @@ const NavigationActions = () => {
   const { archive } = useMailActions();
   const { setSnackbar, setEmails } = useGlobalContext();
 
-  const threadKey = useMemo(() => `#thread-f:${threadId}`, [threadId]);
+  const threadKey = useMemo(() => threadId, [threadId]);
   const threadEmails = useMemo(() => emails.filter((email) => email.threadId === threadKey), [emails, threadKey]);
   const conversationLabelSnapshot = useCallback(
     () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
@@ -1074,7 +1071,7 @@ const NavigationActions = () => {
 
   // use thread position in filtered threadIds array to determine if there is a previous or next thread
   const threadPosition = useMemo(() => {
-    return filteredThreadIds.indexOf(`#thread-f:${threadId}`);
+    return filteredThreadIds.indexOf(threadId);
   }, [filteredThreadIds, threadId]);
 
   const hasPreviousThread = useMemo(() => {
@@ -1086,11 +1083,11 @@ const NavigationActions = () => {
   }, [threadPosition, filteredThreadIds]);
 
   const previousThread = useMemo(() => {
-    return (filteredThreadIds[threadPosition - 1] || "").split(":")[1];
+    return filteredThreadIds[threadPosition - 1] || "";
   }, [filteredThreadIds, threadPosition]);
 
   const nextThread = useMemo(() => {
-    return (filteredThreadIds[threadPosition + 1] || "").split(":")[1];
+    return filteredThreadIds[threadPosition + 1] || "";
   }, [filteredThreadIds, threadPosition]);
 
   const currentItem = useMemo(() => {

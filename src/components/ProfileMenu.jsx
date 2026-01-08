@@ -1,13 +1,17 @@
+import { Avatar, Box, Button, Dialog, DialogContent, Divider, IconButton, Popover, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Popover, Box, Typography, Avatar, IconButton, Divider, Button, Dialog, DialogContent } from "@mui/material";
+
 import { Close as CloseIcon } from "@mui/icons-material";
-import { useGlobalContext } from "../contexts/GlobalContext";
 import { generateAvatarColor } from "../utils/helperFunctions";
+import { logout } from "../store/slices/userSlice";
+import { useDispatch } from "react-redux";
+import { useGlobalContext } from "../contexts/GlobalContext";
+import { useNavigate } from "react-router-dom";
 
 const ProfileMenu = ({ anchorEl, open, onClose }) => {
   const { loggedInUser } = useGlobalContext();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [profilePictureDialogOpen, setProfilePictureDialogOpen] = useState(false);
 
   const handleManageAccount = () => {
@@ -21,8 +25,9 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
   };
 
   const handleSignOut = () => {
-    // Handle sign out logic
-    console.log("Sign out");
+    dispatch(logout());
+    onClose();
+    navigate("/login", { replace: true });
   };
 
   const handleProfilePictureClick = () => {
@@ -269,9 +274,7 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
             <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#5f6368" }}>
               cloud_queue
             </span>
-            <Typography sx={{ fontSize: "14px", fontWeight: 500, color: "#3c4043" }}>
-              15% of 15 GB used
-            </Typography>
+            <Typography sx={{ fontSize: "14px", fontWeight: 500, color: "#3c4043" }}>15% of 15 GB used</Typography>
           </Box>
 
           {/* Footer Links */}
@@ -365,9 +368,7 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
 
           {/* Header */}
           <Box sx={{ textAlign: "center", mb: 3 }}>
-            <Typography sx={{ fontSize: "22px", fontWeight: 400, color: "#5f6368" }}>
-              MailG Account
-            </Typography>
+            <Typography sx={{ fontSize: "22px", fontWeight: 400, color: "#5f6368" }}>MailG Account</Typography>
           </Box>
 
           {/* Content */}
@@ -452,4 +453,3 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
 };
 
 export default ProfileMenu;
-

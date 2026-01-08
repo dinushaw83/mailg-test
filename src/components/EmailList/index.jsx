@@ -1,15 +1,14 @@
 import React, { useEffect, useRef } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { useHotkeys } from "react-hotkeys-hook";
-
-import useMailActions from "../../hooks/useMailActions";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-
-import Table from "./Table";
-import Footer from "./Footer";
-import { CATEGORIES } from "../../utils/categories";
 import useLabels, { getPathLabelFromKey } from "../../hooks/useLabels";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+
+import { CATEGORIES } from "../../utils/categories";
+import Footer from "./Footer";
+import Table from "./Table";
 import { useComposeModal } from "../../hooks/useComposeModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useHotkeys } from "react-hotkeys-hook";
+import useMailActions from "../../hooks/useMailActions";
 
 const useCustomHotKeys = ({ emails }) => {
   const { selection, keyboardShortcuts } = useGlobalContext();
@@ -23,7 +22,7 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "a" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // treat as "*" then "a"
-      const ids = emails.map((email) => email.threadId.split(":")[1]);
+      const ids = emails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -40,7 +39,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>r
       const readEmails = emails.filter((email) => email.isEmailRead);
-      const ids = readEmails.map((email) => email.threadId.split(":")[1]);
+      const ids = readEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -49,7 +48,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
       const unreadEmails = emails.filter((email) => !email.isEmailRead);
-      const ids = unreadEmails.map((email) => email.threadId.split(":")[1]);
+      const ids = unreadEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -57,8 +56,8 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "s" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
-      const starredEmails = emails.filter((email) => email.starred);
-      const ids = starredEmails.map((email) => email.threadId.split(":")[1]);
+      const starredEmails = emails.filter((email) => email.is_starred);
+      const ids = starredEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -66,8 +65,8 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "t" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
-      const unstarredEmails = emails.filter((email) => !email.starred);
-      const ids = unstarredEmails.map((email) => email.threadId.split(":")[1]);
+      const unstarredEmails = emails.filter((email) => !email.is_starred);
+      const ids = unstarredEmails.map((email) => email.threadId);
       selection.setMany(ids);
     }
   });
@@ -151,18 +150,18 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   const getImportantAriaLabel = (email) => {
-    return email.important ? "Important according to Google magic." : "Not important";
+    return email.is_important ? "Important according to Google magic." : "Not important";
   };
 
   const getImportantClassName = (email) => {
-    return email.important ? "pH a9q" : "pH-A7 a9q";
+    return email.is_important ? "pH a9q" : "pH-A7 a9q";
   };
 
   const getAccessibilityText = (email) => {
     const status = [];
-    if (email.starred) status.push("starred");
+    if (email.is_starred) status.push("starred");
     if (!email.isEmailRead) status.push("unread");
-    if (email.important) status.push("Important");
+    if (email.is_important) status.push("Important");
     status.push(email.from.name);
     status.push(email.subject);
     status.push(formatDate(email.timestamp));
@@ -204,32 +203,12 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   const getLabelBadges = (email) => {
-    const currentPath = (label || folder || "").toLowerCase();
-    const isAllMail = ["all"].includes(currentPath);
-    const softRemoved = softRemovedLabels[email.id] || [];
-    const curLabels = [...new Set([...email.labels, ...softRemoved])];
-
-    return curLabels
-      .filter((labelKey) => {
-        const lower = labelKey.toLowerCase();
-        const isInbox = lower === "inbox";
-        const isCategory = categoryLabels.map((c) => c.toLowerCase()).includes(lower);
-
-        // hide current folder label
-        if (lower === currentPath) return false;
-
-        // hide category labels except inbox in All Mail
-        if (isCategory && !(isInbox && isAllMail)) return false;
-
-        // hide system labels except inbox
-        if (labels[labelKey]?.system && !isInbox) return false;
-
-        return true;
-      })
-      .map((labelKey) => ({
-        key: labelKey,
-        displayName: getPathLabelFromKey(labels, labelKey),
-        color: labels[labelKey]?.color,
+    // Simply return the label objects with their id, name, and color
+    // Labels are already in object format: { id, name, color }
+    return (email.labels || []).map((labelObj) => ({
+      key: labelObj.id || labelObj.name,
+      displayName: labelObj.name,
+      color: labelObj.color,
       }));
   };
 

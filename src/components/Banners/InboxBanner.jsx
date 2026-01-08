@@ -1,6 +1,7 @@
-import { useMemo } from "react";
-import styled from "@emotion/styled";
 import { CATEGORIES } from "../../utils/categories";
+import styled from "@emotion/styled";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 
 const TabCell = styled.td`
   user-select: none;
@@ -21,24 +22,9 @@ const TabContent = styled.div`
   user-select: none;
 `;
 
-function InboxTab({
-  tab,
-  isActive,
-  activeTabClass,
-  onClick,
-  counts,
-  previews,
-  tabClass,
-  tooltip,
-  iconClass,
-}) {
+function InboxTab({ tab, isActive, activeTabClass, onClick, counts, previews, tabClass, tooltip, iconClass }) {
   return (
-    <TabCell
-      className="aRz J-KU"
-      role="heading"
-      aria-level={3}
-      onClick={() => onClick(tab)}
-    >
+    <TabCell className="aRz J-KU" role="heading" aria-level={3} onClick={() => onClick(tab)}>
       <TabWrapper
         className={`aAy ${tabClass} ${isActive ? activeTabClass : ""}`}
         tabIndex={0}
@@ -55,11 +41,7 @@ function InboxTab({
                   {`${counts[tab]} new`}
                 </div>
               )}
-              <div
-                className="aKz"
-                data-tooltip-align="t,l"
-                data-tooltip={tooltip}
-              >
+              <div className="aKz" data-tooltip-align="t,l" data-tooltip={tooltip}>
                 {tab}
               </div>
             </div>
@@ -73,20 +55,31 @@ function InboxTab({
   );
 }
 
-
 export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows }) {
   const activeTabClass = "J-KU-KO aIf-aLe";
+  const emailCounts = useSelector((state) => state.mail.emailCounts);
 
+  // Old implementation: Calculate counts from rows (client-side)
+  // const counts = useMemo(() => {
+  //   const tabs = Object.values(CATEGORIES);
+  //   const result = {};
+  //   for (const t of tabs) {
+  //     result[t] = rows.filter(
+  //       (row) => row.labels.includes("Inbox") && row.labels.includes(t) && row.unreadCount > 0
+  //     ).length;
+  //   }
+  //   return result;
+  // }, [rows]);
+
+  // New implementation: Use counts from Redux (fetched via API)
   const counts = useMemo(() => {
-    const tabs = Object.values(CATEGORIES);
     const result = {};
-    for (const t of tabs) {
-      result[t] = rows.filter(
-        (row) => row.labels.includes("Inbox") && row.labels.includes(t) && row.unreadCount > 0
-      ).length;
-    }
+    result.Primary = emailCounts.primary || 0;
+    result.Promotions = emailCounts.promotions || 0;
+    result.Social = emailCounts.social || 0;
+    result.Updates = emailCounts.updates || 0;
     return result;
-  }, [rows]);
+  }, [emailCounts]);
 
   const previews = useMemo(() => {
     const result = {};
@@ -104,12 +97,7 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
     <div className="aKh" jsaction="taiVP:.CLIENT">
       <table className="aKk">
         <tbody>
-          <tr
-            className="aAA J-KU-Jg J-KU-Jg-K9"
-            role="tablist"
-            aria-activedescendant=""
-            style={{ userSelect: "none" }}
-          >
+          <tr className="aAA J-KU-Jg J-KU-Jg-K9" role="tablist" aria-activedescendant="" style={{ userSelect: "none" }}>
             {[
               {
                 tab: "Primary",
@@ -127,7 +115,8 @@ export default function InboxBanner({ activeInboxTab, setActiveInboxTab, rows })
                 tab: "Social",
                 tabClass: "aKe-aLe",
                 iconClass: "aKe-aLf",
-                tooltip: "Messages from social networks, media-sharing sites, online dating services, and other social websites.",
+                tooltip:
+                  "Messages from social networks, media-sharing sites, online dating services, and other social websites.",
               },
               {
                 tab: "Updates",
