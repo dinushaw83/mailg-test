@@ -23,8 +23,7 @@ from sqlalchemy.pool import NullPool
 from app.core.config import DATABASE_URL, POSTGRES_ADMIN_DB, POSTGRES_RUN_DB_PREFIX
 from app.core.constants import EmailStatus, FolderType
 from app.models.email import Email
-from app.models.email_recipient import EmailRecipient
-from app.models.user import User
+from app.utils.email_utils import deliver_email_to_recipients
 
 logger = logging.getLogger(__name__)
 
@@ -62,40 +61,6 @@ def _get_active_run_databases() -> list[str]:
         engine.dispose()
 
 
-def _deliver_email_to_recipients(db, email: Email, sender_id: int) -> None:
-    """Create received copies of an email for all recipients who are system users."""
-    for recipient in email.recipients:
-        if recipient.recipient_id:
-            recipient_user = db.query(User).filter(
-                User.id == recipient.recipient_id,
-                User.is_deleted == False
-            ).first()
-            if recipient_user:
-                received_email = Email(
-                    subject=email.subject,
-                    body=email.body,
-                    html_body=email.html_body,
-                    status=EmailStatus.RECEIVED.value,
-                    folder=FolderType.INBOX.value,
-                    category=email.category,
-                    sender_id=sender_id,
-                    is_read=False,
-                    received_at=datetime.utcnow(),
-                    thread_id=email.thread_id,
-                )
-                db.add(received_email)
-                db.flush()
-                
-                recv_recipient = EmailRecipient(
-                    email_id=received_email.id,
-                    recipient_id=recipient_user.id,
-                    recipient_email=recipient.recipient_email,
-                    recipient_name=recipient.recipient_name,
-                    recipient_type=recipient.recipient_type,
-                )
-                db.add(recv_recipient)
-
-
 def process_scheduled_emails_for_database(db_name: str) -> int:
     """Process all due scheduled emails in a specific run database.
     
@@ -131,8 +96,8 @@ def process_scheduled_emails_for_database(db_name: str) -> int:
                     email.sent_at = datetime.utcnow()
                     email.scheduled_send_at = None
                     
-                    # Deliver to recipients
-                    _deliver_email_to_recipients(db, email, email.sender_id)
+                    # Deliver to recipients (uses shared function from email_utils)
+                    deliver_email_to_recipients(db, email, email.sender_id)
                     
                     db.commit()
                     sent_count += 1

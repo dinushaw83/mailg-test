@@ -253,17 +253,23 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
         db.close()
 
 
-def deliver_email_to_recipients(db: Session, email, sender) -> None:
+def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = None) -> None:
     """Create received copies of an email for all recipients who are system users.
+    
+    This function is used by both the send API endpoint and the background job
+    that processes scheduled/queued emails.
     
     Args:
         db: Database session
-        email: The email being sent
-        sender: The sender user object
+        email: The email being sent (must have recipients loaded)
+        sender_id: The sender's user ID. If None, uses email.sender_id
     """
     from app.models.email import Email
     from app.models.email_recipient import EmailRecipient
     from app.models.user import User
+    
+    # Use provided sender_id or fall back to email's sender_id
+    actual_sender_id = sender_id if sender_id is not None else email.sender_id
     
     for recipient in email.recipients:
         if recipient.recipient_id:
@@ -279,7 +285,7 @@ def deliver_email_to_recipients(db: Session, email, sender) -> None:
                     status=EmailStatus.RECEIVED.value,
                     folder=FolderType.INBOX.value,
                     category=email.category,
-                    sender_id=sender.id,
+                    sender_id=actual_sender_id,
                     is_read=False,
                     received_at=datetime.utcnow(),
                     thread_id=email.thread_id,

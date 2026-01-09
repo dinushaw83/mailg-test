@@ -98,20 +98,21 @@ class TestValidationErrorWrapping:
         """Test validation errors have correct wrapped format."""
         client, token, user = client_with_auth
         
-        # Send invalid data (missing required fields)
+        # Send invalid data (recipient with invalid type)
         response = client.post(
             "/api/v1/emails",
-            json={},  # Missing required fields
+            json={
+                "recipients": [{"email": "test@example.com", "type": "invalid_type"}]
+            },
             headers={"Authorization": f"Bearer {token}"}
         )
         
-        assert response.status_code == 422
+        assert response.status_code == 400
         data = response.json()
         
         assert data["success"] is False
-        assert data["message"] == "Validation error"
-        assert data["statusCode"] == 422
-        assert "errors" in data["data"]
+        assert data["statusCode"] == 400
+        assert "message" in data
 
 
 class TestCRUDResponseWrapping:

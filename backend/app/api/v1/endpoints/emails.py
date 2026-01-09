@@ -63,7 +63,10 @@ def create_email(
     email_data: EmailCreate,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Create a new email (draft or send immediately).
+    """Create a new draft email.
+    
+    This endpoint only creates drafts. Use POST /emails/{id}/send to send the email
+    (either immediately or scheduled for a specific time).
     
     Permissions:
     - All authenticated users can create emails
@@ -78,20 +81,6 @@ def create_email(
                 detail=f"Invalid recipient type. Must be one of: {', '.join(VALID_RECIPIENT_TYPES)}"
             )
     
-    # Determine status and folder
-    if email_data.is_draft:
-        email_status = EmailStatus.DRAFT.value
-        email_folder = FolderType.DRAFTS.value
-    else:
-        email_status = EmailStatus.SENT.value
-        email_folder = FolderType.SENT.value
-    
-    # Handle scheduled send (undo send feature)
-    scheduled_send_at = email_data.scheduled_send_at
-    if scheduled_send_at and not email_data.is_draft:
-        # Email is scheduled for later - queue it
-        email_status = EmailStatus.QUEUED.value
-    
     try:
         # Create a new thread for this email (new conversation)
         thread = Thread(
@@ -104,18 +93,16 @@ def create_email(
         db.add(thread)
         db.flush()  # Get thread ID
         
-        # Create email with thread
+        # Create draft email
         email = Email(
             subject=email_data.subject,
             body=email_data.body,
             html_body=email_data.html_body,
-            status=email_status,
-            folder=email_folder,
+            status=EmailStatus.DRAFT.value,
+            folder=FolderType.DRAFTS.value,
             sender_id=current_user.id,
             thread_id=thread.id,
             is_read=True,  # Sender has read their own email
-            sent_at=None if email_data.is_draft or scheduled_send_at else datetime.utcnow(),
-            scheduled_send_at=scheduled_send_at,
         )
         db.add(email)
         db.flush()  # Get email ID
@@ -136,65 +123,19 @@ def create_email(
                 recipient_type=recipient.type,
             )
             db.add(email_recipient)
-            
-            # If sending immediately (not draft, not queued), create received copy for recipients who are users
-            if not email_data.is_draft and not scheduled_send_at and recipient_user:
-                received_email = Email(
-                    subject=email_data.subject,
-                    body=email_data.body,
-                    html_body=email_data.html_body,
-                    status=EmailStatus.RECEIVED.value,
-                    folder=FolderType.INBOX.value,
-                    sender_id=current_user.id,
-                    is_read=False,
-                    received_at=datetime.utcnow(),
-                    thread_id=email.thread_id,
-                )
-                db.add(received_email)
-                db.flush()
-                
-                # Add recipient record
-                recv_recipient = EmailRecipient(
-                    email_id=received_email.id,
-                    recipient_id=recipient_user.id,
-                    recipient_email=recipient.email,
-                    recipient_name=recipient.name or recipient_user.name,
-                    recipient_type=recipient.type,
-                )
-                db.add(recv_recipient)
         
         db.commit()
         db.refresh(email)
         
-        # Assign system labels based on email type
-        if email_data.is_draft:
-            # Draft: Add Drafts label
-            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
-        else:
-            # Sent email: Add Sent label for sender
-            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
-            # Add category label if applicable
-            if email.category:
-                add_category_label_to_thread(db, email.thread_id, current_user.id, EmailCategory(email.category))
-            
-            # For recipients who are users: Add Inbox label + category
-            for recipient in email_data.recipients:
-                recipient_user = db.query(User).filter(
-                    User.email == recipient.email,
-                    User.is_deleted == False
-                ).first()
-                if recipient_user and not scheduled_send_at:
-                    add_system_label_to_thread(db, email.thread_id, recipient_user.id, SystemLabel.INBOX)
-                    if email.category:
-                        add_category_label_to_thread(db, email.thread_id, recipient_user.id, EmailCategory(email.category))
-        
+        # Add Drafts label to the thread
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
         db.commit()
         
     except Exception:
         db.rollback()
         raise
     
-    logger.info(f"Email {email.id} created by user {current_user.id}")
+    logger.info(f"Draft email {email.id} created by user {current_user.id}")
     
     return format_email_response(email, current_user.id)
 
@@ -755,7 +696,7 @@ def send_email(
         add_category_label_to_thread(db, email.thread_id, current_user.id, EmailCategory(email.category))
     
     # Create received copies for recipients who are users
-    deliver_email_to_recipients(db, email, current_user)
+    deliver_email_to_recipients(db, email, current_user.id)
     
     try:
         db.commit()
@@ -869,7 +810,7 @@ def confirm_send(
     email.folder = FolderType.SENT.value
     
     # Deliver to recipients
-    deliver_email_to_recipients(db, email, current_user)
+    deliver_email_to_recipients(db, email, current_user.id)
     
     try:
         db.commit()
