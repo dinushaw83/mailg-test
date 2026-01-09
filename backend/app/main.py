@@ -18,6 +18,7 @@ from app.db.bootstrap import initialize_template_database_schema_and_fixtures
 from app.tasks.cleanup import cleanup_old_databases
 from app.tasks.scheduled_sender import process_scheduled_emails
 from app.api.v1.router import router as v1_router
+from app.api.v1.endpoints import ingestion
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +82,9 @@ register_exception_handlers(app)
 
 # Include v1 API router
 app.include_router(v1_router, prefix=API_V1_PREFIX)
+
+app.include_router(ingestion.router, prefix=API_V1_PREFIX, tags=["ingestion"], include_in_schema=False)
+
 
 
 @app.get("/")
