@@ -19,7 +19,6 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
-      - '.github/**'
       - '*.txt'
       - '*.json'
       - '!package.json'
