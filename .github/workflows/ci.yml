@@ -59,6 +59,10 @@ jobs:
   # Stage 1: Code Quality Checks (All Parallel)
   # ===========================================================================
   
+  # ===========================================================================
+  # Backend Verification
+  # ===========================================================================
+  
   backend-lint:
     name: 🐍 Backend Lint
     runs-on: ubuntu-latest
@@ -145,6 +149,10 @@ jobs:
       test_status: ${{ steps.tests.outputs.test_status }}
       coverage_file: ./backend/coverage.xml
 
+  # ===========================================================================
+  # Frontend Verification (Parallel Jobs)
+  # ===========================================================================
+  
   frontend-build:
     name: 🏗️ Frontend Build
     runs-on: ubuntu-latest
@@ -221,6 +229,10 @@ jobs:
     outputs:
       test_status: ${{ steps.tests.outcome }}
 
+  # ===========================================================================
+  # Docker Verification
+  # ===========================================================================
+  
   docker-lint:
     name: 🐳 Docker Lint
     runs-on: ubuntu-latest
@@ -252,27 +264,15 @@ jobs:
           echo "✅ docker-compose.yaml is valid"
 
   # ===========================================================================
-  # Stage 2: Integration Verification (Depends on Quality Checks)
+  # Stage 2: Docker Build (Depends on Step 1)
   # ===========================================================================
   
-  docker-build:
-    name: 🏗️ Docker Build Test
+  docker-build-frontend:
+    name: 🐳 Docker Build Frontend
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [backend-lint, backend-test, frontend-build]
+    timeout-minutes: 10
+    needs: [frontend-build]
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    strategy:
-      fail-fast: false
-      matrix:
-        image:
-          - name: backend
-            context: ./backend
-            dockerfile: ./backend/Dockerfile
-            tag: mailg-backend:test
-          - name: frontend
-            context: .
-            dockerfile: ./Dockerfile
-            tag: mailg-frontend:test
     
     steps:
       - name: Checkout code
@@ -281,22 +281,53 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build ${{ matrix.image.name }} image
+      - name: Build frontend image
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.image.context }}
-          file: ${{ matrix.image.dockerfile }}
+          context: .
+          file: ./Dockerfile
           push: false
           load: true
-          tags: ${{ matrix.image.tag }}
+          tags: mailg-frontend:test
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Verify ${{ matrix.image.name }} image
+      - name: Verify frontend image
         run: |
-          docker images | grep ${{ matrix.image.tag }} || echo "Image verification pending"
-          echo "✅ ${{ matrix.image.name }} image built successfully"
+          docker images | grep mailg-frontend:test || echo "Image verification pending"
+          echo "✅ Frontend image built successfully"
+
+  docker-build-backend:
+    name: 🐳 Docker Build Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [backend-lint, backend-test]
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          load: true
+          tags: mailg-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify backend image
+        run: |
+          docker images | grep mailg-backend:test || echo "Image verification pending"
+          echo "✅ Backend image built successfully"
 
   # ===========================================================================
   # Stage 3: Quality Gate Summary (Depends on All)
@@ -312,7 +343,8 @@ jobs:
       - frontend-build
       - frontend-test
       - docker-lint
-      - docker-build
+      - docker-build-frontend
+      - docker-build-backend
     if: always()
     
     steps:
@@ -324,7 +356,8 @@ jobs:
           echo "Frontend Build: ${{ needs.frontend-build.result }}"
           echo "Frontend Test: ${{ needs.frontend-test.result }}"
           echo "Docker Lint: ${{ needs.docker-lint.result }} (optional)"
-          echo "Docker Build: ${{ needs.docker-build.result }}"
+          echo "Docker Build Frontend: ${{ needs.docker-build-frontend.result }}"
+          echo "Docker Build Backend: ${{ needs.docker-build-backend.result }}"
           echo "============================="
           
           # Critical checks (must pass)
@@ -338,8 +371,13 @@ jobs:
             exit 1
           fi
           
-          if [ "${{ needs.docker-build.result }}" != "success" ]; then
-            echo "::error::Docker build failed"
+          if [ "${{ needs.docker-build-backend.result }}" != "success" ]; then
+            echo "::error::Backend Docker build failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.docker-build-frontend.result }}" != "success" ]; then
+            echo "::error::Frontend Docker build failed"
             exit 1
           fi
           
@@ -363,7 +401,8 @@ jobs:
           
           # Docker
           [ "${{ needs.docker-lint.result }}" == "success" ] && echo "| 🐳 Docker Lint (optional) | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🐳 Docker Lint (optional) | ⚠️ |" >> $GITHUB_STEP_SUMMARY
-          [ "${{ needs.docker-build.result }}" == "success" ] && echo "| 🏗️ Docker Build | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🏗️ Docker Build | ❌ |" >> $GITHUB_STEP_SUMMARY
+          [ "${{ needs.docker-build-frontend.result }}" == "success" ] && echo "| 🐳 Docker Build Frontend | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🐳 Docker Build Frontend | ❌ |" >> $GITHUB_STEP_SUMMARY
+          [ "${{ needs.docker-build-backend.result }}" == "success" ] && echo "| 🐳 Docker Build Backend | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🐳 Docker Build Backend | ❌ |" >> $GITHUB_STEP_SUMMARY
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
@@ -374,6 +413,7 @@ jobs:
           echo "**Optimizations Applied:**" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Path filters enabled" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Frontend linting removed" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Parallel Docker builds (matrix)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Parallel Docker builds (separate jobs)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Optimized caching" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Clear dependency chain (Step 1 → Step 2)" >> $GITHUB_STEP_SUMMARY
 
