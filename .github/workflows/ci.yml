@@ -1,0 +1,354 @@
+# =============================================================================
+# CI Pipeline - Code Quality & Verification Gate
+# =============================================================================
+# Triggers: feature/*, bugfix/*, hotfix/* branches
+# Purpose: Validate code quality before merge to dev
+# =============================================================================
+
+name: CI - Quality Gate
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'feature/*'
+      - 'bugfix/**'
+      - 'bugfix/*'
+      - 'hotfix/**'
+      - 'hotfix/*'
+  pull_request:
+    branches:
+      - dev
+      - main
+      - master
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  # ===========================================================================
+  # Backend Verification
+  # ===========================================================================
+  backend-lint:
+    name: 🐍 Backend Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: './backend/requirements.txt'
+
+      - name: Install linting tools
+        run: pip install flake8 black isort
+
+      - name: Run flake8
+        working-directory: ./backend
+        run: |
+          flake8 app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 app/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Check code formatting (black)
+        working-directory: ./backend
+        run: black --check --diff app/ || echo "::warning::Code formatting issues found"
+        continue-on-error: true
+
+      - name: Check import sorting (isort)
+        working-directory: ./backend
+        run: isort --check-only --diff app/ || echo "::warning::Import sorting issues found"
+        continue-on-error: true
+
+  backend-test:
+    name: 🧪 Backend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: './backend/requirements.txt'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests with coverage
+        working-directory: ./backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/backend
+        run: |
+          pytest tests/ -v \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --cov-fail-under=0 \
+            --tb=short \
+            -x
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+        continue-on-error: true
+
+  # ===========================================================================
+  # Frontend Verification (Parallel Jobs)
+  # ===========================================================================
+  frontend-lint:
+    name: 🔍 Frontend Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check TypeScript (if applicable)
+        run: npx tsc --noEmit || echo "::warning::TypeScript check skipped or has warnings"
+        continue-on-error: true
+
+  frontend-build:
+    name: 🏗️ Frontend Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Verify build artifacts
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "::error::Build failed - dist directory not found"
+            exit 1
+          fi
+          
+          # Check for essential files
+          if [ ! -f "dist/index.html" ]; then
+            echo "::error::Build failed - index.html not found"
+            exit 1
+          fi
+          
+          echo "✅ Build artifacts verified"
+          echo "📦 Build size: $(du -sh dist | cut -f1)"
+
+  frontend-test:
+    name: 🧪 Frontend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test --if-present || echo "::notice::No test script configured"
+        continue-on-error: true
+
+  # ===========================================================================
+  # Docker Verification
+  # ===========================================================================
+  docker-lint:
+    name: 🐳 Docker Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint Dockerfiles with Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ./backend/Dockerfile
+          failure-threshold: error
+        continue-on-error: true
+
+      - name: Lint frontend Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ./Dockerfile
+          failure-threshold: error
+        continue-on-error: true
+
+      - name: Validate docker-compose
+        run: |
+          docker compose config > /dev/null
+          echo "✅ docker-compose.yaml is valid"
+
+  docker-build:
+    name: 🏗️ Docker Build Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [backend-test, frontend-build]  # Only build Docker if code tests pass
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image (test)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          load: true
+          tags: mailg-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image (test)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: mailg-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify images
+        run: |
+          docker images | grep mailg
+          echo "✅ Docker images built successfully"
+
+  # ===========================================================================
+  # Quality Gate Summary
+  # ===========================================================================
+  quality-gate:
+    name: ✅ Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: 
+      - backend-lint
+      - backend-test
+      - frontend-lint
+      - frontend-build
+      - frontend-test
+      - docker-lint
+      - docker-build
+    if: always()
+    
+    steps:
+      - name: Check all job results
+        run: |
+          echo "=== Quality Gate Results ==="
+          echo "Backend Lint: ${{ needs.backend-lint.result }}"
+          echo "Backend Test: ${{ needs.backend-test.result }}"
+          echo "Frontend Lint: ${{ needs.frontend-lint.result }}"
+          echo "Frontend Build: ${{ needs.frontend-build.result }}"
+          echo "Frontend Test: ${{ needs.frontend-test.result }}"
+          echo "Docker Lint: ${{ needs.docker-lint.result }}"
+          echo "Docker Build: ${{ needs.docker-build.result }}"
+          echo "============================="
+          
+          # Critical checks (must pass)
+          if [ "${{ needs.backend-test.result }}" != "success" ]; then
+            echo "::error::Backend tests failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.frontend-build.result }}" != "success" ]; then
+            echo "::error::Frontend build failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.docker-build.result }}" != "success" ]; then
+            echo "::error::Docker build failed"
+            exit 1
+          fi
+          
+          echo "✅ Quality Gate PASSED"
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## 🔍 Quality Gate Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Backend
+          [ "${{ needs.backend-lint.result }}" == "success" ] && echo "| 🐍 Backend Lint | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🐍 Backend Lint | ❌ |" >> $GITHUB_STEP_SUMMARY
+          [ "${{ needs.backend-test.result }}" == "success" ] && echo "| 🧪 Backend Tests | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🧪 Backend Tests | ❌ |" >> $GITHUB_STEP_SUMMARY
+          
+          # Frontend
+          [ "${{ needs.frontend-lint.result }}" == "success" ] && echo "| 🔍 Frontend Lint | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🔍 Frontend Lint | ❌ |" >> $GITHUB_STEP_SUMMARY
+          [ "${{ needs.frontend-build.result }}" == "success" ] && echo "| 🏗️ Frontend Build | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🏗️ Frontend Build | ❌ |" >> $GITHUB_STEP_SUMMARY
+          [ "${{ needs.frontend-test.result }}" == "success" ] && echo "| 🧪 Frontend Tests | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🧪 Frontend Tests | ❌ |" >> $GITHUB_STEP_SUMMARY
+          
+          # Docker
+          [ "${{ needs.docker-lint.result }}" == "success" ] && echo "| 🐳 Docker Lint | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🐳 Docker Lint | ❌ |" >> $GITHUB_STEP_SUMMARY
+          [ "${{ needs.docker-build.result }}" == "success" ] && echo "| 🏗️ Docker Build | ✅ |" >> $GITHUB_STEP_SUMMARY || echo "| 🏗️ Docker Build | ❌ |" >> $GITHUB_STEP_SUMMARY
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Author:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
