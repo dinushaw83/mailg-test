@@ -66,8 +66,7 @@ def create_label(
     if label_data.parent_id is not None:
         parent = db.query(Label).filter(
             Label.id == label_data.parent_id,
-            Label.owner_id == current_user.id,
-            Label.is_deleted == False
+            Label.owner_id == current_user.id
         ).first()
         
         if not parent:
@@ -80,8 +79,7 @@ def create_label(
     existing = db.query(Label).filter(
         Label.owner_id == current_user.id,
         Label.parent_id == label_data.parent_id,
-        Label.name == label_data.name,
-        Label.is_deleted == False
+        Label.name == label_data.name
     ).first()
     
     if existing:
@@ -145,7 +143,6 @@ def list_labels(
             )
             .join(Thread, Thread.id == ThreadLabel.thread_id)
             .filter(
-                Thread.is_deleted == False,
                 ThreadLabel.user_id == current_user.id  # Only count this user's label associations
             )
             .group_by(ThreadLabel.label_id)
@@ -160,8 +157,7 @@ def list_labels(
             )
             .outerjoin(thread_count_subq, Label.id == thread_count_subq.c.label_id)
             .filter(
-                Label.owner_id == current_user.id,
-                Label.is_deleted == False
+                Label.owner_id == current_user.id
             )
             .order_by(Label.name)
             .all()
@@ -170,8 +166,7 @@ def list_labels(
         thread_counts = {label.id: count for label, count in labels}
     else:
         labels = db.query(Label).filter(
-            Label.owner_id == current_user.id,
-            Label.is_deleted == False
+            Label.owner_id == current_user.id
         ).order_by(Label.name).all()
         
         labels = [(label, 0) for label in labels]
@@ -195,7 +190,6 @@ def list_labels(
             "show_in_label_list": label.show_in_label_list,
             "show_in_message_list": label.show_in_message_list,
             "show_if_unread": label.show_if_unread,
-            "is_deleted": label.is_deleted,
             "created_at": label.created_at,
             "updated_at": label.updated_at,
             "thread_count": thread_count,
@@ -227,7 +221,6 @@ def list_labels_tree(
             )
             .join(Thread, Thread.id == ThreadLabel.thread_id)
             .filter(
-                Thread.is_deleted == False,
                 ThreadLabel.user_id == current_user.id  # Only count this user's label associations
             )
             .group_by(ThreadLabel.label_id)
@@ -241,8 +234,7 @@ def list_labels_tree(
             )
             .outerjoin(thread_count_subq, Label.id == thread_count_subq.c.label_id)
             .filter(
-                Label.owner_id == current_user.id,
-                Label.is_deleted == False
+                Label.owner_id == current_user.id
             )
             .all()
         )
@@ -250,8 +242,7 @@ def list_labels_tree(
         thread_counts = {label.id: count for label, count in labels}
     else:
         labels_raw = db.query(Label).filter(
-            Label.owner_id == current_user.id,
-            Label.is_deleted == False
+            Label.owner_id == current_user.id
         ).all()
         
         labels = [(label, 0) for label in labels_raw]
@@ -274,8 +265,7 @@ def get_label(
     
     label = db.query(Label).filter(
         Label.id == label_id,
-        Label.owner_id == current_user.id,
-        Label.is_deleted == False
+        Label.owner_id == current_user.id
     ).first()
     
     if not label:
@@ -289,8 +279,7 @@ def get_label(
         Thread, Thread.id == ThreadLabel.thread_id
     ).filter(
         ThreadLabel.label_id == label_id,
-        ThreadLabel.user_id == current_user.id,  # Only count this user's label associations
-        Thread.is_deleted == False
+        ThreadLabel.user_id == current_user.id  # Only count this user's label associations
     ).scalar() or 0
     
     return format_label_response(label, thread_count=thread_count)
@@ -314,8 +303,7 @@ def update_label(
     
     label = db.query(Label).filter(
         Label.id == label_id,
-        Label.owner_id == current_user.id,
-        Label.is_deleted == False
+        Label.owner_id == current_user.id
     ).first()
     
     if not label:
@@ -347,8 +335,7 @@ def update_label(
             # Validate parent exists and belongs to user
             parent = db.query(Label).filter(
                 Label.id == new_parent_id,
-                Label.owner_id == current_user.id,
-                Label.is_deleted == False
+                Label.owner_id == current_user.id
             ).first()
             
             if not parent:
@@ -373,7 +360,6 @@ def update_label(
             Label.owner_id == current_user.id,
             Label.parent_id == target_parent_id,
             Label.name == update_data["name"],
-            Label.is_deleted == False,
             Label.id != label_id
         ).first()
         
@@ -389,7 +375,6 @@ def update_label(
             Label.owner_id == current_user.id,
             Label.parent_id == update_data["parent_id"],
             Label.name == label.name,
-            Label.is_deleted == False,
             Label.id != label_id
         ).first()
         
@@ -425,15 +410,11 @@ def update_label(
 def delete_label(
     label_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete a label and all its child labels.
     
     When a label is deleted, all descendant labels (children, grandchildren, etc.)
     are also deleted along with their email associations.
-    
-    Args:
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete their own labels
@@ -442,8 +423,7 @@ def delete_label(
     
     label = db.query(Label).filter(
         Label.id == label_id,
-        Label.owner_id == current_user.id,
-        Label.is_deleted == False
+        Label.owner_id == current_user.id
     ).first()
     
     if not label:
@@ -468,15 +448,8 @@ def delete_label(
         ThreadLabel.user_id == current_user.id
     ).delete(synchronize_session=False)
     
-    if permanent:
-        # Permanently delete from database
-        db.query(Label).filter(Label.id.in_(all_ids_to_delete)).delete(synchronize_session=False)
-    else:
-        # Soft delete - mark as deleted
-        db.query(Label).filter(Label.id.in_(all_ids_to_delete)).update(
-            {"is_deleted": True},
-            synchronize_session=False
-        )
+    # Permanently delete from database
+    db.query(Label).filter(Label.id.in_(all_ids_to_delete)).delete(synchronize_session=False)
     
     deleted_count = len(all_ids_to_delete)
     
@@ -485,8 +458,8 @@ def delete_label(
     except Exception:
         db.rollback()
         raise
-    
-    logger.info(f"Label {label_id} {'permanently ' if permanent else ''}deleted by user {current_user.id} (deleted {deleted_count} labels)")
+
+    logger.info(f"Label {label_id} permanently deleted by user {current_user.id} (deleted {deleted_count} labels)")
 
 
 @router.get("/labels/{label_id}/threads", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
@@ -510,8 +483,7 @@ def list_label_threads(
     # Verify label ownership
     label = db.query(Label).filter(
         Label.id == label_id,
-        Label.owner_id == current_user.id,
-        Label.is_deleted == False
+        Label.owner_id == current_user.id
     ).first()
     
     if not label:
@@ -527,8 +499,7 @@ def list_label_threads(
         ThreadLabel, Thread.id == ThreadLabel.thread_id
     ).filter(
         ThreadLabel.label_id == label_id,
-        ThreadLabel.user_id == current_user.id,  # Only this user's label associations
-        Thread.is_deleted == False
+        ThreadLabel.user_id == current_user.id  # Only this user's label associations
     )
     
     # Get total count
@@ -549,7 +520,6 @@ def list_label_threads(
             selectinload(Email.attachments),
         ).filter(
             Email.thread_id == thread.id,
-            Email.is_deleted == False,
             or_(
                 Email.sender_id == current_user.id,
                 Email.id.in_(

@@ -122,7 +122,7 @@ def initialize_template_database_schema_and_fixtures():
     # Using raw SQL with CASCADE to handle foreign key constraints
     with engine.connect() as conn:
         # Drop legacy tables that are no longer in our models
-        legacy_tables = ['folders']
+        legacy_tables = ['folders', 'email_labels']
         for table_name in legacy_tables:
             try:
                 conn.execute(text(f"DROP TABLE IF EXISTS {table_name} CASCADE"))

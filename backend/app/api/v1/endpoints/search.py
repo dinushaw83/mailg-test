@@ -123,7 +123,6 @@ def search_emails(
     ).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
     ).filter(
-        Email.is_deleted == False,
         or_(
             Email.sender_id == current_user.id,
             EmailRecipient.recipient_id == current_user.id
@@ -173,8 +172,7 @@ def search_emails(
     if label_name:
         label_subq = db.query(Label.id).filter(
             Label.owner_id == current_user.id,
-            Label.name.ilike(f"%{label_name}%"),
-            Label.is_deleted == False
+            Label.name.ilike(f"%{label_name}%")
         ).subquery()
         # Labels are user-specific on shared threads - filter by user_id
         query = query.join(Thread, Email.thread_id == Thread.id).join(
@@ -194,9 +192,7 @@ def search_emails(
         query = query.filter(Email.is_important == is_important)
     
     if has_attachment:
-        att_subq = db.query(Attachment.email_id).filter(
-            Attachment.is_deleted == False
-        ).distinct().subquery()
+        att_subq = db.query(Attachment.email_id).distinct().subquery()
         query = query.filter(Email.id.in_(att_subq))
     
     if date_from:
@@ -241,8 +237,8 @@ def search_emails(
         labels = []
         if email.thread and email.thread.labels:
             labels = [get_label_hierarchy_name(l) for l in email.thread.labels 
-                      if not l.is_deleted and l.owner_id == current_user.id]
-        attachments = [a for a in email.attachments if not a.is_deleted]
+                      if l.owner_id == current_user.id]
+        attachments = [a for a in email.attachments] if hasattr(email, 'attachments') else []
         
         results.append({
             "id": email.id,
@@ -306,7 +302,6 @@ def get_search_suggestions(
         partial = q.split(":", 1)[1] if ":" in q else ""
         # Get contacts from emails
         contacts = db.query(User.email, User.first_name, User.last_name).filter(
-            User.is_deleted == False,
             or_(
                 User.email.ilike(f"%{partial}%"),
                 User.first_name.ilike(f"%{partial}%"),
@@ -323,7 +318,6 @@ def get_search_suggestions(
         partial = q.split(":", 1)[1] if ":" in q else ""
         labels = db.query(Label).filter(
             Label.owner_id == current_user.id,
-            Label.is_deleted == False,
             Label.name.ilike(f"%{partial}%")
         ).limit(limit).all()
         
@@ -357,8 +351,7 @@ def get_search_suggestions(
         
         # Get recent searches
         recent = db.query(SavedSearch).filter(
-            SavedSearch.owner_id == current_user.id,
-            SavedSearch.is_deleted == False
+            SavedSearch.owner_id == current_user.id
         ).order_by(SavedSearch.last_used_at.desc().nulls_last()).limit(5).all()
         
         suggestions["recent_searches"] = [s.query for s in recent]
@@ -415,8 +408,7 @@ def list_saved_searches(
     current_user = auth.user
     
     searches = db.query(SavedSearch).filter(
-        SavedSearch.owner_id == current_user.id,
-        SavedSearch.is_deleted == False
+        SavedSearch.owner_id == current_user.id
     ).order_by(SavedSearch.use_count.desc(), SavedSearch.created_at.desc()).all()
     
     return [
@@ -439,19 +431,18 @@ def list_saved_searches(
 def delete_saved_search(
     search_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete a saved search.
-    
     Args:
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
+        search_id: ID of the saved search to delete.
+    Permissions:
+    - Users can only delete their own saved searches
     """
     current_user = auth.user
     
     saved = db.query(SavedSearch).filter(
         SavedSearch.id == search_id,
-        SavedSearch.owner_id == current_user.id,
-        SavedSearch.is_deleted == False
+        SavedSearch.owner_id == current_user.id
     ).first()
     
     if not saved:
@@ -459,13 +450,9 @@ def delete_saved_search(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Saved search {search_id} not found"
         )
-    
-    if permanent:
-        # Permanently delete from database
-        db.delete(saved)
-    else:
-        # Soft delete
-        saved.is_deleted = True
+
+    # Permanently delete from database
+    db.delete(saved)
     
     try:
         db.commit()
@@ -473,4 +460,4 @@ def delete_saved_search(
         db.rollback()
         raise
     
-    logger.info(f"Saved search {search_id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
+    logger.info(f"Saved search {search_id} permanently deleted by user {current_user.id}")

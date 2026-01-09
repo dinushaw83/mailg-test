@@ -60,8 +60,7 @@ def get_system_label(
     return db.query(Label).filter(
         Label.owner_id == user_id,
         Label.name == label_name,
-        Label.is_system == True,
-        Label.is_deleted == False
+        Label.is_system == True
     ).first()
 
 
@@ -176,8 +175,7 @@ def replace_exclusive_labels(
     exclusive_label_ids = db.query(Label.id).filter(
         Label.owner_id == user_id,
         Label.name.in_(exclusive_label_names),
-        Label.is_system == True,
-        Label.is_deleted == False
+        Label.is_system == True
     ).all()
     
     exclusive_ids = [lid[0] for lid in exclusive_label_ids]
@@ -323,7 +321,6 @@ def format_label_response(label: Label, thread_count: int = 0) -> dict:
         "show_in_label_list": label.show_in_label_list,
         "show_in_message_list": label.show_in_message_list,
         "show_if_unread": label.show_if_unread,
-        "is_deleted": label.is_deleted,
         "created_at": label.created_at,
         "updated_at": label.updated_at,
         "thread_count": thread_count,
@@ -346,8 +343,7 @@ def get_all_descendant_ids(db: Session, label_id: UUID) -> Set[UUID]:
     while to_process:
         current_id = to_process.pop()
         children = db.query(Label.id).filter(
-            Label.parent_id == current_id,
-            Label.is_deleted == False
+            Label.parent_id == current_id
         ).all()
         
         for (child_id,) in children:
@@ -408,7 +404,6 @@ def build_label_tree(
             "show_in_label_list": label.show_in_label_list,
             "show_in_message_list": label.show_in_message_list,
             "show_if_unread": label.show_if_unread,
-            "is_deleted": label.is_deleted,
             "created_at": label.created_at,
             "updated_at": label.updated_at,
             "thread_count": count,

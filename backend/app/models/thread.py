@@ -20,7 +20,6 @@ class Thread(Base):
     email_count = Column(Integer, default=0)
 
     last_email_at = Column(DateTime)
-    is_deleted = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
@@ -33,6 +32,5 @@ class Thread(Base):
     
     # Composite indexes
     __table_args__ = (
-        Index("ix_threads_owner_deleted", "owner_id", "is_deleted"),
         Index("ix_threads_last_email", "last_email_at"),
     )

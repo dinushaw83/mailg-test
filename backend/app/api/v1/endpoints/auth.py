@@ -97,12 +97,6 @@ def create_token(
                 detail=f"User not found with email={normalized_email}. Please check the email and try again.",
             )
 
-        if user.is_deleted:
-            raise HTTPException(
-                status_code=401,
-                detail="Cannot login: user account has been deleted",
-            )
-
         if not user.active:
             raise HTTPException(
                 status_code=401,

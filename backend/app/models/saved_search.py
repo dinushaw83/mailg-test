@@ -21,14 +21,8 @@ class SavedSearch(Base):
     
     use_count = Column(Integer, default=0)  # Track usage for suggestions
     last_used_at = Column(DateTime)
-    is_deleted = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
     # Relationship
     owner = relationship("User", foreign_keys=[owner_id], lazy="joined")
-    
-    # Indexes
-    __table_args__ = (
-        Index("ix_saved_searches_owner_deleted", "owner_id", "is_deleted"),
-    )
