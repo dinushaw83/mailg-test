@@ -20,7 +20,6 @@ class Email(Base):
     status = Column(String, default="draft", index=True)
     is_read = Column(Boolean, default=False, index=True)
     is_starred = Column(Boolean, default=False, index=True)
-    is_important = Column(Boolean, default=False)
     
     # Folder type (enum-based): inbox, sent, drafts, trash, spam, starred
     folder = Column(String(20), default="inbox", index=True)

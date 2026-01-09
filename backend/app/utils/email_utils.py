@@ -84,11 +84,11 @@ def get_label_hierarchy_name(label) -> str:
 
 def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
     """Format email model to response dict.
-    
+
     Args:
         email: The email model instance
-        user_id: Current user's ID - used to filter labels to only show user's own labels
-        
+        user_id: Current user's ID - used to filter labels and get thread metadata
+
     Returns:
         Dictionary with email data formatted for API response
     """
@@ -100,7 +100,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
             "name": r.recipient_name,
             "type": r.recipient_type,
         })
-    
+
     attachments = []
     for a in email.attachments:
         if not a.is_deleted:
@@ -110,7 +110,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
                 "content_type": a.content_type,
                 "size_bytes": a.size_bytes,
             })
-    
+
     # Get labels from the thread - filter by user's ownership for isolation on shared threads
     labels = []
     if email.thread and email.thread.labels:
@@ -127,14 +127,23 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
                     "is_exclusive": l.is_exclusive,
                     "is_deleted": l.is_deleted
                 })
-    
+
+    # Get is_important from thread metadata for the current user
+    # Similar to how labels work - filter from the loaded relationship
+    is_important = False
+    if email.thread and hasattr(email.thread, 'user_metadata') and user_id:
+        for metadata in email.thread.user_metadata:
+            if metadata.user_id == user_id:
+                is_important = metadata.is_important
+                break
+
     # Determine if email can be cancelled (undo send)
     can_undo = (
-        email.status == EmailStatus.QUEUED.value and 
-        email.scheduled_send_at and 
+        email.status == EmailStatus.QUEUED.value and
+        email.scheduled_send_at and
         email.scheduled_send_at > datetime.utcnow()
     )
-    
+
     return {
         "id": email.id,
         "subject": email.subject,
@@ -144,7 +153,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
-        "is_important": email.is_important,
+        "is_important": is_important,
         "sender_id": email.sender_id,
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
@@ -166,12 +175,12 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
 
 def format_email_list_response(email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None) -> dict:
     """Format email model for list responses.
-    
+
     Args:
-        email: The email model instance
+        email: The email model instance (with thread.user_metadata eager loaded if available)
         thread_email_count: Optional count of emails in the thread
-        user_id: Current user's ID - used to filter labels to only show user's own labels
-        
+        user_id: Current user's ID - used to filter labels and get thread metadata
+
     Returns:
         Dictionary with email data formatted for list API response
     """
@@ -191,16 +200,25 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
                     "is_exclusive": l.is_exclusive,
                     "is_deleted": l.is_deleted
                 })
-    
+
     attachment_count = len([a for a in email.attachments if not a.is_deleted])
-    
+
+    # Get is_important from thread metadata for the current user
+    # Similar to how labels work - filter from the loaded relationship
+    is_important = False
+    if email.thread and hasattr(email.thread, 'user_metadata') and user_id:
+        for metadata in email.thread.user_metadata:
+            if metadata.user_id == user_id:
+                is_important = metadata.is_important
+                break
+
     # Determine if email can be cancelled (undo send)
     can_undo = (
-        email.status == EmailStatus.QUEUED.value and 
-        email.scheduled_send_at and 
+        email.status == EmailStatus.QUEUED.value and
+        email.scheduled_send_at and
         email.scheduled_send_at > datetime.utcnow()
     )
-    
+
     return {
         "id": email.id,
         "subject": email.subject,
@@ -209,7 +227,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
-        "is_important": email.is_important,
+        "is_important": is_important,
         "sender_id": email.sender_id,
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
