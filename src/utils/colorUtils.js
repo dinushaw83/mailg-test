@@ -25,10 +25,10 @@ function getLuminance(r, g, b) {
  */
 function hexToRgb(hex) {
   if (!hex) return null;
-  
+
   // Remove # if present
   const cleanedHex = hex.replace("#", "");
-  
+
   // Validate hex format
   if (!/^[0-9A-Fa-f]{6}$/.test(cleanedHex)) {
     return null;
@@ -49,7 +49,7 @@ function hexToRgb(hex) {
 function hexToRgbString(hex) {
   const rgb = hexToRgb(hex);
   if (!rgb) return "rgb(225, 227, 225)"; // Default gray
-  
+
   return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 }
 
@@ -61,9 +61,9 @@ function hexToRgbString(hex) {
 function getContrastingTextColor(hex) {
   const rgb = hexToRgb(hex);
   if (!rgb) return "rgb(68, 71, 70)"; // Default dark gray
-  
+
   const luminance = getLuminance(rgb.r, rgb.g, rgb.b);
-  
+
   // Use white text for dark backgrounds (luminance < 0.5), dark text for light backgrounds
   return luminance < 0.5 ? "rgb(255, 255, 255)" : "rgb(68, 71, 70)";
 }

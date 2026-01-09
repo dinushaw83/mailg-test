@@ -88,13 +88,13 @@ const Inbox = () => {
   // Select emails from the appropriate folder/category
   const emails = useMemo(() => {
     const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
-    
+
     if (isInboxRoute) {
       // For inbox, use the category-specific emails (primary, promotions, social, updates)
       const categoryKey = activeInboxTab.toLowerCase();
       return mailFolders[categoryKey] || [];
     }
-    
+
     // For other folders, use folder-specific emails
     // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
     const folderKey = activeFolder.toLowerCase();
@@ -218,7 +218,7 @@ const Inbox = () => {
   // Fetch labels on mount
   useEffect(() => {
     if (!accessToken) return;
-    
+
     dispatch(fetchLabels()).catch((error) => {
       console.error("Failed to fetch labels:", error);
     });
@@ -230,7 +230,6 @@ const Inbox = () => {
 
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
-    
     let rows = getThreadRows(emails, { label, folder: activeFolder });
     console.log("rows", { rows });
     console.log("asdadasdasd", { rows });
@@ -422,13 +421,6 @@ const Inbox = () => {
     setPreviewEmailId(null);
   }, [activeFolder, label]);
 
-  console.log({ tabFilteredRows });
-  console.log("filteredRows", filteredRows);
-  console.log("sortedImportant", sortedImportant);
-  console.log("sortedUnread", sortedUnread);
-  console.log("sortedStarred", sortedStarred);
-  console.log("paginatedOthers", paginatedOthers);
-  console.log("rows", rows);
   const renderEmailListPanel = () => (
     <>
       {inboxType !== INBOX_TYPE.DEFAULT && activeFolder.toLowerCase() === "inbox" && (
@@ -547,7 +539,7 @@ const Inbox = () => {
               }}
             >
               <EmailContent
-                threadId={previewEmailId}
+                thread_id={previewEmailId}
                 folder={activeFolder}
                 label={label}
                 showActionBar={false}

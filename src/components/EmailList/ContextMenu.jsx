@@ -1,17 +1,19 @@
-import Box from "@mui/material/Box";
-import React, { useCallback, useMemo, useState } from "react";
-import { Menu, Item, Separator, Submenu } from "react-contexify";
 import "react-contexify/ReactContexify.css";
-import MoveToSubMenu from "./MoveToSubMenu";
+
+import { Item, Menu, Separator, Submenu } from "react-contexify";
+import React, { useCallback, useMemo, useState } from "react";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
-import CreateLabelDialog from "../Labels/CreateLabelDialog";
-import useMailActions from "../../hooks/useMailActions";
+
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
-import { useGlobalContext } from "../../contexts/GlobalContext";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import { LabelsSubMenu } from "./LabelsSubMenu";
-import { useComposeModal } from "../../hooks/useComposeModal";
+import MoveToSubMenu from "./MoveToSubMenu";
+import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
 import { restructureRecipients } from "../../utils/helperFunctions";
+import { useComposeModal } from "../../hooks/useComposeModal";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import useMailActions from "../../hooks/useMailActions";
 
 const ContextMenu = ({
   menuId,
@@ -26,9 +28,9 @@ const ContextMenu = ({
 }) => {
   const isRead = contextRow?.read;
   const senderName = contextRow?.from?.name;
-  const threadKey = contextRow?.threadId || "";
-  const threadId = threadKey;
-  const selectedIds = [threadId];
+  const threadKey = contextRow?.thread_id || "";
+  const thread_id = threadKey;
+  const selectedIds = [thread_id];
 
   const isSpamFolder = folder === "spam";
   const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
@@ -79,7 +81,7 @@ const ContextMenu = ({
     }));
   }, []);
 
-  const threadEmails = useMemo(() => emails.filter((email) => email.threadId === threadKey), [emails, threadKey]);
+  const threadEmails = useMemo(() => emails.filter((email) => email.thread_id === threadKey), [emails, threadKey]);
 
   const selectedMessageIds = useMemo(() => threadEmails.map((email) => String(email.id ?? "")), [threadEmails]);
 
@@ -344,7 +346,7 @@ const ContextMenu = ({
   );
 
   const handleReply = useCallback(
-    (threadId) => {
+    (thread_id) => {
       if (!contextRow) return;
 
       const sender = contextRow.from;
@@ -366,7 +368,7 @@ const ContextMenu = ({
   );
 
   const handleReplyAll = useCallback(
-    (threadId) => {
+    (thread_id) => {
       if (!contextRow) return;
 
       const sender = contextRow.from;
@@ -438,7 +440,7 @@ ${email.body || email.preview || ""}
   }, []);
 
   const handleForward = useCallback(
-    (threadId) => {
+    (thread_id) => {
       if (!contextRow) return;
 
       const forwardSubject = contextRow.subject.startsWith("Fwd: ") ? contextRow.subject : `Fwd: ${contextRow.subject}`;
@@ -462,23 +464,23 @@ ${email.body || email.preview || ""}
   );
 
   const handleItemClick = ({ id, event, props }) => {
-    const threadId = props.thread.threadId;
+    const thread_id = props.thread.thread_id;
     switch (id) {
       case "archive":
-        handleArchive([threadId]);
+        handleArchive([thread_id]);
         break;
       case "delete":
-        handleDelete([threadId]);
+        handleDelete([thread_id]);
         break;
       case "mark_as_read":
       case "mark_as_unread":
         handleReadAction(props.thread);
         break;
       case "snooze":
-        handleSnoozeAction([threadId]);
+        handleSnoozeAction([thread_id]);
         break;
       case "mute":
-        handleMuteAction([threadId]);
+        handleMuteAction([thread_id]);
         break;
       case "move_to_inbox":
         handleMoveToInbox();
@@ -490,13 +492,13 @@ ${email.body || email.preview || ""}
         handleDeleteForever();
         break;
       case "reply":
-        handleReply(threadId);
+        handleReply(thread_id);
         break;
       case "reply_all":
-        handleReplyAll(threadId);
+        handleReplyAll(thread_id);
         break;
       case "forward":
-        handleForward(threadId);
+        handleForward(thread_id);
         break;
       //etc...
     }

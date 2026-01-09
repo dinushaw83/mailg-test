@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useGlobalContext } from "../contexts/GlobalContext";
 import {
+  generateLegacyThreadId,
   generateNextIntegerId,
   generateThreadId,
-  generateLegacyThreadId,
   isValidEmail,
 } from "../utils/helperFunctions";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useGlobalContext } from "../contexts/GlobalContext";
 
 export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraftId, parentEmail, replyType }) => {
   const { emails, setEmails, loggedInUser } = useGlobalContext();
@@ -100,14 +101,14 @@ export const useDraftManagement = ({ to, cc, bcc, subject, content, currentDraft
         : null;
 
       // Resolve thread identifiers
-      const resolvedThreadId = existingDraft?.threadId || parentEmail?.threadId || generateThreadId();
+      const resolvedThreadId = existingDraft?.thread_id || parentEmail?.thread_id || generateThreadId();
       const resolvedLegacyThreadId =
         existingDraft?.legacyThreadId || parentEmail?.legacyThreadId || generateLegacyThreadId();
       const resolvedLegacyLastMessageId = existingDraft?.legacyLastMessageId || resolvedLegacyThreadId;
 
       const draftEmail = {
         id: effectiveId || generateNextIntegerId(emails),
-        threadId: resolvedThreadId,
+        thread_id: resolvedThreadId,
         legacyThreadId: resolvedLegacyThreadId,
         legacyLastMessageId: resolvedLegacyLastMessageId,
         replyType: replyType || existingDraft?.replyType,

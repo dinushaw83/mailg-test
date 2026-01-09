@@ -19,7 +19,7 @@ const buildIdIndex = (selection) =>
           return [
             item.id,
             item.messageId,
-            item.threadId,
+            item.thread_id,
             item.legacyThreadId,
             item.legacyLastMessageId,
             item.legacyLastNonDraftMessageId,
@@ -40,7 +40,7 @@ const collectKeysFromMessage = (m) => {
   };
   add(m.id);
   add(m.messageId);
-  add(m.threadId);
+  add(m.thread_id);
   add(m.legacyThreadId);
   add(m.legacyLastMessageId);
   add(m.legacyLastNonDraftMessageId);
@@ -103,7 +103,7 @@ const withUndo = (ids, setEmails, operation) => {
 export default function useMailActions() {
   const dispatch = useDispatch();
   const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
-  
+
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
 
@@ -176,21 +176,24 @@ export default function useMailActions() {
       });
 
       // Sync with backend (only for backend labels, skip system labels)
-      const backendLabelsToAdd = labelIdsToAdd.filter((id) => 
+      const backendLabelsToAdd = labelIdsToAdd.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
-      const backendLabelsToRemove = labelIdsToRemove.filter((id) => 
+      const backendLabelsToRemove = labelIdsToRemove.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
 
+      console.log({ backendLabelsToAdd, backendLabelsToRemove, ids });
       if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
         // Determine final label state: add new ones, remove old ones
         // For simplicity, we'll send the full label set, but backend should handle add/remove
         // This might need adjustment based on actual backend API expectations
-        dispatch(updateLabelsThunk({
-          emailIds: ids.map(String),
-          labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
-        })).catch((error) => {
+        dispatch(
+          updateLabelsThunk({
+            emailIds: ids.map(String),
+            labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
+          })
+        ).catch((error) => {
           console.error("Failed to sync labels with backend:", error);
           // Could rollback local changes here if needed
         });
@@ -448,24 +451,24 @@ export default function useMailActions() {
   );
 
   const toggleMuted = useCallback(
-    (threadIds) => {
+    (thread_ids) => {
       let previousState = [];
 
       setEmails((prev) => {
         // Store the previous state for undo functionality
         previousState = prev
           .filter((m) => {
-            const emailThreadId = m.threadId;
-            return threadIds.includes(emailThreadId);
+            const emailThreadId = m.thread_id;
+            return thread_ids.includes(emailThreadId);
           })
           .map((m) => ({
-            threadId: m.threadId,
+            thread_id: m.thread_id,
             labels: [...(m.labels || [])],
           }));
 
         return prev.map((m) => {
-          const emailThreadId = m.threadId;
-          if (threadIds.includes(emailThreadId)) {
+          const emailThreadId = m.thread_id;
+          if (thread_ids.includes(emailThreadId)) {
             const currentLabels = m.labels || [];
             const isCurrentlyMuted = currentLabels.includes("Muted");
 
@@ -487,8 +490,8 @@ export default function useMailActions() {
       const undo = () => {
         setEmails((prev) =>
           prev.map((m) => {
-            const emailThreadId = m.threadId;
-            const previousEmail = previousState.find((p) => p.threadId === emailThreadId);
+            const emailThreadId = m.thread_id;
+            const previousEmail = previousState.find((p) => p.thread_id === emailThreadId);
             if (previousEmail) {
               return { ...m, labels: [...previousEmail.labels] };
             }

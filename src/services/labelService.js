@@ -8,11 +8,11 @@ const labelService = {
   getLabels: async () => {
     try {
       const response = await apiClient.get("/v1/labels");
-      
+
       // Extract data array from BE response structure
       // Expected: { success: true, data: [...], message: "...", statusCode: 200 }
       const labelsArray = response?.data?.data ?? response?.data ?? [];
-      
+
       return Array.isArray(labelsArray) ? labelsArray : [];
     } catch (error) {
       console.error("Error fetching labels:", error);
@@ -35,7 +35,7 @@ const labelService = {
         color,
         parent_id,
       });
-      
+
       return response?.data?.data ?? response?.data;
     } catch (error) {
       console.error("Error creating label:", error);
@@ -59,7 +59,7 @@ const labelService = {
         color,
         parent_id,
       });
-      
+
       return response?.data?.data ?? response?.data;
     } catch (error) {
       console.error("Error updating label:", error);

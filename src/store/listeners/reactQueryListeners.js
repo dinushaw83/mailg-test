@@ -1,4 +1,11 @@
-import { createLabelThunk, deleteLabelThunk, fetchLabels, sendEmailThunk, updateLabelThunk, updateLabelsThunk } from "../slices/mailSlice";
+import {
+  createLabelThunk,
+  deleteLabelThunk,
+  fetchLabels,
+  sendEmailThunk,
+  updateLabelThunk,
+  updateLabelsThunk,
+} from "../slices/mailSlice";
 import { logout, setAuth } from "../slices/userSlice";
 
 import { queryClient } from "../../lib/query-client";

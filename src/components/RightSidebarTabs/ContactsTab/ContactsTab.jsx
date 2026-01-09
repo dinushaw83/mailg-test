@@ -61,22 +61,22 @@ const ContactsTab = () => {
     setSearchResults(recipients.filter((recipient) => recipient?.isSaved));
   };
 
-  // Check if URL matches thread format and validate threadId
+  // Check if URL matches thread format and validate thread_id
   const isThreadView = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
 
-    // Check for patterns: /:folder/:threadId or /label/:label/:threadId
+    // Check for patterns: /:folder/:thread_id or /label/:label/:thread_id
     if (pathSegments.length === 2) {
-      // Pattern: /:folder/:threadId
-      const [folder, threadId] = pathSegments;
+      // Pattern: /:folder/:thread_id
+      const [folder, thread_id] = pathSegments;
       return emails.some((email) => {
-        return email.threadId === threadId;
+        return email.thread_id === thread_id;
       });
     } else if (pathSegments.length === 3 && pathSegments[0] === "label") {
-      // Pattern: /label/:label/:threadId
-      const [labelPrefix, label, threadId] = pathSegments;
+      // Pattern: /label/:label/:thread_id
+      const [labelPrefix, label, thread_id] = pathSegments;
       return emails.some((email) => {
-        return email.threadId === threadId;
+        return email.thread_id === thread_id;
       });
     }
 
@@ -95,19 +95,19 @@ const ContactsTab = () => {
     if (!isThreadView) return [];
 
     const pathSegments = location.pathname.split("/").filter(Boolean);
-    let threadId;
+    let thread_id;
 
     if (pathSegments.length === 2) {
-      threadId = pathSegments[1];
+      thread_id = pathSegments[1];
     } else if (pathSegments.length === 3 && pathSegments[0] === "label") {
-      threadId = pathSegments[2];
+      thread_id = pathSegments[2];
     } else {
       return [];
     }
 
-    // Find all emails with this threadId
+    // Find all emails with this thread_id
     const threadEmails = emails.filter((email) => {
-      return email.threadId === threadId;
+      return email.thread_id === thread_id;
     });
 
     // Collect all unique email addresses from from, to, cc, bcc
