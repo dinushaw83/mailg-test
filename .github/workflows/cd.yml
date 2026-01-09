@@ -298,17 +298,47 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
+      - name: Extract image tags from build outputs
+        id: images
+        run: |
+          # Extract SHA tag from comma-separated list (first tag is SHA)
+          BACKEND_TAGS="${{ needs.build-backend.outputs.image }}"
+          FRONTEND_TAGS="${{ needs.build-frontend.outputs.image }}"
+          
+          # Get the first tag (SHA tag) from comma-separated list
+          BACKEND_SHA_TAG=$(echo "$BACKEND_TAGS" | cut -d',' -f1)
+          FRONTEND_SHA_TAG=$(echo "$FRONTEND_TAGS" | cut -d',' -f1)
+          
+          echo "Backend tags: $BACKEND_TAGS"
+          echo "Frontend tags: $FRONTEND_TAGS"
+          echo "Backend SHA tag: $BACKEND_SHA_TAG"
+          echo "Frontend SHA tag: $FRONTEND_SHA_TAG"
+          
+          # Fallback to manually constructed tag if extraction fails
+          if [ -z "$BACKEND_SHA_TAG" ] || [ "$BACKEND_SHA_TAG" == "null" ]; then
+            BACKEND_SHA_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${{ github.sha }}"
+            echo "⚠️ Using fallback backend tag: $BACKEND_SHA_TAG"
+          fi
+          
+          if [ -z "$FRONTEND_SHA_TAG" ] || [ "$FRONTEND_SHA_TAG" == "null" ]; then
+            FRONTEND_SHA_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${{ github.sha }}"
+            echo "⚠️ Using fallback frontend tag: $FRONTEND_SHA_TAG"
+          fi
+          
+          echo "backend_image=$BACKEND_SHA_TAG" >> $GITHUB_OUTPUT
+          echo "frontend_image=$FRONTEND_SHA_TAG" >> $GITHUB_OUTPUT
+
       - name: Copy deployment files
         run: |
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
 
       - name: Deploy containers
-        env:
-          BACKEND_IMAGE: ${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${{ github.sha }}
-          FRONTEND_IMAGE: ${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${{ github.sha }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "📦 Deploying with images:"
+          echo "  Backend: ${{ steps.images.outputs.backend_image }}"
+          echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
+          
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << 'DEPLOY_SCRIPT'
             set -e
             cd ~/mailg-deploy
@@ -317,14 +347,14 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             
             echo "📥 Pulling new images..."
-            docker pull ${{ env.BACKEND_IMAGE }}
-            docker pull ${{ env.FRONTEND_IMAGE }}
+            docker pull "${{ steps.images.outputs.backend_image }}"
+            docker pull "${{ steps.images.outputs.frontend_image }}"
             
             echo "🔄 Updating deployment..."
             chmod +x deploy-from-registry.sh
             
-            BACKEND_IMAGE="${{ env.BACKEND_IMAGE }}" \
-            FRONTEND_IMAGE="${{ env.FRONTEND_IMAGE }}" \
+            BACKEND_IMAGE="${{ steps.images.outputs.backend_image }}" \
+            FRONTEND_IMAGE="${{ steps.images.outputs.frontend_image }}" \
             GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
             GITHUB_ACTOR="${{ github.actor }}" \
             ./deploy-from-registry.sh
@@ -388,8 +418,8 @@ jobs:
           | **Deployed by** | @${{ github.actor }} |
           
           ### 📦 Docker Images
-          - Backend: \`${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${{ github.sha }}\`
-          - Frontend: \`${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${{ github.sha }}\`
+          - Backend: \`${{ steps.images.outputs.backend_image }}\`
+          - Frontend: \`${{ steps.images.outputs.frontend_image }}\`
           
           ### 🔗 Access URLs
           - **Application**: http://${{ env.VM_HOST }}:${{ env.FRONTEND_PORT }}
