@@ -376,7 +376,8 @@ const Table = ({
       }
       try {
         archive(thread_ids);
-        const message = thread_ids.length > 1 ? `${thread_ids.length} Conversations archived` : "Conversation archived.";
+        const message =
+          thread_ids.length > 1 ? `${thread_ids.length} Conversations archived` : "Conversation archived.";
         setSnackbar({
           open: true,
           message,
@@ -968,24 +969,24 @@ const Table = ({
                                   // Handle color format: could be string, null, or object with rgb/text
                                   const bgColor = badge?.color?.rgb || badge?.color || "#e1e3e1";
                                   const textColor = badge?.color?.text || "#444746";
-                                  
+
                                   return (
-                                  <div
-                                    key={`Badge-${badge.key}`}
-                                    style={{
+                                    <div
+                                      key={`Badge-${badge.key}`}
+                                      style={{
                                         backgroundColor: bgColor,
                                         color: textColor,
-                                      fontSize: "0.75rem",
-                                      padding: "0 4px",
-                                      textDecoration: "none",
-                                      width: "fit-content",
-                                      borderRadius: "4px",
-                                      marginRight: "6px",
-                                      display: "inline-block",
-                                    }}
-                                  >
-                                    {badge.displayName}
-                                  </div>
+                                        fontSize: "0.75rem",
+                                        padding: "0 4px",
+                                        textDecoration: "none",
+                                        width: "fit-content",
+                                        borderRadius: "4px",
+                                        marginRight: "6px",
+                                        display: "inline-block",
+                                      }}
+                                    >
+                                      {badge.displayName}
+                                    </div>
                                   );
                                 })}
                                 <span

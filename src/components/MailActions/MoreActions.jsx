@@ -1,17 +1,18 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import Icon from "../ui/Icon";
-import Box from "@mui/material/Box";
-import Popover from "@mui/material/Popover";
-import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
-import Button from "@mui/material/Button";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import useMailActions from "../../hooks/useMailActions";
-import { SnoozePopover } from "./Snooze";
+
 import { ActionMenuItem } from "./ActionMenuItem";
-import { Labels } from "./Labels";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import Divider from "@mui/material/Divider";
+import Icon from "../ui/Icon";
+import { Labels } from "./Labels";
+import Popover from "@mui/material/Popover";
+import { SnoozePopover } from "./Snooze";
+import Typography from "@mui/material/Typography";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
+import useMailActions from "../../hooks/useMailActions";
 
 const useCustomHotKeys = ({ handlePeriodPress }) => {
   const { keyboardShortcuts } = useGlobalContext();
@@ -30,6 +31,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
   const { selection, labels, setSnackbar, emails, setEmails } = useGlobalContext();
+  console.log({ selection });
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(

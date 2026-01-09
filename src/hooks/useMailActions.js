@@ -103,7 +103,7 @@ const withUndo = (ids, setEmails, operation) => {
 export default function useMailActions() {
   const dispatch = useDispatch();
   const { setEmails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
-  
+
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
 
@@ -176,21 +176,24 @@ export default function useMailActions() {
       });
 
       // Sync with backend (only for backend labels, skip system labels)
-      const backendLabelsToAdd = labelIdsToAdd.filter((id) => 
+      const backendLabelsToAdd = labelIdsToAdd.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
-      const backendLabelsToRemove = labelIdsToRemove.filter((id) => 
+      const backendLabelsToRemove = labelIdsToRemove.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
 
+      console.log({ backendLabelsToAdd, backendLabelsToRemove, ids });
       if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
         // Determine final label state: add new ones, remove old ones
         // For simplicity, we'll send the full label set, but backend should handle add/remove
         // This might need adjustment based on actual backend API expectations
-        dispatch(updateLabelsThunk({
-          emailIds: ids.map(String),
-          labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
-        })).catch((error) => {
+        dispatch(
+          updateLabelsThunk({
+            emailIds: ids.map(String),
+            labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
+          })
+        ).catch((error) => {
           console.error("Failed to sync labels with backend:", error);
           // Could rollback local changes here if needed
         });

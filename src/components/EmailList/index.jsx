@@ -209,7 +209,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
       key: labelObj.id || labelObj.name,
       displayName: labelObj.name,
       color: labelObj.color,
-      }));
+    }));
   };
 
   useEffect(() => {

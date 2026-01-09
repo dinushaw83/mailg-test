@@ -103,10 +103,12 @@ export function getPathLabelFromKey(labelsMap, key) {
 export default function useLabels() {
   const dispatch = useDispatch();
   const { emails, setEmails, labels, setLabels } = useGlobalContext();
-  
+
   // Get mappings from Redux mail state
   const labelIdToKeyMap = useSelector((state) => state.mail.labelIdToKeyMap || {});
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
+  // Get Redux mail state for folder-based emails
+  const reduxMailState = useSelector((state) => state.mail || {});
 
   const createLabel = useCallback(
     async (name, { parentKey = ROOT, color = null, ...meta } = {}) => {
@@ -125,7 +127,7 @@ export default function useLabels() {
         }
         return (pk ?? ROOT) === parentKey && (labelName || "").toLowerCase() === name.toLowerCase();
       });
-      
+
       if (isDup) {
         throw new Error("Label with this name already exists");
       }
@@ -155,11 +157,11 @@ export default function useLabels() {
       if (!nm) return;
 
       const cur = labels || {};
-      
+
       // Find the label - could be by composite key or UUID
       let labelId = null;
       let label = null;
-      
+
       if (keyToLabelIdMap[key]) {
         // Key is a composite key, get UUID
         labelId = keyToLabelIdMap[key];
@@ -210,11 +212,11 @@ export default function useLabels() {
   const deleteLabel = useCallback(
     async (key) => {
       const cur = labels || {};
-      
+
       // Find the label - could be by composite key or UUID
       let labelId = null;
       let label = null;
-      
+
       if (keyToLabelIdMap[key]) {
         // Key is a composite key, get UUID
         labelId = keyToLabelIdMap[key];
@@ -298,11 +300,11 @@ export default function useLabels() {
   const setLabelColor = useCallback(
     async (key, color, { withSublabels = false } = {}) => {
       const cur = labels || {};
-      
+
       // Find the label - could be by composite key or UUID
       let labelId = null;
       let label = null;
-      
+
       if (keyToLabelIdMap[key]) {
         // Key is a composite key, get UUID
         labelId = keyToLabelIdMap[key];
@@ -339,7 +341,7 @@ export default function useLabels() {
       // Dispatch thunk to update label color in backend
       try {
         await dispatch(updateLabelThunk({ id: labelId, color })).unwrap();
-        
+
         // If withSublabels, update children (this would need to be handled by backend or multiple calls)
         if (withSublabels) {
           // Find and update all children
@@ -359,25 +361,78 @@ export default function useLabels() {
   const labelTree = useMemo(() => buildTree(labels || {}, labelIdToKeyMap), [labels, labelIdToKeyMap]);
 
   const getSelectionLabels = useCallback(
-    (selectedIds) => {
+    (selectedIds, folder = null) => {
       const ids = new Set(Array.from(selectedIds ?? []).map(String));
+      console.log({ ids });
 
+      // If folder is provided, get emails from Redux state for that folder
+      let emailsToSearch = emails || [];
+      if (folder) {
+        const folderKey = folder.toLowerCase();
+
+        // Special handling for inbox: when in inbox, we need to check all category tabs
+        // (primary, promotions, social, updates) since we don't know which tab is active
+        // We optimize by only searching categories that might contain the selected threads
+        if (folderKey === "inbox") {
+          const inboxCategories = ["primary", "promotions", "social", "updates"];
+
+          // First, quickly find which categories contain any of the selected thread_ids
+          const categoriesWithMatches = new Set();
+          for (const category of inboxCategories) {
+            const categoryEmails = reduxMailState[category] || [];
+            // Check if any email in this category has a matching thread_id
+            if (
+              categoryEmails.some((email) => {
+                const threadId = String(email.thread_id ?? "").trim();
+                return threadId && ids.has(threadId);
+              })
+            ) {
+              categoriesWithMatches.add(category);
+            }
+          }
+
+          // If we found matches in specific categories, only search those
+          // Otherwise, search all categories (fallback for safety)
+          const categoriesToSearch =
+            categoriesWithMatches.size > 0 ? Array.from(categoriesWithMatches) : inboxCategories;
+
+          // Combine emails from relevant categories and deduplicate by thread_id
+          const allCategoryEmails = categoriesToSearch.reduce((acc, category) => {
+            const categoryEmails = reduxMailState[category] || [];
+            return [...acc, ...categoryEmails];
+          }, []);
+          // Deduplicate by thread_id to avoid counting same thread multiple times
+          const seenThreadIds = new Set();
+          emailsToSearch = allCategoryEmails.filter((email) => {
+            const threadId = String(email.thread_id ?? "").trim();
+            if (!threadId || seenThreadIds.has(threadId)) return false;
+            seenThreadIds.add(threadId);
+            return true;
+          });
+        } else {
+          // Map folder names to Redux state keys for other folders
+          const folderMap = {
+            sent: "sent",
+            trash: "trash",
+            spam: "spam",
+            drafts: "drafts",
+            all: "all",
+            starred: "is_starred",
+            important: "is_important",
+            snoozed: "is_snoozed",
+          };
+          const reduxKey = folderMap[folderKey] || folderKey;
+          emailsToSearch = reduxMailState[reduxKey] || [];
+        }
+      }
+
+      // Search by thread_id instead of id
       const hasAnyId = (m) => {
-        const keys = [
-          m.id,
-          m.messageId,
-          m.thread_id,
-          m.legacyThreadId,
-          m.legacyLastMessageId,
-          m.legacyLastNonDraftMessageId,
-        ]
-          .map((v) => String(v ?? "").trim())
-          .filter(Boolean);
-
-        return keys.some((k) => ids.has(k));
+        const threadId = String(m.thread_id ?? "").trim();
+        return threadId && ids.has(threadId);
       };
 
-      const selectedList = (emails || []).filter(hasAnyId);
+      const selectedList = (emailsToSearch || []).filter(hasAnyId);
       const nSel = selectedList.length;
 
       // count labels across selected
@@ -391,10 +446,15 @@ export default function useLabels() {
       // intersection (labels on ALL selected)
       const currentLabels =
         nSel === 0 ? new Set() : new Set([...labelCounts.entries()].filter(([_, c]) => c === nSel).map(([l]) => l));
-
+      console.log({ currentLabels, labelCounts, nSel }, "------------");
+      /**
+       * nSel: number of selected emails
+       * labelCounts: count of each label on the selected emails
+       * currentLabels: labels on ALL selected emails
+       */
       return { currentLabels, labelCounts, nSel };
     },
-    [emails]
+    [emails, reduxMailState]
   );
 
   return {

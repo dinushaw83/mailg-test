@@ -78,17 +78,17 @@ const Recipient = ({ recipients = [] }) => {
     // Handle object format: {email, name, id}
     let email = recipient;
     let name = null;
-    
+
     if (typeof recipient === "object" && recipient !== null) {
       email = recipient.email;
       name = recipient.name;
     }
-    
+
     // Ensure email is a string
     if (!email || typeof email !== "string") {
       return "Unknown";
     }
-    
+
     // Check if it's the logged-in user - show "me"
     if (email === loggedInUser.email) {
       return "me";

@@ -8,8 +8,8 @@ const emailService = {
   getEmails: async ({ page = 1, pageSize = 20, category = null } = {}) => {
     try {
       const params = {
-          page,
-          page_size: pageSize,
+        page,
+        page_size: pageSize,
       };
 
       // Add category parameter if provided
@@ -49,7 +49,15 @@ const emailService = {
    * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
    * @param {boolean} options.include_archived - Include archived emails (for all mail)
    */
-  getEmailsByFilter: async ({ page = 1, pageSize = 20, is_starred = null, is_important = null, is_snoozed = null, folder = null, include_archived = null } = {}) => {
+  getEmailsByFilter: async ({
+    page = 1,
+    pageSize = 20,
+    is_starred = null,
+    is_important = null,
+    is_snoozed = null,
+    folder = null,
+    include_archived = null,
+  } = {}) => {
     try {
       const params = {
         page,
@@ -134,10 +142,10 @@ const emailService = {
     try {
       const response = await apiClient.get(`v1/emails/thread/${thread_id}`);
       const payload = response?.data?.data ?? response?.data ?? {};
-      
+
       // API returns an array of emails in the thread
       const emailsArray = Array.isArray(payload) ? payload : [payload];
-      
+
       // Map all emails using the same mapper
       const mappedEmails = emailAPIMapper(emailsArray);
       return mappedEmails;

@@ -99,7 +99,7 @@ export function beToFeLabel(beLabel, idToKeyMap) {
   }
 
   const compositeKey = idToKeyMap[beLabel.id] || beLabel.name;
-  const parentKey = beLabel.parent_id ? (idToKeyMap[beLabel.parent_id] || null) : null;
+  const parentKey = beLabel.parent_id ? idToKeyMap[beLabel.parent_id] || null : null;
 
   return {
     id: beLabel.id,
@@ -121,7 +121,7 @@ export function beToFeLabel(beLabel, idToKeyMap) {
 export function feToBeLabel(feLabel, keyToIdMap = {}) {
   // If feLabel has parentKey (composite key), convert it to parent_id (UUID)
   let parent_id = feLabel.parent_id || null;
-  
+
   if (feLabel.parentKey && keyToIdMap[feLabel.parentKey]) {
     parent_id = keyToIdMap[feLabel.parentKey];
   }
@@ -152,7 +152,7 @@ export function transformLabelsArray(labelsArray) {
 
   // Build ID to composite key mapping
   const idToKeyMap = buildIdToKeyMapping(labelsArray);
-  
+
   // Build reverse mapping
   const keyToIdMap = buildKeyToIdMapping(idToKeyMap);
 

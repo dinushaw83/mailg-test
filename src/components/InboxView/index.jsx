@@ -123,7 +123,7 @@ export const EmailContent = ({
   emails,
   normalizedEmails,
 }) => {
-  console.log({thread_id, folder, label, emails, normalizedEmails})
+  console.log({ thread_id, folder, label, emails, normalizedEmails });
   const responseViewRef = React.useRef();
   const { markRead } = useMailActions();
 
@@ -266,7 +266,6 @@ const InboxView = () => {
     [markRead]
   );
 
-
   // useEffect(() => {
   //   if (!shouldMarkUnreadEmailsAsRead) return;
 
@@ -338,7 +337,15 @@ const InboxView = () => {
     }
 
     setShouldMarkUnreadEmailsAsRead(false);
-  }, [thread, normalizedEmailsFromAPI.messagesById, loggedInUser.email, folder, label, markUnreadEmailsAsRead, shouldMarkUnreadEmailsAsRead]);
+  }, [
+    thread,
+    normalizedEmailsFromAPI.messagesById,
+    loggedInUser.email,
+    folder,
+    label,
+    markUnreadEmailsAsRead,
+    shouldMarkUnreadEmailsAsRead,
+  ]);
 
   // Show loading state while fetching email
   if (!thread && isEmailLoading) {

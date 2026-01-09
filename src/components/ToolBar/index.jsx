@@ -87,17 +87,13 @@ const CheckBox = ({ allSelected, partialSelected, toggle, shortcutsOn, threads, 
   };
 
   const handleSelectRead = () => {
-    const readThreadIds = threads
-      .filter((email) => email.unreadCount === 0)
-      .map((email) => email.thread_id);
+    const readThreadIds = threads.filter((email) => email.unreadCount === 0).map((email) => email.thread_id);
     selection.setMany(readThreadIds);
     handleMenuClose();
   };
 
   const handleSelectUnread = () => {
-    const unreadThreadIds = threads
-      .filter((email) => email.unreadCount > 0)
-      .map((email) => email.thread_id);
+    const unreadThreadIds = threads.filter((email) => email.unreadCount > 0).map((email) => email.thread_id);
     selection.setMany(unreadThreadIds);
     handleMenuClose();
   };
