@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - dev
+      - develop
   workflow_dispatch:
     inputs:
       environment:
