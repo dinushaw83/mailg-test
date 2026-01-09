@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   updateLabelsThunk,
@@ -119,10 +120,34 @@ const withUndo = (ids, setEmails, operation) => {
 
 export default function useMailActions() {
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
 
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
+
+  // Helper to update React Query cache optimistically
+  const updateQueryCache = useCallback(
+    (ids, updater) => {
+      const match = makeMatch(ids);
+
+      // Update all queries that match the "emails" pattern
+      queryClient.setQueriesData({ queryKey: ["emails"] }, (oldData) => {
+        if (!oldData?.results) return oldData;
+
+        return {
+          ...oldData,
+          results: oldData.results.map((email) => {
+            if (match(email)) {
+              return updater(email);
+            }
+            return email;
+          }),
+        };
+      });
+    },
+    [queryClient]
+  );
 
   const updateByIds = useCallback(
     (ids, transform) => {
@@ -274,6 +299,8 @@ export default function useMailActions() {
 
   const moveToSpam = useCallback(
     (ids) => {
+      console.log("moveToSpam called with ids:", ids);
+
       // If ids are already email UUIDs (from ActionBar), use them directly
       // Otherwise, find matching emails by thread ID or other keys
       let emailIds;
@@ -285,28 +312,57 @@ export default function useMailActions() {
       if (isUUID) {
         // Already email IDs, use directly
         emailIds = ids;
+        console.log("Using IDs directly as email IDs:", emailIds);
       } else {
         // Find matching emails by thread/message IDs
         const match = makeMatch(ids);
         const matchingEmails = emails.filter(match);
         emailIds = matchingEmails.map((email) => email.id);
+        console.log("Extracted email IDs from matching emails:", emailIds, "from", matchingEmails.length, "matches");
       }
 
-      // Call bulk backend API with all email IDs at once
-      if (emailIds.length > 0) {
-        dispatch(bulkMoveToSpamThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk move emails to spam:", error);
-        });
-      }
+      // Optimistically update React Query cache
+      updateQueryCache(ids, (email) => {
+        const updatedLabels = [...(email.labels || [])];
+        const labelSet = new Set(updatedLabels);
+        removeSystemLabels(labelSet, labels, ["Spam"]);
+        labelSet.add("Spam");
+        return { ...email, labels: [...labelSet] };
+      });
 
-      return withUndo(ids, setEmails, () => {
+      // Backward compatibility: update local state
+      const undo = withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
           removeSystemLabels(labelSet, labels, ["Spam"]);
           labelSet.add("Spam");
         });
       });
+
+      // Call bulk backend API with all email IDs at once
+      if (emailIds && emailIds.length > 0) {
+        console.log("Dispatching bulkMoveToSpamThunk with emailIds:", emailIds);
+        dispatch(bulkMoveToSpamThunk({ emailIds }))
+          .unwrap()
+          .then(() => {
+            console.log("Successfully moved emails to spam");
+          })
+          .catch((error) => {
+            console.error("Failed to bulk move emails to spam:", error);
+            // Revert optimistic update on error
+            updateQueryCache(ids, (email) => {
+              const updatedLabels = [...(email.labels || [])];
+              const labelSet = new Set(updatedLabels);
+              labelSet.delete("Spam");
+              return { ...email, labels: [...labelSet] };
+            });
+          });
+      } else {
+        console.warn("moveToSpam: No email IDs to process, skipping API call");
+      }
+
+      return undo;
     },
-    [updateByIds, setEmails, labels, dispatch, emails]
+    [updateByIds, setEmails, labels, dispatch, emails, updateQueryCache]
   );
 
   const notSpam = useCallback(
@@ -315,19 +371,44 @@ export default function useMailActions() {
       const match = makeMatch(ids);
       const emailIds = emails.filter(match).map((email) => email.id);
 
-      // Call bulk backend API
+      // Call bulk backend API FIRST
       if (emailIds.length > 0) {
-        dispatch(bulkMoveFromSpamThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk remove spam from emails:", error);
-        });
+        dispatch(bulkMoveFromSpamThunk({ emailIds }))
+          .unwrap()
+          .then(() => {
+            console.log("Successfully removed spam from emails");
+          })
+          .catch((error) => {
+            console.error("Failed to bulk remove spam from emails:", error);
+            // Revert optimistic update on error
+            updateQueryCache(ids, (email) => {
+              const updatedLabels = [...(email.labels || [])];
+              const labelSet = new Set(updatedLabels);
+              labelSet.add("Spam");
+              labelSet.delete("Inbox");
+              return { ...email, labels: [...labelSet] };
+            });
+          });
       }
 
-      return updateByIds(ids, (labels) => {
+      // Optimistically update React Query cache
+      updateQueryCache(ids, (email) => {
+        const updatedLabels = [...(email.labels || [])];
+        const labelSet = new Set(updatedLabels);
+        labelSet.delete("Spam");
+        labelSet.add("Inbox");
+        return { ...email, labels: [...labelSet] };
+      });
+
+      // Backward compatibility: update local state
+      const undo = updateByIds(ids, (labels) => {
         labels.delete("Spam");
         labels.add("Inbox");
       });
+
+      return undo;
     },
-    [updateByIds, emails, dispatch]
+    [updateByIds, emails, dispatch, updateQueryCache]
   );
 
   const moveToTrash = useCallback(
@@ -382,19 +463,10 @@ export default function useMailActions() {
       // Otherwise, we'll need to look it up (not ideal, but fallback)
       const newState = currentStarredState !== undefined ? !currentStarredState : true;
 
-      // Call bulk backend API with all email IDs at once
-      if (ids.length > 0) {
-        dispatch(
-          bulkUpdateEmailStarredThunk({
-            emailIds: ids,
-            is_starred: newState,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync starred status with backend:", error);
-        });
-      }
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_starred: newState }));
 
-      // Update local state optimistically for immediate feedback
+      // Also update local state for backward compatibility
       const match = makeMatch(ids);
       setEmails((prev) => {
         return prev.map((m) => {
@@ -404,23 +476,47 @@ export default function useMailActions() {
           return m;
         });
       });
+
+      // Call bulk backend API with all email IDs at once
+      if (ids.length > 0) {
+        dispatch(
+          bulkUpdateEmailStarredThunk({
+            emailIds: ids,
+            is_starred: newState,
+          })
+        ).catch((error) => {
+          console.error("Failed to bulk sync starred status with backend:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_starred: !newState }));
+        });
+      }
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache]
   );
 
   const setStar = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
 
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_starred: value }));
+
+      // Also update local state for backward compatibility
+      setEmails((prev) => {
+        return prev.map((m) => {
+          if (match(m)) {
+            return { ...m, is_starred: value };
+          }
+          return m;
+        });
+      });
+
       // Collect all email IDs for bulk operation
       const emailIds = [];
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            emailIds.push(m.id);
-          }
-        });
-        return prev;
+      emails.forEach((m) => {
+        if (match(m)) {
+          emailIds.push(m.id);
+        }
       });
 
       // Call bulk backend API with all email IDs at once
@@ -432,54 +528,62 @@ export default function useMailActions() {
           })
         ).catch((error) => {
           console.error("Failed to bulk sync starred status with backend:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_starred: !value }));
         });
       }
-
-      // Update local state immediately (optimistic update)
-      setEmails((prev) => {
-        return prev.map((m) => {
-          if (match(m)) {
-            return { ...m, is_starred: value };
-          }
-          return m;
-        });
-      });
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const markRead = useCallback(
     (ids, read = true) => {
       const match = makeMatch(ids);
 
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_read: read }));
+
+      // Also update local state for backward compatibility
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
+
       // Extract email IDs for backend sync
       const emailIds = [];
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            emailIds.push(m.id);
-          }
-        });
-        return prev;
+      emails.forEach((m) => {
+        if (match(m)) {
+          emailIds.push(m.id);
+        }
       });
 
       // Call bulk backend API
       if (emailIds.length > 0) {
         dispatch(bulkUpdateEmailReadThunk({ emailIds, is_read: read })).catch((error) => {
           console.error("Failed to bulk update read status:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_read: !read }));
         });
       }
-
-      // Update local state
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const toggleImportant = useCallback(
     (ids, currentImportantState) => {
       // Determine the new state
       const newState = currentImportantState !== undefined ? !currentImportantState : true;
+
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_important: newState }));
+
+      // Also update local state for backward compatibility
+      const match = makeMatch(ids);
+      setEmails((prev) => {
+        return prev.map((m) => {
+          if (match(m)) {
+            return { ...m, is_important: newState };
+          }
+          return m;
+        });
+      });
 
       // Call bulk backend API with all email IDs at once
       if (ids.length > 0) {
@@ -490,21 +594,12 @@ export default function useMailActions() {
           })
         ).catch((error) => {
           console.error("Failed to bulk sync important status with backend:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_important: !newState }));
         });
       }
-
-      // Update local state optimistically for immediate feedback
-      const match = makeMatch(ids);
-      setEmails((prev) => {
-        return prev.map((m) => {
-          if (match(m)) {
-            return { ...m, is_important: newState };
-          }
-          return m;
-        });
-      });
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache]
   );
 
   const setImportant = useCallback(
