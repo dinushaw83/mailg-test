@@ -301,32 +301,16 @@ jobs:
       - name: Extract image tags from build outputs
         id: images
         run: |
-          # Extract SHA tag from comma-separated list (first tag is SHA)
-          BACKEND_TAGS="${{ needs.build-backend.outputs.image }}"
-          FRONTEND_TAGS="${{ needs.build-frontend.outputs.image }}"
+          # Construct image tags using the commit SHA (matches what docker/metadata-action pushed)
+          BACKEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${{ github.sha }}"
+          FRONTEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${{ github.sha }}"
           
-          # Get the first tag (SHA tag) from comma-separated list
-          BACKEND_SHA_TAG=$(echo "$BACKEND_TAGS" | cut -d',' -f1)
-          FRONTEND_SHA_TAG=$(echo "$FRONTEND_TAGS" | cut -d',' -f1)
+          echo "Backend image: $BACKEND_IMAGE_TAG"
+          echo "Frontend image: $FRONTEND_IMAGE_TAG"
           
-          echo "Backend tags: $BACKEND_TAGS"
-          echo "Frontend tags: $FRONTEND_TAGS"
-          echo "Backend SHA tag: $BACKEND_SHA_TAG"
-          echo "Frontend SHA tag: $FRONTEND_SHA_TAG"
-          
-          # Fallback to manually constructed tag if extraction fails
-          if [ -z "$BACKEND_SHA_TAG" ] || [ "$BACKEND_SHA_TAG" == "null" ]; then
-            BACKEND_SHA_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${{ github.sha }}"
-            echo "⚠️ Using fallback backend tag: $BACKEND_SHA_TAG"
-          fi
-          
-          if [ -z "$FRONTEND_SHA_TAG" ] || [ "$FRONTEND_SHA_TAG" == "null" ]; then
-            FRONTEND_SHA_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${{ github.sha }}"
-            echo "⚠️ Using fallback frontend tag: $FRONTEND_SHA_TAG"
-          fi
-          
-          echo "backend_image=$BACKEND_SHA_TAG" >> $GITHUB_OUTPUT
-          echo "frontend_image=$FRONTEND_SHA_TAG" >> $GITHUB_OUTPUT
+          # Set outputs
+          echo "backend_image=$BACKEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=$FRONTEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Copy deployment files
         run: |
