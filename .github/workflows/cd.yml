@@ -301,10 +301,16 @@ jobs:
       - name: Extract image tags from build outputs
         id: images
         run: |
-          # Construct image tags using the commit SHA (matches what docker/metadata-action pushed)
-          BACKEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${{ github.sha }}"
-          FRONTEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${{ github.sha }}"
+          # docker/metadata-action with type=sha,prefix= uses short SHA (7 chars)
+          FULL_SHA="${{ github.sha }}"
+          SHORT_SHA=$(echo "$FULL_SHA" | cut -c1-7)
           
+          # Construct image tags using the short commit SHA (matches what docker/metadata-action pushed)
+          BACKEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${SHORT_SHA}"
+          FRONTEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${SHORT_SHA}"
+          
+          echo "Full commit SHA: $FULL_SHA"
+          echo "Short SHA (7 chars): $SHORT_SHA"
           echo "Backend image: $BACKEND_IMAGE_TAG"
           echo "Frontend image: $FRONTEND_IMAGE_TAG"
           
