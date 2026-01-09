@@ -9,7 +9,7 @@ This module provides:
 from app.core.constants import ProhibitedLabels
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 from typing import List
 from uuid import UUID
@@ -18,6 +18,7 @@ import logging
 from app.db.session import get_db
 from app.models.label import Label
 from app.models.email import Email
+from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.schemas.label import (
@@ -540,7 +541,7 @@ def list_label_threads(
     # Get threads with pagination
     threads = threads_with_label.order_by(Thread.last_email_at.desc()).offset(offset).limit(page_size).all()
     
-    # For each thread, get the latest email
+    # For each thread, get the latest email where user is sender or recipient
     emails_data = []
     for thread in threads:
         latest_email = db.query(Email).options(
@@ -548,7 +549,15 @@ def list_label_threads(
             selectinload(Email.attachments),
         ).filter(
             Email.thread_id == thread.id,
-            Email.is_deleted == False
+            Email.is_deleted == False,
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
         ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
         
         if latest_email:
