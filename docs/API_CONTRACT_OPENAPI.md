@@ -1904,7 +1904,10 @@ Permissions:
 
 **POST** `/api/v1/emails`
 
-Create a new email (draft or send immediately).
+Create a new draft email.
+
+This endpoint only creates drafts. Use POST /emails/{id}/send to send the email
+(either immediately or scheduled for a specific time).
 
 Permissions:
 - All authenticated users can create emails
@@ -1922,9 +1925,7 @@ Permissions:
       "name": "string",
       "type": "string"
     }
-  ],
-  "is_draft": false,
-  "scheduled_send_at": "2024-01-01T00:00:00Z"
+  ]
 }
 ```
 
@@ -2270,9 +2271,13 @@ Permissions:
   "subject": "string",
   "body": "string",
   "html_body": "string",
-  "is_read": false,
-  "is_starred": false,
-  "is_important": false
+  "recipients": [
+    {
+      "email": "string",
+      "name": "string",
+      "type": "string"
+    }
+  ]
 }
 ```
 
@@ -3231,15 +3236,26 @@ Permissions:
 
 Send a draft email.
 
-If the user has undo_send_delay_seconds > 0 configured, the email will be
-queued with a scheduled send time. During this window, the user can cancel
-the send using the /emails/{email_id}/cancel-send endpoint.
+If scheduled_send_at is provided in the request body, the email will be 
+scheduled for that specific time, overriding the user's undo_send_delay_seconds.
 
-If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
+If scheduled_send_at is not provided:
+- If the user has undo_send_delay_seconds > 0 configured, the email will be
+  queued with a scheduled send time. During this window, the user can cancel
+  the send using the /emails/{email_id}/cancel-send endpoint.
+- If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
 
 **Path Parameters**:
 
 - `email_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "scheduled_send_at": "2024-01-01T00:00:00Z"
+}
+```
 
 **Responses**:
 
