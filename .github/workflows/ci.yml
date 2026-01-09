@@ -150,7 +150,7 @@ jobs:
       coverage_file: ./backend/coverage.xml
 
   # ===========================================================================
-  # Frontend Verification (Parallel Jobs)
+  # Frontend Verification (Sequential: Build → Test)
   # ===========================================================================
   
   frontend-build:
@@ -271,7 +271,7 @@ jobs:
     name: 🐳 Docker Build Frontend
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [frontend-build]
+    needs: [frontend-build, frontend-test]
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     
     steps:
