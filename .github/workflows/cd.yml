@@ -355,13 +355,20 @@ jobs:
       - name: Health check
         id: health
         run: |
+          SYSTEM_URL="${{ vars.SYSTEM_URL }}"
+          
+          if [ -z "$SYSTEM_URL" ]; then
+            echo "::error::SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
           echo "⏳ Waiting for services to start..."
           sleep 15
           
           # Backend health check with retries
-          echo "Checking backend health..."
+          echo "Checking backend health at ${SYSTEM_URL}/api/health..."
           for i in {1..30}; do
-            if curl -sf --max-time 5 "http://${{ env.VM_HOST }}:${{ env.BACKEND_PORT }}/health" > /dev/null; then
+            if curl -sf --max-time 5 "${SYSTEM_URL}/api/health" > /dev/null; then
               echo "✅ Backend is healthy"
               break
             fi
@@ -374,9 +381,9 @@ jobs:
           done
           
           # Frontend health check with retries
-          echo "Checking frontend health..."
+          echo "Checking frontend health at ${SYSTEM_URL}/api/health..."
           for i in {1..30}; do
-            if curl -sf --max-time 5 "http://${{ env.VM_HOST }}:${{ env.FRONTEND_PORT }}/api/health" > /dev/null; then
+            if curl -sf --max-time 5 "${SYSTEM_URL}" > /dev/null; then
               echo "✅ Frontend is healthy"
               break
             fi
@@ -412,9 +419,9 @@ jobs:
           - Frontend: \`${{ steps.images.outputs.frontend_image }}\`
           
           ### 🔗 Access URLs
-          - **Application**: http://${{ env.VM_HOST }}:${{ env.FRONTEND_PORT }}
-          - **API**: http://${{ env.VM_HOST }}:${{ env.BACKEND_PORT }}
-          - **Health Check**: http://${{ env.VM_HOST }}:${{ env.BACKEND_PORT }}/health
+          - **Application**: ${{ vars.SYSTEM_URL }}
+          - **API**: ${{ vars.SYSTEM_URL }}/api
+          - **Health Check**: ${{ vars.SYSTEM_URL }}/api/health
           EOF
 
   # ===========================================================================
