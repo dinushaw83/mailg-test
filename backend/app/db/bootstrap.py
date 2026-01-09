@@ -113,6 +113,10 @@ def initialize_template_database_schema_and_fixtures():
     to ensure schema is always up to date.
     """
     from sqlalchemy import text
+    # Late import to avoid circular imports with session.py
+    from app.db.session import _get_seed_engine
+    
+    engine = _get_seed_engine()
     
     # Drop all existing tables first to ensure fresh schema
     logger.info("Dropping all existing tables for fresh schema...")
