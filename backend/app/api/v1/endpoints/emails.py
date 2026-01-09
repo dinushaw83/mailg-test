@@ -499,6 +499,7 @@ def _mark_emails_as_read_background(email_ids: list[UUID], user_id: UUID, run_id
     """
     from app.db.session import get_db_session
     
+    db = None
     try:
         db = get_db_session(run_id=run_id)
         db.query(Email).filter(
@@ -510,7 +511,8 @@ def _mark_emails_as_read_background(email_ids: list[UUID], user_id: UUID, run_id
     except Exception as e:
         logger.warning(f"Failed to mark emails as read in background: {e}")
     finally:
-        db.close()
+        if db is not None:
+            db.close()
 
 
 @router.get("/emails/thread/{thread_id}", response_model=list[EmailResponse], dependencies=[Depends(authorized())])
