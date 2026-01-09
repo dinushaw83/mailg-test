@@ -40,14 +40,15 @@ class BulkThreadIds(BaseModel):
     thread_ids: List[UUID] = Field(..., min_length=1, max_length=100, description="List of thread IDs to operate on")
 
 
-class BulkLabelAddRequest(BulkThreadIds):
-    """Schema for bulk add labels to threads."""
-    label_ids: List[UUID] = Field(..., min_length=1, description="Label IDs to add")
+class BulkLabelsUpdateOperation(BaseModel):
+    """Schema for label update operations."""
+    add: List[UUID] = Field(default_factory=list, description="Label IDs to add")
+    remove: List[UUID] = Field(default_factory=list, description="Label IDs to remove")
 
 
-class BulkLabelRemoveRequest(BulkThreadIds):
-    """Schema for bulk remove labels from threads."""
-    label_ids: List[UUID] = Field(..., min_length=1, description="Label IDs to remove")
+class BulkLabelsUpdateRequest(BulkEmailIds):
+    """Schema for bulk update labels on threads (add and/or remove)."""
+    labels: BulkLabelsUpdateOperation = Field(..., description="Labels to add and/or remove")
 
 
 class BulkSnoozeRequest(BulkEmailIds):
