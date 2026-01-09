@@ -1,8 +1,6 @@
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import QuickSettings, { INBOX_TYPE } from "../components/QuickSettings";
 import React, { useEffect, useMemo, useState } from "react";
-import { fetchEmailCounts, fetchEmails, fetchLabels } from "../store/slices/mailSlice";
-import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 
 import Banner from "../components/Banners";
@@ -17,6 +15,7 @@ import ToolBar from "../components/ToolBar";
 import { getThreadRows } from "../utils/emails";
 import { normalizeLabelName } from "../hooks/useLabels";
 import styled from "@emotion/styled";
+import useFolderEmails from "../hooks/useFolderEmails";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 const Container = styled.div`
@@ -71,10 +70,6 @@ const Inbox = () => {
     setPreviewEmailId,
     panelState,
   } = useGlobalContext();
-  const dispatch = useDispatch();
-  const { accessToken } = useSelector((state) => state.user);
-  const { loading: isEmailsLoading } = useSelector((state) => state.mail);
-
   const { folder, label: labelParam } = useParams();
   const label = labelParam ? decodeURIComponent(labelParam) : null;
   const activeFolder = folder || "inbox";
@@ -85,144 +80,17 @@ const Inbox = () => {
   const [activeInboxTab, setActiveInboxTab] = useState(CATEGORIES.Primary);
   const [apiPagination, setApiPagination] = useState(null);
 
-  // Select emails from the appropriate folder/category
-  const emails = useMemo(() => {
-    const isInboxRoute = !label && String(activeFolder).toLowerCase() === "inbox";
-
-    if (isInboxRoute) {
-      // For inbox, use the category-specific emails (primary, promotions, social, updates)
-      const categoryKey = activeInboxTab.toLowerCase();
-      return mailFolders[categoryKey] || [];
-    }
-
-    // For other folders, use folder-specific emails
-    // Map route names to state keys: "starred" -> "is_starred", "important" -> "is_important", "snoozed" -> "is_snoozed"
-    const folderKey = activeFolder.toLowerCase();
-    const stateKeyMap = {
-      starred: "is_starred",
-      important: "is_important",
-      snoozed: "is_snoozed",
-    };
-    const stateKey = stateKeyMap[folderKey] || folderKey;
-    return mailFolders[stateKey] || [];
-  }, [mailFolders, activeFolder, activeInboxTab, label]);
-
-  // Fetch emails based on active folder (inbox with category, starred, important, snoozed, or folder-based routes)
-  useEffect(() => {
-    if (!accessToken) return;
-    if (label) return; // Skip if viewing a label route
-
-    const folderKey = String(activeFolder).toLowerCase();
-    const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "all"];
-    if (!validRoutes.includes(folderKey)) return;
-
-    const promises = [];
-
-    switch (folderKey) {
-      case "starred":
-        // Fetch starred emails
-        promises.push(
-          dispatch(
-            fetchEmails({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              is_starred: true,
-            })
-          ).unwrap()
-        );
-        break;
-      case "important":
-        // Fetch important emails
-        promises.push(
-          dispatch(
-            fetchEmails({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              is_important: true,
-            })
-          ).unwrap()
-        );
-        break;
-      case "snoozed":
-        // Fetch snoozed emails
-        promises.push(
-          dispatch(
-            fetchEmails({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              is_snoozed: true,
-            })
-          ).unwrap()
-        );
-        break;
-      case "sent":
-      case "trash":
-      case "spam":
-      case "drafts":
-        // Fetch folder-based emails (sent, trash, spam, drafts)
-        promises.push(
-          dispatch(
-            fetchEmails({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              folder: folderKey,
-            })
-          ).unwrap()
-        );
-        break;
-      case "all":
-        // Fetch all mail (inbox + archived)
-        promises.push(
-          dispatch(
-            fetchEmails({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              folder: "inbox",
-              include_archived: true,
-            })
-          ).unwrap()
-        );
-        break;
-      case "inbox":
-        // Fetch inbox emails with category filter and counts
-        const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
-        promises.push(
-          dispatch(
-            fetchEmails({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              category: categoryParam,
-            })
-          ).unwrap(),
-          dispatch(fetchEmailCounts()).unwrap()
-        );
-        break;
-      default:
-        return;
-    }
-
-    Promise.all(promises)
-      .then((results) => {
-        // First result is always the emails payload
-        const emailsPayload = results[0];
-        setApiPagination(emailsPayload?.pagination ?? null);
-        if (emailsPayload?.pagination?.pageSize && emailsPayload.pagination.pageSize !== itemsPerPage) {
-          setItemsPerPage(emailsPayload.pagination.pageSize);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to fetch emails:", error);
-      });
-  }, [activeFolder, activeInboxTab, currentPage, itemsPerPage, accessToken, label, dispatch]);
-
-  // Fetch labels on mount
-  useEffect(() => {
-    if (!accessToken) return;
-
-    dispatch(fetchLabels()).catch((error) => {
-      console.error("Failed to fetch labels:", error);
-    });
-  }, [accessToken]);
+  // Use custom hook for folder-based email selection and fetching
+  const { emails, isLoading: isEmailsLoading } = useFolderEmails({
+    activeFolder,
+    activeInboxTab,
+    label,
+    currentPage,
+    itemsPerPage,
+    mailFolders,
+    setApiPagination,
+    setItemsPerPage,
+  });
 
   const direction = panelState.direction;
   const showSplit = direction !== "no-split";
