@@ -65,7 +65,7 @@ export const emailAPIMapper = (emails) => {
         bcc,
         beFormattedEMailLabels: email?.labels,
         folderId: email?.folder_id,
-        threadId: email?.thread_id || null,
+        thread_id: email?.thread_id || null,
         timestamp: email?.sent_at || email?.received_at || email?.created_at,
         // Use html_body if available (for display), fallback to body
         body: email?.html_body || email?.body || "",
@@ -150,10 +150,10 @@ export function normalizeEmails(messages) {
 
     // Handle string format (legacy): just email address
     if (typeof address === "string") {
-    return {
-      email: address,
-      name: emailToUsernameMap[address] || address,
-    };
+      return {
+        email: address,
+        name: emailToUsernameMap[address] || address,
+      };
     }
 
     return null;
@@ -176,7 +176,7 @@ export function normalizeEmails(messages) {
 
   for (const m of messages) {
     const id = String(m.id); // ensure string
-    const threadId = String(m.threadId);
+    const thread_id = String(m.thread_id);
     const ts = new Date(m.timestamp).getTime();
 
     // Preserve full label objects with id, name, and color
@@ -195,16 +195,16 @@ export function normalizeEmails(messages) {
     const msg = {
       ...m,
       id,
-      threadId,
+      thread_id,
       timestampMs: ts,
       labels: enrichedLabels,
     };
     messagesById[id] = msg;
 
-    let thread = threadsById[threadId];
+    let thread = threadsById[thread_id];
     if (!thread) {
       thread = {
-        id: threadId,
+        id: thread_id,
         messageIds: [],
         labels: new Set(),
         updatedAt: 0,
@@ -214,7 +214,7 @@ export function normalizeEmails(messages) {
         participants: new Map(),
         personalEmailSent: false,
       };
-      threadsById[threadId] = thread;
+      threadsById[thread_id] = thread;
     }
 
     const messageParticipants = collectParticipantsForMessage(m);
@@ -272,11 +272,11 @@ export function normalizeEmails(messages) {
     t.participants = participantsWithMeta.map(({ participant }) => participant);
   });
 
-  const threadIds = Object.values(threadsById)
+  const thread_ids = Object.values(threadsById)
     .sort((a, b) => b.updatedAt - a.updatedAt)
     .map((t) => t.id);
 
-  return { messagesById, threadsById, threadIds };
+  return { messagesById, threadsById, thread_ids };
 }
 
 const LABEL_MAX_WIDTH = 168;
@@ -542,7 +542,7 @@ export const getLabel = (participants, { includePersonal = true } = {}) => {
 // - Subject comes from the first message in the thread
 // - Labels are the union of all labels within the thread
 export function getThreadRows(messages, { label = null, folder = "inbox" } = {}) {
-  const { messagesById, threadsById, threadIds } = normalizeEmails(messages);
+  const { messagesById, threadsById, thread_ids } = normalizeEmails(messages);
 
   // Build a label for the Sent folder that lists only recipient first names
   // - Excludes the sender (john.doe@example.com)
@@ -581,7 +581,7 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     return "";
   };
 
-  const rows = threadIds.map((tid) => {
+  const rows = thread_ids.map((tid) => {
     const t = threadsById[tid];
     const firstId = t.messageIds[0];
     const lastId = t.lastMessageId || t.messageIds[t.messageIds.length - 1];
@@ -596,7 +596,7 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
       // Keep navigation compatible with message details by using last message id
       id: last.id,
       // Preserve thread identity for attributes/analytics
-      threadId: t.id,
+      thread_id: t.id,
       legacyThreadId: last.legacyThreadId,
       legacyLastMessageId: last.legacyLastMessageId,
       legacyLastNonDraftMessageId: last.legacyLastNonDraftMessageId,
@@ -701,9 +701,11 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 }
 
 // get a single thread row
-export const getThread = (messages, { threadId }) => {
+export const getThread = (messages, { thread_id }) => {
   const { messagesById, threadsById } = normalizeEmails(messages);
-  const thread = threadsById[threadId];
+  console.log({ messagesById }, "----------messagesById----------");
+  console.log({ threadsById }, "----------threadsById----------");
+  const thread = threadsById[thread_id];
   if (!thread) {
     return null;
   }
@@ -717,7 +719,7 @@ export const getThread = (messages, { threadId }) => {
     // Keep navigation compatible with message details by using last message id
     id: last.id,
     // Preserve thread identity for attributes/analytics
-    threadId: thread.id,
+    thread_id: thread.id,
     legacyThreadId: last.legacyThreadId,
     legacyLastMessageId: last.legacyLastMessageId,
     legacyLastNonDraftMessageId: last.legacyLastNonDraftMessageId,

@@ -46,11 +46,7 @@ class EmailUpdate(BaseModel):
     subject: Optional[str] = Field(None, min_length=1, max_length=500)
     body: Optional[str] = None
     html_body: Optional[str] = None
-    is_read: Optional[bool] = None
-    is_starred: Optional[bool] = None
-    is_important: Optional[bool] = None
-    folder: Optional[str] = Field(None, description="Folder: inbox, sent, drafts, trash, spam, scheduled")
-    category: Optional[str] = Field(None, description="Email category: primary, promotions, social, updates, forums")
+    recipients: Optional[List[EmailRecipientSchema]] = Field(None, description="List of recipients (only for drafts)")
 
 
 class EmailReadUpdate(BaseModel):

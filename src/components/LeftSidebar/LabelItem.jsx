@@ -85,41 +85,41 @@ export default function LabelItem({
 }) {
   const { setLabelColor, labels, deleteLabel } = useLabels();
   const { setLabels, setSnackbar } = useGlobalContext();
-  
+
   // Get mappings to look up label by composite key
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
-  
+
   // Look up label: first try by composite key, if not found try by UUID (labelKey might be UUID)
   const label = useMemo(() => {
     // If labelKey is a composite key, get the UUID
     const labelId = keyToLabelIdMap[labelKey] || labelKey;
-    
+
     // Try to get label by UUID
     let foundLabel = labels[labelId];
-    
+
     // If still not found, try direct lookup by labelKey (for system labels or legacy)
     if (!foundLabel && labels[labelKey]) {
       foundLabel = labels[labelKey];
     }
-    
+
     return foundLabel;
   }, [labels, labelKey, keyToLabelIdMap]);
-  
+
   // Convert hex color to { rgb, text } format if needed
   const selectedColor = useMemo(() => {
     const color = label?.color;
     if (!color) return null;
-    
+
     // If color is already in { rgb, text } format, return as-is
     if (typeof color === "object" && color.rgb && color.text) {
       return color;
     }
-    
+
     // If color is hex string, convert it
     if (typeof color === "string" && (color.startsWith("#") || /^[0-9A-Fa-f]{6}$/.test(color))) {
       return hexToRgbObject(color);
     }
-    
+
     return null;
   }, [label?.color]);
 

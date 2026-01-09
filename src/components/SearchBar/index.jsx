@@ -296,9 +296,9 @@ const SearchBar = () => {
 
   const handleResultClick = (item) => {
     if (typeof item === "object" && item.id) {
-      // Extract threadId from the search result
-      const threadId = item.threadId || item.id;
-      navigate(`/inbox/${threadId}`);
+      // Extract thread_id from the search result
+      const thread_id = item.thread_id || item.id;
+      navigate(`/inbox/${thread_id}`);
     } else {
       // Add search query to history when clicked from suggestions
       if (item && item.trim() && typeof item === "string") {

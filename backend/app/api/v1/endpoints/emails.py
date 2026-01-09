@@ -381,26 +381,58 @@ def list_emails(
     """
     current_user = auth.user
     
-    # Base query - user's emails (sent by them or received by them)
+    # Base query with eager loading
     query = db.query(Email).options(
         joinedload(Email.sender),
         selectinload(Email.attachments),
         joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.is_deleted == False,
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
+    )
+    
+    # Apply folder filter with proper sender/recipient context
+    # For inbox: only show emails where user is a recipient (not their own sent emails)
+    # For sent/drafts/scheduled: only show emails where user is the sender
+    # For other folders: show emails where user is sender or recipient
+    if folder:
+        query = query.filter(Email.folder == folder.value)
+        
+        if folder in (FolderType.INBOX,):
+            # Inbox should only show emails where user is a recipient
+            query = query.filter(
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        elif folder in (FolderType.SENT, FolderType.DRAFTS, FolderType.SCHEDULED):
+            # Sent/Drafts/Scheduled should only show emails where user is the sender
+            query = query.filter(Email.sender_id == current_user.id)
+        else:
+            # Other folders (trash, spam, etc.) - show emails where user is sender or recipient
+            query = query.filter(
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            )
+    else:
+        # No folder filter - show all user's emails (sent or received)
+        query = query.filter(
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
                 )
             )
         )
-    )
-    
-    # Apply folder filter
-    if folder:
-        query = query.filter(Email.folder == folder.value)
     
     if thread_id:
         query = query.filter(Email.thread_id == thread_id)
@@ -683,20 +715,41 @@ def update_email(
             detail="Not authorized to update this email"
         )
     
-    # Only drafts can have content updated
+    # Only drafts can be updated
+    if email.status != EmailStatus.DRAFT.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only draft emails can be updated"
+        )
+    
     update_data = email_data.model_dump(exclude_unset=True)
-    content_fields = {"subject", "body", "html_body"}
     
-    if any(field in update_data for field in content_fields):
-        if email.status != EmailStatus.DRAFT.value:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Only draft emails can have content updated"
-            )
+    # Handle recipients update separately
+    recipients_data = update_data.pop("recipients", None)
     
-    # Apply updates
+    # Apply updates for simple fields
     for field, value in update_data.items():
         setattr(email, field, value)
+    
+    # Update recipients if provided
+    if recipients_data is not None:
+        # Delete existing recipients
+        db.query(EmailRecipient).filter(EmailRecipient.email_id == email.id).delete()
+        
+        # Add new recipients
+        for recipient in recipients_data:
+            recipient_user = db.query(User).filter(
+                User.email == recipient["email"]
+            ).first()
+            
+            email_recipient = EmailRecipient(
+                email_id=email.id,
+                recipient_id=recipient_user.id if recipient_user else None,
+                recipient_email=recipient["email"],
+                recipient_name=recipient.get("name") or (recipient_user.name if recipient_user else None),
+                recipient_type=recipient["type"],
+            )
+            db.add(email_recipient)
     
     try:
         db.commit()
@@ -2104,25 +2157,54 @@ def get_email_category_counts(
     """
     current_user = auth.user
 
-    # Base query - user's emails (sent by them or received by them)
+    # Base query for category counts
     base_query = db.query(
         Email.category,
         func.count(Email.id).label('count')
     ).filter(
         Email.is_deleted == False,
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
+    )
+
+    # Apply folder filter with proper sender/recipient context
+    if folder:
+        base_query = base_query.filter(Email.folder == folder.value)
+        
+        if folder in (FolderType.INBOX,):
+            # Inbox should only count emails where user is a recipient
+            base_query = base_query.filter(
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        elif folder in (FolderType.SENT, FolderType.DRAFTS, FolderType.SCHEDULED):
+            # Sent/Drafts/Scheduled should only count emails where user is the sender
+            base_query = base_query.filter(Email.sender_id == current_user.id)
+        else:
+            # Other folders - count emails where user is sender or recipient
+            base_query = base_query.filter(
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            )
+    else:
+        # No folder filter - count all user's emails (sent or received)
+        base_query = base_query.filter(
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
                 )
             )
         )
-    )
-
-    # Apply filters
-    if folder:
-        base_query = base_query.filter(Email.folder == folder.value)
 
     if is_read is not None:
         base_query = base_query.filter(Email.is_read == is_read)

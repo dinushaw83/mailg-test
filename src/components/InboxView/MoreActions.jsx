@@ -40,8 +40,8 @@ const MoreActions = ({
   const setAnchorEl = externalAnchorEl !== undefined ? () => {} : setInternalAnchorEl;
 
   const threadEmails = useMemo(
-    () => emails.filter((email) => email.threadId === thread.threadId),
-    [emails, thread.threadId]
+    () => emails.filter((email) => email.thread_id === thread.thread_id),
+    [emails, thread.thread_id]
   );
   const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
   const conversationLabelSnapshot = useCallback(

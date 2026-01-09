@@ -96,8 +96,8 @@ function App() {
                     <Layout>
                       <Routes>
                         <Route path="/" element={<Navigate to="/inbox" replace />} />
-                        <Route path="/:folder/:threadId" element={<EmailDetails />} />
-                        <Route path="/label/:label/:threadId" element={<EmailDetails />} />
+                        <Route path="/:folder/:thread_id" element={<EmailDetails />} />
+                        <Route path="/label/:label/:thread_id" element={<EmailDetails />} />
                         <Route path="/:folder" element={<MailView />} />
                         <Route path="/label/:label" element={<MailView />} />
                         <Route path="/search/:query" element={<SearchResultsView />} />

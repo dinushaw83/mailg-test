@@ -8,8 +8,11 @@ import Divider from "@mui/material/Divider";
 import Popover from "@mui/material/Popover";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { buildLabelPath } from "../../utils/labelSync";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export const Labels = ({
   searchQuery,
@@ -29,30 +32,47 @@ export const Labels = ({
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
   const inputRef = useRef(null);
+  const { folder } = useParams();
+
+  // Get labelIdToKeyMap from Redux to convert UUID keys to composite keys for display
+  const labelIdToKeyMap = useSelector((state) => state.mail.labelIdToKeyMap || {});
 
   const handleLabelClose = () => {
     setLabelAnchorEl(null);
     setSearchQuery("");
     setSelectedLabelKeys(new Set());
+    setOverrides({}); // Clear pending changes when closing without applying
   };
 
   const hasChanges = Object.keys(overrides).length > 0;
 
-  // Get currently applied labels for selected emails
-  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds);
+  // Get currently applied labels for selected emails, passing folder if present
+  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
+  console.log({ currentLabels, labelCounts, nSel, selectedIds });
 
   const availableLabels = useMemo(() => {
     return Object.entries(labels || {})
       .filter(([key, meta]) => !meta.system)
-      .map(([key, meta]) => ({
-        key,
-        name: meta.name || key,
-        color: meta.color,
-        isCurrentlyApplied: currentLabels.has(key),
-      }))
-      .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [labels, searchQuery, currentLabels]);
+      .map(([key, meta]) => {
+        const fullPath = buildLabelPath(key, meta, labels, labelIdToKeyMap, getPathLabelFromKey);
+
+        return {
+          key, // Keep original key for operations (UUID or composite)
+          fullPath, // Full path for display (e.g., "Parent/child/subchild")
+          name: meta.name || key,
+          color: meta.color,
+          isCurrentlyApplied: currentLabels.has(key),
+        };
+      })
+      .filter((label) => {
+        // Use full path for search filtering
+        return label.fullPath.toLowerCase().includes(searchQuery.toLowerCase());
+      })
+      .sort((a, b) => {
+        // Sort by full path
+        return a.fullPath.localeCompare(b.fullPath);
+      });
+  }, [labels, searchQuery, currentLabels, labelIdToKeyMap]);
 
   const handleApplyLabels = useCallback(() => {
     const ids = [...selectedIds]; // Capture IDs before any action
@@ -111,6 +131,7 @@ export const Labels = ({
       ),
     }));
 
+    console.log({ overrides });
     selection.clear();
     setOverrides({}); // reset
 
@@ -128,6 +149,7 @@ export const Labels = ({
     labels,
   ]);
 
+  console.log({ availableLabels });
   return (
     <Popover
       open={Boolean(labelAnchorEl)}
@@ -211,9 +233,23 @@ export const Labels = ({
             </Box>
           ) : (
             availableLabels.map((label) => {
-              const count = labelCounts.get(label.key) || 0;
+              // alert('asdad')
+              // labelCounts: count of each label on the selected emails
+              // nSel: number of selected emails
+              // baselineChecked: true if the label is on all selected emails
+              // baselineSome: true if the label is on some of the selected emails
+              // baselineState: "checked" if the label is on all selected emails, "indeterminate" if the label is on some of the selected emails, "unchecked" if the label is on none of the selected emails
+              // NEW: Iterate through the Map entries to find the matching object ID
+              let count = 0;
+              for (const [keyObj, val] of labelCounts.entries()) {
+                if (keyObj.id === label.key) {
+                  count = val;
+                  break; // Stop once we found the match
+                }
+              }
               const baselineChecked = nSel > 0 && count === nSel;
               const baselineSome = nSel > 1 && count > 0 && count < nSel;
+              console.log({ label, baselineChecked, baselineSome, count, nSel, labelCounts });
 
               let baselineState = "unchecked";
               if (baselineChecked) baselineState = "checked";
@@ -277,9 +313,7 @@ export const Labels = ({
                     }
                     sx={{ padding: "4px", pointerEvents: "none" }}
                   />
-                  <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>
-                    {getPathLabelFromKey(labels, label.key)}
-                  </Typography>
+                  <Typography sx={{ flex: 1, fontSize: "0.875rem", lineHeight: "20px" }}>{label.fullPath}</Typography>
                 </Box>
               );
             })

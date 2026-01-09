@@ -268,7 +268,8 @@ export function buildSearchIndex(emails) {
     // Build new index
     emailDocuments = emails.map((email) => ({
       id: email.id,
-      threadId: email.threadId,
+
+      thread_id: email.thread_id,
       subject: email.subject || "",
       body: email.body || "",
       preview: email.preview || "",
