@@ -43,10 +43,10 @@ class EmailCreate(BaseModel):
 
 class EmailUpdate(BaseModel):
     """Schema for updating an email."""
-    subject: Optional[str] = Field(None, min_length=1, max_length=500)
-    body: Optional[str] = None
-    html_body: Optional[str] = None
-    recipients: Optional[List[EmailRecipientSchema]] = Field(None, description="List of recipients (only for drafts)")
+    subject: Optional[str] = Field(default="", max_length=500, description="Email subject")
+    body: Optional[str] = Field(None, description="Plain text body")
+    html_body: Optional[str] = Field(None, description="HTML body")
+    recipients: Optional[List[EmailRecipientSchema]] = Field(default_factory=list, description="List of recipients (only for drafts)")
 
 
 class EmailReadUpdate(BaseModel):
@@ -91,6 +91,11 @@ class EmailForwardRequest(BaseModel):
 class EmailSnoozeRequest(BaseModel):
     """Schema for snoozing an email until a specific date/time."""
     snooze_until: datetime = Field(..., description="Date and time when the email should reappear")
+
+
+class EmailSendRequest(BaseModel):
+    """Schema for sending an email with optional scheduling."""
+    scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time")
 
 
 class EmailCategoryUpdate(BaseModel):

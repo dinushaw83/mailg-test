@@ -13,113 +13,39 @@ This module provides:
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from typing import List, Tuple
 from datetime import datetime
 from uuid import UUID
 import logging
 
 from app.db.session import get_db
 from app.models.email import Email
-from app.models.email_recipient import EmailRecipient
 from app.models.label import Label
-from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.schemas.bulk import (
     BulkImportantRequest, BulkReadRequest, BulkStarRequest, BulkMoveRequest, BulkDeleteRequest,
     BulkLabelAddRequest, BulkLabelRemoveRequest, BulkSnoozeRequest,
     BulkUnsnoozeRequest, BulkArchiveRequest, BulkCategoryRequest,
     BulkUnarchiveRequest, BulkSpamRequest, BulkUnspamRequest,
-    BulkOperationResponse, BulkOperationResult
+    BulkOperationResponse,
 )
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import FolderType, EmailStatus, EmailCategory, SystemLabel, VALID_EMAIL_CATEGORIES, VALID_FOLDER_TYPES
-from app.api.v1.endpoints.label_utils import (
+from app.utils.label_utils import (
     add_system_label_to_thread,
     remove_system_label_from_thread,
     replace_exclusive_labels,
     sync_category_labels,
 )
+from app.utils.bulk_utils import (
+    get_user_accessible_emails,
+    get_user_accessible_threads,
+    create_bulk_response,
+)
+from app.utils.email_utils import FOLDER_TO_LABEL
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-def get_user_accessible_emails(
-    db: Session, 
-    user_id: UUID, 
-    email_ids: List[UUID]
-) -> Tuple[List[Email], List[UUID]]:
-    """
-    Get emails that the user has access to (owned or received).
-    
-    Returns:
-        Tuple of (accessible emails list, inaccessible email ids list)
-    """
-    # Query emails that user can access
-    emails = db.query(Email).filter(
-        Email.id.in_(email_ids),
-        Email.is_deleted == False,
-        or_(
-            Email.sender_id == user_id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == user_id
-                )
-            )
-        )
-    ).all()
-    
-    found_ids = {e.id for e in emails}
-    not_found = [eid for eid in email_ids if eid not in found_ids]
-    
-    return emails, not_found
-
-
-def get_user_accessible_threads(
-    db: Session, 
-    user_id: UUID, 
-    thread_ids: List[UUID]
-) -> Tuple[List[Thread], List[UUID]]:
-    """
-    Get threads that the user owns.
-    
-    Returns:
-        Tuple of (accessible threads list, inaccessible thread ids list)
-    """
-    threads = db.query(Thread).filter(
-        Thread.id.in_(thread_ids),
-        Thread.owner_id == user_id,
-        Thread.is_deleted == False
-    ).all()
-    
-    found_ids = {t.id for t in threads}
-    not_found = [tid for tid in thread_ids if tid not in found_ids]
-    
-    return threads, not_found
-
-
-def create_bulk_response(
-    item_ids: List[UUID],
-    success_ids: List[UUID],
-    failures: dict
-) -> BulkOperationResponse:
-    """Create standardized bulk operation response."""
-    results = []
-    for item_id in item_ids:
-        if item_id in success_ids:
-            results.append(BulkOperationResult(id=item_id, success=True, error=None))
-        else:
-            error_msg = failures.get(item_id, "Unknown error")
-            results.append(BulkOperationResult(id=item_id, success=False, error=error_msg))
-    
-    return BulkOperationResponse(
-        total_requested=len(item_ids),
-        successful=len(success_ids),
-        failed=len(failures),
-        results=results
-    )
 
 
 @router.post("/bulk/read", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
@@ -236,17 +162,6 @@ def bulk_important(
     logger.info(f"Bulk important: {len(success_ids)} emails {'important' if request.is_important else 'unimportant'} by user {current_user.id}")
     
     return create_bulk_response(request.email_ids, success_ids, failures)
-
-
-# Mapping from folder type to system label enum
-FOLDER_TO_LABEL = {
-    FolderType.INBOX.value: SystemLabel.INBOX,
-    FolderType.SENT.value: SystemLabel.SENT,
-    FolderType.DRAFTS.value: SystemLabel.DRAFTS,
-    FolderType.TRASH.value: SystemLabel.TRASH,
-    FolderType.SPAM.value: SystemLabel.SPAM,
-    FolderType.SCHEDULED.value: SystemLabel.SCHEDULED,
-}
 
 
 @router.post("/bulk/move", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])

@@ -9,83 +9,23 @@ This module provides:
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from typing import List
-from uuid import UUID, uuid4
+from uuid import UUID
 import logging
 
 from app.db.session import get_db
 from app.models.attachment import Attachment
 from app.models.email import Email
-from app.models.email_recipient import EmailRecipient
 from app.schemas.attachment import AttachmentCreate, AttachmentResponse, AttachmentListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import AttachmentType
+from app.utils.attachment_utils import (
+    get_attachment_type,
+    format_attachment_response,
+    check_email_access,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-def get_attachment_type(content_type: str) -> str:
-    """Determine attachment type from content type."""
-    if content_type:
-        if content_type.startswith("image/"):
-            return AttachmentType.IMAGE.value
-        elif content_type in [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "text/plain",
-            "text/csv",
-        ]:
-            return AttachmentType.DOCUMENT.value
-    return AttachmentType.FILE.value
-
-
-def format_attachment_response(attachment: Attachment) -> dict:
-    """Format attachment model to response dict."""
-    return {
-        "id": attachment.id,
-        "email_id": attachment.email_id,
-        "filename": attachment.filename,
-        "content_type": attachment.content_type,
-        "size_bytes": attachment.size_bytes,
-        "attachment_type": attachment.attachment_type,
-        "storage_path": attachment.storage_path,
-        "is_deleted": attachment.is_deleted,
-        "created_at": attachment.created_at,
-    }
-
-
-def check_email_access(db: Session, email_id: UUID, user_id: UUID, user_role: str) -> Email:
-    """Check if user has access to email and return it."""
-    email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
-    ).first()
-    
-    if not email:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Email {email_id} not found"
-        )
-    
-    # Check ownership
-    is_sender = email.sender_id == user_id
-    is_recipient = db.query(EmailRecipient).filter(
-        EmailRecipient.email_id == email_id,
-        EmailRecipient.recipient_id == user_id
-    ).first() is not None
-    is_admin = user_role == "admin"
-    
-    if not (is_sender or is_recipient or is_admin):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Email {email_id} not found"
-        )
-    
-    return email
 
 
 @router.get("/emails/{email_id}/attachments", response_model=List[AttachmentListResponse], dependencies=[Depends(authorized())])

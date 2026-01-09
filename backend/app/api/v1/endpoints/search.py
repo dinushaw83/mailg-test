@@ -10,9 +10,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import UUID
-import re
 import time
 import logging
 
@@ -34,125 +33,11 @@ from app.schemas.search import (
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
+from app.utils.email_utils import get_label_hierarchy_name, get_snippet
+from app.utils.search_utils import parse_search_query
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-def get_label_hierarchy_name(label) -> str:
-    """Build full hierarchical name for a label (e.g., 'grand/parent/child').
-    
-    Traverses up the parent chain to construct the full path.
-    """
-    parts = []
-    current = label
-    while current:
-        parts.append(current.name)
-        current = current.parent
-    # Reverse to get grand -> parent -> child order
-    parts.reverse()
-    return "/".join(parts)
-
-
-def parse_search_query(query: str) -> dict:
-    """Parse Gmail-style search operators from query string.
-    
-    Examples:
-        "from:john@example.com subject:meeting" ->
-        {"from_email": "john@example.com", "subject": "meeting"}
-        
-        "is:starred has:attachment report" ->
-        {"is_starred": True, "has_attachment": True, "text": "report"}
-    """
-    operators = {}
-    remaining_text = []
-    
-    # Pattern definitions
-    patterns = [
-        (r'from:(\S+)', 'from_email'),
-        (r'to:(\S+)', 'to_email'),
-        (r'cc:(\S+)', 'cc_email'),
-        (r'subject:("[^"]+"|\'[^\']+\'|\S+)', 'subject'),
-        (r'has:attachment', ('has_attachment', True)),
-        (r'has:star', ('is_starred', True)),
-        (r'is:read', ('is_read', True)),
-        (r'is:unread', ('is_read', False)),
-        (r'is:starred', ('is_starred', True)),
-        (r'is:important', ('is_important', True)),
-        (r'in:(\w+)', 'folder_type'),
-        (r'label:(\S+)', 'label_name'),
-        (r'before:(\d{4}-\d{2}-\d{2})', 'date_to'),
-        (r'after:(\d{4}-\d{2}-\d{2})', 'date_from'),
-        (r'newer_than:(\d+[dmyw])', 'newer_than'),
-        (r'older_than:(\d+[dmyw])', 'older_than'),
-    ]
-    
-    query_copy = query
-    
-    for pattern, key in patterns:
-        if isinstance(key, tuple):
-            # Boolean pattern (no capture group)
-            if re.search(pattern, query_copy, re.IGNORECASE):
-                operators[key[0]] = key[1]
-                query_copy = re.sub(pattern, '', query_copy, flags=re.IGNORECASE)
-        else:
-            # Value pattern (with capture group)
-            match = re.search(pattern, query_copy, re.IGNORECASE)
-            if match:
-                value = match.group(1)
-                # Remove quotes if present
-                if value.startswith('"') or value.startswith("'"):
-                    value = value[1:-1]
-                operators[key] = value
-                query_copy = re.sub(pattern, '', query_copy, flags=re.IGNORECASE)
-    
-    # Handle relative date filters
-    if 'newer_than' in operators:
-        operators['date_from'] = parse_relative_date(operators.pop('newer_than'))
-    if 'older_than' in operators:
-        operators['date_to'] = parse_relative_date(operators.pop('older_than'))
-    
-    # Remaining text is the search query
-    remaining = query_copy.strip()
-    if remaining:
-        operators['text'] = remaining
-    
-    return operators
-
-
-def parse_relative_date(relative: str) -> datetime:
-    """Parse relative date string like '7d', '1m', '1y'."""
-    match = re.match(r'(\d+)([dmyw])', relative)
-    if not match:
-        return None
-    
-    value = int(match.group(1))
-    unit = match.group(2)
-    
-    now = datetime.utcnow()
-    if unit == 'd':
-        return now - timedelta(days=value)
-    elif unit == 'm':
-        return now - timedelta(days=value * 30)
-    elif unit == 'w':
-        return now - timedelta(weeks=value)
-    elif unit == 'y':
-        return now - timedelta(days=value * 365)
-    
-    return now
-
-
-def get_snippet(body: Optional[str], max_length: int = 200) -> str:
-    """Extract snippet from email body."""
-    if not body:
-        return ""
-    # Strip HTML if present (basic)
-    text = body.replace("<br>", " ").replace("<br/>", " ").replace("<p>", " ").replace("</p>", " ")
-    text = re.sub(r'<[^>]+>', '', text)
-    text = ' '.join(text.split())
-    if len(text) > max_length:
-        return text[:max_length] + "..."
-    return text
 
 
 @router.get("/search", response_model=SearchResponse, dependencies=[Depends(authorized())])
