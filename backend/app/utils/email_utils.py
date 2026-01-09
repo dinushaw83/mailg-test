@@ -273,10 +273,10 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
 
 def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = None) -> None:
     """Create received copies of an email for all recipients who are system users.
-    
+
     This function is used by both the send API endpoint and the background job
     that processes scheduled/queued emails.
-    
+
     Args:
         db: Database session
         email: The email being sent (must have recipients loaded)
@@ -285,10 +285,10 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
     from app.models.email import Email
     from app.models.email_recipient import EmailRecipient
     from app.models.user import User
-    
+
     # Use provided sender_id or fall back to email's sender_id
     actual_sender_id = sender_id if sender_id is not None else email.sender_id
-    
+
     for recipient in email.recipients:
         if recipient.recipient_id:
             recipient_user = db.query(User).filter(
@@ -310,7 +310,7 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                 )
                 db.add(received_email)
                 db.flush()
-                
+
                 recv_recipient = EmailRecipient(
                     email_id=received_email.id,
                     recipient_id=recipient_user.id,
@@ -319,9 +319,52 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                     recipient_type=recipient.recipient_type,
                 )
                 db.add(recv_recipient)
-                
+
                 # Add Inbox label for recipient
                 add_system_label_to_thread(db, email.thread_id, recipient_user.id, SystemLabel.INBOX)
                 # Add category label if applicable
                 if email.category:
                     add_category_label_to_thread(db, email.thread_id, recipient_user.id, EmailCategory(email.category))
+
+
+def deliver_email_to_recipients_background(email_id: UUID, sender_id: UUID, run_id: str = None) -> None:
+    """Background task to deliver email to recipients.
+
+    Creates received copies of an email for all recipients who are system users.
+    Uses a fresh database session since the original request session may be closed.
+
+    Args:
+        email_id: ID of the email being sent
+        sender_id: The sender's user ID
+        run_id: Optional run ID for database session
+    """
+    from app.db.session import get_db_session
+    from app.models.email import Email
+    from app.models.email_recipient import EmailRecipient
+    from sqlalchemy.orm import selectinload
+
+    try:
+        db = get_db_session(run_id=run_id)
+
+        # Load the email with recipients
+        email = db.query(Email).options(
+            selectinload(Email.recipients)
+        ).filter(Email.id == email_id).first()
+
+        if not email:
+            logger.warning(f"Email {email_id} not found for background delivery")
+            return
+
+        # Deliver to all recipients
+        deliver_email_to_recipients(db, email, sender_id)
+
+        db.commit()
+        logger.debug(f"Delivered email {email_id} to recipients in background for sender {sender_id}")
+    except Exception as e:
+        logger.warning(f"Failed to deliver email to recipients in background: {e}")
+        try:
+            db.rollback()
+        except:
+            pass
+    finally:
+        db.close()
