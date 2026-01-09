@@ -4,10 +4,11 @@ Identity generators for names, emails, phones, etc.
 
 from typing import Any
 
-from .base import BaseGenerator, fake
+from .base import BaseGenerator
 from ..core.analyzer import FieldSemantics, SemanticType
 from ..core.context import GenerationContext
 from ..core.registry import generator
+
 
 @generator(SemanticType.PERSON_NAME, priority=80)
 class PersonNameGenerator(BaseGenerator):
@@ -16,7 +17,7 @@ class PersonNameGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.02):
             return None
-        return fake.name()
+        return context.fake().name()
 
 
 @generator(SemanticType.FIRST_NAME, priority=80)
@@ -26,7 +27,7 @@ class FirstNameGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.02):
             return None
-        return fake.first_name()
+        return context.fake().first_name()
 
 
 @generator(SemanticType.LAST_NAME, priority=80)
@@ -36,7 +37,7 @@ class LastNameGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.02):
             return None
-        return fake.last_name()
+        return context.fake().last_name()
 
 
 @generator(SemanticType.ADDRESS, priority=80)
@@ -46,7 +47,7 @@ class AddressGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.4):
             return None
-        return fake.address().replace('\n', ', ')
+        return context.fake().address().replace('\n', ', ')
 
 
 @generator(SemanticType.COMPANY_NAME, priority=80)
@@ -56,7 +57,7 @@ class CompanyNameGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.02):
             return None
-        return fake.company()
+        return context.fake().company()
 
 
 @generator(SemanticType.GROUP_NAME, priority=80)
@@ -91,7 +92,7 @@ class EmailGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.02):
             return None
-        return fake.unique.email()
+        return context.fake().unique.email()
 
 
 @generator(SemanticType.PHONE, priority=80)
@@ -101,7 +102,7 @@ class PhoneGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.15):
             return None
-        return fake.phone_number()
+        return context.fake().phone_number()
 
 
 @generator(SemanticType.PHONE_LABEL, priority=80)
@@ -133,7 +134,7 @@ class JobTitleGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.15):
             return None
-        return fake.job()
+        return context.fake().job()
 
 
 @generator(SemanticType.WEBSITE, priority=80)
@@ -143,24 +144,27 @@ class WebsiteGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.4):
             return None
-        return fake.url()
+        return context.fake().url()
 
 
-@generator(SemanticType.BIRTHDAY_YEAR, priority=80)
-class BirthdayYearGenerator(BaseGenerator):
-    """Generates realistic birth years."""
+@generator(SemanticType.YEAR, priority=80)
+class YearGenerator(BaseGenerator):
+    """Generates year values. Default range is suitable for birth years (18-70 years ago)."""
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.7):
             return None
-        # Generate birth years for ages 18-70
-        current_year = 2025
-        return context.random().randint(current_year - 70, current_year - 18)
+        # Default: generate years for ages 18-70
+        from datetime import datetime
+        current_year = datetime.now().year
+        min_year = semantics.field_schema.get("minimum", current_year - 70)
+        max_year = semantics.field_schema.get("maximum", current_year - 18)
+        return context.random().randint(min_year, max_year)
 
 
-@generator(SemanticType.BIRTHDAY_MONTH, priority=80)
-class BirthdayMonthGenerator(BaseGenerator):
-    """Generates birthday month (1-12)."""
+@generator(SemanticType.MONTH, priority=80)
+class MonthGenerator(BaseGenerator):
+    """Generates month (1-12)."""
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.7):
@@ -168,15 +172,40 @@ class BirthdayMonthGenerator(BaseGenerator):
         return context.random().randint(1, 12)
 
 
-@generator(SemanticType.BIRTHDAY_DAY, priority=80)
-class BirthdayDayGenerator(BaseGenerator):
-    """Generates birthday day (1-28 to be safe)."""
+@generator(SemanticType.DAY, priority=80)
+class DayGenerator(BaseGenerator):
+    """Generates day of month. Context-aware: uses YEAR and MONTH to determine valid range."""
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.7):
             return None
-        # Use 1-28 to avoid invalid dates
-        return context.random().randint(1, 28)
+
+        # Look up YEAR and MONTH from context by semantic type
+        year = context.get_value_by_semantic_type(SemanticType.YEAR)
+        month = context.get_value_by_semantic_type(SemanticType.MONTH)
+
+        max_day = self._get_max_day(month, year)
+        return context.random().randint(1, max_day)
+
+    def _get_max_day(self, month: int | None, year: int | None) -> int:
+        """Get maximum day for given month/year, accounting for leap years."""
+        if month is None:
+            return 28  # Safe default
+
+        days_in_month = {
+            1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30,
+            7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31
+        }
+
+        max_day = days_in_month.get(month, 31)
+
+        # Handle February leap year
+        if month == 2 and year is not None:
+            is_leap = (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+            if is_leap:
+                max_day = 29
+
+        return max_day
 
 
 @generator(SemanticType.USERNAME, priority=80)
@@ -186,7 +215,7 @@ class UsernameGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.3):
             return None
-        return fake.user_name()
+        return context.fake().user_name()
 
 
 @generator(SemanticType.EXTERNAL_ID, priority=80)
@@ -196,7 +225,7 @@ class ExternalIdGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.5):
             return None
-        return fake.uuid4()
+        return context.fake().uuid4()
 
 
 @generator(SemanticType.COLOR, priority=80)
@@ -207,53 +236,18 @@ class ColorGenerator(BaseGenerator):
         if self.maybe_null(semantics, context, 0.1):
             return None
 
-        # Generate RGB values in the lighter range (180-255)
-        r = context.random().randint(180, 255)
-        g = context.random().randint(180, 255)
-        b = context.random().randint(180, 255)
-        return f"#{r:02x}{g:02x}{b:02x}"
+        max_length = semantics.field_schema.get("maxLength", 7)
 
-
-@generator(SemanticType.GROUP_NAME, priority=85)
-class FolderLabelNameGenerator(BaseGenerator):
-    """Generates folder and label names for Mailg app."""
-
-    def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
-        if self.maybe_null(semantics, context, 0.02):
-            return None
-
-        table_name = semantics.table_name
-        field_name = semantics.field_name
-
-        # Handle folder names
-        if table_name == "folders" and field_name == "name":
-            folder_names = context.config.get("templates", {}).get("folders", [
-                "Work", "Personal", "Family", "Travel", "Projects",
-                "Clients", "Archive", "Important", "Follow-up", "Read Later"
-            ])
-            return context.random().choice(folder_names)
-
-        # Handle label names
-        if table_name == "labels" and field_name == "name":
-            label_names = context.config.get("templates", {}).get("labels", [
-                "Important", "Urgent", "Follow-up", "Work", "Personal",
-                "Family", "Friends", "Travel", "Receipts", "Invoices"
-            ])
-            return context.random().choice(label_names)
-
-        # Handle email template names
-        if table_name == "email_templates" and field_name == "name":
-            template_names = context.config.get("templates", {}).get("email_templates", [
-                "Weekly Update Template", "Meeting Follow-up Template",
-                "Client Outreach Template", "Thank You Template"
-            ])
-            return context.random().choice(template_names)
-
-        # Fall back to default group name generation
-        groups_cfg = context.config.get("templates", {}).get("groups", {})
-        prefixes = groups_cfg.get("prefixes", ["Technical", "Customer", "Enterprise"])
-        suffixes = groups_cfg.get("suffixes", ["Support", "Team", "Group"])
-
-        prefix = context.random().choice(prefixes)
-        suffix = context.random().choice(suffixes)
-        return f"{prefix} {suffix}"
+        # Generate appropriate format based on maxLength
+        if max_length >= 7:
+            # Full hex color: #RRGGBB (7 chars)
+            return context.fake().hex_color()
+        elif max_length >= 4:
+            # Short hex color: #RGB (4 chars)
+            r = context.random().randint(0, 15)
+            g = context.random().randint(0, 15)
+            b = context.random().randint(0, 15)
+            return f"#{r:x}{g:x}{b:x}"
+        else:
+            # Just return a short color code
+            return context.fake().hex_color()[:max_length]

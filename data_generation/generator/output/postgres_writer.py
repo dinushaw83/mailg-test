@@ -4,6 +4,7 @@ import json
 import logging
 from datetime import date, datetime, time
 from decimal import Decimal
+from graphlib import TopologicalSorter, CycleError
 from ipaddress import IPv4Address, IPv6Address, ip_address
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,116 @@ except ImportError:
 from .base import OutputWriter
 
 logger = logging.getLogger(__name__)
+
+
+def get_table_dependency_order(schema: dict[str, Any]) -> list[str]:
+    """
+    Compute topological ordering of tables based on foreign key dependencies.
+
+    Tables are ordered such that parent tables (referenced by foreign keys)
+    come before child tables.
+
+    If a cycle is detected, only excludes nullable/deferred FK edges that are
+    part of the cycle, preserving other dependencies for correct ordering.
+
+    Args:
+        schema: The full database schema dict
+
+    Returns:
+        List of table names in dependency order (safe import order)
+    """
+    tables_schema = schema.get("properties", {}).get("tables", {}).get("properties", {})
+    relationships_prop = schema.get("properties", {}).get("relationships", {})
+    relationships = relationships_prop.get("items", relationships_prop.get("default", []))
+
+    def get_all_edges() -> list[dict]:
+        """Get all FK edges with their metadata."""
+        edges = []
+        for rel in relationships:
+            from_table = rel["from_table"]
+            to_table = rel["to_table"]
+            from_column = rel.get("from_column", "")
+
+            # Skip self-references
+            if from_table == to_table:
+                continue
+
+            if from_table not in tables_schema:
+                continue
+
+            table_props = tables_schema[from_table].get("properties", {})
+            field_def = table_props.get(from_column, {})
+            is_nullable = field_def.get("nullable", False)
+            is_deferred = field_def.get("deferred", False)
+
+            edges.append({
+                "from": from_table,
+                "to": to_table,
+                "column": from_column,
+                "nullable": is_nullable,
+                "deferred": is_deferred,
+                "breakable": is_nullable or is_deferred,
+            })
+        return edges
+
+    def build_graph_from_edges(edges: list[dict], excluded: set = None) -> dict[str, set]:
+        """Build dependency graph from edges, excluding specified ones."""
+        excluded = excluded or set()
+        deps = {table_name: set() for table_name in tables_schema.keys()}
+
+        for edge in edges:
+            edge_key = (edge["from"], edge["column"])
+            if edge_key in excluded:
+                continue
+            if edge["to"] in deps:
+                deps[edge["from"]].add(edge["to"])
+
+        return deps
+
+    def find_cycle_tables(deps: dict[str, set]) -> set:
+        """Find tables involved in cycles."""
+        try:
+            sorter = TopologicalSorter(deps)
+            list(sorter.static_order())
+            return set()
+        except CycleError as e:
+            # Extract table names from error message
+            # Format: ('nodes are in a cycle', ['table1', 'table2', ...])
+            if len(e.args) >= 2 and isinstance(e.args[1], list):
+                return set(e.args[1])
+            return set()
+
+    edges = get_all_edges()
+
+    # First, try with all dependencies
+    deps = build_graph_from_edges(edges)
+    cycle_tables = find_cycle_tables(deps)
+
+    if not cycle_tables:
+        sorter = TopologicalSorter(deps)
+        ordered = list(sorter.static_order())
+        logger.info(f"Table dependency order: {ordered}")
+        return ordered
+
+    logger.warning(f"Cycle detected involving tables: {cycle_tables}")
+
+    # Only exclude breakable edges that are part of the cycle
+    excluded = set()
+    for edge in edges:
+        if edge["breakable"] and edge["from"] in cycle_tables and edge["to"] in cycle_tables:
+            excluded.add((edge["from"], edge["column"]))
+            logger.debug(f"Excluding edge {edge['from']}.{edge['column']} -> {edge['to']} to break cycle")
+
+    deps = build_graph_from_edges(edges, excluded)
+
+    try:
+        sorter = TopologicalSorter(deps)
+        ordered = list(sorter.static_order())
+        logger.info(f"Table dependency order (after breaking cycles): {ordered}")
+        return ordered
+    except CycleError as e:
+        logger.error(f"Unable to resolve cycle even after excluding nullable/deferred FKs: {e}")
+        raise
 
 
 class PostgresWriter(OutputWriter):
@@ -47,13 +158,69 @@ class PostgresWriter(OutputWriter):
             schema: Schema dict for table definitions.
         """
         super().__init__(output_dir, prefix, overwrite)
-        
+
         if psycopg2 is None:
             raise ImportError("psycopg2 library is required for PostgresWriter.")
 
         self.connection_string = connection_string
         self.schema = schema or {}
         self._conn = None
+        # Build enum map from schema for value conversion
+        self._enum_columns = self._build_enum_column_map()
+
+    def _build_enum_column_map(self) -> dict[tuple[str, str], list[str]]:
+        """
+        Build mapping of (table_name, column_name) -> enum values from schema.
+
+        Returns:
+            Dict like {("users", "role"): ["admin", "member", "viewer"], ...}
+        """
+        enum_map = {}
+        tables_schema = self.schema.get("properties", {}).get("tables", {}).get("properties", {})
+
+        for table_name, table_def in tables_schema.items():
+            properties = table_def.get("properties", {})
+            for col_name, col_def in properties.items():
+                if "enum" in col_def:
+                    enum_map[(table_name, col_name)] = col_def["enum"]
+
+        return enum_map
+
+    def _convert_enum_value(self, table_name: str, column_name: str, value: Any) -> Any:
+        """
+        Convert enum value to PostgreSQL enum format (uppercase).
+
+        PostgreSQL enums are stored as uppercase (e.g., "ADMIN", "MEMBER")
+        but JSON/generated data typically uses lowercase (e.g., "admin", "member").
+
+        Args:
+            table_name: Name of the table
+            column_name: Name of the column
+            value: The value to potentially convert
+
+        Returns:
+            Uppercase string if this is an enum column, otherwise original value
+        """
+        if value is None:
+            return None
+
+        enum_values = self._enum_columns.get((table_name, column_name))
+        if not enum_values:
+            return value
+
+        # Convert to uppercase for PostgreSQL enum
+        str_value = str(value).lower()
+
+        # Verify it's a valid enum value
+        if str_value in [v.lower() for v in enum_values]:
+            return str_value.upper()
+
+        # Return original if not found (let DB handle validation)
+        logger.warning(
+            f"Value '{value}' not found in enum values {enum_values} "
+            f"for {table_name}.{column_name}"
+        )
+        return value
 
     def _get_postgres_type(self, field_def: dict[str, Any], field_name: str) -> str:
         """Map JSON schema type to PostgreSQL type."""
@@ -178,42 +345,6 @@ class PostgresWriter(OutputWriter):
 
         columns_sql = ",\n  ".join(columns)
         return f'CREATE TABLE IF NOT EXISTS "{table_name}" (\n  {columns_sql}\n)'
-
-    def create_tables(self, table_names: list[str] | None = None) -> None:
-        """
-        Create tables in the database if they don't exist.
-
-        Args:
-            table_names: List of table names to create. If None, creates all tables from schema.
-        """
-        if not self.schema:
-            logger.warning("No schema provided, skipping table creation")
-            return
-
-        tables_schema = self.schema.get("properties", {}).get("tables", {}).get("properties", {})
-
-        if table_names is None:
-            table_names = list(tables_schema.keys())
-
-        conn = self._get_connection()
-        try:
-            with conn.cursor() as cursor:
-                for table_name in table_names:
-                    table_schema = tables_schema.get(table_name)
-                    if not table_schema:
-                        logger.warning(f"Schema not found for table '{table_name}', skipping")
-                        continue
-
-                    create_sql = self._create_table_sql(table_name, table_schema)
-                    logger.info(f"Creating table '{table_name}' if not exists")
-                    cursor.execute(create_sql)
-
-            conn.commit()
-            logger.info(f"Successfully created {len(table_names)} tables")
-        except Exception as e:
-            conn.rollback()
-            logger.error(f"Failed to create tables: {e}")
-            raise
 
     def _is_null_value(self, value: Any) -> bool:
         """
@@ -576,6 +707,8 @@ class PostgresWriter(OutputWriter):
                     value = record.get(col)
                     col_type = col_types.get(col, "TEXT")
                     serialized = self._serialize_value(value, col_type)
+                    # Convert enum values to PostgreSQL format (uppercase)
+                    serialized = self._convert_enum_value(table_name, col, serialized)
                     row_values.append(serialized)
                 values_list.append(row_values)
             except Exception as e:
@@ -611,10 +744,6 @@ class PostgresWriter(OutputWriter):
         # out_file parameter is unused but required for base class compatibility
         _ = out_file
 
-        # Create table if it doesn't exist
-        logger.info(f"Ensuring table '{table_name}' exists before inserting data")
-        self.create_tables([table_name])
-
         conn = self._get_connection()
         try:
             with conn.cursor() as cursor:
@@ -646,41 +775,19 @@ class PostgresWriter(OutputWriter):
         # out_file parameter is unused but required for base class compatibility
         _ = out_file
 
-        TABLE_INSERT_ORDER = [
-            # Level 0: No FK dependencies
-            "users",
-            "api_logs",
+        # Get table order from schema using topological sort on FK dependencies
+        all_tables_ordered = get_table_dependency_order(self.schema)
 
-            # Level 1: Depends on users (with self-references)
-            "labels",           # FK: users (owner_id), labels (parent_id - self-ref)
-            "threads",          # FK: users (owner_id)
-            "email_templates",  # FK: users (owner_id)
-            "saved_searches",   # FK: users (owner_id)
+        # Filter to only tables we have data for, preserving dependency order
+        ordered_tables = [t for t in all_tables_ordered if t in data]
 
-            # Level 2: Depends on level 1
-            "emails",           # FK: users (sender_id), threads (thread_id), emails (parent_email_id - self-ref)
-
-            # Level 3: Depends on level 2
-            "email_recipients", # FK: emails (email_id), users (recipient_id)
-            "attachments",      # FK: emails (email_id)
-            "thread_labels",    # FK: threads (thread_id), labels (label_id)
-        ]
-
-        # Sort tables by insertion order to avoid FK constraint violations
-        ordered_tables = []
-        for table_name in TABLE_INSERT_ORDER:
-            if table_name in data:
-                ordered_tables.append(table_name)
-
-        # Add any tables not in the order list (shouldn't happen, but be safe)
+        # Add any tables not in the schema (shouldn't happen, but be safe)
         for table_name in data:
             if table_name not in ordered_tables:
-                logger.warning(f"Table '{table_name}' not in TABLE_INSERT_ORDER, appending at end")
+                logger.warning(f"Table '{table_name}' not in schema, appending at end")
                 ordered_tables.append(table_name)
 
-        # Create tables if they don't exist
-        logger.info("Ensuring tables exist before inserting data")
-        self.create_tables(ordered_tables)
+        logger.info(f"Insert order for {len(ordered_tables)} tables: {ordered_tables}")
 
         conn = self._get_connection()
         try:
@@ -781,3 +888,154 @@ class PostgresWriter(OutputWriter):
                 existing_ids[table_name] = []
 
         return existing_ids
+
+    def get_existing_ids_with_attrs(
+        self,
+        attr_config: dict[str, list[str]],
+        table_names: list[str] | None = None,
+    ) -> dict[str, list[dict]]:
+        """
+        Query existing IDs with their attributes from tables for FK resolution.
+
+        This is needed for contextual FK constraints where we need to filter
+        referenced entities by attribute values (e.g., boards by project_id).
+
+        Args:
+            attr_config: Dict mapping table names to list of attribute columns to fetch.
+                        e.g., {"boards": ["project_id"], "sprints": ["project_id"]}
+            table_names: List of table names to query. If None, queries all tables in attr_config.
+
+        Returns:
+            Dict mapping table names to list of dicts with 'id' and attribute values.
+            e.g., {"boards": [{"id": 1, "project_id": 1}, {"id": 2, "project_id": 1}]}
+        """
+        if table_names is None:
+            table_names = list(attr_config.keys())
+
+        existing_data = {}
+        conn = self._get_connection()
+
+        for table_name in table_names:
+            attrs = attr_config.get(table_name, [])
+            if not attrs:
+                continue
+
+            try:
+                # Build column list: id + attributes
+                columns = ["id"] + attrs
+                column_sql = sql.SQL(", ").join(sql.Identifier(c) for c in columns)
+
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        sql.SQL("SELECT {} FROM {}").format(
+                            column_sql,
+                            sql.Identifier(table_name)
+                        )
+                    )
+                    rows = cursor.fetchall()
+
+                    # Convert to list of dicts
+                    existing_data[table_name] = [
+                        {col: row[i] for i, col in enumerate(columns)}
+                        for row in rows
+                    ]
+            except Exception as e:
+                conn.rollback()
+                logger.warning(f"Could not get IDs with attrs for table '{table_name}': {e}")
+                existing_data[table_name] = []
+
+        return existing_data
+
+    def get_derived_ids_with_attrs(
+        self,
+        derived_config: dict[str, dict[str, dict]],
+    ) -> dict[str, list[dict]]:
+        """
+        Query existing IDs with derived attributes from tables using JOINs.
+
+        This handles cases where an attribute needs to be resolved through
+        another table (e.g., sprints.project_id via boards).
+
+        Args:
+            derived_config: Dict mapping table names to derived attribute specs.
+                e.g., {
+                    "sprints": {
+                        "project_id": {
+                            "via": "board_id",
+                            "from_table": "boards",
+                            "source_field": "project_id"
+                        }
+                    }
+                }
+
+        Returns:
+            Dict mapping table names to list of dicts with 'id' and derived attribute values.
+            e.g., {"sprints": [{"id": 1, "project_id": 1}, {"id": 2, "project_id": 1}]}
+        """
+        existing_data = {}
+        conn = self._get_connection()
+
+        for table_name, attr_specs in derived_config.items():
+            try:
+                # Build the SELECT clause and JOINs
+                # SELECT t.id, j1.source_field AS attr_name, ...
+                select_parts = ["t.id"]
+                join_parts = []
+                join_idx = 0
+
+                for attr_name, spec in attr_specs.items():
+                    via_field = spec.get("via")
+                    from_table = spec.get("from_table")
+                    source_field = spec.get("source_field")
+
+                    if not all([via_field, from_table, source_field]):
+                        logger.warning(
+                            f"Incomplete derived attribute spec for {table_name}.{attr_name}"
+                        )
+                        continue
+
+                    join_alias = f"j{join_idx}"
+                    # SELECT j0.project_id AS project_id
+                    select_parts.append(
+                        f"{join_alias}.{source_field} AS {attr_name}"
+                    )
+                    # LEFT JOIN boards j0 ON t.board_id = j0.id
+                    join_parts.append(
+                        f"LEFT JOIN {from_table} {join_alias} ON t.{via_field} = {join_alias}.id"
+                    )
+                    join_idx += 1
+
+                if len(select_parts) == 1:
+                    # No valid derived attributes, skip table
+                    continue
+
+                select_clause = ", ".join(select_parts)
+                join_clause = " ".join(join_parts)
+
+                query = f"SELECT {select_clause} FROM {table_name} t {join_clause}"
+
+                with conn.cursor() as cursor:
+                    cursor.execute(query)
+                    rows = cursor.fetchall()
+
+                    # Build column names from select parts
+                    # First is always 'id', rest are the attr_names
+                    columns = ["id"] + list(attr_specs.keys())
+
+                    existing_data[table_name] = [
+                        {col: row[i] for i, col in enumerate(columns)}
+                        for row in rows
+                    ]
+
+                    logger.info(
+                        f"Fetched {len(rows)} rows with derived attrs from {table_name}"
+                    )
+
+            except Exception as e:
+                conn.rollback()
+                logger.warning(
+                    f"Could not get derived IDs for table '{table_name}': {e}"
+                )
+                existing_data[table_name] = []
+
+        return existing_data

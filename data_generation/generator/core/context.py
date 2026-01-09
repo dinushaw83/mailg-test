@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from typing import Any
 import random
 
+from faker import Faker
+
 
 @dataclass
 class GenerationContext:
@@ -47,19 +49,48 @@ class GenerationContext:
     # Total row counts per table (for percentage calculations)
     table_row_counts: dict[str, int] = field(default_factory=dict)
 
+    # Starting ID values per table
+    start_ids: dict[str, int] = field(default_factory=dict)
+
+    # Default starting ID for tables not in start_ids
+    default_start_id: int = 1
+
     # Configuration loaded from YAML
     config: dict[str, Any] = field(default_factory=dict)
 
     # Random state for reproducibility (optional seed)
     _random: random.Random = field(default_factory=random.Random)
 
+    # Faker instance for reproducible fake data
+    _faker: Faker = field(default_factory=Faker)
+
+    # Track unique values per table.field to avoid duplicates
+    # Format: {"table.field": set(used_values)}
+    _unique_values: dict[str, set] = field(default_factory=dict)
+
+    # Track field group null decisions for current row
+    # Format: {"group_name": is_null (bool)}
+    _field_group_nulls: dict[str, bool] = field(default_factory=dict)
+
+    # Track values by semantic type for current row (for context-aware generation)
+    # Format: {SemanticType: value}
+    _semantic_type_values: dict[Any, Any] = field(default_factory=dict)
+
     def set_seed(self, seed: int) -> None:
         """Set random seed for reproducibility."""
         self._random = random.Random(seed)
+        # Seed Faker for reproducible fake data
+        Faker.seed(seed)
+        self._faker = Faker()
+        self._faker.seed_instance(seed)
 
     def random(self) -> random.Random:
         """Get the random instance."""
         return self._random
+
+    def fake(self) -> Faker:
+        """Get the seeded Faker instance."""
+        return self._faker
 
     def get_foreign_key_value(
         self,
@@ -186,6 +217,10 @@ class GenerationContext:
         """Get IDs filtered by attribute value (e.g., users with role=agent)."""
         return self.generated_ids_by_attr.get(table_name, {}).get(attr_name, {}).get(attr_value, [])
 
+    def get_start_id(self, table_name: str) -> int:
+        """Get the starting ID for a table."""
+        return self.start_ids.get(table_name, self.default_start_id)
+
     def track_assignment(self, table_name: str, field_name: str, entity_id: Any) -> None:
         """Track an assignment for constraint enforcement."""
         key = f"{table_name}.{field_name}"
@@ -272,8 +307,90 @@ class GenerationContext:
         self.track_assignment(table_name, field_name, selected_id)
         return selected_id
 
+    def get_contextual_fk_value(
+        self,
+        ref_table: str,
+        context_field: str,
+        target_field: str,
+        nullable: bool = True,
+        null_probability: float = 0.1,
+    ) -> Any:
+        """
+        Get a foreign key value that matches a contextual constraint.
+
+        Used when an FK must reference a row that shares a common value with
+        the current row. For example: ticket.board_id must reference a board
+        where board.project_id == ticket.project_id.
+
+        Args:
+            ref_table: Name of the referenced table (e.g., "boards").
+            context_field: Field in current row to match (e.g., "project_id").
+            target_field: Field in referenced table that must match (e.g., "project_id").
+            nullable: Whether null is allowed.
+            null_probability: Probability of returning None for nullable FKs.
+
+        Returns:
+            A random ID from the referenced table that matches the constraint, or None.
+        """
+        # Get the value from the current row that we need to match
+        context_value = self.current_row.get(context_field)
+
+        if context_value is None:
+            # Can't match if the context field is None
+            if nullable:
+                return None
+            # For non-nullable, fall back to any ID
+            ids = self.generated_ids.get(ref_table, [])
+            return self._random.choice(ids) if ids else None
+
+        # Get IDs from the referenced table that have the matching attribute value
+        matching_ids = self.get_ids_by_attr(ref_table, target_field, context_value)
+
+        if not matching_ids:
+            # No matching IDs found
+            if nullable:
+                return None
+            # For non-nullable, fall back to any ID (schema violation, but better than None)
+            ids = self.generated_ids.get(ref_table, [])
+            return self._random.choice(ids) if ids else None
+
+        if nullable and self._random.random() < null_probability:
+            return None
+
+        return self._random.choice(matching_ids)
+
     def new_row(self, table_name: str, row_index: int) -> None:
         """Start a new row generation."""
         self.table_name = table_name
         self.row_index = row_index
         self.current_row = {}
+        self._field_group_nulls = {}  # Clear group decisions for new row
+        self._semantic_type_values = {}  # Clear semantic type values for new row
+
+    def get_field_group_null(self, group_name: str) -> bool | None:
+        """Get the null decision for a field group, or None if not yet decided."""
+        return self._field_group_nulls.get(group_name)
+
+    def set_field_group_null(self, group_name: str, is_null: bool) -> None:
+        """Set the null decision for a field group."""
+        self._field_group_nulls[group_name] = is_null
+
+    def register_semantic_type_value(self, semantic_type: Any, value: Any) -> None:
+        """Register a value for a semantic type in the current row."""
+        self._semantic_type_values[semantic_type] = value
+
+    def get_value_by_semantic_type(self, semantic_type: Any) -> Any | None:
+        """Get the value for a semantic type in the current row, or None if not set."""
+        return self._semantic_type_values.get(semantic_type)
+
+    def is_unique_value_used(self, table_name: str, field_name: str, value: Any) -> bool:
+        """Check if a value has already been used for a unique field."""
+        key = f"{table_name}.{field_name}"
+        return key in self._unique_values and value in self._unique_values[key]
+
+    def register_unique_value(self, table_name: str, field_name: str, value: Any) -> None:
+        """Register a value as used for a unique field."""
+        key = f"{table_name}.{field_name}"
+        if key not in self._unique_values:
+            self._unique_values[key] = set()
+        self._unique_values[key].add(value)

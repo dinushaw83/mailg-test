@@ -53,6 +53,10 @@ from app.utils.email_utils import (
     deliver_email_to_recipients,
     FOLDER_TO_LABEL,
 )
+from app.utils.thread_metadata_utils import (
+    mark_thread_important,
+    get_user_important_thread_ids,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -167,7 +171,10 @@ def list_emails(
     query = db.query(Email).options(
         joinedload(Email.sender),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.is_deleted == False,
     )
@@ -245,7 +252,19 @@ def list_emails(
             )
     
     if is_important is not None:
-        query = query.filter(Email.is_important == is_important)
+        if is_important:
+            # Filter for important threads - get thread IDs marked as important by this user
+            important_thread_ids = get_user_important_thread_ids(db, current_user.id)
+            query = query.filter(Email.thread_id.in_(important_thread_ids))
+        else:
+            # Filter for non-important threads - exclude threads marked as important
+            important_thread_ids = get_user_important_thread_ids(db, current_user.id)
+            query = query.filter(
+                or_(
+                    Email.thread_id.is_(None),
+                    ~Email.thread_id.in_(important_thread_ids)
+                )
+            )
     
     if include_archived is False:
         query = query.filter(Email.status != EmailStatus.ARCHIVED.value)
@@ -369,7 +388,10 @@ def get_emails_by_thread(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.thread_id == thread_id,
         Email.is_deleted == False,
@@ -419,7 +441,10 @@ def get_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1159,29 +1184,48 @@ def important_email(
     important_data: EmailImportantUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
-    """important or un important an email."""
+    """Mark a thread as important or unimportant for the current user.
+
+    This updates the thread-level is_important flag for the current user only.
+    Other users' important status for the same thread is not affected.
+    """
     current_user = auth.user
-    
-    email = db.query(Email).filter(
+
+    email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
+    ).filter(
         Email.id == email_id,
         Email.is_deleted == False
     ).first()
-    
+
     if not email:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
         )
-    
-    email.is_important = important_data.is_important
-    
+
+    if not email.thread_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email has no associated thread"
+        )
+
+    # Update thread metadata for this user
+    mark_thread_important(db, email.thread_id, current_user.id, important_data.is_important)
+
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
-    
+
     return format_email_response(email, current_user.id)
 
 
@@ -1359,7 +1403,10 @@ def snooze_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1423,7 +1470,10 @@ def unsnooze_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1489,7 +1539,10 @@ def archive_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1548,7 +1601,10 @@ def unarchive_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1619,7 +1675,10 @@ def mark_email_spam(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1684,7 +1743,10 @@ def unmark_email_spam(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1753,7 +1815,10 @@ def restore_email_from_trash(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False
@@ -1839,7 +1904,10 @@ def update_email_category(
         joinedload(Email.sender),
         selectinload(Email.recipients),
         selectinload(Email.attachments),
-        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
     ).filter(
         Email.id == email_id,
         Email.is_deleted == False

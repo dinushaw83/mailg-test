@@ -28,9 +28,9 @@ class SemanticType(Enum):
     JOB_TITLE = auto()
     WEBSITE = auto()
     ADDRESS = auto()
-    BIRTHDAY_YEAR = auto()
-    BIRTHDAY_MONTH = auto()
-    BIRTHDAY_DAY = auto()
+    YEAR = auto()
+    MONTH = auto()
+    DAY = auto()
 
     # Content
     SUBJECT = auto()
@@ -134,6 +134,7 @@ class FieldSemantics:
     is_required: bool = False
     is_primary_key: bool = False
     is_foreign_key: bool = False
+    is_unique: bool = False
     foreign_key_ref: str | None = None
     default_value: Any = None
     enum_values: list[str] = field(default_factory=list)
@@ -148,7 +149,68 @@ class FieldAnalyzer:
 
     Uses field name patterns, description keywords, and type information
     to infer the appropriate generator for each field.
+
+    Supports config-based semantic overrides via the 'semantics' section:
+        semantics:
+          table_name:
+            - field_name: key
+              semantic_type: EXTERNAL_ID
     """
+
+    def __init__(self, config: dict[str, Any] | None = None):
+        """
+        Initialize the analyzer.
+
+        Args:
+            config: Optional configuration dict with 'semantics' overrides.
+        """
+        self.config = config or {}
+        self._semantic_overrides = self._build_semantic_overrides()
+
+    def _build_semantic_overrides(self) -> dict[tuple[str, str], SemanticType]:
+        """
+        Build lookup dict from config semantics section.
+
+        Config format:
+            semantics:
+              table_name:
+                field_name: SEMANTIC_TYPE
+
+        Returns:
+            Dict mapping (table_name, field_name) to SemanticType.
+        """
+        overrides = {}
+        semantics_config = self.config.get("semantics", {})
+
+        for table_name, fields in semantics_config.items():
+            if not isinstance(fields, dict):
+                continue
+            for field_name, semantic_type_str in fields.items():
+                if not semantic_type_str:
+                    continue
+                try:
+                    semantic_type = SemanticType[semantic_type_str.upper()]
+                    overrides[(table_name, field_name)] = semantic_type
+                except KeyError:
+                    # Invalid semantic type name, skip
+                    pass
+
+        return overrides
+
+    def _get_config_semantic_type(
+        self, table_name: str, field_name: str
+    ) -> SemanticType | None:
+        """
+        Get semantic type override from config if present.
+
+        Args:
+            table_name: Name of the table.
+            field_name: Name of the field.
+
+        Returns:
+            SemanticType if override exists, None otherwise.
+        """
+        return self._semantic_overrides.get((table_name, field_name))
 
     # Patterns for field name analysis (compiled regexes)
     NAME_PATTERNS: dict[SemanticType, list[re.Pattern]] = {
@@ -166,9 +228,9 @@ class FieldAnalyzer:
         SemanticType.JOB_TITLE: [re.compile(r'^job_title$', re.I)],
         SemanticType.WEBSITE: [re.compile(r'^website$', re.I)],
         SemanticType.ADDRESS: [re.compile(r'^address$', re.I)],
-        SemanticType.BIRTHDAY_YEAR: [re.compile(r'^birthday_year$', re.I)],
-        SemanticType.BIRTHDAY_MONTH: [re.compile(r'^birthday_month$', re.I)],
-        SemanticType.BIRTHDAY_DAY: [re.compile(r'^birthday_day$', re.I)],
+        SemanticType.YEAR: [re.compile(r'^.*day_year$', re.I)],
+        SemanticType.MONTH: [re.compile(r'^.*day_month$', re.I)],
+        SemanticType.DAY: [re.compile(r'^.*day_day$', re.I)],
 
         # Content patterns
         SemanticType.SUBJECT: [re.compile(r'^subject$', re.I)],
@@ -282,6 +344,7 @@ class FieldAnalyzer:
         fk_ref = field_schema.get("foreignKey")
         nullable = field_schema.get("nullable", True)
         default = field_schema.get("default")
+        is_unique = field_schema.get("unique", False)
 
         # Determine semantic type
         semantic_type, confidence = self._determine_semantic_type(
@@ -306,6 +369,7 @@ class FieldAnalyzer:
             is_required=effective_required,
             is_primary_key=is_pk,
             is_foreign_key=fk_ref is not None,
+            is_unique=is_unique or is_pk,  # PKs are implicitly unique
             foreign_key_ref=fk_ref,
             default_value=default,
             related_fields=related_fields,
@@ -329,6 +393,17 @@ class FieldAnalyzer:
             return SemanticType.FOREIGN_KEY, 1.0
 
         # Check for primary key (only if not also a foreign key)
+        if is_pk:
+            if field_type == "integer":
+                return SemanticType.PRIMARY_KEY_INT, 1.0
+            return SemanticType.PRIMARY_KEY_STR, 1.0
+
+        # Check for config-based semantic override (highest priority after FK/PK)
+        config_type = self._get_config_semantic_type(table_name, field_name)
+        if config_type:
+            return config_type, 1.0
+
+        # Check name patterns (highest priority for exact matches)
         if is_pk:
             if field_type == "integer":
                 return SemanticType.PRIMARY_KEY_INT, 1.0

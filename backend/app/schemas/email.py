@@ -136,7 +136,7 @@ class EmailResponse(BaseModel):
     category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool
-    is_important: bool
+    is_important: bool  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
@@ -166,7 +166,7 @@ class EmailListResponse(BaseModel):
     category: Optional[EmailCategory] = EmailCategory.PRIMARY
     is_read: bool
     is_starred: bool
-    is_important: bool
+    is_important: bool  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
