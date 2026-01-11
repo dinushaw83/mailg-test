@@ -151,8 +151,6 @@ export default function useLabels() {
 
   const renameLabel = useCallback(
     async (key, newName, newParentKey = undefined) => {
-      console.log("renameLabel", key, newName, newParentKey);
-
       const nm = String(newName || "").trim();
       if (!nm) return;
 
@@ -334,7 +332,7 @@ export default function useLabels() {
       }
 
       if (!label || !labelId) {
-        console.warn("Label not found:", key);
+        // console.warn("Label not found:", key);
         throw new Error("Label not found");
       }
 
@@ -363,7 +361,6 @@ export default function useLabels() {
   const getSelectionLabels = useCallback(
     (selectedIds, folder = null) => {
       const ids = new Set(Array.from(selectedIds ?? []).map(String));
-      console.log({ ids });
 
       // If folder is provided, get emails from Redux state for that folder
       let emailsToSearch = emails || [];
@@ -446,7 +443,7 @@ export default function useLabels() {
       // intersection (labels on ALL selected)
       const currentLabels =
         nSel === 0 ? new Set() : new Set([...labelCounts.entries()].filter(([_, c]) => c === nSel).map(([l]) => l));
-      console.log({ currentLabels, labelCounts, nSel }, "------------");
+      // console.log({ currentLabels, labelCounts, nSel }, "------------");
       /**
        * nSel: number of selected emails
        * labelCounts: count of each label on the selected emails

@@ -698,26 +698,72 @@ ${email.body || email.preview || ""}
           }));
         }}
         onReportSpam={() => {
-          // Extract email IDs from threadId
-          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
-          const emailIds = matchingEmails.map((email) => email.id);
+          if (!selectedMessageIds.length) {
+            return;
+          }
 
-          moveToSpam(emailIds);
+          const undo = moveToSpam(selectedMessageIds);
           setState((prev) => ({
             ...prev,
             spamModalOpen: false,
           }));
+          setSnackbar({
+            open: true,
+            message: "Conversation marked as spam.",
+            autoHideDuration: 10000,
+            action: (
+              <Button
+                sx={{ textTransform: "none" }}
+                size="small"
+                onClick={() => {
+                  if (typeof undo === "function") {
+                    undo();
+                  }
+                  setSnackbar({
+                    open: true,
+                    message: "Action undone.",
+                    autoHideDuration: 3000,
+                    action: null,
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            ),
+          });
         }}
         onUnsubscribe={() => {
-          // Extract email IDs from threadId
-          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
-          const emailIds = matchingEmails.map((email) => email.id);
+          if (!selectedMessageIds.length) return;
 
-          moveToSpam(emailIds);
+          const undo = moveToSpam(selectedMessageIds);
           setState((prev) => ({
             ...prev,
             spamModalOpen: false,
           }));
+          setSnackbar({
+            open: true,
+            message: "Conversation marked as spam.",
+            autoHideDuration: 10000,
+            action: (
+              <Button
+                sx={{ textTransform: "none" }}
+                size="small"
+                onClick={() => {
+                  if (typeof undo === "function") {
+                    undo();
+                  }
+                  setSnackbar({
+                    open: true,
+                    message: "Action undone.",
+                    autoHideDuration: 3000,
+                    action: null,
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            ),
+          });
         }}
       />
     </Box>

@@ -214,10 +214,17 @@ const MailActions = ({ thread }) => {
     return pathParts.slice(0, -1).join("/") || "/inbox";
   }, [location.pathname]);
 
-  const threadEmails = useMemo(
-    () => emails.filter((email) => email.thread_id === thread.thread_id),
-    [emails, thread.thread_id]
-  );
+  const threadEmails = useMemo(() => {
+    // Try to get emails from the global context first
+    const globalEmails = emails.filter((email) => email.thread_id === thread.thread_id);
+
+    // If not found in global context, use the thread's emails array if available
+    if (globalEmails.length === 0 && thread.emails && Array.isArray(thread.emails)) {
+      return thread.emails;
+    }
+
+    return globalEmails;
+  }, [emails, thread.thread_id, thread.emails]);
   useEffect(() => {
     hasRunOnceRef.current = false;
   }, [thread.thread_id]);
@@ -829,7 +836,9 @@ const MailActions = ({ thread }) => {
   });
 
   const handleReportSpam = useCallback(() => {
-    if (!threadEmails.length) return;
+    if (!threadEmails.length) {
+      return;
+    }
 
     // Use actual email IDs instead of conversationMatchKeys
     const emailIds = threadEmails.map((email) => email.id);

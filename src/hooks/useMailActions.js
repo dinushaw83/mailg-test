@@ -38,9 +38,13 @@ const buildIdIndex = (selection) =>
             item.id,
             item.messageId,
             item.threadId,
+            item.thread_id,
             item.legacyThreadId,
             item.legacyLastMessageId,
             item.legacyLastNonDraftMessageId,
+            item.legacy_thread_id,
+            item.legacy_last_message_id,
+            item.legacy_last_non_draft_message_id,
           ];
         }
         return [item];
@@ -59,9 +63,13 @@ const collectKeysFromMessage = (m) => {
   add(m.id);
   add(m.messageId);
   add(m.threadId);
+  add(m.thread_id);
   add(m.legacyThreadId);
   add(m.legacyLastMessageId);
   add(m.legacyLastNonDraftMessageId);
+  add(m.legacy_thread_id);
+  add(m.legacy_last_message_id);
+  add(m.legacy_last_non_draft_message_id);
   return out;
 };
 
@@ -299,26 +307,23 @@ export default function useMailActions() {
 
   const moveToSpam = useCallback(
     (ids) => {
-      console.log("moveToSpam called with ids:", ids);
-
       // If ids are already email UUIDs (from ActionBar), use them directly
       // Otherwise, find matching emails by thread ID or other keys
-      let emailIds;
+      let emailIds = [];
+      const normalizedIds = ids.map((value) => String(value || "").trim()).filter(Boolean);
+      const uuidPattern = /^[0-9a-fA-F-]{32,}$/;
 
-      // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
-      const firstId = String(ids[0] || "");
-      const isUUID = firstId.includes("-") && firstId.length >= 32;
+      const match = makeMatch(normalizedIds);
+      const matchingEmails = emails.filter(match);
 
-      if (isUUID) {
-        // Already email IDs, use directly
-        emailIds = ids;
-        console.log("Using IDs directly as email IDs:", emailIds);
+      emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+
+      if (emailIds.length) {
+        // Successfully extracted email IDs from matching emails
+      } else if (normalizedIds.every((id) => uuidPattern.test(id))) {
+        emailIds = normalizedIds;
       } else {
-        // Find matching emails by thread/message IDs
-        const match = makeMatch(ids);
-        const matchingEmails = emails.filter(match);
-        emailIds = matchingEmails.map((email) => email.id);
-        console.log("Extracted email IDs from matching emails:", emailIds, "from", matchingEmails.length, "matches");
+        console.warn("moveToSpam: could not resolve email IDs for selection", normalizedIds);
       }
 
       // Optimistically update React Query cache
@@ -340,11 +345,10 @@ export default function useMailActions() {
 
       // Call bulk backend API with all email IDs at once
       if (emailIds && emailIds.length > 0) {
-        console.log("Dispatching bulkMoveToSpamThunk with emailIds:", emailIds);
         dispatch(bulkMoveToSpamThunk({ emailIds }))
           .unwrap()
           .then(() => {
-            console.log("Successfully moved emails to spam");
+            // Successfully moved emails to spam
           })
           .catch((error) => {
             console.error("Failed to bulk move emails to spam:", error);
@@ -376,7 +380,7 @@ export default function useMailActions() {
         dispatch(bulkMoveFromSpamThunk({ emailIds }))
           .unwrap()
           .then(() => {
-            console.log("Successfully removed spam from emails");
+            // Successfully removed spam from emails
           })
           .catch((error) => {
             console.error("Failed to bulk remove spam from emails:", error);
