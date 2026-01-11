@@ -1,6 +1,6 @@
 """Pydantic schemas for Email resource - request/response validation."""
 
-from pydantic import BaseModel, Field, model_validator, RootModel
+from pydantic import BaseModel, Field, RootModel
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -17,36 +17,23 @@ class EmailRecipientSchema(BaseModel):
 
 
 class EmailCreate(BaseModel):
-    """Schema for creating a new email.
+    """Schema for creating a new draft email.
     
-    For drafts (is_draft=True): subject and recipients are optional, allowing empty drafts.
-    For sending (is_draft=False): subject must be provided and at least one recipient is required.
+    This endpoint only creates drafts. Use POST /emails/{id}/send to send.
+    All fields are optional to allow creating empty drafts.
     """
     subject: Optional[str] = Field(default="", max_length=500, description="Email subject")
     body: Optional[str] = Field(None, description="Plain text body")
     html_body: Optional[str] = Field(None, description="HTML body")
     recipients: List[EmailRecipientSchema] = Field(default_factory=list, description="List of recipients")
-    is_draft: bool = Field(False, description="Save as draft instead of sending")
-    scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time (for undo send feature)")
-    
-    @model_validator(mode='after')
-    def validate_send_requirements(self):
-        """Validate that non-draft emails have required fields."""
-        if not self.is_draft:
-            # When sending, subject and recipients are required
-            if not self.subject or not self.subject.strip():
-                raise ValueError("Subject is required when sending an email")
-            if not self.recipients:
-                raise ValueError("At least one recipient is required when sending an email")
-        return self
 
 
 class EmailUpdate(BaseModel):
     """Schema for updating an email."""
-    subject: Optional[str] = Field(None, min_length=1, max_length=500)
-    body: Optional[str] = None
-    html_body: Optional[str] = None
-    recipients: Optional[List[EmailRecipientSchema]] = Field(None, description="List of recipients (only for drafts)")
+    subject: Optional[str] = Field(default="", max_length=500, description="Email subject")
+    body: Optional[str] = Field(None, description="Plain text body")
+    html_body: Optional[str] = Field(None, description="HTML body")
+    recipients: Optional[List[EmailRecipientSchema]] = Field(default_factory=list, description="List of recipients (only for drafts)")
 
 
 class EmailReadUpdate(BaseModel):
@@ -91,6 +78,11 @@ class EmailForwardRequest(BaseModel):
 class EmailSnoozeRequest(BaseModel):
     """Schema for snoozing an email until a specific date/time."""
     snooze_until: datetime = Field(..., description="Date and time when the email should reappear")
+
+
+class EmailSendRequest(BaseModel):
+    """Schema for sending an email with optional scheduling."""
+    scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time")
 
 
 class EmailCategoryUpdate(BaseModel):
@@ -144,7 +136,7 @@ class EmailResponse(BaseModel):
     category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool
-    is_important: bool
+    is_important: bool  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
@@ -174,7 +166,7 @@ class EmailListResponse(BaseModel):
     category: Optional[EmailCategory] = EmailCategory.PRIMARY
     is_read: bool
     is_starred: bool
-    is_important: bool
+    is_important: bool  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None

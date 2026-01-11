@@ -510,7 +510,7 @@ class TestGetEmailsByThread:
         email1_id, email2_id = email1.id, email2.id
         
         # Mock the background task function to verify it's called with correct args
-        with patch('app.api.v1.endpoints.emails._mark_emails_as_read_background') as mock_mark_read:
+        with patch('app.api.v1.endpoints.emails.mark_emails_as_read_background') as mock_mark_read:
             response = client.get(
                 f"/api/v1/emails/thread/{thread.id}",
                 headers={"Authorization": f"Bearer {token}"}
@@ -558,7 +558,7 @@ class TestGetEmailsByThread:
         db_session.add_all([email1, email2])
         db_session.commit()
         
-        with patch('app.api.v1.endpoints.emails._mark_emails_as_read_background') as mock_mark_read:
+        with patch('app.api.v1.endpoints.emails.mark_emails_as_read_background') as mock_mark_read:
             response = client.get(
                 f"/api/v1/emails/thread/{thread.id}",
                 headers={"Authorization": f"Bearer {token}"}
@@ -732,7 +732,7 @@ class TestGetEmailsByThread:
     def test_mark_emails_as_read_background_function(self, db_session, sample_user):
         """Test the background function that marks emails as read."""
         from unittest.mock import patch, MagicMock
-        from app.api.v1.endpoints.emails import _mark_emails_as_read_background
+        from app.utils.email_utils import mark_emails_as_read_background
         
         # Create test emails
         email1 = Email(subject="Email 1", body="Content", status="received", is_read=False,
@@ -754,7 +754,7 @@ class TestGetEmailsByThread:
         
         # The function imports get_db_session inside, so we patch where it's used
         with patch('app.db.session.get_db_session', return_value=mock_session):
-            _mark_emails_as_read_background(email_ids, sample_user.id, "test-run-id")
+            mark_emails_as_read_background(email_ids, sample_user.id, "test-run-id")
             
             # Verify the session was used correctly
             mock_session.query.assert_called_once()
@@ -1502,13 +1502,22 @@ class TestEmailCategoryCounts:
         """Test filtering category counts by folder."""
         client, token, user = client_with_auth
 
+        # Create another user as sender
+        other_user = User(
+            first_name="Other", last_name="User",
+            email="other@example.com", role="user", active=True
+        )
+        db_session.add(other_user)
+        db_session.flush()
+
         # Create emails in different folders
+        # Inbox email: user is a recipient (not sender)
         email_inbox = Email(
             subject="Inbox Email",
             body="Content",
             status="received",
             category="primary",
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email_sent = Email(
@@ -1520,6 +1529,17 @@ class TestEmailCategoryCounts:
             folder=FolderType.SENT.value
         )
         db_session.add_all([email_inbox, email_sent])
+        db_session.flush()
+
+        # Add user as recipient of inbox email
+        recipient = EmailRecipient(
+            email_id=email_inbox.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_name=user.first_name,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
         db_session.commit()
 
         # Filter by inbox
@@ -1631,7 +1651,15 @@ class TestEmailCategoryCounts:
         """Test category counts with multiple filters combined."""
         client, token, user = client_with_auth
 
-        # Create various emails
+        # Create another user as sender for inbox emails
+        other_user = User(
+            first_name="Other", last_name="User",
+            email="other2@example.com", role="user", active=True
+        )
+        db_session.add(other_user)
+        db_session.flush()
+
+        # Create various emails - inbox emails have other_user as sender
         email1 = Email(
             subject="Email 1",
             body="Content",
@@ -1639,7 +1667,7 @@ class TestEmailCategoryCounts:
             category="primary",
             is_read=False,
             is_starred=True,
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email2 = Email(
@@ -1649,7 +1677,7 @@ class TestEmailCategoryCounts:
             category="primary",
             is_read=False,
             is_starred=False,
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email3 = Email(
@@ -1659,7 +1687,7 @@ class TestEmailCategoryCounts:
             category="promotions",
             is_read=False,
             is_starred=True,
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email4 = Email(
@@ -1673,6 +1701,18 @@ class TestEmailCategoryCounts:
             folder=FolderType.SENT.value
         )
         db_session.add_all([email1, email2, email3, email4])
+        db_session.flush()
+
+        # Add user as recipient of inbox emails
+        for email in [email1, email2, email3]:
+            recipient = EmailRecipient(
+                email_id=email.id,
+                recipient_id=user.id,
+                recipient_email=user.email,
+                recipient_name=user.first_name,
+                recipient_type="to"
+            )
+            db_session.add(recipient)
         db_session.commit()
 
         # Filter by inbox + unread + starred

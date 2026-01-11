@@ -55,9 +55,9 @@ def _sqlite_uuid_adapter():
 _sqlite_uuid_adapter()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def db_engine():
-    """Create a test database engine."""
+    """Create a test database engine (once per test session for speed)."""
     engine = create_engine(
         SQLALCHEMY_TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
@@ -70,16 +70,49 @@ def db_engine():
 
 @pytest.fixture(scope="function")
 def db_session(db_engine):
-    """Create a test database session."""
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
+    """Create a test database session with transaction rollback for isolation.
+    
+    Uses a nested transaction pattern:
+    - Creates a connection and begins a transaction
+    - Each test runs in its own savepoint
+    - After test, rollback to clean state (much faster than drop/recreate)
+    """
+    connection = db_engine.connect()
+    transaction = connection.begin()
+    
+    # Create session bound to this connection
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=connection)
     session = TestingSessionLocal()
+    
+    # Begin a nested savepoint for the test
+    nested = connection.begin_nested()
+    
+    # If the session would commit, restart the savepoint instead
+    @event.listens_for(session, "after_transaction_end")
+    def restart_savepoint(session, trans):
+        nonlocal nested
+        if trans.nested and not trans._parent.nested:
+            # Restart savepoint after each commit
+            nested = connection.begin_nested()
+    
     yield session
+    
+    # Cleanup: close session and rollback transaction
     session.close()
+    transaction.rollback()
+    connection.close()
+
+
+@pytest.fixture(scope="session")
+def base_client():
+    """Create a base test client (once per session for speed)."""
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 @pytest.fixture(scope="function")
-def client(db_session):
-    """Create a test client with database dependency override."""
+def client(db_session, base_client):
+    """Configure the test client with database dependency override for this test."""
     def override_get_db():
         try:
             yield db_session
@@ -87,10 +120,7 @@ def client(db_session):
             pass
     
     app.dependency_overrides[get_db] = override_get_db
-    
-    with TestClient(app) as test_client:
-        yield test_client
-    
+    yield base_client
     app.dependency_overrides.clear()
 
 

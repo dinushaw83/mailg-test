@@ -844,18 +844,127 @@ null_probabilities:
 
   # api_logs: not generating seed data for this table
 
+# Semantic type overrides for fields
+# Maps table.field to specific semantic types when auto-detection isn't sufficient
+semantics:
+  users:
+    birthday_year: YEAR
+    birthday_month: MONTH
+    birthday_day: DAY
+
+# Field generation order for context-aware fields
+# Fields listed here are generated first, in the specified order
+# This enables context-aware generators (e.g., DAY can check YEAR and MONTH for valid range)
+field_order:
+  users:
+    - birthday_year   # First: determines leap year
+    - birthday_month  # Second: affects day range
+    - birthday_day    # Third: range depends on year and month
+
 # Foreign key settings
 foreign_keys:
   self_reference_null_probability: 0.80
   optional_null_probability: 0.25
 
+# Derived fields - fields whose values are derived from other fields
+# Supports derivation types:
+#   - email_from_name: Generate email from name field (firstname.lastname@domain)
+#   - username_from_name: Generate username from name field
+#   - html_from_text: Convert plain text to HTML (body → html_body)
+derived_fields:
+  emails:
+    html_body:
+      type: html_from_text
+      from_field: body
+      style: paragraphs  # basic, paragraphs, or rich
+
+  email_templates:
+    html_body:
+      type: html_from_text
+      from_field: body
+      style: paragraphs
+
+# Field groups for coordinated null/present behavior
+# Fields in a group are either all null or all present together
+field_groups:
+  users:
+    # Birthday month and day should be together (can't have day without month)
+    # Year is independent - you might know month/day but not year
+    birthday_date:
+      fields: [birthday_month, birthday_day]
+      null_probability: 0.5
+
+# Field values from config
+# Allows specifying value sources for specific fields
+# Supports:
+#   - source: dot-path to config list (e.g., "samples.label_names")
+#   - values: inline list of values
+#   - field: extract specific field from list of dicts
+#   - unique: ensure uniqueness across generated records
+#   - null_probability: chance of returning null (0.0-1.0)
+field_values:
+  labels:
+    name:
+      source: samples.label_names
+      unique: true
+      null_probability: 0
+
+  saved_searches:
+    name:
+      values:
+        - Unread Messages
+        - Important Emails
+        - Work Emails
+        - Emails with Attachments
+        - Recent from Client
+        - Urgent Items
+        - This Week
+        - Starred Messages
+        - From Boss
+        - Team Updates
+      unique: true
+    query:
+      source: samples.search_queries
+
+  attachments:
+    filename:
+      source: samples.attachments
+      field: filename
+    content_type:
+      source: samples.attachments
+      field: content_type
+
+  email_templates:
+    name:
+      values:
+        - Weekly Update Template
+        - Meeting Follow-up Template
+        - Client Outreach Template
+        - Thank You Template
+        - Welcome Email Template
+        - Project Status Template
+        - Invoice Reminder Template
+        - Newsletter Template
+      unique: true
+
 # ID registration attributes for FK filtering
+# These attributes are tracked when IDs are registered, enabling filtering in FK lookups
 id_registration_attributes:
   users:
     - role
   emails:
     - status
     - category
+  labels:
+    - is_deleted
+
+# Foreign key filters
+# Filter FK candidates by attribute values before selection
+# Example: only reference labels where is_deleted=false
+foreign_key_filters:
+  thread_labels:
+    label_id:
+      is_deleted: false
 
 # Assignment constraints
 # Limits how many times a single entity can be referenced
@@ -970,6 +1079,109 @@ templates:
     - "Hi there"
     - "Good morning"
     - "Hey"
+
+  # Projects
+  projects:
+    - "Q1 Initiative"
+    - "Dashboard Redesign"
+    - "API Migration"
+    - "Mobile App"
+    - "Infrastructure Upgrade"
+    - "Customer Portal"
+
+  # Documents
+  documents:
+    - "Report"
+    - "Proposal"
+    - "Contract"
+    - "Invoice"
+    - "Presentation"
+    - "Spreadsheet"
+
+  # Offers
+  offers:
+    - "Summer Sale"
+    - "Flash Deal"
+    - "Special Discount"
+    - "Limited Time Offer"
+    - "Exclusive Access"
+
+  # Names (for personalized subjects) - use FIRST_NAME generator
+  name:
+    generator: FIRST_NAME
+
+  # Platforms
+  platforms:
+    - "LinkedIn"
+    - "Twitter"
+    - "Facebook"
+    - "Instagram"
+    - "Slack"
+
+  # Services
+  services:
+    - "account"
+    - "subscription"
+    - "order"
+    - "delivery"
+    - "payment"
+
+  # Percentages
+  percentages:
+    - "10"
+    - "15"
+    - "20"
+    - "25"
+    - "30"
+    - "50"
+
+  # Dates (for subject lines)
+  dates:
+    - "Monday"
+    - "Tuesday"
+    - "this week"
+    - "next week"
+    - "end of month"
+
+  # Months
+  months:
+    - "January"
+    - "February"
+    - "March"
+    - "April"
+    - "May"
+    - "June"
+    - "July"
+    - "August"
+    - "September"
+    - "October"
+    - "November"
+    - "December"
+
+  # Apps
+  apps:
+    - "Gmail"
+    - "Slack"
+    - "Zoom"
+    - "Dropbox"
+    - "Notion"
+    - "Trello"
+
+  # Versions
+  versions:
+    - "2.0"
+    - "3.1"
+    - "4.0"
+    - "5.2"
+    - "1.5"
+
+  # Counts
+  counts:
+    - "3"
+    - "5"
+    - "7"
+    - "12"
+    - "15"
 
   # Label names
   labels:
@@ -1240,14 +1452,14 @@ consistency_rules:
         field: status
         equals: queued
       set:
-        scheduled_send_at: "generate_timestamp_future(5, 1800)"  # 5s to 30min in future
+        scheduled_send_at: "generate_future_timestamp(0, 7)"  # 0-7 days in future
 
     # Sent emails should have sent_at
     - condition:
         field: status
         equals: sent
       set:
-        sent_at: "generate_timestamp_past(0, 30)"  # Within last 30 days
+        sent_at: "generate_past_timestamp(0, 30)"  # Within last 30 days
         scheduled_send_at: null
 
     # Received emails should have received_at
@@ -1255,7 +1467,7 @@ consistency_rules:
         field: status
         equals: received
       set:
-        received_at: "generate_timestamp_past(0, 30)"
+        received_at: "generate_past_timestamp(0, 30)"
         scheduled_send_at: null
 
     # Draft emails shouldn't have sent_at or received_at
@@ -1276,4 +1488,4 @@ consistency_rules:
         field: email_count
         greater_than: 0
       set:
-        last_email_at: "generate_timestamp_past(0, 30)"
+        last_email_at: "generate_past_timestamp(0, 30)"

@@ -9,17 +9,16 @@ This module provides:
 from app.core.constants import ProhibitedLabels
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
-from typing import Optional, List, Dict, Set, Union
+from typing import List
 from uuid import UUID
 import logging
-
-import random
 
 from app.db.session import get_db
 from app.models.label import Label
 from app.models.email import Email
+from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.schemas.label import (
@@ -29,138 +28,17 @@ from app.schemas.email import EmailListResponse
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
+from app.utils.label_utils import (
+    generate_random_light_color,
+    format_label_response,
+    get_all_descendant_ids,
+    would_create_cycle,
+    build_label_tree,
+)
+from app.utils.email_utils import get_label_hierarchy_name
 
 logger = logging.getLogger(__name__)
-
-
-def generate_random_light_color() -> str:
-    """Generate a random light/pastel hex color."""
-    # Generate RGB values in the lighter range (180-255)
-    r = random.randint(180, 255)
-    g = random.randint(180, 255)
-    b = random.randint(180, 255)
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-
 router = APIRouter()
-
-
-def get_label_hierarchy_name(label: Label) -> str:
-    """Build full hierarchical name for a label (e.g., 'grand/parent/child').
-    
-    Traverses up the parent chain to construct the full path.
-    """
-    parts = []
-    current = label
-    while current:
-        parts.append(current.name)
-        current = current.parent
-    # Reverse to get grand -> parent -> child order
-    parts.reverse()
-    return "/".join(parts)
-
-
-def format_label_response(label: Label, thread_count: int = 0) -> dict:
-    """Format label model to response dict."""
-    return {
-        "id": label.id,
-        "name": label.name,
-        "color": label.color,
-        "owner_id": label.owner_id,
-        "parent_id": label.parent_id,
-        "is_system": label.is_system,
-        "is_exclusive": label.is_exclusive,
-        "show_in_label_list": label.show_in_label_list,
-        "show_in_message_list": label.show_in_message_list,
-        "show_if_unread": label.show_if_unread,
-        "is_deleted": label.is_deleted,
-        "created_at": label.created_at,
-        "updated_at": label.updated_at,
-        "thread_count": thread_count,
-    }
-
-
-def get_all_descendant_ids(db: Session, label_id: UUID) -> Set[UUID]:
-    """Get all descendant label IDs (children, grandchildren, etc.)."""
-    descendants = set()
-    to_process = [label_id]
-    
-    while to_process:
-        current_id = to_process.pop()
-        children = db.query(Label.id).filter(
-            Label.parent_id == current_id,
-            Label.is_deleted == False
-        ).all()
-        
-        for (child_id,) in children:
-            if child_id not in descendants:
-                descendants.add(child_id)
-                to_process.append(child_id)
-    
-    return descendants
-
-
-def would_create_cycle(db: Session, label_id: UUID, new_parent_id: UUID) -> bool:
-    """Check if setting new_parent_id would create a circular reference."""
-    if new_parent_id is None:
-        return False
-    
-    if label_id == new_parent_id:
-        return True
-    
-    # Check if new_parent_id is a descendant of label_id
-    descendants = get_all_descendant_ids(db, label_id)
-    return new_parent_id in descendants
-
-
-def build_label_tree(
-    labels_with_counts: List[tuple],
-    thread_counts: Dict[UUID, int]
-) -> List[dict]:
-    """Build hierarchical tree from flat label list."""
-    # Create lookup dict
-    label_map: Dict[UUID, dict] = {}
-    
-    for label, count in labels_with_counts:
-        label_map[label.id] = {
-            "id": label.id,
-            "name": label.name,
-            "color": label.color,
-            "owner_id": label.owner_id,
-            "parent_id": label.parent_id,
-            "is_system": label.is_system,
-            "is_exclusive": label.is_exclusive,
-            "show_in_label_list": label.show_in_label_list,
-            "show_in_message_list": label.show_in_message_list,
-            "show_if_unread": label.show_if_unread,
-            "is_deleted": label.is_deleted,
-            "created_at": label.created_at,
-            "updated_at": label.updated_at,
-            "thread_count": count,
-            "children": [],
-        }
-    
-    # Build tree structure
-    root_labels = []
-    
-    for label_id, label_data in label_map.items():
-        parent_id = label_data["parent_id"]
-        if parent_id is None or parent_id not in label_map:
-            root_labels.append(label_data)
-        else:
-            label_map[parent_id]["children"].append(label_data)
-    
-    # Sort children at each level by name
-    def sort_children(node):
-        node["children"].sort(key=lambda x: x["name"])
-        for child in node["children"]:
-            sort_children(child)
-    
-    for root in root_labels:
-        sort_children(root)
-    
-    root_labels.sort(key=lambda x: x["name"])
-    return root_labels
 
 
 @router.post("/labels", response_model=LabelResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -625,7 +503,7 @@ def list_label_threads(
     Permissions:
     - Users can only access their own labels
     """
-    from app.api.v1.endpoints.emails import format_email_list_response
+    from app.utils.email_utils import format_email_list_response
     
     current_user = auth.user
     
@@ -663,7 +541,7 @@ def list_label_threads(
     # Get threads with pagination
     threads = threads_with_label.order_by(Thread.last_email_at.desc()).offset(offset).limit(page_size).all()
     
-    # For each thread, get the latest email
+    # For each thread, get the latest email where user is sender or recipient
     emails_data = []
     for thread in threads:
         latest_email = db.query(Email).options(
@@ -671,7 +549,15 @@ def list_label_threads(
             selectinload(Email.attachments),
         ).filter(
             Email.thread_id == thread.id,
-            Email.is_deleted == False
+            Email.is_deleted == False,
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
         ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
         
         if latest_email:

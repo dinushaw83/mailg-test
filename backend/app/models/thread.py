@@ -18,7 +18,7 @@ class Thread(Base):
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     participant_count = Column(Integer, default=1)
     email_count = Column(Integer, default=0)
-    
+
     last_email_at = Column(DateTime)
     is_deleted = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, server_default=func.now())
@@ -29,6 +29,7 @@ class Thread(Base):
     emails = relationship("Email", back_populates="thread", lazy="dynamic",
                          order_by="Email.created_at")
     labels = relationship("Label", secondary="thread_labels", back_populates="threads", lazy="selectin")
+    user_metadata = relationship("ThreadUserMetadata", back_populates="thread", lazy="select")
     
     # Composite indexes
     __table_args__ = (
