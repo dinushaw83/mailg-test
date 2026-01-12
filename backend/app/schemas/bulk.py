@@ -11,6 +11,11 @@ class BulkEmailIds(BaseModel):
     email_ids: List[UUID] = Field(..., min_length=1, max_length=100, description="List of email IDs to operate on")
 
 
+class BulkThreadIds(BaseModel):
+    """Base schema for bulk operations with thread IDs."""
+    thread_ids: List[UUID] = Field(..., min_length=1, max_length=100, description="List of thread IDs to operate on")
+
+
 class BulkReadRequest(BulkEmailIds):
     """Schema for bulk mark read/unread."""
     is_read: bool = Field(..., description="Mark as read (true) or unread (false)")
@@ -20,9 +25,9 @@ class BulkStarRequest(BulkEmailIds):
     """Schema for bulk star/unstar."""
     is_starred: bool = Field(..., description="Star (true) or unstar (false)")
 
-class BulkImportantRequest(BulkEmailIds):
-    """Schema for bulk important/un important."""
-    is_important: bool = Field(..., description="Important (true) or un important (false)")
+class BulkImportantRequest(BulkThreadIds):
+    """Schema for bulk important/unimportant (thread-level operation)."""
+    is_important: bool = Field(..., description="Important (true) or unimportant (false)")
 
 
 class BulkMoveRequest(BulkEmailIds):
@@ -46,23 +51,23 @@ class BulkLabelsUpdateOperation(BaseModel):
     remove: List[UUID] = Field(default_factory=list, description="Label IDs to remove")
 
 
-class BulkLabelsUpdateRequest(BulkEmailIds):
+class BulkLabelsUpdateRequest(BulkThreadIds):
     """Schema for bulk update labels on threads (add and/or remove)."""
     labels: BulkLabelsUpdateOperation = Field(..., description="Labels to add and/or remove")
 
 
-class BulkSnoozeRequest(BulkEmailIds):
-    """Schema for bulk snooze emails."""
-    snooze_until: datetime = Field(..., description="Date and time when emails should reappear")
+class BulkSnoozeRequest(BulkThreadIds):
+    """Schema for bulk snooze threads (thread-level operation)."""
+    snooze_until: datetime = Field(..., description="Date and time when threads should reappear")
 
 
-class BulkUnsnoozeRequest(BulkEmailIds):
-    """Schema for bulk unsnooze emails."""
+class BulkUnsnoozeRequest(BulkThreadIds):
+    """Schema for bulk unsnooze threads (thread-level operation)."""
     pass
 
 
-class BulkArchiveRequest(BulkEmailIds):
-    """Schema for bulk archive emails."""
+class BulkArchiveRequest(BulkThreadIds):
+    """Schema for bulk archive threads (thread-level operation)."""
     pass
 
 
@@ -71,8 +76,8 @@ class BulkCategoryRequest(BulkEmailIds):
     category: str = Field(..., description="Email category: primary, promotions, social, updates, forums")
 
 
-class BulkUnarchiveRequest(BulkEmailIds):
-    """Schema for bulk unarchive emails."""
+class BulkUnarchiveRequest(BulkThreadIds):
+    """Schema for bulk unarchive threads (thread-level operation)."""
     pass
 
 
@@ -88,7 +93,7 @@ class BulkUnspamRequest(BulkEmailIds):
 
 class BulkOperationResult(BaseModel):
     """Result of a single item in bulk operation."""
-    id: UUID = Field(..., description="Email ID")
+    id: UUID = Field(..., description="Email ID or Thread ID")
     success: bool = Field(..., description="Whether operation succeeded")
     error: Optional[str] = Field(None, description="Error message if failed")
 
