@@ -92,6 +92,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Snooze Thread](#snooze-thread)
   - [Unarchive Thread](#unarchive-thread)
   - [Unsnooze Thread](#unsnooze-thread)
+  - [Unstar Thread](#unstar-thread)
 - [Users API](#users-api)
   - [List Users](#list-users)
   - [Create User](#create-user)
@@ -577,18 +578,21 @@ Raises:
 
 **POST** `/api/v1/bulk/archive`
 
-Archive multiple emails.
+Archive multiple threads.
 
-Archives emails by setting their status to 'archived'.
+Since archive is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk upsert operations.
 
 Permissions:
-- Users can only archive their own emails
+- Users can only archive their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ]
 }
@@ -655,6 +659,8 @@ Permissions:
 **POST** `/api/v1/bulk/category`
 
 Update category for multiple emails.
+
+Optimized to use generic bulk update helper with batch category label sync.
 
 Categories: primary, promotions, social, updates, forums (Gmail-style tabs).
 
@@ -732,14 +738,6 @@ Permissions:
 
 **POST** `/api/v1/bulk/delete`
 
-Delete multiple emails.
-
-If permanent=False (default), moves emails to trash.
-If permanent=True or already in trash, permanently deletes.
-
-Permissions:
-- Users can only delete their own emails
-
 **Request Body**:
 
 ```json
@@ -811,16 +809,19 @@ Permissions:
 
 **POST** `/api/v1/bulk/important`
 
-Important or un important multiple emails.
+Mark or unmark multiple threads as important.
+
+Since is_important is thread-level and user-specific, this operation
+updates ThreadUserMetadata for the provided threads.
 
 Permissions:
-- Users can only modify their own emails
+- Users can only modify their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "is_important": false
@@ -898,7 +899,7 @@ Permissions:
 
 Example request:
 {
-    "email_ids": ["uuid1", "uuid2"],
+    "thread_ids": ["uuid1", "uuid2"],
     "labels": {
         "add": ["label_uuid1", "label_uuid2"],
         "remove": ["label_uuid3"]
@@ -909,7 +910,7 @@ Example request:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "labels": {
@@ -1135,16 +1136,21 @@ Permissions:
 
 **POST** `/api/v1/bulk/snooze`
 
-Snooze multiple emails until a specific date/time.
+Snooze multiple threads until a specific date/time.
+
+Since snooze is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk upsert operations.
 
 Permissions:
-- Users can only snooze their own emails
+- Users can only snooze their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "snooze_until": "2024-01-01T00:00:00Z"
@@ -1212,6 +1218,8 @@ Permissions:
 **POST** `/api/v1/bulk/spam`
 
 Mark multiple emails as spam.
+
+Optimized to use generic bulk update helper with single UPDATE query.
 
 Moves emails to the spam folder.
 
@@ -1364,18 +1372,21 @@ Permissions:
 
 **POST** `/api/v1/bulk/unarchive`
 
-Unarchive multiple emails.
+Unarchive multiple threads.
 
-Restores archived emails back to their original status (sent or received).
+Since archive is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk operations.
 
 Permissions:
-- Users can only unarchive their own emails
+- Users can only unarchive their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ]
 }
@@ -1441,16 +1452,21 @@ Permissions:
 
 **POST** `/api/v1/bulk/unsnooze`
 
-Unsnooze multiple emails.
+Unsnooze multiple threads.
+
+Since snooze is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk operations.
 
 Permissions:
-- Users can only unsnooze their own emails
+- Users can only unsnooze their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ]
 }
@@ -1517,6 +1533,8 @@ Permissions:
 **POST** `/api/v1/bulk/unspam`
 
 Remove spam mark from multiple emails.
+
+Optimized to use generic bulk update helper with single UPDATE query.
 
 Moves emails from spam folder back to inbox.
 
@@ -5341,6 +5359,67 @@ Permissions:
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unstar Thread
+
+**POST** `/api/v1/threads/{thread_id}/unstar`
+
+Unstar all emails in a thread for the current user.
+
+Removes the starred flag from all emails in the thread where the user
+is either the sender or recipient.
+
+Permissions:
+- Users can only unstar emails in threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
 }
 ```
 
