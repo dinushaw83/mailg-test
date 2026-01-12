@@ -4,59 +4,57 @@ services:
     image: postgres:16-alpine
     container_name: ui-gym-mailg-postgres
     environment:
-      - POSTGRES_USER=mailg
-      - POSTGRES_PASSWORD=mailg
-      - POSTGRES_DB=postgres
-      - POSTGRES_MAX_CONNECTIONS=1000
-    # Postgres tuning for ~32GB RAM / 32 vCPU host (adjust if your host differs)
+      - POSTGRES_USER=${POSTGRES_USER:-mailg}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_MAX_CONNECTIONS=${POSTGRES_MAX_CONNECTIONS:-1000}
+    # Postgres tuning - adjust based on VM resources
+    # Default values are for ~16GB RAM / 4 vCPU (adjust if your VM differs)
     command:
       - postgres
       - -c
-      - max_connections=1000
+      - max_connections=${POSTGRES_MAX_CONNECTIONS:-1000}
       - -c
-      - shared_buffers=8GB
+      - shared_buffers=${POSTGRES_SHARED_BUFFERS:-4GB}
       - -c
-      - effective_cache_size=24GB
+      - effective_cache_size=${POSTGRES_EFFECTIVE_CACHE_SIZE:-12GB}
       - -c
-      - work_mem=8MB
+      - work_mem=${POSTGRES_WORK_MEM:-4MB}
       - -c
-      - maintenance_work_mem=1GB
+      - maintenance_work_mem=${POSTGRES_MAINTENANCE_WORK_MEM:-512MB}
       - -c
       - random_page_cost=1.1
       - -c
-      - effective_io_concurrency=200
+      - effective_io_concurrency=${POSTGRES_IO_CONCURRENCY:-200}
       - -c
       - checkpoint_completion_target=0.9
       - -c
       - wal_buffers=16MB
-      # CPU/parallelism (32 vCPU)
+      # CPU/parallelism - adjust based on VM vCPU count
       - -c
-      - max_worker_processes=32
+      - max_worker_processes=${POSTGRES_MAX_WORKERS:-4}
       - -c
-      - max_parallel_workers=32
+      - max_parallel_workers=${POSTGRES_MAX_PARALLEL_WORKERS:-4}
       - -c
-      - max_parallel_workers_per_gather=8
+      - max_parallel_workers_per_gather=${POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER:-2}
       - -c
-      - max_parallel_maintenance_workers=8
+      - max_parallel_maintenance_workers=${POSTGRES_MAX_PARALLEL_MAINTENANCE_WORKERS:-2}
     ports:
-      - "5436:5432"
+      - "${POSTGRES_EXTERNAL_PORT:-5436}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - mailg-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mailg -d postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mailg} -d ${POSTGRES_DB:-postgres}"]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 10s
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    image: mailg-backend:latest
+    image: ${BACKEND_IMAGE:-gcr.io/${GCP_PROJECT_ID}/mailg-backend:latest}
     container_name: ui-gym-mailg-backend
     depends_on:
       postgres:
@@ -64,34 +62,27 @@ services:
     environment:
       - DEVELOPMENT_MODE=${DEVELOPMENT_MODE:-false}
       - DB_BACKEND=postgres
-      - DATABASE_URL=postgresql+psycopg2://mailg:mailg@postgres:5432/postgres
-      - POSTGRES_ADMIN_DB=postgres
-      - POSTGRES_TEMPLATE_DB=mailg_seed
-      - POSTGRES_RUN_DB_PREFIX=mailg_
-      - UVICORN_WORKERS=1
-      # Shared secret for JWT signing/verification
-      # IMPORTANT: Set JWT_SECRET_KEY env var to a secure 32+ byte random value in production
-      # Generate with: python -c "import secrets; print(secrets.token_urlsafe(32))"
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-mailg-local-dev-secret}
-      - JWT_ACCESS_TOKEN_TTL_SECONDS=86400
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-mailg}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-postgres}
+      - POSTGRES_ADMIN_DB=${POSTGRES_ADMIN_DB:-postgres}
+      - POSTGRES_TEMPLATE_DB=${POSTGRES_TEMPLATE_DB:-mailg_seed}
+      - POSTGRES_RUN_DB_PREFIX=${POSTGRES_RUN_DB_PREFIX:-mailg_}
+      - UVICORN_WORKERS=${UVICORN_WORKERS:-1}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ACCESS_TOKEN_TTL_SECONDS=${JWT_ACCESS_TOKEN_TTL_SECONDS:-86400}
       # OpenTelemetry configuration
       - OTEL_SDK_DISABLED=${OTEL_SDK_DISABLED:-true}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-      - OTEL_SERVICE_NAME=mailg-backend
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://otel-collector:4318}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-mailg-backend}
       # Prometheus URL for metrics API
-      - PROMETHEUS_URL=http://prometheus:9090
-      # Data generation
-      - GENERATE_ADDITIONAL_DATA=${GENERATE_ADDITIONAL_DATA:-0}
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
     volumes:
       - backend_logs:/app/backend/logs
       - ./backend/fixtures:/seed/fixtures:ro
-      - ./data_generation:/app/data_generation:ro
     ports:
-      - "8766:8765"
+      - "${BACKEND_EXTERNAL_PORT:-8766}:8765"
     networks:
       - mailg-network
     restart: unless-stopped
-
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:8765/health >/dev/null || exit 1"]
       interval: 10s
@@ -100,16 +91,14 @@ services:
       start_period: 15s
 
   mailg:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${FRONTEND_IMAGE:-gcr.io/${GCP_PROJECT_ID}/mailg-frontend:latest}
     container_name: ui-gym-mailg-frontend
     ports:
-      - "3002:3000" 
+      - "${FRONTEND_EXTERNAL_PORT:-3002}:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - VITE_RUN_MODE=localstorage
+      - VITE_RUN_MODE=${VITE_RUN_MODE:-localstorage}
       # OpenTelemetry configuration
       - VITE_ENABLE_INSTRUMENTATION=${VITE_ENABLE_INSTRUMENTATION:-false}
       - VITE_OTEL_COLLECTOR_URL=${VITE_OTEL_COLLECTOR_URL:-http://localhost:4318}
@@ -117,7 +106,6 @@ services:
       - mailg-network
     restart: unless-stopped
     healthcheck:
-      # Use curl (installed in the image) instead of wget
       test: ["CMD-SHELL", "curl -fsS http://localhost:3000/api/health >/dev/null || exit 1"]
       interval: 30s
       timeout: 10s
@@ -133,7 +121,7 @@ services:
     profiles: ["instrumentation"]
     container_name: ui-gym-mailg-cadvisor
     ports:
-      - "8090:8080"
+      - "${CADVISOR_EXTERNAL_PORT:-8090}:8080"
     privileged: true
     restart: unless-stopped
     volumes:
@@ -172,7 +160,7 @@ services:
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP (frontend and backend send here)
-      - "9465:9464"   # Prometheus scrape endpoint (collector)
+      - "${OTEL_PROMETHEUS_PORT:-9465}:9464"   # Prometheus scrape endpoint (collector)
     restart: unless-stopped
     networks:
       - mailg-network
@@ -185,11 +173,11 @@ services:
       - ./instrumentation/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_EXTERNAL_PORT:-9090}:9090"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
-      - --storage.tsdb.retention.time=30d
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}
       - --web.enable-lifecycle
       - --web.enable-admin-api
     restart: unless-stopped
@@ -206,7 +194,7 @@ services:
     container_name: ui-gym-mailg-grafana
     entrypoint: ["sh", "-c", "sh /etc/grafana/init.sh & exec /run.sh"]
     ports:
-      - "3000:3000"
+      - "${GRAFANA_EXTERNAL_PORT:-3000}:3000"
     volumes:
       - ./instrumentation/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./instrumentation/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
@@ -234,3 +222,4 @@ volumes:
   backend_logs:
   postgres_data:
   prometheus_data:
+

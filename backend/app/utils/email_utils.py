@@ -262,6 +262,7 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
     from app.db.session import get_db_session
     from app.models.email import Email
     
+    db = None
     try:
         db = get_db_session(run_id=run_id)
         db.query(Email).filter(
@@ -273,7 +274,8 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
     except Exception as e:
         logger.warning(f"Failed to mark emails as read in background: {e}")
     finally:
-        db.close()
+        if db is not None:
+            db.close()
 
 
 def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = None) -> None:
@@ -347,6 +349,7 @@ def deliver_email_to_recipients_background(email_id: UUID, sender_id: UUID, run_
     from app.models.email_recipient import EmailRecipient
     from sqlalchemy.orm import selectinload
 
+    db = None
     try:
         db = get_db_session(run_id=run_id)
 
@@ -366,9 +369,11 @@ def deliver_email_to_recipients_background(email_id: UUID, sender_id: UUID, run_
         logger.debug(f"Delivered email {email_id} to recipients in background for sender {sender_id}")
     except Exception as e:
         logger.warning(f"Failed to deliver email to recipients in background: {e}")
-        try:
-            db.rollback()
-        except:
-            pass
+        if db is not None:
+            try:
+                db.rollback()
+            except:
+                pass
     finally:
-        db.close()
+        if db is not None:
+            db.close()

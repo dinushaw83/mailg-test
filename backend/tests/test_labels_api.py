@@ -678,10 +678,10 @@ class TestNestedLabelOperations:
         db_session.add(child)
         db_session.commit()
         
-        # Move to root using null UUID (00000000-0000-0000-0000-000000000000)
+        # Move to root using null (None)
         response = client.put(
             f"/api/v1/labels/{child.id}",
-            json={"parent_id": "00000000-0000-0000-0000-000000000000"},
+            json={"parent_id": None},
             headers={"Authorization": f"Bearer {token}"}
         )
         

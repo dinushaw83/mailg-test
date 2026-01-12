@@ -13,7 +13,6 @@ from typing import List, Optional
 
 from sqlalchemy.orm import sessionmaker
 
-from app.db.session import engine
 from app.db.base import Base
 from app.models.user import User
 from app.models.label import Label
@@ -114,6 +113,10 @@ def initialize_template_database_schema_and_fixtures():
     to ensure schema is always up to date.
     """
     from sqlalchemy import text
+    # Late import to avoid circular imports with session.py
+    from app.db.session import _get_seed_engine
+    
+    engine = _get_seed_engine()
     
     # Drop all existing tables first to ensure fresh schema
     logger.info("Dropping all existing tables for fresh schema...")

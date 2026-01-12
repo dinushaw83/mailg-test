@@ -10,6 +10,7 @@ and cache results on `request.state` for reuse within the same request.
 
 from __future__ import annotations
 
+import uuid
 from typing import Optional
 from uuid import UUID
 
