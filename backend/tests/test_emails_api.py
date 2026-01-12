@@ -885,9 +885,9 @@ class TestEmailSendReplyForward:
         data = response.json()["data"]
 
     def test_reply_to_email(self, client_with_auth, db_session, sample_email):
-        """Test replying to an email."""
+        """Test replying to an email creates a draft."""
         client, token, user = client_with_auth
-        
+
         response = client.post(
             f"/api/v1/emails/{sample_email.id}/reply",
             json={
@@ -896,10 +896,62 @@ class TestEmailSendReplyForward:
             },
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 201
         data = response.json()["data"]
         assert data["parent_email_id"] == str(sample_email.id)
+        # Verify reply is created as a draft
+        assert data["folder"] == "drafts"
+        assert data["sent_at"] is None
+        # To send this draft, user would call POST /emails/{id}/send
+
+    def test_reply_to_draft_email_fails(self, client_with_auth, db_session, sample_draft_email):
+        """Test that replying to a draft email fails with 400."""
+        client, token, user = client_with_auth
+
+        response = client.post(
+            f"/api/v1/emails/{sample_draft_email.id}/reply",
+            json={
+                "body": "This is my reply",
+                "reply_all": False
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 400
+        assert "Cannot reply to a draft email" in response.json()["message"]
+
+    def test_reply_to_email_without_thread_fails(self, client_with_auth, db_session):
+        """Test that replying to an email without thread fails with 400."""
+        from app.models.email import Email
+        from app.core.constants import EmailStatus, FolderType
+
+        client, token, user = client_with_auth
+
+        # Create an email without a thread_id
+        email_no_thread = Email(
+            subject="Email without thread",
+            body="Test body",
+            status=EmailStatus.SENT.value,
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=None,  # No thread
+            is_read=False,
+        )
+        db_session.add(email_no_thread)
+        db_session.commit()
+
+        response = client.post(
+            f"/api/v1/emails/{email_no_thread.id}/reply",
+            json={
+                "body": "This is my reply",
+                "reply_all": False
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 400
+        assert "Cannot reply to an email without a thread" in response.json()["message"]
 
     def test_forward_email(self, client_with_auth, db_session, sample_email):
         """Test forwarding an email."""
