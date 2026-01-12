@@ -14,16 +14,14 @@ This module provides:
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime
-from uuid import UUID
 import logging
 
 from app.db.session import get_db
-from app.models.email import Email
 from app.models.label import Label
 from app.models.thread_label import ThreadLabel
 from app.schemas.bulk import (
     BulkImportantRequest, BulkReadRequest, BulkStarRequest, BulkMoveRequest, BulkDeleteRequest,
-    BulkLabelAddRequest, BulkLabelRemoveRequest, BulkSnoozeRequest,
+    BulkLabelsUpdateRequest, BulkSnoozeRequest,
     BulkUnsnoozeRequest, BulkArchiveRequest, BulkCategoryRequest,
     BulkUnarchiveRequest, BulkSpamRequest, BulkUnspamRequest,
     BulkOperationResponse,
@@ -267,130 +265,123 @@ def bulk_delete(
     return create_bulk_response(request.email_ids, success_ids, failures)
 
 
-@router.post("/bulk/labels/add", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
-def bulk_add_labels(
-    request: BulkLabelAddRequest,
+@router.post("/bulk/labels/update", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
+def bulk_update_labels(
+    request: BulkLabelsUpdateRequest,
     db: Session = Depends(get_db),
 ) -> BulkOperationResponse:
-    """Replace all labels on multiple threads with new ones.
-    
-    This operation drops all existing labels from the threads and assigns
-    the new labels provided in the request.
-    
+    """Update labels on multiple threads by adding and/or removing labels.
+
+    This endpoint allows you to add and remove labels in a single operation.
+    You can specify which labels to add and which to remove.
+
     Permissions:
     - Users can only modify their own threads
     - Labels must belong to the user
+
+    Example request:
+    {
+        "email_ids": ["uuid1", "uuid2"],
+        "labels": {
+            "add": ["label_uuid1", "label_uuid2"],
+            "remove": ["label_uuid3"]
+        }
+    }
     """
     current_user = auth.user
-    
-    # Verify labels belong to user
+
+    # Combine all label IDs to validate
+    all_label_ids = list(set(request.labels.add + request.labels.remove))
+
+    if not all_label_ids:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Must specify at least one label to add or remove"
+        )
+
+    # Verify all labels belong to user
     labels = db.query(Label).filter(
-        Label.id.in_(request.label_ids),
+        Label.id.in_(all_label_ids),
         Label.owner_id == current_user.id
     ).all()
-    
+
     valid_label_ids = {l.id for l in labels}
-    invalid_labels = [lid for lid in request.label_ids if lid not in valid_label_ids]
-    
+    invalid_labels = [lid for lid in all_label_ids if lid not in valid_label_ids]
+
     if invalid_labels:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid label IDs: {invalid_labels}"
         )
-    
-    threads, not_found = get_user_accessible_threads(db, current_user.id, request.thread_ids)
-    
-    failures = {tid: "Thread not found or access denied" for tid in not_found}
-    success_ids = [t.id for t in threads]
-    
-    if not success_ids:
-        return create_bulk_response(request.thread_ids, success_ids, failures)
-    
+
+    # Get threads from email IDs
+    emails, not_found = get_user_accessible_emails(db, current_user.id, request.email_ids)
+
+    # Extract unique thread IDs
+    thread_ids = list(set(email.thread_id for email in emails if email.thread_id))
+
+    if not thread_ids:
+        failures = {eid: "Email not found, access denied, or no thread associated" for eid in request.email_ids}
+        return create_bulk_response(request.email_ids, [], failures)
+
+    # Verify thread access
+    threads, _ = get_user_accessible_threads(db, current_user.id, thread_ids)
+    success_thread_ids = [t.id for t in threads]
+
+    # Map back to email IDs for response
+    success_email_ids = [email.id for email in emails if email.thread_id in success_thread_ids]
+    failed_email_ids = [eid for eid in request.email_ids if eid not in success_email_ids]
+    failures = {eid: "Email not found, access denied, or no thread associated" for eid in failed_email_ids}
+
+    if not success_thread_ids:
+        return create_bulk_response(request.email_ids, success_email_ids, failures)
+
     try:
-        # Bulk delete all existing labels for these threads (only this user's label associations)
-        db.query(ThreadLabel).filter(
-            ThreadLabel.thread_id.in_(success_ids),
-            ThreadLabel.user_id == current_user.id
-        ).delete(synchronize_session=False)
-        
-        # Bulk insert new labels for all threads (with user_id for user-specific isolation)
-        new_thread_labels = [
-            ThreadLabel(thread_id=thread_id, label_id=label_id, user_id=current_user.id)
-            for thread_id in success_ids
-            for label_id in request.label_ids
-        ]
-        db.bulk_save_objects(new_thread_labels)
-        
+        # Remove specified labels if any
+        if request.labels.remove:
+            db.query(ThreadLabel).filter(
+                ThreadLabel.thread_id.in_(success_thread_ids),
+                ThreadLabel.label_id.in_(request.labels.remove),
+                ThreadLabel.user_id == current_user.id
+            ).delete(synchronize_session=False)
+
+        # Add specified labels if any
+        if request.labels.add:
+            # Get existing label associations to avoid duplicates
+            existing = db.query(ThreadLabel).filter(
+                ThreadLabel.thread_id.in_(success_thread_ids),
+                ThreadLabel.label_id.in_(request.labels.add),
+                ThreadLabel.user_id == current_user.id
+            ).all()
+
+            existing_pairs = {(tl.thread_id, tl.label_id) for tl in existing}
+
+            # Create new thread label associations
+            new_thread_labels = [
+                ThreadLabel(thread_id=thread_id, label_id=label_id, user_id=current_user.id)
+                for thread_id in success_thread_ids
+                for label_id in request.labels.add
+                if (thread_id, label_id) not in existing_pairs
+            ]
+
+            if new_thread_labels:
+                db.bulk_save_objects(new_thread_labels)
+
         db.commit()
     except Exception as e:
         db.rollback()
-        logger.error(f"Bulk add labels operation failed: {e}")
+        logger.error(f"Bulk update labels operation failed: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Bulk operation failed"
         )
-    
-    logger.info(f"Bulk assign labels: {len(success_ids)} threads re-labeled by user {current_user.id}")
-    
-    return create_bulk_response(request.thread_ids, success_ids, failures)
 
+    logger.info(
+        f"Bulk update labels: {len(request.labels.add)} labels added, "
+        f"{len(request.labels.remove)} labels removed from {len(success_thread_ids)} threads by user {current_user.id}"
+    )
 
-@router.post("/bulk/labels/remove", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
-def bulk_remove_labels(
-    request: BulkLabelRemoveRequest,
-    db: Session = Depends(get_db),
-) -> BulkOperationResponse:
-    """Remove specified labels from multiple threads.
-    
-    Permissions:
-    - Users can only modify their own threads
-    - Labels must belong to the user
-    """
-    current_user = auth.user
-    
-    # Verify labels belong to user
-    labels = db.query(Label).filter(
-        Label.id.in_(request.label_ids),
-        Label.owner_id == current_user.id
-    ).all()
-    
-    valid_label_ids = {l.id for l in labels}
-    invalid_labels = [lid for lid in request.label_ids if lid not in valid_label_ids]
-    
-    if invalid_labels:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid label IDs: {invalid_labels}"
-        )
-    
-    threads, not_found = get_user_accessible_threads(db, current_user.id, request.thread_ids)
-    
-    failures = {tid: "Thread not found or access denied" for tid in not_found}
-    success_ids = [t.id for t in threads]
-    
-    if not success_ids:
-        return create_bulk_response(request.thread_ids, success_ids, failures)
-    
-    try:
-        # Bulk delete specified labels for these threads (only this user's label associations)
-        db.query(ThreadLabel).filter(
-            ThreadLabel.thread_id.in_(success_ids),
-            ThreadLabel.label_id.in_(request.label_ids),
-            ThreadLabel.user_id == current_user.id
-        ).delete(synchronize_session=False)
-        
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Bulk remove labels operation failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Bulk operation failed"
-        )
-    
-    logger.info(f"Bulk remove labels: labels removed from {len(success_ids)} threads by user {current_user.id}")
-    
-    return create_bulk_response(request.thread_ids, success_ids, failures)
+    return create_bulk_response(request.email_ids, success_email_ids, failures)
 
 
 @router.post("/bulk/snooze", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
