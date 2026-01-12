@@ -97,7 +97,6 @@ def migrate_users(db: Session):
             notes=user_data.get("notes"),
             undo_send_delay_seconds=user_data.get("undo_send_delay_seconds", 10),
             active=user_data.get("active", True),
-            is_deleted=user_data.get("is_deleted", False),
             created_at=parse_datetime(user_data.get("created_at")),
             updated_at=parse_datetime(user_data.get("updated_at")),
         )
@@ -130,7 +129,6 @@ def migrate_labels(db: Session):
             show_in_label_list=label_data.get("show_in_label_list", True),
             show_in_message_list=label_data.get("show_in_message_list", True),
             show_if_unread=label_data.get("show_if_unread", False),
-            is_deleted=label_data.get("is_deleted", False),
             created_at=parse_datetime(label_data.get("created_at")),
             updated_at=parse_datetime(label_data.get("updated_at")),
         )
@@ -159,7 +157,6 @@ def migrate_threads(db: Session):
             participant_count=thread_data.get("participant_count", 1),
             email_count=thread_data.get("email_count", 0),
             last_email_at=parse_datetime(thread_data.get("last_email_at")),
-            is_deleted=thread_data.get("is_deleted", False),
             created_at=parse_datetime(thread_data.get("created_at")),
             updated_at=parse_datetime(thread_data.get("updated_at")),
         )
@@ -194,7 +191,6 @@ def migrate_emails(db: Session):
             is_read=email_data.get("is_read", False),
             is_starred=email_data.get("is_starred", False),
             is_important=email_data.get("is_important", False),
-            is_deleted=email_data.get("is_deleted", False),
             snooze_until=parse_datetime(email_data.get("snooze_until")),
             scheduled_send_at=parse_datetime(email_data.get("scheduled_send_at")),
             parent_email_id=email_data.get("parent_email_id"),
@@ -279,7 +275,6 @@ def migrate_attachments(db: Session):
             size_bytes=attachment_data.get("size_bytes") or attachment_data.get("size"),
             storage_path=attachment_data.get("storage_path"),
             attachment_type=attachment_data.get("attachment_type", "file"),
-            is_deleted=attachment_data.get("is_deleted", False),
             created_at=parse_datetime(attachment_data.get("created_at")),
         )
         db.merge(attachment)
@@ -308,7 +303,6 @@ def migrate_saved_searches(db: Session):
             filters=search_data.get("filters"),
             use_count=search_data.get("use_count", 0),
             last_used_at=parse_datetime(search_data.get("last_used_at")),
-            is_deleted=search_data.get("is_deleted", False),
             created_at=parse_datetime(search_data.get("created_at")),
             updated_at=parse_datetime(search_data.get("updated_at")),
         )
@@ -339,7 +333,6 @@ def migrate_email_templates(db: Session):
             body=template_data.get("body"),
             html_body=template_data.get("html_body"),
             is_shared=template_data.get("is_shared", False),
-            is_deleted=template_data.get("is_deleted", False),
             created_at=parse_datetime(template_data.get("created_at")),
             updated_at=parse_datetime(template_data.get("updated_at")),
         )

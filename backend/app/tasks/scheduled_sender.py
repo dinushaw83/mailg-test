@@ -85,8 +85,7 @@ def process_scheduled_emails_for_database(db_name: str) -> int:
                 selectinload(Email.recipients),
             ).filter(
                 Email.status == EmailStatus.QUEUED.value,
-                Email.scheduled_send_at <= now,
-                Email.is_deleted == False,
+                Email.scheduled_send_at <= now
             ).all()
             
             for email in queued_emails:

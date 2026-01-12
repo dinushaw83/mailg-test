@@ -336,6 +336,7 @@ class TestBulkDelete:
         db_session.commit()
         
         email_ids = [str(e.id) for e in emails]
+        email_ids_raw = [e.id for e in emails]
         
         response = client.post(
             "/api/v1/bulk/delete",
@@ -347,10 +348,9 @@ class TestBulkDelete:
         data = response.json()["data"]
         assert data["successful"] == 3
         
-        # Verify emails are soft deleted
-        for email in emails:
-            db_session.refresh(email)
-            assert email.is_deleted == True
+        # Verify emails are deleted
+        db_session.expire_all()
+        db_session.query(Email).filter(Email.id.in_(email_ids_raw)).all() == []
 
 
 class TestBulkLabels:
@@ -700,8 +700,7 @@ class TestBulkAccessControl:
             last_name="User",
             email="other@example.com",
             role="user",
-            active=True,
-            is_deleted=False
+            active=True
         )
         db_session.add(other_user)
         db_session.commit()

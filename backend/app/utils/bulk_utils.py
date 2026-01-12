@@ -35,7 +35,6 @@ def get_user_accessible_emails(
     # Query emails that user can access
     emails = db.query(Email).filter(
         Email.id.in_(email_ids),
-        Email.is_deleted == False,
         or_(
             Email.sender_id == user_id,
             Email.id.in_(
@@ -70,8 +69,7 @@ def get_user_accessible_threads(
     """
     threads = db.query(Thread).filter(
         Thread.id.in_(thread_ids),
-        Thread.owner_id == user_id,
-        Thread.is_deleted == False
+        Thread.owner_id == user_id
     ).all()
     
     found_ids = {t.id for t in threads}

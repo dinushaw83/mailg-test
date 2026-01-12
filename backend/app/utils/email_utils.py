@@ -103,20 +103,19 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
 
     attachments = []
     for a in email.attachments:
-        if not a.is_deleted:
-            attachments.append({
-                "id": a.id,
-                "filename": a.filename,
-                "content_type": a.content_type,
-                "size_bytes": a.size_bytes,
-            })
+        attachments.append({
+            "id": a.id,
+            "filename": a.filename,
+            "content_type": a.content_type,
+            "size_bytes": a.size_bytes,
+        })
 
     # Get labels from the thread - filter by user's ownership for isolation on shared threads
     labels = []
     if email.thread and email.thread.labels:
         for l in email.thread.labels:
             # Only include labels owned by the current user (user-specific label isolation)
-            if not l.is_deleted and (user_id is None or l.owner_id == user_id):
+            if (user_id is None or l.owner_id == user_id):
                 labels.append({
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
@@ -124,8 +123,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
                     "owner_id": l.owner_id,
                     "parent_id": l.parent_id,
                     "is_system": l.is_system,
-                    "is_exclusive": l.is_exclusive,
-                    "is_deleted": l.is_deleted
+                    "is_exclusive": l.is_exclusive
                 })
 
     # Get is_important from thread metadata for the current user
@@ -189,7 +187,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
     if email.thread and email.thread.labels:
         for l in email.thread.labels:
             # Only include labels owned by the current user (user-specific label isolation)
-            if not l.is_deleted and (user_id is None or l.owner_id == user_id):
+            if (user_id is None or l.owner_id == user_id):
                 labels.append({
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
@@ -197,11 +195,10 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
                     "owner_id": l.owner_id,
                     "parent_id": l.parent_id,
                     "is_system": l.is_system,
-                    "is_exclusive": l.is_exclusive,
-                    "is_deleted": l.is_deleted
+                    "is_exclusive": l.is_exclusive
                 })
 
-    attachment_count = len([a for a in email.attachments if not a.is_deleted])
+    attachment_count = len([a for a in email.attachments])
 
     # Get is_important from thread metadata for the current user
     # Similar to how labels work - filter from the loaded relationship
@@ -292,8 +289,7 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
     for recipient in email.recipients:
         if recipient.recipient_id:
             recipient_user = db.query(User).filter(
-                User.id == recipient.recipient_id,
-                User.is_deleted == False
+                User.id == recipient.recipient_id
             ).first()
             if recipient_user:
                 received_email = Email(

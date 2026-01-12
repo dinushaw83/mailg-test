@@ -368,22 +368,6 @@ class TestTemplateOperations:
         
         assert response.status_code == 403
 
-    def test_delete_template(self, client_with_auth, sample_template, db_session):
-        """Test deleting a template (soft delete)."""
-        client, token, user = client_with_auth
-        template_id = sample_template.id
-        
-        response = client.delete(
-            f"/api/v1/templates/{template_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify soft deleted
-        db_session.refresh(sample_template)
-        assert sample_template.is_deleted == True
-
     def test_delete_template_permanent(self, client_with_auth, db_session):
         """Test permanently deleting a template removes it from database."""
         client, token, user = client_with_auth

@@ -222,7 +222,7 @@ def bulk_delete(
     """Delete multiple emails.
     
     If permanent=False (default), moves emails to trash.
-    If permanent=True or already in trash, permanently deletes (soft delete).
+    If permanent=True or already in trash, permanently deletes.
     
     Permissions:
     - Users can only delete their own emails
@@ -237,8 +237,8 @@ def bulk_delete(
     for email in emails:
         try:
             if request.permanent or email.folder == FolderType.TRASH.value:
-                # Permanent delete (soft delete)
-                email.is_deleted = True
+                # Permanently delete
+                db.delete(email)
             else:
                 # Move to trash
                 email.folder = FolderType.TRASH.value
@@ -302,8 +302,7 @@ def bulk_update_labels(
     # Verify all labels belong to user
     labels = db.query(Label).filter(
         Label.id.in_(all_label_ids),
-        Label.owner_id == current_user.id,
-        Label.is_deleted == False
+        Label.owner_id == current_user.id
     ).all()
 
     valid_label_ids = {l.id for l in labels}

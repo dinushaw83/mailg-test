@@ -21,7 +21,6 @@ class Attachment(Base):
     storage_path = Column(String)  # Path in storage system
     attachment_type = Column(String, default="file")  # file, image, document
     
-    is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
     
     # Relationships
@@ -29,6 +28,5 @@ class Attachment(Base):
     
     # Index for filtering attachments by type
     __table_args__ = (
-        Index("ix_attachments_email_deleted", "email_id", "is_deleted"),
         Index("ix_attachments_type", "attachment_type"),
     )

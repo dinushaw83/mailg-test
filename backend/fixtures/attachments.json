@@ -7,7 +7,6 @@
     "size_bytes": 246,
     "storage_path": "attachments/2024/05/5f6e288e-3f1b-4b6c-b767-7175c61f3a07",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-07-03T23:03:44.520129"
   },
   {
@@ -18,7 +17,6 @@
     "size_bytes": 596,
     "storage_path": "attachments/2025/09/1ce8d63f-1f1c-430d-a830-7d3b21845abf",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-05-30T11:18:44.520202"
   },
   {
@@ -29,7 +27,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2025/01/923acadc-4024-4a79-a782-ce36ab4373ea",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-22T17:10:44.520268"
   },
   {
@@ -40,7 +37,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/03/ff534213-6c18-458b-9dc6-0803bab34767",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-15T02:17:44.520324"
   },
   {
@@ -51,7 +47,6 @@
     "size_bytes": 16,
     "storage_path": "attachments/2025/01/b879811a-1eee-4176-b4e8-769a08091a10",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-01-18T09:24:44.520387"
   },
   {
@@ -62,7 +57,6 @@
     "size_bytes": 1000,
     "storage_path": "attachments/2023/12/cd648815-df23-48c9-bdc3-94c2b92c3d2e",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-10T12:02:44.520449"
   },
   {
@@ -73,7 +67,6 @@
     "size_bytes": 554,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-06-12T07:03:44.520508"
   },
   {
@@ -84,7 +77,6 @@
     "size_bytes": 6,
     "storage_path": "attachments/2023/01/66c2ac95-95c6-448f-b722-955a32b6daff",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-28T16:38:44.520571"
   },
   {
@@ -95,7 +87,6 @@
     "size_bytes": 626,
     "storage_path": "attachments/2024/04/884b2766-e496-4a97-845d-cbb9ea744a42",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-29T03:21:44.520634"
   },
   {
@@ -106,7 +97,6 @@
     "size_bytes": 76,
     "storage_path": "attachments/2024/08/92834f14-2d71-47d4-9f9e-038302cc7e45",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-31T00:02:44.520696"
   },
   {
@@ -117,7 +107,6 @@
     "size_bytes": 61,
     "storage_path": "attachments/2024/08/6c53d2c8-976d-492c-8bdf-695726817e92",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-15T16:15:44.520758"
   },
   {
@@ -128,7 +117,6 @@
     "size_bytes": 354,
     "storage_path": "attachments/2023/05/5ade6219-c196-43f6-bf23-4eaa134878ba",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-01T04:15:44.520820"
   },
   {
@@ -139,7 +127,6 @@
     "size_bytes": 496,
     "storage_path": "attachments/2024/10/da5c1f7b-38eb-4691-bfdb-95f8884115f1",
     "attachment_type": "document",
-    "is_deleted": true,
     "created_at": "2025-10-05T21:36:44.520882"
   },
   {
@@ -150,7 +137,6 @@
     "size_bytes": 78,
     "storage_path": "attachments/2023/05/abf09359-35ea-42d7-9a6b-b3d9cf55b2f7",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-06-17T04:06:44.520945"
   },
   {
@@ -161,7 +147,6 @@
     "size_bytes": 200,
     "storage_path": "attachments/2025/02/1872f09c-bfaf-4579-8c8c-57ef2e1a439f",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-27T07:10:44.521006"
   },
   {
@@ -172,7 +157,6 @@
     "size_bytes": 448,
     "storage_path": "attachments/2025/05/471ee49e-a820-42f9-bf08-ff130f55245d",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-08-27T22:28:44.521069"
   },
   {
@@ -183,7 +167,6 @@
     "size_bytes": 32,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-02T09:24:44.521127"
   },
   {
@@ -194,7 +177,6 @@
     "size_bytes": 286,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-05T16:37:44.521186"
   },
   {
@@ -205,7 +187,6 @@
     "size_bytes": 45,
     "storage_path": "attachments/2023/09/69f8b1c5-b969-4b55-867c-bd6833e27970",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-07-26T11:09:44.521254"
   },
   {
@@ -216,7 +197,6 @@
     "size_bytes": 888,
     "storage_path": "attachments/2025/02/30dd3233-1e27-45c4-878b-923243adb987",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-10-26T15:37:44.521317"
   },
   {
@@ -227,7 +207,6 @@
     "size_bytes": 967,
     "storage_path": "attachments/2025/03/42c1eaf5-4661-40ba-82f8-7783d14d4495",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-01T11:34:44.521372"
   },
   {
@@ -238,7 +217,6 @@
     "size_bytes": 515,
     "storage_path": "attachments/2024/08/e3695211-2cd5-43b4-aaa5-4f87cea6a18e",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-30T03:33:44.521434"
   },
   {
@@ -249,7 +227,6 @@
     "size_bytes": 825,
     "storage_path": "attachments/2025/03/ac851a5a-c1a8-476a-8966-a3ebcc614871",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-26T07:05:44.521497"
   },
   {
@@ -260,7 +237,6 @@
     "size_bytes": 590,
     "storage_path": "attachments/2023/12/58b9b1da-75cf-42f1-ace1-20baa5ea26b8",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-27T17:00:44.521559"
   },
   {
@@ -271,7 +247,6 @@
     "size_bytes": 167,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-04-29T22:26:44.521611"
   },
   {
@@ -282,7 +257,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2025/03/665e6100-8681-43f6-8feb-1d10f1a07a0e",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-12T23:41:44.521674"
   },
   {
@@ -293,7 +267,6 @@
     "size_bytes": 144,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-28T14:12:44.521733"
   },
   {
@@ -304,7 +277,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2024/01/c39e71fd-2f82-41fd-8577-c862d3c2ad57",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-05T02:07:44.521796"
   },
   {
@@ -315,7 +287,6 @@
     "size_bytes": 86,
     "storage_path": "attachments/2024/03/6ba08b92-dbff-4755-a00e-d51157732e20",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-06T06:19:44.521858"
   },
   {
@@ -326,7 +297,6 @@
     "size_bytes": 53,
     "storage_path": "attachments/2024/02/2d9bc2cf-494c-43e6-83d3-c9c9d4833721",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-30T05:02:44.521921"
   },
   {
@@ -337,7 +307,6 @@
     "size_bytes": 410,
     "storage_path": "attachments/2025/08/00be54d5-9a34-4956-8d34-c7d80db287e2",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-06-27T01:49:44.521983"
   },
   {
@@ -348,7 +317,6 @@
     "size_bytes": 562,
     "storage_path": "attachments/2023/06/05fa6bca-ce53-4a91-ac03-12b2809a70b9",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-09T14:30:44.522046"
   },
   {
@@ -359,7 +327,6 @@
     "size_bytes": 640,
     "storage_path": "attachments/2025/06/3ddbf817-3fe0-4c5c-9f4f-7cec1472f79b",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-25T00:52:44.522107"
   },
   {
@@ -370,7 +337,6 @@
     "size_bytes": 536,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-24T03:57:44.522166"
   },
   {
@@ -381,7 +347,6 @@
     "size_bytes": 806,
     "storage_path": "attachments/2025/04/c48dbb4c-26b4-4142-8831-601d9512c251",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-17T18:14:44.522228"
   },
   {
@@ -392,7 +357,6 @@
     "size_bytes": 739,
     "storage_path": "attachments/2025/05/53ab9edb-fb4f-434a-83f0-b5752af26dde",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-01T05:42:44.522290"
   },
   {
@@ -403,7 +367,6 @@
     "size_bytes": 963,
     "storage_path": "attachments/2023/09/224d66c4-1d41-4944-9e97-26e55df0e807",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-05T23:18:44.522352"
   },
   {
@@ -414,7 +377,6 @@
     "size_bytes": 667,
     "storage_path": "attachments/2024/02/73537655-d647-4041-9eaf-1f54590d3c57",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-02T16:14:44.522414"
   },
   {
@@ -425,7 +387,6 @@
     "size_bytes": 835,
     "storage_path": "attachments/2024/12/77d515ef-3ac6-409e-b6aa-fee6ecb75aef",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-10-25T08:09:44.522476"
   },
   {
@@ -436,7 +397,6 @@
     "size_bytes": 533,
     "storage_path": "attachments/2023/02/b7923de8-6c7e-46c1-9300-f88b9d72f1d6",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-10T18:35:44.522539"
   },
   {
@@ -447,7 +407,6 @@
     "size_bytes": 10,
     "storage_path": "attachments/2023/02/a47b1ed7-353c-4602-b64a-4181bf0ae9c5",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-06-19T12:30:44.522601"
   },
   {
@@ -458,7 +417,6 @@
     "size_bytes": 32,
     "storage_path": "attachments/2023/06/9c903148-d194-49e9-b115-ffbc934eec24",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-07T05:14:44.522665"
   },
   {
@@ -469,7 +427,6 @@
     "size_bytes": 768,
     "storage_path": "attachments/2024/11/285e0228-0ede-4cfd-a7c8-bd8c169d2d26",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-04-17T16:44:44.522727"
   },
   {
@@ -480,7 +437,6 @@
     "size_bytes": 340,
     "storage_path": "attachments/2024/08/03a0801b-cab1-4d14-98a4-37b59ff93e63",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-04T21:47:44.522789"
   },
   {
@@ -491,7 +447,6 @@
     "size_bytes": 214,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-10-14T03:19:44.522841"
   },
   {
@@ -502,7 +457,6 @@
     "size_bytes": 643,
     "storage_path": "attachments/2024/10/4ab5f1af-4478-44bb-9fd8-bcfc21ea3418",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-01-21T07:49:44.522908"
   },
   {
@@ -513,7 +467,6 @@
     "size_bytes": 546,
     "storage_path": "attachments/2024/05/508193d0-7eac-4cae-8b5f-c7b4a9043448",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-28T00:56:44.522971"
   },
   {
@@ -524,7 +477,6 @@
     "size_bytes": 212,
     "storage_path": "attachments/2023/04/983eb4a9-1475-41bb-a0de-bc79ba320fa8",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-14T05:43:44.523033"
   },
   {
@@ -535,7 +487,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2024/03/17ee4b79-46e3-448a-98b7-2957e5ca502e",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-04T21:24:44.523095"
   },
   {
@@ -546,7 +497,6 @@
     "size_bytes": 526,
     "storage_path": "attachments/2025/07/425eba15-60a8-4100-96a3-0b49414ecc5a",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-29T12:06:44.523157"
   },
   {
@@ -557,7 +507,6 @@
     "size_bytes": 872,
     "storage_path": "attachments/2023/04/fb5f983b-b2d5-4eca-80a8-06d451cf22e3",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-06-07T03:11:44.523220"
   },
   {
@@ -568,7 +517,6 @@
     "size_bytes": 842,
     "storage_path": "attachments/2023/01/377c30e5-f0a5-4535-b9fa-8e06b6bdf869",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-30T13:44:44.523282"
   },
   {
@@ -579,7 +527,6 @@
     "size_bytes": 570,
     "storage_path": "attachments/2024/02/9aa9ba58-19f1-414f-b67c-d75cbc364bd1",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-03-04T13:46:44.523345"
   },
   {
@@ -590,7 +537,6 @@
     "size_bytes": null,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-24T19:03:44.523403"
   },
   {
@@ -601,7 +547,6 @@
     "size_bytes": 358,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-07-11T23:42:44.523464"
   },
   {
@@ -612,7 +557,6 @@
     "size_bytes": 553,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-08-15T13:53:44.523523"
   },
   {
@@ -623,7 +567,6 @@
     "size_bytes": 966,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-01T17:33:44.523582"
   },
   {
@@ -634,7 +577,6 @@
     "size_bytes": 109,
     "storage_path": "attachments/2024/09/e0b5f12a-5535-4b57-8c60-d805fa837c5b",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-31T12:20:44.523644"
   },
   {
@@ -645,7 +587,6 @@
     "size_bytes": 790,
     "storage_path": "attachments/2024/10/1aea6aae-3151-4baf-806a-d3393d715880",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-08T07:05:44.523706"
   },
   {
@@ -656,7 +597,6 @@
     "size_bytes": 818,
     "storage_path": "attachments/2024/12/6eb4d2d0-5831-4642-b8aa-51b75dd768fe",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-05T03:37:44.523768"
   },
   {
@@ -667,7 +607,6 @@
     "size_bytes": 503,
     "storage_path": "attachments/2024/10/be19af53-283b-4bae-a391-3d06044e9c63",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-11T00:39:44.523830"
   },
   {
@@ -678,7 +617,6 @@
     "size_bytes": 156,
     "storage_path": "attachments/2024/09/6475b6dd-c300-4bd8-bb5d-1ae4be92a67d",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-02T07:09:44.523892"
   },
   {
@@ -689,7 +627,6 @@
     "size_bytes": 831,
     "storage_path": "attachments/2023/05/99175494-219b-42dd-ad4d-e47676ebf3ac",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-02-16T22:39:44.523955"
   },
   {
@@ -700,7 +637,6 @@
     "size_bytes": 415,
     "storage_path": "attachments/2025/06/b0096e96-036c-4dbe-ad1b-86eccc868eb0",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-25T09:37:44.524017"
   },
   {
@@ -711,7 +647,6 @@
     "size_bytes": 801,
     "storage_path": "attachments/2025/08/ac984fd2-5526-4a7d-a7e9-2ed955a8fd37",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-26T18:04:44.524080"
   },
   {
@@ -722,7 +657,6 @@
     "size_bytes": 564,
     "storage_path": "attachments/2024/09/0c476f20-84ae-438e-a4d3-22fa94d2c189",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-02-04T08:45:44.524143"
   },
   {
@@ -733,7 +667,6 @@
     "size_bytes": 694,
     "storage_path": "attachments/2023/07/50dcf931-14ae-4244-abab-1d841522b646",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-15T14:21:44.524205"
   },
   {
@@ -744,7 +677,6 @@
     "size_bytes": 198,
     "storage_path": "attachments/2025/02/f0f4b9f2-5433-4224-ba43-65636dd98e69",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-20T14:50:44.524260"
   },
   {
@@ -755,7 +687,6 @@
     "size_bytes": 610,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-11T13:27:44.524319"
   },
   {
@@ -766,7 +697,6 @@
     "size_bytes": 834,
     "storage_path": "attachments/2023/01/89faec14-6e46-4593-9371-7da43c35589d",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-28T20:33:44.524381"
   },
   {
@@ -777,7 +707,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/10/2731a472-c629-4e0c-ac44-2f15e48de1f9",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-04T13:57:44.524443"
   },
   {
@@ -788,7 +717,6 @@
     "size_bytes": 780,
     "storage_path": "attachments/2025/09/7eb6d630-634f-4e63-8f3f-e861af9593a4",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-02T21:05:44.524505"
   },
   {
@@ -799,7 +727,6 @@
     "size_bytes": 829,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-02-18T22:50:44.524557"
   },
   {
@@ -810,7 +737,6 @@
     "size_bytes": 247,
     "storage_path": "attachments/2024/07/396c23a7-bbc5-4664-9ba7-ef0048f2bbc3",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-20T01:05:44.524619"
   },
   {
@@ -821,7 +747,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2024/08/6336516b-fde8-45ef-bbfc-ddef578cfe3f",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-22T05:27:44.524680"
   },
   {
@@ -832,7 +757,6 @@
     "size_bytes": 522,
     "storage_path": "attachments/2023/04/692d1c4b-ae18-4366-9a39-cdfdde3b1b43",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-06-03T01:13:44.524741"
   },
   {
@@ -843,7 +767,6 @@
     "size_bytes": 457,
     "storage_path": "attachments/2023/10/12562d39-19fd-4b1b-b2c4-fab6c925530c",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-28T21:02:44.524801"
   },
   {
@@ -854,7 +777,6 @@
     "size_bytes": 430,
     "storage_path": "attachments/2025/02/417ba8ed-c684-40fb-a6b1-03d8f74695ce",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-18T18:56:44.524862"
   },
   {
@@ -865,7 +787,6 @@
     "size_bytes": 462,
     "storage_path": "attachments/2024/12/5cc65ffc-4a29-459e-b96f-aae1eebdbd7c",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-20T21:38:44.524928"
   },
   {
@@ -876,7 +797,6 @@
     "size_bytes": 251,
     "storage_path": "attachments/2023/11/d3da4286-57f7-4ba3-a9b6-ebf7d9b4840b",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-01T12:46:44.524988"
   },
   {
@@ -887,7 +807,6 @@
     "size_bytes": 261,
     "storage_path": "attachments/2023/08/759264d7-410c-4cf9-8da3-6579120deb7c",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-17T22:54:44.525051"
   },
   {
@@ -898,7 +817,6 @@
     "size_bytes": 752,
     "storage_path": "attachments/2023/04/aa35df04-6f80-4966-9c51-fb6f3b20e964",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-10T06:47:44.525115"
   },
   {
@@ -909,7 +827,6 @@
     "size_bytes": 374,
     "storage_path": "attachments/2024/10/12c50102-ba7d-4792-88a9-48abb32d492e",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-02-17T14:38:44.525168"
   },
   {
@@ -920,7 +837,6 @@
     "size_bytes": 314,
     "storage_path": "attachments/2024/05/069d60bf-09c3-4cd1-8223-8aec40428ef0",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-11T17:40:44.525228"
   },
   {
@@ -931,7 +847,6 @@
     "size_bytes": 264,
     "storage_path": "attachments/2024/10/4aabd10b-a705-4f93-91dd-d27657c37c68",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-03-27T23:28:44.525281"
   },
   {
@@ -942,7 +857,6 @@
     "size_bytes": 103,
     "storage_path": "attachments/2023/01/bcdf5d1c-b5f7-4f4e-ab61-74a934f9ed32",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-11T21:33:44.525341"
   },
   {
@@ -953,7 +867,6 @@
     "size_bytes": 232,
     "storage_path": "attachments/2025/11/27f41fe9-7ba4-4342-9361-9fb803d315e1",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-28T14:11:44.525401"
   },
   {
@@ -964,7 +877,6 @@
     "size_bytes": null,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-24T15:02:44.525458"
   },
   {
@@ -975,7 +887,6 @@
     "size_bytes": 135,
     "storage_path": "attachments/2023/05/383f3d04-ab43-42ef-9c80-eea20608271a",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-03-30T23:53:44.525518"
   },
   {
@@ -986,7 +897,6 @@
     "size_bytes": 829,
     "storage_path": "attachments/2024/08/c8393ea2-22d8-479f-881b-b6882d2c58eb",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-03-13T15:33:44.525571"
   },
   {
@@ -997,7 +907,6 @@
     "size_bytes": 125,
     "storage_path": "attachments/2023/02/ea13038d-14c0-40ce-985b-f820d9406461",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-05-05T12:50:44.525631"
   },
   {
@@ -1008,7 +917,6 @@
     "size_bytes": 410,
     "storage_path": "attachments/2025/05/0dd1d2bb-81da-40d7-a38d-4403baab28e2",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-21T11:38:44.525690"
   },
   {
@@ -1019,7 +927,6 @@
     "size_bytes": 218,
     "storage_path": "attachments/2025/11/608a7d34-2049-4d8e-8fdf-b1f9bdb47b33",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-16T15:38:44.525750"
   },
   {
@@ -1030,7 +937,6 @@
     "size_bytes": 602,
     "storage_path": "attachments/2023/05/edd448f2-1ddc-4524-87c9-412984a7b20c",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-04-11T08:24:44.525811"
   },
   {
@@ -1041,7 +947,6 @@
     "size_bytes": 952,
     "storage_path": "attachments/2025/04/54f402b6-42c5-4a95-9176-989a7a1628b5",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2026-01-07T03:41:44.525873"
   },
   {
@@ -1052,7 +957,6 @@
     "size_bytes": 648,
     "storage_path": "attachments/2024/09/7c80b9ad-9317-432c-848e-584078caea21",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-04-11T04:17:44.525933"
   },
   {
@@ -1063,7 +967,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/10/bb3fc35e-2ca0-4f56-9636-21e3dca1f646",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-11T05:15:44.525994"
   },
   {
@@ -1074,7 +977,6 @@
     "size_bytes": 189,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-04T09:09:44.526051"
   },
   {
@@ -1085,7 +987,6 @@
     "size_bytes": 778,
     "storage_path": "attachments/2025/12/a26c5bd1-28ab-4f3e-bfba-30b530809505",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-08-24T10:54:44.526112"
   },
   {
@@ -1096,7 +997,6 @@
     "size_bytes": 927,
     "storage_path": "attachments/2023/05/dbcd50dc-8942-4a6a-9257-5bca167b89a2",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-21T01:26:44.526172"
   },
   {
@@ -1107,7 +1007,6 @@
     "size_bytes": 822,
     "storage_path": "attachments/2024/09/ebd93774-d3b5-4817-83c3-6a3082e8d05f",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-23T11:24:44.526236"
   },
   {
@@ -1118,7 +1017,6 @@
     "size_bytes": 318,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-04T14:54:44.526294"
   },
   {
@@ -1129,7 +1027,6 @@
     "size_bytes": 967,
     "storage_path": "attachments/2025/06/be7cb95c-af89-424b-aaa4-99b5529de03d",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-23T04:04:44.526356"
   },
   {
@@ -1140,7 +1037,6 @@
     "size_bytes": 388,
     "storage_path": "attachments/2023/11/048c6f48-0469-451d-bc2c-c0ec648a4fb6",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-18T22:26:44.526415"
   },
   {
@@ -1151,7 +1047,6 @@
     "size_bytes": 110,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-27T09:36:44.526475"
   },
   {
@@ -1162,7 +1057,6 @@
     "size_bytes": 736,
     "storage_path": "attachments/2023/11/d8fe0a3f-8110-4667-ba8e-49289ca329bd",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-07T06:33:44.526533"
   },
   {
@@ -1173,7 +1067,6 @@
     "size_bytes": 165,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-15T23:34:44.526591"
   },
   {
@@ -1184,7 +1077,6 @@
     "size_bytes": 99,
     "storage_path": "attachments/2025/07/962545ed-fca0-4a66-8564-5253bf6c1838",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-20T14:25:44.526654"
   },
   {
@@ -1195,7 +1087,6 @@
     "size_bytes": 317,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-22T22:13:44.526713"
   },
   {
@@ -1206,7 +1097,6 @@
     "size_bytes": 639,
     "storage_path": "attachments/2025/10/8a8ae5e1-4f8d-4d8d-871d-6907ce465a9d",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2026-01-01T02:18:44.526777"
   },
   {
@@ -1217,7 +1107,6 @@
     "size_bytes": 80,
     "storage_path": "attachments/2023/09/283493ac-5ec6-4fc3-a838-80722fed693a",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-09T20:42:44.526840"
   },
   {
@@ -1228,7 +1117,6 @@
     "size_bytes": 118,
     "storage_path": "attachments/2023/02/375098e7-e43a-47aa-b8e4-233680e0e968",
     "attachment_type": "document",
-    "is_deleted": true,
     "created_at": "2025-11-03T10:16:44.526903"
   },
   {
@@ -1239,7 +1127,6 @@
     "size_bytes": 749,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-24T14:42:44.526962"
   },
   {
@@ -1250,7 +1137,6 @@
     "size_bytes": 371,
     "storage_path": "attachments/2023/12/9da612d5-2fea-42f4-89d4-f503d6c85e14",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-29T05:22:44.527024"
   },
   {
@@ -1261,7 +1147,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2024/11/9cf902f0-e7ab-48db-a1ae-c2ea131453c1",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-30T04:32:44.527086"
   },
   {
@@ -1272,7 +1157,6 @@
     "size_bytes": 652,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-01T21:35:44.527146"
   },
   {
@@ -1283,7 +1167,6 @@
     "size_bytes": 519,
     "storage_path": "attachments/2023/07/ca9a6a07-7b38-444a-950b-010edf7c2d8b",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-22T02:33:44.527208"
   },
   {
@@ -1294,7 +1177,6 @@
     "size_bytes": 719,
     "storage_path": "attachments/2024/03/b2576ba0-8de5-43ad-a417-9f9a2fb649a9",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-27T20:33:44.527270"
   },
   {
@@ -1305,7 +1187,6 @@
     "size_bytes": 865,
     "storage_path": "attachments/2024/06/fc1be981-fe2a-4efa-9038-5c5152b352e5",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-16T05:52:44.527333"
   },
   {
@@ -1316,7 +1197,6 @@
     "size_bytes": 336,
     "storage_path": "attachments/2024/12/c9a28344-5b7a-4392-bb87-854cae307573",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-08T12:11:44.527388"
   },
   {
@@ -1327,7 +1207,6 @@
     "size_bytes": 805,
     "storage_path": "attachments/2025/03/bb8ea740-d93c-4e69-ab29-1b57ee51d6af",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-08-08T15:19:44.527454"
   },
   {
@@ -1338,7 +1217,6 @@
     "size_bytes": 666,
     "storage_path": "attachments/2023/10/76934b14-6af5-461d-8909-ba465b5b522d",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-10-26T07:05:44.527520"
   },
   {
@@ -1349,7 +1227,6 @@
     "size_bytes": 942,
     "storage_path": "attachments/2023/07/4e9be2ad-b357-4cb6-a90e-e2fe9fe39ef5",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-02-06T01:21:44.527582"
   },
   {
@@ -1360,7 +1237,6 @@
     "size_bytes": 607,
     "storage_path": "attachments/2024/11/41f66967-781b-4cc2-97b2-f5fb26740028",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-21T15:32:44.527644"
   },
   {
@@ -1371,7 +1247,6 @@
     "size_bytes": 925,
     "storage_path": "attachments/2025/08/e9f59786-b83f-4786-a91f-7db03972506b",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-09-05T09:28:44.527706"
   },
   {
@@ -1382,7 +1257,6 @@
     "size_bytes": 335,
     "storage_path": "attachments/2024/06/fab0cdb7-9b52-4c1e-912f-8fc02d6ac173",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-28T04:33:44.527761"
   },
   {
@@ -1393,7 +1267,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2024/05/aa886713-0d36-44e0-8506-ab0dd929a257",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-21T23:10:44.527823"
   },
   {
@@ -1404,7 +1277,6 @@
     "size_bytes": 546,
     "storage_path": "attachments/2023/08/cb955cba-d17c-4e4c-be46-fa3c30de7c20",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-15T18:25:44.527884"
   },
   {
@@ -1415,7 +1287,6 @@
     "size_bytes": 995,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-01T07:54:44.527942"
   },
   {
@@ -1426,7 +1297,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2025/09/9adafae1-352c-410c-8bd2-4dc61f2ec46d",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-16T07:25:44.528004"
   },
   {
@@ -1437,7 +1307,6 @@
     "size_bytes": 916,
     "storage_path": "attachments/2023/05/e4dfea71-0dd9-426b-84b6-65da7002eafd",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-31T09:45:44.528066"
   },
   {
@@ -1448,7 +1317,6 @@
     "size_bytes": 882,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-10-06T09:23:44.528125"
   },
   {
@@ -1459,7 +1327,6 @@
     "size_bytes": 560,
     "storage_path": "attachments/2024/02/05acc113-838c-4ef5-866a-b304fef30537",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-01T02:47:44.528180"
   },
   {
@@ -1470,7 +1337,6 @@
     "size_bytes": 130,
     "storage_path": "attachments/2024/03/16fa9c1d-972c-4835-89e2-02e49cad3324",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-07T00:42:44.528242"
   },
   {
@@ -1481,7 +1347,6 @@
     "size_bytes": null,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-18T09:31:44.528303"
   },
   {
@@ -1492,7 +1357,6 @@
     "size_bytes": 170,
     "storage_path": "attachments/2024/02/6178ad9a-04ee-40d5-b6f8-1f53ad2622fc",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-18T09:31:44.528366"
   },
   {
@@ -1503,7 +1367,6 @@
     "size_bytes": 871,
     "storage_path": "attachments/2025/05/774e4255-9312-4e47-bdd4-3b9c30bbc2e0",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-04-04T10:39:44.528429"
   },
   {
@@ -1514,7 +1377,6 @@
     "size_bytes": 506,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-05T21:47:44.528494"
   },
   {
@@ -1525,7 +1387,6 @@
     "size_bytes": 773,
     "storage_path": "attachments/2024/10/0540518a-ab25-40c5-8999-c308273bf9f6",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-08T22:54:44.528557"
   },
   {
@@ -1536,7 +1397,6 @@
     "size_bytes": 998,
     "storage_path": "attachments/2025/01/23f88c95-0281-47cd-af86-59aada42ebab",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-08-02T15:43:44.528611"
   },
   {
@@ -1547,7 +1407,6 @@
     "size_bytes": 932,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-07-18T20:19:44.528669"
   },
   {
@@ -1558,7 +1417,6 @@
     "size_bytes": 560,
     "storage_path": "attachments/2023/03/5441e318-5ccf-457c-bafc-55fc798063a9",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-24T00:17:44.528731"
   },
   {
@@ -1569,7 +1427,6 @@
     "size_bytes": 658,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-06-17T10:42:44.528789"
   },
   {
@@ -1580,7 +1437,6 @@
     "size_bytes": 945,
     "storage_path": "attachments/2024/11/c5d9ec06-8c3e-4c19-b545-6a4ddef7aba1",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-04-28T02:10:44.528852"
   },
   {
@@ -1591,7 +1447,6 @@
     "size_bytes": 215,
     "storage_path": "attachments/2025/04/b3e642ab-8179-4d12-9e41-33b776ed1f26",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-06-12T09:37:44.528921"
   },
   {
@@ -1602,7 +1457,6 @@
     "size_bytes": 161,
     "storage_path": "attachments/2023/09/dad4cb92-badb-4fa2-a9c5-20383ae07337",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2026-01-03T07:58:44.528983"
   },
   {
@@ -1613,7 +1467,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/10/cfaa2e5e-73a3-4468-8656-0d6427434a97",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-08-18T10:21:44.529045"
   },
   {
@@ -1624,7 +1477,6 @@
     "size_bytes": 734,
     "storage_path": "attachments/2023/01/bf176efb-e79d-41bb-8cdc-bcc74a6a0d29",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-10-09T08:27:44.529113"
   },
   {
@@ -1635,7 +1487,6 @@
     "size_bytes": 880,
     "storage_path": "attachments/2023/04/dd73a8df-f40f-44bc-af9f-a58c05550bd1",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-30T14:24:44.529166"
   },
   {
@@ -1646,7 +1497,6 @@
     "size_bytes": 393,
     "storage_path": "attachments/2025/02/ab6d3862-c057-4eef-893e-13c5687a91fe",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-02T06:41:44.529228"
   },
   {
@@ -1657,7 +1507,6 @@
     "size_bytes": 590,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-01-18T06:34:44.529279"
   },
   {
@@ -1668,7 +1517,6 @@
     "size_bytes": 896,
     "storage_path": "attachments/2023/06/bf09bd1f-6c75-477d-8fc1-c5c846b35fab",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-26T00:25:44.529341"
   },
   {
@@ -1679,7 +1527,6 @@
     "size_bytes": 767,
     "storage_path": "attachments/2023/02/827ee472-2413-4ce9-85c0-4ae4f04e1d2d",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-23T10:52:44.529403"
   },
   {
@@ -1690,7 +1537,6 @@
     "size_bytes": 936,
     "storage_path": "attachments/2023/05/57e98ad7-f7f2-42ce-b4d2-fde8d456041f",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-10T13:55:44.529465"
   },
   {
@@ -1701,7 +1547,6 @@
     "size_bytes": 818,
     "storage_path": "attachments/2023/06/65cb1105-ab89-43d7-bb6b-4ac6128fde27",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-24T17:13:44.529527"
   },
   {
@@ -1712,7 +1557,6 @@
     "size_bytes": 970,
     "storage_path": "attachments/2024/01/34a95f90-10f3-4ccc-babb-e65d2d71db77",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-30T10:07:44.529589"
   },
   {
@@ -1723,7 +1567,6 @@
     "size_bytes": 127,
     "storage_path": "attachments/2025/03/e8851e25-bd93-46b4-9e04-2d4f3b33aae8",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-10-14T09:54:44.529651"
   },
   {
@@ -1734,7 +1577,6 @@
     "size_bytes": 901,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-11T19:54:44.529709"
   },
   {
@@ -1745,7 +1587,6 @@
     "size_bytes": 414,
     "storage_path": "attachments/2025/02/f8b0f89f-1d12-4672-be24-276ee0a28d1a",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-02-05T16:09:44.529771"
   },
   {
@@ -1756,7 +1597,6 @@
     "size_bytes": 857,
     "storage_path": "attachments/2024/07/f438c1cf-48a3-40a0-9645-8cf62e520efb",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-30T21:36:44.529833"
   },
   {
@@ -1767,7 +1607,6 @@
     "size_bytes": 124,
     "storage_path": "attachments/2023/07/80a2b2c6-57f5-427f-929c-0269c48f713a",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-09T02:48:44.529888"
   },
   {
@@ -1778,7 +1617,6 @@
     "size_bytes": 25,
     "storage_path": "attachments/2023/06/fd59febc-d869-4308-a8cb-c2b0d76f7c42",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-01T07:50:44.529950"
   },
   {
@@ -1789,7 +1627,6 @@
     "size_bytes": null,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-08T08:23:44.530008"
   },
   {
@@ -1800,7 +1637,6 @@
     "size_bytes": 607,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-11-16T03:38:44.530059"
   },
   {
@@ -1811,7 +1647,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2025/09/8f0b017d-2074-416d-80d5-fdba1e297616",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-04T06:25:44.530121"
   },
   {
@@ -1822,7 +1657,6 @@
     "size_bytes": 711,
     "storage_path": "attachments/2025/02/f5ec3cc4-2670-46ec-abfb-c4553205317e",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-17T13:12:44.530183"
   },
   {
@@ -1833,7 +1667,6 @@
     "size_bytes": 701,
     "storage_path": "attachments/2023/07/e04c61fd-59a7-49d1-8d03-b423f562cb1d",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-31T00:28:44.530245"
   },
   {
@@ -1844,7 +1677,6 @@
     "size_bytes": 502,
     "storage_path": "attachments/2023/03/2b7a82f4-972b-4fab-aabd-3691bde14bbe",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-18T08:07:44.530307"
   },
   {
@@ -1855,7 +1687,6 @@
     "size_bytes": 479,
     "storage_path": "attachments/2023/06/7161d4cd-58f7-4f96-bfbb-0055eac750df",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-29T10:25:44.530361"
   },
   {
@@ -1866,7 +1697,6 @@
     "size_bytes": 130,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-22T19:47:44.530420"
   },
   {
@@ -1877,7 +1707,6 @@
     "size_bytes": 324,
     "storage_path": "attachments/2024/07/9f4c6c98-83c8-4d0c-b2b1-3a62447d6621",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-08-29T07:20:44.530481"
   },
   {
@@ -1888,7 +1717,6 @@
     "size_bytes": 911,
     "storage_path": "attachments/2023/04/f88b3d7d-e291-4f92-a943-4580b3a736a8",
     "attachment_type": "image",
-    "is_deleted": true,
     "created_at": "2025-06-13T17:30:44.530544"
   },
   {
@@ -1899,7 +1727,6 @@
     "size_bytes": 862,
     "storage_path": "attachments/2025/08/468a610c-f027-4ee9-b7a6-bb3d145ff5ad",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-08-26T18:56:44.530606"
   },
   {
@@ -1910,7 +1737,6 @@
     "size_bytes": 343,
     "storage_path": "attachments/2023/07/7bba2279-2aaf-4a76-9d3e-8096e2ba7003",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-09-29T18:52:44.530668"
   },
   {
@@ -1921,7 +1747,6 @@
     "size_bytes": 210,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-24T14:23:44.530730"
   },
   {
@@ -1932,7 +1757,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/03/f7c3dd46-7f0f-4a76-8180-3b1ca16c1e93",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-25T06:31:44.530793"
   },
   {
@@ -1943,7 +1767,6 @@
     "size_bytes": 347,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-04-25T14:20:44.530851"
   },
   {
@@ -1954,7 +1777,6 @@
     "size_bytes": 656,
     "storage_path": "attachments/2024/12/8d0a4ac0-3c82-47b1-b700-dd56b5ca0139",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-24T22:33:44.530917"
   },
   {
@@ -1965,7 +1787,6 @@
     "size_bytes": 120,
     "storage_path": "attachments/2024/09/2b016d8e-2eac-4119-a6af-4c2c9f3805de",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-01-23T16:31:44.530978"
   },
   {
@@ -1976,7 +1797,6 @@
     "size_bytes": 73,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-15T08:13:44.531037"
   },
   {
@@ -1987,7 +1807,6 @@
     "size_bytes": 572,
     "storage_path": "attachments/2023/09/36fc3421-5020-42a2-b105-b73a542dd04b",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-06T10:45:44.531099"
   },
   {
@@ -1998,7 +1817,6 @@
     "size_bytes": 644,
     "storage_path": "attachments/2024/08/95b760ba-6201-434b-a842-e6e36f1bae49",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-10-19T02:05:44.531161"
   },
   {
@@ -2009,7 +1827,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/03/61c10ca5-2fb9-4eee-b57f-59a9122d86d3",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-23T02:00:44.531223"
   },
   {
@@ -2020,7 +1837,6 @@
     "size_bytes": 784,
     "storage_path": "attachments/2023/04/c679fda4-e9a9-4502-abdf-cbbb6dc82c7c",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-25T11:59:44.531285"
   },
   {
@@ -2031,7 +1847,6 @@
     "size_bytes": 571,
     "storage_path": "attachments/2024/08/b1493542-31a7-442b-bd06-3ec0820be021",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-12T05:11:44.531340"
   },
   {
@@ -2042,7 +1857,6 @@
     "size_bytes": 419,
     "storage_path": "attachments/2025/02/3b16020d-9353-433a-aefa-37e34de6abe2",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-14T14:13:44.531402"
   },
   {
@@ -2053,7 +1867,6 @@
     "size_bytes": 430,
     "storage_path": "attachments/2024/11/71915a2c-59f8-41b1-81d9-23d475711cf5",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-14T15:23:44.531464"
   },
   {
@@ -2064,7 +1877,6 @@
     "size_bytes": 14,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-10-20T10:34:44.531523"
   },
   {
@@ -2075,7 +1887,6 @@
     "size_bytes": 947,
     "storage_path": "attachments/2024/07/2152dad7-be73-48fa-bd5c-686bd66619eb",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-13T06:41:44.531585"
   },
   {
@@ -2086,7 +1897,6 @@
     "size_bytes": 749,
     "storage_path": "attachments/2024/09/2d82bc1a-8241-472a-9774-7542eddca826",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-30T01:18:44.531640"
   },
   {
@@ -2097,7 +1907,6 @@
     "size_bytes": 751,
     "storage_path": "attachments/2023/06/0954a474-b170-40d9-8113-41eb41301c4f",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-02T11:37:44.531695"
   },
   {
@@ -2108,7 +1917,6 @@
     "size_bytes": 100,
     "storage_path": "attachments/2023/05/219267f6-22a0-4332-8002-d768ca03c277",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-18T23:31:44.531756"
   },
   {
@@ -2119,7 +1927,6 @@
     "size_bytes": 202,
     "storage_path": "attachments/2023/07/a8f6aa44-d8cd-4a6c-ad23-0e6a5dd713fb",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-17T20:55:44.531818"
   },
   {
@@ -2130,7 +1937,6 @@
     "size_bytes": 420,
     "storage_path": "attachments/2023/12/4b2d5c27-a2be-44a8-bc22-863eb62e4e9a",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-13T06:03:44.531880"
   },
   {
@@ -2141,7 +1947,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2025/10/085cd83e-aada-43b3-8350-343ecd66e6c8",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-08-04T15:48:44.531942"
   },
   {
@@ -2152,7 +1957,6 @@
     "size_bytes": 476,
     "storage_path": "attachments/2025/09/3feb54ea-29b3-4509-9284-1575fdba4b53",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-24T15:32:44.532004"
   },
   {
@@ -2163,7 +1967,6 @@
     "size_bytes": 818,
     "storage_path": "attachments/2024/07/c38356f5-df1d-4d01-834e-274a18d15192",
     "attachment_type": "file",
-    "is_deleted": true,
     "created_at": "2025-05-29T11:12:44.532066"
   },
   {
@@ -2174,7 +1977,6 @@
     "size_bytes": 747,
     "storage_path": "attachments/2025/10/a8081760-d182-4b2f-90d9-517f84cb51de",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-08T18:58:44.532128"
   },
   {
@@ -2185,7 +1987,6 @@
     "size_bytes": 496,
     "storage_path": "attachments/2025/06/c86199de-04e5-4a21-8a1b-68828bf77f4c",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-22T02:39:44.532190"
   },
   {
@@ -2196,7 +1997,6 @@
     "size_bytes": 236,
     "storage_path": "attachments/2024/08/7d825dd8-ecc8-4d58-8f87-5267fd6c2a90",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-29T12:22:44.532252"
   },
   {
@@ -2207,7 +2007,6 @@
     "size_bytes": 99,
     "storage_path": "attachments/2023/12/79283474-7488-4123-acf3-b0a6460f71fb",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-25T08:34:44.532314"
   },
   {
@@ -2218,7 +2017,6 @@
     "size_bytes": 40,
     "storage_path": "attachments/2024/06/5f32c6c1-76e9-4179-bef7-9aa1282841d9",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-22T16:33:44.532377"
   },
   {
@@ -2229,7 +2027,6 @@
     "size_bytes": 879,
     "storage_path": "attachments/2023/11/ecbc625e-83f8-48e8-82ac-eb2f564cdbbb",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-04T20:36:44.532443"
   },
   {
@@ -2240,7 +2037,6 @@
     "size_bytes": 670,
     "storage_path": "attachments/2024/05/3ba93ff6-1b04-4f25-8ffd-0e5300e925bb",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-02T17:02:44.532506"
   },
   {
@@ -2251,7 +2047,6 @@
     "size_bytes": 225,
     "storage_path": "attachments/2025/05/42a38b28-b827-41e4-a3d1-720698defb1b",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-08-25T17:59:44.532568"
   },
   {
@@ -2262,7 +2057,6 @@
     "size_bytes": 377,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-26T15:30:44.532626"
   },
   {
@@ -2273,7 +2067,6 @@
     "size_bytes": 38,
     "storage_path": "attachments/2024/03/07ec9dce-1a9d-403e-b485-12af0cf643c9",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-04-05T01:41:44.532688"
   },
   {
@@ -2284,7 +2077,6 @@
     "size_bytes": 121,
     "storage_path": "attachments/2025/07/9d281ca6-2c87-477b-89e1-04d20ddc3a9c",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-09-11T12:08:44.532743"
   },
   {
@@ -2295,7 +2087,6 @@
     "size_bytes": 113,
     "storage_path": "attachments/2024/12/0671635d-3422-4067-b328-9faa45047c44",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-17T20:00:44.532806"
   },
   {
@@ -2306,7 +2097,6 @@
     "size_bytes": 793,
     "storage_path": "attachments/2025/04/545621d4-30fa-497b-b9b7-969a5252367b",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-22T19:30:44.532871"
   },
   {
@@ -2317,7 +2107,6 @@
     "size_bytes": 77,
     "storage_path": "attachments/2024/01/06d5626f-ac88-400c-82e0-aeec6128c40f",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-04-25T00:59:44.532933"
   },
   {
@@ -2328,7 +2117,6 @@
     "size_bytes": 80,
     "storage_path": "attachments/2024/06/859b167c-df94-4551-85d7-88606cc1afb4",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-22T09:14:44.532995"
   },
   {
@@ -2339,7 +2127,6 @@
     "size_bytes": 181,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-16T10:48:44.533054"
   },
   {
@@ -2350,7 +2137,6 @@
     "size_bytes": 735,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": true,
     "created_at": "2025-01-29T17:56:44.533113"
   },
   {
@@ -2361,7 +2147,6 @@
     "size_bytes": 313,
     "storage_path": "attachments/2025/08/1959530b-3be7-4945-9ede-979ad59cfa82",
     "attachment_type": "file",
-    "is_deleted": true,
     "created_at": "2025-02-02T14:03:44.533175"
   },
   {
@@ -2372,7 +2157,6 @@
     "size_bytes": 961,
     "storage_path": "attachments/2024/05/e0045bd5-1b02-4080-aef4-b3dd4a005db1",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-12-22T10:07:44.533237"
   },
   {
@@ -2383,7 +2167,6 @@
     "size_bytes": 887,
     "storage_path": "attachments/2024/07/559322ca-2b00-4978-a62a-5afcd4929096",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-09-10T21:08:44.533299"
   },
   {
@@ -2394,7 +2177,6 @@
     "size_bytes": 342,
     "storage_path": "attachments/2025/12/2842a750-2270-43fd-ab84-9e54705044e7",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-11T18:15:44.533361"
   },
   {
@@ -2405,7 +2187,6 @@
     "size_bytes": 794,
     "storage_path": "attachments/2024/10/c6e443c4-b81a-40b8-a617-7e4b984db279",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-24T17:47:44.533423"
   },
   {
@@ -2416,7 +2197,6 @@
     "size_bytes": 441,
     "storage_path": "attachments/2024/06/189c823a-32ce-47c1-a41a-22d2d7d04636",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-09-14T12:36:44.533491"
   },
   {
@@ -2427,7 +2207,6 @@
     "size_bytes": 810,
     "storage_path": "attachments/2024/09/3c5f41f7-93cd-4b01-830d-da5b352dd97f",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-17T00:52:44.533552"
   },
   {
@@ -2438,7 +2217,6 @@
     "size_bytes": 721,
     "storage_path": "attachments/2023/06/ff9b44e6-d7d0-4d85-a9c2-e4bd7ba9c349",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-26T08:05:44.533614"
   },
   {
@@ -2449,7 +2227,6 @@
     "size_bytes": 429,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-02-25T20:59:44.533672"
   },
   {
@@ -2460,7 +2237,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/12/45e30765-2c5f-44d0-aa43-fa00a35cf37d",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-01T20:57:44.533733"
   },
   {
@@ -2471,7 +2247,6 @@
     "size_bytes": 230,
     "storage_path": "attachments/2025/09/13904dee-2b1b-4a65-b7f9-40ec71fe8521",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-01-20T00:06:44.533794"
   },
   {
@@ -2482,7 +2257,6 @@
     "size_bytes": 808,
     "storage_path": "attachments/2023/01/7700cd89-6e34-41e9-aeb2-9fea63f22df5",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-01-20T22:37:44.533856"
   },
   {
@@ -2493,7 +2267,6 @@
     "size_bytes": 385,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-18T03:22:44.533914"
   },
   {
@@ -2504,7 +2277,6 @@
     "size_bytes": 437,
     "storage_path": "attachments/2023/07/9d728133-2426-443b-8e09-780ffc272e3b",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-23T08:27:44.533976"
   },
   {
@@ -2515,7 +2287,6 @@
     "size_bytes": 934,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-03T15:32:44.534034"
   },
   {
@@ -2526,7 +2297,6 @@
     "size_bytes": 754,
     "storage_path": "attachments/2024/12/602b6591-c06e-4784-8554-76ea466e0435",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-27T16:20:44.534088"
   },
   {
@@ -2537,7 +2307,6 @@
     "size_bytes": 444,
     "storage_path": "attachments/2025/06/88fb5ddd-8dab-454c-9b22-1709084e1396",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-14T01:06:44.534149"
   },
   {
@@ -2548,7 +2317,6 @@
     "size_bytes": 243,
     "storage_path": "attachments/2025/12/e469b6c8-127b-4b87-984b-192dc2b510ef",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-04-04T01:42:44.534203"
   },
   {
@@ -2559,7 +2327,6 @@
     "size_bytes": 926,
     "storage_path": "attachments/2024/10/5ffb2400-b5d3-44a5-9e05-8ba6b46e3da7",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-08-22T22:03:44.534264"
   },
   {
@@ -2570,7 +2337,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/08/fcc96952-2af4-4e29-b574-3aae76156b96",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-06-17T14:02:44.534326"
   },
   {
@@ -2581,7 +2347,6 @@
     "size_bytes": 240,
     "storage_path": "attachments/2023/04/bae448ad-9cb4-49d1-a54b-86b5560594f1",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-27T08:28:44.534387"
   },
   {
@@ -2592,7 +2357,6 @@
     "size_bytes": 255,
     "storage_path": "attachments/2023/04/7ac5b71b-ba61-4ff9-97a5-ef9826c3dfc5",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-02-28T06:11:44.534448"
   },
   {
@@ -2603,7 +2367,6 @@
     "size_bytes": 976,
     "storage_path": "attachments/2023/12/87b1fd0f-892f-4e22-8078-0c42d3648003",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-13T09:23:44.534510"
   },
   {
@@ -2614,7 +2377,6 @@
     "size_bytes": 686,
     "storage_path": "attachments/2023/03/fca1aa36-dff3-42e1-99ea-e46deed5f3f3",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-03-17T07:28:44.534571"
   },
   {
@@ -2625,7 +2387,6 @@
     "size_bytes": 294,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-01-22T16:05:44.534629"
   },
   {
@@ -2636,7 +2397,6 @@
     "size_bytes": 38,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-10-05T17:49:44.534686"
   },
   {
@@ -2647,7 +2407,6 @@
     "size_bytes": 1,
     "storage_path": "attachments/2023/01/61d15140-f724-457d-a95f-ec85019e4f66",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-22T01:47:44.534748"
   },
   {
@@ -2658,7 +2417,6 @@
     "size_bytes": 248,
     "storage_path": "attachments/2025/03/a50f9a41-fc24-4a7b-87e3-0ecb4c8a1ebd",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-05-09T21:37:44.534810"
   },
   {
@@ -2669,7 +2427,6 @@
     "size_bytes": 895,
     "storage_path": "attachments/2023/08/0599d501-ab3a-4778-9731-12d2f3119977",
     "attachment_type": "file",
-    "is_deleted": true,
     "created_at": "2025-08-04T22:31:44.534871"
   },
   {
@@ -2680,7 +2437,6 @@
     "size_bytes": 843,
     "storage_path": "attachments/2023/02/a9b003f8-7329-4f84-bc6d-ac2db45eb39f",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-06-29T11:11:44.534933"
   },
   {
@@ -2691,7 +2447,6 @@
     "size_bytes": 262,
     "storage_path": "attachments/2025/10/4986c210-2cd2-4802-a397-c0c77eaad356",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-22T16:43:44.534994"
   },
   {
@@ -2702,7 +2457,6 @@
     "size_bytes": 710,
     "storage_path": "attachments/2024/06/4c45176e-6c0a-4ce4-a7ec-45b0aa0c630f",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-02T17:16:44.535056"
   },
   {
@@ -2713,7 +2467,6 @@
     "size_bytes": 509,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2026-01-04T14:07:44.535106"
   },
   {
@@ -2724,7 +2477,6 @@
     "size_bytes": 618,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-19T06:45:44.535164"
   },
   {
@@ -2735,7 +2487,6 @@
     "size_bytes": 788,
     "storage_path": "attachments/2025/09/486485c7-705b-483c-8eeb-f772d7b56462",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-10-21T23:05:44.535226"
   },
   {
@@ -2746,7 +2497,6 @@
     "size_bytes": 131,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-03-25T04:34:44.535286"
   },
   {
@@ -2757,7 +2507,6 @@
     "size_bytes": 105,
     "storage_path": "attachments/2025/07/868090e0-d269-4657-a125-72fc03b773d8",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-19T23:31:44.535349"
   },
   {
@@ -2768,7 +2517,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/09/4eb1d263-b8ae-41a8-8731-0484f94d6184",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-10-29T01:34:44.535410"
   },
   {
@@ -2779,7 +2527,6 @@
     "size_bytes": 581,
     "storage_path": "attachments/2023/08/f29b59e0-49f9-4b7d-b8c3-7a94d2e3f986",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-14T05:59:44.535472"
   },
   {
@@ -2790,7 +2537,6 @@
     "size_bytes": 428,
     "storage_path": "attachments/2024/04/5f2f6eec-2fa2-4c34-97fa-da29db059a2d",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-08-04T12:58:44.535534"
   },
   {
@@ -2801,7 +2547,6 @@
     "size_bytes": 832,
     "storage_path": "attachments/2025/05/722add79-b535-4a07-b787-339df38045e1",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-25T03:12:44.535588"
   },
   {
@@ -2812,7 +2557,6 @@
     "size_bytes": 592,
     "storage_path": "attachments/2024/03/579c02e5-6a38-4e16-aa88-533a08dd9168",
     "attachment_type": "image",
-    "is_deleted": true,
     "created_at": "2025-09-21T15:28:44.535649"
   },
   {
@@ -2823,7 +2567,6 @@
     "size_bytes": 100,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-01-08T14:55:44.535706"
   },
   {
@@ -2834,7 +2577,6 @@
     "size_bytes": 850,
     "storage_path": "attachments/2024/06/37b5f6ae-42bc-4304-8cdd-81011a8487ea",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-07-10T00:02:44.535761"
   },
   {
@@ -2845,7 +2587,6 @@
     "size_bytes": 828,
     "storage_path": "attachments/2024/09/21d184da-4fa2-41e3-b151-52de15026a76",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-03T04:56:44.535822"
   },
   {
@@ -2856,7 +2597,6 @@
     "size_bytes": 665,
     "storage_path": "attachments/2024/01/986a9f0e-9f5b-497d-b7ff-0f35f0568936",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-11T10:18:44.535883"
   },
   {
@@ -2867,7 +2607,6 @@
     "size_bytes": 941,
     "storage_path": "attachments/2023/06/dac3a1de-97cb-440b-926c-384dd0b2eedf",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-02-20T03:32:44.535945"
   },
   {
@@ -2878,7 +2617,6 @@
     "size_bytes": 224,
     "storage_path": "attachments/2024/01/1ebebc95-a320-4939-9883-3b19448301bf",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-16T00:46:44.536007"
   },
   {
@@ -2889,7 +2627,6 @@
     "size_bytes": 96,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-22T02:42:44.536065"
   },
   {
@@ -2900,7 +2637,6 @@
     "size_bytes": 212,
     "storage_path": "attachments/2023/09/f2ead392-6184-467e-9850-bc5ee2e96578",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-14T07:12:44.536119"
   },
   {
@@ -2911,7 +2647,6 @@
     "size_bytes": 339,
     "storage_path": "attachments/2024/10/a3d5f9e9-2cfa-42c5-aa84-c75a0d99026a",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-04-04T22:42:44.536173"
   },
   {
@@ -2922,7 +2657,6 @@
     "size_bytes": 750,
     "storage_path": "attachments/2023/06/aa5f0643-ba75-478a-ae24-6895eabdb3c9",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-08-26T03:49:44.536234"
   },
   {
@@ -2933,7 +2667,6 @@
     "size_bytes": 803,
     "storage_path": "attachments/2024/08/f9747657-58b2-4269-b811-850be3de62fc",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-02-26T21:12:44.536295"
   },
   {
@@ -2944,7 +2677,6 @@
     "size_bytes": 70,
     "storage_path": "attachments/2025/01/88c17ff3-7303-4d8e-a953-803508b44b29",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-10-30T07:01:44.536356"
   },
   {
@@ -2955,7 +2687,6 @@
     "size_bytes": 926,
     "storage_path": "attachments/2023/08/eb5c456a-78d2-4df6-bf6b-af9ea09548c3",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-25T01:14:44.536418"
   },
   {
@@ -2966,7 +2697,6 @@
     "size_bytes": 209,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-01-15T11:54:44.536475"
   },
   {
@@ -2977,7 +2707,6 @@
     "size_bytes": 849,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-12T21:51:44.536531"
   },
   {
@@ -2988,7 +2717,6 @@
     "size_bytes": 268,
     "storage_path": "attachments/2023/03/2494ea3e-d6ea-4752-9629-dfb83d359df9",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-07-28T02:39:44.536590"
   },
   {
@@ -2999,7 +2727,6 @@
     "size_bytes": 516,
     "storage_path": "attachments/2025/07/16ad2773-b01c-441a-af26-8f140caf5dc5",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-12-11T11:45:44.536650"
   },
   {
@@ -3010,7 +2737,6 @@
     "size_bytes": 967,
     "storage_path": "attachments/2024/10/0a13ea08-b5e9-430e-b7cf-b40ce65ccf46",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-24T10:14:44.536713"
   },
   {
@@ -3021,7 +2747,6 @@
     "size_bytes": 143,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-16T00:09:44.536801"
   },
   {
@@ -3032,7 +2757,6 @@
     "size_bytes": 332,
     "storage_path": "attachments/2025/03/2d31b675-9749-4f63-b131-0172ede2fd7c",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-02-07T12:44:44.536877"
   },
   {
@@ -3043,7 +2767,6 @@
     "size_bytes": 423,
     "storage_path": "attachments/2024/02/5ae47a2d-d770-45ed-90e9-d6a38fff05d5",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-02-03T00:39:44.536941"
   },
   {
@@ -3054,7 +2777,6 @@
     "size_bytes": 941,
     "storage_path": "attachments/2024/08/1ac83db2-fc87-493d-bcae-2dd0f189c316",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-11-26T11:20:44.537009"
   },
   {
@@ -3065,7 +2787,6 @@
     "size_bytes": 535,
     "storage_path": "attachments/2024/11/dd4d99c4-ba75-4685-ad91-4c40d29cc151",
     "attachment_type": "document",
-    "is_deleted": true,
     "created_at": "2025-05-23T05:03:44.537070"
   },
   {
@@ -3076,7 +2797,6 @@
     "size_bytes": 751,
     "storage_path": "attachments/2024/07/892d3fe1-e4b2-4e8c-aea0-2b62b202e744",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-02-17T11:15:44.537131"
   },
   {
@@ -3087,7 +2807,6 @@
     "size_bytes": 190,
     "storage_path": "attachments/2025/12/9e0ca4ce-ca42-4ca5-8f8a-35ddf02b9dde",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-22T12:24:44.537191"
   },
   {
@@ -3098,7 +2817,6 @@
     "size_bytes": 463,
     "storage_path": "attachments/2023/09/f6acb3bc-1886-4e2a-9430-53e17b20aa25",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-06-03T07:42:44.537252"
   },
   {
@@ -3109,7 +2827,6 @@
     "size_bytes": 651,
     "storage_path": "attachments/2025/05/a40f97a3-850f-4002-b06a-96e69e6eec8c",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-03-16T10:46:44.537313"
   },
   {
@@ -3120,7 +2837,6 @@
     "size_bytes": 30,
     "storage_path": null,
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-09-06T12:49:44.537369"
   },
   {
@@ -3131,7 +2847,6 @@
     "size_bytes": 559,
     "storage_path": "attachments/2023/07/9ed7f713-039e-4a7a-b32b-70598c46a6d1",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-10-06T13:11:44.537429"
   },
   {
@@ -3142,7 +2857,6 @@
     "size_bytes": 486,
     "storage_path": "attachments/2024/01/178feb17-7758-4e33-91db-7b328b8a388b",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-02T19:40:44.537489"
   },
   {
@@ -3153,7 +2867,6 @@
     "size_bytes": 768,
     "storage_path": null,
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-12-19T23:36:44.537546"
   },
   {
@@ -3164,7 +2877,6 @@
     "size_bytes": 806,
     "storage_path": "attachments/2023/10/6d86ec25-559c-47c4-b9ca-feffa31917c6",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-03-16T01:46:44.537606"
   },
   {
@@ -3175,7 +2887,6 @@
     "size_bytes": 396,
     "storage_path": "attachments/2023/04/764a1a31-a64e-4795-828e-f7172c7a7c80",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-01-27T02:00:44.537666"
   },
   {
@@ -3186,7 +2897,6 @@
     "size_bytes": 993,
     "storage_path": "attachments/2024/01/2a582be0-fc33-464d-9225-b1ce5ce5e971",
     "attachment_type": "document",
-    "is_deleted": false,
     "created_at": "2025-05-26T15:36:44.537725"
   },
   {
@@ -3197,7 +2907,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2025/02/1617e63c-5238-414e-bbe1-56fb2bd2c254",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-09-30T04:41:44.537785"
   },
   {
@@ -3208,7 +2917,6 @@
     "size_bytes": 502,
     "storage_path": "attachments/2025/12/2f008aef-4f46-4350-acf7-8157b318fcc8",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-11-20T23:01:44.537845"
   },
   {
@@ -3219,7 +2927,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2023/05/b3d80632-e8a8-4604-86fa-372ad591f270",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-08T16:42:44.537905"
   },
   {
@@ -3230,7 +2937,6 @@
     "size_bytes": 506,
     "storage_path": "attachments/2024/03/04698922-9fe9-42d4-ab0a-935d1af7524b",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-07-24T23:48:44.537970"
   },
   {
@@ -3241,7 +2947,6 @@
     "size_bytes": 989,
     "storage_path": "attachments/2025/04/a99b2bd3-e133-4860-96d1-ab33c78afb04",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-08-08T01:51:44.538035"
   },
   {
@@ -3252,7 +2957,6 @@
     "size_bytes": 283,
     "storage_path": "attachments/2023/07/9bb7e1ad-03b8-43dc-b2e0-92a484ba9060",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-03T22:21:44.538087"
   },
   {
@@ -3263,7 +2967,6 @@
     "size_bytes": 958,
     "storage_path": null,
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-27T19:45:44.538143"
   },
   {
@@ -3274,7 +2977,6 @@
     "size_bytes": 571,
     "storage_path": "attachments/2024/09/16ff4a37-1e63-4a01-aa15-c8271c04db65",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2026-01-04T13:23:44.538203"
   },
   {
@@ -3285,7 +2987,6 @@
     "size_bytes": null,
     "storage_path": "attachments/2025/11/6702c7a7-7093-4c8e-9c40-ec0c6bfcdc71",
     "attachment_type": "file",
-    "is_deleted": false,
     "created_at": "2025-05-20T09:19:44.538263"
   },
   {
@@ -3296,7 +2997,6 @@
     "size_bytes": 694,
     "storage_path": "attachments/2024/07/cd3b2024-6de6-4de3-b3bb-58bb5dc0e622",
     "attachment_type": "image",
-    "is_deleted": false,
     "created_at": "2025-05-31T07:34:44.538322"
   }
 ]

@@ -121,7 +121,6 @@ class LabelBriefResponse(BaseModel):
     parent_id: Optional[UUID] = None
     is_system: bool = False
     is_exclusive: bool = False
-    is_deleted: bool = False
 
 
 class EmailResponse(BaseModel):
