@@ -22,8 +22,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Bulk Update Category](#bulk-update-category)
   - [Bulk Delete](#bulk-delete)
   - [Bulk Important](#bulk-important)
-  - [Bulk Add Labels](#bulk-add-labels)
-  - [Bulk Remove Labels](#bulk-remove-labels)
+  - [Bulk Update Labels](#bulk-update-labels)
   - [Bulk Move](#bulk-move)
   - [Bulk Mark Read](#bulk-mark-read)
   - [Bulk Snooze](#bulk-snooze)
@@ -40,7 +39,6 @@ This document describes the REST API endpoints for the Deskzen application.
   - [List Emails](#list-emails)
   - [Create Email](#create-email)
   - [Get Email Category Counts](#get-email-category-counts)
-  - [Get Emails By Thread](#get-emails-by-thread)
   - [Delete Email](#delete-email)
   - [Get Email](#get-email)
   - [Update Email](#update-email)
@@ -90,6 +88,10 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Get Template](#get-template)
   - [Update Template](#update-template)
   - [Apply Template](#apply-template)
+- [Threads API](#threads-api)
+  - [Delete Thread](#delete-thread)
+  - [Get Thread Emails](#get-thread-emails)
+  - [Restore Thread](#restore-thread)
 - [Users API](#users-api)
   - [List Users](#list-users)
   - [Create User](#create-user)
@@ -110,7 +112,7 @@ This document describes the REST API endpoints for the Deskzen application.
 Delete an attachment.
 
 Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
+    attachment_id: ID of the attachment to delete.
 
 Permissions:
 - Users can only delete attachments on their own draft emails
@@ -118,10 +120,6 @@ Permissions:
 **Path Parameters**:
 
 - `attachment_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -737,7 +735,7 @@ Permissions:
 Delete multiple emails.
 
 If permanent=False (default), moves emails to trash.
-If permanent=True or already in trash, permanently deletes (soft delete).
+If permanent=True or already in trash, permanently deletes.
 
 Permissions:
 - Users can only delete their own emails
@@ -885,108 +883,43 @@ Permissions:
 
 ---
 
-### Bulk Add Labels
+### Bulk Update Labels
 
-**POST** `/api/v1/bulk/labels/add`
+**POST** `/api/v1/bulk/labels/update`
 
-Replace all labels on multiple threads with new ones.
+Update labels on multiple threads by adding and/or removing labels.
 
-This operation drops all existing labels from the threads and assigns
-the new labels provided in the request.
-
-Permissions:
-- Users can only modify their own threads
-- Labels must belong to the user
-
-**Request Body**:
-
-```json
-{
-  "thread_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
-  "label_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ]
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "total_requested": 0,
-    "successful": 0,
-    "failed": 0,
-    "results": [
-      {
-        "id": null,
-        "success": null,
-        "error": null
-      }
-    ]
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Bulk Remove Labels
-
-**POST** `/api/v1/bulk/labels/remove`
-
-Remove specified labels from multiple threads.
+This endpoint allows you to add and remove labels in a single operation.
+You can specify which labels to add and which to remove.
 
 Permissions:
 - Users can only modify their own threads
 - Labels must belong to the user
 
+Example request:
+{
+    "email_ids": ["uuid1", "uuid2"],
+    "labels": {
+        "add": ["label_uuid1", "label_uuid2"],
+        "remove": ["label_uuid3"]
+    }
+}
+
 **Request Body**:
 
 ```json
 {
-  "thread_ids": [
+  "email_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
-  "label_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ]
+  "labels": {
+    "add": [
+      "00000000-0000-0000-0000-000000000000"
+    ],
+    "remove": [
+      "00000000-0000-0000-0000-000000000000"
+    ]
+  }
 }
 ```
 
@@ -1832,9 +1765,8 @@ Permissions:
 - `is_starred` (optional, object): Filter by starred
 - `is_snoozed` (optional, object): Filter by snoozed status (True=snoozed, False=not snoozed)
 - `is_important` (optional, object): Filter by important
-- `include_archived` (optional, object): Include archived emails
+- `include_archived` (optional, object): Include archived threads
 - `search` (optional, object): Search in subject and body
-- `threaded` (optional, boolean): Group by thread and return only latest email from each thread
 
 **Responses**:
 
@@ -2050,91 +1982,21 @@ Permissions:
 
 ---
 
-### Get Emails By Thread
-
-**GET** `/api/v1/emails/thread/{thread_id}`
-
-Get all emails in a thread/conversation.
-
-Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
-Emails are automatically marked as read in the background.
-
-Permissions:
-- Users can only access threads containing their own emails (sent or received)
-
-**Path Parameters**:
-
-- `thread_id` (required, string)
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": [
-    {
-      "id": "00000000-0000-0000-0000-000000000000",
-      "subject": "string",
-      "body": "string",
-      "html_body": "string",
-      "folder": "string",
-      "category": "string",
-      "is_read": false,
-      "is_starred": false,
-      "is_important": false,
-      "sender_id": "00000000-0000-0000-0000-000000000000",
-      "created_at": "2024-01-01T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z"
-    }
-  ]
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
 ### Delete Email
 
 **DELETE** `/api/v1/emails/{email_id}`
 
 Delete an email.
 
-Args:
-    permanent: If True, permanently removes from database. 
-               If False (default), moves to trash or soft deletes if already in trash.
+Delete behavior:
+- If permanent=False (default): Moves email to trash folder
+- If permanent=True: Permanently removes email from database
+
+To permanently delete an email from trash, call this endpoint with permanent=True.
+
+Permissions:
+- Users can only delete their own emails (sent or received)
+- Admins can delete any email
 
 **Path Parameters**:
 
@@ -2142,7 +2004,7 @@ Args:
 
 **Query Parameters**:
 
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
+- `permanent` (optional, boolean): Permanently delete from database
 
 **Responses**:
 
@@ -2343,9 +2205,9 @@ Permissions:
 
 **POST** `/api/v1/emails/{email_id}/archive`
 
-Archive an email.
+Archive a thread (via email_id).
 
-Sets the email status to 'archived'.
+Sets is_archived=True in ThreadUserMetadata for the thread.
 
 Permissions:
 - Users can only archive their own emails (sent or received)
@@ -2571,6 +2433,7 @@ Permissions:
 Immediately send a queued email without waiting for the scheduled time.
 
 Use this if you want to skip the undo send waiting period.
+Email delivery to recipients is processed in the background for better performance.
 
 **Path Parameters**:
 
@@ -2639,6 +2502,8 @@ Use this if you want to skip the undo send waiting period.
 **POST** `/api/v1/emails/{email_id}/forward`
 
 Forward an email.
+
+Email delivery to recipients is processed in the background for better performance.
 
 **Path Parameters**:
 
@@ -2722,7 +2587,10 @@ Forward an email.
 
 **PATCH** `/api/v1/emails/{email_id}/important`
 
-important or un important an email.
+Mark a thread as important or unimportant for the current user.
+
+This updates the thread-level is_important flag for the current user only.
+Other users' important status for the same thread is not affected.
 
 **Path Parameters**:
 
@@ -2881,6 +2749,10 @@ Remove a label from an email's thread for the current user.
 
 Labels are user-specific on shared threads. Removing a label only affects
 the current user's view of the thread.
+
+Special behavior for TRASH/SPAM labels:
+- When removing the TRASH label, all trashed emails in the thread are moved back to inbox.
+- When removing the SPAM label, all spam emails in the thread are moved back to inbox.
 
 **Path Parameters**:
 
@@ -3081,6 +2953,8 @@ Mark an email as read or unread.
 
 Reply to an email.
 
+Email delivery to recipients is processed in the background for better performance.
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -3236,7 +3110,7 @@ Permissions:
 
 Send a draft email.
 
-If scheduled_send_at is provided in the request body, the email will be 
+If scheduled_send_at is provided in the request body, the email will be
 scheduled for that specific time, overriding the user's undo_send_delay_seconds.
 
 If scheduled_send_at is not provided:
@@ -3244,6 +3118,8 @@ If scheduled_send_at is not provided:
   queued with a scheduled send time. During this window, the user can cancel
   the send using the /emails/{email_id}/cancel-send endpoint.
 - If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
+
+Email delivery to recipients is processed in the background for better performance.
 
 **Path Parameters**:
 
@@ -3550,9 +3426,9 @@ Star or unstar an email.
 
 **POST** `/api/v1/emails/{email_id}/unarchive`
 
-Unarchive an email.
+Unarchive a thread (via email_id).
 
-Restores an archived email back to its original folder (inbox for received, sent for sent emails).
+Sets is_archived=False in ThreadUserMetadata and restores Inbox/Sent label.
 
 Permissions:
 - Users can only unarchive their own emails (sent or received)
@@ -3976,19 +3852,12 @@ Delete a label and all its child labels.
 When a label is deleted, all descendant labels (children, grandchildren, etc.)
 are also deleted along with their email associations.
 
-Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
-
 Permissions:
 - Users can only delete their own labels
 
 **Path Parameters**:
 
 - `label_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -4751,17 +4620,14 @@ Save a search query for later use.
 **DELETE** `/api/v1/search/saved/{search_id}`
 
 Delete a saved search.
-
 Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
+    search_id: ID of the saved search to delete.
+Permissions:
+- Users can only delete their own saved searches
 
 **Path Parameters**:
 
 - `search_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -5033,9 +4899,6 @@ Permissions:
 
 Delete an email template.
 
-Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
-
 Permissions:
 - Users can only delete their own templates
 - Admins can delete any template
@@ -5043,10 +4906,6 @@ Permissions:
 **Path Parameters**:
 
 - `template_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -5323,6 +5182,199 @@ Permissions:
 
 ---
 
+## Threads API
+
+### Delete Thread
+
+**DELETE** `/api/v1/threads/{thread_id}`
+
+Delete an entire thread for the current user.
+
+Delete behavior:
+- If permanent=False (default): Moves all user's emails in the thread to trash folder
+- If permanent=True: Permanently deletes all user's emails in the thread
+
+Permissions:
+- Users can only delete threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Query Parameters**:
+
+- `permanent` (optional, boolean): Permanently delete all emails in thread
+
+**Responses**:
+
+- `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Thread Emails
+
+**GET** `/api/v1/threads/{thread_id}/emails`
+
+Get all emails in a thread/conversation.
+
+Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
+Emails are automatically marked as read in the background.
+
+Query Parameters:
+- only_trashed: If true, returns only emails in trash folder
+
+Permissions:
+- Users can only access threads containing their own emails (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Query Parameters**:
+
+- `only_trashed` (optional, boolean): Include only trashed emails
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": [
+    {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "subject": "string",
+      "body": "string",
+      "html_body": "string",
+      "folder": "string",
+      "category": "string",
+      "is_read": false,
+      "is_starred": false,
+      "is_important": false,
+      "sender_id": "00000000-0000-0000-0000-000000000000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Restore Thread
+
+**POST** `/api/v1/threads/{thread_id}/restore`
+
+Restore a deleted thread for the current user.
+
+Moves all user's emails in the thread from trash back to inbox.
+
+Permissions:
+- Users can only restore threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ## Users API
 
 ### List Users
@@ -5341,7 +5393,6 @@ Args:
     page_size: Number of users per page.
     role: Filter by role.
     search: Search term for name/email.
-    show_deleted: Include deleted users (admin only).
     
 Returns:
     Paginated list of users.
@@ -5352,7 +5403,6 @@ Returns:
 - `page_size` (optional, integer): Items per page
 - `role` (optional, object): Filter by role
 - `search` (optional, object): Search in name and email
-- `show_deleted` (optional, boolean): Include deleted users (admin only)
 
 **Responses**:
 
@@ -5513,7 +5563,6 @@ Permissions:
 
 Args:
     user_id: User ID.
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
     
 Raises:
     HTTPException: 404 if user not found.
@@ -5521,10 +5570,6 @@ Raises:
 **Path Parameters**:
 
 - `user_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
