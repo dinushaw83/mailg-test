@@ -18,7 +18,7 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_user_metadata import ThreadUserMetadata
-from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate, EmailSpamUpdate
+from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import SystemLabel, FolderType

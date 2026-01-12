@@ -51,11 +51,6 @@ class EmailImportantUpdate(BaseModel):
     is_important: bool = Field(..., description="Important or un important email")
 
 
-class EmailSpamUpdate(BaseModel):
-    """Schema for updating spam status."""
-    is_spam: bool = Field(..., description="Mark as spam or not spam")
-
-
 class EmailMoveRequest(BaseModel):
     """Schema for moving email to folder."""
     folder: str = Field(..., description="Target folder: inbox, sent, drafts, trash, spam, scheduled")
