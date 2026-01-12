@@ -27,6 +27,8 @@ class ThreadUserMetadata(Base):
 
     # User-specific metadata
     is_important = Column(Boolean, default=False, index=True)
+    snooze_until = Column(DateTime, nullable=True, index=True)  # Thread-level snooze
+    is_archived = Column(Boolean, default=False, index=True)    # Thread-level archive
 
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
@@ -41,4 +43,6 @@ class ThreadUserMetadata(Base):
         UniqueConstraint("thread_id", "user_id", name="uq_thread_user_metadata"),
         Index("ix_thread_user_metadata_user_thread", "user_id", "thread_id"),
         Index("ix_thread_user_metadata_important", "user_id", "is_important"),
+        Index("ix_thread_user_metadata_snooze", "user_id", "snooze_until"),
+        Index("ix_thread_user_metadata_archived", "user_id", "is_archived"),
     )

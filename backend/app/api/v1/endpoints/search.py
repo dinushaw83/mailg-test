@@ -209,8 +209,10 @@ def search_emails(
         except ValueError:
             pass
     
-    # Get total count
-    total = query.distinct(Email.id).count()
+    # Get total count using subquery for cross-database compatibility
+    # (DISTINCT ON is PostgreSQL-specific)
+    distinct_ids = query.with_entities(Email.id).distinct().subquery()
+    total = db.query(func.count()).select_from(distinct_ids).scalar()
     
     # Apply sorting
     if sort_by == "subject":
@@ -225,9 +227,26 @@ def search_emails(
     else:
         query = query.order_by(order_col.desc())
     
-    # Apply pagination
+    # Apply pagination - use distinct() for cross-database compatibility
     offset = (page - 1) * page_size
-    emails = query.distinct(Email.id).offset(offset).limit(page_size).all()
+    # Get distinct email IDs first, then fetch full emails
+    email_ids_query = query.with_entities(Email.id).distinct().offset(offset).limit(page_size)
+    email_ids = [eid[0] for eid in email_ids_query.all()]
+    
+    # Fetch full email objects for the distinct IDs
+    if email_ids:
+        emails = db.query(Email).options(
+            joinedload(Email.sender),
+            selectinload(Email.recipients),
+            selectinload(Email.attachments),
+            joinedload(Email.thread).selectinload(Thread.labels),
+        ).filter(Email.id.in_(email_ids)).all()
+        
+        # Preserve order from original query
+        email_map = {e.id: e for e in emails}
+        emails = [email_map[eid] for eid in email_ids if eid in email_map]
+    else:
+        emails = []
     
     # Format results
     results = []

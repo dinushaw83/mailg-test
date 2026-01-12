@@ -151,9 +151,8 @@ def list_emails(
     is_starred: Optional[bool] = Query(None, description="Filter by starred"),
     is_snoozed: Optional[bool] = Query(None, description="Filter by snoozed status (True=snoozed, False=not snoozed)"),
     is_important: Optional[bool] = Query(None, description="Filter by important"),
-    include_archived: Optional[bool] = Query(False, description="Include archived emails"),
+    include_archived: Optional[bool] = Query(False, description="Include archived threads"),
     search: Optional[str] = Query(None, description="Search in subject and body"),
-    threaded: bool = Query(False, description="Group by thread and return only latest email from each thread"),
 ) -> dict:
     """List emails with pagination and filtering.
     
@@ -173,26 +172,94 @@ def list_emails(
     )
     
     # Apply folder filter with proper sender/recipient context
-    # For inbox: only show emails where user is a recipient (not their own sent emails)
-    # For sent/drafts/scheduled: only show emails where user is the sender
-    # For other folders: show emails where user is sender or recipient
     if folder:
-        query = query.filter(Email.folder == folder.value)
-        
-        if folder in (FolderType.INBOX,):
-            # Inbox should only show emails where user is a recipient
+        if folder == FolderType.INBOX:
+            # INBOX: Show threads that have the INBOX label for this user
+            # This allows removing INBOX label to hide from inbox (like archive)
+            from app.utils.label_utils import get_system_label
+            inbox_label = get_system_label(db, current_user.id, SystemLabel.INBOX)
+            
+            if inbox_label:
+                # Filter to threads with INBOX label
+                inbox_thread_ids = db.query(ThreadLabel.thread_id).filter(
+                    ThreadLabel.label_id == inbox_label.id,
+                    ThreadLabel.user_id == current_user.id
+                ).subquery()
+                
+                query = query.filter(
+                    Email.thread_id.in_(db.query(inbox_thread_ids.c.thread_id)),
+                    or_(
+                        Email.sender_id == current_user.id,
+                        Email.id.in_(
+                            db.query(EmailRecipient.email_id).filter(
+                                EmailRecipient.recipient_id == current_user.id
+                            )
+                        )
+                    )
+                )
+            else:
+                # Fallback if no inbox label found - show all user's emails
+                query = query.filter(
+                    or_(
+                        Email.sender_id == current_user.id,
+                        Email.id.in_(
+                            db.query(EmailRecipient.email_id).filter(
+                                EmailRecipient.recipient_id == current_user.id
+                            )
+                        )
+                    )
+                )
+            # Threaded grouping applied automatically at end
+        elif folder == FolderType.SENT:
+            # SENT: Show latest email sent BY current user per thread
             query = query.filter(
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
+                Email.sender_id == current_user.id,
+                Email.folder == FolderType.SENT.value
+            )
+            # Threaded grouping applied automatically at end
+        elif folder == FolderType.SCHEDULED:
+            # SCHEDULED: Show latest scheduled email per thread (user is sender)
+            query = query.filter(
+                Email.sender_id == current_user.id,
+                Email.folder == FolderType.SCHEDULED.value
+            )
+            # Threaded grouping applied automatically at end
+        elif folder == FolderType.DRAFTS:
+            # DRAFTS: Show latest draft per thread (user is sender)
+            query = query.filter(
+                Email.sender_id == current_user.id,
+                Email.folder == FolderType.DRAFTS.value
+            )
+            # Threaded grouping applied automatically at end
+        elif folder == FolderType.TRASH:
+            # TRASH: Show emails in trash folder
+            query = query.filter(
+                Email.folder == FolderType.TRASH.value,
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
                     )
                 )
             )
-        elif folder in (FolderType.SENT, FolderType.DRAFTS, FolderType.SCHEDULED):
-            # Sent/Drafts/Scheduled should only show emails where user is the sender
-            query = query.filter(Email.sender_id == current_user.id)
+        elif folder == FolderType.SPAM:
+            # SPAM: Show emails in spam folder (similar to trash)
+            query = query.filter(
+                Email.folder == FolderType.SPAM.value,
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            )
         else:
-            # Other folders (trash, spam, etc.) - show emails where user is sender or recipient
+            # Other folders - show emails where user is sender or recipient
+            query = query.filter(Email.folder == folder.value)
             query = query.filter(
                 or_(
                     Email.sender_id == current_user.id,
@@ -226,21 +293,50 @@ def list_emails(
         query = query.filter(Email.is_read == is_read)
     
     if is_starred is not None:
-        query = query.filter(Email.is_starred == is_starred)
+        if is_starred:
+            # STARRED: Find threads where ANY email is starred, then show latest email
+            starred_thread_ids = db.query(Email.thread_id).filter(
+                Email.is_starred == True,
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            ).distinct().subquery()
+            
+            query = query.filter(Email.thread_id.in_(db.query(starred_thread_ids.c.thread_id)))
+            # Threaded grouping applied automatically at end - returns latest per thread
+        else:
+            # No starred emails - exclude threads with any starred
+            query = query.filter(Email.is_starred == False)
     
     if is_snoozed is not None:
+        from app.models.thread_user_metadata import ThreadUserMetadata
         if is_snoozed:
-            # Show only snoozed emails (snooze_until is set and in the future)
-            query = query.filter(
-                Email.snooze_until.isnot(None),
-                Email.snooze_until > datetime.utcnow()
-            )
+            # SNOOZED: Filter by ThreadUserMetadata.snooze_until (thread-level per user)
+            snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
+                ThreadUserMetadata.user_id == current_user.id,
+                ThreadUserMetadata.snooze_until.isnot(None),
+                ThreadUserMetadata.snooze_until > datetime.utcnow()
+            ).subquery()
+            
+            query = query.filter(Email.thread_id.in_(db.query(snoozed_thread_ids.c.thread_id)))
+            # Threaded grouping applied automatically at end - returns latest per thread
         else:
-            # Show only non-snoozed emails (snooze_until is null or in the past)
+            # Non-snoozed: exclude threads with active snooze for this user
+            snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
+                ThreadUserMetadata.user_id == current_user.id,
+                ThreadUserMetadata.snooze_until.isnot(None),
+                ThreadUserMetadata.snooze_until > datetime.utcnow()
+            ).subquery()
+            
             query = query.filter(
                 or_(
-                    Email.snooze_until.is_(None),
-                    Email.snooze_until <= datetime.utcnow()
+                    Email.thread_id.is_(None),
+                    ~Email.thread_id.in_(db.query(snoozed_thread_ids.c.thread_id))
                 )
             )
     
@@ -260,7 +356,19 @@ def list_emails(
             )
     
     if include_archived is False:
-        query = query.filter(Email.status != EmailStatus.ARCHIVED.value)
+        # Exclude threads archived by this user (thread-level)
+        from app.models.thread_user_metadata import ThreadUserMetadata
+        archived_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
+            ThreadUserMetadata.user_id == current_user.id,
+            ThreadUserMetadata.is_archived == True
+        ).subquery()
+        
+        query = query.filter(
+            or_(
+                Email.thread_id.is_(None),
+                ~Email.thread_id.in_(db.query(archived_thread_ids.c.thread_id))
+            )
+        )
     
     if search:
         search_term = f"%{search}%"
@@ -271,55 +379,46 @@ def list_emails(
             )
         )
     
-    # Apply threaded grouping - return only latest email from each thread
-    if threaded:
-        # Use sent_at for sorting, fallback to created_at if null
-        sort_date = func.coalesce(Email.sent_at, Email.created_at)
-        
-        # Step 1: Get max dates per thread from the filtered query
-        max_dates = query.filter(
-            Email.thread_id.isnot(None)
-        ).with_entities(
-            Email.thread_id,
-            func.max(sort_date).label("max_date")
-        ).group_by(Email.thread_id).subquery()
-        
-        # Step 2: Get email IDs that are the latest in their thread
-        # Use explicit join to avoid cross-join performance issues
-        latest_email_ids = db.query(Email.id).join(
-            max_dates,
-            and_(
-                Email.thread_id == max_dates.c.thread_id,
-                sort_date == max_dates.c.max_date
-            )
-        ).subquery()
-        
-        # Step 3: Filter main query using IN clause
-        # Include: latest email per thread OR emails without thread_id
-        query = query.filter(
-            or_(
-                Email.id.in_(db.query(latest_email_ids.c.id)),
-                Email.thread_id.is_(None)
-            )
-        )
+    # ALWAYS apply threaded grouping - return only latest email from each thread
+    # Use sent_at for sorting, fallback to created_at if null
+    sort_date = func.coalesce(Email.sent_at, Email.created_at)
     
-    # Get total count
-    if threaded:
-        # For threaded queries, use subquery to get correct count
-        # This avoids issues with the cross-join in the threaded filter
-        total = db.query(func.count()).select_from(query.with_entities(Email.id).subquery()).scalar()
-    else:
-        total = query.count()
+    # Step 1: Get max dates per thread from the filtered query
+    max_dates = query.filter(
+        Email.thread_id.isnot(None)
+    ).with_entities(
+        Email.thread_id,
+        func.max(sort_date).label("max_date")
+    ).group_by(Email.thread_id).subquery()
+    
+    # Step 2: Get email IDs that are the latest in their thread
+    # Use explicit join to avoid cross-join performance issues
+    latest_email_ids = db.query(Email.id).join(
+        max_dates,
+        and_(
+            Email.thread_id == max_dates.c.thread_id,
+            sort_date == max_dates.c.max_date
+        )
+    ).subquery()
+    
+    # Step 3: Filter main query using IN clause
+    # Include: latest email per thread OR emails without thread_id
+    query = query.filter(
+        or_(
+            Email.id.in_(db.query(latest_email_ids.c.id)),
+            Email.thread_id.is_(None)
+        )
+    )
+    
+    # Get total count (always use threaded count method)
+    total = db.query(func.count()).select_from(query.with_entities(Email.id).subquery()).scalar()
     
     # Calculate pagination
     total_pages = (total + page_size - 1) // page_size if total > 0 else 0
     offset = (page - 1) * page_size
     
-    # Get results - sort by sent_at when threaded, otherwise by created_at
-    if threaded:
-        emails = query.order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).offset(offset).limit(page_size).all()
-    else:
-        emails = query.order_by(Email.created_at.desc()).offset(offset).limit(page_size).all()
+    # Get results - always sort by sent_at
+    emails = query.order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).offset(offset).limit(page_size).all()
     
     # Get thread email counts for all threads in the result set
     thread_ids = [email.thread_id for email in emails if email.thread_id]
@@ -356,64 +455,6 @@ def list_emails(
         page_size=page_size,
         total_pages=total_pages,
     )
-
-
-@router.get("/emails/thread/{thread_id}", response_model=list[EmailResponse], dependencies=[Depends(authorized())])
-def get_emails_by_thread(
-    thread_id: UUID,
-    request: Request,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-) -> list[dict]:
-    """Get all emails in a thread/conversation.
-    
-    Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
-    Emails are automatically marked as read in the background.
-    
-    Permissions:
-    - Users can only access threads containing their own emails (sent or received)
-    """
-    current_user = auth.user
-    
-    # Query all emails in the thread that the user has access to
-    emails = db.query(Email).options(
-        joinedload(Email.sender),
-        selectinload(Email.recipients),
-        selectinload(Email.attachments),
-        joinedload(Email.thread)
-            .selectinload(Thread.labels),
-        joinedload(Email.thread)
-            .selectinload(Thread.user_metadata),
-    ).filter(
-        Email.thread_id == thread_id,
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
-                )
-            )
-        )
-    ).order_by(func.coalesce(Email.sent_at, Email.created_at).asc()).all()
-    
-    if not emails:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No emails found for thread {thread_id}"
-        )
-    
-    # Mark unread emails as read in background
-    unread_email_ids = [email.id for email in emails if not email.is_read]
-    if unread_email_ids:
-        run_id = getattr(request.state, "run_id", None)
-        background_tasks.add_task(
-            mark_emails_as_read_background,
-            unread_email_ids,
-            current_user.id,
-            run_id
-        )
-    
-    return [format_email_response(email, current_user.id) for email in emails]
 
 
 @router.get("/emails/{email_id}", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1322,29 +1363,85 @@ def remove_label_from_email(
     db: Session = Depends(get_db),
 ) -> None:
     """Remove a label from an email's thread for the current user.
-    
+
     Labels are user-specific on shared threads. Removing a label only affects
     the current user's view of the thread.
+
+    Special behavior for TRASH/SPAM labels:
+    - When removing the TRASH label, all trashed emails in the thread are moved back to inbox.
+    - When removing the SPAM label, all spam emails in the thread are moved back to inbox.
     """
     current_user = auth.user
-    
+
     # Get the email to find its thread
     email = db.query(Email).filter(
         Email.id == email_id
     ).first()
-    
+
     if not email or not email.thread_id:
         return  # Silently succeed if email or thread not found
-    
+
+    # Check if the label being removed is the TRASH or SPAM system label
+    label = db.query(Label).filter(Label.id == label_id).first()
+    is_trash_label = label and label.is_system and label.name == SystemLabel.TRASH.value
+    is_spam_label = label and label.is_system and label.name == SystemLabel.SPAM.value
+
     # Only remove the label association for this specific user
     thread_label = db.query(ThreadLabel).filter(
         ThreadLabel.thread_id == email.thread_id,
         ThreadLabel.label_id == label_id,
         ThreadLabel.user_id == current_user.id
     ).first()
-    
+
     if thread_label:
         db.delete(thread_label)
+
+        # If removing TRASH label, restore trashed emails to inbox
+        if is_trash_label:
+            trashed_emails = db.query(Email).filter(
+                Email.thread_id == email.thread_id,
+                Email.folder == FolderType.TRASH.value,
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            ).all()
+
+            for trashed_email in trashed_emails:
+                trashed_email.folder = FolderType.INBOX.value
+
+            # Add inbox label
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+
+            logger.info(f"Restored {len(trashed_emails)} emails from trash for thread {email.thread_id} by user {current_user.id}")
+
+        # If removing SPAM label, restore spam emails to inbox
+        elif is_spam_label:
+            spam_emails = db.query(Email).filter(
+                Email.thread_id == email.thread_id,
+                Email.folder == FolderType.SPAM.value,
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            ).all()
+
+            for spam_email in spam_emails:
+                spam_email.folder = FolderType.INBOX.value
+
+            # Add inbox label
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+
+            logger.info(f"Restored {len(spam_emails)} emails from spam for thread {email.thread_id} by user {current_user.id}")
+        
         try:
             db.commit()
         except Exception:
@@ -1404,11 +1501,31 @@ def snooze_email(
             detail="Snooze time must be in the future"
         )
     
-    email.snooze_until = snooze_data.snooze_until
+    if not email.thread_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot snooze email without thread"
+        )
+    
+    # Update snooze in ThreadUserMetadata (thread-level per user)
+    from app.models.thread_user_metadata import ThreadUserMetadata
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == email.thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if metadata:
+        metadata.snooze_until = snooze_data.snooze_until
+    else:
+        metadata = ThreadUserMetadata(
+            thread_id=email.thread_id,
+            user_id=current_user.id,
+            snooze_until=snooze_data.snooze_until
+        )
+        db.add(metadata)
     
     # Add Snoozed label
-    if email.thread_id:
-        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
     
     try:
         db.commit()
@@ -1417,7 +1534,7 @@ def snooze_email(
         db.rollback()
         raise
     
-    logger.info(f"Email {email.id} snoozed until {snooze_data.snooze_until} by user {current_user.id}")
+    logger.info(f"Thread {email.thread_id} snoozed until {snooze_data.snooze_until} by user {current_user.id}")
     
     return format_email_response(email, current_user.id)
 
@@ -1463,18 +1580,30 @@ def unsnooze_email(
             detail=f"Email {email_id} not found"
         )
     
-    if not email.snooze_until:
+    if not email.thread_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email is not snoozed"
+            detail="Cannot unsnooze email without thread"
         )
     
-    email.snooze_until = None
+    # Check snooze status in ThreadUserMetadata
+    from app.models.thread_user_metadata import ThreadUserMetadata
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == email.thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if not metadata or not metadata.snooze_until:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Thread is not snoozed"
+        )
+    
+    metadata.snooze_until = None
     
     # Remove Snoozed label and add Inbox back
-    if email.thread_id:
-        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
-        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+    remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
     
     try:
         db.commit()
@@ -1483,7 +1612,7 @@ def unsnooze_email(
         db.rollback()
         raise
     
-    logger.info(f"Email {email.id} unsnoozed by user {current_user.id}")
+    logger.info(f"Thread {email.thread_id} unsnoozed by user {current_user.id}")
     
     return format_email_response(email, current_user.id)
 
@@ -1493,9 +1622,9 @@ def archive_email(
     email_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Archive an email.
+    """Archive a thread (via email_id).
     
-    Sets the email status to 'archived'.
+    Sets is_archived=True in ThreadUserMetadata for the thread.
     
     Permissions:
     - Users can only archive their own emails (sent or received)
@@ -1531,11 +1660,31 @@ def archive_email(
             detail=f"Email {email_id} not found"
         )
     
-    email.status = EmailStatus.ARCHIVED.value
+    if not email.thread_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot archive email without thread"
+        )
+    
+    # Update archive status in ThreadUserMetadata (thread-level per user)
+    from app.models.thread_user_metadata import ThreadUserMetadata
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == email.thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if metadata:
+        metadata.is_archived = True
+    else:
+        metadata = ThreadUserMetadata(
+            thread_id=email.thread_id,
+            user_id=current_user.id,
+            is_archived=True
+        )
+        db.add(metadata)
     
     # Remove Inbox label (email stays in All Mail)
-    if email.thread_id:
-        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+    remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
     
     try:
         db.commit()
@@ -1544,7 +1693,7 @@ def archive_email(
         db.rollback()
         raise
     
-    logger.info(f"Email {email.id} archived by user {current_user.id}")
+    logger.info(f"Thread {email.thread_id} archived by user {current_user.id}")
     
     return format_email_response(email, current_user.id)
 
@@ -1554,9 +1703,9 @@ def unarchive_email(
     email_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Unarchive an email.
+    """Unarchive a thread (via email_id).
     
-    Restores an archived email back to its original folder (inbox for received, sent for sent emails).
+    Sets is_archived=False in ThreadUserMetadata and restores Inbox/Sent label.
     
     Permissions:
     - Users can only unarchive their own emails (sent or received)
@@ -1592,23 +1741,32 @@ def unarchive_email(
             detail=f"Email {email_id} not found"
         )
     
-    if email.status != EmailStatus.ARCHIVED.value:
+    if not email.thread_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email is not archived"
+            detail="Cannot unarchive email without thread"
         )
     
-    # Restore to original status based on whether user sent or received it
+    # Check archive status in ThreadUserMetadata
+    from app.models.thread_user_metadata import ThreadUserMetadata
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == email.thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if not metadata or not metadata.is_archived:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Thread is not archived"
+        )
+    
+    metadata.is_archived = False
+    
+    # Restore appropriate label based on whether user sent or received it
     if email.sender_id == current_user.id:
-        email.status = EmailStatus.SENT.value
-        # Add Sent label back
-        if email.thread_id:
-            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
     else:
-        email.status = EmailStatus.RECEIVED.value
-        # Add Inbox label back
-        if email.thread_id:
-            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
     
     try:
         db.commit()
@@ -1617,7 +1775,7 @@ def unarchive_email(
         db.rollback()
         raise
     
-    logger.info(f"Email {email.id} unarchived by user {current_user.id}")
+    logger.info(f"Thread {email.thread_id} unarchived by user {current_user.id}")
     
     return format_email_response(email, current_user.id)
 

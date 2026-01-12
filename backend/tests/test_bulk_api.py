@@ -551,18 +551,31 @@ class TestBulkSnooze:
     """Test bulk snooze/unsnooze operations."""
 
     def test_bulk_snooze_success(self, client_with_auth, db_session):
-        """Test snoozing multiple emails."""
+        """Test snoozing multiple emails (thread-level snooze)."""
+        from app.models.thread_user_metadata import ThreadUserMetadata
+        
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple emails with threads (snooze is thread-level)
         emails = []
+        threads = []
         for i in range(3):
+            thread = Thread(
+                subject=f"Thread {i}",
+                owner_id=user.id,
+                email_count=1
+            )
+            db_session.add(thread)
+            db_session.flush()
+            threads.append(thread)
+            
             email = Email(
                 subject=f"Email {i}",
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
-                folder=FolderType.INBOX.value
+                folder=FolderType.INBOX.value,
+                thread_id=thread.id
             )
             db_session.add(email)
             emails.append(email)
@@ -581,22 +594,31 @@ class TestBulkSnooze:
         data = response.json()["data"]
         assert data["successful"] == 3
         
-        # Verify emails are snoozed
-        for email in emails:
-            db_session.refresh(email)
-            assert email.snooze_until is not None
+        # Verify threads are snoozed via ThreadUserMetadata
+        for thread in threads:
+            metadata = db_session.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == thread.id,
+                ThreadUserMetadata.user_id == user.id
+            ).first()
+            assert metadata is not None
+            assert metadata.snooze_until is not None
 
     def test_bulk_snooze_past_time_fails(self, client_with_auth, db_session):
         """Test bulk snooze with past time fails."""
         client, token, user = client_with_auth
         
-        # Create an email
+        # Create a thread and email
+        thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
         email = Email(
             subject="Test Email",
             body="Body",
             status="received",
             sender_id=user.id,
-            folder=FolderType.INBOX.value
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
         )
         db_session.add(email)
         db_session.commit()
@@ -612,22 +634,42 @@ class TestBulkSnooze:
         assert response.status_code == 400
 
     def test_bulk_unsnooze_success(self, client_with_auth, db_session):
-        """Test unsnoozing multiple emails."""
+        """Test unsnoozing multiple emails (thread-level snooze)."""
+        from app.models.thread_user_metadata import ThreadUserMetadata
+        
         client, token, user = client_with_auth
         
-        # Create multiple snoozed emails
+        # Create multiple emails with threads and snooze metadata
         emails = []
+        threads = []
         for i in range(3):
+            thread = Thread(
+                subject=f"Thread {i}",
+                owner_id=user.id,
+                email_count=1
+            )
+            db_session.add(thread)
+            db_session.flush()
+            threads.append(thread)
+            
             email = Email(
                 subject=f"Email {i}",
                 body=f"Body {i}",
                 status="received",
                 sender_id=user.id,
                 folder=FolderType.INBOX.value,
-                snooze_until=datetime.utcnow() + timedelta(days=1)
+                thread_id=thread.id
             )
             db_session.add(email)
             emails.append(email)
+            
+            # Create snooze metadata for thread
+            metadata = ThreadUserMetadata(
+                thread_id=thread.id,
+                user_id=user.id,
+                snooze_until=datetime.utcnow() + timedelta(days=1)
+            )
+            db_session.add(metadata)
         db_session.commit()
         
         email_ids = [str(e.id) for e in emails]
@@ -642,10 +684,14 @@ class TestBulkSnooze:
         data = response.json()["data"]
         assert data["successful"] == 3
         
-        # Verify emails are unsnoozed
-        for email in emails:
-            db_session.refresh(email)
-            assert email.snooze_until is None
+        # Verify threads are unsnoozed
+        for thread in threads:
+            metadata = db_session.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == thread.id,
+                ThreadUserMetadata.user_id == user.id
+            ).first()
+            assert metadata is not None
+            assert metadata.snooze_until is None
 
 
 class TestBulkArchive:

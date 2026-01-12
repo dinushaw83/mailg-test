@@ -126,13 +126,16 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
                     "is_exclusive": l.is_exclusive
                 })
 
-    # Get is_important from thread metadata for the current user
-    # Similar to how labels work - filter from the loaded relationship
+    # Get thread-level metadata for the current user
     is_important = False
+    snooze_until = None
+    is_archived = False
     if email.thread and hasattr(email.thread, 'user_metadata') and user_id:
         for metadata in email.thread.user_metadata:
             if metadata.user_id == user_id:
                 is_important = metadata.is_important
+                snooze_until = getattr(metadata, 'snooze_until', None)
+                is_archived = getattr(metadata, 'is_archived', False)
                 break
 
     # Determine if email can be cancelled (undo send)
@@ -152,6 +155,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": is_important,
+        "is_archived": is_archived,
         "sender_id": email.sender_id,
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
@@ -161,7 +165,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         "sent_at": email.sent_at,
         "received_at": email.received_at,
         "scheduled_send_at": email.scheduled_send_at,
-        "snooze_until": email.snooze_until,
+        "snooze_until": snooze_until,
         "created_at": email.created_at,
         "updated_at": email.updated_at,
         "attachment_count": len(attachments),
@@ -200,13 +204,16 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
 
     attachment_count = len([a for a in email.attachments])
 
-    # Get is_important from thread metadata for the current user
-    # Similar to how labels work - filter from the loaded relationship
+    # Get thread-level metadata for the current user
     is_important = False
+    snooze_until = None
+    is_archived = False
     if email.thread and hasattr(email.thread, 'user_metadata') and user_id:
         for metadata in email.thread.user_metadata:
             if metadata.user_id == user_id:
                 is_important = metadata.is_important
+                snooze_until = getattr(metadata, 'snooze_until', None)
+                is_archived = getattr(metadata, 'is_archived', False)
                 break
 
     # Determine if email can be cancelled (undo send)
@@ -225,6 +232,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": is_important,
+        "is_archived": is_archived,
         "sender_id": email.sender_id,
         "sender_name": email.sender.name if email.sender else None,
         "sender_email": email.sender.email if email.sender else None,
@@ -232,7 +240,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         "thread_email_count": thread_email_count,
         "sent_at": email.sent_at,
         "scheduled_send_at": email.scheduled_send_at,
-        "snooze_until": email.snooze_until,
+        "snooze_until": snooze_until,
         "created_at": email.created_at,
         "attachment_count": attachment_count,
         "has_attachments": attachment_count > 0,

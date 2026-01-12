@@ -471,7 +471,7 @@ class TestGetEmailsByThread:
         db_session.commit()
         
         response = client.get(
-            f"/api/v1/emails/thread/{thread.id}",
+            f"/api/v1/threads/{thread.id}/emails",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -510,9 +510,9 @@ class TestGetEmailsByThread:
         email1_id, email2_id = email1.id, email2.id
         
         # Mock the background task function to verify it's called with correct args
-        with patch('app.api.v1.endpoints.emails.mark_emails_as_read_background') as mock_mark_read:
+        with patch('app.api.v1.endpoints.threads.mark_emails_as_read_background') as mock_mark_read:
             response = client.get(
-                f"/api/v1/emails/thread/{thread.id}",
+                f"/api/v1/threads/{thread.id}/emails",
                 headers={"Authorization": f"Bearer {token}"}
             )
             
@@ -558,9 +558,9 @@ class TestGetEmailsByThread:
         db_session.add_all([email1, email2])
         db_session.commit()
         
-        with patch('app.api.v1.endpoints.emails.mark_emails_as_read_background') as mock_mark_read:
+        with patch('app.api.v1.endpoints.threads.mark_emails_as_read_background') as mock_mark_read:
             response = client.get(
-                f"/api/v1/emails/thread/{thread.id}",
+                f"/api/v1/threads/{thread.id}/emails",
                 headers={"Authorization": f"Bearer {token}"}
             )
             
@@ -596,7 +596,7 @@ class TestGetEmailsByThread:
         db_session.commit()
         
         response = client.get(
-            f"/api/v1/emails/thread/{thread.id}",
+            f"/api/v1/threads/{thread.id}/emails",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -609,7 +609,7 @@ class TestGetEmailsByThread:
         client, token, user = client_with_auth
         
         response = client.get(
-            f"/api/v1/emails/thread/{NON_EXISTENT_UUID}",
+            f"/api/v1/threads/{NON_EXISTENT_UUID}/emails",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -628,7 +628,7 @@ class TestGetEmailsByThread:
         db_session.add(thread)
         db_session.commit()
         
-        response = client.get(f"/api/v1/emails/thread/{thread.id}")
+        response = client.get(f"/api/v1/threads/{thread.id}/emails")
         
         assert response.status_code == 401
 
@@ -678,7 +678,7 @@ class TestGetEmailsByThread:
         db_session.commit()
         
         response = client.get(
-            f"/api/v1/emails/thread/{thread.id}",
+            f"/api/v1/threads/{thread.id}/emails",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -717,7 +717,7 @@ class TestGetEmailsByThread:
         db_session.commit()
         
         response = client.get(
-            f"/api/v1/emails/thread/{thread.id}",
+            f"/api/v1/threads/{thread.id}/emails",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -985,11 +985,18 @@ class TestEmailSnooze:
         assert response.status_code == 401
 
     def test_unsnooze_email_success(self, client_with_auth, db_session, sample_email):
-        """Test unsnoozing a snoozed email."""
+        """Test unsnoozing a snoozed email (thread-level snooze)."""
+        from app.models.thread_user_metadata import ThreadUserMetadata
+        
         client, token, user = client_with_auth
         
-        # First snooze the email
-        sample_email.snooze_until = datetime.utcnow() + timedelta(days=1)
+        # First snooze the thread via ThreadUserMetadata
+        metadata = ThreadUserMetadata(
+            thread_id=sample_email.thread_id,
+            user_id=user.id,
+            snooze_until=datetime.utcnow() + timedelta(days=1)
+        )
+        db_session.add(metadata)
         db_session.commit()
         
         response = client.post(
@@ -1005,9 +1012,7 @@ class TestEmailSnooze:
         """Test unsnoozing an email that's not snoozed fails."""
         client, token, user = client_with_auth
         
-        # Ensure email is not snoozed
-        sample_email.snooze_until = None
-        db_session.commit()
+        # No snooze metadata exists for this thread
         
         response = client.post(
             f"/api/v1/emails/{sample_email.id}/unsnooze",
@@ -1153,12 +1158,11 @@ class TestEmailArchive:
         
         assert response.status_code == 401
 
-    def test_archive_email_updates_status_in_db(self, client_with_auth, db_session, sample_email):
-        """Test that archiving updates the status in database."""
-        client, token, user = client_with_auth
+    def test_archive_email_updates_thread_metadata(self, client_with_auth, db_session, sample_email):
+        """Test that archiving updates ThreadUserMetadata.is_archived."""
+        from app.models.thread_user_metadata import ThreadUserMetadata
         
-        # Verify initial status is not archived
-        assert sample_email.status != "archived"
+        client, token, user = client_with_auth
         
         response = client.post(
             f"/api/v1/emails/{sample_email.id}/archive",
@@ -1166,10 +1170,16 @@ class TestEmailArchive:
         )
         
         assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["is_archived"] == True
         
-        # Refresh from database
-        db_session.refresh(sample_email)
-        assert sample_email.status == "archived"
+        # Verify ThreadUserMetadata was created/updated
+        metadata = db_session.query(ThreadUserMetadata).filter(
+            ThreadUserMetadata.thread_id == sample_email.thread_id,
+            ThreadUserMetadata.user_id == user.id
+        ).first()
+        assert metadata is not None
+        assert metadata.is_archived == True
 
     def test_archive_email_as_recipient(self, client_with_auth, db_session):
         """Test that a recipient can archive an email they received."""
@@ -1185,13 +1195,23 @@ class TestEmailArchive:
         db_session.add(sender)
         db_session.commit()
         
+        # Create a thread for the email
+        thread = Thread(
+            subject="Test received email",
+            owner_id=sender.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.commit()
+        
         # Create an email from sender to current user
         email = Email(
             subject="Test received email",
             body="Email body",
             sender_id=sender.id,
             folder=FolderType.INBOX.value,
-            status="received"
+            status="received",
+            thread_id=thread.id
         )
         db_session.add(email)
         db_session.commit()
@@ -1214,6 +1234,7 @@ class TestEmailArchive:
         
         assert response.status_code == 200
         data = response.json()["data"]
+        assert data["is_archived"] == True
 
 
 class TestEmailCategory:

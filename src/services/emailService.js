@@ -140,7 +140,7 @@ const emailService = {
    */
   getEmail: async (thread_id) => {
     try {
-      const response = await apiClient.get(`v1/emails/thread/${thread_id}`);
+      const response = await apiClient.get(`v1/threads/${thread_id}/emails`);
       const payload = response?.data?.data ?? response?.data ?? {};
 
       // API returns an array of emails in the thread
@@ -159,7 +159,7 @@ const emailService = {
    * Fetch a specific thread by ID
    */
   getThread: async (thread_id) => {
-    const response = await apiClient.get(`/emails/threads/${thread_id}`);
+    const response = await apiClient.get(`/threads/${thread_id}/emails`);
     return response.data;
   },
 

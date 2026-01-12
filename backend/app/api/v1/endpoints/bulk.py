@@ -408,12 +408,41 @@ def bulk_snooze(
     success_ids = []
     failures = {eid: "Email not found or access denied" for eid in not_found}
     
+    from app.models.thread_user_metadata import ThreadUserMetadata
+    
+    # Track processed threads to avoid duplicates
+    processed_threads = set()
+    
     for email in emails:
         try:
-            email.snooze_until = request.snooze_until
+            if not email.thread_id:
+                failures[email.id] = "Email has no thread"
+                continue
+            
+            # Skip if we already processed this thread
+            if email.thread_id in processed_threads:
+                success_ids.append(email.id)
+                continue
+            
+            # Update snooze in ThreadUserMetadata (thread-level per user)
+            metadata = db.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == email.thread_id,
+                ThreadUserMetadata.user_id == current_user.id
+            ).first()
+            
+            if metadata:
+                metadata.snooze_until = request.snooze_until
+            else:
+                metadata = ThreadUserMetadata(
+                    thread_id=email.thread_id,
+                    user_id=current_user.id,
+                    snooze_until=request.snooze_until
+                )
+                db.add(metadata)
+            
             # Add Snoozed label
-            if email.thread_id:
-                add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+            processed_threads.add(email.thread_id)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
@@ -450,13 +479,35 @@ def bulk_unsnooze(
     success_ids = []
     failures = {eid: "Email not found or access denied" for eid in not_found}
     
+    from app.models.thread_user_metadata import ThreadUserMetadata
+    
+    # Track processed threads to avoid duplicates
+    processed_threads = set()
+    
     for email in emails:
         try:
-            email.snooze_until = None
+            if not email.thread_id:
+                failures[email.id] = "Email has no thread"
+                continue
+            
+            # Skip if we already processed this thread
+            if email.thread_id in processed_threads:
+                success_ids.append(email.id)
+                continue
+            
+            # Update snooze in ThreadUserMetadata (thread-level per user)
+            metadata = db.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == email.thread_id,
+                ThreadUserMetadata.user_id == current_user.id
+            ).first()
+            
+            if metadata:
+                metadata.snooze_until = None
+            
             # Remove Snoozed label and add Inbox back
-            if email.thread_id:
-                remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
-                add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+            remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SNOOZED)
+            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
+            processed_threads.add(email.thread_id)
             success_ids.append(email.id)
         except Exception as e:
             failures[email.id] = str(e)
