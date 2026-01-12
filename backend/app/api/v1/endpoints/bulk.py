@@ -802,32 +802,38 @@ def bulk_spam(
     """
     current_user = auth.user
 
-    try:
-        # Use generic helper - filter out emails already in spam
-        success_ids, thread_ids, failures = bulk_update_emails_with_threads(
-            db=db,
-            user_id=current_user.id,
-            email_ids=request.email_ids,
-            email_updates={Email.folder: FolderType.SPAM.value},
-            label_operation=lambda tids: bulk_replace_exclusive_labels(
-                db, tids, current_user.id, SystemLabel.SPAM
-            ),
-            additional_filters=[Email.folder != FolderType.SPAM.value]
+    # Get accessible email IDs (without loading full objects)
+    accessible_ids = db.query(Email.id).filter(
+        Email.id.in_(request.email_ids),
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
         )
+    ).all()
 
-        # Mark already-spam emails as failures
-        for eid in request.email_ids:
-            if eid not in success_ids and eid not in failures:
-                failures[eid] = "Email is already marked as spam"
+    success_ids = [eid[0] for eid in accessible_ids]
+    not_found = [eid for eid in request.email_ids if eid not in success_ids]
+    failures = {eid: "Email not found or access denied" for eid in not_found}
 
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Bulk spam operation failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Bulk operation failed"
-        )
+    # Bulk update with single query
+    if success_ids:
+        try:
+            db.query(Email).filter(
+                Email.id.in_(success_ids)
+            ).update({Email.is_spam: True, Email.folder: FolderType.SPAM.value}, synchronize_session=False)
+
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Bulk spam operation failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Bulk operation failed"
+            )
 
     logger.info(f"Bulk spam: {len(success_ids)} emails marked as spam by user {current_user.id}")
 
@@ -850,32 +856,38 @@ def bulk_unspam(
     """
     current_user = auth.user
 
-    try:
-        # Use generic helper - filter only emails in spam folder
-        success_ids, thread_ids, failures = bulk_update_emails_with_threads(
-            db=db,
-            user_id=current_user.id,
-            email_ids=request.email_ids,
-            email_updates={Email.folder: FolderType.INBOX.value},
-            label_operation=lambda tids: bulk_replace_exclusive_labels(
-                db, tids, current_user.id, SystemLabel.INBOX
-            ),
-            additional_filters=[Email.folder == FolderType.SPAM.value]
+    # Get accessible email IDs (without loading full objects)
+    accessible_ids = db.query(Email.id).filter(
+        Email.id.in_(request.email_ids),
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
         )
+    ).all()
 
-        # Mark non-spam emails as failures
-        for eid in request.email_ids:
-            if eid not in success_ids and eid not in failures:
-                failures[eid] = "Email is not in spam folder"
+    success_ids = [eid[0] for eid in accessible_ids]
+    not_found = [eid for eid in request.email_ids if eid not in success_ids]
+    failures = {eid: "Email not found or access denied" for eid in not_found}
 
-        db.commit()
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Bulk unspam operation failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Bulk operation failed"
-        )
+    # Bulk update with single query
+    if success_ids:
+        try:
+            db.query(Email).filter(
+                Email.id.in_(success_ids)
+            ).update({Email.is_spam: False, Email.folder: FolderType.INBOX.value}, synchronize_session=False)
+
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Bulk unspam operation failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Bulk operation failed"
+            )
 
     logger.info(f"Bulk unspam: {len(success_ids)} emails removed from spam by user {current_user.id}")
 
