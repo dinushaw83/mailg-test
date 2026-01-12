@@ -115,8 +115,7 @@ def create_email(
         for recipient in email_data.recipients:
             # Try to find user by email
             recipient_user = db.query(User).filter(
-                User.email == recipient.email,
-                User.is_deleted == False
+                User.email == recipient.email
             ).first()
             
             email_recipient = EmailRecipient(
@@ -175,8 +174,6 @@ def list_emails(
             .selectinload(Thread.labels),
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
-    ).filter(
-        Email.is_deleted == False,
     )
     
     # Apply folder filter with proper sender/recipient context
@@ -338,7 +335,6 @@ def list_emails(
             func.count(Email.id).label('count')
         ).filter(
             Email.thread_id.in_(thread_ids),
-            Email.is_deleted == False,
             or_(
                 Email.sender_id == current_user.id,
                 Email.id.in_(
@@ -394,7 +390,6 @@ def get_emails_by_thread(
             .selectinload(Thread.user_metadata),
     ).filter(
         Email.thread_id == thread_id,
-        Email.is_deleted == False,
         or_(
             Email.sender_id == current_user.id,
             Email.id.in_(
@@ -446,8 +441,7 @@ def get_email(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -484,8 +478,7 @@ def update_email(
     current_user = auth.user
     
     email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -553,27 +546,32 @@ def update_email(
 def delete_email(
     email_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
+    permanent: bool = Query(False, description="Permanently delete from database"),
 ) -> None:
     """Delete an email.
-    
-    Args:
-        permanent: If True, permanently removes from database. 
-                   If False (default), moves to trash or soft deletes if already in trash.
+
+    Delete behavior:
+    - If permanent=False (default): Moves email to trash folder
+    - If permanent=True: Permanently removes email from database
+
+    To permanently delete an email from trash, call this endpoint with permanent=True.
+
+    Permissions:
+    - Users can only delete their own emails (sent or received)
+    - Admins can delete any email
     """
     current_user = auth.user
-    
+
     email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
-    
+
     if not email:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
         )
-    
+
     # Check ownership
     if email.sender_id != current_user.id and current_user.role != "admin":
         is_recipient = db.query(EmailRecipient).filter(
@@ -585,26 +583,25 @@ def delete_email(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Email {email_id} not found"
             )
-    
+
     if permanent:
         # Permanently delete from database
         db.delete(email)
     else:
-        # Check if already in trash
-        if email.folder == FolderType.TRASH.value:
-            # Already in trash, soft delete
-            email.is_deleted = True
-        else:
-            # Move to trash
-            email.folder = FolderType.TRASH.value
-    
+        # Move to trash folder
+        email.folder = FolderType.TRASH.value
+
+        # Update thread label to trash
+        if email.thread_id:
+            replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.TRASH)
+
     try:
         db.commit()
     except Exception:
         db.rollback()
         raise
-    
-    logger.info(f"Email {email.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
+
+    logger.info(f"Email {email.id} {'permanently ' if permanent else 'moved to trash and '}deleted by user {current_user.id}")
 
 
 @router.post("/emails/{email_id}/send", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -630,8 +627,7 @@ def send_email(
         selectinload(Email.recipients),
     ).filter(
         Email.id == email_id,
-        Email.sender_id == current_user.id,
-        Email.is_deleted == False
+        Email.sender_id == current_user.id
     ).first()
     
     if not email:
@@ -754,8 +750,7 @@ def cancel_send(
         joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
-        Email.sender_id == current_user.id,
-        Email.is_deleted == False
+        Email.sender_id == current_user.id
     ).first()
     
     if not email:
@@ -812,8 +807,7 @@ def confirm_send(
         joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
         Email.id == email_id,
-        Email.sender_id == current_user.id,
-        Email.is_deleted == False
+        Email.sender_id == current_user.id
     ).first()
     
     if not email:
@@ -862,8 +856,7 @@ def reply_to_email(
         joinedload(Email.sender),
         selectinload(Email.recipients),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not original_email:
@@ -937,8 +930,7 @@ def reply_to_email(
         # Add recipients
         for recipient in recipients:
             recipient_user = db.query(User).filter(
-                User.email == recipient["email"],
-                User.is_deleted == False
+                User.email == recipient["email"]
             ).first()
             
             email_recipient = EmailRecipient(
@@ -1004,8 +996,7 @@ def forward_email(
     current_user = auth.user
     
     original_email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not original_email:
@@ -1058,8 +1049,7 @@ def forward_email(
         # Add recipients
         for recipient in forward_data.recipients:
             recipient_user = db.query(User).filter(
-                User.email == recipient.email,
-                User.is_deleted == False
+                User.email == recipient.email
             ).first()
             
             email_recipient = EmailRecipient(
@@ -1124,8 +1114,7 @@ def mark_email_read(
     current_user = auth.user
     
     email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1156,8 +1145,7 @@ def star_email(
     current_user = auth.user
     
     email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1200,8 +1188,7 @@ def important_email(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
 
     if not email:
@@ -1247,8 +1234,7 @@ def move_email(
         )
     
     email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1291,8 +1277,7 @@ def add_label_to_email(
     email = db.query(Email).options(
         joinedload(Email.thread).selectinload(Thread.labels),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1310,8 +1295,7 @@ def add_label_to_email(
     # Verify label belongs to user
     label = db.query(Label).filter(
         Label.id == label_data.label_id,
-        Label.owner_id == current_user.id,
-        Label.is_deleted == False
+        Label.owner_id == current_user.id
     ).first()
     
     if not label:
@@ -1360,8 +1344,7 @@ def remove_label_from_email(
     
     # Get the email to find its thread
     email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email or not email.thread_id:
@@ -1408,8 +1391,7 @@ def snooze_email(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1475,8 +1457,7 @@ def unsnooze_email(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1544,8 +1525,7 @@ def archive_email(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1606,8 +1586,7 @@ def unarchive_email(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1680,8 +1659,7 @@ def mark_email_spam(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1748,8 +1726,7 @@ def unmark_email_spam(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1820,8 +1797,7 @@ def restore_email_from_trash(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1909,8 +1885,7 @@ def update_email_category(
         joinedload(Email.thread)
             .selectinload(Thread.user_metadata),
     ).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:
@@ -1972,8 +1947,6 @@ def get_email_category_counts(
     base_query = db.query(
         Email.category,
         func.count(Email.id).label('count')
-    ).filter(
-        Email.is_deleted == False,
     )
 
     # Apply folder filter with proper sender/recipient context

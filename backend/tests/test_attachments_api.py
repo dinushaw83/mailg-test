@@ -150,34 +150,6 @@ class TestAttachmentCreate:
 class TestAttachmentDelete:
     """Test attachment deletion."""
 
-    def test_delete_attachment_soft_delete(self, client_with_auth, db_session, sample_draft_email):
-        """Test soft deleting an attachment."""
-        client, token, user = client_with_auth
-        
-        # Create attachment on draft
-        attachment = Attachment(
-            email_id=sample_draft_email.id,
-            filename="to_delete.pdf",
-            content_type="application/pdf",
-            size_bytes=512
-        )
-        db_session.add(attachment)
-        db_session.commit()
-        attachment_id = attachment.id
-        
-        response = client.delete(
-            f"/api/v1/attachments/{attachment_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify soft delete
-        db_session.expire_all()
-        attachment_check = db_session.query(Attachment).filter(Attachment.id == attachment_id).first()
-        assert attachment_check is not None
-        assert attachment_check.is_deleted == True
-
     def test_delete_attachment_permanent(self, client_with_auth, db_session, sample_draft_email):
         """Test permanently deleting an attachment removes it from database."""
         client, token, user = client_with_auth

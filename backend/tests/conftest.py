@@ -133,7 +133,6 @@ def sample_user(db_session):
         email="testuser@example.com",
         role="user",
         active=True,
-        is_deleted=False,
     )
     db_session.add(user)
     db_session.commit()
@@ -149,8 +148,7 @@ def sample_admin(db_session):
         last_name="Admin",
         email="admin@example.com",
         role="admin",
-        active=True,
-        is_deleted=False,
+        active=True
     )
     db_session.add(user)
     db_session.commit()

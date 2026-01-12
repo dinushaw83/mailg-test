@@ -829,17 +829,23 @@ class TestEmailOperations:
         
         assert response.status_code == 200
 
-    def test_delete_email_soft_delete(self, client_with_auth, db_session, sample_email):
-        """Test deleting an email (soft delete - moves to trash)."""
+    def test_delete_email_moves_to_trash(self, client_with_auth, db_session, sample_email):
+        """Test deleting an email moves it to trash folder."""
         client, token, user = client_with_auth
         email_id = sample_email.id
-        
+
         response = client.delete(
             f"/api/v1/emails/{email_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 204
+
+        # Verify email was moved to trash
+        db_session.expire_all()
+        email_check = db_session.query(Email).filter(Email.id == email_id).first()
+        assert email_check is not None
+        assert email_check.folder == FolderType.TRASH.value
 
     def test_delete_email_permanent(self, client_with_auth, db_session, sample_email):
         """Test permanently deleting an email removes it from database."""
@@ -857,36 +863,6 @@ class TestEmailOperations:
         db_session.expire_all()
         email_check = db_session.query(Email).filter(Email.id == email_id).first()
         assert email_check is None
-
-    def test_delete_email_soft_delete_default(self, client_with_auth, db_session):
-        """Test default delete moves to trash (not permanent)."""
-        client, token, user = client_with_auth
-        
-        # Create email
-        email = Email(
-            subject="Test Email",
-            body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add(email)
-        db_session.commit()
-        email_id = email.id
-        original_folder = email.folder
-        
-        # Delete without permanent flag
-        response = client.delete(
-            f"/api/v1/emails/{email_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify email still exists (moved to trash or soft deleted)
-        db_session.expire_all()
-        email_check = db_session.query(Email).filter(Email.id == email_id).first()
-        assert email_check is not None
 
 
 class TestEmailSendReplyForward:
@@ -1829,43 +1805,6 @@ class TestEmailCategoryCounts:
         data = response.json()["data"]
 
         assert data["social"] == 1
-
-    def test_get_category_counts_excludes_deleted_emails(self, client_with_auth, db_session):
-        """Test that category counts exclude soft-deleted emails."""
-        client, token, user = client_with_auth
-
-        # Create active and deleted emails
-        email_active = Email(
-            subject="Active Email",
-            body="Content",
-            status="received",
-            category="primary",
-            is_deleted=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_deleted = Email(
-            subject="Deleted Email",
-            body="Content",
-            status="received",
-            category="primary",
-            is_deleted=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add_all([email_active, email_deleted])
-        db_session.commit()
-
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # Only active email
-        assert data["primary"] == 1
 
     def test_get_category_counts_all_keys_present(self, client_with_auth, db_session):
         """Test that all category keys are present in response."""

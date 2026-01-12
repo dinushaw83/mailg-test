@@ -26,7 +26,6 @@ class AttachmentResponse(BaseModel):
     size_bytes: Optional[int] = None
     attachment_type: str
     storage_path: Optional[str] = None
-    is_deleted: bool = False
     created_at: datetime
 
 
