@@ -284,9 +284,9 @@ class TestEmailAPIImportant:
         db_session.add(email)
         db_session.commit()
 
-        # Mark as important
+        # Mark as important via thread endpoint
         response = client.patch(
-            f"/api/v1/emails/{email.id}/important",
+            f"/api/v1/threads/{thread.id}/important",
             json={"is_important": True},
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -303,8 +303,8 @@ class TestEmailAPIImportant:
         assert metadata is not None
         assert metadata.is_important is True
 
-    def test_unmark_email_important_via_api(self, client_with_auth, db_session):
-        """Test unmarking a thread as important via email endpoint."""
+    def test_unmark_thread_important_via_api(self, client_with_auth, db_session):
+        """Test unmarking a thread as important via thread endpoint."""
         client, token, user = client_with_auth
 
         # Create a thread and email
@@ -332,7 +332,7 @@ class TestEmailAPIImportant:
 
         # Then unmark via API
         response = client.patch(
-            f"/api/v1/emails/{email.id}/important",
+            f"/api/v1/threads/{thread.id}/important",
             json={"is_important": False},
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -549,31 +549,17 @@ class TestEmailAPIImportant:
         data = response.json()["data"]
         assert data["is_important"] is False
 
-    def test_mark_important_without_thread(self, client_with_auth, db_session):
-        """Test that marking important fails for emails without a thread."""
+    def test_mark_important_nonexistent_thread(self, client_with_auth, db_session):
+        """Test that marking important fails for non-existent thread."""
+        import uuid
         client, token, user = client_with_auth
 
-        # Create an email without a thread (shouldn't happen in practice, but test edge case)
-        email = Email(
-            subject="Email without thread",
-            body="Body",
-            status="draft",
-            folder=FolderType.DRAFTS.value,
-            sender_id=user.id,
-            thread_id=None,
-        )
-        db_session.add(email)
-        db_session.commit()
-
-        # Try to mark as important
+        # Try to mark a non-existent thread as important
+        fake_thread_id = uuid.uuid4()
         response = client.patch(
-            f"/api/v1/emails/{email.id}/important",
+            f"/api/v1/threads/{fake_thread_id}/important",
             json={"is_important": True},
             headers={"Authorization": f"Bearer {token}"}
         )
 
-        assert response.status_code == 400
-        response_data = response.json()
-        # Check if error is in 'detail' or in the response structure
-        error_msg = response_data.get("detail", str(response_data)).lower()
-        assert "no associated thread" in error_msg or "thread" in error_msg
+        assert response.status_code == 404

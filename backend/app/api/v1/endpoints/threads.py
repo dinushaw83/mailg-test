@@ -3,9 +3,10 @@
 This module provides:
 - Get all emails in a thread
 - Delete/restore thread operations
-- Thread metadata management
+- Thread metadata management (snooze, archive, important)
 """
 
+from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_
@@ -16,18 +17,21 @@ from app.db.session import get_db
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
-from app.schemas.email import EmailResponse
+from app.models.thread_user_metadata import ThreadUserMetadata
+from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import SystemLabel, FolderType
 from app.utils.label_utils import (
     add_system_label_to_thread,
+    remove_system_label_from_thread,
     replace_exclusive_labels,
 )
 from app.utils.email_utils import (
     format_email_response,
     mark_emails_as_read_background,
 )
+from app.utils.thread_metadata_utils import mark_thread_important
 
 logger = logging.getLogger(__name__)
 
@@ -208,3 +212,409 @@ def restore_thread(
         raise
     
     logger.info(f"Thread {thread_id} restored from trash by user {current_user.id}")
+
+
+@router.post("/{thread_id}/snooze", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def snooze_thread(
+    thread_id: UUID,
+    snooze_data: EmailSnoozeRequest,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Snooze a thread until a specific date and time.
+    
+    When snoozed, the thread is temporarily hidden from the inbox and will
+    reappear at the specified snooze_until time.
+    
+    Permissions:
+    - Users can only snooze threads they have access to (sent or received)
+    """
+    current_user = auth.user
+    
+    # Check if user has access to this thread
+    user_email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
+    ).filter(
+        Email.thread_id == thread_id,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).first()
+    
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Validate snooze_until is in the future
+    if snooze_data.snooze_until <= datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Snooze time must be in the future"
+        )
+    
+    # Update snooze in ThreadUserMetadata (thread-level per user)
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if metadata:
+        metadata.snooze_until = snooze_data.snooze_until
+    else:
+        metadata = ThreadUserMetadata(
+            thread_id=thread_id,
+            user_id=current_user.id,
+            snooze_until=snooze_data.snooze_until
+        )
+        db.add(metadata)
+    
+    # Add Snoozed label
+    add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.SNOOZED)
+    
+    try:
+        db.commit()
+        db.refresh(user_email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Thread {thread_id} snoozed until {snooze_data.snooze_until} by user {current_user.id}")
+    
+    return format_email_response(user_email, current_user.id)
+
+
+@router.post("/{thread_id}/unsnooze", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def unsnooze_thread(
+    thread_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Unsnooze a thread, making it immediately visible again.
+    
+    Permissions:
+    - Users can only unsnooze threads they have access to (sent or received)
+    """
+    current_user = auth.user
+    
+    # Check if user has access to this thread
+    user_email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
+    ).filter(
+        Email.thread_id == thread_id,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).first()
+    
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Check snooze status in ThreadUserMetadata
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if not metadata or not metadata.snooze_until:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Thread is not snoozed"
+        )
+    
+    metadata.snooze_until = None
+    
+    # Remove Snoozed label and add Inbox back
+    remove_system_label_from_thread(db, thread_id, current_user.id, SystemLabel.SNOOZED)
+    add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.INBOX)
+    
+    try:
+        db.commit()
+        db.refresh(user_email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Thread {thread_id} unsnoozed by user {current_user.id}")
+    
+    return format_email_response(user_email, current_user.id)
+
+
+@router.post("/{thread_id}/archive", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def archive_thread(
+    thread_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Archive a thread.
+    
+    Sets is_archived=True in ThreadUserMetadata for the thread.
+    Removes the INBOX label so thread doesn't appear in inbox.
+    
+    Permissions:
+    - Users can only archive threads they have access to (sent or received)
+    """
+    current_user = auth.user
+    
+    # Check if user has access to this thread
+    user_email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
+    ).filter(
+        Email.thread_id == thread_id,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).first()
+    
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Update archive status in ThreadUserMetadata (thread-level per user)
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if metadata:
+        metadata.is_archived = True
+    else:
+        metadata = ThreadUserMetadata(
+            thread_id=thread_id,
+            user_id=current_user.id,
+            is_archived=True
+        )
+        db.add(metadata)
+    
+    # Remove Inbox label (email stays in All Mail)
+    remove_system_label_from_thread(db, thread_id, current_user.id, SystemLabel.INBOX)
+    
+    try:
+        db.commit()
+        db.refresh(user_email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Thread {thread_id} archived by user {current_user.id}")
+    
+    return format_email_response(user_email, current_user.id)
+
+
+@router.post("/{thread_id}/unarchive", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def unarchive_thread(
+    thread_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Unarchive a thread.
+    
+    Sets is_archived=False in ThreadUserMetadata and restores Inbox/Sent label.
+    
+    Permissions:
+    - Users can only unarchive threads they have access to (sent or received)
+    """
+    current_user = auth.user
+    
+    # Check if user has access to this thread
+    user_email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
+    ).filter(
+        Email.thread_id == thread_id,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).first()
+    
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Check archive status in ThreadUserMetadata
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == thread_id,
+        ThreadUserMetadata.user_id == current_user.id
+    ).first()
+    
+    if not metadata or not metadata.is_archived:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Thread is not archived"
+        )
+    
+    metadata.is_archived = False
+    
+    # Restore appropriate label based on whether user sent or received it
+    if user_email.sender_id == current_user.id:
+        add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.SENT)
+    else:
+        add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.INBOX)
+    
+    try:
+        db.commit()
+        db.refresh(user_email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Thread {thread_id} unarchived by user {current_user.id}")
+    
+    return format_email_response(user_email, current_user.id)
+
+
+@router.patch("/{thread_id}/important", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def mark_thread_important_endpoint(
+    thread_id: UUID,
+    important_data: EmailImportantUpdate,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Mark a thread as important or unimportant for the current user.
+
+    This updates the thread-level is_important flag for the current user only.
+    Other users' important status for the same thread is not affected.
+    """
+    current_user = auth.user
+    
+    # Check if user has access to this thread
+    user_email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
+    ).filter(
+        Email.thread_id == thread_id,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).first()
+    
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Update thread metadata for this user
+    mark_thread_important(db, thread_id, current_user.id, important_data.is_important)
+    
+    try:
+        db.commit()
+        db.refresh(user_email)
+    except Exception:
+        db.rollback()
+        raise
+    
+    return format_email_response(user_email, current_user.id)
+
+
+@router.post("/{thread_id}/unstar", status_code=status.HTTP_200_OK, dependencies=[Depends(authorized())])
+def unstar_thread(
+    thread_id: UUID,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Unstar all emails in a thread for the current user.
+    
+    Removes the starred flag from all emails in the thread where the user
+    is either the sender or recipient.
+    
+    Permissions:
+    - Users can only unstar emails in threads they have access to
+    """
+    current_user = auth.user
+    
+    # Get all user's emails in this thread
+    user_emails = db.query(Email).filter(
+        Email.thread_id == thread_id,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).all()
+    
+    if not user_emails:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Unstar all emails in the thread
+    unstarred_count = 0
+    for email in user_emails:
+        if email.is_starred:
+            email.is_starred = False
+            unstarred_count += 1
+    
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    
+    logger.info(f"Unstarred {unstarred_count} emails in thread {thread_id} for user {current_user.id}")
+    
+    return {
+        "success": True,
+        "message": f"Unstarred {unstarred_count} email(s) in thread",
+        "thread_id": str(thread_id),
+        "unstarred_count": unstarred_count
+    }

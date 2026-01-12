@@ -261,32 +261,51 @@ When the TRASH or SPAM system label is removed from a thread, all corresponding 
 
 ---
 
-### Email Operations
+### Thread Metadata Operations
 
-#### Snooze Email (Thread)
+#### Snooze Thread
 ```
-POST /api/v1/emails/{email_id}/snooze
+POST /api/v1/threads/{thread_id}/snooze
 Body: { "snooze_until": "2024-01-15T09:00:00Z" }
 ```
-Snoozes the entire thread until specified time.
+Snoozes the thread until specified time.
 
-#### Unsnooze Email (Thread)
+#### Unsnooze Thread
 ```
-POST /api/v1/emails/{email_id}/unsnooze
+POST /api/v1/threads/{thread_id}/unsnooze
 ```
 Removes snooze from the thread.
 
-#### Archive Email (Thread)
+#### Archive Thread
 ```
-POST /api/v1/emails/{email_id}/archive
+POST /api/v1/threads/{thread_id}/archive
 ```
-Archives the entire thread.
+Archives the thread. Sets `is_archived=True` and removes INBOX label.
 
-#### Unarchive Email (Thread)
+#### Unarchive Thread
 ```
-POST /api/v1/emails/{email_id}/unarchive
+POST /api/v1/threads/{thread_id}/unarchive
 ```
-Unarchives the thread.
+Unarchives the thread. Sets `is_archived=False` and restores appropriate label.
+
+#### Mark Thread Important
+```
+PATCH /api/v1/threads/{thread_id}/important
+Body: { "is_important": true }
+```
+Marks/unmarks the thread as important for the current user.
+
+#### Unstar Thread
+```
+POST /api/v1/threads/{thread_id}/unstar
+```
+Removes starred flag from all emails in the thread for the current user.
+Returns count of emails unstarred.
+
+**Note on Star/Unstar:**
+- **Star individual email**: `PATCH /api/v1/emails/{email_id}/star` with `{ "is_starred": true }`
+- **Unstar individual email**: `PATCH /api/v1/emails/{email_id}/star` with `{ "is_starred": false }`
+- **Unstar all emails in thread**: `POST /api/v1/threads/{thread_id}/unstar`
 
 ---
 

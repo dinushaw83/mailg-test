@@ -42,12 +42,10 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Delete Email](#delete-email)
   - [Get Email](#get-email)
   - [Update Email](#update-email)
-  - [Archive Email](#archive-email)
   - [Cancel Send](#cancel-send)
   - [Update Email Category](#update-email-category)
   - [Confirm Send](#confirm-send)
   - [Forward Email](#forward-email)
-  - [Important Email](#important-email)
   - [Add Label To Email](#add-label-to-email)
   - [Remove Label From Email](#remove-label-from-email)
   - [Move Email](#move-email)
@@ -55,11 +53,8 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Reply To Email](#reply-to-email)
   - [Restore Email From Trash](#restore-email-from-trash)
   - [Send Email](#send-email)
-  - [Snooze Email](#snooze-email)
   - [Mark Email Spam](#mark-email-spam)
   - [Star Email](#star-email)
-  - [Unarchive Email](#unarchive-email)
-  - [Unsnooze Email](#unsnooze-email)
   - [Unmark Email Spam](#unmark-email-spam)
 - [Labels API](#labels-api)
   - [List Labels](#list-labels)
@@ -90,8 +85,13 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Apply Template](#apply-template)
 - [Threads API](#threads-api)
   - [Delete Thread](#delete-thread)
+  - [Archive Thread](#archive-thread)
   - [Get Thread Emails](#get-thread-emails)
+  - [Mark Thread Important Endpoint](#mark-thread-important-endpoint)
   - [Restore Thread](#restore-thread)
+  - [Snooze Thread](#snooze-thread)
+  - [Unarchive Thread](#unarchive-thread)
+  - [Unsnooze Thread](#unsnooze-thread)
 - [Users API](#users-api)
   - [List Users](#list-users)
   - [Create User](#create-user)
@@ -2201,79 +2201,6 @@ Permissions:
 
 ---
 
-### Archive Email
-
-**POST** `/api/v1/emails/{email_id}/archive`
-
-Archive a thread (via email_id).
-
-Sets is_archived=True in ThreadUserMetadata for the thread.
-
-Permissions:
-- Users can only archive their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
 ### Cancel Send
 
 **POST** `/api/v1/emails/{email_id}/cancel-send`
@@ -2528,85 +2455,6 @@ Email delivery to recipients is processed in the background for better performan
 **Responses**:
 
 - `201`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Important Email
-
-**PATCH** `/api/v1/emails/{email_id}/important`
-
-Mark a thread as important or unimportant for the current user.
-
-This updates the thread-level is_important flag for the current user only.
-Other users' important status for the same thread is not affected.
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Request Body**:
-
-```json
-{
-  "is_important": false
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
 
 ```json
 {
@@ -3191,88 +3039,6 @@ Email delivery to recipients is processed in the background for better performan
 
 ---
 
-### Snooze Email
-
-**POST** `/api/v1/emails/{email_id}/snooze`
-
-Snooze an email until a specific date and time.
-
-When snoozed, the email is temporarily hidden from the inbox and will
-reappear at the specified snooze_until time.
-
-Permissions:
-- Users can only snooze their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Request Body**:
-
-```json
-{
-  "snooze_until": "2024-01-01T00:00:00Z"
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
 ### Mark Email Spam
 
 **POST** `/api/v1/emails/{email_id}/spam`
@@ -3363,150 +3129,6 @@ Star or unstar an email.
   "is_starred": false
 }
 ```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Unarchive Email
-
-**POST** `/api/v1/emails/{email_id}/unarchive`
-
-Unarchive a thread (via email_id).
-
-Sets is_archived=False in ThreadUserMetadata and restores Inbox/Sent label.
-
-Permissions:
-- Users can only unarchive their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Unsnooze Email
-
-**POST** `/api/v1/emails/{email_id}/unsnooze`
-
-Unsnooze an email, making it immediately visible again.
-
-Permissions:
-- Users can only unsnooze their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
 
 **Responses**:
 
@@ -5241,6 +4863,80 @@ Permissions:
 
 ---
 
+### Archive Thread
+
+**POST** `/api/v1/threads/{thread_id}/archive`
+
+Archive a thread.
+
+Sets is_archived=True in ThreadUserMetadata for the thread.
+Removes the INBOX label so thread doesn't appear in inbox.
+
+Permissions:
+- Users can only archive threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Get Thread Emails
 
 **GET** `/api/v1/threads/{thread_id}/emails`
@@ -5324,6 +5020,85 @@ Permissions:
 
 ---
 
+### Mark Thread Important Endpoint
+
+**PATCH** `/api/v1/threads/{thread_id}/important`
+
+Mark a thread as important or unimportant for the current user.
+
+This updates the thread-level is_important flag for the current user only.
+Other users' important status for the same thread is not affected.
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "is_important": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Restore Thread
 
 **POST** `/api/v1/threads/{thread_id}/restore`
@@ -5342,6 +5117,232 @@ Permissions:
 **Responses**:
 
 - `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Snooze Thread
+
+**POST** `/api/v1/threads/{thread_id}/snooze`
+
+Snooze a thread until a specific date and time.
+
+When snoozed, the thread is temporarily hidden from the inbox and will
+reappear at the specified snooze_until time.
+
+Permissions:
+- Users can only snooze threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "snooze_until": "2024-01-01T00:00:00Z"
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unarchive Thread
+
+**POST** `/api/v1/threads/{thread_id}/unarchive`
+
+Unarchive a thread.
+
+Sets is_archived=False in ThreadUserMetadata and restores Inbox/Sent label.
+
+Permissions:
+- Users can only unarchive threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unsnooze Thread
+
+**POST** `/api/v1/threads/{thread_id}/unsnooze`
+
+Unsnooze a thread, making it immediately visible again.
+
+Permissions:
+- Users can only unsnooze threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "category": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
 - `422`: Validation Error
 

@@ -919,18 +919,18 @@ class TestEmailSendReplyForward:
         assert response.status_code == 201
 
 
-class TestEmailSnooze:
-    """Test email snooze and unsnooze operations."""
+class TestThreadSnooze:
+    """Test thread snooze and unsnooze operations."""
 
-    def test_snooze_email_success(self, client_with_auth, db_session, sample_email):
-        """Test snoozing an email until a future date."""
+    def test_snooze_thread_success(self, client_with_auth, db_session, sample_email):
+        """Test snoozing a thread until a future date."""
         client, token, user = client_with_auth
         
         # Snooze until tomorrow
         snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
         
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/snooze",
+            f"/api/v1/threads/{sample_email.thread_id}/snooze",
             json={"snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -938,9 +938,8 @@ class TestEmailSnooze:
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["snooze_until"] is not None
-        assert data["id"] == str(sample_email.id)
 
-    def test_snooze_email_past_time_fails(self, client_with_auth, db_session, sample_email):
+    def test_snooze_thread_past_time_fails(self, client_with_auth, db_session, sample_email):
         """Test that snoozing to a past time fails."""
         client, token, user = client_with_auth
         
@@ -948,7 +947,7 @@ class TestEmailSnooze:
         snooze_time = (datetime.utcnow() - timedelta(days=1)).isoformat()
         
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/snooze",
+            f"/api/v1/threads/{sample_email.thread_id}/snooze",
             json={"snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -959,33 +958,33 @@ class TestEmailSnooze:
         error_msg = response_data.get("message", "")
         assert "future" in error_msg.lower()
 
-    def test_snooze_email_not_found(self, client_with_auth):
-        """Test snoozing a non-existent email returns 404."""
+    def test_snooze_thread_not_found(self, client_with_auth):
+        """Test snoozing a non-existent thread returns 404."""
         client, token, user = client_with_auth
         
         snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
         
         response = client.post(
-            f"/api/v1/emails/{NON_EXISTENT_UUID}/snooze",
+            f"/api/v1/threads/{NON_EXISTENT_UUID}/snooze",
             json={"snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 404
 
-    def test_snooze_email_unauthenticated(self, client, sample_email):
+    def test_snooze_thread_unauthenticated(self, client, sample_email):
         """Test snoozing without authentication fails."""
         snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
         
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/snooze",
+            f"/api/v1/threads/{sample_email.thread_id}/snooze",
             json={"snooze_until": snooze_time}
         )
         
         assert response.status_code == 401
 
-    def test_unsnooze_email_success(self, client_with_auth, db_session, sample_email):
-        """Test unsnoozing a snoozed email (thread-level snooze)."""
+    def test_unsnooze_thread_success(self, client_with_auth, db_session, sample_email):
+        """Test unsnoozing a snoozed thread."""
         from app.models.thread_user_metadata import ThreadUserMetadata
         
         client, token, user = client_with_auth
@@ -1000,7 +999,7 @@ class TestEmailSnooze:
         db_session.commit()
         
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/unsnooze",
+            f"/api/v1/threads/{sample_email.thread_id}/unsnooze",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -1008,14 +1007,14 @@ class TestEmailSnooze:
         data = response.json()["data"]
         assert data["snooze_until"] is None
 
-    def test_unsnooze_email_not_snoozed_fails(self, client_with_auth, db_session, sample_email):
-        """Test unsnoozing an email that's not snoozed fails."""
+    def test_unsnooze_thread_not_snoozed_fails(self, client_with_auth, db_session, sample_email):
+        """Test unsnoozing a thread that's not snoozed fails."""
         client, token, user = client_with_auth
         
         # No snooze metadata exists for this thread
         
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/unsnooze",
+            f"/api/v1/threads/{sample_email.thread_id}/unsnooze",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -1025,12 +1024,12 @@ class TestEmailSnooze:
         error_msg = response_data.get("message", "")
         assert "not snoozed" in error_msg.lower()
 
-    def test_unsnooze_email_not_found(self, client_with_auth):
-        """Test unsnoozing a non-existent email returns 404."""
+    def test_unsnooze_thread_not_found(self, client_with_auth):
+        """Test unsnoozing a non-existent thread returns 404."""
         client, token, user = client_with_auth
         
         response = client.post(
-            f"/api/v1/emails/{NON_EXISTENT_UUID}/unsnooze",
+            f"/api/v1/threads/{NON_EXISTENT_UUID}/unsnooze",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -1123,49 +1122,49 @@ class TestEmailSnooze:
         assert "snooze_until" in data
 
 
-class TestEmailArchive:
-    """Test email archive operations."""
+class TestThreadArchive:
+    """Test thread archive operations."""
 
-    def test_archive_email_success(self, client_with_auth, db_session, sample_email):
-        """Test archiving an email."""
+    def test_archive_thread_success(self, client_with_auth, db_session, sample_email):
+        """Test archiving a thread."""
         client, token, user = client_with_auth
         
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/archive",
+            f"/api/v1/threads/{sample_email.thread_id}/archive",
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 200
         data = response.json()["data"]
-        assert data["id"] == str(sample_email.id)
+        assert data["is_archived"] == True
 
-    def test_archive_email_not_found(self, client_with_auth):
-        """Test archiving a non-existent email returns 404."""
+    def test_archive_thread_not_found(self, client_with_auth):
+        """Test archiving a non-existent thread returns 404."""
         client, token, user = client_with_auth
         
         response = client.post(
-            f"/api/v1/emails/{NON_EXISTENT_UUID}/archive",
+            f"/api/v1/threads/{NON_EXISTENT_UUID}/archive",
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 404
 
-    def test_archive_email_unauthenticated(self, client, sample_email):
+    def test_archive_thread_unauthenticated(self, client, sample_email):
         """Test archiving without authentication fails."""
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/archive"
+            f"/api/v1/threads/{sample_email.thread_id}/archive"
         )
         
         assert response.status_code == 401
 
-    def test_archive_email_updates_thread_metadata(self, client_with_auth, db_session, sample_email):
+    def test_archive_thread_updates_metadata(self, client_with_auth, db_session, sample_email):
         """Test that archiving updates ThreadUserMetadata.is_archived."""
         from app.models.thread_user_metadata import ThreadUserMetadata
         
         client, token, user = client_with_auth
         
         response = client.post(
-            f"/api/v1/emails/{sample_email.id}/archive",
+            f"/api/v1/threads/{sample_email.thread_id}/archive",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -1181,8 +1180,8 @@ class TestEmailArchive:
         assert metadata is not None
         assert metadata.is_archived == True
 
-    def test_archive_email_as_recipient(self, client_with_auth, db_session):
-        """Test that a recipient can archive an email they received."""
+    def test_archive_thread_as_recipient(self, client_with_auth, db_session):
+        """Test that a recipient can archive a thread they received."""
         client, token, user = client_with_auth
         
         # Create another user as sender
@@ -1228,13 +1227,152 @@ class TestEmailArchive:
         
         # Archive as recipient
         response = client.post(
-            f"/api/v1/emails/{email.id}/archive",
+            f"/api/v1/threads/{thread.id}/archive",
             headers={"Authorization": f"Bearer {token}"}
         )
         
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["is_archived"] == True
+
+
+class TestThreadUnstar:
+    """Test thread unstar operations."""
+
+    def test_unstar_thread_success(self, client_with_auth, db_session):
+        """Test unstarring all emails in a thread."""
+        client, token, user = client_with_auth
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test thread",
+            owner_id=user.id,
+            email_count=2
+        )
+        db_session.add(thread)
+        db_session.commit()
+        
+        # Create two starred emails in the thread
+        email1 = Email(
+            subject="Email 1",
+            body="Body 1",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            status="received",
+            thread_id=thread.id,
+            is_starred=True
+        )
+        email2 = Email(
+            subject="Email 2",
+            body="Body 2",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            status="received",
+            thread_id=thread.id,
+            is_starred=True
+        )
+        db_session.add_all([email1, email2])
+        db_session.commit()
+        
+        # Unstar all emails in the thread
+        response = client.post(
+            f"/api/v1/threads/{thread.id}/unstar",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["unstarred_count"] == 2
+        
+        # Verify emails are unstarred
+        db_session.refresh(email1)
+        db_session.refresh(email2)
+        assert email1.is_starred == False
+        assert email2.is_starred == False
+
+    def test_unstar_thread_partial(self, client_with_auth, db_session):
+        """Test unstarring when some emails are already unstarred."""
+        client, token, user = client_with_auth
+        
+        # Create a thread
+        thread = Thread(
+            subject="Test thread",
+            owner_id=user.id,
+            email_count=2
+        )
+        db_session.add(thread)
+        db_session.commit()
+        
+        # Create one starred and one unstarred email
+        email1 = Email(
+            subject="Email 1",
+            body="Body 1",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            status="received",
+            thread_id=thread.id,
+            is_starred=True
+        )
+        email2 = Email(
+            subject="Email 2",
+            body="Body 2",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            status="received",
+            thread_id=thread.id,
+            is_starred=False
+        )
+        db_session.add_all([email1, email2])
+        db_session.commit()
+        
+        # Unstar all emails in the thread
+        response = client.post(
+            f"/api/v1/threads/{thread.id}/unstar",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["unstarred_count"] == 1  # Only 1 was starred
+
+    def test_unstar_thread_not_found(self, client_with_auth):
+        """Test unstarring a non-existent thread returns 404."""
+        client, token, user = client_with_auth
+        
+        response = client.post(
+            f"/api/v1/threads/{NON_EXISTENT_UUID}/unstar",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 404
+
+    def test_unstar_thread_unauthenticated(self, client, db_session):
+        """Test unstarring without authentication fails."""
+        import uuid
+        response = client.post(
+            f"/api/v1/threads/{uuid.uuid4()}/unstar"
+        )
+        
+        assert response.status_code == 401
+
+    def test_unstar_single_email_still_works(self, client_with_auth, db_session, sample_email):
+        """Test that individual email unstar still works via email endpoint."""
+        client, token, user = client_with_auth
+        
+        # Star the email first
+        sample_email.is_starred = True
+        db_session.commit()
+        
+        # Unstar via email endpoint
+        response = client.patch(
+            f"/api/v1/emails/{sample_email.id}/star",
+            json={"is_starred": False},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["is_starred"] == False
 
 
 class TestEmailCategory:
