@@ -824,7 +824,7 @@ def bulk_spam(
         try:
             db.query(Email).filter(
                 Email.id.in_(success_ids)
-            ).update({Email.is_spam: True, Email.folder: FolderType.SPAM.value}, synchronize_session=False)
+            ).update({Email.folder: FolderType.SPAM.value}, synchronize_session=False)
 
             db.commit()
         except Exception as e:
@@ -878,7 +878,7 @@ def bulk_unspam(
         try:
             db.query(Email).filter(
                 Email.id.in_(success_ids)
-            ).update({Email.is_spam: False, Email.folder: FolderType.INBOX.value}, synchronize_session=False)
+            ).update({Email.folder: FolderType.INBOX.value}, synchronize_session=False)
 
             db.commit()
         except Exception as e:
