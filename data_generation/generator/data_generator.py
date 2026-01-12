@@ -9,6 +9,7 @@ import csv
 import io
 import json
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -766,12 +767,17 @@ class DataGenerator:
 
                 if thread_emails:
                     # Find the most recent email's created_at timestamp
-                    latest_email = max(
-                        thread_emails,
-                        key=lambda e: e.get("created_at", ""),
-                        default=None
-                    )
-                    if latest_email and "created_at" in latest_email:
+                    # Filter to emails with valid created_at and parse to datetime for proper comparison
+                    emails_with_timestamp = [
+                        e for e in thread_emails if e.get("created_at")
+                    ]
+                    if emails_with_timestamp:
+                        latest_email = max(
+                            emails_with_timestamp,
+                            key=lambda e: datetime.fromisoformat(
+                                e["created_at"].replace("Z", "+00:00")
+                            ),
+                        )
                         thread["last_email_at"] = latest_email["created_at"]
                 else:
                     # No emails in this thread, set last_email_at to None

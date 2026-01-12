@@ -193,7 +193,7 @@ def migrate_emails(db: Session):
             category=email_data.get("category", "primary"),
             is_read=email_data.get("is_read", False),
             is_starred=email_data.get("is_starred", False),
-            is_important=email_data.get("is_important", False),
+            # is_important=email_data.get("is_important", False),
             is_deleted=email_data.get("is_deleted", False),
             snooze_until=parse_datetime(email_data.get("snooze_until")),
             scheduled_send_at=parse_datetime(email_data.get("scheduled_send_at")),

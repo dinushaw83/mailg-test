@@ -13,6 +13,7 @@ import EmailDetails from "./pages/EmailDetails";
 import Frequent from "./pages/Contacts/Frequent";
 import GlobalSnackbar from "./components/GlobalSnackbar";
 import Layout from "./components/Layout";
+import ImportDataMain from "./components/import_data/ImportDataMain";
 import LocalStorageDownload from "./pages/LocalStorageDownload";
 import Login from "./pages/Login";
 import MailGAccount from "./pages/MailGAccount";
@@ -127,6 +128,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/import-data" element={<ImportDataMain />} />
             </Routes>
 
             {/* Global Snackbar */}
