@@ -47,6 +47,8 @@ class DataGenerator:
         schema_path: str | Path | None = None,
         config_path: str | Path | None = None,
         seed: int | None = None,
+        start_ids: dict[str, int] | None = None,
+        default_start_id: int = 1,
         use_seed: bool = True,
     ):
         """
@@ -56,6 +58,8 @@ class DataGenerator:
             schema_path: Optional path to schema file.
             config_path: Optional path to config YAML file.
             seed: Optional random seed for reproducibility.
+            start_ids: Optional dict mapping table names to starting ID values.
+            default_start_id: Default starting ID for tables not in start_ids.
             use_seed: Whether to inject seed data (users, orgs, groups) from config.
         """
         self.schema = load_schema(schema_path)
@@ -63,11 +67,17 @@ class DataGenerator:
         self.config = load_config(config_path)
         self.use_seed = use_seed
 
-        self.analyzer = FieldAnalyzer()
+        self.analyzer = FieldAnalyzer(self.config)
         self.consistency = ConsistencyRules(self.config, self.schema)
 
         self.context = GenerationContext()
         self.context.config = self.config
+
+        # Merge start_ids: config defaults + explicit overrides
+        config_start_ids = self.config.get("start_ids", {})
+        merged_start_ids = {**config_start_ids, **(start_ids or {})}
+        self.context.start_ids = merged_start_ids
+        self.context.default_start_id = default_start_id
 
         if seed is not None:
             self.context.set_seed(seed)
@@ -120,17 +130,13 @@ class DataGenerator:
             self.generated_data[table_name] = records
             result[table_name] = records
 
-        # Apply cross-table consistency checks
-        self._apply_cross_table_consistency(result)
-
-        # Sort self-referencing tables for correct insertion order
-        self._sort_self_referencing_tables(result)
-
         return result
 
     def register_existing_ids(self, existing_ids: dict[str, list]) -> None:
         """
         Register existing IDs from database for FK resolution.
+
+        Also updates start_ids to avoid ID conflicts when generating new records.
 
         Args:
             existing_ids: Dict mapping table names to list of existing IDs.
@@ -138,6 +144,48 @@ class DataGenerator:
         for table_name, ids in existing_ids.items():
             for id_val in ids:
                 self.context.register_id(table_name, id_val)
+            # Update start_id to avoid conflicts with existing IDs
+            if ids:
+                int_ids = [id for id in ids if isinstance(id, int)]
+                if int_ids:
+                    max_id = max(int_ids)
+                    current_start = self.context.start_ids.get(table_name, self.context.default_start_id)
+                    if max_id >= current_start:
+                        self.context.start_ids[table_name] = max_id + 1
+
+    def register_existing_ids_with_attrs(
+        self, existing_data: dict[str, list[dict]]
+    ) -> None:
+        """
+        Register existing IDs with their attributes from database.
+
+        This is needed for contextual FK constraints where we need to filter
+        referenced entities by attribute values (e.g., boards by project_id).
+
+        Args:
+            existing_data: Dict mapping table names to list of dicts with 'id' and attributes.
+                          e.g., {"boards": [{"id": 1, "project_id": 1}, ...]}
+        """
+        for table_name, records in existing_data.items():
+            for record in records:
+                id_val = record.get("id")
+                if id_val is None:
+                    continue
+
+                # Extract attributes (everything except 'id')
+                attrs = {k: v for k, v in record.items() if k != "id"}
+
+                # Register with attributes for contextual FK lookup
+                self.context.register_id(table_name, id_val, **attrs)
+
+            # Update start_id to avoid conflicts
+            if records:
+                int_ids = [r["id"] for r in records if isinstance(r.get("id"), int)]
+                if int_ids:
+                    max_id = max(int_ids)
+                    current_start = self.context.start_ids.get(table_name, self.context.default_start_id)
+                    if max_id >= current_start:
+                        self.context.start_ids[table_name] = max_id + 1
 
     def generate_all(
         self,
@@ -223,6 +271,457 @@ class DataGenerator:
 
         # Sort self-referencing tables for correct insertion order
         self._sort_self_referencing_tables(result)
+
+        self.generated_data = result
+
+        return result
+
+
+    def _get_field_value_config(
+        self, table_name: str, field_name: str
+    ) -> dict[str, Any] | None:
+        """
+        Get field_values configuration if defined for this field.
+
+        Returns:
+            Field value config dict or None if not configured.
+        """
+        field_values = self.config.get("field_values", {})
+        table_config = field_values.get(table_name, {})
+        return table_config.get(field_name)
+
+    def _check_field_group_null(
+        self, table_name: str, field_name: str
+    ) -> bool | None:
+        """
+        Check if a field is in a group and whether the group should be null.
+
+        If the field is in a group:
+        - First field in group decides null/not-null based on group's null_probability
+        - Subsequent fields in group use the same decision
+
+        Returns:
+            True if field should be null (group is null)
+            False if field should have a value (group is not null)
+            None if field is not in any group
+        """
+        field_groups = self.config.get("field_groups", {})
+        table_groups = field_groups.get(table_name, {})
+
+        # Find which group this field belongs to
+        for group_name, group_config in table_groups.items():
+            fields = group_config.get("fields", [])
+            if field_name in fields:
+                # Check if decision already made for this group
+                existing_decision = self.context.get_field_group_null(group_name)
+                if existing_decision is not None:
+                    return existing_decision
+
+                # First field in group - make the decision
+                null_prob = group_config.get("null_probability", 0.5)
+                is_null = self.context.random().random() < null_prob
+                self.context.set_field_group_null(group_name, is_null)
+                return is_null
+
+        return None  # Field not in any group
+
+    def _generate_field_from_config(
+        self, semantics, config: dict[str, Any]
+    ) -> Any:
+        """
+        Generate a field value from config-specified source.
+
+        Supports:
+        - source: path to config list (e.g., "samples.label_names")
+        - values: inline list of values
+        - unique: ensure uniqueness (default False)
+        - null_probability: chance of returning None (default from semantics)
+
+        Args:
+            semantics: Field semantics
+            config: Field value config from field_values section
+
+        Returns:
+            Generated value or None
+        """
+        table_name = semantics.table_name
+        field_name = semantics.field_name
+
+        # Check null probability
+        null_prob = config.get("null_probability")
+        if null_prob is None and semantics.is_nullable:
+            null_prob = 0.1  # Default for nullable fields
+        if null_prob and self.context.random().random() < null_prob:
+            return None
+
+        # Get values list from config
+        values = self._resolve_field_values(config)
+        if not values:
+            return None
+
+        # Handle uniqueness
+        unique = config.get("unique", False)
+        if unique:
+            return self._pick_unique_value(table_name, field_name, values)
+        else:
+            return self.context.random().choice(values)
+
+    def _resolve_field_values(self, config: dict[str, Any]) -> list[Any]:
+        """
+        Resolve the list of possible values from config.
+
+        Supports:
+        - values: inline list
+        - source: dot-path to config location (e.g., "samples.label_names")
+
+        Returns:
+            List of possible values, or empty list if not found.
+        """
+        # Inline values take precedence
+        if "values" in config:
+            return config["values"]
+
+        # Resolve from source path
+        source = config.get("source")
+        if not source:
+            return []
+
+        # Navigate config using dot-path
+        parts = source.split(".")
+        current = self.config
+        for part in parts:
+            if isinstance(current, dict) and part in current:
+                current = current[part]
+            else:
+                return []
+
+        # Handle different value formats
+        if isinstance(current, list):
+            # Check if it's a list of dicts with a specific field
+            field = config.get("field")
+            if field and current and isinstance(current[0], dict):
+                return [item.get(field) for item in current if item.get(field)]
+            return current
+
+        return []
+
+    def _pick_unique_value(
+        self, table_name: str, field_name: str, values: list[Any]
+    ) -> Any | None:
+        """
+        Pick a unique value that hasn't been used before.
+
+        Args:
+            table_name: Current table name
+            field_name: Field name
+            values: List of possible values
+
+        Returns:
+            Unique value or None if all values exhausted
+        """
+        # Shuffle to randomize selection
+        available = list(values)
+        self.context.random().shuffle(available)
+
+        for value in available:
+            if not self.context.is_unique_value_used(table_name, field_name, value):
+                self.context.register_unique_value(table_name, field_name, value)
+                return value
+
+        # All values used - append suffix to make unique
+        base_value = self.context.random().choice(values)
+        counter = 1
+        while self.context.is_unique_value_used(table_name, field_name, f"{base_value}_{counter}"):
+            counter += 1
+            if counter > 1000:
+                return None
+        unique_value = f"{base_value}_{counter}"
+        self.context.register_unique_value(table_name, field_name, unique_value)
+        return unique_value
+
+    def _get_derived_field_config(
+        self, table_name: str, field_name: str
+    ) -> dict[str, Any] | None:
+        """
+        Get derived field configuration if field has one.
+
+        Returns:
+            Derived field config dict or None if not a derived field.
+        """
+        derived_config = self.config.get("derived_fields", {})
+        table_config = derived_config.get(table_name, {})
+        return table_config.get(field_name)
+
+    def _generate_derived_field(
+        self, table_name: str, field_name: str, config: dict[str, Any]
+    ) -> Any:
+        """
+        Generate a derived field value based on another field.
+
+        Supports derivation types:
+        - email_from_name: Generate email from a name field (firstname.lastname@domain)
+        - username_from_name: Generate username from a name field
+        - html_from_text: Convert plain text to HTML (for body → html_body)
+
+        Args:
+            table_name: Current table name
+            field_name: Field being generated
+            config: Derivation config from derived_fields section
+
+        Returns:
+            Generated derived value
+        """
+        derivation_type = config.get("type", "email_from_name")
+        source_field = config.get("from_field")
+
+        if not source_field:
+            return None
+
+        source_value = self.context.get_field_value(source_field)
+        if source_value is None:
+            return None
+
+        if derivation_type == "email_from_name":
+            return self._derive_email_from_name(source_value, config)
+        elif derivation_type == "username_from_name":
+            return self._derive_username_from_name(source_value, config)
+        elif derivation_type == "html_from_text":
+            return self._derive_html_from_text(source_value, config)
+        else:
+            return None
+
+    def _derive_email_from_name(
+        self, name: str, config: dict[str, Any]
+    ) -> str:
+        """
+        Derive an email address from a person's name.
+
+        Args:
+            name: Full name (e.g., "John Doe", "Jane Smith-Jones")
+            config: Config with 'domains' list and optional 'separator'
+
+        Returns:
+            Email like "john.doe@example.com"
+        """
+        domains = config.get("domains", ["example.com"])
+        separator = config.get("separator", ".")
+        lowercase = config.get("lowercase", True)
+
+        # Parse the name into parts
+        parts = name.strip().split()
+        if not parts:
+            # Fallback to random email
+            return self.context.fake().unique.email()
+
+        # Handle various name formats
+        if len(parts) == 1:
+            # Single name: use as-is
+            local_part = parts[0]
+        else:
+            # Multi-part name: first.last
+            first_name = parts[0]
+            last_name = parts[-1]  # Use last part as surname
+
+            # Clean up names (remove suffixes like Jr., III, etc.)
+            # and handle hyphenated names
+            first_clean = first_name.replace("-", "").replace("'", "")
+            last_clean = last_name.replace("-", "").replace("'", "")
+
+            local_part = f"{first_clean}{separator}{last_clean}"
+
+        if lowercase:
+            local_part = local_part.lower()
+
+        # Remove any non-alphanumeric characters except separator
+        import re
+        allowed_chars = f"[^a-zA-Z0-9{re.escape(separator)}]"
+        local_part = re.sub(allowed_chars, "", local_part)
+
+        # Pick a random domain
+        domain = self.context.random().choice(domains)
+
+        # Ensure uniqueness by appending number if needed
+        email = f"{local_part}@{domain}"
+        unique_key = f"{self.context.table_name}.email"
+
+        counter = 1
+        while self.context.is_unique_value_used(
+            self.context.table_name, "email", email
+        ):
+            email = f"{local_part}{counter}@{domain}"
+            counter += 1
+            if counter > 1000:
+                # Fallback to random email
+                return self.context.fake().unique.email()
+
+        self.context.register_unique_value(self.context.table_name, "email", email)
+        return email
+
+    def _derive_username_from_name(
+        self, name: str, config: dict[str, Any]
+    ) -> str:
+        """
+        Derive a username from a person's name.
+
+        Args:
+            name: Full name (e.g., "John Doe")
+            config: Config with optional 'separator' and 'style'
+
+        Returns:
+            Username like "johndoe" or "john_doe"
+        """
+        separator = config.get("separator", "")
+        style = config.get("style", "firstlast")  # firstlast, first_last, first.last
+
+        parts = name.strip().split()
+        if not parts:
+            return self.context.fake().user_name()
+
+        if len(parts) == 1:
+            username = parts[0].lower()
+        else:
+            first_name = parts[0].lower()
+            last_name = parts[-1].lower()
+
+            if style == "first_last":
+                username = f"{first_name}_{last_name}"
+            elif style == "first.last":
+                username = f"{first_name}.{last_name}"
+            elif style == "flast":
+                username = f"{first_name[0]}{last_name}"
+            else:  # firstlast
+                username = f"{first_name}{separator}{last_name}"
+
+        # Clean up
+        import re
+        username = re.sub(r"[^a-z0-9._]", "", username)
+
+        return username
+
+    def _derive_html_from_text(
+        self, text: str, config: dict[str, Any]
+    ) -> str:
+        """
+        Derive HTML content from plain text.
+
+        Args:
+            text: Plain text content
+            config: Config with optional 'style' (basic, paragraphs, rich)
+
+        Returns:
+            HTML formatted version of the text
+        """
+        import html
+
+        style = config.get("style", "paragraphs")
+
+        # Escape HTML entities in the source text
+        escaped_text = html.escape(text)
+
+        if style == "basic":
+            # Simple: just wrap in <p> and convert newlines to <br>
+            html_content = escaped_text.replace("\n", "<br>\n")
+            return f"<p>{html_content}</p>"
+
+        elif style == "paragraphs":
+            # Convert double newlines to paragraphs, single newlines to <br>
+            paragraphs = escaped_text.split("\n\n")
+            html_paragraphs = []
+            for para in paragraphs:
+                para = para.strip()
+                if para:
+                    # Convert single newlines within paragraph to <br>
+                    para = para.replace("\n", "<br>\n")
+                    html_paragraphs.append(f"<p>{para}</p>")
+            return "\n".join(html_paragraphs)
+
+        elif style == "rich":
+            # More elaborate: add DOCTYPE, html/body wrapper
+            paragraphs = escaped_text.split("\n\n")
+            html_paragraphs = []
+            for para in paragraphs:
+                para = para.strip()
+                if para:
+                    para = para.replace("\n", "<br>\n")
+                    html_paragraphs.append(f"  <p>{para}</p>")
+            body_content = "\n".join(html_paragraphs)
+            return f"""<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body>
+{body_content}
+</body>
+</html>"""
+
+        else:
+            # Default to paragraphs style
+            return self._derive_html_from_text(text, {"style": "paragraphs"})
+
+    def _order_fields_for_generation(
+        self,
+        field_names: list[str],
+        table_name: str,
+    ) -> list[str]:
+        """
+        Order fields for generation based on:
+        1. Explicit field_order config (for context-aware fields like YEAR, MONTH, DAY)
+        2. Derived field dependencies (source fields before derived)
+        3. Remaining fields in original order
+
+        Args:
+            field_names: List of field names to order
+            table_name: Current table name
+
+        Returns:
+            Ordered list of field names
+        """
+        result = []
+        remaining = set(field_names)
+
+        # 1. Apply explicit field_order from config
+        field_order = self.config.get("field_order", {}).get(table_name, [])
+        for field_name in field_order:
+            if field_name in remaining:
+                result.append(field_name)
+                remaining.remove(field_name)
+
+        # 2. Apply derivation ordering to remaining fields
+        derived_config = self.config.get("derived_fields", {}).get(table_name, {})
+
+        if derived_config:
+            # Build dependency graph: derived_field -> source_field
+            dependencies = {}
+            for field_name, config in derived_config.items():
+                source_field = config.get("from_field")
+                if source_field and field_name in remaining:
+                    dependencies[field_name] = source_field
+
+            if dependencies:
+                source_fields = set(dependencies.values())
+                derived_fields = set(dependencies.keys())
+
+                # Add source fields first (if not already added)
+                for f in list(remaining):
+                    if f in source_fields and f not in derived_fields:
+                        result.append(f)
+                        remaining.remove(f)
+
+                # Add non-derived fields
+                for f in list(remaining):
+                    if f not in derived_fields:
+                        result.append(f)
+                        remaining.remove(f)
+
+                # Add derived fields last
+                for f in list(remaining):
+                    if f in derived_fields:
+                        result.append(f)
+                        remaining.remove(f)
+
+        # 3. Add any remaining fields in original order
+        for f in field_names:
+            if f in remaining:
+                result.append(f)
 
         return result
 
@@ -578,7 +1077,7 @@ class DataGenerator:
                 recipient_type = "to" if idx == 0 else self.context.random().choice(["to", "cc"])
 
                 email_recipients_list.append({
-                    "id": str(uuid.uuid4()),
+                    "id": str(self.context.fake().uuid4()),
                     "email_id": sender_email["id"],
                     "recipient_id": recipient_id,
                     "recipient_email": recipient_user.get("email"),
@@ -594,7 +1093,7 @@ class DataGenerator:
 
                 # Create receiver copy
                 receiver_email = {
-                    "id": str(uuid.uuid4()),
+                    "id": str(self.context.fake().uuid4()),
                     "subject": sender_email["subject"],
                     "body": sender_email.get("body"),
                     "html_body": sender_email.get("html_body"),
@@ -619,7 +1118,7 @@ class DataGenerator:
 
                 # Create email_recipient for receiver copy (points to this recipient)
                 email_recipients_list.append({
-                    "id": str(uuid.uuid4()),
+                    "id": str(self.context.fake().uuid4()),
                     "email_id": receiver_email["id"],
                     "recipient_id": recipient_id,
                     "recipient_email": recipient_user.get("email"),
@@ -659,7 +1158,7 @@ class DataGenerator:
                     recipient_user = next((u for u in users if u["id"] == recipient_id), None)
                     if recipient_user:
                         email_recipients_list.append({
-                            "id": str(uuid.uuid4()),
+                            "id": str(self.context.fake().uuid4()),
                             "email_id": receiver_email["id"],
                             "recipient_id": recipient_id,
                             "recipient_email": recipient_user.get("email"),
@@ -689,7 +1188,7 @@ class DataGenerator:
 
             # Create sender copy (the original email that was sent)
             sender_email = {
-                "id": str(uuid.uuid4()),
+                "id": str(self.context.fake().uuid4()),
                 "subject": receiver_email["subject"],
                 "body": receiver_email.get("body"),
                 "html_body": receiver_email.get("html_body"),
@@ -718,7 +1217,7 @@ class DataGenerator:
 
             # Create email_recipient for sender copy (points to the recipient)
             email_recipients_list.append({
-                "id": str(uuid.uuid4()),
+                "id": str(self.context.fake().uuid4()),
                 "email_id": sender_email["id"],
                 "recipient_id": recipient_id,
                 "recipient_email": recipient_user.get("email"),
@@ -728,7 +1227,7 @@ class DataGenerator:
 
             # Create email_recipient for receiver copy
             email_recipients_list.append({
-                "id": str(uuid.uuid4()),
+                "id": str(self.context.fake().uuid4()),
                 "email_id": receiver_email["id"],
                 "recipient_id": recipient_id,
                 "recipient_email": recipient_user.get("email"),
@@ -1038,90 +1537,93 @@ class DataGenerator:
             retry_count = 0
             record: dict[str, Any] = {}
 
+            # Generate fields in order (PKs first, then others)
+            pk_fields = [n for n, s in field_semantics.items() if s.is_primary_key]
+            other_fields = [n for n, s in field_semantics.items() if not s.is_primary_key]
+
+            # For junction tables and unique constraints, retry until we get unique values
+            skip_row = False
+
             while True:
-                record = {}
-
-                # Generate fields in order (PKs first, then others)
-                pk_fields = [n for n, s in field_semantics.items() if s.is_primary_key]
-                other_fields = [n for n, s in field_semantics.items() if not s.is_primary_key]
-
-                # Generate PK fields
                 for field_name in pk_fields:
-                    semantics = field_semantics[field_name]
-                    value = self._generate_field(semantics)
-                    record[field_name] = value
-                    self.context.set_field_value(field_name, value)
-
-                # Generate non-PK fields
-                for field_name in other_fields:
                     semantics = field_semantics[field_name]
                     value = self._generate_field(semantics)
                     record[field_name] = value
                     self.context.set_field_value(field_name, value)
 
                 # Check for duplicate composite key in junction tables
-                is_duplicate = False
                 if composite_pk_fields:
-                    combo = tuple(record.get(f) for f in composite_pk_fields)
-                    if combo in used_combinations["_composite_pk"]:
-                        is_duplicate = True
-                    else:
-                        used_combinations["_composite_pk"].add(combo)
-
-                # Check for duplicate unique constraints
-                if not is_duplicate:
-                    for constraint in unique_constraints:
-                        constraint_key = "_".join(sorted(constraint))
-                        combo = tuple(record.get(f) for f in constraint)
-                        if combo in used_combinations[constraint_key]:
-                            is_duplicate = True
-                            # Remove the composite PK combo we just added
-                            if composite_pk_fields:
-                                pk_combo = tuple(record.get(f) for f in composite_pk_fields)
-                                used_combinations["_composite_pk"].discard(pk_combo)
+                    combo = tuple(record[f] for f in composite_pk_fields)
+                    if combo in used_combinations.get("_composite_pk", set()):
+                        retry_count += 1
+                        if retry_count >= max_retries:
+                            # Can't find unique combination, skip this row
+                            skip_row = True
                             break
-                        used_combinations[constraint_key].add(combo)
-
-                # Check for duplicate email logical key (subject + sender + thread + status)
-                if not is_duplicate and table_name == "emails" and "_email_logical_key" in used_combinations:
-                    logical_key = (
-                        record.get("subject"),
-                        record.get("sender_id"),
-                        record.get("thread_id"),
-                        record.get("status")
-                    )
-                    if logical_key in used_combinations["_email_logical_key"]:
-                        is_duplicate = True
-                        # Remove any combinations we just added
-                        if composite_pk_fields:
-                            pk_combo = tuple(record.get(f) for f in composite_pk_fields)
-                            used_combinations["_composite_pk"].discard(pk_combo)
-                        for constraint in unique_constraints:
-                            constraint_key = "_".join(sorted(constraint))
-                            combo = tuple(record.get(f) for f in constraint)
-                            used_combinations[constraint_key].discard(combo)
-                    else:
-                        used_combinations["_email_logical_key"].add(logical_key)
-
-                if is_duplicate:
-                    retry_count += 1
-                    if retry_count >= max_retries:
-                        # Can't find unique combination, skip this row
-                        break
-                    continue  # Try again
-
-                # Success, exit retry loop
-                break
+                        continue  # Try again
+                    used_combinations["_composite_pk"].add(combo)
+                break  # Success, exit retry loop
 
             # Skip row if we couldn't find unique combination
-            if retry_count >= max_retries:
+            if skip_row:
                 continue
 
-            # Register primary key for FK resolution (only for single-column PKs)
+            # Generate non-PK fields (ordered for derivation and field_order config)
+            ordered_fields = self._order_fields_for_generation(other_fields, table_name)
+            for field_name in ordered_fields:
+                semantics = field_semantics[field_name]
+
+                # Check if this is a derived field
+                derived_config = self._get_derived_field_config(table_name, field_name)
+                if derived_config:
+                    value = self._generate_derived_field(
+                        table_name, field_name, derived_config
+                    )
+                else:
+                    value = self._generate_field(semantics)
+
+                record[field_name] = value
+                self.context.set_field_value(field_name, value)
+
+                # Register value by semantic type for context-aware generators
+                self.context.register_semantic_type_value(semantics.semantic_type, value)
+
+            # Check unique constraints after all fields are generated
+            constraint_violated = False
+            for constraint in unique_constraints:
+                constraint_key = "_".join(sorted(constraint))
+                combo = tuple(record.get(f) for f in constraint)
+                if combo in used_combinations.get(constraint_key, set()):
+                    constraint_violated = True
+                    break
+                used_combinations[constraint_key].add(combo)
+
+            # Check email logical key (subject, sender_id, thread_id, status)
+            if table_name == "emails" and "_email_logical_key" in used_combinations:
+                logical_key = (
+                    record.get("subject"),
+                    record.get("sender_id"),
+                    record.get("thread_id"),
+                    record.get("status")
+                )
+                if logical_key in used_combinations["_email_logical_key"]:
+                    constraint_violated = True
+                else:
+                    used_combinations["_email_logical_key"].add(logical_key)
+
+            if constraint_violated:
+                # Skip this row - violates unique constraint
+                continue
+
+            # Register primary key for FK resolution
             if not composite_pk_fields:
+                # Single-column PK: register regardless of column name
                 for field_name in pk_fields:
-                    if field_name == "id":
-                        self.context.register_id(table_name, record[field_name])
+                    self.context.register_id(table_name, record[field_name])
+            else:
+                # Composite PK: register each component field for FK resolution
+                for field_name in composite_pk_fields:
+                    self.context.register_id(table_name, record[field_name])
 
             # Apply consistency rules
             record = self.consistency.apply(record, table_name)
@@ -1132,6 +1634,26 @@ class DataGenerator:
 
     def _generate_field(self, semantics) -> Any:
         """Generate a value for a field using the appropriate generator."""
+        # Check if field is in a field group (for coordinated nullability)
+        group_null = self._check_field_group_null(
+            semantics.table_name, semantics.field_name
+        )
+        if group_null is True:
+            return None  # Group decided to be null
+        elif group_null is False:
+            # Group decided not null - ensure generator produces a value
+            semantics.is_nullable = False
+
+        # Check for field_values config first (highest priority for non-PK/FK fields)
+        field_value_config = self._get_field_value_config(
+            semantics.table_name, semantics.field_name
+        )
+        if field_value_config:
+            value = self._generate_field_from_config(semantics, field_value_config)
+            if value is not None or semantics.is_nullable:
+                return value
+            # Fall through to registry if config returned None for required field
+
         # Get matching generator from registry
         gen = GeneratorRegistry.get_generator(semantics)
 
@@ -1297,6 +1819,8 @@ def generate_all(
     row_counts: dict[str, int] | None = None,
     default_rows: int = 100,
     seed: int | None = None,
+    start_ids: dict[str, int] | None = None,
+    default_start_id: int = 1,
 ) -> dict[str, list[dict[str, Any]]]:
     """
     Convenience function to generate all tables.
@@ -1307,11 +1831,13 @@ def generate_all(
         row_counts: Optional dict mapping table names to row counts.
         default_rows: Default number of rows.
         seed: Optional random seed.
+        start_ids: Optional dict mapping table names to starting ID values.
+        default_start_id: Default starting ID for tables not in start_ids.
 
     Returns:
         Dict mapping table names to list of generated records.
     """
-    generator = DataGenerator(schema_path, config_path, seed)
+    generator = DataGenerator(schema_path, config_path, seed, start_ids, default_start_id)
     return generator.generate_all(row_counts, default_rows)
 
 
@@ -1322,6 +1848,8 @@ def generate_table(
     config_path: str | Path | None = None,
     include_dependencies: bool = True,
     seed: int | None = None,
+    start_ids: dict[str, int] | None = None,
+    default_start_id: int = 1,
 ) -> dict[str, list[dict[str, Any]]]:
     """
     Convenience function to generate a single table.
@@ -1333,9 +1861,11 @@ def generate_table(
         config_path: Optional path to config YAML file.
         include_dependencies: If True, generates required parent tables.
         seed: Optional random seed.
+        start_ids: Optional dict mapping table names to starting ID values.
+        default_start_id: Default starting ID for tables not in start_ids.
 
     Returns:
         Dict mapping table names to list of generated records.
     """
-    generator = DataGenerator(schema_path, config_path, seed)
+    generator = DataGenerator(schema_path, config_path, seed, start_ids, default_start_id)
     return generator.generate_table(table_name, num_rows, include_dependencies)

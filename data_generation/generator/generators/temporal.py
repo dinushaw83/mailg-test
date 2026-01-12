@@ -184,22 +184,14 @@ class TimezoneOffsetGenerator(BaseGenerator):
 
 @generator(SemanticType.LOCALE, priority=80)
 class LocaleGenerator(BaseGenerator):
-    """Generates locale strings and phone country codes."""
+    """Generates locale strings."""
 
     LOCALES = ["en-US", "en-GB", "es-ES", "fr-FR", "de-DE", "ja-JP", "zh-CN", "pt-BR"]
-    COUNTRY_CODES = ["+1", "+44", "+33", "+49", "+81", "+86", "+55", "+61", "+91"]
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.1):
             return None
-
-        # Check if this is phone_country_code
-        if semantics.field_name == "phone_country_code":
-            # Return country codes like +1, +44, etc.
-            weights = [0.6, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.03, 0.02]
-            return context.random().choices(self.COUNTRY_CODES, weights=weights)[0]
-
-        # Default to locale strings
+        # Default to en-US more often
         weights = [0.5, 0.1, 0.1, 0.08, 0.07, 0.05, 0.05, 0.05]
         return context.random().choices(self.LOCALES, weights=weights)[0]
 
@@ -221,4 +213,4 @@ class IpAddressGenerator(BaseGenerator):
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.1):
             return None
-        return self.fake.ipv4()
+        return context.fake().ipv4()

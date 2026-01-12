@@ -4,7 +4,7 @@ Content generators for text fields like subjects, bodies, descriptions.
 
 from typing import Any
 
-from .base import BaseGenerator, fake
+from .base import BaseGenerator
 from ..core.analyzer import FieldSemantics, SemanticType
 from ..core.context import GenerationContext
 from ..core.registry import generator
@@ -44,58 +44,104 @@ class SubjectGenerator(BaseGenerator):
         if self.maybe_null(semantics, context, 0.02):
             return None
 
-        table_name = semantics.table_name
+        templates_cfg = context.config.get("templates", {})
+        subjects_cfg = templates_cfg.get("subjects", {})
 
-        # For emails table, use category-specific subject templates
-        if table_name == "emails":
-            category = context.get_field_value("category") or "primary"
-            templates_cfg = context.config.get("templates", {}).get("subjects", {})
-
-            # Try to get category-specific templates
-            category_templates = templates_cfg.get(category, [])
-            if category_templates:
-                template = context.random().choice(category_templates)
-                # Get replacement values from config
-                topics = templates_cfg.get("topics", self.DEFAULT_TOPICS)
-                actions = templates_cfg.get("actions", self.DEFAULT_ACTIONS)
-                greetings = templates_cfg.get("greetings", ["Hello"])
-                events = templates_cfg.get("events", ["Meeting"])
-                products = templates_cfg.get("products", ["Product"])
-
-                # Replace placeholders
-                subject = template
-                if "{topic}" in subject:
-                    subject = subject.replace("{topic}", context.random().choice(topics))
-                if "{action}" in subject:
-                    subject = subject.replace("{action}", context.random().choice(actions))
-                if "{greeting}" in subject:
-                    subject = subject.replace("{greeting}", context.random().choice(greetings))
-                if "{event}" in subject:
-                    subject = subject.replace("{event}", context.random().choice(events))
-                if "{product}" in subject:
-                    subject = subject.replace("{product}", context.random().choice(products))
-                if "{percentage}" in subject:
-                    subject = subject.replace("{percentage}", str(context.random().choice([10, 15, 20, 25, 30, 50])))
-                if "{date}" in subject:
-                    subject = subject.replace("{date}", fake.date_this_month().strftime("%B %d"))
-                if "{project}" in subject:
-                    subject = subject.replace("{project}", context.random().choice(["Q1 Project", "Dashboard", "API"]))
-                if "{document}" in subject:
-                    subject = subject.replace("{document}", context.random().choice(["Report", "Proposal", "Document"]))
-
-                return subject
-
-        # Default behavior for other tables or if no templates found
-        templates_cfg = context.config.get("templates", {}).get("subjects", {})
-        templates = templates_cfg.get("patterns", self.DEFAULT_TEMPLATES)
-        topics = templates_cfg.get("topics", self.DEFAULT_TOPICS)
-        actions = templates_cfg.get("actions", self.DEFAULT_ACTIONS)
+        # Support both formats:
+        # 1. Flat list: subjects.patterns = [...]
+        # 2. Categorized: subjects.personal = [...], subjects.professional = [...]
+        if "patterns" in subjects_cfg:
+            templates = subjects_cfg["patterns"]
+        else:
+            # Flatten all category lists into one
+            templates = []
+            for key, value in subjects_cfg.items():
+                if isinstance(value, list):
+                    templates.extend(value)
+            if not templates:
+                templates = self.DEFAULT_TEMPLATES
 
         template = context.random().choice(templates)
-        topic = context.random().choice(topics)
-        action = context.random().choice(actions)
+        return self._fill_placeholders(template, templates_cfg, context)
 
-        return template.format(topic=topic, action=action)
+    def _fill_placeholders(
+        self, template: str, config: dict, context: GenerationContext
+    ) -> str:
+        """
+        Replace {placeholder} patterns with values from config.
+
+        Supports three formats in config:
+        1. Simple list: templates.names: ["Alex", "Jordan", ...]
+        2. Source reference: templates.names: {source: samples.first_names}
+        3. Generator: templates.name: {generator: FIRST_NAME}  # uses SemanticType
+
+        If not found, keeps the placeholder as-is.
+        """
+        import re
+        from ..core.registry import GeneratorRegistry
+
+        def replace_match(match):
+            placeholder = match.group(1)
+            # Try singular, then plural form in config
+            placeholder_config = config.get(placeholder) or config.get(f"{placeholder}s")
+
+            if placeholder_config is None:
+                return match.group(0)
+
+            # Simple list
+            if isinstance(placeholder_config, list):
+                return context.random().choice(placeholder_config)
+
+            # Dict with source or generator
+            if isinstance(placeholder_config, dict):
+                # Source reference - resolve from config path
+                if "source" in placeholder_config:
+                    values = self._resolve_source(placeholder_config["source"], context)
+                    if values:
+                        return context.random().choice(values)
+
+                # Generator - use existing semantic type generators
+                if "generator" in placeholder_config:
+                    generator_name = placeholder_config["generator"]
+                    try:
+                        semantic_type = SemanticType[generator_name.upper()]
+                        # Create minimal semantics for the generator
+                        placeholder_semantics = FieldSemantics(
+                            semantic_type=semantic_type,
+                            confidence=1.0,
+                            field_name=placeholder,
+                            table_name=context.table_name,
+                            field_schema={},
+                        )
+                        gen = GeneratorRegistry.get_generator(placeholder_semantics)
+                        if gen:
+                            value = gen.generate(placeholder_semantics, context)
+                            return str(value) if value else match.group(0)
+                    except KeyError:
+                        pass  # Invalid semantic type
+
+            return match.group(0)
+
+        # Run until no more placeholders are resolved (handles nesting)
+        result = template
+        max_iterations = 5  # Prevent infinite loops
+        for _ in range(max_iterations):
+            new_result = re.sub(r"\{(\w+)\}", replace_match, result)
+            if new_result == result:
+                break
+            result = new_result
+        return result
+
+    def _resolve_source(self, source_path: str, context: GenerationContext) -> list:
+        """Resolve a dot-path source to a list of values."""
+        parts = source_path.split(".")
+        current = context.config
+        for part in parts:
+            if isinstance(current, dict) and part in current:
+                current = current[part]
+            else:
+                return []
+        return current if isinstance(current, list) else []
 
 
 @generator(SemanticType.TITLE, priority=80)
@@ -154,35 +200,22 @@ class BodyGenerator(BaseGenerator):
             return None
 
         paragraphs = context.random().randint(1, 3)
-        return "\n\n".join(fake.paragraph(nb_sentences=4) for _ in range(paragraphs))
+        return "\n\n".join(context.fake().paragraph(nb_sentences=4) for _ in range(paragraphs))
 
 
 @generator(SemanticType.BODY_HTML, priority=80)
 class HtmlBodyGenerator(BaseGenerator):
-    """Generates HTML formatted body content.
-
-    If plain body already exists in context, converts it to HTML.
-    Otherwise generates new content as HTML.
-    """
+    """Generates HTML formatted body content."""
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.05):
             return None
 
-        # Check if plain body already exists
-        plain_body = context.get_field_value("body")
-        if plain_body:
-            # Convert plain text to HTML
-            paragraphs = plain_body.split("\n\n")
-            html_parts = [f"<p>{p.strip()}</p>" for p in paragraphs if p.strip()]
-            return "\n".join(html_parts)
-
-        # Generate new HTML content
         paragraphs = context.random().randint(1, 3)
         html_parts = []
 
         for _ in range(paragraphs):
-            text = fake.paragraph(nb_sentences=3)
+            text = context.fake().paragraph(nb_sentences=3)
             html_parts.append(f"<p>{text}</p>")
 
         return "\n".join(html_parts)
@@ -196,7 +229,7 @@ class PlainBodyGenerator(BaseGenerator):
         if self.maybe_null(semantics, context, 0.05):
             return None
 
-        return fake.paragraph(nb_sentences=4)
+        return context.fake().paragraph(nb_sentences=4)
 
 
 @generator(SemanticType.DESCRIPTION, priority=80)
@@ -210,11 +243,11 @@ class DescriptionGenerator(BaseGenerator):
         # Ensure minimum length of 20 characters
         min_length = semantics.field_schema.get("minLength", 20)
         for _ in range(5):  # Try up to 5 times
-            text = fake.paragraph(nb_sentences=context.random().randint(2, 5))
+            text = context.fake().paragraph(nb_sentences=context.random().randint(2, 5))
             if len(text) >= min_length:
                 return text
         # Fallback: pad with additional sentence if needed
-        return text + " " + fake.sentence()
+        return text + " " + context.fake().sentence()
 
 
 @generator(SemanticType.MESSAGE, priority=80)
@@ -225,7 +258,7 @@ class MessageGenerator(BaseGenerator):
         if self.maybe_null(semantics, context, 0.15):
             return None
 
-        return fake.sentence(nb_words=context.random().randint(6, 15))
+        return context.fake().sentence(nb_words=context.random().randint(6, 15))
 
 
 @generator(SemanticType.NOTE, priority=80)
@@ -236,7 +269,7 @@ class NoteGenerator(BaseGenerator):
         if self.maybe_null(semantics, context, 0.3):
             return None
 
-        return fake.paragraph(nb_sentences=context.random().randint(1, 3))
+        return context.fake().paragraph(nb_sentences=context.random().randint(1, 3))
 
 
 @generator(SemanticType.SIGNATURE, priority=80)
@@ -247,8 +280,8 @@ class SignatureGenerator(BaseGenerator):
         if self.maybe_null(semantics, context, 0.4):
             return None
 
-        name = fake.name()
-        title = fake.job()
-        company = fake.company()
+        name = context.fake().name()
+        title = context.fake().job()
+        company = context.fake().company()
 
         return f"Best regards,\n{name}\n{title}\n{company}"

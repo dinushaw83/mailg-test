@@ -25,7 +25,13 @@ class Label(Base):
     # Hierarchical relationship - self-referential
     parent_id = Column(UUID(as_uuid=True), ForeignKey("labels.id"), nullable=True, index=True)
     
-    is_deleted = Column(Boolean, default=False, index=True)
+    # System label properties
+    is_system = Column(Boolean, default=False, nullable=False)
+    is_exclusive = Column(Boolean, default=False, nullable=False)
+    show_in_label_list = Column(Boolean, default=True, nullable=False)
+    show_in_message_list = Column(Boolean, default=True, nullable=False)
+    show_if_unread = Column(Boolean, default=False, nullable=False)
+    
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
@@ -45,6 +51,5 @@ class Label(Base):
     # Unique constraint: label name per user within same parent
     __table_args__ = (
         UniqueConstraint("owner_id", "parent_id", "name", name="uq_labels_owner_parent_name"),
-        Index("ix_labels_owner_deleted", "owner_id", "is_deleted"),
         Index("ix_labels_parent", "parent_id"),
     )

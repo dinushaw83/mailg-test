@@ -11,6 +11,12 @@ pytest>=7.4.0
 pytest-asyncio>=0.23.0
 pytest-cov>=4.1.0
 httpx>=0.26,<0.28
+werkzeug>=3.0.0
+jsonschema>=4.20.0
+
+# Data generation dependencies
+faker>=24.0.0
+pyyaml>=6.0
 
 # OpenTelemetry instrumentation
 opentelemetry-api>=1.21.0

@@ -22,7 +22,7 @@ const useCustomHotKeys = ({ emails }) => {
   useHotkeys(shortcutsOn ? "a" : "", () => {
     if (Date.now() - lastStarAt.current < 1000) {
       // treat as "*" then "a"
-      const ids = emails.map((email) => email.threadId);
+      const ids = emails.map((email) => email.thread_id);
       selection.setMany(ids);
     }
   });
@@ -39,7 +39,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>r
       const readEmails = emails.filter((email) => email.isEmailRead);
-      const ids = readEmails.map((email) => email.threadId);
+      const ids = readEmails.map((email) => email.thread_id);
       selection.setMany(ids);
     }
   });
@@ -48,7 +48,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
       const unreadEmails = emails.filter((email) => !email.isEmailRead);
-      const ids = unreadEmails.map((email) => email.threadId);
+      const ids = unreadEmails.map((email) => email.thread_id);
       selection.setMany(ids);
     }
   });
@@ -57,7 +57,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
       const starredEmails = emails.filter((email) => email.is_starred);
-      const ids = starredEmails.map((email) => email.threadId);
+      const ids = starredEmails.map((email) => email.thread_id);
       selection.setMany(ids);
     }
   });
@@ -66,7 +66,7 @@ const useCustomHotKeys = ({ emails }) => {
     if (Date.now() - lastStarAt.current < 1000) {
       // *>u
       const unstarredEmails = emails.filter((email) => !email.is_starred);
-      const ids = unstarredEmails.map((email) => email.threadId);
+      const ids = unstarredEmails.map((email) => email.thread_id);
       selection.setMany(ids);
     }
   });
@@ -170,7 +170,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   // Navigate to the email details page
-  const navigateToEmailDetails = (email, threadId) => {
+  const navigateToEmailDetails = (email, thread_id) => {
     // If compose param is present in the url, include it while navigating
     const urlParams = new URLSearchParams(location.search);
     const composeParam = urlParams.get("compose");
@@ -191,14 +191,14 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
     if (pathname.startsWith("/search")) {
       const composeQuery = composeParam ? `?compose=${composeParam}` : "";
-      navigate(`/inbox/${threadId}${composeQuery}`);
+      navigate(`/inbox/${thread_id}${composeQuery}`);
       return;
     }
 
     if (composeParam) {
-      navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
+      navigate(`${location.pathname}/${thread_id}?compose=${composeParam}`);
     } else {
-      navigate(`${location.pathname}/${threadId}`);
+      navigate(`${location.pathname}/${thread_id}`);
     }
   };
 
@@ -209,7 +209,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
       key: labelObj.id || labelObj.name,
       displayName: labelObj.name,
       color: labelObj.color,
-      }));
+    }));
   };
 
   useEffect(() => {

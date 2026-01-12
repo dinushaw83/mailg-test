@@ -510,7 +510,7 @@ class TestGetEmailsByThread:
         email1_id, email2_id = email1.id, email2.id
         
         # Mock the background task function to verify it's called with correct args
-        with patch('app.api.v1.endpoints.emails._mark_emails_as_read_background') as mock_mark_read:
+        with patch('app.api.v1.endpoints.emails.mark_emails_as_read_background') as mock_mark_read:
             response = client.get(
                 f"/api/v1/emails/thread/{thread.id}",
                 headers={"Authorization": f"Bearer {token}"}
@@ -558,7 +558,7 @@ class TestGetEmailsByThread:
         db_session.add_all([email1, email2])
         db_session.commit()
         
-        with patch('app.api.v1.endpoints.emails._mark_emails_as_read_background') as mock_mark_read:
+        with patch('app.api.v1.endpoints.emails.mark_emails_as_read_background') as mock_mark_read:
             response = client.get(
                 f"/api/v1/emails/thread/{thread.id}",
                 headers={"Authorization": f"Bearer {token}"}
@@ -732,7 +732,7 @@ class TestGetEmailsByThread:
     def test_mark_emails_as_read_background_function(self, db_session, sample_user):
         """Test the background function that marks emails as read."""
         from unittest.mock import patch, MagicMock
-        from app.api.v1.endpoints.emails import _mark_emails_as_read_background
+        from app.utils.email_utils import mark_emails_as_read_background
         
         # Create test emails
         email1 = Email(subject="Email 1", body="Content", status="received", is_read=False,
@@ -754,7 +754,7 @@ class TestGetEmailsByThread:
         
         # The function imports get_db_session inside, so we patch where it's used
         with patch('app.db.session.get_db_session', return_value=mock_session):
-            _mark_emails_as_read_background(email_ids, sample_user.id, "test-run-id")
+            mark_emails_as_read_background(email_ids, sample_user.id, "test-run-id")
             
             # Verify the session was used correctly
             mock_session.query.assert_called_once()
@@ -829,17 +829,23 @@ class TestEmailOperations:
         
         assert response.status_code == 200
 
-    def test_delete_email_soft_delete(self, client_with_auth, db_session, sample_email):
-        """Test deleting an email (soft delete - moves to trash)."""
+    def test_delete_email_moves_to_trash(self, client_with_auth, db_session, sample_email):
+        """Test deleting an email moves it to trash folder."""
         client, token, user = client_with_auth
         email_id = sample_email.id
-        
+
         response = client.delete(
             f"/api/v1/emails/{email_id}",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 204
+
+        # Verify email was moved to trash
+        db_session.expire_all()
+        email_check = db_session.query(Email).filter(Email.id == email_id).first()
+        assert email_check is not None
+        assert email_check.folder == FolderType.TRASH.value
 
     def test_delete_email_permanent(self, client_with_auth, db_session, sample_email):
         """Test permanently deleting an email removes it from database."""
@@ -857,36 +863,6 @@ class TestEmailOperations:
         db_session.expire_all()
         email_check = db_session.query(Email).filter(Email.id == email_id).first()
         assert email_check is None
-
-    def test_delete_email_soft_delete_default(self, client_with_auth, db_session):
-        """Test default delete moves to trash (not permanent)."""
-        client, token, user = client_with_auth
-        
-        # Create email
-        email = Email(
-            subject="Test Email",
-            body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add(email)
-        db_session.commit()
-        email_id = email.id
-        original_folder = email.folder
-        
-        # Delete without permanent flag
-        response = client.delete(
-            f"/api/v1/emails/{email_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify email still exists (moved to trash or soft deleted)
-        db_session.expire_all()
-        email_check = db_session.query(Email).filter(Email.id == email_id).first()
-        assert email_check is not None
 
 
 class TestEmailSendReplyForward:
@@ -1502,13 +1478,22 @@ class TestEmailCategoryCounts:
         """Test filtering category counts by folder."""
         client, token, user = client_with_auth
 
+        # Create another user as sender
+        other_user = User(
+            first_name="Other", last_name="User",
+            email="other@example.com", role="user", active=True
+        )
+        db_session.add(other_user)
+        db_session.flush()
+
         # Create emails in different folders
+        # Inbox email: user is a recipient (not sender)
         email_inbox = Email(
             subject="Inbox Email",
             body="Content",
             status="received",
             category="primary",
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email_sent = Email(
@@ -1520,6 +1505,17 @@ class TestEmailCategoryCounts:
             folder=FolderType.SENT.value
         )
         db_session.add_all([email_inbox, email_sent])
+        db_session.flush()
+
+        # Add user as recipient of inbox email
+        recipient = EmailRecipient(
+            email_id=email_inbox.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_name=user.first_name,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
         db_session.commit()
 
         # Filter by inbox
@@ -1631,7 +1627,15 @@ class TestEmailCategoryCounts:
         """Test category counts with multiple filters combined."""
         client, token, user = client_with_auth
 
-        # Create various emails
+        # Create another user as sender for inbox emails
+        other_user = User(
+            first_name="Other", last_name="User",
+            email="other2@example.com", role="user", active=True
+        )
+        db_session.add(other_user)
+        db_session.flush()
+
+        # Create various emails - inbox emails have other_user as sender
         email1 = Email(
             subject="Email 1",
             body="Content",
@@ -1639,7 +1643,7 @@ class TestEmailCategoryCounts:
             category="primary",
             is_read=False,
             is_starred=True,
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email2 = Email(
@@ -1649,7 +1653,7 @@ class TestEmailCategoryCounts:
             category="primary",
             is_read=False,
             is_starred=False,
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email3 = Email(
@@ -1659,7 +1663,7 @@ class TestEmailCategoryCounts:
             category="promotions",
             is_read=False,
             is_starred=True,
-            sender_id=user.id,
+            sender_id=other_user.id,
             folder=FolderType.INBOX.value
         )
         email4 = Email(
@@ -1673,6 +1677,18 @@ class TestEmailCategoryCounts:
             folder=FolderType.SENT.value
         )
         db_session.add_all([email1, email2, email3, email4])
+        db_session.flush()
+
+        # Add user as recipient of inbox emails
+        for email in [email1, email2, email3]:
+            recipient = EmailRecipient(
+                email_id=email.id,
+                recipient_id=user.id,
+                recipient_email=user.email,
+                recipient_name=user.first_name,
+                recipient_type="to"
+            )
+            db_session.add(recipient)
         db_session.commit()
 
         # Filter by inbox + unread + starred
@@ -1789,43 +1805,6 @@ class TestEmailCategoryCounts:
         data = response.json()["data"]
 
         assert data["social"] == 1
-
-    def test_get_category_counts_excludes_deleted_emails(self, client_with_auth, db_session):
-        """Test that category counts exclude soft-deleted emails."""
-        client, token, user = client_with_auth
-
-        # Create active and deleted emails
-        email_active = Email(
-            subject="Active Email",
-            body="Content",
-            status="received",
-            category="primary",
-            is_deleted=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_deleted = Email(
-            subject="Deleted Email",
-            body="Content",
-            status="received",
-            category="primary",
-            is_deleted=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add_all([email_active, email_deleted])
-        db_session.commit()
-
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # Only active email
-        assert data["primary"] == 1
 
     def test_get_category_counts_all_keys_present(self, client_with_auth, db_session):
         """Test that all category keys are present in response."""

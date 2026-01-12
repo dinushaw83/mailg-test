@@ -78,17 +78,17 @@ const Recipient = ({ recipients = [] }) => {
     // Handle object format: {email, name, id}
     let email = recipient;
     let name = null;
-    
+
     if (typeof recipient === "object" && recipient !== null) {
       email = recipient.email;
       name = recipient.name;
     }
-    
+
     // Ensure email is a string
     if (!email || typeof email !== "string") {
       return "Unknown";
     }
-    
+
     // Check if it's the logged-in user - show "me"
     if (email === loggedInUser.email) {
       return "me";
@@ -329,7 +329,7 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
       </TopBarContainer>
       {email && (
         <MoreActions
-          thread={{ threadId: email.threadId, starred: isStarred, important: email.is_important }}
+          thread={{ thread_id: email.thread_id, starred: isStarred, important: email.is_important }}
           showAdvancedMenu={false}
           toggleShowAdvancedMenu={() => {}}
           anchorEl={moreActionsAnchor}

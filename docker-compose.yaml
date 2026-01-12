@@ -80,9 +80,12 @@ services:
       - OTEL_SERVICE_NAME=mailg-backend
       # Prometheus URL for metrics API
       - PROMETHEUS_URL=http://prometheus:9090
+      # Data generation
+      - GENERATE_ADDITIONAL_DATA=${GENERATE_ADDITIONAL_DATA:-0}
     volumes:
       - backend_logs:/app/backend/logs
       - ./backend/fixtures:/seed/fixtures:ro
+      - ./data_generation:/app/data_generation:ro
     ports:
       - "8766:8765"
     networks:

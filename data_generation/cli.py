@@ -1,5 +1,5 @@
 """
-Command-line interface for the fake data generator.
+Command-line interface for the Mira fake data generator.
 """
 
 import argparse
@@ -85,6 +85,10 @@ Examples:
   # Generate different row counts per table
   python -m data_generation --rows users=1000 --rows tickets=5000 --rows 100
 
+  # Custom starting IDs for primary keys
+  python -m data_generation --start-id 1000
+  python -m data_generation --start-id users=5000 --start-id tickets=10000
+
   # Output formats
   python -m data_generation --format json                # JSON files (default)
   python -m data_generation --table users --format jsonl # JSON Lines (single table)
@@ -136,6 +140,16 @@ Examples:
         help=(
             "Number of rows to generate. Can be a single number (applies to all) "
             "or table=count format. Can be specified multiple times."
+        ),
+    )
+
+    parser.add_argument(
+        "--start-id",
+        action="append",
+        default=[],
+        help=(
+            "Starting ID for primary keys. Can be a single number (applies to all) "
+            "or table=id format. Can be specified multiple times."
         ),
     )
 
@@ -320,12 +334,25 @@ Examples:
         else:
             default_rows = count
 
+    # Parse start ID specifications
+    default_start_id: int = 1
+    start_ids: dict[str, int] = {}
+
+    for spec in args.start_id:
+        table_name, start = parse_key_value_spec(spec, "start ID")
+        if table_name:
+            start_ids[table_name] = start
+        else:
+            default_start_id = start
+
     # Generate data
     try:
         generator = DataGenerator(
             schema_path=args.schema,
             config_path=args.config,
             seed=args.seed,
+            start_ids=start_ids,
+            default_start_id=default_start_id,
             use_seed=not args.no_seed,
         )
 
@@ -345,6 +372,20 @@ Examples:
             # Query existing IDs for FK resolution
             existing_ids = postgres_writer.get_existing_ids()
             generator.register_existing_ids(existing_ids)
+
+            # Query existing IDs with attributes for contextual FK constraints
+            # e.g., boards need project_id attribute for ticket.board_id lookup
+            attr_config = generator.config.get("id_registration_attributes", {})
+            if attr_config:
+                existing_data_with_attrs = postgres_writer.get_existing_ids_with_attrs(attr_config)
+                generator.register_existing_ids_with_attrs(existing_data_with_attrs)
+
+            # Query derived attributes via JOINs for tables that don't have direct columns
+            # e.g., sprints.project_id is derived via boards table
+            derived_config = generator.config.get("derived_id_attributes", {})
+            if derived_config:
+                derived_data = postgres_writer.get_derived_ids_with_attrs(derived_config)
+                generator.register_existing_ids_with_attrs(derived_data)
 
             # Use existing ID counts for row calculation
             existing_counts = {table: len(ids) for table, ids in existing_ids.items()}

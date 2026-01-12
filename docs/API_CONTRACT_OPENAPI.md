@@ -1904,7 +1904,10 @@ Permissions:
 
 **POST** `/api/v1/emails`
 
-Create a new email (draft or send immediately).
+Create a new draft email.
+
+This endpoint only creates drafts. Use POST /emails/{id}/send to send the email
+(either immediately or scheduled for a specific time).
 
 Permissions:
 - All authenticated users can create emails
@@ -1922,9 +1925,7 @@ Permissions:
       "name": "string",
       "type": "string"
     }
-  ],
-  "is_draft": false,
-  "scheduled_send_at": "2024-01-01T00:00:00Z"
+  ]
 }
 ```
 
@@ -2270,9 +2271,13 @@ Permissions:
   "subject": "string",
   "body": "string",
   "html_body": "string",
-  "is_read": false,
-  "is_starred": false,
-  "is_important": false
+  "recipients": [
+    {
+      "email": "string",
+      "name": "string",
+      "type": "string"
+    }
+  ]
 }
 ```
 
@@ -2872,10 +2877,10 @@ Adding a label to an email will add it to the email's thread.
 
 **DELETE** `/api/v1/emails/{email_id}/labels/{label_id}`
 
-Remove a label from an email's thread.
+Remove a label from an email's thread for the current user.
 
-Labels are now linked to threads, not individual emails.
-Removing a label from an email will remove it from the email's thread.
+Labels are user-specific on shared threads. Removing a label only affects
+the current user's view of the thread.
 
 **Path Parameters**:
 
@@ -3231,15 +3236,26 @@ Permissions:
 
 Send a draft email.
 
-If the user has undo_send_delay_seconds > 0 configured, the email will be
-queued with a scheduled send time. During this window, the user can cancel
-the send using the /emails/{email_id}/cancel-send endpoint.
+If scheduled_send_at is provided in the request body, the email will be 
+scheduled for that specific time, overriding the user's undo_send_delay_seconds.
 
-If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
+If scheduled_send_at is not provided:
+- If the user has undo_send_delay_seconds > 0 configured, the email will be
+  queued with a scheduled send time. During this window, the user can cancel
+  the send using the /emails/{email_id}/cancel-send endpoint.
+- If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
 
 **Path Parameters**:
 
 - `email_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "scheduled_send_at": "2024-01-01T00:00:00Z"
+}
+```
 
 **Responses**:
 
@@ -3819,7 +3835,10 @@ Permissions:
 ```json
 {
   "name": "string",
-  "parent_id": "00000000-0000-0000-0000-000000000000"
+  "parent_id": "00000000-0000-0000-0000-000000000000",
+  "show_in_label_list": true,
+  "show_in_message_list": true,
+  "show_if_unread": false
 }
 ```
 
@@ -3838,7 +3857,7 @@ Permissions:
     "color": "string",
     "owner_id": "00000000-0000-0000-0000-000000000000",
     "parent_id": "00000000-0000-0000-0000-000000000000",
-    "is_deleted": false,
+    "is_system": false,
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
@@ -3906,9 +3925,11 @@ Permissions:
       "id": "00000000-0000-0000-0000-000000000000",
       "name": "string",
       "color": "string",
+      "owner_id": "00000000-0000-0000-0000-000000000000",
       "parent_id": "00000000-0000-0000-0000-000000000000",
-      "thread_count": 0,
-      "children": []
+      "is_system": false,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
     }
   ]
 }
@@ -4033,7 +4054,7 @@ Permissions:
     "color": "string",
     "owner_id": "00000000-0000-0000-0000-000000000000",
     "parent_id": "00000000-0000-0000-0000-000000000000",
-    "is_deleted": false,
+    "is_system": false,
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
@@ -4093,7 +4114,10 @@ Permissions:
 ```json
 {
   "name": "string",
-  "parent_id": "00000000-0000-0000-0000-000000000000"
+  "parent_id": "00000000-0000-0000-0000-000000000000",
+  "show_in_label_list": false,
+  "show_in_message_list": false,
+  "show_if_unread": false
 }
 ```
 
@@ -4112,7 +4136,7 @@ Permissions:
     "color": "string",
     "owner_id": "00000000-0000-0000-0000-000000000000",
     "parent_id": "00000000-0000-0000-0000-000000000000",
-    "is_deleted": false,
+    "is_system": false,
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
@@ -5711,6 +5735,7 @@ Raises:
 - `social`
 - `updates`
 - `forums`
+- `purchases`
 
 ### FolderType
 

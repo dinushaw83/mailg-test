@@ -17,7 +17,16 @@ import { transformLabelsArray } from "../../utils/labelTransform";
  * @param {boolean} options.include_archived - Include archived emails (for all mail)
  */
 export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue }) => {
-  const { page = 1, pageSize = 20, category = null, is_starred = null, is_important = null, is_snoozed = null, folder = null, include_archived = null } = options;
+  const {
+    page = 1,
+    pageSize = 20,
+    category = null,
+    is_starred = null,
+    is_important = null,
+    is_snoozed = null,
+    folder = null,
+    include_archived = null,
+  } = options;
 
   try {
     // Structure query key for separate cache invalidation:
@@ -29,13 +38,20 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
     // - ["emails", "all", page, pageSize] for all mail (folder=inbox&include_archived=true)
     // - ["emails", "inbox", page, pageSize] for inbox (no filter)
     let queryKey;
-    const filterType = is_starred === true ? "is_starred" 
-      : is_important === true ? "is_important"
-      : is_snoozed === true ? "is_snoozed"
-      : include_archived === true ? "all"
-      : folder ? "folder"
-      : category ? "category"
-      : "inbox";
+    const filterType =
+      is_starred === true
+        ? "is_starred"
+        : is_important === true
+          ? "is_important"
+          : is_snoozed === true
+            ? "is_snoozed"
+            : include_archived === true
+              ? "all"
+              : folder
+                ? "folder"
+                : category
+                  ? "category"
+                  : "inbox";
 
     switch (filterType) {
       case "is_starred":
@@ -65,12 +81,26 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
       queryKey,
       queryFn: () => {
         // Use getEmailsByFilter if is_starred, is_important, is_snoozed, folder, or include_archived is provided, otherwise use getEmails
-        if (is_starred !== null || is_important !== null || is_snoozed !== null || folder !== null || include_archived !== null) {
-          return emailService.getEmailsByFilter({ page, pageSize, is_starred, is_important, is_snoozed, folder, include_archived });
+        if (
+          is_starred !== null ||
+          is_important !== null ||
+          is_snoozed !== null ||
+          folder !== null ||
+          include_archived !== null
+        ) {
+          return emailService.getEmailsByFilter({
+            page,
+            pageSize,
+            is_starred,
+            is_important,
+            is_snoozed,
+            folder,
+            include_archived,
+          });
         }
         return emailService.getEmails({ page, pageSize, category });
       },
-      staleTime: 1000 * 60 * 5, 
+      staleTime: 1000 * 60 * 5,
     });
     return { ...data, category, is_starred, is_important, is_snoozed, folder, include_archived };
   } catch (error) {
@@ -186,19 +216,16 @@ export const updateLabelThunk = createAsyncThunk(
 /**
  * MUTATION THUNK: Delete a label
  */
-export const deleteLabelThunk = createAsyncThunk(
-  "mail/deleteLabel",
-  async (id, { rejectWithValue }) => {
-    try {
-      const response = await labelService.deleteLabel(id);
-      // React Query cache invalidation is handled by RTK listener middleware.
-      return { id, ...response };
-    } catch (error) {
-      console.error("❌ Failed to delete label:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
-    }
+export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, { rejectWithValue }) => {
+  try {
+    const response = await labelService.deleteLabel(id);
+    // React Query cache invalidation is handled by RTK listener middleware.
+    return { id, ...response };
+  } catch (error) {
+    console.error("❌ Failed to delete label:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
   }
-);
+});
 
 const mailSlice = createSlice({
   name: "mail",
@@ -299,15 +326,22 @@ const mailSlice = createSlice({
         const is_snoozed = action.payload?.is_snoozed;
         const folder = action.payload?.folder;
         const include_archived = action.payload?.include_archived;
-        
+
         // Store emails in the appropriate folder/category
-        const filterType = is_starred === true ? "is_starred"
-          : is_important === true ? "is_important"
-          : is_snoozed === true ? "is_snoozed"
-          : include_archived === true ? "all"
-          : folder ? "folder"
-          : category ? "category"
-          : "inbox";
+        const filterType =
+          is_starred === true
+            ? "is_starred"
+            : is_important === true
+              ? "is_important"
+              : is_snoozed === true
+                ? "is_snoozed"
+                : include_archived === true
+                  ? "all"
+                  : folder
+                    ? "folder"
+                    : category
+                      ? "category"
+                      : "inbox";
 
         switch (filterType) {
           case "is_starred":
@@ -345,7 +379,7 @@ const mailSlice = createSlice({
             state.inbox = results;
             break;
         }
-        
+
         state.activeCategory = category ?? null;
       })
       .addCase(fetchEmails.rejected, (state, action) => {
@@ -373,18 +407,18 @@ const mailSlice = createSlice({
       .addCase(fetchLabels.fulfilled, (state, action) => {
         state.labelLoading = false;
         const labelsArray = action.payload ?? [];
-        
+
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-        
+
         // Merge with system labels (keep system labels as-is, they use composite keys)
         const mergedLabels = { ...state.labels };
-        
+
         // Add/update backend labels (UUID-based)
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
-        
+
         state.labels = mergedLabels;
         state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
         state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };
@@ -406,7 +440,7 @@ const mailSlice = createSlice({
       .addCase(updateLabelThunk.fulfilled, (state, action) => {
         const updatedLabel = action.payload;
         const labelId = action.payload.id;
-        
+
         if (labelId && state.labels[labelId]) {
           // Re-fetch labels to get updated tree structure (or rebuild mapping)
           // For now, update the label in place
@@ -417,7 +451,7 @@ const mailSlice = createSlice({
             color: updatedLabel.color ?? existingLabel.color,
             parent_id: updatedLabel.parent_id ?? existingLabel.parent_id,
           };
-          
+
           // Rebuild mappings if parent or name changed
           if (updatedLabel.name !== existingLabel.name || updatedLabel.parent_id !== existingLabel.parent_id) {
             // Rebuild all mappings by transforming all labels
@@ -429,7 +463,7 @@ const mailSlice = createSlice({
                 color: l.color,
                 parent_id: l.parent_id,
               }));
-            
+
             const { idToKeyMap, keyToIdMap } = transformLabelsArray(allLabelsArray);
             state.labelIdToKeyMap = { ...idToKeyMap };
             state.keyToLabelIdMap = { ...keyToIdMap };
@@ -443,14 +477,14 @@ const mailSlice = createSlice({
         if (deletedId) {
           // Remove label from state
           delete state.labels[deletedId];
-          
+
           // Remove from mappings
           const compositeKey = state.labelIdToKeyMap[deletedId];
           if (compositeKey) {
             delete state.labelIdToKeyMap[deletedId];
             delete state.keyToLabelIdMap[compositeKey];
           }
-          
+
           // Also remove children (cascade delete)
           Object.entries(state.labels).forEach(([id, label]) => {
             if (label.parent_id === deletedId) {

@@ -21,7 +21,14 @@ COPY . .
 # Create logs + reports directory
 RUN mkdir -p /app/backend/logs /app/reports
 
+# Copy and setup entrypoint
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 8765
 
+# Set entrypoint and default command
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["sh", "-c", "gunicorn app.main:app -c gunicorn_config.py"]
 

@@ -53,12 +53,6 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
             detail="User associated with token not found. Please login again.",
         )
 
-    if user.is_deleted:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account has been deleted",
-        )
-
     if not user.active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

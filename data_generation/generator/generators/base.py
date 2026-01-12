@@ -11,10 +11,6 @@ from ..core.context import GenerationContext
 from ..core.analyzer import FieldSemantics
 
 
-# Shared Faker instance
-fake = Faker()
-
-
 class BaseGenerator(ABC):
     """
     Abstract base class for field value generators.
@@ -22,9 +18,6 @@ class BaseGenerator(ABC):
     Subclasses implement generate() to produce values for specific
     semantic types. Generators are registered via the @generator decorator.
     """
-
-    def __init__(self):
-        self.fake = fake
 
     @abstractmethod
     def generate(

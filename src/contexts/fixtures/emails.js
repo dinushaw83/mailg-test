@@ -30,7 +30,7 @@ export const emailToUsernameMap = {
 export const initialEmails = [
   {
     id: 1,
-    threadId: "#thread-f:1842139573356840007",
+    thread_id: "#thread-f:1842139573356840007",
     legacyThreadId: "1990982e909fc447",
     legacyLastMessageId: "1990982e909fc447",
     legacyLastNonDraftMessageId: "1990982e909fc447",
@@ -53,7 +53,7 @@ export const initialEmails = [
   },
   {
     id: 2,
-    threadId: "#thread-f:1842087366422769452",
+    thread_id: "#thread-f:1842087366422769452",
     legacyThreadId: "199068b330dd2f2c",
     legacyLastMessageId: "199068b330dd2f2c",
     legacyLastNonDraftMessageId: "199068b330dd2f2c",
@@ -92,7 +92,7 @@ export const initialEmails = [
   },
   {
     id: 3,
-    threadId: "#thread-f:1842085083087208760",
+    thread_id: "#thread-f:1842085083087208760",
     legacyThreadId: "1990669f8f758138",
     legacyLastMessageId: "1990669f8f758138",
     legacyLastNonDraftMessageId: "1990669f8f758138",
@@ -124,7 +124,7 @@ export const initialEmails = [
   },
   {
     id: 4,
-    threadId: "#thread-f:1842085083087208761",
+    thread_id: "#thread-f:1842085083087208761",
     legacyThreadId: "1990669f8f758139",
     legacyLastMessageId: "1990669f8f758139",
     legacyLastNonDraftMessageId: "1990669f8f758139",
@@ -146,7 +146,7 @@ export const initialEmails = [
   },
   {
     id: 5,
-    threadId: "#thread-f:1842085083087208762",
+    thread_id: "#thread-f:1842085083087208762",
     legacyThreadId: "1990669f8f758140",
     legacyLastMessageId: "1990669f8f758140",
     legacyLastNonDraftMessageId: "1990669f8f758140",
@@ -169,7 +169,7 @@ export const initialEmails = [
   },
   {
     id: 6,
-    threadId: "#thread-f:1842087366422769452",
+    thread_id: "#thread-f:1842087366422769452",
     legacyThreadId: "199068b330dd2f2c",
     legacyLastMessageId: "199068b330dd2f2d",
     legacyLastNonDraftMessageId: "199068b330dd2f2d",
@@ -191,7 +191,7 @@ export const initialEmails = [
   },
   {
     id: 7,
-    threadId: "#thread-f:1842087366422769452",
+    thread_id: "#thread-f:1842087366422769452",
     legacyThreadId: "199068b330dd2f2c",
     legacyLastMessageId: "199068b330dd2f2e",
     legacyLastNonDraftMessageId: "199068b330dd2f2e",
@@ -213,7 +213,7 @@ export const initialEmails = [
   },
   {
     id: 8,
-    threadId: "#thread-f:1842087366422769452",
+    thread_id: "#thread-f:1842087366422769452",
     legacyThreadId: "199068b330dd2f2c",
     legacyLastMessageId: "199068b330dd2f2f",
     legacyLastNonDraftMessageId: "199068b330dd2f2f",
@@ -235,7 +235,7 @@ export const initialEmails = [
   },
   {
     id: 9,
-    threadId: "#thread-f:1849139573456812324207",
+    thread_id: "#thread-f:1849139573456812324207",
     legacyThreadId: "1990982e903fc666",
     legacyLastMessageId: "1990982e903fc666",
     legacyLastNonDraftMessageId: "1990982e903fc666",
@@ -258,7 +258,7 @@ export const initialEmails = [
   },
   {
     id: 10,
-    threadId: "#thread-f:1849139573456812324208",
+    thread_id: "#thread-f:1849139573456812324208",
     legacyThreadId: "1990982e903fc667",
     legacyLastMessageId: "1990982e903fc667",
     legacyLastNonDraftMessageId: "1990982e903fc667",
@@ -283,7 +283,7 @@ export const initialEmails = [
   },
   {
     id: 11,
-    threadId: "#thread-f:1849139573456812324301",
+    thread_id: "#thread-f:1849139573456812324301",
     from: {
       name: "Amazon Deals",
       email: "deals@amazon.com",
@@ -302,7 +302,7 @@ export const initialEmails = [
   },
   {
     id: 12,
-    threadId: "#thread-f:1849139573456812324302",
+    thread_id: "#thread-f:1849139573456812324302",
     from: {
       name: "Nike Store",
       email: "news@nike.com",
@@ -321,7 +321,7 @@ export const initialEmails = [
   },
   {
     id: 13,
-    threadId: "#thread-f:1849139573456812324303",
+    thread_id: "#thread-f:1849139573456812324303",
     from: {
       name: "Apple",
       email: "no-reply@apple.com",
@@ -340,7 +340,7 @@ export const initialEmails = [
   },
   {
     id: 14,
-    threadId: "#thread-f:1849139573456812324401",
+    thread_id: "#thread-f:1849139573456812324401",
     legacyThreadId: "1990982e903fc668",
     legacyLastMessageId: "1990982e903fc668",
     legacyLastNonDraftMessageId: "1990982e903fc668",
@@ -362,7 +362,7 @@ export const initialEmails = [
   },
   {
     id: 15,
-    threadId: "#thread-f:1849139573456812324402",
+    thread_id: "#thread-f:1849139573456812324402",
     legacyThreadId: "1990982e903fc669",
     legacyLastMessageId: "1990982e903fc669",
     legacyLastNonDraftMessageId: "1990982e903fc669",
@@ -384,7 +384,7 @@ export const initialEmails = [
   },
   {
     id: 18,
-    threadId: "#thread-f:1849139573456812324405",
+    thread_id: "#thread-f:1849139573456812324405",
     legacyThreadId: "1990982e903fc672",
     legacyLastMessageId: "1990982e903fc672",
     legacyLastNonDraftMessageId: "1990982e903fc672",
@@ -406,7 +406,7 @@ export const initialEmails = [
   },
   {
     id: 19,
-    threadId: "#thread-f:1849139573456812324406",
+    thread_id: "#thread-f:1849139573456812324406",
     legacyThreadId: "1990982e903fc673",
     legacyLastMessageId: "1990982e903fc673",
     legacyLastNonDraftMessageId: "1990982e903fc673",
@@ -428,7 +428,7 @@ export const initialEmails = [
   },
   {
     id: 20,
-    threadId: "#thread-f:1849236573412378900",
+    thread_id: "#thread-f:1849236573412378900",
     legacyThreadId: "1990a2be9a3fd100",
     legacyLastMessageId: "1990a2be9a3fd100",
     legacyLastNonDraftMessageId: "1990a2be9a3fd100",
@@ -459,7 +459,7 @@ export const initialEmails = [
   },
   {
     id: 21,
-    threadId: "#thread-f:1849236573412378901",
+    thread_id: "#thread-f:1849236573412378901",
     legacyThreadId: "1990a2be9a3fd101",
     legacyLastMessageId: "1990a2be9a3fd101",
     legacyLastNonDraftMessageId: "1990a2be9a3fd101",
@@ -481,7 +481,7 @@ export const initialEmails = [
   },
   {
     id: 22,
-    threadId: "#thread-f:1849236573412378902",
+    thread_id: "#thread-f:1849236573412378902",
     legacyThreadId: "1990a2be9a3fd102",
     legacyLastMessageId: "1990a2be9a3fd102",
     legacyLastNonDraftMessageId: "1990a2be9a3fd102",
@@ -503,7 +503,7 @@ export const initialEmails = [
   },
   {
     id: 23,
-    threadId: "#thread-f:1849236573412378903",
+    thread_id: "#thread-f:1849236573412378903",
     legacyThreadId: "1990a2be9a3fd103",
     legacyLastMessageId: "1990a2be9a3fd103",
     legacyLastNonDraftMessageId: "1990a2be9a3fd103",
@@ -525,7 +525,7 @@ export const initialEmails = [
   },
   {
     id: 24,
-    threadId: "#thread-f:1849236573412378904",
+    thread_id: "#thread-f:1849236573412378904",
     legacyThreadId: "1990a2be9a3fd104",
     legacyLastMessageId: "1990a2be9a3fd104",
     legacyLastNonDraftMessageId: "1990a2be9a3fd104",
@@ -547,7 +547,7 @@ export const initialEmails = [
   },
   {
     id: 25,
-    threadId: "#thread-f:1849236573412378905",
+    thread_id: "#thread-f:1849236573412378905",
     legacyThreadId: "1990a2be9a3fd105",
     legacyLastMessageId: "1990a2be9a3fd105",
     legacyLastNonDraftMessageId: "1990a2be9a3fd105",
@@ -569,7 +569,7 @@ export const initialEmails = [
   },
   {
     id: 26,
-    threadId: "#thread-f:1849236573412378906",
+    thread_id: "#thread-f:1849236573412378906",
     legacyThreadId: "1990a2be9a3fd106",
     legacyLastMessageId: "1990a2be9a3fd106",
     legacyLastNonDraftMessageId: "1990a2be9a3fd106",
@@ -591,7 +591,7 @@ export const initialEmails = [
   },
   {
     id: 27,
-    threadId: "#thread-f:1849236573412378907",
+    thread_id: "#thread-f:1849236573412378907",
     legacyThreadId: "1990a2be9a3fd107",
     legacyLastMessageId: "1990a2be9a3fd107",
     legacyLastNonDraftMessageId: "1990a2be9a3fd107",
@@ -613,7 +613,7 @@ export const initialEmails = [
   },
   {
     id: 28,
-    threadId: "#thread-f:1849236573412378908",
+    thread_id: "#thread-f:1849236573412378908",
     legacyThreadId: "1990a2be9a3fd108",
     legacyLastMessageId: "1990a2be9a3fd108",
     legacyLastNonDraftMessageId: "1990a2be9a3fd108",
@@ -636,7 +636,7 @@ export const initialEmails = [
   },
   {
     id: 29,
-    threadId: "#thread-f:1849236573412378908",
+    thread_id: "#thread-f:1849236573412378908",
     legacyThreadId: "1990a2be9a3fd108",
     legacyLastMessageId: "1990a2be9a3fd109",
     legacyLastNonDraftMessageId: "1990a2be9a3fd109",
@@ -659,7 +659,7 @@ export const initialEmails = [
   },
   {
     id: 30,
-    threadId: "#thread-f:1849236573412378908",
+    thread_id: "#thread-f:1849236573412378908",
     legacyThreadId: "1990a2be9a3fd108",
     legacyLastMessageId: "1990a2be9a3fd110",
     legacyLastNonDraftMessageId: "1990a2be9a3fd110",
@@ -682,7 +682,7 @@ export const initialEmails = [
   },
   {
     id: 31,
-    threadId: "#thread-f:1849236573412378908",
+    thread_id: "#thread-f:1849236573412378908",
     legacyThreadId: "1990a2be9a3fd108",
     legacyLastMessageId: "1990a2be9a3fd111",
     legacyLastNonDraftMessageId: "1990a2be9a3fd111",
@@ -705,7 +705,7 @@ export const initialEmails = [
   },
   {
     id: 32,
-    threadId: "#thread-f:1849236573412378909",
+    thread_id: "#thread-f:1849236573412378909",
     legacyThreadId: "1990a2be9a3fd112",
     legacyLastMessageId: "1990a2be9a3fd112",
     legacyLastNonDraftMessageId: "1990a2be9a3fd112",
@@ -727,7 +727,7 @@ export const initialEmails = [
   },
   {
     id: 33,
-    threadId: "#thread-f:1849236573412378910",
+    thread_id: "#thread-f:1849236573412378910",
     legacyThreadId: "1990a2be9a3fd113",
     legacyLastMessageId: "1990a2be9a3fd113",
     legacyLastNonDraftMessageId: "1990a2be9a3fd113",
@@ -749,7 +749,7 @@ export const initialEmails = [
   },
   {
     id: 34,
-    threadId: "#thread-f:1849236573412378911",
+    thread_id: "#thread-f:1849236573412378911",
     legacyThreadId: "1990a2be9a3fd114",
     legacyLastMessageId: "1990a2be9a3fd114",
     legacyLastNonDraftMessageId: "1990a2be9a3fd114",
@@ -771,7 +771,7 @@ export const initialEmails = [
   },
   {
     id: 35,
-    threadId: "#thread-f:1849236573412378912",
+    thread_id: "#thread-f:1849236573412378912",
     legacyThreadId: "1990a2be9a3fd115",
     legacyLastMessageId: "1990a2be9a3fd115",
     legacyLastNonDraftMessageId: "1990a2be9a3fd115",
@@ -793,7 +793,7 @@ export const initialEmails = [
   },
   {
     id: 36,
-    threadId: "#thread-f:1849236573412378913",
+    thread_id: "#thread-f:1849236573412378913",
     legacyThreadId: "1990a2be9a3fd116",
     legacyLastMessageId: "1990a2be9a3fd116",
     legacyLastNonDraftMessageId: "1990a2be9a3fd116",
@@ -815,7 +815,7 @@ export const initialEmails = [
   },
   {
     id: 37,
-    threadId: "#thread-f:1849236573412378914",
+    thread_id: "#thread-f:1849236573412378914",
     legacyThreadId: "1990a2be9a3fd117",
     legacyLastMessageId: "1990a2be9a3fd117",
     legacyLastNonDraftMessageId: "1990a2be9a3fd117",
@@ -837,7 +837,7 @@ export const initialEmails = [
   },
   {
     id: 38,
-    threadId: "#thread-f:1849236573412378915",
+    thread_id: "#thread-f:1849236573412378915",
     legacyThreadId: "1990a2be9a3fd118",
     legacyLastMessageId: "1990a2be9a3fd118",
     legacyLastNonDraftMessageId: "1990a2be9a3fd118",
@@ -859,7 +859,7 @@ export const initialEmails = [
   },
   {
     id: 39,
-    threadId: "#thread-f:1849236573412378916",
+    thread_id: "#thread-f:1849236573412378916",
     legacyThreadId: "1990a2be9a3fd119",
     legacyLastMessageId: "1990a2be9a3fd119",
     legacyLastNonDraftMessageId: "1990a2be9a3fd119",
@@ -881,7 +881,7 @@ export const initialEmails = [
   },
   {
     id: 40,
-    threadId: "#thread-f:1849236573412378917",
+    thread_id: "#thread-f:1849236573412378917",
     legacyThreadId: "1990a2be9a3fd120",
     legacyLastMessageId: "1990a2be9a3fd120",
     legacyLastNonDraftMessageId: "1990a2be9a3fd120",
@@ -903,7 +903,7 @@ export const initialEmails = [
   },
   {
     id: 41,
-    threadId: "#thread-f:1849236573412378918",
+    thread_id: "#thread-f:1849236573412378918",
     legacyThreadId: "1990a2be9a3fd121",
     legacyLastMessageId: "1990a2be9a3fd121",
     legacyLastNonDraftMessageId: "1990a2be9a3fd121",
@@ -925,7 +925,7 @@ export const initialEmails = [
   },
   {
     id: 42,
-    threadId: "#thread-f:1849236573412378919",
+    thread_id: "#thread-f:1849236573412378919",
     legacyThreadId: "1990a2be9a3fd122",
     legacyLastMessageId: "1990a2be9a3fd122",
     legacyLastNonDraftMessageId: "1990a2be9a3fd122",
@@ -947,7 +947,7 @@ export const initialEmails = [
   },
   {
     id: 43,
-    threadId: "#thread-f:1849236573412378920",
+    thread_id: "#thread-f:1849236573412378920",
     legacyThreadId: "1990a2be9a3fd123",
     legacyLastMessageId: "1990a2be9a3fd123",
     legacyLastNonDraftMessageId: "1990a2be9a3fd123",
@@ -969,7 +969,7 @@ export const initialEmails = [
   },
   {
     id: 44,
-    threadId: "#thread-f:1849236573412378921",
+    thread_id: "#thread-f:1849236573412378921",
     legacyThreadId: "1990a2be9a3fd124",
     legacyLastMessageId: "1990a2be9a3fd124",
     legacyLastNonDraftMessageId: "1990a2be9a3fd124",
@@ -991,7 +991,7 @@ export const initialEmails = [
   },
   {
     id: 45,
-    threadId: "#thread-f:1849236573412378922",
+    thread_id: "#thread-f:1849236573412378922",
     legacyThreadId: "1990a2be9a3fd125",
     legacyLastMessageId: "1990a2be9a3fd125",
     legacyLastNonDraftMessageId: "1990a2be9a3fd125",
@@ -1013,7 +1013,7 @@ export const initialEmails = [
   },
   {
     id: 46,
-    threadId: "#thread-f:1849236573412378923",
+    thread_id: "#thread-f:1849236573412378923",
     legacyThreadId: "1990a2be9a3fd126",
     legacyLastMessageId: "1990a2be9a3fd126",
     legacyLastNonDraftMessageId: "1990a2be9a3fd126",
@@ -1035,7 +1035,7 @@ export const initialEmails = [
   },
   {
     id: 47,
-    threadId: "#thread-f:1849236573412378924",
+    thread_id: "#thread-f:1849236573412378924",
     legacyThreadId: "1990a2be9a3fd127",
     legacyLastMessageId: "1990a2be9a3fd127",
     legacyLastNonDraftMessageId: "1990a2be9a3fd127",
@@ -1057,7 +1057,7 @@ export const initialEmails = [
   },
   {
     id: 48,
-    threadId: "#thread-f:1849236573412378925",
+    thread_id: "#thread-f:1849236573412378925",
     legacyThreadId: "1990a2be9a3fd128",
     legacyLastMessageId: "1990a2be9a3fd128",
     legacyLastNonDraftMessageId: "1990a2be9a3fd128",
@@ -1079,7 +1079,7 @@ export const initialEmails = [
   },
   {
     id: 49,
-    threadId: "#thread-f:1849236573412378926",
+    thread_id: "#thread-f:1849236573412378926",
     legacyThreadId: "1990a2be9a3fd129",
     legacyLastMessageId: "1990a2be9a3fd129",
     legacyLastNonDraftMessageId: "1990a2be9a3fd129",
@@ -1101,7 +1101,7 @@ export const initialEmails = [
   },
   {
     id: 50,
-    threadId: "#thread-f:1849236573412378927",
+    thread_id: "#thread-f:1849236573412378927",
     legacyThreadId: "1990a2be9a3fd130",
     legacyLastMessageId: "1990a2be9a3fd130",
     legacyLastNonDraftMessageId: "1990a2be9a3fd130",
@@ -1123,7 +1123,7 @@ export const initialEmails = [
   },
   {
     id: 51,
-    threadId: "#thread-f:1849236573412378928",
+    thread_id: "#thread-f:1849236573412378928",
     legacyThreadId: "1990a2be9a3fd131",
     legacyLastMessageId: "1990a2be9a3fd131",
     legacyLastNonDraftMessageId: "1990a2be9a3fd131",
@@ -1145,7 +1145,7 @@ export const initialEmails = [
   },
   {
     id: 52,
-    threadId: "#thread-f:1849236573412378929",
+    thread_id: "#thread-f:1849236573412378929",
     legacyThreadId: "1990a2be9a3fd132",
     legacyLastMessageId: "1990a2be9a3fd132",
     legacyLastNonDraftMessageId: "1990a2be9a3fd132",
@@ -1167,7 +1167,7 @@ export const initialEmails = [
   },
   {
     id: 53,
-    threadId: "#thread-f:1849236573412378930",
+    thread_id: "#thread-f:1849236573412378930",
     legacyThreadId: "1990a2be9a3fd133",
     legacyLastMessageId: "1990a2be9a3fd133",
     legacyLastNonDraftMessageId: "1990a2be9a3fd133",
@@ -1189,7 +1189,7 @@ export const initialEmails = [
   },
   {
     id: 54,
-    threadId: "#thread-f:1849236573412378931",
+    thread_id: "#thread-f:1849236573412378931",
     legacyThreadId: "1990a2be9a3fd134",
     legacyLastMessageId: "1990a2be9a3fd134",
     legacyLastNonDraftMessageId: "1990a2be9a3fd134",
@@ -1211,7 +1211,7 @@ export const initialEmails = [
   },
   {
     id: 55,
-    threadId: "#thread-f:1849236573412378932",
+    thread_id: "#thread-f:1849236573412378932",
     legacyThreadId: "1990a2be9a3fd135",
     legacyLastMessageId: "1990a2be9a3fd135",
     legacyLastNonDraftMessageId: "1990a2be9a3fd135",
@@ -1233,7 +1233,7 @@ export const initialEmails = [
   },
   {
     id: 56,
-    threadId: "#thread-f:1849236573412378933",
+    thread_id: "#thread-f:1849236573412378933",
     legacyThreadId: "1990a2be9a3fd136",
     legacyLastMessageId: "1990a2be9a3fd136",
     legacyLastNonDraftMessageId: "1990a2be9a3fd136",
@@ -1255,7 +1255,7 @@ export const initialEmails = [
   },
   {
     id: 57,
-    threadId: "#thread-f:1849236573412378934",
+    thread_id: "#thread-f:1849236573412378934",
     legacyThreadId: "1990a2be9a3fd137",
     legacyLastMessageId: "1990a2be9a3fd137",
     legacyLastNonDraftMessageId: "1990a2be9a3fd137",
@@ -1277,7 +1277,7 @@ export const initialEmails = [
   },
   {
     id: 58,
-    threadId: "#thread-f:1849236573412378935",
+    thread_id: "#thread-f:1849236573412378935",
     legacyThreadId: "1990a2be9a3fd138",
     legacyLastMessageId: "1990a2be9a3fd138",
     legacyLastNonDraftMessageId: "1990a2be9a3fd138",
@@ -1299,7 +1299,7 @@ export const initialEmails = [
   },
   {
     id: 59,
-    threadId: "#thread-f:1849236573412378936",
+    thread_id: "#thread-f:1849236573412378936",
     legacyThreadId: "1990a2be9a3fd139",
     legacyLastMessageId: "1990a2be9a3fd139",
     legacyLastNonDraftMessageId: "1990a2be9a3fd139",
@@ -1321,7 +1321,7 @@ export const initialEmails = [
   },
   {
     id: 60,
-    threadId: "#thread-f:1849236573412378937",
+    thread_id: "#thread-f:1849236573412378937",
     legacyThreadId: "1990a2be9a3fd140",
     legacyLastMessageId: "1990a2be9a3fd140",
     legacyLastNonDraftMessageId: "1990a2be9a3fd140",
@@ -1343,7 +1343,7 @@ export const initialEmails = [
   },
   {
     id: 61,
-    threadId: "#thread-f:1849236573412378938",
+    thread_id: "#thread-f:1849236573412378938",
     legacyThreadId: "1990a2be9a3fd141",
     legacyLastMessageId: "1990a2be9a3fd141",
     legacyLastNonDraftMessageId: "1990a2be9a3fd141",
@@ -1365,7 +1365,7 @@ export const initialEmails = [
   },
   {
     id: 62,
-    threadId: "#thread-f:1849236573412378939",
+    thread_id: "#thread-f:1849236573412378939",
     legacyThreadId: "1990a2be9a3fd142",
     legacyLastMessageId: "1990a2be9a3fd142",
     legacyLastNonDraftMessageId: "1990a2be9a3fd142",
@@ -1387,7 +1387,7 @@ export const initialEmails = [
   },
   {
     id: 63,
-    threadId: "#thread-f:1849236573412378940",
+    thread_id: "#thread-f:1849236573412378940",
     legacyThreadId: "1990a2be9a3fd143",
     legacyLastMessageId: "1990a2be9a3fd143",
     legacyLastNonDraftMessageId: "1990a2be9a3fd143",
@@ -1409,7 +1409,7 @@ export const initialEmails = [
   },
   {
     id: 64,
-    threadId: "#thread-f:1849236573412378941",
+    thread_id: "#thread-f:1849236573412378941",
     legacyThreadId: "1990a2be9a3fd144",
     legacyLastMessageId: "1990a2be9a3fd144",
     legacyLastNonDraftMessageId: "1990a2be9a3fd144",
@@ -1431,7 +1431,7 @@ export const initialEmails = [
   },
   {
     id: 65,
-    threadId: "#thread-f:1849236573412378942",
+    thread_id: "#thread-f:1849236573412378942",
     legacyThreadId: "1990a2be9a3fd145",
     legacyLastMessageId: "1990a2be9a3fd145",
     legacyLastNonDraftMessageId: "1990a2be9a3fd145",
@@ -1453,7 +1453,7 @@ export const initialEmails = [
   },
   {
     id: 66,
-    threadId: "#thread-f:1849236573412378943",
+    thread_id: "#thread-f:1849236573412378943",
     legacyThreadId: "1990a2be9a3fd146",
     legacyLastMessageId: "1990a2be9a3fd146",
     legacyLastNonDraftMessageId: "1990a2be9a3fd146",
@@ -1475,7 +1475,7 @@ export const initialEmails = [
   },
   {
     id: 67,
-    threadId: "#thread-f:1849236573412378944",
+    thread_id: "#thread-f:1849236573412378944",
     legacyThreadId: "1990a2be9a3fd147",
     legacyLastMessageId: "1990a2be9a3fd147",
     legacyLastNonDraftMessageId: "1990a2be9a3fd147",
@@ -1497,7 +1497,7 @@ export const initialEmails = [
   },
   {
     id: 68,
-    threadId: "#thread-f:1849236573412378945",
+    thread_id: "#thread-f:1849236573412378945",
     legacyThreadId: "1990a2be9a3fd148",
     legacyLastMessageId: "1990a2be9a3fd148",
     legacyLastNonDraftMessageId: "1990a2be9a3fd148",
@@ -1519,7 +1519,7 @@ export const initialEmails = [
   },
   {
     id: 69,
-    threadId: "#thread-f:1849236573412378946",
+    thread_id: "#thread-f:1849236573412378946",
     legacyThreadId: "1990a2be9a3fd149",
     legacyLastMessageId: "1990a2be9a3fd149",
     legacyLastNonDraftMessageId: "1990a2be9a3fd149",
@@ -1541,7 +1541,7 @@ export const initialEmails = [
   },
   {
     id: 70,
-    threadId: "#thread-f:1849236573412378947",
+    thread_id: "#thread-f:1849236573412378947",
     legacyThreadId: "1990a2be9a3fd150",
     legacyLastMessageId: "1990a2be9a3fd150",
     legacyLastNonDraftMessageId: "1990a2be9a3fd150",
@@ -1563,7 +1563,7 @@ export const initialEmails = [
   },
   {
     id: 71,
-    threadId: "#thread-f:1849236573412378948",
+    thread_id: "#thread-f:1849236573412378948",
     legacyThreadId: "1990a2be9a3fd151",
     legacyLastMessageId: "1990a2be9a3fd151",
     legacyLastNonDraftMessageId: "1990a2be9a3fd151",
@@ -1585,7 +1585,7 @@ export const initialEmails = [
   },
   {
     id: 72,
-    threadId: "#thread-f:1849236573412378949",
+    thread_id: "#thread-f:1849236573412378949",
     legacyThreadId: "1990a2be9a3fd152",
     legacyLastMessageId: "1990a2be9a3fd152",
     legacyLastNonDraftMessageId: "1990a2be9a3fd152",
@@ -1607,7 +1607,7 @@ export const initialEmails = [
   },
   {
     id: 73,
-    threadId: "#thread-f:1849236573412378950",
+    thread_id: "#thread-f:1849236573412378950",
     legacyThreadId: "1990a2be9a3fd153",
     legacyLastMessageId: "1990a2be9a3fd153",
     legacyLastNonDraftMessageId: "1990a2be9a3fd153",
@@ -1629,7 +1629,7 @@ export const initialEmails = [
   },
   {
     id: 74,
-    threadId: "#thread-f:1849236573412378951",
+    thread_id: "#thread-f:1849236573412378951",
     legacyThreadId: "1990a2be9a3fd154",
     legacyLastMessageId: "1990a2be9a3fd154",
     legacyLastNonDraftMessageId: "1990a2be9a3fd154",
@@ -1651,7 +1651,7 @@ export const initialEmails = [
   },
   {
     id: 75,
-    threadId: "#thread-f:1849236573412378952",
+    thread_id: "#thread-f:1849236573412378952",
     legacyThreadId: "1990a2be9a3fd155",
     legacyLastMessageId: "1990a2be9a3fd155",
     legacyLastNonDraftMessageId: "1990a2be9a3fd155",
@@ -1673,7 +1673,7 @@ export const initialEmails = [
   },
   {
     id: 76,
-    threadId: "#thread-f:1849236573412378953",
+    thread_id: "#thread-f:1849236573412378953",
     legacyThreadId: "1990a2be9a3fd156",
     legacyLastMessageId: "1990a2be9a3fd156",
     legacyLastNonDraftMessageId: "1990a2be9a3fd156",
@@ -1695,7 +1695,7 @@ export const initialEmails = [
   },
   {
     id: 77,
-    threadId: "#thread-f:1849236573412378954",
+    thread_id: "#thread-f:1849236573412378954",
     legacyThreadId: "1990a2be9a3fd157",
     legacyLastMessageId: "1990a2be9a3fd157",
     legacyLastNonDraftMessageId: "1990a2be9a3fd157",
@@ -1717,7 +1717,7 @@ export const initialEmails = [
   },
   {
     id: 78,
-    threadId: "#thread-f:1849236573412378955",
+    thread_id: "#thread-f:1849236573412378955",
     legacyThreadId: "1990a2be9a3fd158",
     legacyLastMessageId: "1990a2be9a3fd158",
     legacyLastNonDraftMessageId: "1990a2be9a3fd158",
@@ -1739,7 +1739,7 @@ export const initialEmails = [
   },
   {
     id: 79,
-    threadId: "#thread-f:1849236573412378956",
+    thread_id: "#thread-f:1849236573412378956",
     legacyThreadId: "1990a2be9a3fd159",
     legacyLastMessageId: "1990a2be9a3fd159",
     legacyLastNonDraftMessageId: "1990a2be9a3fd159",
@@ -1761,7 +1761,7 @@ export const initialEmails = [
   },
   {
     id: 80,
-    threadId: "#thread-f:1849236573412378957",
+    thread_id: "#thread-f:1849236573412378957",
     legacyThreadId: "1990a2be9a3fd160",
     legacyLastMessageId: "1990a2be9a3fd160",
     legacyLastNonDraftMessageId: "1990a2be9a3fd160",
@@ -1783,7 +1783,7 @@ export const initialEmails = [
   },
   {
     id: 81,
-    threadId: "#thread-f:1849236573412378958",
+    thread_id: "#thread-f:1849236573412378958",
     legacyThreadId: "1990a2be9a3fd161",
     legacyLastMessageId: "1990a2be9a3fd161",
     legacyLastNonDraftMessageId: "1990a2be9a3fd161",
@@ -1805,7 +1805,7 @@ export const initialEmails = [
   },
   {
     id: 82,
-    threadId: "#thread-f:1849236573412378959",
+    thread_id: "#thread-f:1849236573412378959",
     legacyThreadId: "1990a2be9a3fd162",
     legacyLastMessageId: "1990a2be9a3fd162",
     legacyLastNonDraftMessageId: "1990a2be9a3fd162",
@@ -1827,7 +1827,7 @@ export const initialEmails = [
   },
   {
     id: 83,
-    threadId: "#thread-f:1849236573412378960",
+    thread_id: "#thread-f:1849236573412378960",
     legacyThreadId: "1990a2be9a3fd163",
     legacyLastMessageId: "1990a2be9a3fd163",
     legacyLastNonDraftMessageId: "1990a2be9a3fd163",
@@ -1849,7 +1849,7 @@ export const initialEmails = [
   },
   {
     id: 84,
-    threadId: "#thread-f:1849236573412378961",
+    thread_id: "#thread-f:1849236573412378961",
     legacyThreadId: "1990a2be9a3fd164",
     legacyLastMessageId: "1990a2be9a3fd164",
     legacyLastNonDraftMessageId: "1990a2be9a3fd164",
@@ -1871,7 +1871,7 @@ export const initialEmails = [
   },
   {
     id: 85,
-    threadId: "#thread-f:1849236573412378962",
+    thread_id: "#thread-f:1849236573412378962",
     legacyThreadId: "1990a2be9a3fd165",
     legacyLastMessageId: "1990a2be9a3fd165",
     legacyLastNonDraftMessageId: "1990a2be9a3fd165",
@@ -1893,7 +1893,7 @@ export const initialEmails = [
   },
   {
     id: 86,
-    threadId: "#thread-f:1849236573412378963",
+    thread_id: "#thread-f:1849236573412378963",
     legacyThreadId: "1990a2be9a3fd166",
     legacyLastMessageId: "1990a2be9a3fd166",
     legacyLastNonDraftMessageId: "1990a2be9a3fd166",
@@ -1915,7 +1915,7 @@ export const initialEmails = [
   },
   {
     id: 87,
-    threadId: "#thread-f:1849236573412378964",
+    thread_id: "#thread-f:1849236573412378964",
     legacyThreadId: "1990a2be9a3fd167",
     legacyLastMessageId: "1990a2be9a3fd167",
     legacyLastNonDraftMessageId: "1990a2be9a3fd167",
@@ -1937,7 +1937,7 @@ export const initialEmails = [
   },
   {
     id: 88,
-    threadId: "#thread-f:1849236573412378965",
+    thread_id: "#thread-f:1849236573412378965",
     legacyThreadId: "1990a2be9a3fd168",
     legacyLastMessageId: "1990a2be9a3fd168",
     legacyLastNonDraftMessageId: "1990a2be9a3fd168",
@@ -1959,7 +1959,7 @@ export const initialEmails = [
   },
   {
     id: 89,
-    threadId: "#thread-f:1849236573412378966",
+    thread_id: "#thread-f:1849236573412378966",
     legacyThreadId: "1990a2be9a3fd169",
     legacyLastMessageId: "1990a2be9a3fd169",
     legacyLastNonDraftMessageId: "1990a2be9a3fd169",
@@ -1981,7 +1981,7 @@ export const initialEmails = [
   },
   {
     id: 90,
-    threadId: "#thread-f:1849236573412378967",
+    thread_id: "#thread-f:1849236573412378967",
     legacyThreadId: "1990a2be9a3fd170",
     legacyLastMessageId: "1990a2be9a3fd170",
     legacyLastNonDraftMessageId: "1990a2be9a3fd170",
@@ -2003,7 +2003,7 @@ export const initialEmails = [
   },
   {
     id: 91,
-    threadId: "#thread-f:1849236573412378968",
+    thread_id: "#thread-f:1849236573412378968",
     legacyThreadId: "1990a2be9a3fd171",
     legacyLastMessageId: "1990a2be9a3fd171",
     legacyLastNonDraftMessageId: "1990a2be9a3fd171",
@@ -2025,7 +2025,7 @@ export const initialEmails = [
   },
   {
     id: 92,
-    threadId: "#thread-f:1849236573412378969",
+    thread_id: "#thread-f:1849236573412378969",
     legacyThreadId: "1990a2be9a3fd172",
     legacyLastMessageId: "1990a2be9a3fd172",
     legacyLastNonDraftMessageId: "1990a2be9a3fd172",
@@ -2047,7 +2047,7 @@ export const initialEmails = [
   },
   {
     id: 93,
-    threadId: "#thread-f:1849236573412378970",
+    thread_id: "#thread-f:1849236573412378970",
     legacyThreadId: "1990a2be9a3fd173",
     legacyLastMessageId: "1990a2be9a3fd173",
     legacyLastNonDraftMessageId: "1990a2be9a3fd173",
@@ -2069,7 +2069,7 @@ export const initialEmails = [
   },
   {
     id: 94,
-    threadId: "#thread-f:1849236573412378971",
+    thread_id: "#thread-f:1849236573412378971",
     legacyThreadId: "1990a2be9a3fd174",
     legacyLastMessageId: "1990a2be9a3fd174",
     legacyLastNonDraftMessageId: "1990a2be9a3fd174",
@@ -2091,7 +2091,7 @@ export const initialEmails = [
   },
   {
     id: 95,
-    threadId: "#thread-f:1849236573412378972",
+    thread_id: "#thread-f:1849236573412378972",
     legacyThreadId: "1990a2be9a3fd175",
     legacyLastMessageId: "1990a2be9a3fd175",
     legacyLastNonDraftMessageId: "1990a2be9a3fd175",
@@ -2113,7 +2113,7 @@ export const initialEmails = [
   },
   {
     id: 96,
-    threadId: "#thread-f:1849236573412378973",
+    thread_id: "#thread-f:1849236573412378973",
     legacyThreadId: "1990a2be9a3fd176",
     legacyLastMessageId: "1990a2be9a3fd176",
     legacyLastNonDraftMessageId: "1990a2be9a3fd176",
@@ -2135,7 +2135,7 @@ export const initialEmails = [
   },
   {
     id: 97,
-    threadId: "#thread-f:1849236573412378974",
+    thread_id: "#thread-f:1849236573412378974",
     legacyThreadId: "1990a2be9a3fd177",
     legacyLastMessageId: "1990a2be9a3fd177",
     legacyLastNonDraftMessageId: "1990a2be9a3fd177",
@@ -2157,7 +2157,7 @@ export const initialEmails = [
   },
   {
     id: 98,
-    threadId: "#thread-f:1849236573412378975",
+    thread_id: "#thread-f:1849236573412378975",
     legacyThreadId: "1990a2be9a3fd178",
     legacyLastMessageId: "1990a2be9a3fd178",
     legacyLastNonDraftMessageId: "1990a2be9a3fd178",
@@ -2179,7 +2179,7 @@ export const initialEmails = [
   },
   {
     id: 99,
-    threadId: "#thread-f:1849236573412378976",
+    thread_id: "#thread-f:1849236573412378976",
     legacyThreadId: "1990a2be9a3fd179",
     legacyLastMessageId: "1990a2be9a3fd179",
     legacyLastNonDraftMessageId: "1990a2be9a3fd179",
@@ -2201,7 +2201,7 @@ export const initialEmails = [
   },
   {
     id: 100,
-    threadId: "#thread-f:1849236573412378977",
+    thread_id: "#thread-f:1849236573412378977",
     legacyThreadId: "1990a2be9a3fd180",
     legacyLastMessageId: "1990a2be9a3fd180",
     legacyLastNonDraftMessageId: "1990a2be9a3fd180",
@@ -2223,7 +2223,7 @@ export const initialEmails = [
   },
   {
     id: 101,
-    threadId: "#thread-f:1849236573412378978",
+    thread_id: "#thread-f:1849236573412378978",
     legacyThreadId: "1990a2be9a3fd181",
     legacyLastMessageId: "1990a2be9a3fd181",
     legacyLastNonDraftMessageId: "1990a2be9a3fd181",
@@ -2245,7 +2245,7 @@ export const initialEmails = [
   },
   {
     id: 102,
-    threadId: "#thread-f:1849236573412378979",
+    thread_id: "#thread-f:1849236573412378979",
     legacyThreadId: "1990a2be9a3fd182",
     legacyLastMessageId: "1990a2be9a3fd182",
     legacyLastNonDraftMessageId: "1990a2be9a3fd182",
@@ -2267,7 +2267,7 @@ export const initialEmails = [
   },
   {
     id: 103,
-    threadId: "#thread-f:1849236573412378980",
+    thread_id: "#thread-f:1849236573412378980",
     legacyThreadId: "1990a2be9a3fd183",
     legacyLastMessageId: "1990a2be9a3fd183",
     legacyLastNonDraftMessageId: "1990a2be9a3fd183",
@@ -2289,7 +2289,7 @@ export const initialEmails = [
   },
   {
     id: 104,
-    threadId: "#thread-f:1849236573412378981",
+    thread_id: "#thread-f:1849236573412378981",
     legacyThreadId: "1990a2be9a3fd184",
     legacyLastMessageId: "1990a2be9a3fd184",
     legacyLastNonDraftMessageId: "1990a2be9a3fd184",
@@ -2311,7 +2311,7 @@ export const initialEmails = [
   },
   {
     id: 105,
-    threadId: "#thread-f:1849236573412378982",
+    thread_id: "#thread-f:1849236573412378982",
     legacyThreadId: "1990a2be9a3fd185",
     legacyLastMessageId: "1990a2be9a3fd185",
     legacyLastNonDraftMessageId: "1990a2be9a3fd185",
@@ -2333,7 +2333,7 @@ export const initialEmails = [
   },
   {
     id: 106,
-    threadId: "#thread-f:1849236573412378983",
+    thread_id: "#thread-f:1849236573412378983",
     legacyThreadId: "1990a2be9a3fd186",
     legacyLastMessageId: "1990a2be9a3fd186",
     legacyLastNonDraftMessageId: "1990a2be9a3fd186",
@@ -2355,7 +2355,7 @@ export const initialEmails = [
   },
   {
     id: 107,
-    threadId: "#thread-f:1849236573412378984",
+    thread_id: "#thread-f:1849236573412378984",
     legacyThreadId: "1990a2be9a3fd187",
     legacyLastMessageId: "1990a2be9a3fd187",
     legacyLastNonDraftMessageId: "1990a2be9a3fd187",
@@ -2377,7 +2377,7 @@ export const initialEmails = [
   },
   {
     id: 108,
-    threadId: "#thread-f:1849236573412378985",
+    thread_id: "#thread-f:1849236573412378985",
     legacyThreadId: "1990a2be9a3fd188",
     legacyLastMessageId: "1990a2be9a3fd188",
     legacyLastNonDraftMessageId: "1990a2be9a3fd188",
@@ -2399,7 +2399,7 @@ export const initialEmails = [
   },
   {
     id: 109,
-    threadId: "#thread-f:1849236573412378986",
+    thread_id: "#thread-f:1849236573412378986",
     legacyThreadId: "1990a2be9a3fd189",
     legacyLastMessageId: "1990a2be9a3fd189",
     legacyLastNonDraftMessageId: "1990a2be9a3fd189",
@@ -2421,7 +2421,7 @@ export const initialEmails = [
   },
   {
     id: 110,
-    threadId: "#thread-f:1849236573412378987",
+    thread_id: "#thread-f:1849236573412378987",
     legacyThreadId: "1990a2be9a3fd190",
     legacyLastMessageId: "1990a2be9a3fd190",
     legacyLastNonDraftMessageId: "1990a2be9a3fd190",
@@ -2443,7 +2443,7 @@ export const initialEmails = [
   },
   {
     id: 111,
-    threadId: "#thread-f:1849236573412378988",
+    thread_id: "#thread-f:1849236573412378988",
     legacyThreadId: "1990a2be9a3fd191",
     legacyLastMessageId: "1990a2be9a3fd191",
     legacyLastNonDraftMessageId: "1990a2be9a3fd191",
@@ -2465,7 +2465,7 @@ export const initialEmails = [
   },
   {
     id: 112,
-    threadId: "#thread-f:1849236573412378989",
+    thread_id: "#thread-f:1849236573412378989",
     legacyThreadId: "1990a2be9a3fd192",
     legacyLastMessageId: "1990a2be9a3fd192",
     legacyLastNonDraftMessageId: "1990a2be9a3fd192",
@@ -2487,7 +2487,7 @@ export const initialEmails = [
   },
   {
     id: 113,
-    threadId: "#thread-f:1849236573412378990",
+    thread_id: "#thread-f:1849236573412378990",
     legacyThreadId: "1990a2be9a3fd193",
     legacyLastMessageId: "1990a2be9a3fd193",
     legacyLastNonDraftMessageId: "1990a2be9a3fd193",
@@ -2509,7 +2509,7 @@ export const initialEmails = [
   },
   {
     id: 114,
-    threadId: "#thread-f:1849236573412378991",
+    thread_id: "#thread-f:1849236573412378991",
     legacyThreadId: "1990a2be9a3fd194",
     legacyLastMessageId: "1990a2be9a3fd194",
     legacyLastNonDraftMessageId: "1990a2be9a3fd194",
@@ -2531,7 +2531,7 @@ export const initialEmails = [
   },
   {
     id: 115,
-    threadId: "#thread-f:1849236573412378992",
+    thread_id: "#thread-f:1849236573412378992",
     legacyThreadId: "1990a2be9a3fd195",
     legacyLastMessageId: "1990a2be9a3fd195",
     legacyLastNonDraftMessageId: "1990a2be9a3fd195",
@@ -2553,7 +2553,7 @@ export const initialEmails = [
   },
   {
     id: 116,
-    threadId: "#thread-f:1849236573412378993",
+    thread_id: "#thread-f:1849236573412378993",
     legacyThreadId: "1990a2be9a3fd196",
     legacyLastMessageId: "1990a2be9a3fd196",
     legacyLastNonDraftMessageId: "1990a2be9a3fd196",
@@ -2575,7 +2575,7 @@ export const initialEmails = [
   },
   {
     id: 117,
-    threadId: "#thread-f:1849236573412378994",
+    thread_id: "#thread-f:1849236573412378994",
     legacyThreadId: "1990a2be9a3fd197",
     legacyLastMessageId: "1990a2be9a3fd197",
     legacyLastNonDraftMessageId: "1990a2be9a3fd197",
@@ -2597,7 +2597,7 @@ export const initialEmails = [
   },
   {
     id: 118,
-    threadId: "#thread-f:1849236573412378995",
+    thread_id: "#thread-f:1849236573412378995",
     legacyThreadId: "1990a2be9a3fd198",
     legacyLastMessageId: "1990a2be9a3fd198",
     legacyLastNonDraftMessageId: "1990a2be9a3fd198",
@@ -2619,7 +2619,7 @@ export const initialEmails = [
   },
   {
     id: 119,
-    threadId: "#thread-f:1849236573412378996",
+    thread_id: "#thread-f:1849236573412378996",
     legacyThreadId: "1990a2be9a3fd199",
     legacyLastMessageId: "1990a2be9a3fd199",
     legacyLastNonDraftMessageId: "1990a2be9a3fd199",
@@ -2641,7 +2641,7 @@ export const initialEmails = [
   },
   {
     id: 120,
-    threadId: "#thread-f:1849236573412378997",
+    thread_id: "#thread-f:1849236573412378997",
     legacyThreadId: "1990a2be9a3fd200",
     legacyLastMessageId: "1990a2be9a3fd200",
     legacyLastNonDraftMessageId: "1990a2be9a3fd200",
@@ -2663,7 +2663,7 @@ export const initialEmails = [
   },
   {
     id: 121,
-    threadId: "#thread-f:1849236573412378998",
+    thread_id: "#thread-f:1849236573412378998",
     legacyThreadId: "1990a2be9a3fd201",
     legacyLastMessageId: "1990a2be9a3fd201",
     legacyLastNonDraftMessageId: "1990a2be9a3fd201",
@@ -2685,7 +2685,7 @@ export const initialEmails = [
   },
   {
     id: 122,
-    threadId: "#thread-f:1849236573412378999",
+    thread_id: "#thread-f:1849236573412378999",
     legacyThreadId: "1990a2be9a3fd202",
     legacyLastMessageId: "1990a2be9a3fd202",
     legacyLastNonDraftMessageId: "1990a2be9a3fd202",
@@ -2707,7 +2707,7 @@ export const initialEmails = [
   },
   {
     id: 123,
-    threadId: "#thread-f:1849236573412378999",
+    thread_id: "#thread-f:1849236573412378999",
     legacyThreadId: "1990a2be9a3fd202",
     legacyLastMessageId: "1990a2be9a3fd203",
     legacyLastNonDraftMessageId: "1990a2be9a3fd203",
@@ -2729,7 +2729,7 @@ export const initialEmails = [
   },
   {
     id: 124,
-    threadId: "#thread-f:1849236573412378999",
+    thread_id: "#thread-f:1849236573412378999",
     legacyThreadId: "1990a2be9a3fd202",
     legacyLastMessageId: "1990a2be9a3fd204",
     legacyLastNonDraftMessageId: "1990a2be9a3fd204",
@@ -2751,7 +2751,7 @@ export const initialEmails = [
   },
   {
     id: 125,
-    threadId: "#thread-f:1849236573412379000",
+    thread_id: "#thread-f:1849236573412379000",
     legacyThreadId: "1990a2be9a3fd205",
     legacyLastMessageId: "1990a2be9a3fd205",
     legacyLastNonDraftMessageId: "1990a2be9a3fd205",
@@ -2773,7 +2773,7 @@ export const initialEmails = [
   },
   {
     id: 126,
-    threadId: "#thread-f:1849236573412379000",
+    thread_id: "#thread-f:1849236573412379000",
     legacyThreadId: "1990a2be9a3fd205",
     legacyLastMessageId: "1990a2be9a3fd206",
     legacyLastNonDraftMessageId: "1990a2be9a3fd206",
@@ -2795,7 +2795,7 @@ export const initialEmails = [
   },
   {
     id: 127,
-    threadId: "#thread-f:1849236573412379001",
+    thread_id: "#thread-f:1849236573412379001",
     legacyThreadId: "1990a2be9a3fd207",
     legacyLastMessageId: "1990a2be9a3fd207",
     legacyLastNonDraftMessageId: "1990a2be9a3fd207",
@@ -2817,7 +2817,7 @@ export const initialEmails = [
   },
   {
     id: 128,
-    threadId: "#thread-f:1849236573412379001",
+    thread_id: "#thread-f:1849236573412379001",
     legacyThreadId: "1990a2be9a3fd207",
     legacyLastMessageId: "1990a2be9a3fd208",
     legacyLastNonDraftMessageId: "1990a2be9a3fd208",
@@ -2839,7 +2839,7 @@ export const initialEmails = [
   },
   {
     id: 129,
-    threadId: "#thread-f:1849236573412379002",
+    thread_id: "#thread-f:1849236573412379002",
     legacyThreadId: "1990a2be9a3fd209",
     legacyLastMessageId: "1990a2be9a3fd209",
     legacyLastNonDraftMessageId: "1990a2be9a3fd209",
@@ -2861,7 +2861,7 @@ export const initialEmails = [
   },
   {
     id: 130,
-    threadId: "#thread-f:1849236573412379002",
+    thread_id: "#thread-f:1849236573412379002",
     legacyThreadId: "1990a2be9a3fd209",
     legacyLastMessageId: "1990a2be9a3fd210",
     legacyLastNonDraftMessageId: "1990a2be9a3fd210",
@@ -2883,7 +2883,7 @@ export const initialEmails = [
   },
   {
     id: 131,
-    threadId: "#thread-f:1849236573412379003",
+    thread_id: "#thread-f:1849236573412379003",
     legacyThreadId: "1990a2be9a3fd211",
     legacyLastMessageId: "1990a2be9a3fd211",
     legacyLastNonDraftMessageId: "1990a2be9a3fd211",
@@ -2905,7 +2905,7 @@ export const initialEmails = [
   },
   {
     id: 132,
-    threadId: "#thread-f:1849236573412379003",
+    thread_id: "#thread-f:1849236573412379003",
     legacyThreadId: "1990a2be9a3fd211",
     legacyLastMessageId: "1990a2be9a3fd212",
     legacyLastNonDraftMessageId: "1990a2be9a3fd212",
@@ -2927,7 +2927,7 @@ export const initialEmails = [
   },
   {
     id: 133,
-    threadId: "#thread-f:1849236573412379004",
+    thread_id: "#thread-f:1849236573412379004",
     legacyThreadId: "1990a2be9a3fd213",
     legacyLastMessageId: "1990a2be9a3fd213",
     legacyLastNonDraftMessageId: "1990a2be9a3fd213",
@@ -2949,7 +2949,7 @@ export const initialEmails = [
   },
   {
     id: 134,
-    threadId: "#thread-f:1849236573412379004",
+    thread_id: "#thread-f:1849236573412379004",
     legacyThreadId: "1990a2be9a3fd213",
     legacyLastMessageId: "1990a2be9a3fd214",
     legacyLastNonDraftMessageId: "1990a2be9a3fd214",
@@ -2971,7 +2971,7 @@ export const initialEmails = [
   },
   {
     id: 135,
-    threadId: "#thread-f:1849236573412379005",
+    thread_id: "#thread-f:1849236573412379005",
     legacyThreadId: "1990a2be9a3fd215",
     legacyLastMessageId: "1990a2be9a3fd215",
     legacyLastNonDraftMessageId: "1990a2be9a3fd215",
@@ -2993,7 +2993,7 @@ export const initialEmails = [
   },
   {
     id: 136,
-    threadId: "#thread-f:1849236573412379006",
+    thread_id: "#thread-f:1849236573412379006",
     legacyThreadId: "1990a2be9a3fd216",
     legacyLastMessageId: "1990a2be9a3fd216",
     legacyLastNonDraftMessageId: "1990a2be9a3fd216",
@@ -3015,7 +3015,7 @@ export const initialEmails = [
   },
   {
     id: 137,
-    threadId: "#thread-f:1849236573412379007",
+    thread_id: "#thread-f:1849236573412379007",
     legacyThreadId: "1990a2be9a3fd217",
     legacyLastMessageId: "1990a2be9a3fd217",
     legacyLastNonDraftMessageId: "1990a2be9a3fd217",
@@ -3037,7 +3037,7 @@ export const initialEmails = [
   },
   {
     id: 138,
-    threadId: "#thread-f:1849236573412379008",
+    thread_id: "#thread-f:1849236573412379008",
     legacyThreadId: "1990a2be9a3fd218",
     legacyLastMessageId: "1990a2be9a3fd218",
     legacyLastNonDraftMessageId: "1990a2be9a3fd218",
@@ -3059,7 +3059,7 @@ export const initialEmails = [
   },
   {
     id: 139,
-    threadId: "#thread-f:1849236573412379009",
+    thread_id: "#thread-f:1849236573412379009",
     legacyThreadId: "1990a2be9a3fd219",
     legacyLastMessageId: "1990a2be9a3fd219",
     legacyLastNonDraftMessageId: "1990a2be9a3fd219",
@@ -3081,7 +3081,7 @@ export const initialEmails = [
   },
   {
     id: 140,
-    threadId: "#thread-f:1849236573412379010",
+    thread_id: "#thread-f:1849236573412379010",
     legacyThreadId: "1990a2be9a3fd220",
     legacyLastMessageId: "1990a2be9a3fd220",
     legacyLastNonDraftMessageId: "1990a2be9a3fd220",
@@ -3103,7 +3103,7 @@ export const initialEmails = [
   },
   {
     id: 141,
-    threadId: "#thread-f:1849236573412379011",
+    thread_id: "#thread-f:1849236573412379011",
     legacyThreadId: "1990a2be9a3fd221",
     legacyLastMessageId: "1990a2be9a3fd221",
     legacyLastNonDraftMessageId: "1990a2be9a3fd221",
@@ -3125,7 +3125,7 @@ export const initialEmails = [
   },
   {
     id: 142,
-    threadId: "#thread-f:1849236573412379012",
+    thread_id: "#thread-f:1849236573412379012",
     legacyThreadId: "1990a2be9a3fd222",
     legacyLastMessageId: "1990a2be9a3fd222",
     legacyLastNonDraftMessageId: "1990a2be9a3fd222",
@@ -3147,7 +3147,7 @@ export const initialEmails = [
   },
   {
     id: 143,
-    threadId: "#thread-f:1849236573412379012",
+    thread_id: "#thread-f:1849236573412379012",
     legacyThreadId: "1990a2be9a3fd222",
     legacyLastMessageId: "1990a2be9a3fd223",
     legacyLastNonDraftMessageId: "1990a2be9a3fd223",
@@ -3169,7 +3169,7 @@ export const initialEmails = [
   },
   {
     id: 144,
-    threadId: "#thread-f:1849236573412379012",
+    thread_id: "#thread-f:1849236573412379012",
     legacyThreadId: "1990a2be9a3fd222",
     legacyLastMessageId: "1990a2be9a3fd224",
     legacyLastNonDraftMessageId: "1990a2be9a3fd224",
@@ -3191,7 +3191,7 @@ export const initialEmails = [
   },
   {
     id: 145,
-    threadId: "#thread-f:1849236573412379012",
+    thread_id: "#thread-f:1849236573412379012",
     legacyThreadId: "1990a2be9a3fd222",
     legacyLastMessageId: "1990a2be9a3fd225",
     legacyLastNonDraftMessageId: "1990a2be9a3fd225",
@@ -3213,7 +3213,7 @@ export const initialEmails = [
   },
   {
     id: 146,
-    threadId: "#thread-f:1849236573412379012",
+    thread_id: "#thread-f:1849236573412379012",
     legacyThreadId: "1990a2be9a3fd222",
     legacyLastMessageId: "1990a2be9a3fd226",
     legacyLastNonDraftMessageId: "1990a2be9a3fd226",
@@ -3235,7 +3235,7 @@ export const initialEmails = [
   },
   {
     id: 147,
-    threadId: "#thread-f:1849236573412379012",
+    thread_id: "#thread-f:1849236573412379012",
     legacyThreadId: "1990a2be9a3fd222",
     legacyLastMessageId: "1990a2be9a3fd227",
     legacyLastNonDraftMessageId: "1990a2be9a3fd227",
@@ -3257,7 +3257,7 @@ export const initialEmails = [
   },
   {
     id: 148,
-    threadId: "#thread-f:1849236573412379013",
+    thread_id: "#thread-f:1849236573412379013",
     legacyThreadId: "1990a2be9a3fd228",
     legacyLastMessageId: "1990a2be9a3fd228",
     legacyLastNonDraftMessageId: "1990a2be9a3fd228",
@@ -3279,7 +3279,7 @@ export const initialEmails = [
   },
   {
     id: 149,
-    threadId: "#thread-f:1849236573412379013",
+    thread_id: "#thread-f:1849236573412379013",
     legacyThreadId: "1990a2be9a3fd228",
     legacyLastMessageId: "1990a2be9a3fd229",
     legacyLastNonDraftMessageId: "1990a2be9a3fd229",
@@ -3301,7 +3301,7 @@ export const initialEmails = [
   },
   {
     id: 150,
-    threadId: "#thread-f:1849236573412379013",
+    thread_id: "#thread-f:1849236573412379013",
     legacyThreadId: "1990a2be9a3fd228",
     legacyLastMessageId: "1990a2be9a3fd230",
     legacyLastNonDraftMessageId: "1990a2be9a3fd230",
@@ -3323,7 +3323,7 @@ export const initialEmails = [
   },
   {
     id: 151,
-    threadId: "#thread-f:1849236573412379013",
+    thread_id: "#thread-f:1849236573412379013",
     legacyThreadId: "1990a2be9a3fd228",
     legacyLastMessageId: "1990a2be9a3fd231",
     legacyLastNonDraftMessageId: "1990a2be9a3fd231",
@@ -3345,7 +3345,7 @@ export const initialEmails = [
   },
   {
     id: 152,
-    threadId: "#thread-f:1849236573412379013",
+    thread_id: "#thread-f:1849236573412379013",
     legacyThreadId: "1990a2be9a3fd228",
     legacyLastMessageId: "1990a2be9a3fd232",
     legacyLastNonDraftMessageId: "1990a2be9a3fd232",
@@ -3367,7 +3367,7 @@ export const initialEmails = [
   },
   {
     id: 153,
-    threadId: "#thread-f:1849236573412379014",
+    thread_id: "#thread-f:1849236573412379014",
     legacyThreadId: "1990a2be9a3fd233",
     legacyLastMessageId: "1990a2be9a3fd233",
     legacyLastNonDraftMessageId: "1990a2be9a3fd233",
@@ -3389,7 +3389,7 @@ export const initialEmails = [
   },
   {
     id: 154,
-    threadId: "#thread-f:1849236573412379014",
+    thread_id: "#thread-f:1849236573412379014",
     legacyThreadId: "1990a2be9a3fd233",
     legacyLastMessageId: "1990a2be9a3fd234",
     legacyLastNonDraftMessageId: "1990a2be9a3fd234",
@@ -3411,7 +3411,7 @@ export const initialEmails = [
   },
   {
     id: 155,
-    threadId: "#thread-f:1849236573412379014",
+    thread_id: "#thread-f:1849236573412379014",
     legacyThreadId: "1990a2be9a3fd233",
     legacyLastMessageId: "1990a2be9a3fd235",
     legacyLastNonDraftMessageId: "1990a2be9a3fd235",
@@ -3433,7 +3433,7 @@ export const initialEmails = [
   },
   {
     id: 156,
-    threadId: "#thread-f:1849236573412379014",
+    thread_id: "#thread-f:1849236573412379014",
     legacyThreadId: "1990a2be9a3fd233",
     legacyLastMessageId: "1990a2be9a3fd236",
     legacyLastNonDraftMessageId: "1990a2be9a3fd236",
@@ -3455,7 +3455,7 @@ export const initialEmails = [
   },
   {
     id: 157,
-    threadId: "#thread-f:1849236573412379015",
+    thread_id: "#thread-f:1849236573412379015",
     legacyThreadId: "1990a2be9a3fd237",
     legacyLastMessageId: "1990a2be9a3fd237",
     legacyLastNonDraftMessageId: "1990a2be9a3fd237",
@@ -3477,7 +3477,7 @@ export const initialEmails = [
   },
   {
     id: 158,
-    threadId: "#thread-f:1849236573412379015",
+    thread_id: "#thread-f:1849236573412379015",
     legacyThreadId: "1990a2be9a3fd237",
     legacyLastMessageId: "1990a2be9a3fd238",
     legacyLastNonDraftMessageId: "1990a2be9a3fd238",
@@ -3499,7 +3499,7 @@ export const initialEmails = [
   },
   {
     id: 159,
-    threadId: "#thread-f:1849236573412379015",
+    thread_id: "#thread-f:1849236573412379015",
     legacyThreadId: "1990a2be9a3fd237",
     legacyLastMessageId: "1990a2be9a3fd239",
     legacyLastNonDraftMessageId: "1990a2be9a3fd239",
@@ -3521,7 +3521,7 @@ export const initialEmails = [
   },
   {
     id: 160,
-    threadId: "#thread-f:1849236573412379015",
+    thread_id: "#thread-f:1849236573412379015",
     legacyThreadId: "1990a2be9a3fd237",
     legacyLastMessageId: "1990a2be9a3fd240",
     legacyLastNonDraftMessageId: "1990a2be9a3fd240",
@@ -3543,7 +3543,7 @@ export const initialEmails = [
   },
   {
     id: 161,
-    threadId: "#thread-f:1849236573412379015",
+    thread_id: "#thread-f:1849236573412379015",
     legacyThreadId: "1990a2be9a3fd237",
     legacyLastMessageId: "1990a2be9a3fd241",
     legacyLastNonDraftMessageId: "1990a2be9a3fd241",
@@ -3565,7 +3565,7 @@ export const initialEmails = [
   },
   {
     id: 162,
-    threadId: "#thread-f:1849236573412379016",
+    thread_id: "#thread-f:1849236573412379016",
     legacyThreadId: "1990a2be9a3fd242",
     legacyLastMessageId: "1990a2be9a3fd242",
     legacyLastNonDraftMessageId: "1990a2be9a3fd242",
@@ -3587,7 +3587,7 @@ export const initialEmails = [
   },
   {
     id: 163,
-    threadId: "#thread-f:1849236573412379016",
+    thread_id: "#thread-f:1849236573412379016",
     legacyThreadId: "1990a2be9a3fd242",
     legacyLastMessageId: "1990a2be9a3fd243",
     legacyLastNonDraftMessageId: "1990a2be9a3fd243",
@@ -3609,7 +3609,7 @@ export const initialEmails = [
   },
   {
     id: 164,
-    threadId: "#thread-f:1849236573412379016",
+    thread_id: "#thread-f:1849236573412379016",
     legacyThreadId: "1990a2be9a3fd242",
     legacyLastMessageId: "1990a2be9a3fd244",
     legacyLastNonDraftMessageId: "1990a2be9a3fd244",
@@ -3631,7 +3631,7 @@ export const initialEmails = [
   },
   {
     id: 165,
-    threadId: "#thread-f:1849236573412379017",
+    thread_id: "#thread-f:1849236573412379017",
     legacyThreadId: "1990a2be9a3fd245",
     legacyLastMessageId: "1990a2be9a3fd245",
     legacyLastNonDraftMessageId: "1990a2be9a3fd245",
@@ -3653,7 +3653,7 @@ export const initialEmails = [
   },
   {
     id: 166,
-    threadId: "#thread-f:1849236573412379017",
+    thread_id: "#thread-f:1849236573412379017",
     legacyThreadId: "1990a2be9a3fd245",
     legacyLastMessageId: "1990a2be9a3fd246",
     legacyLastNonDraftMessageId: "1990a2be9a3fd246",
@@ -3675,7 +3675,7 @@ export const initialEmails = [
   },
   {
     id: 167,
-    threadId: "#thread-f:1849236573412379018",
+    thread_id: "#thread-f:1849236573412379018",
     legacyThreadId: "1990a2be9a3fd247",
     legacyLastMessageId: "1990a2be9a3fd247",
     legacyLastNonDraftMessageId: "1990a2be9a3fd247",
@@ -3697,7 +3697,7 @@ export const initialEmails = [
   },
   {
     id: 168,
-    threadId: "#thread-f:1849236573412379018",
+    thread_id: "#thread-f:1849236573412379018",
     legacyThreadId: "1990a2be9a3fd247",
     legacyLastMessageId: "1990a2be9a3fd248",
     legacyLastNonDraftMessageId: "1990a2be9a3fd248",
@@ -3719,7 +3719,7 @@ export const initialEmails = [
   },
   {
     id: 169,
-    threadId: "#thread-f:1849236573412379019",
+    thread_id: "#thread-f:1849236573412379019",
     legacyThreadId: "1990a2be9a3fd249",
     legacyLastMessageId: "1990a2be9a3fd249",
     legacyLastNonDraftMessageId: "1990a2be9a3fd249",
@@ -3741,7 +3741,7 @@ export const initialEmails = [
   },
   {
     id: 170,
-    threadId: "#thread-f:1849236573412379019",
+    thread_id: "#thread-f:1849236573412379019",
     legacyThreadId: "1990a2be9a3fd249",
     legacyLastMessageId: "1990a2be9a3fd250",
     legacyLastNonDraftMessageId: "1990a2be9a3fd250",
@@ -3763,7 +3763,7 @@ export const initialEmails = [
   },
   {
     id: 171,
-    threadId: "#thread-f:1849236573412379019",
+    thread_id: "#thread-f:1849236573412379019",
     legacyThreadId: "1990a2be9a3fd249",
     legacyLastMessageId: "1990a2be9a3fd251",
     legacyLastNonDraftMessageId: "1990a2be9a3fd251",
@@ -3785,7 +3785,7 @@ export const initialEmails = [
   },
   {
     id: 172,
-    threadId: "#thread-f:1849236573412379020",
+    thread_id: "#thread-f:1849236573412379020",
     legacyThreadId: "1990a2be9a3fd252",
     legacyLastMessageId: "1990a2be9a3fd252",
     legacyLastNonDraftMessageId: "1990a2be9a3fd252",
@@ -3807,7 +3807,7 @@ export const initialEmails = [
   },
   {
     id: 173,
-    threadId: "#thread-f:1849236573412379021",
+    thread_id: "#thread-f:1849236573412379021",
     legacyThreadId: "1990a2be9a3fd253",
     legacyLastMessageId: "1990a2be9a3fd253",
     legacyLastNonDraftMessageId: "1990a2be9a3fd253",
@@ -3829,7 +3829,7 @@ export const initialEmails = [
   },
   {
     id: 174,
-    threadId: "#thread-f:1849236573412379022",
+    thread_id: "#thread-f:1849236573412379022",
     legacyThreadId: "1990a2be9a3fd254",
     legacyLastMessageId: "1990a2be9a3fd254",
     legacyLastNonDraftMessageId: "1990a2be9a3fd254",
@@ -3851,7 +3851,7 @@ export const initialEmails = [
   },
   {
     id: 175,
-    threadId: "#thread-f:1849236573412379023",
+    thread_id: "#thread-f:1849236573412379023",
     legacyThreadId: "1990a2be9a3fd255",
     legacyLastMessageId: "1990a2be9a3fd255",
     legacyLastNonDraftMessageId: "1990a2be9a3fd255",
@@ -3873,7 +3873,7 @@ export const initialEmails = [
   },
   {
     id: 176,
-    threadId: "#thread-f:1849236573412379024",
+    thread_id: "#thread-f:1849236573412379024",
     legacyThreadId: "1990a2be9a3fd256",
     legacyLastMessageId: "1990a2be9a3fd256",
     legacyLastNonDraftMessageId: "1990a2be9a3fd256",
@@ -3895,7 +3895,7 @@ export const initialEmails = [
   },
   {
     id: 177,
-    threadId: "#thread-f:1849236573412379025",
+    thread_id: "#thread-f:1849236573412379025",
     legacyThreadId: "1990a2be9a3fd257",
     legacyLastMessageId: "1990a2be9a3fd257",
     legacyLastNonDraftMessageId: "1990a2be9a3fd257",
@@ -3917,7 +3917,7 @@ export const initialEmails = [
   },
   {
     id: 178,
-    threadId: "#thread-f:1849236573412379026",
+    thread_id: "#thread-f:1849236573412379026",
     legacyThreadId: "1990a2be9a3fd258",
     legacyLastMessageId: "1990a2be9a3fd258",
     legacyLastNonDraftMessageId: "1990a2be9a3fd258",
@@ -3939,7 +3939,7 @@ export const initialEmails = [
   },
   {
     id: 179,
-    threadId: "#thread-f:1849236573412379027",
+    thread_id: "#thread-f:1849236573412379027",
     legacyThreadId: "1990a2be9a3fd259",
     legacyLastMessageId: "1990a2be9a3fd259",
     legacyLastNonDraftMessageId: "1990a2be9a3fd259",
@@ -3961,7 +3961,7 @@ export const initialEmails = [
   },
   {
     id: 180,
-    threadId: "#thread-f:1849236573412379028",
+    thread_id: "#thread-f:1849236573412379028",
     legacyThreadId: "1990a2be9a3fd260",
     legacyLastMessageId: "1990a2be9a3fd260",
     legacyLastNonDraftMessageId: "1990a2be9a3fd260",
@@ -3983,7 +3983,7 @@ export const initialEmails = [
   },
   {
     id: 181,
-    threadId: "#thread-f:1849236573412379029",
+    thread_id: "#thread-f:1849236573412379029",
     legacyThreadId: "1990a2be9a3fd261",
     legacyLastMessageId: "1990a2be9a3fd261",
     legacyLastNonDraftMessageId: "1990a2be9a3fd261",
@@ -4005,7 +4005,7 @@ export const initialEmails = [
   },
   {
     id: 182,
-    threadId: "#thread-f:1849236573412379030",
+    thread_id: "#thread-f:1849236573412379030",
     legacyThreadId: "1990a2be9a3fd262",
     legacyLastMessageId: "1990a2be9a3fd262",
     legacyLastNonDraftMessageId: "1990a2be9a3fd262",
@@ -4027,7 +4027,7 @@ export const initialEmails = [
   },
   {
     id: 183,
-    threadId: "#thread-f:1849236573412379031",
+    thread_id: "#thread-f:1849236573412379031",
     legacyThreadId: "1990a2be9a3fd263",
     legacyLastMessageId: "1990a2be9a3fd263",
     legacyLastNonDraftMessageId: "1990a2be9a3fd263",
@@ -4049,7 +4049,7 @@ export const initialEmails = [
   },
   {
     id: 184,
-    threadId: "#thread-f:1849236573412379032",
+    thread_id: "#thread-f:1849236573412379032",
     legacyThreadId: "1990a2be9a3fd264",
     legacyLastMessageId: "1990a2be9a3fd264",
     legacyLastNonDraftMessageId: "1990a2be9a3fd264",
@@ -4071,7 +4071,7 @@ export const initialEmails = [
   },
   {
     id: 185,
-    threadId: "#thread-f:1849236573412379033",
+    thread_id: "#thread-f:1849236573412379033",
     legacyThreadId: "1990a2be9a3fd265",
     legacyLastMessageId: "1990a2be9a3fd265",
     legacyLastNonDraftMessageId: "1990a2be9a3fd265",
@@ -4093,7 +4093,7 @@ export const initialEmails = [
   },
   {
     id: 186,
-    threadId: "#thread-f:1849236573412379034",
+    thread_id: "#thread-f:1849236573412379034",
     legacyThreadId: "1990a2be9a3fd266",
     legacyLastMessageId: "1990a2be9a3fd266",
     legacyLastNonDraftMessageId: "1990a2be9a3fd266",
@@ -4115,7 +4115,7 @@ export const initialEmails = [
   },
   {
     id: 187,
-    threadId: "#thread-f:1849236573412379035",
+    thread_id: "#thread-f:1849236573412379035",
     legacyThreadId: "1990a2be9a3fd267",
     legacyLastMessageId: "1990a2be9a3fd267",
     legacyLastNonDraftMessageId: "1990a2be9a3fd267",
@@ -4137,7 +4137,7 @@ export const initialEmails = [
   },
   {
     id: 188,
-    threadId: "#thread-f:1849236573412379036",
+    thread_id: "#thread-f:1849236573412379036",
     legacyThreadId: "1990a2be9a3fd268",
     legacyLastMessageId: "1990a2be9a3fd268",
     legacyLastNonDraftMessageId: "1990a2be9a3fd268",
@@ -4159,7 +4159,7 @@ export const initialEmails = [
   },
   {
     id: 189,
-    threadId: "#thread-f:1849236573412379037",
+    thread_id: "#thread-f:1849236573412379037",
     legacyThreadId: "1990a2be9a3fd269",
     legacyLastMessageId: "1990a2be9a3fd269",
     legacyLastNonDraftMessageId: "1990a2be9a3fd269",
@@ -4181,7 +4181,7 @@ export const initialEmails = [
   },
   {
     id: 190,
-    threadId: "#thread-f:1849236573412379038",
+    thread_id: "#thread-f:1849236573412379038",
     legacyThreadId: "1990a2be9a3fd270",
     legacyLastMessageId: "1990a2be9a3fd270",
     legacyLastNonDraftMessageId: "1990a2be9a3fd270",
@@ -4203,7 +4203,7 @@ export const initialEmails = [
   },
   {
     id: 191,
-    threadId: "#thread-f:1849236573412379039",
+    thread_id: "#thread-f:1849236573412379039",
     legacyThreadId: "1990a2be9a3fd271",
     legacyLastMessageId: "1990a2be9a3fd271",
     legacyLastNonDraftMessageId: "1990a2be9a3fd271",
@@ -4225,7 +4225,7 @@ export const initialEmails = [
   },
   {
     id: 192,
-    threadId: "#thread-f:1849236573412379040",
+    thread_id: "#thread-f:1849236573412379040",
     legacyThreadId: "1990a2be9a3fd272",
     legacyLastMessageId: "1990a2be9a3fd272",
     legacyLastNonDraftMessageId: "1990a2be9a3fd272",
@@ -4247,7 +4247,7 @@ export const initialEmails = [
   },
   {
     id: 193,
-    threadId: "#thread-f:1849236573412379041",
+    thread_id: "#thread-f:1849236573412379041",
     legacyThreadId: "1990a2be9a3fd273",
     legacyLastMessageId: "1990a2be9a3fd273",
     legacyLastNonDraftMessageId: "1990a2be9a3fd273",
@@ -4269,7 +4269,7 @@ export const initialEmails = [
   },
   {
     id: 194,
-    threadId: "#thread-f:1849236573412379042",
+    thread_id: "#thread-f:1849236573412379042",
     legacyThreadId: "1990a2be9a3fd274",
     legacyLastMessageId: "1990a2be9a3fd274",
     legacyLastNonDraftMessageId: "1990a2be9a3fd274",
@@ -4291,7 +4291,7 @@ export const initialEmails = [
   },
   {
     id: 195,
-    threadId: "#thread-f:1849236573412379043",
+    thread_id: "#thread-f:1849236573412379043",
     legacyThreadId: "1990a2be9a3fd275",
     legacyLastMessageId: "1990a2be9a3fd275",
     legacyLastNonDraftMessageId: "1990a2be9a3fd275",
@@ -4313,7 +4313,7 @@ export const initialEmails = [
   },
   {
     id: 196,
-    threadId: "#thread-f:1849236573412379044",
+    thread_id: "#thread-f:1849236573412379044",
     legacyThreadId: "1990a2be9a3fd276",
     legacyLastMessageId: "1990a2be9a3fd276",
     legacyLastNonDraftMessageId: "1990a2be9a3fd276",
@@ -4335,7 +4335,7 @@ export const initialEmails = [
   },
   {
     id: 197,
-    threadId: "#thread-f:1849236573412379045",
+    thread_id: "#thread-f:1849236573412379045",
     legacyThreadId: "1990a2be9a3fd277",
     legacyLastMessageId: "1990a2be9a3fd277",
     legacyLastNonDraftMessageId: "1990a2be9a3fd277",
@@ -4357,7 +4357,7 @@ export const initialEmails = [
   },
   {
     id: 198,
-    threadId: "#thread-f:1849236573412379046",
+    thread_id: "#thread-f:1849236573412379046",
     legacyThreadId: "1990a2be9a3fd278",
     legacyLastMessageId: "1990a2be9a3fd278",
     legacyLastNonDraftMessageId: "1990a2be9a3fd278",
@@ -4379,7 +4379,7 @@ export const initialEmails = [
   },
   {
     id: 199,
-    threadId: "#thread-f:1849236573412379047",
+    thread_id: "#thread-f:1849236573412379047",
     legacyThreadId: "1990a2be9a3fd279",
     legacyLastMessageId: "1990a2be9a3fd279",
     legacyLastNonDraftMessageId: "1990a2be9a3fd279",
@@ -4401,7 +4401,7 @@ export const initialEmails = [
   },
   {
     id: 200,
-    threadId: "#thread-f:1849236573412379048",
+    thread_id: "#thread-f:1849236573412379048",
     legacyThreadId: "1990a2be9a3fd280",
     legacyLastMessageId: "1990a2be9a3fd280",
     legacyLastNonDraftMessageId: "1990a2be9a3fd280",
@@ -4423,7 +4423,7 @@ export const initialEmails = [
   },
   {
     id: 201,
-    threadId: "#thread-f:1849236573412379049",
+    thread_id: "#thread-f:1849236573412379049",
     legacyThreadId: "1990a2be9a3fd281",
     legacyLastMessageId: "1990a2be9a3fd281",
     legacyLastNonDraftMessageId: "1990a2be9a3fd281",
@@ -4446,7 +4446,7 @@ export const initialEmails = [
 
   {
     id: 202,
-    threadId: "#thread-f:1849236573412379202",
+    thread_id: "#thread-f:1849236573412379202",
     legacyThreadId: "1990a2be9a3fd202",
     legacyLastMessageId: "1990a2be9a3fd202",
     legacyLastNonDraftMessageId: "1990a2be9a3fd202",
@@ -4468,7 +4468,7 @@ export const initialEmails = [
   },
   {
     id: 203,
-    threadId: "#thread-f:1849236573412379203",
+    thread_id: "#thread-f:1849236573412379203",
     legacyThreadId: "1990a2be9a3fd203",
     legacyLastMessageId: "1990a2be9a3fd203",
     legacyLastNonDraftMessageId: "1990a2be9a3fd203",
@@ -4490,7 +4490,7 @@ export const initialEmails = [
   },
   {
     id: 204,
-    threadId: "#thread-f:1849236573412379204",
+    thread_id: "#thread-f:1849236573412379204",
     legacyThreadId: "1990a2be9a3fd204",
     legacyLastMessageId: "1990a2be9a3fd204",
     legacyLastNonDraftMessageId: "1990a2be9a3fd204",
@@ -4512,7 +4512,7 @@ export const initialEmails = [
   },
   {
     id: 205,
-    threadId: "#thread-f:1849236573412379205",
+    thread_id: "#thread-f:1849236573412379205",
     legacyThreadId: "1990a2be9a3fd205",
     legacyLastMessageId: "1990a2be9a3fd205",
     legacyLastNonDraftMessageId: "1990a2be9a3fd205",
@@ -4534,7 +4534,7 @@ export const initialEmails = [
   },
   {
     id: 206,
-    threadId: "#thread-f:1849236573412379206",
+    thread_id: "#thread-f:1849236573412379206",
     legacyThreadId: "1990a2be9a3fd206",
     legacyLastMessageId: "1990a2be9a3fd206",
     legacyLastNonDraftMessageId: "1990a2be9a3fd206",
@@ -4556,7 +4556,7 @@ export const initialEmails = [
   },
   {
     id: 207,
-    threadId: "#thread-f:1849236573412379207",
+    thread_id: "#thread-f:1849236573412379207",
     legacyThreadId: "1990a2be9a3fd207",
     legacyLastMessageId: "1990a2be9a3fd207",
     legacyLastNonDraftMessageId: "1990a2be9a3fd207",
@@ -4578,7 +4578,7 @@ export const initialEmails = [
   },
   {
     id: 208,
-    threadId: "#thread-f:1849236573412379208",
+    thread_id: "#thread-f:1849236573412379208",
     legacyThreadId: "1990a2be9a3fd208",
     legacyLastMessageId: "1990a2be9a3fd208",
     legacyLastNonDraftMessageId: "1990a2be9a3fd208",
@@ -4600,7 +4600,7 @@ export const initialEmails = [
   },
   {
     id: 209,
-    threadId: "#thread-f:1849236573412379209",
+    thread_id: "#thread-f:1849236573412379209",
     legacyThreadId: "1990a2be9a3fd209",
     legacyLastMessageId: "1990a2be9a3fd209",
     legacyLastNonDraftMessageId: "1990a2be9a3fd209",
@@ -4622,7 +4622,7 @@ export const initialEmails = [
   },
   {
     id: 210,
-    threadId: "#thread-f:1849236573412379210",
+    thread_id: "#thread-f:1849236573412379210",
     legacyThreadId: "1990a2be9a3fd210",
     legacyLastMessageId: "1990a2be9a3fd210",
     legacyLastNonDraftMessageId: "1990a2be9a3fd210",
@@ -4644,7 +4644,7 @@ export const initialEmails = [
   },
   {
     id: 211,
-    threadId: "#thread-f:1849236573412379211",
+    thread_id: "#thread-f:1849236573412379211",
     legacyThreadId: "1990a2be9a3fd211",
     legacyLastMessageId: "1990a2be9a3fd211",
     legacyLastNonDraftMessageId: "1990a2be9a3fd211",
@@ -4666,7 +4666,7 @@ export const initialEmails = [
   },
   {
     id: 212,
-    threadId: "#thread-f:1849236573412379212",
+    thread_id: "#thread-f:1849236573412379212",
     legacyThreadId: "1990a2be9a3fd212",
     legacyLastMessageId: "1990a2be9a3fd212",
     legacyLastNonDraftMessageId: "1990a2be9a3fd212",

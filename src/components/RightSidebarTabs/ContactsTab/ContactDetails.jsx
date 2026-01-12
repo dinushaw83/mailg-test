@@ -154,16 +154,16 @@ const ContactDetails = () => {
 
   // Navigate to email details
   const navigateToEmailDetails = (email) => {
-    const threadId = email.threadId;
+    const thread_id = email.thread_id;
 
     if (!email.labels.includes("Drafts")) {
       // If compose param is present in the url, include it while navigating
       const urlParams = new URLSearchParams(location.search);
       const composeParam = urlParams.get("compose");
       if (composeParam) {
-        navigate(`${location.pathname}/${threadId}?compose=${composeParam}`);
+        navigate(`${location.pathname}/${thread_id}?compose=${composeParam}`);
       } else {
-        navigate(`${location.pathname}/${threadId}`);
+        navigate(`${location.pathname}/${thread_id}`);
       }
     }
   };

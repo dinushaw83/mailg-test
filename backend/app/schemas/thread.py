@@ -18,8 +18,8 @@ class ThreadResponse(BaseModel):
     owner_id: UUID
     participant_count: int
     email_count: int
+    is_important: bool = False  # User-specific, from thread metadata
     last_email_at: Optional[datetime] = None
-    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
     emails: List[EmailListResponse] = []
@@ -34,6 +34,7 @@ class ThreadListResponse(BaseModel):
     subject: str
     participant_count: int
     email_count: int
+    is_important: bool = False  # User-specific, from thread metadata
     last_email_at: Optional[datetime] = None
     created_at: datetime
     # Preview info

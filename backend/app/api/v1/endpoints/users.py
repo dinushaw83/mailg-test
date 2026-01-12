@@ -12,13 +12,28 @@ import logging
 
 from app.db.session import get_db
 from app.models.user import User
+from app.models.label import Label
 from app.schemas.user import UserResponse, UserCreate, UserUpdate
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import VALID_USER_ROLES, UserRole
+from app.core.constants import (
+    VALID_USER_ROLES, UserRole, SystemLabel, CategoryLabel, EXCLUSIVE_SYSTEM_LABELS
+)
 
 logger = logging.getLogger(__name__)
+
+# System labels to create for each new user (using enums)
+SYSTEM_LABELS = [
+    # System labels - check if exclusive using the EXCLUSIVE_SYSTEM_LABELS set
+    {"label": sl, "is_exclusive": sl in EXCLUSIVE_SYSTEM_LABELS}
+    for sl in SystemLabel
+] + [
+    # Category labels (never exclusive)
+    {"label": cl, "is_exclusive": False}
+    for cl in CategoryLabel
+]
+
 router = APIRouter()
 
 
@@ -69,7 +84,6 @@ def list_users(
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     role: Optional[str] = Query(None, description="Filter by role"),
     search: Optional[str] = Query(None, description="Search in name and email"),
-    show_deleted: bool = Query(False, description="Include deleted users (admin only)"),
 ) -> dict:
     """List users with pagination and filtering.
     
@@ -83,7 +97,6 @@ def list_users(
         page_size: Number of users per page.
         role: Filter by role.
         search: Search term for name/email.
-        show_deleted: Include deleted users (admin only).
         
     Returns:
         Paginated list of users.
@@ -94,13 +107,9 @@ def list_users(
     query = db.query(User)
     
     # Permission-based filtering
-    if current_user.role == "admin":
-        # Admins can see deleted users if requested
-        if not show_deleted:
-            query = query.filter(User.is_deleted == False)
-    else:
-        # Regular users can only see active, non-deleted users
-        query = query.filter(User.is_deleted == False, User.active == True)
+    if current_user.role != "admin":
+        # Regular users can only see active users
+        query = query.filter(User.active == True)
     
     # Apply filters
     if role:
@@ -154,7 +163,7 @@ def get_user(
     Raises:
         HTTPException: 404 if user not found.
     """
-    user = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -223,6 +232,22 @@ def create_user(
         db.add(user)
         db.commit()
         db.refresh(user)
+        
+        # Create system labels for new user
+        for label_def in SYSTEM_LABELS:
+            system_label = Label(
+                owner_id=user.id,
+                name=label_def["label"].value,  # Get string value from enum
+                color="#e1e3e1",  # Default system label color
+                is_system=True,
+                is_exclusive=label_def["is_exclusive"],
+                show_in_label_list=True,
+                show_in_message_list=True,
+                show_if_unread=False,
+            )
+            db.add(system_label)
+        db.commit()
+        
     except Exception:
         db.rollback()
         raise
@@ -255,7 +280,7 @@ def update_user(
     Raises:
         HTTPException: 404 if user not found, 400 if validation fails.
     """
-    user = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -295,7 +320,6 @@ def update_user(
 def delete_user(
     user_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete a user.
     
@@ -305,12 +329,11 @@ def delete_user(
     
     Args:
         user_id: User ID.
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
         
     Raises:
         HTTPException: 404 if user not found.
     """
-    user = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -318,12 +341,8 @@ def delete_user(
             detail=f"User {user_id} not found"
         )
     
-    if permanent:
-        # Permanently delete from database
-        db.delete(user)
-    else:
-        # Soft delete
-        user.is_deleted = True
+    # Permanently delete from database
+    db.delete(user)
     
     try:
         db.commit()
@@ -331,6 +350,6 @@ def delete_user(
         db.rollback()
         raise
     
-    logger.info(f"User {user.id} {'permanently ' if permanent else ''}deleted by admin {auth.user.id}")
+    logger.info(f"User {user.id} permanently deleted by admin {auth.user.id}")
 
     return None

@@ -5,7 +5,7 @@ Reference generators for URLs, foreign keys, and IDs.
 import uuid
 from typing import Any
 
-from .base import BaseGenerator, fake
+from .base import BaseGenerator
 from ..core.analyzer import FieldSemantics, SemanticType
 from ..core.context import GenerationContext
 from ..core.registry import generator
@@ -29,7 +29,7 @@ class UrlGenerator(BaseGenerator):
             resource_id = context.random().randint(1, 10000)
             return f"/api/v1/{resource}/{resource_id}"
 
-        return fake.url()
+        return context.fake().url()
 
 
 @generator(SemanticType.PHOTO_URL, priority=80)
@@ -59,11 +59,8 @@ class StringPrimaryKeyGenerator(BaseGenerator):
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         # Check if this is a UUID field
-        field_format = semantics.field_schema.get("format")
-
-        if field_format == "uuid":
-            # Generate UUID v4
-            return str(uuid.uuid4())
+        if semantics.field_schema.get("format") == "uuid":
+            return str(context.fake().uuid4())
 
         # Fall back to sequential string IDs for non-UUID fields
         start_id = context.get_start_id(context.table_name)
@@ -98,31 +95,14 @@ class ForeignKeyGenerator(BaseGenerator):
         table_name = semantics.table_name
         field_name = semantics.field_name
 
-        # Handle self-references (like parent_email_id -> emails.id, parent_id -> labels.id)
+        # Handle self-references (like linked_problem_id -> tickets.id)
         if ref_table == table_name:
             # For self-references, only pick from PREVIOUS rows (not current row)
             ids = context.generated_ids.get(ref_table, [])
 
             # Get current row's ID to exclude it
-            # For UUID primary keys, the current ID is already in the current_row
-            current_id = context.current_row.get("id")
-
-            # If current_id is not set yet (shouldn't happen but just in case)
-            if current_id is None:
-                # Try to calculate it for integer IDs
-                try:
-                    current_id = context.get_start_id(ref_table) + context.row_index - 1
-                except:
-                    # If calculation fails, assume we can't determine current_id
-                    current_id = None
-
-            # Filter out current ID from valid choices
-            if current_id is not None:
-                valid_ids = [id for id in ids if str(id) != str(current_id)]
-            else:
-                # If we can't determine current_id, just use all previous IDs
-                # Take only IDs generated before this row
-                valid_ids = ids[:context.row_index - 1] if context.row_index > 1 else []
+            current_id = context.get_start_id(ref_table) + context.row_index - 1
+            valid_ids = [id for id in ids if str(id) != str(current_id)]
 
             # If non-nullable, we MUST return a valid ID (if any exist)
             if not semantics.is_nullable:
@@ -157,6 +137,35 @@ class ForeignKeyGenerator(BaseGenerator):
             if field_name in table_null_probs:
                 null_prob = table_null_probs[field_name]
 
+        # Check for contextual FK constraints
+        # These require the FK to reference a row that shares a value with the current row
+        # e.g., ticket.board_id must reference a board where board.project_id == ticket.project_id
+        contextual_fks = context.config.get("contextual_foreign_keys", {})
+        table_contextual = contextual_fks.get(table_name, {})
+        field_contextual = table_contextual.get(field_name)
+
+        if field_contextual:
+            must_match = field_contextual.get("must_match", {})
+            source_field = must_match.get("source_field")  # Field in current row
+            target_field = must_match.get("target_field")  # Field in referenced table
+
+            if source_field and target_field:
+                value = context.get_contextual_fk_value(
+                    ref_table=ref_table,
+                    context_field=source_field,
+                    target_field=target_field,
+                    nullable=semantics.is_nullable,
+                    null_probability=null_prob,
+                )
+                if value is None and not semantics.is_nullable:
+                    return self._null_or_placeholder(semantics, context)
+                return value
+
+        # Check for foreign key filters (e.g., exclude deleted labels)
+        fk_filters = context.config.get("foreign_key_filters", {})
+        table_fk_filters = fk_filters.get(table_name, {})
+        field_filter = table_fk_filters.get(field_name)
+
         # Check for assignment constraints
         constraints = context.config.get("assignment_constraints", {})
         table_constraints = constraints.get(table_name, {})
@@ -164,14 +173,32 @@ class ForeignKeyGenerator(BaseGenerator):
 
         if field_constraint:
             max_percentage = field_constraint.get("max_percentage", 100)
-            filter_by = field_constraint.get("filter")  # e.g., {"role": "agent"}
+            # Merge filter from constraint and foreign_key_filters
+            filter_by = field_constraint.get("filter", {})
+            if field_filter:
+                filter_by = {**filter_by, **field_filter}
 
             value = context.get_constrained_fk_value(
                 ref_table=ref_table,
                 table_name=table_name,
                 field_name=field_name,
                 max_percentage=max_percentage,
-                filter_by=filter_by,
+                filter_by=filter_by if filter_by else None,
+                nullable=semantics.is_nullable,
+                null_probability=null_prob,
+            )
+            if value is None and not semantics.is_nullable:
+                return self._null_or_placeholder(semantics, context)
+            return value
+
+        # Apply FK filter without assignment constraints
+        if field_filter:
+            value = context.get_constrained_fk_value(
+                ref_table=ref_table,
+                table_name=table_name,
+                field_name=field_name,
+                max_percentage=100,  # No percentage limit
+                filter_by=field_filter,
                 nullable=semantics.is_nullable,
                 null_probability=null_prob,
             )
@@ -228,79 +255,6 @@ class GenericStringGenerator(BaseGenerator):
         field_name = semantics.field_name
         table_name = semantics.table_name
 
-        # Mailg-specific: users.phone_country_code
-        if table_name == "users" and field_name == "phone_country_code":
-            country_codes = ["+1", "+44", "+33", "+49", "+81", "+86", "+55", "+61", "+91"]
-            weights = [0.6, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.03, 0.02]
-            return context.random().choices(country_codes, weights=weights)[0]
-
-        # Mailg-specific: email_recipients.recipient_name
-        if table_name == "email_recipients" and field_name == "recipient_name":
-            first_names = context.config.get("samples", {}).get("first_names", ["John", "Jane", "Bob"])
-            last_names = context.config.get("samples", {}).get("last_names", ["Doe", "Smith", "Johnson"])
-            first = context.random().choice(first_names)
-            last = context.random().choice(last_names)
-            return f"{first} {last}"
-
-        # Mailg-specific: email_recipients.recipient_email (for external recipients)
-        if table_name == "email_recipients" and field_name == "recipient_email":
-            # If recipient_id is null, generate external email
-            recipient_id = context.get_field_value("recipient_id")
-            if recipient_id is None:
-                # Generate external email address
-                first_names = context.config.get("samples", {}).get("first_names", ["john", "jane"])
-                last_names = context.config.get("samples", {}).get("last_names", ["doe", "smith"])
-                domains = context.config.get("samples", {}).get("email_domains", ["example.com", "gmail.com"])
-                first = context.random().choice(first_names).lower()
-                last = context.random().choice(last_names).lower()
-                domain = context.random().choice(domains)
-                return f"{first}.{last}@{domain}"
-            # If recipient_id exists, get email from users table (would need FK resolution)
-            # For now, generate a realistic email
-            return fake.email()
-
-        # Mailg-specific: saved_searches.query
-        if table_name == "saved_searches" and field_name == "query":
-            queries = context.config.get("samples", {}).get("search_queries", [
-                "from:important@client.com", "subject:urgent", "has:attachment",
-                "is:unread", "label:work", "in:inbox"
-            ])
-            return context.random().choice(queries)
-
-        # Mailg-specific: saved_searches.name
-        if table_name == "saved_searches" and field_name == "name":
-            names = [
-                "Unread Messages", "Important Emails", "Work Emails",
-                "Emails with Attachments", "Recent from Client",
-                "Urgent Items", "This Week", "Starred Messages"
-            ]
-            return context.random().choice(names)
-
-        # Mailg-specific: labels.name
-        if table_name == "labels" and field_name == "name":
-            label_names = context.config.get("samples", {}).get("label_names", [
-                "Work", "Personal", "Important", "Projects", "Follow Up",
-                "Clients", "Team", "Archive", "Reference", "To Do"
-            ])
-            return context.random().choice(label_names)
-
-        # Mailg-specific: attachments.filename
-        if table_name == "attachments" and field_name == "filename":
-            filenames = context.config.get("samples", {}).get("attachments", [])
-            if filenames:
-                file_info = context.random().choice(filenames)
-                return file_info.get("filename", "document.pdf")
-            return "document.pdf"
-
-        # Mailg-specific: attachments.storage_path
-        if table_name == "attachments" and field_name == "storage_path":
-            # Generate a realistic S3-style path
-            year = context.random().randint(2023, 2025)
-            month = f"{context.random().randint(1, 12):02d}"
-            import uuid
-            file_id = str(uuid.uuid4())
-            return f"attachments/{year}/{month}/{file_id}"
-
         # Status label for statuses table
         if table_name == "statuses" and field_name == "agent_label":
             labels = [
@@ -311,7 +265,7 @@ class GenericStringGenerator(BaseGenerator):
 
         # Tag name for tags table
         if table_name == "tags" and field_name == "name":
-            return fake.word().lower()
+            return context.fake().word().lower()
 
         # If field has enum values in schema, use distribution if configured, otherwise equal weights
         enum_values = semantics.field_schema.get("enum")
@@ -333,4 +287,21 @@ class GenericStringGenerator(BaseGenerator):
                 return str(context.random().randint(1000, 9999))
             return None
 
-        return fake.word()
+        # Generate value, ensuring uniqueness if required
+        value = context.fake().word()
+
+        if semantics.is_unique:
+            # Ensure uniqueness by appending suffix if needed
+            max_attempts = 100
+            base_value = value
+            attempt = 0
+            while context.is_unique_value_used(table_name, field_name, value):
+                attempt += 1
+                if attempt >= max_attempts:
+                    # Fallback to UUID-like suffix
+                    value = f"{base_value}_{context.row_index}"
+                    break
+                value = f"{base_value}_{attempt}"
+            context.register_unique_value(table_name, field_name, value)
+
+        return value

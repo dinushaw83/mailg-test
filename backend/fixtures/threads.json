@@ -6,7 +6,6 @@
     "participant_count": 3,
     "email_count": 25,
     "last_email_at": "2025-12-26T12:08:44.429539",
-    "is_deleted": false,
     "created_at": "2025-12-07T08:48:42.783472",
     "updated_at": "2025-12-23T02:48:42.783472"
   },
@@ -17,7 +16,6 @@
     "participant_count": 4,
     "email_count": 19,
     "last_email_at": "2025-12-07T21:31:44.430894",
-    "is_deleted": false,
     "created_at": "2025-12-31T23:25:42.783501",
     "updated_at": "2026-01-07T19:25:42.783501"
   },
@@ -28,7 +26,6 @@
     "participant_count": 2,
     "email_count": 18,
     "last_email_at": "2025-12-02T01:15:44.475847",
-    "is_deleted": true,
     "created_at": "2025-08-06T12:38:42.783526",
     "updated_at": "2025-08-25T01:38:42.783526"
   },
@@ -39,7 +36,6 @@
     "participant_count": 1,
     "email_count": 23,
     "last_email_at": "2025-12-10T08:00:00",
-    "is_deleted": false,
     "created_at": "2025-12-24T21:13:42.783549",
     "updated_at": "2025-12-27T08:13:42.783549"
   },
@@ -50,7 +46,6 @@
     "participant_count": 1,
     "email_count": 31,
     "last_email_at": "2025-12-15T18:00:00",
-    "is_deleted": false,
     "created_at": "2025-02-03T01:45:42.783573",
     "updated_at": "2025-02-21T08:45:42.783573"
   },
@@ -61,7 +56,6 @@
     "participant_count": 2,
     "email_count": 19,
     "last_email_at": "2025-12-26T21:46:44.396392",
-    "is_deleted": false,
     "created_at": "2025-12-18T10:33:42.783597",
     "updated_at": "2026-01-08T16:53:42.783606"
   },
@@ -72,7 +66,6 @@
     "participant_count": 2,
     "email_count": 14,
     "last_email_at": "2025-12-13T16:30:00",
-    "is_deleted": false,
     "created_at": "2025-09-22T17:41:42.783622",
     "updated_at": "2025-09-29T11:41:42.783622"
   },
@@ -83,7 +76,6 @@
     "participant_count": 2,
     "email_count": 30,
     "last_email_at": "2025-12-12T10:15:00",
-    "is_deleted": false,
     "created_at": "2025-02-21T11:39:42.783646",
     "updated_at": "2025-02-23T04:39:42.783646"
   },
@@ -94,7 +86,6 @@
     "participant_count": 2,
     "email_count": 25,
     "last_email_at": "2025-12-11T14:20:00",
-    "is_deleted": false,
     "created_at": "2025-07-29T20:54:42.783669",
     "updated_at": "2025-08-04T07:54:42.783669"
   },
@@ -105,7 +96,6 @@
     "participant_count": 2,
     "email_count": 16,
     "last_email_at": "2025-11-10T09:00:00",
-    "is_deleted": false,
     "created_at": "2025-08-14T23:05:42.783694",
     "updated_at": "2025-08-19T09:05:42.783694"
   },
@@ -116,7 +106,6 @@
     "participant_count": 1,
     "email_count": 31,
     "last_email_at": "2025-12-16T23:38:44.506438",
-    "is_deleted": false,
     "created_at": "2025-12-28T16:24:42.783718",
     "updated_at": "2026-01-04T22:24:42.783718"
   },
@@ -127,7 +116,6 @@
     "participant_count": 37,
     "email_count": 10,
     "last_email_at": "2025-11-17T01:12:44.406529",
-    "is_deleted": false,
     "created_at": "2025-10-30T13:12:42.768801",
     "updated_at": "2025-11-17T20:12:42.768801"
   },
@@ -138,7 +126,6 @@
     "participant_count": 30,
     "email_count": 13,
     "last_email_at": "2026-01-04T22:12:44.340565",
-    "is_deleted": false,
     "created_at": "2025-04-03T12:21:42.768880",
     "updated_at": "2025-04-29T02:21:42.768880"
   },
@@ -149,7 +136,6 @@
     "participant_count": 15,
     "email_count": 5,
     "last_email_at": "2025-11-10T17:45:44.424749",
-    "is_deleted": false,
     "created_at": "2025-03-21T16:55:42.768957",
     "updated_at": "2025-04-04T18:55:42.768957"
   },
@@ -160,7 +146,6 @@
     "participant_count": 73,
     "email_count": 16,
     "last_email_at": "2025-08-04T09:33:44.499029",
-    "is_deleted": false,
     "created_at": "2025-06-27T05:03:42.769031",
     "updated_at": "2025-06-29T01:03:42.769031"
   },
@@ -171,7 +156,6 @@
     "participant_count": 95,
     "email_count": 12,
     "last_email_at": "2025-12-23T15:43:44.401431",
-    "is_deleted": false,
     "created_at": "2025-08-08T13:54:42.769106",
     "updated_at": "2025-08-16T13:54:42.769106"
   },
@@ -182,7 +166,6 @@
     "participant_count": 41,
     "email_count": 12,
     "last_email_at": "2025-12-01T01:49:44.410807",
-    "is_deleted": false,
     "created_at": "2025-06-02T15:23:42.769181",
     "updated_at": "2025-06-21T15:23:42.769181"
   },
@@ -193,7 +176,6 @@
     "participant_count": 67,
     "email_count": 5,
     "last_email_at": "2025-12-19T11:32:44.480158",
-    "is_deleted": false,
     "created_at": "2025-05-08T08:29:42.769255",
     "updated_at": "2025-05-09T17:29:42.769255"
   },
@@ -204,7 +186,6 @@
     "participant_count": 83,
     "email_count": 15,
     "last_email_at": "2025-12-31T01:41:44.473780",
-    "is_deleted": false,
     "created_at": "2025-05-26T21:49:42.769329",
     "updated_at": "2025-06-02T22:49:42.769329"
   },
@@ -215,7 +196,6 @@
     "participant_count": 5,
     "email_count": 19,
     "last_email_at": "2025-12-09T16:05:44.492382",
-    "is_deleted": false,
     "created_at": "2025-03-25T20:50:42.769402",
     "updated_at": "2025-03-30T06:50:42.769402"
   },
@@ -226,7 +206,6 @@
     "participant_count": 95,
     "email_count": 14,
     "last_email_at": "2025-09-12T01:34:44.460944",
-    "is_deleted": false,
     "created_at": "2025-09-12T11:12:42.769476",
     "updated_at": "2025-09-25T05:12:42.769476"
   },
@@ -237,7 +216,6 @@
     "participant_count": 75,
     "email_count": 14,
     "last_email_at": "2025-12-22T15:23:44.483374",
-    "is_deleted": false,
     "created_at": "2025-10-06T08:58:42.769550",
     "updated_at": "2025-10-10T06:58:42.769550"
   },
@@ -248,7 +226,6 @@
     "participant_count": 17,
     "email_count": 10,
     "last_email_at": "2025-12-23T01:03:44.419622",
-    "is_deleted": false,
     "created_at": "2025-10-19T07:10:42.769625",
     "updated_at": "2025-11-16T02:10:42.769625"
   },
@@ -259,7 +236,6 @@
     "participant_count": 52,
     "email_count": 15,
     "last_email_at": "2025-12-14T04:39:44.455739",
-    "is_deleted": false,
     "created_at": "2025-05-04T17:45:42.769698",
     "updated_at": "2025-05-23T03:45:42.769698"
   },
@@ -270,7 +246,6 @@
     "participant_count": 99,
     "email_count": 13,
     "last_email_at": "2025-10-19T01:37:44.365663",
-    "is_deleted": false,
     "created_at": "2025-04-23T14:59:42.769772",
     "updated_at": "2025-05-06T10:59:42.769772"
   },
@@ -281,7 +256,6 @@
     "participant_count": 64,
     "email_count": 9,
     "last_email_at": "2025-12-19T15:04:44.388214",
-    "is_deleted": false,
     "created_at": "2025-02-19T12:37:42.769846",
     "updated_at": "2025-03-08T10:37:42.769846"
   },
@@ -292,7 +266,6 @@
     "participant_count": 49,
     "email_count": 5,
     "last_email_at": "2025-08-28T06:17:44.341989",
-    "is_deleted": true,
     "created_at": "2025-02-26T17:50:42.769920",
     "updated_at": "2025-03-12T15:50:42.769920"
   },
@@ -303,7 +276,6 @@
     "participant_count": 71,
     "email_count": 8,
     "last_email_at": "2025-11-18T18:35:44.463376",
-    "is_deleted": false,
     "created_at": "2025-05-30T10:52:42.769999",
     "updated_at": "2025-06-02T15:52:42.769999"
   },
@@ -314,7 +286,6 @@
     "participant_count": 96,
     "email_count": 12,
     "last_email_at": "2025-12-08T10:32:44.470568",
-    "is_deleted": false,
     "created_at": "2025-11-16T05:23:42.770074",
     "updated_at": "2025-11-23T17:23:42.770074"
   },
@@ -325,7 +296,6 @@
     "participant_count": 80,
     "email_count": 6,
     "last_email_at": "2025-12-20T02:30:44.347190",
-    "is_deleted": false,
     "created_at": "2025-05-12T08:30:42.770148",
     "updated_at": "2025-05-18T02:30:42.770148"
   },
@@ -336,7 +306,6 @@
     "participant_count": 92,
     "email_count": 12,
     "last_email_at": "2025-09-04T14:17:44.467813",
-    "is_deleted": false,
     "created_at": "2025-01-18T00:07:42.770222",
     "updated_at": "2025-02-06T07:07:42.770222"
   },
@@ -347,7 +316,6 @@
     "participant_count": 43,
     "email_count": 4,
     "last_email_at": "2025-05-24T16:13:44.329762",
-    "is_deleted": false,
     "created_at": "2025-03-27T00:32:42.770296",
     "updated_at": "2025-04-09T21:32:42.770296"
   },
@@ -358,7 +326,6 @@
     "participant_count": 76,
     "email_count": 9,
     "last_email_at": "2025-10-14T14:10:44.370275",
-    "is_deleted": false,
     "created_at": "2025-07-11T08:34:42.770370",
     "updated_at": "2025-07-13T08:34:42.770370"
   },
@@ -369,7 +336,6 @@
     "participant_count": 75,
     "email_count": 14,
     "last_email_at": "2025-12-04T06:53:44.442769",
-    "is_deleted": false,
     "created_at": "2025-06-28T14:01:42.770473",
     "updated_at": "2025-07-28T12:01:42.770473"
   },
@@ -380,7 +346,6 @@
     "participant_count": 62,
     "email_count": 6,
     "last_email_at": "2025-08-29T00:00:44.440408",
-    "is_deleted": false,
     "created_at": "2025-09-03T11:57:42.770684",
     "updated_at": "2025-09-15T17:57:42.770684"
   },
@@ -391,7 +356,6 @@
     "participant_count": 41,
     "email_count": 8,
     "last_email_at": "2025-12-04T16:25:44.401032",
-    "is_deleted": true,
     "created_at": "2025-01-11T02:04:42.770813",
     "updated_at": "2025-01-21T03:04:42.770813"
   },
@@ -402,7 +366,6 @@
     "participant_count": 21,
     "email_count": 9,
     "last_email_at": "2026-01-02T22:22:44.409752",
-    "is_deleted": false,
     "created_at": "2025-06-26T03:48:42.770889",
     "updated_at": "2025-07-03T03:48:42.770889"
   },
@@ -413,7 +376,6 @@
     "participant_count": 64,
     "email_count": 15,
     "last_email_at": "2025-11-14T20:40:44.455135",
-    "is_deleted": false,
     "created_at": "2025-03-08T01:17:42.770964",
     "updated_at": "2025-04-03T16:17:42.770964"
   },
@@ -424,7 +386,6 @@
     "participant_count": 100,
     "email_count": 13,
     "last_email_at": "2025-12-03T14:42:44.408762",
-    "is_deleted": false,
     "created_at": "2025-10-27T09:40:42.771039",
     "updated_at": "2025-11-19T17:40:42.771039"
   },
@@ -435,7 +396,6 @@
     "participant_count": 95,
     "email_count": 7,
     "last_email_at": "2025-11-21T14:30:44.487059",
-    "is_deleted": false,
     "created_at": "2025-04-17T22:18:42.771112",
     "updated_at": "2025-05-15T01:18:42.771112"
   },
@@ -446,7 +406,6 @@
     "participant_count": 84,
     "email_count": 19,
     "last_email_at": "2025-09-09T16:11:44.324818",
-    "is_deleted": false,
     "created_at": "2025-10-09T07:55:42.771187",
     "updated_at": "2025-10-12T20:55:42.771187"
   },
@@ -457,7 +416,6 @@
     "participant_count": 54,
     "email_count": 6,
     "last_email_at": "2025-10-03T11:31:44.405470",
-    "is_deleted": false,
     "created_at": "2025-09-10T23:06:42.771262",
     "updated_at": "2025-09-25T23:06:42.771262"
   },
@@ -468,7 +426,6 @@
     "participant_count": 18,
     "email_count": 20,
     "last_email_at": "2025-12-16T15:11:44.461388",
-    "is_deleted": false,
     "created_at": "2025-10-04T20:09:42.771336",
     "updated_at": "2025-10-19T14:09:42.771336"
   },
@@ -479,7 +436,6 @@
     "participant_count": 48,
     "email_count": 10,
     "last_email_at": "2025-10-12T13:27:44.498119",
-    "is_deleted": false,
     "created_at": "2025-11-06T18:05:42.771410",
     "updated_at": "2025-11-17T05:05:42.771410"
   },
@@ -490,7 +446,6 @@
     "participant_count": 60,
     "email_count": 6,
     "last_email_at": "2025-09-18T19:11:44.363216",
-    "is_deleted": false,
     "created_at": "2025-07-25T02:15:42.771484",
     "updated_at": "2025-07-30T18:15:42.771484"
   },
@@ -501,7 +456,6 @@
     "participant_count": 61,
     "email_count": 12,
     "last_email_at": "2025-09-19T19:37:44.362081",
-    "is_deleted": false,
     "created_at": "2025-08-13T16:53:42.771557",
     "updated_at": "2025-08-27T06:53:42.771557"
   },
@@ -512,7 +466,6 @@
     "participant_count": 20,
     "email_count": 5,
     "last_email_at": "2025-03-26T13:30:44.431726",
-    "is_deleted": false,
     "created_at": "2025-12-26T02:24:42.771628",
     "updated_at": "2026-01-08T16:53:42.771637"
   },
@@ -523,7 +476,6 @@
     "participant_count": 71,
     "email_count": 10,
     "last_email_at": "2025-11-24T04:19:44.358720",
-    "is_deleted": false,
     "created_at": "2025-06-22T14:52:42.771703",
     "updated_at": "2025-06-25T09:52:42.771703"
   },
@@ -534,7 +486,6 @@
     "participant_count": 67,
     "email_count": 12,
     "last_email_at": "2025-11-01T07:27:44.513674",
-    "is_deleted": false,
     "created_at": "2025-10-19T10:40:42.771783",
     "updated_at": "2025-11-18T10:40:42.771783"
   },
@@ -545,7 +496,6 @@
     "participant_count": 55,
     "email_count": 14,
     "last_email_at": "2026-01-05T14:17:44.353406",
-    "is_deleted": false,
     "created_at": "2025-03-10T07:20:42.771869",
     "updated_at": "2025-03-31T13:20:42.771869"
   },
@@ -556,7 +506,6 @@
     "participant_count": 49,
     "email_count": 9,
     "last_email_at": "2025-11-03T06:21:44.445758",
-    "is_deleted": false,
     "created_at": "2025-02-27T05:50:42.771945",
     "updated_at": "2025-03-02T14:50:42.771945"
   },
@@ -567,7 +516,6 @@
     "participant_count": 23,
     "email_count": 6,
     "last_email_at": "2025-08-06T18:43:44.446777",
-    "is_deleted": true,
     "created_at": "2025-07-06T13:07:42.772018",
     "updated_at": "2025-07-16T07:07:42.772018"
   },
@@ -578,7 +526,6 @@
     "participant_count": 4,
     "email_count": 7,
     "last_email_at": "2025-10-29T00:09:44.367803",
-    "is_deleted": false,
     "created_at": "2025-10-12T11:58:42.772092",
     "updated_at": "2025-11-08T09:58:42.772092"
   },
@@ -589,7 +536,6 @@
     "participant_count": 25,
     "email_count": 25,
     "last_email_at": "2025-11-24T04:34:44.432156",
-    "is_deleted": false,
     "created_at": "2025-02-09T15:40:42.772166",
     "updated_at": "2025-02-16T00:40:42.772166"
   },
@@ -600,7 +546,6 @@
     "participant_count": 82,
     "email_count": 7,
     "last_email_at": "2025-10-14T23:17:44.394397",
-    "is_deleted": false,
     "created_at": "2025-02-13T04:50:42.772239",
     "updated_at": "2025-03-14T04:50:42.772239"
   },
@@ -611,7 +556,6 @@
     "participant_count": 62,
     "email_count": 11,
     "last_email_at": "2025-12-21T06:55:44.499425",
-    "is_deleted": true,
     "created_at": "2025-12-16T10:28:42.772312",
     "updated_at": "2026-01-08T03:28:42.772312"
   },
@@ -622,7 +566,6 @@
     "participant_count": 7,
     "email_count": 13,
     "last_email_at": "2025-12-19T21:35:44.389410",
-    "is_deleted": false,
     "created_at": "2025-12-29T08:44:42.772385",
     "updated_at": "2026-01-08T16:53:42.772393"
   },
@@ -633,7 +576,6 @@
     "participant_count": 71,
     "email_count": 19,
     "last_email_at": "2025-09-26T16:53:44.472194",
-    "is_deleted": false,
     "created_at": "2025-03-12T12:46:42.772458",
     "updated_at": "2025-03-30T11:46:42.772458"
   },
@@ -644,7 +586,6 @@
     "participant_count": 62,
     "email_count": 10,
     "last_email_at": "2025-11-10T17:10:44.430712",
-    "is_deleted": false,
     "created_at": "2025-05-09T21:01:42.772530",
     "updated_at": "2025-06-05T10:01:42.772530"
   },
@@ -655,7 +596,6 @@
     "participant_count": 62,
     "email_count": 6,
     "last_email_at": "2025-12-17T12:53:44.514712",
-    "is_deleted": false,
     "created_at": "2025-02-13T10:49:42.772603",
     "updated_at": "2025-02-19T04:49:42.772603"
   },
@@ -666,7 +606,6 @@
     "participant_count": 51,
     "email_count": 3,
     "last_email_at": "2025-08-02T19:15:44.339417",
-    "is_deleted": false,
     "created_at": "2025-04-17T14:34:42.772676",
     "updated_at": "2025-05-09T13:34:42.772676"
   },
@@ -677,7 +616,6 @@
     "participant_count": 69,
     "email_count": 5,
     "last_email_at": "2025-10-16T16:24:44.355988",
-    "is_deleted": false,
     "created_at": "2025-01-27T04:21:42.772750",
     "updated_at": "2025-02-12T13:21:42.772750"
   },
@@ -688,7 +626,6 @@
     "participant_count": 14,
     "email_count": 5,
     "last_email_at": "2025-11-04T08:53:44.328274",
-    "is_deleted": false,
     "created_at": "2025-06-10T07:11:42.772823",
     "updated_at": "2025-07-09T06:11:42.772823"
   },
@@ -699,7 +636,6 @@
     "participant_count": 63,
     "email_count": 14,
     "last_email_at": "2025-12-21T20:27:44.356330",
-    "is_deleted": false,
     "created_at": "2025-02-01T20:11:42.772896",
     "updated_at": "2025-02-16T12:11:42.772896"
   },
@@ -710,7 +646,6 @@
     "participant_count": 27,
     "email_count": 8,
     "last_email_at": "2025-12-17T15:27:44.490967",
-    "is_deleted": false,
     "created_at": "2025-09-04T11:00:42.772969",
     "updated_at": "2025-09-08T02:00:42.772969"
   },
@@ -721,7 +656,6 @@
     "participant_count": 50,
     "email_count": 12,
     "last_email_at": "2025-11-05T06:47:44.385999",
-    "is_deleted": false,
     "created_at": "2025-12-08T11:11:42.773043",
     "updated_at": "2026-01-06T09:11:42.773043"
   },
@@ -732,7 +666,6 @@
     "participant_count": 63,
     "email_count": 7,
     "last_email_at": "2025-09-14T03:47:44.425120",
-    "is_deleted": false,
     "created_at": "2025-08-13T03:46:42.773116",
     "updated_at": "2025-08-26T16:46:42.773116"
   },
@@ -743,7 +676,6 @@
     "participant_count": 75,
     "email_count": 6,
     "last_email_at": "2025-11-22T12:01:44.396783",
-    "is_deleted": false,
     "created_at": "2025-02-25T04:55:42.773189",
     "updated_at": "2025-02-27T01:55:42.773189"
   },
@@ -754,7 +686,6 @@
     "participant_count": 15,
     "email_count": 14,
     "last_email_at": "2025-11-18T12:54:44.361911",
-    "is_deleted": false,
     "created_at": "2025-05-18T00:11:42.773263",
     "updated_at": "2025-06-15T13:11:42.773263"
   },
@@ -765,7 +696,6 @@
     "participant_count": 54,
     "email_count": 7,
     "last_email_at": "2025-12-05T10:58:44.376248",
-    "is_deleted": false,
     "created_at": "2025-04-22T15:24:42.773337",
     "updated_at": "2025-05-15T20:24:42.773337"
   },
@@ -776,7 +706,6 @@
     "participant_count": 70,
     "email_count": 5,
     "last_email_at": "2025-12-15T23:47:44.370072",
-    "is_deleted": false,
     "created_at": "2025-10-17T05:54:42.773409",
     "updated_at": "2025-11-05T03:54:42.773409"
   },
@@ -787,7 +716,6 @@
     "participant_count": 61,
     "email_count": 11,
     "last_email_at": "2025-12-15T15:51:44.331039",
-    "is_deleted": false,
     "created_at": "2025-08-07T15:53:42.773482",
     "updated_at": "2025-08-24T20:53:42.773482"
   },
@@ -798,7 +726,6 @@
     "participant_count": 67,
     "email_count": 3,
     "last_email_at": "2025-11-10T02:44:44.503475",
-    "is_deleted": false,
     "created_at": "2025-11-12T18:13:42.773556",
     "updated_at": "2025-11-18T12:13:42.773556"
   },
@@ -809,7 +736,6 @@
     "participant_count": 47,
     "email_count": 4,
     "last_email_at": "2025-08-28T12:51:44.511143",
-    "is_deleted": false,
     "created_at": "2025-10-16T05:09:42.773629",
     "updated_at": "2025-11-09T15:09:42.773629"
   },
@@ -820,7 +746,6 @@
     "participant_count": 74,
     "email_count": 13,
     "last_email_at": "2025-11-27T06:50:44.473390",
-    "is_deleted": false,
     "created_at": "2025-08-14T04:51:42.773703",
     "updated_at": "2025-09-11T06:51:42.773703"
   },
@@ -831,7 +756,6 @@
     "participant_count": 20,
     "email_count": 13,
     "last_email_at": "2025-09-01T23:57:44.513888",
-    "is_deleted": false,
     "created_at": "2025-12-21T12:59:42.773777",
     "updated_at": "2026-01-08T16:53:42.773785"
   },
@@ -842,7 +766,6 @@
     "participant_count": 65,
     "email_count": 21,
     "last_email_at": "2025-12-24T00:40:44.491964",
-    "is_deleted": false,
     "created_at": "2025-11-28T10:10:42.773851",
     "updated_at": "2025-12-17T07:10:42.773851"
   },
@@ -853,7 +776,6 @@
     "participant_count": 35,
     "email_count": 6,
     "last_email_at": "2025-08-07T21:21:44.439736",
-    "is_deleted": false,
     "created_at": "2025-01-25T15:33:42.773924",
     "updated_at": "2025-02-16T20:33:42.773924"
   },
@@ -864,7 +786,6 @@
     "participant_count": 92,
     "email_count": 22,
     "last_email_at": "2025-12-20T20:07:44.397722",
-    "is_deleted": false,
     "created_at": "2025-01-29T02:26:42.773998",
     "updated_at": "2025-01-31T19:26:42.773998"
   },
@@ -875,7 +796,6 @@
     "participant_count": 3,
     "email_count": 11,
     "last_email_at": "2025-12-10T09:37:44.358557",
-    "is_deleted": false,
     "created_at": "2025-07-24T22:28:42.774072",
     "updated_at": "2025-07-31T17:28:42.774072"
   },
@@ -886,7 +806,6 @@
     "participant_count": 21,
     "email_count": 17,
     "last_email_at": "2025-12-18T09:30:44.442589",
-    "is_deleted": false,
     "created_at": "2025-05-28T09:30:42.774145",
     "updated_at": "2025-06-26T05:30:42.774145"
   },
@@ -897,7 +816,6 @@
     "participant_count": 96,
     "email_count": 7,
     "last_email_at": "2025-12-05T02:07:44.337694",
-    "is_deleted": false,
     "created_at": "2025-06-10T02:27:42.774218",
     "updated_at": "2025-06-20T05:27:42.774218"
   },
@@ -908,7 +826,6 @@
     "participant_count": 97,
     "email_count": 8,
     "last_email_at": "2025-11-20T16:13:44.381217",
-    "is_deleted": false,
     "created_at": "2025-12-29T04:04:42.774294",
     "updated_at": "2026-01-08T16:53:42.774302"
   },
@@ -919,7 +836,6 @@
     "participant_count": 10,
     "email_count": 3,
     "last_email_at": "2025-08-05T04:24:44.330107",
-    "is_deleted": false,
     "created_at": "2025-04-27T11:04:42.774368",
     "updated_at": "2025-04-28T11:04:42.774368"
   },
@@ -930,7 +846,6 @@
     "participant_count": 60,
     "email_count": 7,
     "last_email_at": "2025-10-22T05:06:44.451446",
-    "is_deleted": false,
     "created_at": "2025-12-17T10:13:42.774441",
     "updated_at": "2025-12-30T05:13:42.774441"
   },
@@ -941,7 +856,6 @@
     "participant_count": 2,
     "email_count": 10,
     "last_email_at": "2025-11-09T01:20:44.345275",
-    "is_deleted": false,
     "created_at": "2025-05-10T03:39:42.774683",
     "updated_at": "2025-05-18T07:39:42.774683"
   },
@@ -952,7 +866,6 @@
     "participant_count": 63,
     "email_count": 7,
     "last_email_at": "2025-10-29T13:59:44.433302",
-    "is_deleted": false,
     "created_at": "2025-05-09T16:38:42.774851",
     "updated_at": "2025-05-10T11:38:42.774851"
   },
@@ -963,7 +876,6 @@
     "participant_count": 61,
     "email_count": 4,
     "last_email_at": "2025-12-28T23:10:44.419259",
-    "is_deleted": false,
     "created_at": "2025-10-15T04:48:42.774940",
     "updated_at": "2025-10-26T09:48:42.774940"
   },
@@ -974,7 +886,6 @@
     "participant_count": 7,
     "email_count": 8,
     "last_email_at": "2025-12-06T23:43:44.478043",
-    "is_deleted": false,
     "created_at": "2025-04-27T17:57:42.775021",
     "updated_at": "2025-05-16T05:57:42.775021"
   },
@@ -985,7 +896,6 @@
     "participant_count": 43,
     "email_count": 13,
     "last_email_at": "2025-11-02T18:17:44.369850",
-    "is_deleted": true,
     "created_at": "2025-06-10T21:33:42.775098",
     "updated_at": "2025-07-01T06:33:42.775098"
   },
@@ -996,7 +906,6 @@
     "participant_count": 45,
     "email_count": 6,
     "last_email_at": "2025-11-09T23:03:44.468026",
-    "is_deleted": false,
     "created_at": "2025-01-26T13:00:42.775174",
     "updated_at": "2025-01-29T21:00:42.775174"
   },
@@ -1007,7 +916,6 @@
     "participant_count": 14,
     "email_count": 19,
     "last_email_at": "2025-08-24T19:59:44.329161",
-    "is_deleted": false,
     "created_at": "2025-11-08T06:30:42.775254",
     "updated_at": "2025-11-25T05:30:42.775254"
   },
@@ -1018,7 +926,6 @@
     "participant_count": 33,
     "email_count": 10,
     "last_email_at": "2025-11-21T12:55:44.452291",
-    "is_deleted": false,
     "created_at": "2025-08-24T06:16:42.775332",
     "updated_at": "2025-09-20T11:16:42.775332"
   },
@@ -1029,7 +936,6 @@
     "participant_count": 100,
     "email_count": 16,
     "last_email_at": "2025-12-20T17:50:44.437817",
-    "is_deleted": false,
     "created_at": "2025-09-25T17:02:42.775406",
     "updated_at": "2025-10-02T19:02:42.775406"
   },
@@ -1040,7 +946,6 @@
     "participant_count": 1,
     "email_count": 7,
     "last_email_at": "2025-09-07T03:14:44.476239",
-    "is_deleted": false,
     "created_at": "2025-08-30T14:04:42.775484",
     "updated_at": "2025-09-12T12:04:42.775484"
   },
@@ -1051,7 +956,6 @@
     "participant_count": 7,
     "email_count": 15,
     "last_email_at": "2025-11-20T05:05:44.488004",
-    "is_deleted": false,
     "created_at": "2025-11-24T07:03:42.775559",
     "updated_at": "2025-11-24T19:03:42.775559"
   },
@@ -1062,7 +966,6 @@
     "participant_count": 28,
     "email_count": 4,
     "last_email_at": "2026-01-07T14:35:44.398473",
-    "is_deleted": false,
     "created_at": "2025-12-07T20:39:42.775632",
     "updated_at": "2026-01-04T03:39:42.775632"
   },
@@ -1073,7 +976,6 @@
     "participant_count": 41,
     "email_count": 19,
     "last_email_at": "2025-10-04T20:18:44.428150",
-    "is_deleted": false,
     "created_at": "2025-02-24T10:56:42.775705",
     "updated_at": "2025-03-25T23:56:42.775705"
   },
@@ -1084,7 +986,6 @@
     "participant_count": 7,
     "email_count": 10,
     "last_email_at": "2025-12-22T13:33:44.465383",
-    "is_deleted": false,
     "created_at": "2025-12-23T06:45:42.775779",
     "updated_at": "2026-01-04T05:45:42.775779"
   },
@@ -1095,7 +996,6 @@
     "participant_count": 75,
     "email_count": 10,
     "last_email_at": "2025-09-04T08:19:44.398315",
-    "is_deleted": false,
     "created_at": "2025-02-07T05:19:42.775852",
     "updated_at": "2025-02-15T20:19:42.775852"
   },
@@ -1106,7 +1006,6 @@
     "participant_count": 74,
     "email_count": 15,
     "last_email_at": "2025-12-23T02:17:44.352832",
-    "is_deleted": false,
     "created_at": "2025-06-21T07:43:42.775927",
     "updated_at": "2025-07-10T23:43:42.775927"
   },
@@ -1117,7 +1016,6 @@
     "participant_count": 0,
     "email_count": 14,
     "last_email_at": "2025-11-19T13:37:44.392119",
-    "is_deleted": false,
     "created_at": "2025-09-11T20:24:42.776002",
     "updated_at": "2025-09-18T09:24:42.776002"
   },
@@ -1128,7 +1026,6 @@
     "participant_count": 71,
     "email_count": 10,
     "last_email_at": "2026-01-05T10:40:44.337185",
-    "is_deleted": false,
     "created_at": "2025-08-03T11:34:42.776075",
     "updated_at": "2025-08-06T10:34:42.776075"
   },
@@ -1139,7 +1036,6 @@
     "participant_count": 30,
     "email_count": 4,
     "last_email_at": "2025-12-11T02:47:44.485521",
-    "is_deleted": false,
     "created_at": "2025-07-02T02:30:42.776148",
     "updated_at": "2025-07-15T01:30:42.776148"
   },
@@ -1150,7 +1046,6 @@
     "participant_count": 91,
     "email_count": 8,
     "last_email_at": "2025-07-14T15:36:44.345024",
-    "is_deleted": false,
     "created_at": "2025-09-22T23:48:42.776224",
     "updated_at": "2025-09-26T22:48:42.776224"
   },
@@ -1161,7 +1056,6 @@
     "participant_count": 73,
     "email_count": 5,
     "last_email_at": "2025-10-08T10:20:44.335381",
-    "is_deleted": false,
     "created_at": "2025-10-15T08:36:42.776297",
     "updated_at": "2025-11-01T16:36:42.776297"
   },
@@ -1172,7 +1066,6 @@
     "participant_count": 86,
     "email_count": 9,
     "last_email_at": "2025-12-28T02:11:44.361525",
-    "is_deleted": false,
     "created_at": "2025-11-16T18:03:42.776369",
     "updated_at": "2025-11-20T03:03:42.776369"
   },
@@ -1183,7 +1076,6 @@
     "participant_count": 68,
     "email_count": 2,
     "last_email_at": "2025-08-10T04:42:44.340909",
-    "is_deleted": false,
     "created_at": "2025-10-11T06:21:42.776439",
     "updated_at": "2025-11-05T14:21:42.776439"
   },
@@ -1194,7 +1086,6 @@
     "participant_count": 52,
     "email_count": 8,
     "last_email_at": "2025-11-04T09:50:44.353777",
-    "is_deleted": false,
     "created_at": "2025-04-02T09:42:42.776512",
     "updated_at": "2025-04-18T19:42:42.776512"
   },
@@ -1205,7 +1096,6 @@
     "participant_count": 19,
     "email_count": 5,
     "last_email_at": "2025-12-26T00:12:44.435345",
-    "is_deleted": false,
     "created_at": "2025-03-25T02:58:42.776585",
     "updated_at": "2025-04-10T16:58:42.776585"
   },
@@ -1216,7 +1106,6 @@
     "participant_count": 16,
     "email_count": 9,
     "last_email_at": "2025-06-18T04:02:44.327670",
-    "is_deleted": false,
     "created_at": "2025-03-19T10:40:42.776657",
     "updated_at": "2025-04-10T20:40:42.776657"
   },
@@ -1227,7 +1116,6 @@
     "participant_count": 3,
     "email_count": 10,
     "last_email_at": "2025-12-31T23:15:44.505599",
-    "is_deleted": false,
     "created_at": "2025-07-10T08:35:42.776730",
     "updated_at": "2025-08-01T01:35:42.776730"
   },
@@ -1238,7 +1126,6 @@
     "participant_count": 1,
     "email_count": 28,
     "last_email_at": "2025-12-16T12:26:44.419803",
-    "is_deleted": false,
     "created_at": "2025-04-21T18:54:42.776802",
     "updated_at": "2025-05-06T00:54:42.776802"
   },
@@ -1249,7 +1136,6 @@
     "participant_count": 58,
     "email_count": 7,
     "last_email_at": "2025-12-02T02:39:44.434735",
-    "is_deleted": false,
     "created_at": "2025-02-13T09:55:42.776872",
     "updated_at": "2025-03-11T20:55:42.776872"
   },
@@ -1260,7 +1146,6 @@
     "participant_count": 80,
     "email_count": 11,
     "last_email_at": "2025-09-15T10:41:44.411216",
-    "is_deleted": false,
     "created_at": "2025-12-09T11:48:42.776945",
     "updated_at": "2025-12-16T23:48:42.776945"
   },
@@ -1271,7 +1156,6 @@
     "participant_count": 65,
     "email_count": 12,
     "last_email_at": "2025-12-21T17:43:44.503707",
-    "is_deleted": false,
     "created_at": "2025-06-27T02:32:42.777017",
     "updated_at": "2025-07-21T00:32:42.777017"
   },
@@ -1282,7 +1166,6 @@
     "participant_count": 52,
     "email_count": 3,
     "last_email_at": "2025-09-23T20:06:44.444106",
-    "is_deleted": false,
     "created_at": "2025-07-08T04:21:42.777091",
     "updated_at": "2025-08-05T17:21:42.777091"
   },
@@ -1293,7 +1176,6 @@
     "participant_count": 80,
     "email_count": 7,
     "last_email_at": "2025-12-18T02:28:44.477045",
-    "is_deleted": false,
     "created_at": "2025-02-21T13:59:42.777178",
     "updated_at": "2025-03-11T14:59:42.777178"
   },
@@ -1304,7 +1186,6 @@
     "participant_count": 15,
     "email_count": 19,
     "last_email_at": "2025-12-04T22:30:44.352118",
-    "is_deleted": false,
     "created_at": "2025-07-13T12:58:42.777258",
     "updated_at": "2025-08-06T00:58:42.777258"
   },
@@ -1315,7 +1196,6 @@
     "participant_count": 71,
     "email_count": 19,
     "last_email_at": "2025-09-06T16:38:44.350229",
-    "is_deleted": false,
     "created_at": "2025-05-13T06:12:42.777333",
     "updated_at": "2025-05-30T18:12:42.777333"
   },
@@ -1326,7 +1206,6 @@
     "participant_count": 50,
     "email_count": 19,
     "last_email_at": "2026-01-07T16:40:44.327852",
-    "is_deleted": false,
     "created_at": "2025-05-01T03:36:42.777409",
     "updated_at": "2025-05-10T18:36:42.777409"
   },
@@ -1337,7 +1216,6 @@
     "participant_count": 5,
     "email_count": 10,
     "last_email_at": "2025-05-14T18:18:44.454170",
-    "is_deleted": false,
     "created_at": "2025-09-19T01:33:42.777481",
     "updated_at": "2025-09-21T10:33:42.777481"
   },
@@ -1348,7 +1226,6 @@
     "participant_count": 96,
     "email_count": 7,
     "last_email_at": "2025-11-21T23:53:44.402466",
-    "is_deleted": false,
     "created_at": "2025-05-20T18:18:42.777553",
     "updated_at": "2025-05-30T21:18:42.777553"
   },
@@ -1359,7 +1236,6 @@
     "participant_count": 13,
     "email_count": 11,
     "last_email_at": "2025-11-04T05:14:44.444461",
-    "is_deleted": false,
     "created_at": "2025-11-12T13:02:42.777625",
     "updated_at": "2025-12-08T08:02:42.777625"
   },
@@ -1370,7 +1246,6 @@
     "participant_count": 53,
     "email_count": 7,
     "last_email_at": "2025-12-27T20:06:44.517174",
-    "is_deleted": false,
     "created_at": "2025-11-20T18:44:42.777696",
     "updated_at": "2025-12-20T07:44:42.777696"
   },
@@ -1381,7 +1256,6 @@
     "participant_count": 83,
     "email_count": 7,
     "last_email_at": "2025-11-28T04:15:44.494774",
-    "is_deleted": false,
     "created_at": "2025-11-05T17:10:42.777768",
     "updated_at": "2025-11-18T04:10:42.777768"
   },
@@ -1392,7 +1266,6 @@
     "participant_count": 29,
     "email_count": 5,
     "last_email_at": "2025-09-11T08:42:44.420584",
-    "is_deleted": false,
     "created_at": "2025-10-26T08:14:42.777840",
     "updated_at": "2025-11-20T16:14:42.777840"
   },
@@ -1403,7 +1276,6 @@
     "participant_count": 6,
     "email_count": 20,
     "last_email_at": "2025-11-13T13:28:44.439491",
-    "is_deleted": false,
     "created_at": "2025-02-13T07:15:42.777912",
     "updated_at": "2025-03-08T09:15:42.777912"
   },
@@ -1414,7 +1286,6 @@
     "participant_count": 98,
     "email_count": 6,
     "last_email_at": "2025-10-15T09:02:44.406940",
-    "is_deleted": false,
     "created_at": "2025-07-08T22:56:42.777988",
     "updated_at": "2025-07-17T02:56:42.777988"
   },
@@ -1425,7 +1296,6 @@
     "participant_count": 44,
     "email_count": 8,
     "last_email_at": "2025-08-04T04:14:44.404678",
-    "is_deleted": false,
     "created_at": "2025-05-12T08:38:42.778060",
     "updated_at": "2025-06-05T05:38:42.778060"
   },
@@ -1436,7 +1306,6 @@
     "participant_count": 69,
     "email_count": 6,
     "last_email_at": "2025-08-03T18:59:44.331803",
-    "is_deleted": false,
     "created_at": "2025-06-13T13:32:42.778131",
     "updated_at": "2025-06-25T09:32:42.778131"
   },
@@ -1447,7 +1316,6 @@
     "participant_count": 5,
     "email_count": 13,
     "last_email_at": "2025-11-08T07:48:44.351327",
-    "is_deleted": false,
     "created_at": "2025-09-25T16:48:42.778202",
     "updated_at": "2025-10-13T04:48:42.778202"
   },
@@ -1458,7 +1326,6 @@
     "participant_count": 8,
     "email_count": 18,
     "last_email_at": "2025-12-05T20:46:44.499609",
-    "is_deleted": false,
     "created_at": "2025-01-12T21:15:42.778274",
     "updated_at": "2025-01-17T04:15:42.778274"
   },
@@ -1469,7 +1336,6 @@
     "participant_count": 18,
     "email_count": 5,
     "last_email_at": "2025-08-10T21:08:44.404882",
-    "is_deleted": false,
     "created_at": "2025-06-23T16:29:42.778345",
     "updated_at": "2025-07-14T15:29:42.778345"
   },
@@ -1480,7 +1346,6 @@
     "participant_count": 36,
     "email_count": 13,
     "last_email_at": "2025-10-18T14:06:44.339756",
-    "is_deleted": false,
     "created_at": "2025-06-06T00:23:42.778416",
     "updated_at": "2025-06-07T11:23:42.778416"
   },
@@ -1491,7 +1356,6 @@
     "participant_count": 66,
     "email_count": 8,
     "last_email_at": "2025-11-26T12:11:44.344269",
-    "is_deleted": false,
     "created_at": "2025-10-13T03:00:42.778487",
     "updated_at": "2025-10-15T10:00:42.778487"
   },
@@ -1502,7 +1366,6 @@
     "participant_count": 14,
     "email_count": 13,
     "last_email_at": "2025-11-09T01:25:44.502439",
-    "is_deleted": false,
     "created_at": "2025-06-14T13:58:42.778558",
     "updated_at": "2025-07-14T06:58:42.778558"
   },
@@ -1513,7 +1376,6 @@
     "participant_count": 54,
     "email_count": 15,
     "last_email_at": "2025-12-08T07:47:44.368166",
-    "is_deleted": false,
     "created_at": "2026-01-02T14:34:42.778630",
     "updated_at": "2026-01-06T11:34:42.778630"
   },
@@ -1524,7 +1386,6 @@
     "participant_count": 94,
     "email_count": 13,
     "last_email_at": "2025-10-04T22:35:44.408939",
-    "is_deleted": false,
     "created_at": "2025-12-23T06:12:42.778701",
     "updated_at": "2026-01-01T15:12:42.778701"
   },
@@ -1535,7 +1396,6 @@
     "participant_count": 47,
     "email_count": 12,
     "last_email_at": "2025-12-19T19:41:44.413323",
-    "is_deleted": false,
     "created_at": "2025-12-27T19:45:42.778773",
     "updated_at": "2025-12-31T16:45:42.778773"
   },
@@ -1546,7 +1406,6 @@
     "participant_count": 96,
     "email_count": 7,
     "last_email_at": "2025-11-25T07:33:44.391482",
-    "is_deleted": false,
     "created_at": "2025-08-31T07:08:42.778845",
     "updated_at": "2025-09-14T19:08:42.778845"
   },
@@ -1557,7 +1416,6 @@
     "participant_count": 2,
     "email_count": 13,
     "last_email_at": "2025-09-04T21:21:44.458193",
-    "is_deleted": false,
     "created_at": "2025-03-16T17:06:42.778917",
     "updated_at": "2025-03-30T20:06:42.778917"
   },
@@ -1568,7 +1426,6 @@
     "participant_count": 5,
     "email_count": 9,
     "last_email_at": "2025-12-09T06:15:44.332176",
-    "is_deleted": false,
     "created_at": "2025-06-15T02:21:42.778988",
     "updated_at": "2025-07-09T13:21:42.778988"
   },
@@ -1579,7 +1436,6 @@
     "participant_count": 16,
     "email_count": 13,
     "last_email_at": "2025-11-07T13:27:44.407110",
-    "is_deleted": false,
     "created_at": "2025-05-15T04:00:42.779058",
     "updated_at": "2025-06-08T10:00:42.779058"
   },
@@ -1590,7 +1446,6 @@
     "participant_count": 73,
     "email_count": 5,
     "last_email_at": "2025-07-20T11:40:44.377545",
-    "is_deleted": false,
     "created_at": "2025-05-11T18:16:42.779129",
     "updated_at": "2025-05-20T12:16:42.779129"
   },
@@ -1601,7 +1456,6 @@
     "participant_count": 9,
     "email_count": 13,
     "last_email_at": "2025-12-25T17:12:44.438888",
-    "is_deleted": false,
     "created_at": "2025-02-17T22:03:42.779200",
     "updated_at": "2025-02-25T11:03:42.779200"
   },
@@ -1612,7 +1466,6 @@
     "participant_count": 6,
     "email_count": 17,
     "last_email_at": "2025-12-20T03:37:44.369123",
-    "is_deleted": true,
     "created_at": "2025-07-16T15:48:42.779270",
     "updated_at": "2025-07-30T00:48:42.779270"
   },
@@ -1623,7 +1476,6 @@
     "participant_count": 73,
     "email_count": 24,
     "last_email_at": "2025-12-26T03:53:44.375873",
-    "is_deleted": true,
     "created_at": "2025-01-19T13:56:42.779339",
     "updated_at": "2025-02-13T16:56:42.779339"
   },
@@ -1634,7 +1486,6 @@
     "participant_count": 98,
     "email_count": 6,
     "last_email_at": "2025-03-31T04:27:44.476643",
-    "is_deleted": false,
     "created_at": "2025-09-18T12:51:42.779410",
     "updated_at": "2025-10-07T15:51:42.779410"
   },
@@ -1645,7 +1496,6 @@
     "participant_count": 18,
     "email_count": 3,
     "last_email_at": "2025-10-24T05:24:44.382337",
-    "is_deleted": false,
     "created_at": "2025-03-01T17:57:42.779482",
     "updated_at": "2025-03-12T18:57:42.779482"
   },
@@ -1656,7 +1506,6 @@
     "participant_count": 87,
     "email_count": 10,
     "last_email_at": "2025-09-11T18:55:44.326659",
-    "is_deleted": false,
     "created_at": "2025-07-22T00:38:42.779555",
     "updated_at": "2025-07-22T05:38:42.779555"
   },
@@ -1667,7 +1516,6 @@
     "participant_count": 59,
     "email_count": 11,
     "last_email_at": "2025-12-14T13:49:44.335590",
-    "is_deleted": false,
     "created_at": "2025-09-09T06:53:42.779634",
     "updated_at": "2025-10-06T09:53:42.779634"
   },
@@ -1678,7 +1526,6 @@
     "participant_count": 3,
     "email_count": 14,
     "last_email_at": "2025-11-17T13:38:44.415213",
-    "is_deleted": false,
     "created_at": "2025-03-31T21:22:42.779706",
     "updated_at": "2025-04-05T23:22:42.779706"
   },
@@ -1689,7 +1536,6 @@
     "participant_count": 34,
     "email_count": 13,
     "last_email_at": "2025-12-25T23:40:44.455933",
-    "is_deleted": false,
     "created_at": "2025-11-10T18:49:42.779777",
     "updated_at": "2025-11-12T04:49:42.779777"
   },
@@ -1700,7 +1546,6 @@
     "participant_count": 94,
     "email_count": 12,
     "last_email_at": "2025-07-27T09:26:44.378101",
-    "is_deleted": false,
     "created_at": "2025-07-22T16:03:42.779848",
     "updated_at": "2025-07-25T17:03:42.779848"
   },
@@ -1711,7 +1556,6 @@
     "participant_count": 45,
     "email_count": 18,
     "last_email_at": "2026-01-04T01:25:44.497925",
-    "is_deleted": false,
     "created_at": "2025-05-26T08:03:42.779922",
     "updated_at": "2025-06-09T22:03:42.779922"
   },
@@ -1722,7 +1566,6 @@
     "participant_count": 1,
     "email_count": 9,
     "last_email_at": "2025-11-19T05:28:44.371245",
-    "is_deleted": true,
     "created_at": "2025-10-27T07:04:42.779996",
     "updated_at": "2025-11-19T16:04:42.779996"
   },
@@ -1733,7 +1576,6 @@
     "participant_count": 46,
     "email_count": 4,
     "last_email_at": "2025-07-22T11:38:44.332934",
-    "is_deleted": false,
     "created_at": "2025-05-27T05:46:42.780066",
     "updated_at": "2025-06-22T17:46:42.780066"
   },
@@ -1744,7 +1586,6 @@
     "participant_count": 16,
     "email_count": 11,
     "last_email_at": "2025-12-06T13:17:44.507940",
-    "is_deleted": false,
     "created_at": "2025-08-20T18:28:42.780137",
     "updated_at": "2025-09-17T02:28:42.780137"
   },
@@ -1755,7 +1596,6 @@
     "participant_count": 0,
     "email_count": 14,
     "last_email_at": "2025-12-04T23:20:44.425939",
-    "is_deleted": false,
     "created_at": "2025-06-13T05:34:42.780208",
     "updated_at": "2025-07-06T06:34:42.780208"
   },
@@ -1766,7 +1606,6 @@
     "participant_count": 58,
     "email_count": 14,
     "last_email_at": "2025-10-20T00:20:44.361736",
-    "is_deleted": false,
     "created_at": "2025-05-25T22:14:42.780282",
     "updated_at": "2025-06-20T18:14:42.780282"
   },
@@ -1777,7 +1616,6 @@
     "participant_count": 81,
     "email_count": 7,
     "last_email_at": "2025-11-13T05:49:44.471387",
-    "is_deleted": false,
     "created_at": "2025-06-19T14:49:42.780352",
     "updated_at": "2025-07-14T02:49:42.780352"
   },
@@ -1788,7 +1626,6 @@
     "participant_count": 14,
     "email_count": 8,
     "last_email_at": "2025-11-11T22:27:44.473950",
-    "is_deleted": false,
     "created_at": "2025-03-24T01:09:42.780423",
     "updated_at": "2025-04-01T12:09:42.780423"
   },
@@ -1799,7 +1636,6 @@
     "participant_count": 63,
     "email_count": 4,
     "last_email_at": "2025-12-28T18:55:44.346627",
-    "is_deleted": false,
     "created_at": "2025-01-18T04:11:42.780506",
     "updated_at": "2025-01-28T03:11:42.780506"
   },
@@ -1810,7 +1646,6 @@
     "participant_count": 61,
     "email_count": 6,
     "last_email_at": "2025-12-29T19:40:44.439070",
-    "is_deleted": true,
     "created_at": "2025-04-13T20:46:42.780582",
     "updated_at": "2025-04-29T06:46:42.780582"
   },
@@ -1821,7 +1656,6 @@
     "participant_count": 53,
     "email_count": 5,
     "last_email_at": "2025-11-09T14:17:44.416812",
-    "is_deleted": false,
     "created_at": "2025-09-02T12:26:42.780653",
     "updated_at": "2025-09-11T03:26:42.780653"
   },
@@ -1832,7 +1666,6 @@
     "participant_count": 51,
     "email_count": 13,
     "last_email_at": "2025-12-15T17:15:44.500032",
-    "is_deleted": false,
     "created_at": "2025-10-19T00:37:42.780725",
     "updated_at": "2025-11-06T02:37:42.780725"
   },
@@ -1843,7 +1676,6 @@
     "participant_count": 39,
     "email_count": 3,
     "last_email_at": "2025-09-22T11:06:44.449293",
-    "is_deleted": false,
     "created_at": "2025-07-18T14:59:42.780797",
     "updated_at": "2025-08-04T16:59:42.780797"
   },
@@ -1854,7 +1686,6 @@
     "participant_count": 73,
     "email_count": 10,
     "last_email_at": "2025-08-26T12:21:44.434312",
-    "is_deleted": false,
     "created_at": "2025-09-12T14:41:42.780870",
     "updated_at": "2025-10-01T02:41:42.780870"
   },
@@ -1865,7 +1696,6 @@
     "participant_count": 34,
     "email_count": 11,
     "last_email_at": "2025-10-04T04:43:44.456959",
-    "is_deleted": false,
     "created_at": "2025-06-22T15:36:42.780941",
     "updated_at": "2025-07-06T00:36:42.780941"
   },
@@ -1876,7 +1706,6 @@
     "participant_count": 65,
     "email_count": 0,
     "last_email_at": null,
-    "is_deleted": false,
     "created_at": "2025-01-15T05:04:42.781013",
     "updated_at": "2025-01-22T07:04:42.781013"
   },
@@ -1887,7 +1716,6 @@
     "participant_count": 72,
     "email_count": 7,
     "last_email_at": "2025-09-03T14:42:44.370621",
-    "is_deleted": true,
     "created_at": "2025-12-04T18:29:42.781087",
     "updated_at": "2025-12-15T11:29:42.781087"
   },
@@ -1898,7 +1726,6 @@
     "participant_count": 57,
     "email_count": 5,
     "last_email_at": "2025-04-18T12:50:44.333101",
-    "is_deleted": false,
     "created_at": "2025-02-07T21:25:42.781160",
     "updated_at": "2025-03-08T18:25:42.781160"
   },
@@ -1909,7 +1736,6 @@
     "participant_count": 63,
     "email_count": 7,
     "last_email_at": "2025-11-29T21:49:44.418921",
-    "is_deleted": false,
     "created_at": "2025-11-29T20:48:42.781233",
     "updated_at": "2025-12-21T08:48:42.781233"
   },
@@ -1920,7 +1746,6 @@
     "participant_count": 44,
     "email_count": 10,
     "last_email_at": "2025-09-10T23:36:44.355244",
-    "is_deleted": false,
     "created_at": "2025-12-13T07:11:42.781306",
     "updated_at": "2025-12-28T19:11:42.781306"
   },
@@ -1931,7 +1756,6 @@
     "participant_count": 97,
     "email_count": 8,
     "last_email_at": "2025-10-08T18:38:44.436849",
-    "is_deleted": false,
     "created_at": "2025-10-22T22:37:42.781379",
     "updated_at": "2025-10-31T04:37:42.781379"
   },
@@ -1942,7 +1766,6 @@
     "participant_count": 89,
     "email_count": 16,
     "last_email_at": "2025-10-26T09:53:44.515688",
-    "is_deleted": false,
     "created_at": "2025-06-22T05:41:42.781450",
     "updated_at": "2025-07-14T07:41:42.781450"
   },
@@ -1953,7 +1776,6 @@
     "participant_count": 2,
     "email_count": 12,
     "last_email_at": "2025-10-13T10:02:44.324983",
-    "is_deleted": false,
     "created_at": "2025-04-30T23:41:42.781520",
     "updated_at": "2025-05-11T20:41:42.781520"
   },
@@ -1964,7 +1786,6 @@
     "participant_count": 31,
     "email_count": 14,
     "last_email_at": "2026-01-05T08:37:44.451633",
-    "is_deleted": false,
     "created_at": "2025-09-05T02:28:42.781593",
     "updated_at": "2025-09-19T13:28:42.781593"
   },
@@ -1975,7 +1796,6 @@
     "participant_count": 60,
     "email_count": 9,
     "last_email_at": "2025-12-06T06:32:44.345629",
-    "is_deleted": false,
     "created_at": "2025-09-15T12:33:42.781665",
     "updated_at": "2025-10-03T07:33:42.781665"
   },
@@ -1986,7 +1806,6 @@
     "participant_count": 30,
     "email_count": 9,
     "last_email_at": "2025-10-11T05:43:44.390382",
-    "is_deleted": false,
     "created_at": "2025-05-11T20:12:42.781735",
     "updated_at": "2025-05-12T07:12:42.781735"
   },
@@ -1997,7 +1816,6 @@
     "participant_count": 55,
     "email_count": 13,
     "last_email_at": "2025-10-13T08:25:44.327058",
-    "is_deleted": false,
     "created_at": "2025-12-12T06:43:42.781807",
     "updated_at": "2025-12-17T16:43:42.781807"
   },
@@ -2008,7 +1826,6 @@
     "participant_count": 44,
     "email_count": 5,
     "last_email_at": "2025-12-01T22:52:44.446597",
-    "is_deleted": false,
     "created_at": "2025-06-10T14:02:42.781879",
     "updated_at": "2025-06-20T10:02:42.781879"
   },
@@ -2019,7 +1836,6 @@
     "participant_count": 36,
     "email_count": 5,
     "last_email_at": "2025-09-20T21:17:44.451048",
-    "is_deleted": false,
     "created_at": "2025-03-14T16:52:42.781951",
     "updated_at": "2025-03-29T06:52:42.781951"
   },
@@ -2030,7 +1846,6 @@
     "participant_count": 51,
     "email_count": 8,
     "last_email_at": "2025-11-04T14:00:44.366658",
-    "is_deleted": false,
     "created_at": "2025-05-10T06:18:42.782025",
     "updated_at": "2025-05-13T17:18:42.782025"
   },
@@ -2041,7 +1856,6 @@
     "participant_count": 80,
     "email_count": 16,
     "last_email_at": "2025-12-17T16:31:44.510529",
-    "is_deleted": false,
     "created_at": "2025-03-10T04:39:42.782097",
     "updated_at": "2025-04-02T14:39:42.782097"
   },
@@ -2052,7 +1866,6 @@
     "participant_count": 93,
     "email_count": 16,
     "last_email_at": "2025-12-10T00:23:44.411806",
-    "is_deleted": false,
     "created_at": "2025-02-17T09:26:42.782169",
     "updated_at": "2025-03-02T20:26:42.782169"
   },
@@ -2063,7 +1876,6 @@
     "participant_count": 4,
     "email_count": 7,
     "last_email_at": "2025-08-15T05:43:44.460571",
-    "is_deleted": false,
     "created_at": "2025-04-30T13:51:42.782242",
     "updated_at": "2025-05-15T10:51:42.782242"
   },
@@ -2074,7 +1886,6 @@
     "participant_count": 5,
     "email_count": 13,
     "last_email_at": "2025-12-19T00:54:44.343759",
-    "is_deleted": false,
     "created_at": "2025-06-29T01:48:42.782314",
     "updated_at": "2025-07-13T09:48:42.782314"
   },
@@ -2085,7 +1896,6 @@
     "participant_count": 26,
     "email_count": 9,
     "last_email_at": "2025-07-19T10:06:44.477847",
-    "is_deleted": false,
     "created_at": "2025-02-07T22:48:42.782386",
     "updated_at": "2025-02-09T06:48:42.782386"
   },
@@ -2096,7 +1906,6 @@
     "participant_count": 30,
     "email_count": 4,
     "last_email_at": "2025-12-06T01:03:44.448581",
-    "is_deleted": false,
     "created_at": "2025-04-26T12:04:42.782458",
     "updated_at": "2025-05-19T00:04:42.782458"
   },
@@ -2107,7 +1916,6 @@
     "participant_count": 75,
     "email_count": 10,
     "last_email_at": "2025-10-05T13:47:44.507362",
-    "is_deleted": false,
     "created_at": "2025-08-15T02:48:42.782531",
     "updated_at": "2025-08-28T01:48:42.782531"
   },
@@ -2118,7 +1926,6 @@
     "participant_count": 40,
     "email_count": 5,
     "last_email_at": "2026-01-06T20:22:44.346037",
-    "is_deleted": false,
     "created_at": "2025-05-23T23:04:42.782622",
     "updated_at": "2025-05-28T23:04:42.782622"
   },
@@ -2129,7 +1936,6 @@
     "participant_count": 56,
     "email_count": 6,
     "last_email_at": "2025-10-03T04:10:44.437198",
-    "is_deleted": false,
     "created_at": "2025-09-17T17:15:42.782725",
     "updated_at": "2025-10-07T03:15:42.782725"
   },
@@ -2140,7 +1946,6 @@
     "participant_count": 39,
     "email_count": 2,
     "last_email_at": "2025-12-26T12:39:44.473028",
-    "is_deleted": false,
     "created_at": "2025-09-24T15:23:42.782922",
     "updated_at": "2025-10-01T19:23:42.782922"
   },
@@ -2151,7 +1956,6 @@
     "participant_count": 98,
     "email_count": 9,
     "last_email_at": "2025-12-12T13:13:44.344102",
-    "is_deleted": false,
     "created_at": "2025-03-21T10:29:42.783078",
     "updated_at": "2025-04-05T01:29:42.783078"
   },
@@ -2162,7 +1966,6 @@
     "participant_count": 79,
     "email_count": 16,
     "last_email_at": "2025-12-26T22:37:44.359124",
-    "is_deleted": false,
     "created_at": "2025-02-21T04:25:42.783157",
     "updated_at": "2025-03-08T05:25:42.783157"
   },
@@ -2173,7 +1976,6 @@
     "participant_count": 14,
     "email_count": 20,
     "last_email_at": "2025-07-24T12:28:44.401633",
-    "is_deleted": false,
     "created_at": "2025-08-26T22:41:42.783230",
     "updated_at": "2025-09-15T22:41:42.783230"
   },
@@ -2184,7 +1986,6 @@
     "participant_count": 1,
     "email_count": 19,
     "last_email_at": "2026-01-06T11:46:44.405684",
-    "is_deleted": false,
     "created_at": "2025-05-21T10:23:42.783302",
     "updated_at": "2025-06-16T04:23:42.783302"
   },
@@ -2195,7 +1996,6 @@
     "participant_count": 12,
     "email_count": 15,
     "last_email_at": "2025-10-24T05:44:44.380103",
-    "is_deleted": false,
     "created_at": "2025-10-27T13:46:42.783374",
     "updated_at": "2025-11-05T06:46:42.783374"
   }

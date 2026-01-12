@@ -26,7 +26,7 @@ const buildMatchKeysForEmail = (email = {}) => {
 
   add(email.id);
   add(email.messageId);
-  add(email.threadId);
+  add(email.thread_id);
   add(email.legacyThreadId);
   add(email.legacyLastMessageId);
   add(email.legacyLastNonDraftMessageId);
@@ -192,7 +192,7 @@ const useCustomHotKeys = ({
 
 const MailActions = ({ thread }) => {
   const navigate = useNavigate();
-  const threadId = thread.threadId;
+  const thread_id = thread.thread_id;
   const [state, dispatch] = useReducer(reducer, initialState);
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
@@ -208,19 +208,19 @@ const MailActions = ({ thread }) => {
   const location = useLocation();
   const hasRunOnceRef = useRef(false);
 
-  // Get the base path by removing the threadId from the current path
+  // Get the base path by removing the thread_id from the current path
   const getBasePath = useCallback(() => {
     const pathParts = location.pathname.split("/");
     return pathParts.slice(0, -1).join("/") || "/inbox";
   }, [location.pathname]);
 
   const threadEmails = useMemo(
-    () => emails.filter((email) => email.threadId === thread.threadId),
-    [emails, thread.threadId]
+    () => emails.filter((email) => email.thread_id === thread.thread_id),
+    [emails, thread.thread_id]
   );
   useEffect(() => {
     hasRunOnceRef.current = false;
-  }, [thread.threadId]);
+  }, [thread.thread_id]);
 
   const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
   const conversationMatchKeys = useMemo(() => {
@@ -230,8 +230,8 @@ const MailActions = ({ thread }) => {
       if (v) keys.add(v);
     };
 
-    add(thread.threadId);
-    add(threadId);
+    add(thread.thread_id);
+    add(thread_id);
     add(thread.legacyThreadId);
     add(thread.legacyLastMessageId);
     add(thread.legacyLastNonDraftMessageId);
@@ -241,7 +241,7 @@ const MailActions = ({ thread }) => {
     });
 
     return [...keys];
-  }, [thread, threadEmails, threadId]);
+  }, [thread, threadEmails, thread_id]);
   const conversationLabelSnapshot = useCallback(
     () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
     [threadEmails]
@@ -1036,24 +1036,24 @@ const useNavigationHotKeys = ({ goBack, goForward, handleArchive }) => {
 };
 
 const NavigationActions = () => {
-  const { threadId, folder, label: labelParam } = useParams();
+  const { thread_id, folder, label: labelParam } = useParams();
   const { emails } = useGlobalContext();
   const navigate = useNavigate();
   const location = useLocation();
   const { archive } = useMailActions();
   const { setSnackbar, setEmails } = useGlobalContext();
 
-  const threadKey = useMemo(() => threadId, [threadId]);
-  const threadEmails = useMemo(() => emails.filter((email) => email.threadId === threadKey), [emails, threadKey]);
+  const threadKey = useMemo(() => thread_id, [thread_id]);
+  const threadEmails = useMemo(() => emails.filter((email) => email.thread_id === threadKey), [emails, threadKey]);
   const conversationLabelSnapshot = useCallback(
     () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
     [threadEmails]
   );
 
-  // Get the base path by removing the threadId from the current path
+  // Get the base path by removing the thread_id from the current path
   const getBasePath = () => {
     const pathParts = location.pathname.split("/");
-    // Remove the last part (threadId) to get the base path
+    // Remove the last part (thread_id) to get the base path
     return pathParts.slice(0, -1).join("/") || "/inbox";
   };
 
@@ -1066,13 +1066,13 @@ const NavigationActions = () => {
 
   // Get thread IDs from filtered threads
   const filteredThreadIds = useMemo(() => {
-    return filteredThreads.map((thread) => thread.threadId);
+    return filteredThreads.map((thread) => thread.thread_id);
   }, [filteredThreads]);
 
-  // use thread position in filtered threadIds array to determine if there is a previous or next thread
+  // use thread position in filtered thread_ids array to determine if there is a previous or next thread
   const threadPosition = useMemo(() => {
-    return filteredThreadIds.indexOf(threadId);
-  }, [filteredThreadIds, threadId]);
+    return filteredThreadIds.indexOf(thread_id);
+  }, [filteredThreadIds, thread_id]);
 
   const hasPreviousThread = useMemo(() => {
     return threadPosition > 0;

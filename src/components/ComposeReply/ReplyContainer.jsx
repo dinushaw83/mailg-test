@@ -1,17 +1,19 @@
-import React, { useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from "react";
-import EmailRecipients from "../common/EmailRecipients";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import RichTextEditor from "../RichTextEditor/RichTextEditor";
-import { useSendEmail } from "../../hooks/useSendEmail";
-import { useScheduleEmail } from "../../hooks/useScheduleEmail";
-import { useDraftManagement } from "../../hooks/useDraftManagement";
-import InfoModal from "../ComposeEmail/InfoModal";
 import "./ReplyContainer.css";
-import replyIcon from "../../icons/reply.png";
-import replyAllIcon from "../../icons/replyall.png";
-import forwardIcon from "../../icons/forward.png";
-import dropdownArrow from "../../icons/dropdownarrow.png";
+
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+
 import { Button } from "@mui/material";
+import EmailRecipients from "../common/EmailRecipients";
+import InfoModal from "../ComposeEmail/InfoModal";
+import RichTextEditor from "../RichTextEditor/RichTextEditor";
+import dropdownArrow from "../../icons/dropdownarrow.png";
+import forwardIcon from "../../icons/forward.png";
+import replyAllIcon from "../../icons/replyall.png";
+import replyIcon from "../../icons/reply.png";
+import { useDraftManagement } from "../../hooks/useDraftManagement";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useScheduleEmail } from "../../hooks/useScheduleEmail";
+import { useSendEmail } from "../../hooks/useSendEmail";
 
 const ReplyContainer = forwardRef(({ email, replyType, currentDraftId, onClose, onUndoDelete }, ref) => {
   const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
@@ -276,7 +278,7 @@ ${email.body}
       // Store the draft data for potential restoration
       lastDeletedDraftRef.current = {
         id: draftId,
-        threadId: email.threadId,
+        thread_id: email.thread_id,
         legacyThreadId: email.legacyThreadId,
         legacyLastMessageId: email.legacyLastMessageId,
         to: recipientsForDraft.to,
