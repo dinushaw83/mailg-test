@@ -1,7 +1,7 @@
 """Association table for thread-user metadata.
 
 This tracks user-specific attributes for threads, such as whether a user
-marked a thread as important. This allows different users to have different
+marked a thread as important or spam. This allows different users to have different
 metadata on the same shared thread.
 """
 
@@ -27,6 +27,7 @@ class ThreadUserMetadata(Base):
 
     # User-specific metadata
     is_important = Column(Boolean, default=False, index=True)
+    is_spam = Column(Boolean, default=False, index=True)        # Thread-level spam marker
     snooze_until = Column(DateTime, nullable=True, index=True)  # Thread-level snooze
     is_archived = Column(Boolean, default=False, index=True)    # Thread-level archive
 
@@ -43,6 +44,7 @@ class ThreadUserMetadata(Base):
         UniqueConstraint("thread_id", "user_id", name="uq_thread_user_metadata"),
         Index("ix_thread_user_metadata_user_thread", "user_id", "thread_id"),
         Index("ix_thread_user_metadata_important", "user_id", "is_important"),
+        Index("ix_thread_user_metadata_spam", "user_id", "is_spam"),
         Index("ix_thread_user_metadata_snooze", "user_id", "snooze_until"),
         Index("ix_thread_user_metadata_archived", "user_id", "is_archived"),
     )

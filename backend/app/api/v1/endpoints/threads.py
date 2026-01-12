@@ -18,7 +18,7 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_user_metadata import ThreadUserMetadata
-from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate
+from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate, EmailSpamUpdate
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import SystemLabel, FolderType
@@ -31,7 +31,7 @@ from app.utils.email_utils import (
     format_email_response,
     mark_emails_as_read_background,
 )
-from app.utils.thread_metadata_utils import mark_thread_important
+from app.utils.thread_metadata_utils import mark_thread_important, mark_thread_spam
 
 logger = logging.getLogger(__name__)
 
@@ -560,6 +560,68 @@ def mark_thread_important_endpoint(
         db.rollback()
         raise
     
+    return format_email_response(user_email, current_user.id)
+
+
+@router.patch("/{thread_id}/spam", response_model=EmailResponse, dependencies=[Depends(authorized())])
+def mark_thread_spam_endpoint(
+    thread_id: UUID,
+    spam_data: EmailSpamUpdate,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Mark a thread as spam or not spam for the current user.
+
+    This updates the thread-level is_spam flag for the current user only.
+    Other users' spam status for the same thread is not affected.
+    """
+    current_user = auth.user
+    
+    # Check if user has access to this thread
+    user_email = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread)
+            .selectinload(Thread.labels),
+        joinedload(Email.thread)
+            .selectinload(Thread.user_metadata),
+    ).filter(
+        Email.thread_id == thread_id,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).first()
+    
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Update thread metadata for this user
+    mark_thread_spam(db, thread_id, current_user.id, spam_data.is_spam)
+
+    # Update email folder based on spam status
+    user_email.folder = FolderType.SPAM.value if spam_data.is_spam else FolderType.INBOX.value
+
+    # Add or remove Spam label accordingly
+    if spam_data.is_spam:
+        add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.SPAM)
+    else:
+        remove_system_label_from_thread(db, thread_id, current_user.id, SystemLabel.SPAM)
+    
+    try:
+        db.commit()
+        db.refresh(user_email)
+    except Exception:
+        db.rollback()
+        raise
+
     return format_email_response(user_email, current_user.id)
 
 

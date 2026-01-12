@@ -85,3 +85,41 @@ def get_user_important_thread_ids(
     ).all()
 
     return [record[0] for record in metadata_records]
+
+
+def mark_thread_spam(
+    db: Session,
+    thread_id: UUID,
+    user_id: UUID,
+    is_spam: bool = True
+) -> ThreadUserMetadata:
+    """Mark a thread as spam/not spam for a specific user.
+
+    Args:
+        db: Database session
+        thread_id: Thread ID
+        user_id: User ID
+        is_spam: True to mark as spam, False to unmark
+
+    Returns:
+        ThreadUserMetadata record
+    """
+    # Check if metadata record exists
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == thread_id,
+        ThreadUserMetadata.user_id == user_id
+    ).first()
+
+    if metadata:
+        # Update existing record
+        metadata.is_spam = is_spam
+    else:
+        # Create new record
+        metadata = ThreadUserMetadata(
+            thread_id=thread_id,
+            user_id=user_id,
+            is_spam=is_spam
+        )
+        db.add(metadata)
+
+    return metadata

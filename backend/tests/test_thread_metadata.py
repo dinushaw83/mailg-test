@@ -12,6 +12,7 @@ from app.utils.thread_metadata_utils import (
     mark_thread_important,
     get_thread_is_important,
     get_user_important_thread_ids,
+    mark_thread_spam,
 )
 
 
@@ -559,6 +560,113 @@ class TestEmailAPIImportant:
         response = client.patch(
             f"/api/v1/threads/{fake_thread_id}/important",
             json={"is_important": True},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 404
+
+
+class TestEmailAPISpam:
+    """Test is_spam functionality in Email API endpoints."""
+
+    def test_mark_email_spam_via_api(self, client_with_auth, db_session):
+        """Test marking a thread as spam via email endpoint."""
+        client, token, user = client_with_auth
+
+        # Create a thread and email
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+        )
+        db_session.add(thread)
+        db_session.commit()
+
+        email = Email(
+            subject="Test Email",
+            body="Test body",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+        )
+        db_session.add(email)
+        db_session.commit()
+
+        # Mark as spam via thread endpoint
+        response = client.patch(
+            f"/api/v1/threads/{thread.id}/spam",
+            json={"is_spam": True},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["folder"] == FolderType.SPAM.value
+
+        # Verify in database
+        metadata = db_session.query(ThreadUserMetadata).filter(
+            ThreadUserMetadata.thread_id == thread.id,
+            ThreadUserMetadata.user_id == user.id
+        ).first()
+        assert metadata is not None
+        assert metadata.is_spam is True
+
+    def test_unmark_thread_spam_via_api(self, client_with_auth, db_session):
+        """Test unmarking a thread as spam via thread endpoint."""
+        client, token, user = client_with_auth
+
+        # Create a thread and email
+        thread = Thread(
+            subject="Test Thread",
+            owner_id=user.id,
+        )
+        db_session.add(thread)
+        db_session.commit()
+
+        email = Email(
+            subject="Test Email",
+            body="Test body",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+        )
+        db_session.add(email)
+        db_session.commit()
+
+        # First mark as spam
+        mark_thread_spam(db_session, thread.id, user.id, True)
+        db_session.commit()
+
+        # Then unmark via API
+        response = client.patch(
+            f"/api/v1/threads/{thread.id}/spam",
+            json={"is_spam": False},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["folder"] == FolderType.INBOX.value
+
+        # verify in database
+        metadata = db_session.query(ThreadUserMetadata).filter(
+            ThreadUserMetadata.thread_id == thread.id,
+            ThreadUserMetadata.user_id == user.id
+        ).first()
+        assert metadata is not None
+        assert metadata.is_spam is False
+
+    def test_mark_spam_nonexistent_thread(self, client_with_auth, db_session):
+        """Test that marking spam fails for non-existent thread."""
+        import uuid
+        client, token, user = client_with_auth
+
+        # Try to mark a non-existent thread as spam
+        fake_thread_id = uuid.uuid4()
+        response = client.patch(
+            f"/api/v1/threads/{fake_thread_id}/spam",
+            json={"is_spam": True},
             headers={"Authorization": f"Bearer {token}"}
         )
 
