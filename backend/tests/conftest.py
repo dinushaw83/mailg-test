@@ -18,6 +18,7 @@ import uuid
 import pytest
 from unittest.mock import Mock
 from datetime import datetime, timezone
+from fastapi import Request
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
@@ -113,7 +114,7 @@ def base_client():
 @pytest.fixture(scope="function")
 def client(db_session, base_client):
     """Configure the test client with database dependency override for this test."""
-    def override_get_db():
+    def override_get_db(request: Request = None):
         try:
             yield db_session
         finally:
