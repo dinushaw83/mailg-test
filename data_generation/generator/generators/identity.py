@@ -230,7 +230,7 @@ class ExternalIdGenerator(BaseGenerator):
 
 @generator(SemanticType.COLOR, priority=80)
 class ColorGenerator(BaseGenerator):
-    """Generates hex color codes respecting maxLength from schema."""
+    """Generates hex color codes with optional RGB range constraints."""
 
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         if self.maybe_null(semantics, context, 0.1):
@@ -238,16 +238,21 @@ class ColorGenerator(BaseGenerator):
 
         max_length = semantics.field_schema.get("maxLength", 7)
 
-        # Generate appropriate format based on maxLength
+        # Get RGB range config from context params
+        colors_cfg = context.config.get("templates", {}).get("colors", {})
+        r_range = colors_cfg.get("r", [0, 255])
+        g_range = colors_cfg.get("g", [0, 255])
+        b_range = colors_cfg.get("b", [0, 255])
+
+        # Generate RGB values within specified ranges
+        r = context.random().randint(r_range[0], r_range[1])
+        g = context.random().randint(g_range[0], g_range[1])
+        b = context.random().randint(b_range[0], b_range[1])
+
         if max_length >= 7:
-            # Full hex color: #RRGGBB (7 chars)
-            return context.fake().hex_color()
+            return f"#{r:02x}{g:02x}{b:02x}"
         elif max_length >= 4:
-            # Short hex color: #RGB (4 chars)
-            r = context.random().randint(0, 15)
-            g = context.random().randint(0, 15)
-            b = context.random().randint(0, 15)
-            return f"#{r:x}{g:x}{b:x}"
+            # Short hex: use high nibble
+            return f"#{r>>4:x}{g>>4:x}{b>>4:x}"
         else:
-            # Just return a short color code
-            return context.fake().hex_color()[:max_length]
+            return f"#{r:02x}{g:02x}{b:02x}"[:max_length]
