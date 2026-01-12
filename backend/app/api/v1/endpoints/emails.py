@@ -20,21 +20,19 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.label import Label
 from app.models.thread_label import ThreadLabel
-from app.models.attachment import Attachment
 from app.models.thread import Thread
 from app.models.user import User
 from app.schemas.email import (
     EmailCreate, EmailImportantUpdate, EmailUpdate, EmailResponse, EmailListResponse,
     EmailReadUpdate, EmailStarUpdate, EmailMoveRequest, EmailLabelRequest,
-    EmailReplyRequest, EmailForwardRequest, EmailRecipientResponse,
-    AttachmentBriefResponse, LabelBriefResponse, EmailSnoozeRequest,
+    EmailReplyRequest, EmailForwardRequest, EmailSnoozeRequest,
     EmailCategoryUpdate, EmailCategoryCountsResponse, EmailSendRequest
 )
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import (
-    VALID_EMAIL_STATUSES, VALID_RECIPIENT_TYPES, VALID_EMAIL_CATEGORIES,
+    VALID_RECIPIENT_TYPES, VALID_EMAIL_CATEGORIES,
     VALID_FOLDER_TYPES, EmailStatus, FolderType, EmailCategory, SystemLabel
 )
 from app.utils.label_utils import (
@@ -45,12 +43,10 @@ from app.utils.label_utils import (
     sync_category_labels,
 )
 from app.utils.email_utils import (
-    get_snippet,
-    get_label_hierarchy_name,
     format_email_response,
     format_email_list_response,
     mark_emails_as_read_background,
-    deliver_email_to_recipients,
+    deliver_email_to_recipients_background,
     FOLDER_TO_LABEL,
 )
 from app.utils.thread_metadata_utils import (
@@ -607,19 +603,23 @@ def delete_email(
 @router.post("/emails/{email_id}/send", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def send_email(
     email_id: UUID,
+    background_tasks: BackgroundTasks,
+    request_obj: Request,
     request: Optional[EmailSendRequest] = None,
     db: Session = Depends(get_db),
 ) -> dict:
     """Send a draft email.
-    
-    If scheduled_send_at is provided in the request body, the email will be 
+
+    If scheduled_send_at is provided in the request body, the email will be
     scheduled for that specific time, overriding the user's undo_send_delay_seconds.
-    
+
     If scheduled_send_at is not provided:
     - If the user has undo_send_delay_seconds > 0 configured, the email will be
       queued with a scheduled send time. During this window, the user can cancel
       the send using the /emails/{email_id}/cancel-send endpoint.
     - If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
+
+    Email delivery to recipients is processed in the background for better performance.
     """
     current_user = auth.user
     
@@ -709,25 +709,31 @@ def send_email(
     email.status = EmailStatus.SENT.value
     email.sent_at = datetime.utcnow()
     email.folder = FolderType.SENT.value
-    
+
     # Update labels: Remove Drafts, add Sent + category
     remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
     add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
     if email.category:
         add_category_label_to_thread(db, email.thread_id, current_user.id, EmailCategory(email.category))
-    
-    # Create received copies for recipients who are users
-    deliver_email_to_recipients(db, email, current_user.id)
-    
+
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
-    
+
+    # Create received copies for recipients in background
+    run_id = getattr(request_obj.state, "run_id", None)
+    background_tasks.add_task(
+        deliver_email_to_recipients_background,
+        email.id,
+        current_user.id,
+        run_id
+    )
+
     logger.info(f"Email {email.id} sent by user {current_user.id}")
-    
+
     return format_email_response(email, current_user.id)
 
 
@@ -792,11 +798,14 @@ def cancel_send(
 @router.post("/emails/{email_id}/confirm-send", response_model=EmailResponse, dependencies=[Depends(authorized())])
 def confirm_send(
     email_id: UUID,
+    background_tasks: BackgroundTasks,
+    request: Request,
     db: Session = Depends(get_db),
 ) -> dict:
     """Immediately send a queued email without waiting for the scheduled time.
-    
+
     Use this if you want to skip the undo send waiting period.
+    Email delivery to recipients is processed in the background for better performance.
     """
     current_user = auth.user
     
@@ -827,19 +836,25 @@ def confirm_send(
     email.sent_at = datetime.utcnow()
     email.scheduled_send_at = None
     email.folder = FolderType.SENT.value
-    
-    # Deliver to recipients
-    deliver_email_to_recipients(db, email, current_user.id)
-    
+
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
-    
+
+    # Deliver to recipients in background
+    run_id = getattr(request.state, "run_id", None)
+    background_tasks.add_task(
+        deliver_email_to_recipients_background,
+        email.id,
+        current_user.id,
+        run_id
+    )
+
     logger.info(f"Email {email.id} confirmed and sent immediately by user {current_user.id}")
-    
+
     return format_email_response(email, current_user.id)
 
 
@@ -847,9 +862,14 @@ def confirm_send(
 def reply_to_email(
     email_id: UUID,
     reply_data: EmailReplyRequest,
+    background_tasks: BackgroundTasks,
+    request: Request,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Reply to an email."""
+    """Reply to an email.
+
+    Email delivery to recipients is processed in the background for better performance.
+    """
     current_user = auth.user
     
     original_email = db.query(Email).options(
@@ -922,17 +942,17 @@ def reply_to_email(
         is_read=True,
         sent_at=datetime.utcnow(),
     )
-    
+
     try:
         db.add(reply_email)
         db.flush()
-        
-        # Add recipients
+
+        # Add recipients to reply email
         for recipient in recipients:
             recipient_user = db.query(User).filter(
                 User.email == recipient["email"]
             ).first()
-            
+
             email_recipient = EmailRecipient(
                 email_id=reply_email.id,
                 recipient_id=recipient_user.id if recipient_user else None,
@@ -941,48 +961,28 @@ def reply_to_email(
                 recipient_type=recipient["type"],
             )
             db.add(email_recipient)
-            
-            # Create received copy
-            if recipient_user:
-                received_email = Email(
-                    subject=subject,
-                    body=reply_data.body,
-                    html_body=reply_data.html_body,
-                    status=EmailStatus.RECEIVED.value,
-                    folder=FolderType.INBOX.value,
-                    sender_id=current_user.id,
-                    thread_id=thread_id,
-                    parent_email_id=email_id,
-                    is_read=False,
-                    received_at=datetime.utcnow(),
-                )
-                db.add(received_email)
-                db.flush()
-                
-                recv_recipient = EmailRecipient(
-                    email_id=received_email.id,
-                    recipient_id=recipient_user.id,
-                    recipient_email=recipient["email"],
-                    recipient_name=recipient["name"],
-                    recipient_type=recipient["type"],
-                )
-                db.add(recv_recipient)
-                
-                # Add Inbox label for recipient
-                add_system_label_to_thread(db, thread_id, recipient_user.id, SystemLabel.INBOX)
-        
+
         # Add Sent label for sender
         add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.SENT)
-        
+
         db.commit()
         db.refresh(reply_email)
-        
+
     except Exception:
         db.rollback()
         raise
-    
+
+    # Create received copies for recipients in background
+    run_id = getattr(request.state, "run_id", None)
+    background_tasks.add_task(
+        deliver_email_to_recipients_background,
+        reply_email.id,
+        current_user.id,
+        run_id
+    )
+
     logger.info(f"Reply {reply_email.id} to email {email_id} by user {current_user.id}")
-    
+
     return format_email_response(reply_email, current_user.id)
 
 
@@ -990,9 +990,14 @@ def reply_to_email(
 def forward_email(
     email_id: UUID,
     forward_data: EmailForwardRequest,
+    background_tasks: BackgroundTasks,
+    request: Request,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Forward an email."""
+    """Forward an email.
+
+    Email delivery to recipients is processed in the background for better performance.
+    """
     current_user = auth.user
     
     original_email = db.query(Email).filter(
@@ -1029,7 +1034,7 @@ def forward_email(
     try:
         db.add(thread)
         db.flush()
-        
+
         # Create forward email
         forward_email_obj = Email(
             subject=subject,
@@ -1045,13 +1050,13 @@ def forward_email(
         )
         db.add(forward_email_obj)
         db.flush()
-        
-        # Add recipients
+
+        # Add recipients to forward email
         for recipient in forward_data.recipients:
             recipient_user = db.query(User).filter(
                 User.email == recipient.email
             ).first()
-            
+
             email_recipient = EmailRecipient(
                 email_id=forward_email_obj.id,
                 recipient_id=recipient_user.id if recipient_user else None,
@@ -1060,47 +1065,28 @@ def forward_email(
                 recipient_type=recipient.type,
             )
             db.add(email_recipient)
-            
-            # Create received copy
-            if recipient_user:
-                received_email = Email(
-                    subject=subject,
-                    body=body,
-                    html_body=html_body,
-                    status=EmailStatus.RECEIVED.value,
-                    folder=FolderType.INBOX.value,
-                    sender_id=current_user.id,
-                    thread_id=thread.id,
-                    is_read=False,
-                    received_at=datetime.utcnow(),
-                )
-                db.add(received_email)
-                db.flush()
-                
-                recv_recipient = EmailRecipient(
-                    email_id=received_email.id,
-                    recipient_id=recipient_user.id,
-                    recipient_email=recipient.email,
-                    recipient_name=recipient.name,
-                    recipient_type=recipient.type,
-                )
-                db.add(recv_recipient)
-                
-                # Add Inbox label for recipient
-                add_system_label_to_thread(db, thread.id, recipient_user.id, SystemLabel.INBOX)
-        
+
         # Add Sent label for sender
         add_system_label_to_thread(db, thread.id, current_user.id, SystemLabel.SENT)
-        
+
         db.commit()
         db.refresh(forward_email_obj)
-        
+
     except Exception:
         db.rollback()
         raise
-    
+
+    # Create received copies for recipients in background
+    run_id = getattr(request.state, "run_id", None)
+    background_tasks.add_task(
+        deliver_email_to_recipients_background,
+        forward_email_obj.id,
+        current_user.id,
+        run_id
+    )
+
     logger.info(f"Forward {forward_email_obj.id} of email {email_id} by user {current_user.id}")
-    
+
     return format_email_response(forward_email_obj, current_user.id)
 
 
