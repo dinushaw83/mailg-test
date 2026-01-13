@@ -628,7 +628,7 @@ def mark_thread_spam_endpoint(
 
 
 @router.patch("/{thread_id}/unspam", response_model=dict, dependencies=[Depends(authorized())])
-def mark_thread_spam_endpoint(
+def unmark_thread_spam_endpoint(
     thread_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
