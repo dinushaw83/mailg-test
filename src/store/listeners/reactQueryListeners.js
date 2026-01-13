@@ -10,6 +10,7 @@ import {
   updateEmailImportantThunk,
   bulkUpdateEmailsThunk,
   bulkUnstarThreadsThunk,
+  updateThreadImportantThunk,
   snoozeEmailThunk,
   moveToTrashThunk,
   moveToSpamThunk,
@@ -112,6 +113,16 @@ export function registerReactQueryListeners(listenerMiddleware) {
       // Invalidate all email queries to refresh unstarred emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       // Invalidate email counts since unstarring affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: updateThreadImportantThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh important status
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since important status affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
   });

@@ -518,8 +518,9 @@ const Table = ({
   );
 
   const handleImportant = useCallback(
-    (ids, currentlyImportant) => {
-      toggleImportant(ids, currentlyImportant);
+    (ids, currentlyImportant, threadIds) => {
+      // Pass 'list' context and threadIds to indicate this is from email list
+      toggleImportant(ids, currentlyImportant, "list", threadIds);
 
       const message = currentlyImportant
         ? "Conversation marked as not important."
@@ -533,7 +534,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleImportant(ids, !currentlyImportant); // Pass opposite state for undo
+              toggleImportant(ids, !currentlyImportant, "list", threadIds); // Pass opposite state for undo
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -867,7 +868,7 @@ const Table = ({
                     index={index}
                     formatDate={formatDate}
                     toggleStar={() => handleStar([email.id], email.is_starred, [email.thread_id])}
-                    toggleImportant={() => toggleImportant([email.id], email.is_important)}
+                    toggleImportant={() => handleImportant([email.id], email.is_important, [email.thread_id])}
                     density={density}
                   />
                 ) : (
@@ -917,7 +918,7 @@ const Table = ({
                         data-is-important={email.is_important.toString()}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleImportant && handleImportant([email.id], email.is_important);
+                          handleImportant && handleImportant([email.id], email.is_important, [email.thread_id]);
                         }}
                       >
                         <div className="T-ays-a45 sf-hidden">

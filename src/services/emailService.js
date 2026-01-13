@@ -261,6 +261,18 @@ const emailService = {
   },
 
   /**
+   * Update thread important status
+   * @param {string} threadId - Thread ID
+   * @param {boolean} is_important - Important status
+   * @returns {Promise<Object>} Response data
+   */
+  updateThreadImportant: async (threadId, is_important) => {
+    const response = await apiClient.patch(`/v1/threads/${threadId}/important`, { is_important });
+    const payload = response?.data?.data ?? response?.data ?? {};
+    return payload;
+  },
+
+  /**
    * Bulk update emails (starred, important, etc.)
    * @param {Array} emailIds - Array of email IDs
    * @param {Object} updates - Updates to apply { is_starred, is_important, etc. }

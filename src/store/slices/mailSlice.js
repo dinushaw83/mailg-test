@@ -394,7 +394,23 @@ export const bulkUpdateEmailImportantThunk = createAsyncThunk(
     }
   }
 );
-
+/**
+ * Update thread important status using thread-level endpoint
+ */
+export const updateThreadImportantThunk = createAsyncThunk(
+  "mail/updateThreadImportant",
+  async ({ threadId, is_important }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateThreadImportant(threadId, is_important);
+      return { threadId, is_important, response };
+    } catch (error) {
+      console.error("Failed to update thread important status:", error);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to update thread important status"
+      );
+    }
+  }
+);
 /**
  * BULK MUTATION THUNK: Update multiple emails' read status
  */

@@ -21,6 +21,7 @@ import {
   bulkSnoozeEmailsThunk,
   bulkUnsnoozeEmailsThunk,
   bulkUnstarThreadsThunk,
+  updateThreadImportantThunk,
 } from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
@@ -677,7 +678,7 @@ export default function useMailActions() {
   );
 
   const toggleImportant = useCallback(
-    (ids, currentImportantState) => {
+    (ids, currentImportantState, context = "list", threadIds = null) => {
       // Determine the new state
       const newState = currentImportantState !== undefined ? !currentImportantState : true;
 
@@ -695,49 +696,39 @@ export default function useMailActions() {
         });
       });
 
-      // Call bulk backend API with all email IDs at once
-      if (ids.length > 0) {
-        dispatch(
-          bulkUpdateEmailImportantThunk({
-            emailIds: ids,
-            is_important: newState,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync important status with backend:", error);
+      // Get thread IDs - use provided ones or extract from emails
+      let threadIdsToUpdate = threadIds;
+      if (!threadIdsToUpdate || threadIdsToUpdate.length === 0) {
+        threadIdsToUpdate = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+      }
+
+      // Call thread-level endpoint for each thread
+      if (threadIdsToUpdate && threadIdsToUpdate.length > 0) {
+        const promises = threadIdsToUpdate.map((threadId) =>
+          dispatch(
+            updateThreadImportantThunk({
+              threadId,
+              is_important: newState,
+            })
+          )
+        );
+
+        Promise.all(promises).catch((error) => {
+          console.error("Failed to update important status:", error);
           // Revert optimistic update on error
           updateQueryCache(ids, (email) => ({ ...email, is_important: !newState }));
         });
       }
     },
-    [setEmails, dispatch, updateQueryCache]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const setImportant = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
 
-      // Collect all email IDs for bulk operation
-      const emailIds = [];
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            emailIds.push(m.id);
-          }
-        });
-        return prev;
-      });
-
-      // Call bulk backend API with all email IDs at once
-      if (emailIds.length > 0) {
-        dispatch(
-          bulkUpdateEmailImportantThunk({
-            emailIds,
-            is_important: !!value,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync important status with backend:", error);
-        });
-      }
+      // Optimistically update React Query cache
+      updateQueryCache(ids, (email) => ({ ...email, is_important: !!value }));
 
       // Update local state immediately (optimistic update)
       setEmails((prev) => {
@@ -748,8 +739,29 @@ export default function useMailActions() {
           return m;
         });
       });
+
+      // Collect thread IDs
+      const threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+
+      // Call thread-level endpoint for each thread
+      if (threadIds.length > 0) {
+        const promises = threadIds.map((threadId) =>
+          dispatch(
+            updateThreadImportantThunk({
+              threadId,
+              is_important: !!value,
+            })
+          )
+        );
+
+        Promise.all(promises).catch((error) => {
+          console.error("Failed to update important status:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_important: !value }));
+        });
+      }
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const moveToLabel = useCallback(

@@ -67,11 +67,11 @@ export const Subject = ({ subject, message }) => {
   const handleImportant = useCallback(
     (e) => {
       e?.stopPropagation();
-      if (message?.id) {
+      if (message?.id && message?.thread_id) {
         // Optimistically update local state immediately
         setIsImportant((prev) => !prev);
-        // Then sync with backend
-        toggleImportant([message.id], isImportant);
+        // Then sync with backend - pass "detail" context and thread ID
+        toggleImportant([message.id], isImportant, "detail", [message.thread_id]);
       }
     },
     [message, toggleImportant, isImportant]
