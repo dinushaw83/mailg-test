@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
@@ -81,7 +81,7 @@ def process_scheduled_emails_for_database(db_name: str) -> int:
         db = SessionLocal()
         try:
             # Find all queued emails whose scheduled_send_at has passed
-            now = datetime.utcnow()
+            now = datetime.now(UTC)
             queued_emails = db.query(Email).options(
                 selectinload(Email.recipients),
             ).filter(
@@ -93,7 +93,7 @@ def process_scheduled_emails_for_database(db_name: str) -> int:
                 try:
                     # Update email status and folder to sent
                     email.status = EmailStatus.SENT.value
-                    email.sent_at = datetime.utcnow()
+                    email.sent_at = datetime.now(UTC)
                     email.scheduled_send_at = None
                     email.folder = FolderType.SENT.value
                     

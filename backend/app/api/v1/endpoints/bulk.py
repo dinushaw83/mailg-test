@@ -14,7 +14,7 @@ This module provides:
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from datetime import datetime
+from datetime import UTC, datetime
 import logging
 
 from app.db.session import get_db
@@ -484,7 +484,7 @@ def bulk_snooze(
     current_user = auth.user
 
     # Validate snooze time is in the future
-    if request.snooze_until <= datetime.utcnow():
+    if request.snooze_until <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Snooze time must be in the future"

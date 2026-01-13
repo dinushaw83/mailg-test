@@ -21,7 +21,7 @@ class Attachment(Base):
     storage_path = Column(String)  # Path in storage system
     attachment_type = Column(String, default="file")  # file, image, document
     
-    created_at = Column(DateTime, server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
     email = relationship("Email", back_populates="attachments")

@@ -27,12 +27,11 @@ class ThreadUserMetadata(Base):
 
     # User-specific metadata
     is_important = Column(Boolean, default=False, index=True)
-    snooze_until = Column(DateTime, nullable=True, index=True)  # Thread-level snooze
+    snooze_until = Column(DateTime(timezone=True), nullable=True, index=True)  # Thread-level snooze
     is_archived = Column(Boolean, default=False, index=True)    # Thread-level archive
 
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     # Relationships
     user = relationship("User", lazy="joined")
     thread = relationship("Thread", lazy="select")
