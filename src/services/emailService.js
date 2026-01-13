@@ -56,6 +56,7 @@ const emailService = {
     is_important = null,
     is_snoozed = null,
     folder = null,
+    category = null,
     include_archived = null,
   } = {}) => {
     try {
@@ -78,7 +79,10 @@ const emailService = {
       if (is_snoozed !== null) {
         params.is_snoozed = is_snoozed;
       }
-
+      // Add category parameter if provided
+      if (category !== null) {
+        params.category = category;
+      }
       // Add folder parameter if provided
       if (folder !== null) {
         params.folder = folder;

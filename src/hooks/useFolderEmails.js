@@ -85,13 +85,15 @@ export default function useFolderEmails({
             folder: "inbox",
             include_archived: true,
           });
-        case "inbox":
+        case "inbox": {
           const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
           return emailService.getEmailsByFilter({
             page: currentPage,
             pageSize: itemsPerPage,
+            folder: "inbox",
             category: categoryParam,
           });
+        }
         default:
           return { results: [], pagination: null };
       }
