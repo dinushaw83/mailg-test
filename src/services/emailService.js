@@ -138,6 +138,38 @@ const emailService = {
   },
 
   /**
+   * Fetch threads by label ID
+   * @param {string} labelId - Label UUID (not composite key)
+   * @param {number} page - Page number
+   * @param {number} pageSize - Items per page
+   * @returns {Promise<Object>} { results: [...], pagination: {...} }
+   */
+  getThreadsByLabel: async (labelId, page = 1, pageSize = 20) => {
+    try {
+      const response = await apiClient.get(`/v1/labels/${labelId}/threads`, {
+        params: { page, page_size: pageSize },
+      });
+
+      const payload = response?.data?.data ?? response?.data ?? {};
+      const results = Array.isArray(payload?.results) ? payload.results : [];
+
+      let mappedResults = emailAPIMapper(results);
+      return {
+        results: mappedResults,
+        pagination: {
+          total: payload?.total ?? results.length,
+          page: payload?.page ?? page,
+          pageSize: payload?.page_size ?? pageSize,
+          totalPages: payload?.total_pages ?? 1,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching threads by label:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Fetch a thread by email ID or thread ID
    * @param {string} thread_id - Email UUID or thread UUID
    * @returns {Promise<Array>} Array of email objects in the thread

@@ -33,6 +33,22 @@ export default function useFolderEmails({
 }) {
   const dispatch = useDispatch();
   const { accessToken } = useSelector((state) => state.user);
+  const labels = useSelector((state) => state.mail.labels || {});
+  const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
+
+  // Helper function to get label UUID from label key
+  const getLabelId = (labelKey) => {
+    // Try composite key lookup first
+    const labelId = keyToLabelIdMap[labelKey];
+    if (labelId) return labelId;
+
+    // Try direct UUID lookup (if labelKey is already a UUID)
+    if (labels[labelKey]) return labelKey;
+
+    // Fallback: search by name (case-insensitive)
+    const matchingLabel = Object.values(labels).find((l) => l.name?.toLowerCase() === labelKey.toLowerCase());
+    return matchingLabel?.id || null;
+  };
 
   // Build query key and fetch function based on active folder
   const queryKey = label
@@ -42,7 +58,17 @@ export default function useFolderEmails({
   const { data: emailsData, isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
-      if (label) return { results: [], pagination: null }; // Skip label routes for now
+      // Handle label routes
+      if (label) {
+        const labelId = getLabelId(label);
+
+        if (!labelId) {
+          console.error(`Label ID not found for label key: ${label}`);
+          return { results: [], pagination: null };
+        }
+
+        return emailService.getThreadsByLabel(labelId, currentPage, itemsPerPage);
+      }
 
       const folderKey = String(activeFolder).toLowerCase();
       const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "all"];
@@ -98,7 +124,7 @@ export default function useFolderEmails({
           return { results: [], pagination: null };
       }
     },
-    enabled: !!accessToken && !label,
+    enabled: !!accessToken,
     staleTime: 0, // Always refetch when query is invalidated
   });
 
