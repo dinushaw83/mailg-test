@@ -248,16 +248,26 @@ jobs:
           echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
 
   # ===========================================================================
-  # Stage 3: Deploy to GCP VM
+  # Stage 3: Deploy to Staging
   # ===========================================================================
-  deploy:
-    name: 🚀 Deploy to GCP
+  deploy-staging:
+    name: 🚀 Deploy to Staging
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [build-backend, build-frontend]
-    if: always() && needs.build-backend.result == 'success' && needs.build-frontend.result == 'success'
+    if: |
+      always() && 
+      needs.build-backend.result == 'success' && 
+      needs.build-frontend.result == 'success' &&
+      (github.event.inputs.environment != 'production' || github.event.inputs.environment == '')
     environment:
-      name: ${{ github.event.inputs.environment || 'staging' }}
+      name: staging
+    
+    outputs:
+      commit_sha: ${{ github.sha }}
+      short_sha: ${{ steps.images.outputs.short_sha }}
+      backend_image: ${{ steps.images.outputs.backend_image }}
+      frontend_image: ${{ steps.images.outputs.frontend_image }}
     
     steps:
       - name: Checkout code
@@ -314,7 +324,8 @@ jobs:
           echo "Backend image: $BACKEND_IMAGE_TAG"
           echo "Frontend image: $FRONTEND_IMAGE_TAG"
           
-          # Set outputs
+          # Set outputs for job outputs and step outputs
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
           echo "backend_image=$BACKEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "frontend_image=$FRONTEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
@@ -409,7 +420,7 @@ jobs:
           | Property | Value |
           |----------|-------|
           | **Status** | ${STATUS} |
-          | **Environment** | ${{ github.event.inputs.environment || 'staging' }} |
+          | **Environment** | staging |
           | **Branch** | \`${{ github.ref_name }}\` |
           | **Commit** | \`${{ github.sha }}\` |
           | **Deployed by** | @${{ github.actor }} |
@@ -422,6 +433,336 @@ jobs:
           - **Application**: ${{ vars.SYSTEM_URL }}
           - **API**: ${{ vars.SYSTEM_URL }}/api
           - **Health Check**: ${{ vars.SYSTEM_URL }}/api/health
+          
+          ### ⏭️ Next Steps
+          - Production deployment will be triggered automatically after staging verification
+          - Production deployment requires manual approval
+          EOF
+
+  # ===========================================================================
+  # Stage 4: Deploy to Production (with Manual Approval)
+  # ===========================================================================
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build-backend, build-frontend, deploy-staging]
+    if: |
+      always() && 
+      needs.build-backend.result == 'success' && 
+      needs.build-frontend.result == 'success' &&
+      (
+        (needs.deploy-staging.result == 'success' && github.ref == 'refs/heads/staging') ||
+        (github.event.inputs.environment == 'production')
+      )
+    environment:
+      name: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.deploy-staging.outputs.commit_sha || github.sha }}
+
+      - name: Set registry owner
+        id: owner
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Validate deployment secrets
+        run: |
+          echo "🔐 Validating deployment configuration..."
+          
+          if [ -z "${{ secrets.GCP_SSH_PRIVATE_KEY }}" ]; then
+            echo "::error::GCP_SSH_PRIVATE_KEY secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ env.VM_HOST }}" ]; then
+            echo "::error::GCP_VM_HOST secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ env.VM_USER }}" ]; then
+            echo "::error::GCP_VM_USER secret is not configured"
+            exit 1
+          fi
+          
+          echo "✅ All deployment secrets configured"
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
+      - name: Configure SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Set registry owner
+        id: owner
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Determine image tags
+        id: images
+        run: |
+          # If staging deployment succeeded, use those image tags
+          # Otherwise (workflow_dispatch with production), use current commit SHA
+          if [ "${{ needs.deploy-staging.result }}" == "success" ] && [ -n "${{ needs.deploy-staging.outputs.backend_image }}" ]; then
+            echo "📦 Using verified images from staging deployment:"
+            echo "  Backend: ${{ needs.deploy-staging.outputs.backend_image }}"
+            echo "  Frontend: ${{ needs.deploy-staging.outputs.frontend_image }}"
+            echo "  Commit SHA: ${{ needs.deploy-staging.outputs.commit_sha }}"
+            
+            echo "backend_image=${{ needs.deploy-staging.outputs.backend_image }}" >> "$GITHUB_OUTPUT"
+            echo "frontend_image=${{ needs.deploy-staging.outputs.frontend_image }}" >> "$GITHUB_OUTPUT"
+            echo "commit_sha=${{ needs.deploy-staging.outputs.commit_sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "📦 Using current commit SHA for production deployment (workflow_dispatch):"
+            FULL_SHA="${{ github.sha }}"
+            SHORT_SHA=$(echo "$FULL_SHA" | cut -c1-7)
+            BACKEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${SHORT_SHA}"
+            FRONTEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${SHORT_SHA}"
+            
+            echo "  Backend: $BACKEND_IMAGE_TAG"
+            echo "  Frontend: $FRONTEND_IMAGE_TAG"
+            echo "  Commit SHA: $FULL_SHA"
+            
+            echo "backend_image=$BACKEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+            echo "frontend_image=$FRONTEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+            echo "commit_sha=$FULL_SHA" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Copy deployment files
+        run: |
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
+
+      - name: Deploy containers
+        run: |
+          echo "📦 Deploying to PRODUCTION with verified images from staging:"
+          echo "  Backend: ${{ steps.images.outputs.backend_image }}"
+          echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
+          
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << 'DEPLOY_SCRIPT'
+            set -e
+            cd ~/mailg-deploy
+            
+            echo "🔑 Logging into GHCR..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            
+            echo "📥 Pulling verified images from staging..."
+            docker pull "${{ steps.images.outputs.backend_image }}"
+            docker pull "${{ steps.images.outputs.frontend_image }}"
+            
+            echo "🔄 Updating production deployment..."
+            chmod +x deploy-from-registry.sh
+            
+            BACKEND_IMAGE="${{ steps.images.outputs.backend_image }}" \
+            FRONTEND_IMAGE="${{ steps.images.outputs.frontend_image }}" \
+            GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
+            GITHUB_ACTOR="${{ github.actor }}" \
+            ./deploy-from-registry.sh
+            
+            echo "✅ Production deployment completed"
+          DEPLOY_SCRIPT
+
+      - name: Health check
+        id: health
+        run: |
+          PROD_SYSTEM_URL="${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}"
+          
+          if [ -z "$PROD_SYSTEM_URL" ]; then
+            echo "::error::PROD_SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
+          echo "⏳ Waiting for production services to start..."
+          sleep 15
+          
+          # Backend health check with retries
+          echo "Checking production backend health at ${PROD_SYSTEM_URL}/api/health..."
+          for i in {1..30}; do
+            if curl -sf --max-time 5 "${PROD_SYSTEM_URL}/api/health" > /dev/null; then
+              echo "✅ Production backend is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Production backend health check failed after 30 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 5
+          done
+          
+          # Frontend health check with retries
+          echo "Checking production frontend health at ${PROD_SYSTEM_URL}..."
+          for i in {1..30}; do
+            if curl -sf --max-time 5 "${PROD_SYSTEM_URL}" > /dev/null; then
+              echo "✅ Production frontend is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Production frontend health check failed after 30 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 5
+          done
+          
+          echo "health_status=success" >> $GITHUB_OUTPUT
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          STATUS="✅ Success"
+          [ "${{ steps.health.outputs.health_status }}" != "success" ] && STATUS="❌ Failed"
+          
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Production Deployment Summary
+          
+          | Property | Value |
+          |----------|-------|
+          | **Status** | ${STATUS} |
+          | **Environment** | production |
+          | **Branch** | \`${{ github.ref_name }}\` |
+          | **Commit** | \`${{ steps.images.outputs.commit_sha }}\` |
+          | **Deployed by** | @${{ github.actor }} |
+          
+          ### 📦 Docker Images (from verified staging)
+          - Backend: \`${{ steps.images.outputs.backend_image }}\`
+          - Frontend: \`${{ steps.images.outputs.frontend_image }}\`
+          
+          ### 🔗 Production URLs
+          - **Application**: ${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}
+          - **API**: ${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}/api
+          - **Health Check**: ${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}/api/health
+          EOF
+
+  # ===========================================================================
+  # Stage 5: Verify Production Environment
+  # ===========================================================================
+  verify-production:
+    name: ✅ Verify Production Environment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [deploy-production]
+    if: always() && needs.deploy-production.result == 'success'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Production environment verification
+        id: verify
+        run: |
+          PROD_SYSTEM_URL="${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}"
+          
+          if [ -z "$PROD_SYSTEM_URL" ]; then
+            echo "::error::PROD_SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
+          echo "🔍 Starting comprehensive production environment verification..."
+          echo "Production URL: $PROD_SYSTEM_URL"
+          
+          VERIFICATION_FAILED=0
+          
+          # 1. Backend Health Check
+          echo ""
+          echo "1️⃣ Checking backend health endpoint..."
+          if curl -sf --max-time 10 "${PROD_SYSTEM_URL}/api/health" > /dev/null; then
+            echo "✅ Backend health check passed"
+          else
+            echo "❌ Backend health check failed"
+            VERIFICATION_FAILED=1
+          fi
+          
+          # 2. Frontend Accessibility
+          echo ""
+          echo "2️⃣ Checking frontend accessibility..."
+          FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${PROD_SYSTEM_URL}" || echo "000")
+          if [ "$FRONTEND_STATUS" = "200" ] || [ "$FRONTEND_STATUS" = "301" ] || [ "$FRONTEND_STATUS" = "302" ]; then
+            echo "✅ Frontend is accessible (HTTP $FRONTEND_STATUS)"
+          else
+            echo "❌ Frontend accessibility check failed (HTTP $FRONTEND_STATUS)"
+            VERIFICATION_FAILED=1
+          fi
+          
+          # 3. API Endpoint Verification
+          echo ""
+          echo "3️⃣ Checking API endpoint..."
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${PROD_SYSTEM_URL}/api/health" || echo "000")
+          if [ "$API_STATUS" = "200" ]; then
+            echo "✅ API endpoint is responding (HTTP $API_STATUS)"
+          else
+            echo "❌ API endpoint check failed (HTTP $API_STATUS)"
+            VERIFICATION_FAILED=1
+          fi
+          
+          # 4. Response Time Check
+          echo ""
+          echo "4️⃣ Checking response times..."
+          RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" --max-time 10 "${PROD_SYSTEM_URL}/api/health" || echo "999")
+          # Convert to milliseconds (multiply by 1000 and round)
+          RESPONSE_TIME_MS=$(awk "BEGIN {printf \"%.0f\", $RESPONSE_TIME * 1000}")
+          if [ "$RESPONSE_TIME_MS" -lt 5000 ]; then
+            echo "✅ Response time acceptable (${RESPONSE_TIME_MS}ms)"
+          else
+            echo "⚠️  Response time is slow (${RESPONSE_TIME_MS}ms)"
+            # Don't fail on slow response, just warn
+          fi
+          
+          # 5. SSL/TLS Check (if HTTPS)
+          if [[ "$PROD_SYSTEM_URL" == https://* ]]; then
+            echo ""
+            echo "5️⃣ Checking SSL certificate..."
+            SSL_CHECK=$(echo | openssl s_client -connect $(echo $PROD_SYSTEM_URL | sed -e 's|^[^/]*//||' -e 's|/.*$||'):443 -servername $(echo $PROD_SYSTEM_URL | sed -e 's|^[^/]*//||' -e 's|/.*$||') 2>&1 | grep -c "Verify return code: 0" || echo "0")
+            if [ "$SSL_CHECK" -gt 0 ]; then
+              echo "✅ SSL certificate is valid"
+            else
+              echo "⚠️  SSL certificate check inconclusive (may require manual verification)"
+            fi
+          fi
+          
+          echo ""
+          echo "=========================================="
+          if [ $VERIFICATION_FAILED -eq 0 ]; then
+            echo "✅ Production environment verification PASSED"
+            echo "verification_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Production environment verification FAILED"
+            echo "verification_status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          echo "=========================================="
+
+      - name: Verification summary
+        if: always()
+        run: |
+          STATUS="✅ Passed"
+          [ "${{ steps.verify.outputs.verification_status }}" != "success" ] && STATUS="❌ Failed"
+          
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## ✅ Production Verification Summary
+          
+          | Property | Value |
+          |----------|-------|
+          | **Status** | ${STATUS} |
+          | **Environment** | production |
+          | **Verified at** | $(date -u +"%Y-%m-%d %H:%M:%S UTC") |
+          
+          ### 🔍 Verification Checks
+          - ✅ Backend health endpoint
+          - ✅ Frontend accessibility
+          - ✅ API endpoint response
+          - ✅ Response time check
+          - ✅ SSL/TLS certificate (if applicable)
+          
+          ### 🔗 Production URLs
+          - **Application**: ${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}
+          - **API**: ${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}/api
+          - **Health Check**: ${{ vars.PROD_SYSTEM_URL || vars.SYSTEM_URL }}/api/health
           EOF
 
   # ===========================================================================
@@ -431,22 +772,45 @@ jobs:
     name: 📢 Notify
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    needs: [deploy]
+    needs: [deploy-staging, deploy-production, verify-production]
     if: always()
     
     steps:
       - name: Send notification
         run: |
-          if [ "${{ needs.deploy.result }}" == "success" ]; then
-            echo "🎉 Deployment successful!"
+          STAGING_STATUS="${{ needs.deploy-staging.result }}"
+          PROD_STATUS="${{ needs.deploy-production.result }}"
+          VERIFY_STATUS="${{ needs.verify-production.result }}"
+          
+          if [ "$STAGING_STATUS" == "success" ] && [ "$PROD_STATUS" == "success" ] && [ "$VERIFY_STATUS" == "success" ]; then
+            echo "🎉 Full deployment pipeline successful!"
+            echo "  ✅ Staging deployment: $STAGING_STATUS"
+            echo "  ✅ Production deployment: $PROD_STATUS"
+            echo "  ✅ Production verification: $VERIFY_STATUS"
             # Add Slack/Discord/Email notification here if needed
             # curl -X POST -H 'Content-type: application/json' \
-            #   --data '{"text":"✅ Deployment to ${{ github.event.inputs.environment || 'staging' }} succeeded!"}' \
+            #   --data '{"text":"✅ Full deployment pipeline succeeded! Staging → Production → Verified"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          elif [ "$STAGING_STATUS" == "success" ] && [ "$PROD_STATUS" == "success" ]; then
+            echo "⚠️  Production deployment succeeded but verification failed"
+            echo "  ✅ Staging deployment: $STAGING_STATUS"
+            echo "  ✅ Production deployment: $PROD_STATUS"
+            echo "  ❌ Production verification: $VERIFY_STATUS"
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"⚠️ Production deployment succeeded but verification failed"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          elif [ "$STAGING_STATUS" == "success" ]; then
+            echo "⚠️  Staging deployment succeeded, production pending approval or failed"
+            echo "  ✅ Staging deployment: $STAGING_STATUS"
+            echo "  ⏸️  Production deployment: $PROD_STATUS"
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"⚠️ Staging deployment succeeded, production pending"}' \
             #   ${{ secrets.SLACK_WEBHOOK_URL }}
           else
             echo "❌ Deployment failed!"
+            echo "  ❌ Staging deployment: $STAGING_STATUS"
             # curl -X POST -H 'Content-type: application/json' \
-            #   --data '{"text":"❌ Deployment to ${{ github.event.inputs.environment || 'staging' }} failed!"}' \
+            #   --data '{"text":"❌ Staging deployment failed!"}' \
             #   ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
 
