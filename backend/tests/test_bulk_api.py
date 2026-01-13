@@ -2,7 +2,7 @@
 
 import pytest
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from app.models.email import Email
 from app.models.thread import Thread
 from app.core.constants import FolderType
@@ -522,7 +522,7 @@ class TestBulkSnooze:
         db_session.commit()
 
         thread_ids = [str(t.id) for t in threads]
-        snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
+        snooze_time = (datetime.now(UTC) + timedelta(days=1)).isoformat()
 
         response = client.post(
             "/api/v1/bulk/snooze",
@@ -552,7 +552,7 @@ class TestBulkSnooze:
         db_session.add(thread)
         db_session.commit()
 
-        snooze_time = (datetime.utcnow() - timedelta(days=1)).isoformat()
+        snooze_time = (datetime.now(UTC) - timedelta(days=1)).isoformat()
 
         response = client.post(
             "/api/v1/bulk/snooze",
@@ -584,7 +584,7 @@ class TestBulkSnooze:
             metadata = ThreadUserMetadata(
                 thread_id=thread.id,
                 user_id=user.id,
-                snooze_until=datetime.utcnow() + timedelta(days=1)
+                snooze_until=datetime.now(UTC) + timedelta(days=1)
             )
             db_session.add(metadata)
         db_session.commit()

@@ -11,7 +11,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_
 from typing import Optional
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 import logging
 
@@ -85,7 +85,7 @@ def create_email(
             owner_id=current_user.id,
             participant_count=len(email_data.recipients) + 1,
             email_count=1,
-            last_email_at=datetime.utcnow(),
+            last_email_at=datetime.now(UTC),
         )
         db.add(thread)
         db.flush()  # Get thread ID
@@ -317,7 +317,7 @@ def list_emails(
             snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
                 ThreadUserMetadata.user_id == current_user.id,
                 ThreadUserMetadata.snooze_until.isnot(None),
-                ThreadUserMetadata.snooze_until > datetime.utcnow()
+                ThreadUserMetadata.snooze_until > datetime.now(UTC)
             ).subquery()
             
             query = query.filter(Email.thread_id.in_(db.query(snoozed_thread_ids.c.thread_id)))
@@ -327,7 +327,7 @@ def list_emails(
             snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
                 ThreadUserMetadata.user_id == current_user.id,
                 ThreadUserMetadata.snooze_until.isnot(None),
-                ThreadUserMetadata.snooze_until > datetime.utcnow()
+                ThreadUserMetadata.snooze_until > datetime.now(UTC)
             ).subquery()
             
             query = query.filter(
@@ -691,7 +691,7 @@ def send_email(
     
     if scheduled_send_at:
         # Explicit scheduled send time provided - override user's undo delay
-        if scheduled_send_at <= datetime.utcnow():
+        if scheduled_send_at <= datetime.now(UTC):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="scheduled_send_at must be in the future"
@@ -726,7 +726,7 @@ def send_email(
         # Queue the email with scheduled send time (undo send enabled)
         from datetime import timedelta
         email.status = EmailStatus.QUEUED.value
-        email.scheduled_send_at = datetime.utcnow() + timedelta(seconds=undo_delay)
+        email.scheduled_send_at = datetime.now(UTC) + timedelta(seconds=undo_delay)
         email.folder = FolderType.SCHEDULED.value
         
         # Update labels: Remove Drafts, add Scheduled
@@ -745,7 +745,7 @@ def send_email(
     
     # Immediate send (undo send disabled)
     email.status = EmailStatus.SENT.value
-    email.sent_at = datetime.utcnow()
+    email.sent_at = datetime.now(UTC)
     email.folder = FolderType.SENT.value
 
     # Update labels: Remove Drafts, add Sent + category
@@ -810,7 +810,7 @@ def cancel_send(
         )
     
     # Check if still within the undo window
-    if email.scheduled_send_at and email.scheduled_send_at <= datetime.utcnow():
+    if email.scheduled_send_at and email.scheduled_send_at <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Undo window has expired. The email has been sent."
@@ -871,7 +871,7 @@ def confirm_send(
     
     # Send immediately
     email.status = EmailStatus.SENT.value
-    email.sent_at = datetime.utcnow()
+    email.sent_at = datetime.now(UTC)
     email.scheduled_send_at = None
     email.folder = FolderType.SENT.value
 
@@ -1058,7 +1058,7 @@ def forward_email(
         owner_id=current_user.id,
         participant_count=len(forward_data.recipients) + 1,
         email_count=1,
-        last_email_at=datetime.utcnow(),
+        last_email_at=datetime.now(UTC),
     )
     
     try:
@@ -1076,7 +1076,7 @@ def forward_email(
             thread_id=thread.id,
             parent_email_id=email_id,
             is_read=True,
-            sent_at=datetime.utcnow(),
+            sent_at=datetime.now(UTC),
         )
         db.add(forward_email_obj)
         db.flush()

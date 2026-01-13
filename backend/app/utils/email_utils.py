@@ -10,7 +10,7 @@ This module provides helper functions for:
 
 import re
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -142,7 +142,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
     can_undo = (
         email.status == EmailStatus.QUEUED.value and
         email.scheduled_send_at and
-        email.scheduled_send_at > datetime.utcnow()
+        email.scheduled_send_at > datetime.now(UTC)
     )
 
     return {
@@ -216,11 +216,12 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
                 is_archived = getattr(metadata, 'is_archived', False)
                 break
 
+    print(email.scheduled_send_at, datetime.now(UTC), email.id)
     # Determine if email can be cancelled (undo send)
     can_undo = (
         email.status == EmailStatus.QUEUED.value and
         email.scheduled_send_at and
-        email.scheduled_send_at > datetime.utcnow()
+        email.scheduled_send_at > datetime.now(UTC)
     )
 
     return {
@@ -311,7 +312,7 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                     category=email.category,
                     sender_id=actual_sender_id,
                     is_read=False,
-                    received_at=datetime.utcnow(),
+                    received_at=datetime.now(UTC),
                     thread_id=email.thread_id,
                 )
                 db.add(received_email)

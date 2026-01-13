@@ -32,8 +32,8 @@ class Label(Base):
     show_in_message_list = Column(Boolean, default=True, nullable=False)
     show_if_unread = Column(Boolean, default=False, nullable=False)
     
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
     owner = relationship("User", foreign_keys=[owner_id], lazy="joined")

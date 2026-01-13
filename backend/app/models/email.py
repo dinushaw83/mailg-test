@@ -28,22 +28,22 @@ class Email(Base):
     category = Column(String(50), default="primary", index=True)
     
     # Snooze functionality
-    snooze_until = Column(DateTime, nullable=True, index=True)  # When email should reappear
+    snooze_until = Column(DateTime(timezone=True), nullable=True, index=True)  # When email should reappear
     
     # Undo send functionality
-    scheduled_send_at = Column(DateTime, nullable=True, index=True)  # When email will actually be sent
-    
+    scheduled_send_at = Column(DateTime(timezone=True), nullable=True, index=True)  # When email will actually be sent
+
     # Foreign keys
     sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id"), index=True)
     parent_email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id"))  # For replies/forwards
     
     # Timestamps
-    sent_at = Column(DateTime)
-    received_at = Column(DateTime)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-    
+    sent_at = Column(DateTime(timezone=True))
+    received_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
     # Relationships for eager loading (JOIN queries)
     sender = relationship("User", foreign_keys=[sender_id], lazy="joined")
     thread = relationship("Thread", back_populates="emails", lazy="select")

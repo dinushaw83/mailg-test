@@ -6,7 +6,7 @@ This module provides:
 - Thread metadata management (snooze, archive, important)
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_
@@ -258,7 +258,7 @@ def snooze_thread(
         )
     
     # Validate snooze_until is in the future
-    if snooze_data.snooze_until <= datetime.utcnow():
+    if snooze_data.snooze_until <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Snooze time must be in the future"
