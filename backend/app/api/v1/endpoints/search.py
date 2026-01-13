@@ -12,7 +12,6 @@ from sqlalchemy import func, or_, and_
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
-import time
 import logging
 
 from app.db.session import get_db
@@ -30,17 +29,19 @@ from app.schemas.search import (
     SearchSuggestion, SearchSuggestionsResponse,
     SavedSearchCreate, SavedSearchResponse
 )
+from app.schemas.email import EmailListResponse
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.utils.email_utils import get_label_hierarchy_name, get_snippet
+from app.utils.email_utils import get_label_hierarchy_name, format_email_list_response
 from app.utils.search_utils import parse_search_query
+from app.utils.thread_metadata_utils import get_user_important_thread_ids
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/search", response_model=SearchResponse, dependencies=[Depends(authorized())])
+@router.get("/search", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
 def search_emails(
     q: Optional[str] = Query(None, description="Search query with operators"),
     from_email: Optional[str] = Query(None, alias="from", description="Filter by sender"),
@@ -77,7 +78,6 @@ def search_emails(
     
     These can be combined: q="from:john subject:report has:attachment"
     """
-    start_time = time.time()
     current_user = auth.user
     
     # Parse Gmail-style operators from q parameter
@@ -119,6 +119,7 @@ def search_emails(
     query = db.query(Email).options(
         joinedload(Email.sender),
         joinedload(Email.thread).selectinload(Thread.labels),  # Labels are on threads, not emails
+        joinedload(Email.thread).selectinload(Thread.user_metadata),  # Thread metadata for is_important, snooze, etc.
         selectinload(Email.attachments),
     ).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
@@ -189,7 +190,19 @@ def search_emails(
         query = query.filter(Email.is_starred == is_starred)
     
     if is_important is not None:
-        query = query.filter(Email.is_important == is_important)
+        if is_important:
+            # Filter for important threads - get thread IDs marked as important by this user
+            important_thread_ids = get_user_important_thread_ids(db, current_user.id)
+            query = query.filter(Email.thread_id.in_(important_thread_ids))
+        else:
+            # Filter for non-important threads - exclude threads marked as important
+            important_thread_ids = get_user_important_thread_ids(db, current_user.id)
+            query = query.filter(
+                or_(
+                    Email.thread_id.is_(None),
+                    ~Email.thread_id.in_(important_thread_ids)
+                )
+            )
     
     if has_attachment:
         att_subq = db.query(Attachment.email_id).distinct().subquery()
@@ -209,10 +222,64 @@ def search_emails(
         except ValueError:
             pass
     
-    # Get total count using subquery for cross-database compatibility
-    # (DISTINCT ON is PostgreSQL-specific)
-    distinct_ids = query.with_entities(Email.id).distinct().subquery()
-    total = db.query(func.count()).select_from(distinct_ids).scalar()
+    # First, get distinct email IDs that match the filters
+    filtered_email_ids = [eid[0] for eid in query.with_entities(Email.id).distinct().all()]
+    
+    if not filtered_email_ids:
+        # No matching emails - return empty result
+        return PaginatedListResponse[EmailListResponse](
+            results=[],
+            total=0,
+            page=page,
+            page_size=page_size,
+            total_pages=0,
+        )
+    
+    # Apply threaded grouping - return only latest email from each thread
+    # Use sent_at for sorting, fallback to created_at if null
+    sort_date = func.coalesce(Email.sent_at, Email.created_at)
+    
+    # Step 1: Get max dates per thread for the filtered emails
+    max_dates = db.query(
+        Email.thread_id,
+        func.max(sort_date).label("max_date")
+    ).filter(
+        Email.id.in_(filtered_email_ids),
+        Email.thread_id.isnot(None)
+    ).group_by(Email.thread_id).subquery()
+    
+    # Step 2: Get email IDs that are the latest in their thread
+    latest_email_ids_subq = db.query(Email.id).join(
+        max_dates,
+        and_(
+            Email.thread_id == max_dates.c.thread_id,
+            sort_date == max_dates.c.max_date
+        )
+    ).filter(
+        Email.id.in_(filtered_email_ids)
+    ).subquery()
+    
+    # Step 3: Build final query - latest email per thread OR emails without thread_id
+    final_query = db.query(Email).options(
+        joinedload(Email.sender),
+        selectinload(Email.recipients),
+        selectinload(Email.attachments),
+        joinedload(Email.thread).selectinload(Thread.labels),
+        joinedload(Email.thread).selectinload(Thread.user_metadata),
+    ).filter(
+        Email.id.in_(filtered_email_ids),
+        or_(
+            Email.id.in_(db.query(latest_email_ids_subq.c.id)),
+            Email.thread_id.is_(None)
+        )
+    )
+    
+    # Get total count
+    total = final_query.count()
+    
+    # Calculate pagination
+    total_pages = (total + page_size - 1) // page_size if total > 0 else 0
+    offset = (page - 1) * page_size
     
     # Apply sorting
     if sort_by == "subject":
@@ -220,76 +287,51 @@ def search_emails(
     elif sort_by == "sender":
         order_col = Email.sender_id
     else:
-        order_col = Email.created_at
+        order_col = func.coalesce(Email.sent_at, Email.created_at)
     
     if sort_order == "asc":
-        query = query.order_by(order_col.asc())
+        final_query = final_query.order_by(order_col.asc())
     else:
-        query = query.order_by(order_col.desc())
+        final_query = final_query.order_by(order_col.desc())
     
-    # Apply pagination - use distinct() for cross-database compatibility
-    offset = (page - 1) * page_size
-    # Get distinct email IDs first, then fetch full emails
-    email_ids_query = query.with_entities(Email.id).distinct().offset(offset).limit(page_size)
-    email_ids = [eid[0] for eid in email_ids_query.all()]
+    # Get paginated results
+    emails = final_query.offset(offset).limit(page_size).all()
     
-    # Fetch full email objects for the distinct IDs
-    if email_ids:
-        emails = db.query(Email).options(
-            joinedload(Email.sender),
-            selectinload(Email.recipients),
-            selectinload(Email.attachments),
-            joinedload(Email.thread).selectinload(Thread.labels),
-        ).filter(Email.id.in_(email_ids)).all()
+    # Get thread email counts for all threads in the result set
+    thread_ids = [email.thread_id for email in emails if email.thread_id]
+    thread_counts = {}
+    if thread_ids:
+        # Query count of emails per thread (accessible to this user)
+        count_results = db.query(
+            Email.thread_id,
+            func.count(Email.id).label('count')
+        ).filter(
+            Email.thread_id.in_(thread_ids),
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        ).group_by(Email.thread_id).all()
         
-        # Preserve order from original query
-        email_map = {e.id: e for e in emails}
-        emails = [email_map[eid] for eid in email_ids if eid in email_map]
-    else:
-        emails = []
+        thread_counts = {tid: cnt for tid, cnt in count_results}
     
-    # Format results
-    results = []
-    for email in emails:
-        recipients = [r.recipient_email for r in email.recipients] if hasattr(email, 'recipients') else []
-        # Labels are on threads - filter by user ownership for user-specific isolation
-        labels = []
-        if email.thread and email.thread.labels:
-            labels = [get_label_hierarchy_name(l) for l in email.thread.labels 
-                      if l.owner_id == current_user.id]
-        attachments = [a for a in email.attachments] if hasattr(email, 'attachments') else []
-        
-        results.append({
-            "id": email.id,
-            "subject": email.subject,
-            "snippet": get_snippet(email.body),
-            "sender_email": email.sender.email if email.sender else "",
-            "sender_name": email.sender.name if email.sender else None,
-            "recipients": recipients,
-            "folder": email.folder or "inbox",
-            "labels": labels,
-            "is_read": email.is_read,
-            "is_starred": email.is_starred,
-            "has_attachment": len(attachments) > 0,
-            "attachment_count": len(attachments),
-            "sent_at": email.sent_at,
-            "created_at": email.created_at,
-            "highlighted_subject": None,
-            "highlighted_snippet": None,
-        })
+    # Format response with thread counts and user_id for label filtering
+    emails_data = [
+        format_email_list_response(email, thread_counts.get(email.thread_id), current_user.id)
+        for email in emails
+    ]
     
-    execution_time_ms = int((time.time() - start_time) * 1000)
-    total_pages = (total + page_size - 1) // page_size if total > 0 else 0
-    
-    return {
-        "results": results,
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-        "total_pages": total_pages,
-        "query": q or "",
-        "execution_time_ms": execution_time_ms,
-    }
+    return PaginatedListResponse[EmailListResponse](
+        results=emails_data,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )
 
 
 @router.get("/search/suggestions", response_model=SearchSuggestionsResponse, dependencies=[Depends(authorized())])
