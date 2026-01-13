@@ -99,6 +99,8 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - VITE_RUN_MODE=${VITE_RUN_MODE:-localstorage}
+      # Backend API URL for dynamic configuration
+      - BACKEND_API_URL=${BACKEND_API_URL:-http://localhost:8766/api}
       # OpenTelemetry configuration
       - VITE_ENABLE_INSTRUMENTATION=${VITE_ENABLE_INSTRUMENTATION:-false}
       - VITE_OTEL_COLLECTOR_URL=${VITE_OTEL_COLLECTOR_URL:-http://localhost:4318}
