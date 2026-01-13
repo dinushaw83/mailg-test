@@ -76,8 +76,6 @@ export const Labels = ({
 
   const handleApplyLabels = useCallback(() => {
     const ids = [...selectedIds]; // Capture IDs before any action
-    console.log("📋 handleApplyLabels - selectedIds:", ids);
-    console.log("📋 handleApplyLabels - emails context:", { totalEmails: emails.length, emails });
 
     const labelsToAdd = [];
     const labelsToRemove = [];
@@ -91,14 +89,10 @@ export const Labels = ({
       // "indeterminate" means leave it as-is
     }
 
-    console.log("📋 Labels to modify:", { labelsToAdd, labelsToRemove });
-    console.log("📋 Received providedThreadIds:", providedThreadIds, "type:", typeof providedThreadIds);
-
     // Use provided threadIds or extract from emails
     let threadIds;
     if (providedThreadIds && Array.isArray(providedThreadIds) && providedThreadIds.length > 0) {
       threadIds = providedThreadIds;
-      console.log("📋 Using provided threadIds:", threadIds);
     } else {
       // Extract thread IDs from selected emails (fallback)
       threadIds = [
@@ -109,7 +103,6 @@ export const Labels = ({
             .filter(Boolean)
         ),
       ];
-      console.log("📋 Extracted threadIds from emails:", threadIds);
     }
 
     const threadIdsForUndo = threadIds; // Capture for closure

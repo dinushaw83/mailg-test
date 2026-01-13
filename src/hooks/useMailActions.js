@@ -196,8 +196,6 @@ export default function useMailActions() {
 
   const modifyLabels = useCallback(
     (ids, { add = [], remove = [] }, threadIds = null) => {
-      console.log("🏷️ modifyLabels START:", { ids, add, remove, threadIds });
-
       // Transform composite keys to UUIDs for backend sync
       const transformToIds = (labelKeys) => {
         return labelKeys
@@ -219,7 +217,6 @@ export default function useMailActions() {
 
       const labelIdsToAdd = transformToIds(add);
       const labelIdsToRemove = transformToIds(remove);
-      console.log("🔄 Transformed:", { labelIdsToAdd, labelIdsToRemove });
 
       // Store previous state for rollback
       const previousState = new Map();
@@ -246,7 +243,6 @@ export default function useMailActions() {
       const backendLabelsToRemove = labelIdsToRemove.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
-      console.log("🎯 Backend labels:", { backendLabelsToAdd, backendLabelsToRemove });
 
       if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
         // Use provided threadIds or extract from emails
@@ -254,11 +250,9 @@ export default function useMailActions() {
 
         if (threadIds && threadIds.length > 0) {
           // Thread IDs explicitly provided
-          console.log("✅ Using provided threadIds:", threadIds);
           threadIdsToUse = Array.isArray(threadIds) ? threadIds : [threadIds];
         } else {
           // Try to extract from emails context
-          console.log("🔍 Extracting threadIds from emails:", { totalEmails: emails.length, ids });
           threadIdsToUse = [
             ...new Set(
               emails
@@ -267,16 +261,9 @@ export default function useMailActions() {
                 .filter(Boolean)
             ),
           ];
-          console.log("📧 Extracted threadIds:", threadIdsToUse);
         }
 
-        console.log("🚀 Final threadIdsToUse:", threadIdsToUse);
-
         if (threadIdsToUse.length > 0) {
-          console.log("✅ DISPATCHING bulkUpdateLabelsThunk with:", {
-            threadIds: threadIdsToUse,
-            labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
-          });
           // Use bulk update endpoint with thread IDs
           dispatch(
             bulkUpdateLabelsThunk({
@@ -296,11 +283,7 @@ export default function useMailActions() {
               })
             );
           });
-        } else {
-          console.error("❌ No threadIds available - cannot make API call");
         }
-      } else {
-        console.warn("⚠️ No backend labels to sync");
       }
     },
     [updateByIds, dispatch, keyToLabelIdMap, emails, setEmails]

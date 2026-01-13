@@ -233,9 +233,7 @@ const MailActions = ({ thread }) => {
 
   // Extract thread IDs from threadEmails for label operations
   const threadIdsForLabels = useMemo(() => {
-    console.log("🔍 ActionBar threadEmails:", threadEmails);
     const ids = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
-    console.log("🔍 Extracted threadIds:", ids);
     return ids;
   }, [threadEmails]);
 
