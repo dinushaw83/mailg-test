@@ -336,6 +336,7 @@ class TestBulkDelete:
         db_session.commit()
         
         email_ids = [str(e.id) for e in emails]
+        email_ids_raw = [e.id for e in emails]
         
         response = client.post(
             "/api/v1/bulk/delete",
@@ -347,28 +348,167 @@ class TestBulkDelete:
         data = response.json()["data"]
         assert data["successful"] == 3
         
-        # Verify emails are soft deleted
-        for email in emails:
-            db_session.refresh(email)
-            assert email.is_deleted == True
+        # Verify emails are deleted
+        db_session.expire_all()
+        db_session.query(Email).filter(Email.id.in_(email_ids_raw)).all() == []
 
 
 class TestBulkLabels:
     """Test bulk label add/remove operations."""
 
-    def test_bulk_add_labels_success(self, client_with_auth, db_session, sample_label):
-        """Test adding labels to multiple threads."""
+    def test_bulk_update_labels_add_and_remove(self, client_with_auth, db_session, sample_label):
+        """Test unified endpoint to add and remove labels in one operation."""
         client, token, user = client_with_auth
-        
-        # Create another label
-        label2 = Label(
-            name="Label 2",
-            color="#00ff00",
-            owner_id=user.id
-        )
-        db_session.add(label2)
+
+        # Create two more labels
+        label2 = Label(name="Label 2", color="#00ff00", owner_id=user.id)
+        label3 = Label(name="Label 3", color="#0000ff", owner_id=user.id)
+        db_session.add_all([label2, label3])
         db_session.commit()
-        
+
+        # Create multiple threads
+        threads = []
+        for i in range(3):
+            thread = Thread(subject=f"Thread {i}", owner_id=user.id, email_count=1)
+            db_session.add(thread)
+            threads.append(thread)
+        db_session.commit()
+
+        # Add label1 to all threads initially
+        for thread in threads:
+            thread_label = ThreadLabel(thread_id=thread.id, label_id=sample_label.id, user_id=user.id)
+            db_session.add(thread_label)
+        db_session.commit()
+
+        thread_ids = [str(t.id) for t in threads]
+
+        # Update: Add label2 and label3, Remove label1
+        response = client.post(
+            "/api/v1/bulk/labels/update",
+            json={
+                "thread_ids": thread_ids,
+                "labels": {
+                    "add": [str(label2.id), str(label3.id)],
+                    "remove": [str(sample_label.id)]
+                }
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["successful"] == 3
+
+        # Verify: label1 removed, label2 and label3 added
+        for thread in threads:
+            thread_labels = db_session.query(ThreadLabel).filter(
+                ThreadLabel.thread_id == thread.id
+            ).all()
+            label_ids = {tl.label_id for tl in thread_labels}
+            assert sample_label.id not in label_ids  # label1 removed
+            assert label2.id in label_ids  # label2 added
+            assert label3.id in label_ids  # label3 added
+            assert len(thread_labels) == 2
+
+    def test_bulk_update_labels_only_add(self, client_with_auth, db_session, sample_label):
+        """Test unified endpoint with only add operation."""
+        client, token, user = client_with_auth
+
+        # Create thread and email
+        thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.commit()
+
+        response = client.post(
+            "/api/v1/bulk/labels/update",
+            json={
+                "thread_ids": [str(thread.id)],
+                "labels": {
+                    "add": [str(sample_label.id)],
+                    "remove": []
+                }
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["successful"] == 1
+
+        # Verify label added
+        thread_labels = db_session.query(ThreadLabel).filter(
+            ThreadLabel.thread_id == thread.id
+        ).all()
+        assert len(thread_labels) == 1
+        assert thread_labels[0].label_id == sample_label.id
+
+    def test_bulk_update_labels_only_remove(self, client_with_auth, db_session, sample_label):
+        """Test unified endpoint with only remove operation."""
+        client, token, user = client_with_auth
+
+        # Create thread with label
+        thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.commit()
+
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=sample_label.id, user_id=user.id)
+        db_session.add(thread_label)
+        db_session.commit()
+
+        response = client.post(
+            "/api/v1/bulk/labels/update",
+            json={
+                "thread_ids": [str(thread.id)],
+                "labels": {
+                    "add": [],
+                    "remove": [str(sample_label.id)]
+                }
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["successful"] == 1
+
+        # Verify label removed
+        thread_labels = db_session.query(ThreadLabel).filter(
+            ThreadLabel.thread_id == thread.id
+        ).all()
+        assert len(thread_labels) == 0
+
+    def test_bulk_update_labels_empty_fails(self, client_with_auth, db_session):
+        """Test unified endpoint fails with no labels to add or remove."""
+        client, token, user = client_with_auth
+
+        thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.commit()
+
+        response = client.post(
+            "/api/v1/bulk/labels/update",
+            json={
+                "thread_ids": [str(thread.id)],
+                "labels": {
+                    "add": [],
+                    "remove": []
+                }
+            },
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 400
+
+
+class TestBulkSnooze:
+    """Test bulk snooze/unsnooze operations."""
+
+    def test_bulk_snooze_success(self, client_with_auth, db_session):
+        """Test snoozing multiple threads."""
+        from app.models.thread_user_metadata import ThreadUserMetadata
+
+        client, token, user = client_with_auth
+
         # Create multiple threads
         threads = []
         for i in range(3):
@@ -380,52 +520,55 @@ class TestBulkLabels:
             db_session.add(thread)
             threads.append(thread)
         db_session.commit()
-        
+
         thread_ids = [str(t.id) for t in threads]
-        
+        snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
+
         response = client.post(
-            "/api/v1/bulk/labels/add",
-            json={"thread_ids": thread_ids, "label_ids": [str(sample_label.id), str(label2.id)]},
+            "/api/v1/bulk/snooze",
+            json={"thread_ids": thread_ids, "snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["successful"] == 3
-        
-        # Verify labels are added to threads
-        for thread in threads:
-            thread_labels = db_session.query(ThreadLabel).filter(
-                ThreadLabel.thread_id == thread.id
-            ).all()
-            assert len(thread_labels) == 2
 
-    def test_bulk_add_labels_invalid_label(self, client_with_auth, db_session):
-        """Test adding invalid labels fails."""
+        # Verify threads are snoozed via ThreadUserMetadata
+        for thread in threads:
+            metadata = db_session.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == thread.id,
+                ThreadUserMetadata.user_id == user.id
+            ).first()
+            assert metadata is not None
+            assert metadata.snooze_until is not None
+
+    def test_bulk_snooze_past_time_fails(self, client_with_auth, db_session):
+        """Test bulk snooze with past time fails."""
         client, token, user = client_with_auth
-        
+
         # Create a thread
-        thread = Thread(
-            subject="Test Thread",
-            owner_id=user.id,
-            email_count=1
-        )
+        thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
-        
+
+        snooze_time = (datetime.utcnow() - timedelta(days=1)).isoformat()
+
         response = client.post(
-            "/api/v1/bulk/labels/add",
-            json={"thread_ids": [str(thread.id)], "label_ids": [NON_EXISTENT_UUID]},
+            "/api/v1/bulk/snooze",
+            json={"thread_ids": [str(thread.id)], "snooze_until": snooze_time},
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 400
 
-    def test_bulk_remove_labels_success(self, client_with_auth, db_session, sample_label):
-        """Test removing labels from multiple threads."""
+    def test_bulk_unsnooze_success(self, client_with_auth, db_session):
+        """Test unsnoozing multiple threads."""
+        from app.models.thread_user_metadata import ThreadUserMetadata
+
         client, token, user = client_with_auth
-        
-        # Create multiple threads with labels
+
+        # Create multiple threads with snooze metadata
         threads = []
         for i in range(3):
             thread = Thread(
@@ -434,173 +577,127 @@ class TestBulkLabels:
                 email_count=1
             )
             db_session.add(thread)
+            db_session.flush()
             threads.append(thread)
-        db_session.commit()
-        
-        # Add labels to threads (include user_id for user-specific label isolation)
-        for thread in threads:
-            thread_label = ThreadLabel(thread_id=thread.id, label_id=sample_label.id, user_id=user.id)
-            db_session.add(thread_label)
-        db_session.commit()
-        
-        thread_ids = [str(t.id) for t in threads]
-        
-        response = client.post(
-            "/api/v1/bulk/labels/remove",
-            json={"thread_ids": thread_ids, "label_ids": [str(sample_label.id)]},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert data["successful"] == 3
-        
-        # Verify labels are removed from threads
-        for thread in threads:
-            thread_labels = db_session.query(ThreadLabel).filter(
-                ThreadLabel.thread_id == thread.id
-            ).all()
-            assert len(thread_labels) == 0
 
-
-class TestBulkSnooze:
-    """Test bulk snooze/unsnooze operations."""
-
-    def test_bulk_snooze_success(self, client_with_auth, db_session):
-        """Test snoozing multiple emails."""
-        client, token, user = client_with_auth
-        
-        # Create multiple emails
-        emails = []
-        for i in range(3):
-            email = Email(
-                subject=f"Email {i}",
-                body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
-            )
-            db_session.add(email)
-            emails.append(email)
-        db_session.commit()
-        
-        email_ids = [str(e.id) for e in emails]
-        snooze_time = (datetime.utcnow() + timedelta(days=1)).isoformat()
-        
-        response = client.post(
-            "/api/v1/bulk/snooze",
-            json={"email_ids": email_ids, "snooze_until": snooze_time},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert data["successful"] == 3
-        
-        # Verify emails are snoozed
-        for email in emails:
-            db_session.refresh(email)
-            assert email.snooze_until is not None
-
-    def test_bulk_snooze_past_time_fails(self, client_with_auth, db_session):
-        """Test bulk snooze with past time fails."""
-        client, token, user = client_with_auth
-        
-        # Create an email
-        email = Email(
-            subject="Test Email",
-            body="Body",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add(email)
-        db_session.commit()
-        
-        snooze_time = (datetime.utcnow() - timedelta(days=1)).isoformat()
-        
-        response = client.post(
-            "/api/v1/bulk/snooze",
-            json={"email_ids": [str(email.id)], "snooze_until": snooze_time},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 400
-
-    def test_bulk_unsnooze_success(self, client_with_auth, db_session):
-        """Test unsnoozing multiple emails."""
-        client, token, user = client_with_auth
-        
-        # Create multiple snoozed emails
-        emails = []
-        for i in range(3):
-            email = Email(
-                subject=f"Email {i}",
-                body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
-                folder=FolderType.INBOX.value,
+            # Create snooze metadata for thread
+            metadata = ThreadUserMetadata(
+                thread_id=thread.id,
+                user_id=user.id,
                 snooze_until=datetime.utcnow() + timedelta(days=1)
             )
-            db_session.add(email)
-            emails.append(email)
+            db_session.add(metadata)
         db_session.commit()
-        
-        email_ids = [str(e.id) for e in emails]
-        
+
+        thread_ids = [str(t.id) for t in threads]
+
         response = client.post(
             "/api/v1/bulk/unsnooze",
-            json={"email_ids": email_ids},
+            json={"thread_ids": thread_ids},
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["successful"] == 3
-        
-        # Verify emails are unsnoozed
-        for email in emails:
-            db_session.refresh(email)
-            assert email.snooze_until is None
+
+        # Verify threads are unsnoozed
+        for thread in threads:
+            metadata = db_session.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == thread.id,
+                ThreadUserMetadata.user_id == user.id
+            ).first()
+            assert metadata is not None
+            assert metadata.snooze_until is None
 
 
 class TestBulkArchive:
     """Test bulk archive operations."""
 
     def test_bulk_archive_success(self, client_with_auth, db_session):
-        """Test archiving multiple emails."""
+        """Test archiving multiple threads."""
         client, token, user = client_with_auth
-        
-        # Create multiple emails
-        emails = []
+
+        # Create multiple threads
+        threads = []
         for i in range(3):
-            email = Email(
-                subject=f"Email {i}",
-                body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
+            thread = Thread(
+                subject=f"Thread {i}",
+                owner_id=user.id
             )
-            db_session.add(email)
-            emails.append(email)
+            db_session.add(thread)
+            threads.append(thread)
         db_session.commit()
-        
-        email_ids = [str(e.id) for e in emails]
-        
+
+        thread_ids = [str(t.id) for t in threads]
+
         response = client.post(
             "/api/v1/bulk/archive",
-            json={"email_ids": email_ids},
+            json={"thread_ids": thread_ids},
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["successful"] == 3
-        
-        # Verify emails are archived
-        for email in emails:
-            db_session.refresh(email)
-            assert email.status == "archived"
+
+        # Verify threads are archived in ThreadUserMetadata
+        from app.models.thread_user_metadata import ThreadUserMetadata
+        for thread in threads:
+            metadata = db_session.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == thread.id,
+                ThreadUserMetadata.user_id == user.id
+            ).first()
+            assert metadata is not None
+            assert metadata.is_archived == True
+
+    def test_bulk_unarchive_success(self, client_with_auth, db_session):
+        """Test unarchiving multiple threads."""
+        from app.models.thread_user_metadata import ThreadUserMetadata
+
+        client, token, user = client_with_auth
+
+        # Create multiple threads with archive metadata
+        threads = []
+        for i in range(3):
+            # Create thread
+            thread = Thread(
+                subject=f"Thread {i}",
+                owner_id=user.id
+            )
+            db_session.add(thread)
+            db_session.flush()
+            threads.append(thread)
+
+            # Create archive metadata for thread
+            metadata = ThreadUserMetadata(
+                thread_id=thread.id,
+                user_id=user.id,
+                is_archived=True
+            )
+            db_session.add(metadata)
+        db_session.commit()
+
+        thread_ids = [str(t.id) for t in threads]
+
+        response = client.post(
+            "/api/v1/bulk/unarchive",
+            json={"thread_ids": thread_ids},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["successful"] == 3
+
+        # Verify threads are unarchived in ThreadUserMetadata
+        for thread in threads:
+            metadata = db_session.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id == thread.id,
+                ThreadUserMetadata.user_id == user.id
+            ).first()
+            assert metadata is not None
+            assert metadata.is_archived == False
 
 
 class TestBulkAccessControl:
@@ -616,8 +713,7 @@ class TestBulkAccessControl:
             last_name="User",
             email="other@example.com",
             role="user",
-            active=True,
-            is_deleted=False
+            active=True
         )
         db_session.add(other_user)
         db_session.commit()

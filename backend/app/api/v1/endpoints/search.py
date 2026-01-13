@@ -10,9 +10,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import UUID
-import re
 import time
 import logging
 
@@ -34,125 +33,11 @@ from app.schemas.search import (
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
+from app.utils.email_utils import get_label_hierarchy_name, get_snippet
+from app.utils.search_utils import parse_search_query
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
-
-
-def get_label_hierarchy_name(label) -> str:
-    """Build full hierarchical name for a label (e.g., 'grand/parent/child').
-    
-    Traverses up the parent chain to construct the full path.
-    """
-    parts = []
-    current = label
-    while current:
-        parts.append(current.name)
-        current = current.parent
-    # Reverse to get grand -> parent -> child order
-    parts.reverse()
-    return "/".join(parts)
-
-
-def parse_search_query(query: str) -> dict:
-    """Parse Gmail-style search operators from query string.
-    
-    Examples:
-        "from:john@example.com subject:meeting" ->
-        {"from_email": "john@example.com", "subject": "meeting"}
-        
-        "is:starred has:attachment report" ->
-        {"is_starred": True, "has_attachment": True, "text": "report"}
-    """
-    operators = {}
-    remaining_text = []
-    
-    # Pattern definitions
-    patterns = [
-        (r'from:(\S+)', 'from_email'),
-        (r'to:(\S+)', 'to_email'),
-        (r'cc:(\S+)', 'cc_email'),
-        (r'subject:("[^"]+"|\'[^\']+\'|\S+)', 'subject'),
-        (r'has:attachment', ('has_attachment', True)),
-        (r'has:star', ('is_starred', True)),
-        (r'is:read', ('is_read', True)),
-        (r'is:unread', ('is_read', False)),
-        (r'is:starred', ('is_starred', True)),
-        (r'is:important', ('is_important', True)),
-        (r'in:(\w+)', 'folder_type'),
-        (r'label:(\S+)', 'label_name'),
-        (r'before:(\d{4}-\d{2}-\d{2})', 'date_to'),
-        (r'after:(\d{4}-\d{2}-\d{2})', 'date_from'),
-        (r'newer_than:(\d+[dmyw])', 'newer_than'),
-        (r'older_than:(\d+[dmyw])', 'older_than'),
-    ]
-    
-    query_copy = query
-    
-    for pattern, key in patterns:
-        if isinstance(key, tuple):
-            # Boolean pattern (no capture group)
-            if re.search(pattern, query_copy, re.IGNORECASE):
-                operators[key[0]] = key[1]
-                query_copy = re.sub(pattern, '', query_copy, flags=re.IGNORECASE)
-        else:
-            # Value pattern (with capture group)
-            match = re.search(pattern, query_copy, re.IGNORECASE)
-            if match:
-                value = match.group(1)
-                # Remove quotes if present
-                if value.startswith('"') or value.startswith("'"):
-                    value = value[1:-1]
-                operators[key] = value
-                query_copy = re.sub(pattern, '', query_copy, flags=re.IGNORECASE)
-    
-    # Handle relative date filters
-    if 'newer_than' in operators:
-        operators['date_from'] = parse_relative_date(operators.pop('newer_than'))
-    if 'older_than' in operators:
-        operators['date_to'] = parse_relative_date(operators.pop('older_than'))
-    
-    # Remaining text is the search query
-    remaining = query_copy.strip()
-    if remaining:
-        operators['text'] = remaining
-    
-    return operators
-
-
-def parse_relative_date(relative: str) -> datetime:
-    """Parse relative date string like '7d', '1m', '1y'."""
-    match = re.match(r'(\d+)([dmyw])', relative)
-    if not match:
-        return None
-    
-    value = int(match.group(1))
-    unit = match.group(2)
-    
-    now = datetime.utcnow()
-    if unit == 'd':
-        return now - timedelta(days=value)
-    elif unit == 'm':
-        return now - timedelta(days=value * 30)
-    elif unit == 'w':
-        return now - timedelta(weeks=value)
-    elif unit == 'y':
-        return now - timedelta(days=value * 365)
-    
-    return now
-
-
-def get_snippet(body: Optional[str], max_length: int = 200) -> str:
-    """Extract snippet from email body."""
-    if not body:
-        return ""
-    # Strip HTML if present (basic)
-    text = body.replace("<br>", " ").replace("<br/>", " ").replace("<p>", " ").replace("</p>", " ")
-    text = re.sub(r'<[^>]+>', '', text)
-    text = ' '.join(text.split())
-    if len(text) > max_length:
-        return text[:max_length] + "..."
-    return text
 
 
 @router.get("/search", response_model=SearchResponse, dependencies=[Depends(authorized())])
@@ -238,7 +123,6 @@ def search_emails(
     ).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
     ).filter(
-        Email.is_deleted == False,
         or_(
             Email.sender_id == current_user.id,
             EmailRecipient.recipient_id == current_user.id
@@ -288,8 +172,7 @@ def search_emails(
     if label_name:
         label_subq = db.query(Label.id).filter(
             Label.owner_id == current_user.id,
-            Label.name.ilike(f"%{label_name}%"),
-            Label.is_deleted == False
+            Label.name.ilike(f"%{label_name}%")
         ).subquery()
         # Labels are user-specific on shared threads - filter by user_id
         query = query.join(Thread, Email.thread_id == Thread.id).join(
@@ -309,9 +192,7 @@ def search_emails(
         query = query.filter(Email.is_important == is_important)
     
     if has_attachment:
-        att_subq = db.query(Attachment.email_id).filter(
-            Attachment.is_deleted == False
-        ).distinct().subquery()
+        att_subq = db.query(Attachment.email_id).distinct().subquery()
         query = query.filter(Email.id.in_(att_subq))
     
     if date_from:
@@ -328,8 +209,10 @@ def search_emails(
         except ValueError:
             pass
     
-    # Get total count
-    total = query.distinct(Email.id).count()
+    # Get total count using subquery for cross-database compatibility
+    # (DISTINCT ON is PostgreSQL-specific)
+    distinct_ids = query.with_entities(Email.id).distinct().subquery()
+    total = db.query(func.count()).select_from(distinct_ids).scalar()
     
     # Apply sorting
     if sort_by == "subject":
@@ -344,9 +227,26 @@ def search_emails(
     else:
         query = query.order_by(order_col.desc())
     
-    # Apply pagination
+    # Apply pagination - use distinct() for cross-database compatibility
     offset = (page - 1) * page_size
-    emails = query.distinct(Email.id).offset(offset).limit(page_size).all()
+    # Get distinct email IDs first, then fetch full emails
+    email_ids_query = query.with_entities(Email.id).distinct().offset(offset).limit(page_size)
+    email_ids = [eid[0] for eid in email_ids_query.all()]
+    
+    # Fetch full email objects for the distinct IDs
+    if email_ids:
+        emails = db.query(Email).options(
+            joinedload(Email.sender),
+            selectinload(Email.recipients),
+            selectinload(Email.attachments),
+            joinedload(Email.thread).selectinload(Thread.labels),
+        ).filter(Email.id.in_(email_ids)).all()
+        
+        # Preserve order from original query
+        email_map = {e.id: e for e in emails}
+        emails = [email_map[eid] for eid in email_ids if eid in email_map]
+    else:
+        emails = []
     
     # Format results
     results = []
@@ -356,8 +256,8 @@ def search_emails(
         labels = []
         if email.thread and email.thread.labels:
             labels = [get_label_hierarchy_name(l) for l in email.thread.labels 
-                      if not l.is_deleted and l.owner_id == current_user.id]
-        attachments = [a for a in email.attachments if not a.is_deleted]
+                      if l.owner_id == current_user.id]
+        attachments = [a for a in email.attachments] if hasattr(email, 'attachments') else []
         
         results.append({
             "id": email.id,
@@ -421,7 +321,6 @@ def get_search_suggestions(
         partial = q.split(":", 1)[1] if ":" in q else ""
         # Get contacts from emails
         contacts = db.query(User.email, User.first_name, User.last_name).filter(
-            User.is_deleted == False,
             or_(
                 User.email.ilike(f"%{partial}%"),
                 User.first_name.ilike(f"%{partial}%"),
@@ -438,7 +337,6 @@ def get_search_suggestions(
         partial = q.split(":", 1)[1] if ":" in q else ""
         labels = db.query(Label).filter(
             Label.owner_id == current_user.id,
-            Label.is_deleted == False,
             Label.name.ilike(f"%{partial}%")
         ).limit(limit).all()
         
@@ -472,8 +370,7 @@ def get_search_suggestions(
         
         # Get recent searches
         recent = db.query(SavedSearch).filter(
-            SavedSearch.owner_id == current_user.id,
-            SavedSearch.is_deleted == False
+            SavedSearch.owner_id == current_user.id
         ).order_by(SavedSearch.last_used_at.desc().nulls_last()).limit(5).all()
         
         suggestions["recent_searches"] = [s.query for s in recent]
@@ -530,8 +427,7 @@ def list_saved_searches(
     current_user = auth.user
     
     searches = db.query(SavedSearch).filter(
-        SavedSearch.owner_id == current_user.id,
-        SavedSearch.is_deleted == False
+        SavedSearch.owner_id == current_user.id
     ).order_by(SavedSearch.use_count.desc(), SavedSearch.created_at.desc()).all()
     
     return [
@@ -554,19 +450,18 @@ def list_saved_searches(
 def delete_saved_search(
     search_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete a saved search.
-    
     Args:
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
+        search_id: ID of the saved search to delete.
+    Permissions:
+    - Users can only delete their own saved searches
     """
     current_user = auth.user
     
     saved = db.query(SavedSearch).filter(
         SavedSearch.id == search_id,
-        SavedSearch.owner_id == current_user.id,
-        SavedSearch.is_deleted == False
+        SavedSearch.owner_id == current_user.id
     ).first()
     
     if not saved:
@@ -574,13 +469,9 @@ def delete_saved_search(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Saved search {search_id} not found"
         )
-    
-    if permanent:
-        # Permanently delete from database
-        db.delete(saved)
-    else:
-        # Soft delete
-        saved.is_deleted = True
+
+    # Permanently delete from database
+    db.delete(saved)
     
     try:
         db.commit()
@@ -588,4 +479,4 @@ def delete_saved_search(
         db.rollback()
         raise
     
-    logger.info(f"Saved search {search_id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
+    logger.info(f"Saved search {search_id} permanently deleted by user {current_user.id}")

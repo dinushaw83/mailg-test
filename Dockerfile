@@ -26,8 +26,10 @@ RUN npm run build
 FROM node:20-slim
 
 # Install system dependencies (curl for healthcheck)
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-  && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    CURL_VERSION=$(apt-cache madison curl | head -1 | awk '{print $3}') && \
+    apt-get install -y --no-install-recommends curl=${CURL_VERSION} && \
+    rm -rf /var/lib/apt/lists/*
 
 # Keep env available at runtime (for server or diagnostics)
 ARG VITE_APP_URL

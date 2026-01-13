@@ -1,0 +1,25 @@
+{
+  "global": {
+    "default_action": "block"
+  },
+  "pii": {
+    "on_detection": "sanitize",
+    "severity": "block"
+  },
+  "rules": {
+    "tables": {}
+  },
+  "dq_score": {
+    "weights": {
+      "schema_validation": 0.2,
+      "pii_cleanliness": 0.15,
+      "null_handling": 0.1,
+      "fk_integrity": 0.15,
+      "pk_integrity": 0.1,
+      "outlier_free": 0.1,
+      "semantic_safety": 0.05,
+      "duplicates": 0.05,
+      "rules": 0.1
+    }
+  }
+}

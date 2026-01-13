@@ -546,12 +546,42 @@
               "nullable": false,
               "format": "date-time",
               "default": "now()"
+            },
+            "is_system": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false
+            },
+            "is_exclusive": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false
+            },
+            "show_in_label_list": {
+              "type": "boolean",
+              "nullable": false,
+              "default": true
+            },
+            "show_in_message_list": {
+              "type": "boolean",
+              "nullable": false,
+              "default": true
+            },
+            "show_if_unread": {
+              "type": "boolean",
+              "nullable": false,
+              "default": false
             }
           },
           "required": [
             "id",
             "name",
             "owner_id",
+            "is_system",
+            "is_exclusive",
+            "show_in_label_list",
+            "show_in_message_list",
+            "show_if_unread",
             "is_deleted",
             "created_at",
             "updated_at"

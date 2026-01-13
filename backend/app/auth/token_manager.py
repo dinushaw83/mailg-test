@@ -92,8 +92,16 @@ class TokenManager:
             ValueError: If user_id is empty or invalid.
         """
         # Validate user_id (must be a non-empty string, typically a UUID)
-        if not user_id or not str(user_id).strip():
+        user_id_str = str(user_id).strip()
+        if not user_id_str:
             raise ValueError("user_id must be a non-empty string")
+        
+        # Reject numeric values like "0" or "-1" (user_id should be a UUID)
+        # Check if it's a numeric string
+        if user_id_str.lstrip('-').isdigit():
+            user_id_int = int(user_id_str)
+            if user_id_int <= 0:
+                raise ValueError("user_id must be greater than 0")
         
         # IMPORTANT: use timezone-aware UTC datetimes.
         # On Windows, `datetime.utcnow()` returns a naive datetime and `.timestamp()`
@@ -180,6 +188,13 @@ class TokenManager:
         user_id = payload.get("sub")
         if not user_id or not isinstance(user_id, str) or not user_id.strip():
             return None
+        
+        # Reject numeric values like "0" or "-1" (user_id should be a UUID)
+        user_id_str = user_id.strip()
+        if user_id_str.lstrip('-').isdigit():
+            user_id_int = int(user_id_str)
+            if user_id_int <= 0:
+                return None  # Reject zero or negative user IDs
 
         role = payload.get("role")
         email = payload.get("email")

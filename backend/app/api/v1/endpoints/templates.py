@@ -7,7 +7,7 @@ This module provides:
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import or_
 from typing import Optional
 from uuid import UUID
@@ -17,6 +17,7 @@ from app.db.session import get_db
 from app.models.email_template import EmailTemplate
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
+from app.models.thread import Thread
 from app.models.user import User
 from app.schemas.email_template import (
     EmailTemplateCreate, EmailTemplateUpdate, EmailTemplateResponse,
@@ -27,6 +28,7 @@ from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import FolderType, EmailStatus
+from app.utils.email_utils import format_email_response
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -120,7 +122,6 @@ def list_templates(
     # Base query - user's own templates or shared templates
     if include_shared:
         query = db.query(EmailTemplate).filter(
-            EmailTemplate.is_deleted == False,
             or_(
                 EmailTemplate.owner_id == current_user.id,
                 EmailTemplate.is_shared == True
@@ -128,8 +129,7 @@ def list_templates(
         )
     else:
         query = db.query(EmailTemplate).filter(
-            EmailTemplate.owner_id == current_user.id,
-            EmailTemplate.is_deleted == False
+            EmailTemplate.owner_id == current_user.id
         )
     
     if search:
@@ -177,8 +177,7 @@ def get_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -216,8 +215,7 @@ def update_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -254,12 +252,8 @@ def update_template(
 def delete_template(
     template_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete an email template.
-    
-    Args:
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete their own templates
@@ -268,8 +262,7 @@ def delete_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -285,20 +278,16 @@ def delete_template(
             detail="Not authorized to delete this template"
         )
     
-    if permanent:
-        # Permanently delete from database
-        db.delete(template)
-    else:
-        # Soft delete
-        template.is_deleted = True
+    # Permanently delete from database
+    db.delete(template)
     
     try:
         db.commit()
     except Exception:
         db.rollback()
         raise
-    
-    logger.info(f"Template {template.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
+
+    logger.info(f"Template {template.id} permanently deleted by user {current_user.id}")
 
 
 @router.post("/templates/{template_id}/apply", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -318,8 +307,7 @@ def apply_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -371,8 +359,7 @@ def apply_template(
                 recipient_type = recipient.get("type", "to")
                 
                 recipient_user = db.query(User).filter(
-                    User.email == recipient_email,
-                    User.is_deleted == False
+                    User.email == recipient_email
                 ).first()
                 
                 email_recipient = EmailRecipient(
@@ -385,46 +372,23 @@ def apply_template(
                 db.add(email_recipient)
         
         db.commit()
-        db.refresh(email)
-        
+
+        # Reload email with all relationships for proper formatting
+        email = db.query(Email).options(
+            joinedload(Email.sender),
+            selectinload(Email.recipients),
+            selectinload(Email.attachments),
+            joinedload(Email.thread)
+                .selectinload(Thread.labels),
+            joinedload(Email.thread)
+                .selectinload(Thread.user_metadata),
+        ).filter(Email.id == email.id).first()
+
     except Exception:
         db.rollback()
         raise
-    
+
     logger.info(f"Template {template.id} applied to create email {email.id} by user {current_user.id}")
-    
-    # Format email response
-    recipients = []
-    for r in email.recipients:
-        recipients.append({
-            "id": r.id,
-            "email": r.recipient_email,
-            "name": r.recipient_name,
-            "type": r.recipient_type,
-        })
-    
-    return {
-        "id": email.id,
-        "subject": email.subject,
-        "body": email.body,
-        "html_body": email.html_body,
-        "status": email.status,
-        "folder": email.folder or "drafts",
-        "is_read": email.is_read,
-        "is_starred": email.is_starred,
-        "is_important": email.is_important,
-        "sender_id": email.sender_id,
-        "sender_name": email.sender.name if email.sender else None,
-        "sender_email": email.sender.email if email.sender else None,
-        "recipients": recipients,
-        "thread_id": email.thread_id,
-        "parent_email_id": email.parent_email_id,
-        "sent_at": email.sent_at,
-        "received_at": email.received_at,
-        "snooze_until": email.snooze_until,
-        "created_at": email.created_at,
-        "updated_at": email.updated_at,
-        "attachment_count": 0,
-        "attachments": [],
-        "labels": [],
-    }
+
+    # Use utility function to format response
+    return format_email_response(email, current_user.id)

@@ -5,10 +5,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app/backend
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    BUILD_ESSENTIAL_VERSION=$(apt-cache madison build-essential | head -1 | awk '{print $3}') && \
+    CURL_VERSION=$(apt-cache madison curl | head -1 | awk '{print $3}') && \
+    apt-get install -y --no-install-recommends \
+        build-essential=${BUILD_ESSENTIAL_VERSION} \
+        curl=${CURL_VERSION} && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -18,7 +21,14 @@ COPY . .
 # Create logs + reports directory
 RUN mkdir -p /app/backend/logs /app/reports
 
+# Copy and setup entrypoint
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN sed -i 's/\r$//' /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 8765
 
+# Set entrypoint and default command
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["sh", "-c", "gunicorn app.main:app -c gunicorn_config.py"]
 

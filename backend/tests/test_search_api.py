@@ -277,33 +277,6 @@ class TestSavedSearches:
         
         assert response.status_code == 200
 
-    def test_delete_saved_search(self, client_with_auth, db_session):
-        """Test deleting a saved search (soft delete)."""
-        client, token, user = client_with_auth
-        
-        # First create a saved search
-        saved = SavedSearch(
-            name="Test Search",
-            query="is:starred",
-            owner_id=user.id
-        )
-        db_session.add(saved)
-        db_session.commit()
-        saved_id = saved.id
-        
-        response = client.delete(
-            f"/api/v1/search/saved/{saved_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify soft delete (still exists but marked deleted)
-        db_session.expire_all()
-        saved_check = db_session.query(SavedSearch).filter(SavedSearch.id == saved_id).first()
-        assert saved_check is not None
-        assert saved_check.is_deleted == True
-
     def test_delete_saved_search_permanent(self, client_with_auth, db_session):
         """Test permanently deleting a saved search removes it from database."""
         client, token, user = client_with_auth

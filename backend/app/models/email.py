@@ -20,7 +20,6 @@ class Email(Base):
     status = Column(String, default="draft", index=True)
     is_read = Column(Boolean, default=False, index=True)
     is_starred = Column(Boolean, default=False, index=True)
-    is_important = Column(Boolean, default=False)
     
     # Folder type (enum-based): inbox, sent, drafts, trash, spam, starred
     folder = Column(String(20), default="inbox", index=True)
@@ -42,7 +41,6 @@ class Email(Base):
     # Timestamps
     sent_at = Column(DateTime)
     received_at = Column(DateTime)
-    is_deleted = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     
@@ -62,8 +60,6 @@ class Email(Base):
     # Composite indexes for common query patterns
     __table_args__ = (
         Index("ix_emails_sender_status", "sender_id", "status"),
-        Index("ix_emails_folder_is_deleted", "folder", "is_deleted"),
-        Index("ix_emails_is_deleted_is_read", "is_deleted", "is_read"),
         Index("ix_emails_thread_created", "thread_id", "created_at"),
         Index("ix_emails_folder_category", "folder", "category"),
         Index("ix_emails_scheduled_send", "scheduled_send_at"),
