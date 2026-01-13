@@ -1141,6 +1141,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds,
+          threadIds: Array.from(selectedThreadIdSet),
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },

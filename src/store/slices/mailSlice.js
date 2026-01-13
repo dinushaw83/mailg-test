@@ -181,6 +181,23 @@ export const updateLabelsThunk = createAsyncThunk(
 );
 
 /**
+ * MUTATION THUNK: Bulk update labels on threads (add and/or remove in single operation)
+ */
+export const bulkUpdateLabelsThunk = createAsyncThunk(
+  "mail/bulkUpdateLabels",
+  async ({ threadIds, labels }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUpdateLabels(threadIds, labels);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return response;
+    } catch (error) {
+      console.error("Failed to bulk update labels:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update labels");
+    }
+  }
+);
+
+/**
  * Fetch all labels from backend
  */
 export const fetchLabels = createAsyncThunk("mail/fetchLabels", async (_, { rejectWithValue }) => {

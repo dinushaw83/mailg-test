@@ -22,12 +22,13 @@ export const Labels = ({
   selectedLabelKeys,
   labelAnchorEl,
   selectedIds,
+  threadIds: providedThreadIds = null,
   handleClose,
   anchorOrigin = { vertical: "top", horizontal: "right" },
   transformOrigin = { vertical: "top", horizontal: "left" },
   onOpenCreateLabelDialog,
 }) => {
-  const { labels, setSnackbar, selection } = useGlobalContext();
+  const { labels, setSnackbar, selection, emails } = useGlobalContext();
   const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
@@ -75,6 +76,8 @@ export const Labels = ({
 
   const handleApplyLabels = useCallback(() => {
     const ids = [...selectedIds]; // Capture IDs before any action
+    console.log("📋 handleApplyLabels - selectedIds:", ids);
+    console.log("📋 handleApplyLabels - emails context:", { totalEmails: emails.length, emails });
 
     const labelsToAdd = [];
     const labelsToRemove = [];
@@ -88,10 +91,32 @@ export const Labels = ({
       // "indeterminate" means leave it as-is
     }
 
-    modifyLabels(ids, { add: labelsToAdd, remove: labelsToRemove });
+    console.log("📋 Labels to modify:", { labelsToAdd, labelsToRemove });
+    console.log("📋 Received providedThreadIds:", providedThreadIds, "type:", typeof providedThreadIds);
+
+    // Use provided threadIds or extract from emails
+    let threadIds;
+    if (providedThreadIds && Array.isArray(providedThreadIds) && providedThreadIds.length > 0) {
+      threadIds = providedThreadIds;
+      console.log("📋 Using provided threadIds:", threadIds);
+    } else {
+      // Extract thread IDs from selected emails (fallback)
+      threadIds = [
+        ...new Set(
+          emails
+            .filter((email) => ids.includes(email.id))
+            .map((email) => email.thread_id)
+            .filter(Boolean)
+        ),
+      ];
+      console.log("📋 Extracted threadIds from emails:", threadIds);
+    }
+
+    const threadIdsForUndo = threadIds; // Capture for closure
+    modifyLabels(ids, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
 
     const undo = () => {
-      modifyLabels(ids, { add: labelsToRemove, remove: labelsToAdd });
+      modifyLabels(ids, { add: labelsToRemove, remove: labelsToAdd }, threadIdsForUndo);
       setSnackbar({
         open: true,
         message: "Action undone.",
@@ -145,6 +170,8 @@ export const Labels = ({
     handleClose,
     selectedIds,
     labels,
+    emails,
+    providedThreadIds,
   ]);
 
   return (

@@ -528,6 +528,25 @@ const emailService = {
     });
     return response?.data?.data ?? response?.data ?? {};
   },
+
+  /**
+   * Bulk update labels on threads (add and/or remove labels in a single operation)
+   * @param {Array<string>} threadIds - Array of thread UUIDs
+   * @param {Object} labels - Labels to add and/or remove
+   * @param {Array<string>} labels.add - Array of label UUIDs to add
+   * @param {Array<string>} labels.remove - Array of label UUIDs to remove
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUpdateLabels: async (threadIds, labels) => {
+    const response = await apiClient.post("/v1/bulk/labels/update", {
+      thread_ids: threadIds,
+      labels: {
+        add: labels.add || [],
+        remove: labels.remove || [],
+      },
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
 };
 
 export default emailService;

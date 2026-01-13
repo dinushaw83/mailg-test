@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import {
   updateLabelsThunk,
+  bulkUpdateLabelsThunk,
   updateEmailStarredThunk,
   updateEmailImportantThunk,
   snoozeEmailThunk,
@@ -194,7 +195,9 @@ export default function useMailActions() {
   );
 
   const modifyLabels = useCallback(
-    (ids, { add = [], remove = [] }) => {
+    (ids, { add = [], remove = [] }, threadIds = null) => {
+      console.log("🏷️ modifyLabels START:", { ids, add, remove, threadIds });
+
       // Transform composite keys to UUIDs for backend sync
       const transformToIds = (labelKeys) => {
         return labelKeys
@@ -216,8 +219,17 @@ export default function useMailActions() {
 
       const labelIdsToAdd = transformToIds(add);
       const labelIdsToRemove = transformToIds(remove);
+      console.log("🔄 Transformed:", { labelIdsToAdd, labelIdsToRemove });
 
-      // Update local state immediately for UI feedback
+      // Store previous state for rollback
+      const previousState = new Map();
+      emails.forEach((email) => {
+        if (ids.includes(email.id)) {
+          previousState.set(email.id, new Set(email.labels || []));
+        }
+      });
+
+      // Update local state immediately for optimistic UI feedback
       updateByIds(ids, (labelSet) => {
         for (const n of add) {
           if (n) labelSet.add(String(n));
@@ -234,23 +246,64 @@ export default function useMailActions() {
       const backendLabelsToRemove = labelIdsToRemove.filter((id) =>
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
+      console.log("🎯 Backend labels:", { backendLabelsToAdd, backendLabelsToRemove });
 
       if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
-        // Determine final label state: add new ones, remove old ones
-        // For simplicity, we'll send the full label set, but backend should handle add/remove
-        // This might need adjustment based on actual backend API expectations
-        dispatch(
-          updateLabelsThunk({
-            emailIds: ids.map(String),
+        // Use provided threadIds or extract from emails
+        let threadIdsToUse;
+
+        if (threadIds && threadIds.length > 0) {
+          // Thread IDs explicitly provided
+          console.log("✅ Using provided threadIds:", threadIds);
+          threadIdsToUse = Array.isArray(threadIds) ? threadIds : [threadIds];
+        } else {
+          // Try to extract from emails context
+          console.log("🔍 Extracting threadIds from emails:", { totalEmails: emails.length, ids });
+          threadIdsToUse = [
+            ...new Set(
+              emails
+                .filter((email) => ids.includes(email.id))
+                .map((email) => email.thread_id)
+                .filter(Boolean)
+            ),
+          ];
+          console.log("📧 Extracted threadIds:", threadIdsToUse);
+        }
+
+        console.log("🚀 Final threadIdsToUse:", threadIdsToUse);
+
+        if (threadIdsToUse.length > 0) {
+          console.log("✅ DISPATCHING bulkUpdateLabelsThunk with:", {
+            threadIds: threadIdsToUse,
             labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
-          })
-        ).catch((error) => {
-          console.error("Failed to sync labels with backend:", error);
-          // Could rollback local changes here if needed
-        });
+          });
+          // Use bulk update endpoint with thread IDs
+          dispatch(
+            bulkUpdateLabelsThunk({
+              threadIds: threadIdsToUse,
+              labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
+            })
+          ).catch((error) => {
+            console.error("Failed to sync labels with backend:", error);
+            // Rollback local optimistic updates on error
+            setEmails((prevEmails) =>
+              prevEmails.map((email) => {
+                const prevLabels = previousState.get(email.id);
+                if (prevLabels) {
+                  return { ...email, labels: Array.from(prevLabels) };
+                }
+                return email;
+              })
+            );
+          });
+        } else {
+          console.error("❌ No threadIds available - cannot make API call");
+        }
+      } else {
+        console.warn("⚠️ No backend labels to sync");
       }
     },
-    [updateByIds, dispatch, keyToLabelIdMap]
+    [updateByIds, dispatch, keyToLabelIdMap, emails, setEmails]
   );
 
   const moveToInbox = useCallback(

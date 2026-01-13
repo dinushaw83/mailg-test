@@ -12,7 +12,7 @@ import useMailActions from "../../hooks/useMailActions";
 
 export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const { labels, setSnackbar, selection } = useGlobalContext();
+  const { labels, setSnackbar, selection, emails } = useGlobalContext();
   const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
@@ -71,10 +71,20 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
 
     if (message) {
-      modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove });
+      // Extract thread IDs from selected emails
+      const threadIds = [
+        ...new Set(
+          emails
+            .filter((email) => selectedIds.includes(email.id))
+            .map((email) => email.thread_id)
+            .filter(Boolean)
+        ),
+      ];
+
+      modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
 
       const undo = () => {
-        modifyLabels(selectedIds, { add: labelsToRemove, remove: labelsToAdd });
+        modifyLabels(selectedIds, { add: labelsToRemove, remove: labelsToAdd }, threadIds);
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -97,7 +107,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
 
     selection.clear();
     setOverrides({}); // reset
-  }, [overrides, currentLabels, modifyLabels, setSnackbar, selection, selectedIds, labels]);
+  }, [overrides, currentLabels, modifyLabels, setSnackbar, selection, selectedIds, labels, emails]);
 
   return (
     <Box sx={{ width: "280px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>

@@ -5,6 +5,7 @@ import {
   sendEmailThunk,
   updateLabelThunk,
   updateLabelsThunk,
+  bulkUpdateLabelsThunk,
   updateEmailStarredThunk,
   bulkUpdateEmailStarredThunk,
   updateEmailImportantThunk,
@@ -36,6 +37,17 @@ export function registerReactQueryListeners(listenerMiddleware) {
 
   listenerMiddleware.startListening({
     actionCreator: updateLabelsThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries (all categories and folders)
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["labels"] });
+      // Invalidate email counts since label changes can move emails between categories
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUpdateLabelsThunk.fulfilled,
     effect: async () => {
       // Invalidate all email queries (all categories and folders)
       queryClient.invalidateQueries({ queryKey: ["emails"] });

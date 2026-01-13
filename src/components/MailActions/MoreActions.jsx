@@ -43,6 +43,12 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     const thread_idSet = new Set(selectedThreads.map((thread) => thread.thread_id));
     return emails.filter((email) => thread_idSet.has(email.thread_id));
   }, [selectedThreads, emails]);
+
+  const selectedThreadIds = useMemo(
+    () => [...new Set(selectedEmails.map((email) => email.thread_id).filter(Boolean))],
+    [selectedEmails]
+  );
+
   const moreVertRef = useRef(null);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -650,6 +656,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds,
+          threadIds: selectedThreadIds,
           handleClose,
           onOpenCreateLabelDialog: () => {
             setCreateOpen(true);
