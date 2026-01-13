@@ -133,19 +133,29 @@ if [ ! -f "docker-compose.prod.yaml" ]; then
 fi
 
 # =============================================================================
-# STEP 5: Export image tags for docker-compose
+# STEP 5: Export image tags and config for docker-compose
 # =============================================================================
 # The production docker-compose.prod.yaml uses environment variables:
 #   image: ${BACKEND_IMAGE:-gcr.io/.../mailg-backend:latest}
 #   image: ${FRONTEND_IMAGE:-gcr.io/.../mailg-frontend:latest}
+#   environment: BACKEND_API_URL=${BACKEND_API_URL:-...}
 # We export these so docker-compose picks up the CI-passed values
 
 export BACKEND_IMAGE="$BACKEND_IMAGE_TAG"
 export FRONTEND_IMAGE="$FRONTEND_IMAGE_TAG"
 
-log "Exported image tags for docker-compose:"
+# Export BACKEND_API_URL if provided (from CI/CD or .env.production)
+if [ -n "${BACKEND_API_URL:-}" ]; then
+    export BACKEND_API_URL
+    log "Backend API URL configured: ${BACKEND_API_URL}"
+else
+    warn "BACKEND_API_URL not set, using default from docker-compose"
+fi
+
+log "Exported image tags and config for docker-compose:"
 log "  BACKEND_IMAGE=${BACKEND_IMAGE}"
 log "  FRONTEND_IMAGE=${FRONTEND_IMAGE}"
+[ -n "${BACKEND_API_URL:-}" ] && log "  BACKEND_API_URL=${BACKEND_API_URL}"
 
 # Validate docker-compose configuration
 log "Validating docker-compose configuration..."
