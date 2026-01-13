@@ -875,6 +875,10 @@ def confirm_send(
     email.scheduled_send_at = None
     email.folder = FolderType.SENT.value
 
+    # Update labels: Remove Scheduled, add Sent
+    remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
+    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
+
     try:
         db.commit()
         db.refresh(email)
