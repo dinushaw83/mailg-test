@@ -231,7 +231,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const idsToUpdate = previousStates.filter((state) => state.starred !== value).map((state) => state.id);
 
       if (idsToUpdate.length) {
-        setStar(idsToUpdate, value);
+        // Pass 'list' context since this is from the toolbar/list actions
+        setStar(idsToUpdate, value, "list");
       }
 
       selection.clear();
@@ -258,10 +259,10 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
         const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
 
         if (toStar.length) {
-          setStar(toStar, true);
+          setStar(toStar, true, "list");
         }
         if (toUnstar.length) {
-          setStar(toUnstar, false);
+          setStar(toUnstar, false, "list");
         }
 
         setSnackbar({

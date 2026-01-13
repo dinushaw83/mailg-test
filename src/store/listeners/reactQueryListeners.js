@@ -6,8 +6,10 @@ import {
   updateLabelThunk,
   updateLabelsThunk,
   updateEmailStarredThunk,
+  bulkUpdateEmailStarredThunk,
   updateEmailImportantThunk,
   bulkUpdateEmailsThunk,
+  bulkUnstarThreadsThunk,
   snoozeEmailThunk,
   moveToTrashThunk,
   moveToSpamThunk,
@@ -90,6 +92,26 @@ export function registerReactQueryListeners(listenerMiddleware) {
       // Invalidate all email queries to refresh starred emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       // Invalidate email counts since starring affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUpdateEmailStarredThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh starred emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since starring affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUnstarThreadsThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh unstarred emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since unstarring affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
   });

@@ -20,6 +20,7 @@ import {
   bulkArchiveEmailsThunk,
   bulkSnoozeEmailsThunk,
   bulkUnsnoozeEmailsThunk,
+  bulkUnstarThreadsThunk,
 } from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
@@ -462,7 +463,7 @@ export default function useMailActions() {
   );
 
   const toggleStar = useCallback(
-    (ids, currentStarredState) => {
+    (ids, currentStarredState, context = "list", threadIds = null) => {
       // Determine the new state - if currentStarredState is provided, use opposite
       // Otherwise, we'll need to look it up (not ideal, but fallback)
       const newState = currentStarredState !== undefined ? !currentStarredState : true;
@@ -481,25 +482,77 @@ export default function useMailActions() {
         });
       });
 
-      // Call bulk backend API with all email IDs at once
-      if (ids.length > 0) {
-        dispatch(
-          bulkUpdateEmailStarredThunk({
-            emailIds: ids,
-            is_starred: newState,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync starred status with backend:", error);
-          // Revert optimistic update on error
-          updateQueryCache(ids, (email) => ({ ...email, is_starred: !newState }));
-        });
+      // Use ids directly as email IDs array
+      const emailIds = Array.isArray(ids) ? ids : [ids];
+
+      if (emailIds.length === 0) return;
+
+      // Determine which API to call based on number of emails and action
+      if (newState === true) {
+        // STARRING: Use individual endpoint for single email, bulk for multiple
+        if (emailIds.length === 1) {
+          // Single email - use individual endpoint
+          dispatch(
+            updateEmailStarredThunk({
+              emailId: emailIds[0],
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star email:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        } else {
+          // Multiple emails - use bulk endpoint
+          dispatch(
+            bulkUpdateEmailStarredThunk({
+              emailIds,
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star emails:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        }
+      } else {
+        // UNSTARRING: Different logic based on context
+        if (context === "list") {
+          // From List: Use thread-level unstar with thread IDs
+          // Use provided threadIds or fallback to extracting from emails
+          let threadIdsToUse = threadIds;
+          if (!threadIdsToUse || threadIdsToUse.length === 0) {
+            const match = makeMatch(ids);
+            threadIdsToUse = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+          }
+
+          if (threadIdsToUse && threadIdsToUse.length > 0) {
+            dispatch(bulkUnstarThreadsThunk({ threadIds: threadIdsToUse })).catch((error) => {
+              console.error("Failed to unstar threads:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          }
+        } else {
+          // From Detail: Use individual email endpoint for each email
+          const promises = emailIds.map((emailId) =>
+            dispatch(
+              updateEmailStarredThunk({
+                emailId,
+                is_starred: false,
+              })
+            )
+          );
+
+          Promise.all(promises).catch((error) => {
+            console.error("Failed to unstar emails:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+          });
+        }
       }
     },
-    [setEmails, dispatch, updateQueryCache]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const setStar = useCallback(
-    (ids, value = true) => {
+    (ids, value = true, context = "detail") => {
       const match = makeMatch(ids);
 
       // Optimistically update React Query cache immediately
@@ -515,26 +568,79 @@ export default function useMailActions() {
         });
       });
 
-      // Collect all email IDs for bulk operation
-      const emailIds = [];
-      emails.forEach((m) => {
-        if (match(m)) {
-          emailIds.push(m.id);
-        }
-      });
+      // Use ids directly as email IDs array
+      const emailIds = Array.isArray(ids) ? ids : [ids];
 
-      // Call bulk backend API with all email IDs at once
-      if (emailIds.length > 0) {
-        dispatch(
-          bulkUpdateEmailStarredThunk({
-            emailIds,
-            is_starred: value,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync starred status with backend:", error);
-          // Revert optimistic update on error
-          updateQueryCache(ids, (email) => ({ ...email, is_starred: !value }));
-        });
+      if (emailIds.length === 0) return;
+
+      // Determine which API to call based on number of emails and action
+      if (value === true) {
+        // STARRING: Use individual endpoint for single email, bulk for multiple
+        if (emailIds.length === 1) {
+          // Single email - use individual endpoint
+          dispatch(
+            updateEmailStarredThunk({
+              emailId: emailIds[0],
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star email:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        } else {
+          // Multiple emails - use bulk endpoint
+          dispatch(
+            bulkUpdateEmailStarredThunk({
+              emailIds,
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star emails:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        }
+      } else {
+        // UNSTARRING: Different logic based on context
+        if (context === "list") {
+          // From List: Use thread-level unstar with ALL thread IDs
+          const threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+
+          if (threadIds.length > 0) {
+            dispatch(bulkUnstarThreadsThunk({ threadIds })).catch((error) => {
+              console.error("Failed to unstar threads:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          }
+        } else {
+          // From Detail: Use individual endpoint for each email with is_starred: false
+          if (emailIds.length === 1) {
+            // Single email - use individual endpoint
+            dispatch(
+              updateEmailStarredThunk({
+                emailId: emailIds[0],
+                is_starred: false,
+              })
+            ).catch((error) => {
+              console.error("Failed to unstar email:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          } else {
+            // Multiple emails - call individual endpoint for each
+            const promises = emailIds.map((emailId) =>
+              dispatch(
+                updateEmailStarredThunk({
+                  emailId,
+                  is_starred: false,
+                })
+              )
+            );
+
+            Promise.all(promises).catch((error) => {
+              console.error("Failed to unstar emails:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          }
+        }
       }
     },
     [setEmails, dispatch, updateQueryCache, emails]

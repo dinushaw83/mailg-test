@@ -725,8 +725,9 @@ const Table = ({
   );
 
   const handleStar = useCallback(
-    (ids, isStarred) => {
-      toggleStar(ids, isStarred);
+    (ids, isStarred, threadIds) => {
+      // Pass 'list' context and threadIds to indicate this is from email list
+      toggleStar(ids, isStarred, "list", threadIds);
 
       const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
       setSnackbar({
@@ -737,7 +738,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleStar(ids, !isStarred); // Pass opposite state for undo
+              toggleStar(ids, !isStarred, "list", threadIds); // Undo with same context
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -865,7 +866,7 @@ const Table = ({
                     getSenderClassName={getSenderClassName}
                     index={index}
                     formatDate={formatDate}
-                    toggleStar={() => handleStar([email.id], email.is_starred)}
+                    toggleStar={() => handleStar([email.id], email.is_starred, [email.thread_id])}
                     toggleImportant={() => toggleImportant([email.id], email.is_important)}
                     density={density}
                   />
@@ -880,7 +881,7 @@ const Table = ({
                         className="T-Jo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleStar([email.id], email.is_starred);
+                          handleStar([email.id], email.is_starred, [email.thread_id]);
                         }}
                         style={{
                           background: "transparent",

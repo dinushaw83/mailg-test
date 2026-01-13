@@ -235,6 +235,17 @@ const emailService = {
   },
 
   /**
+   * Unstar all emails in a thread
+   * @param {string} threadId - Thread ID
+   * @returns {Promise<Object>} Response data
+   */
+  unstarThread: async (threadId) => {
+    const response = await apiClient.post(`/v1/threads/${threadId}/unstar`);
+    const payload = response?.data?.data ?? response?.data ?? {};
+    return payload;
+  },
+
+  /**
    * Update email important status
    * @param {string} emailId - Email ID
    * @param {boolean} is_important - Important status

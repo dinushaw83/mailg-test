@@ -380,7 +380,8 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setStar(idsToUpdate, nextValue);
+    // Pass 'detail' context to indicate this is from email detail page
+    setStar(idsToUpdate, nextValue, "detail");
 
     setSnackbar({
       open: true,
@@ -393,8 +394,8 @@ const MailActions = ({ thread }) => {
           onClick={() => {
             const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
             const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
-            if (toStar.length) setStar(toStar, true);
-            if (toUnstar.length) setStar(toUnstar, false);
+            if (toStar.length) setStar(toStar, true, "detail");
+            if (toUnstar.length) setStar(toUnstar, false, "detail");
             setSnackbar({
               open: true,
               message: "Action undone.",

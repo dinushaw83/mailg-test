@@ -130,6 +130,25 @@ export const fetchEmailCounts = createAsyncThunk("mail/fetchEmailCounts", async 
 });
 
 /**
+ * MUTATION THUNK: Bulk unstar threads
+ */
+export const bulkUnstarThreadsThunk = createAsyncThunk(
+  "mail/bulkUnstarThreads",
+  async ({ threadIds }, { rejectWithValue }) => {
+    try {
+      // Call unstar endpoint for each thread
+      const promises = threadIds.map((threadId) => emailService.unstarThread(threadId));
+
+      const results = await Promise.all(promises);
+      return { threadIds, results };
+    } catch (error) {
+      console.error("Failed to unstar threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to unstar threads");
+    }
+  }
+);
+
+/**
  * MUTATION THUNK: Sends email and invalidates relevant caches.
  * Mirrors the 'onSuccess' logic provided by the user.
  */
@@ -233,23 +252,6 @@ export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, 
  * ────────────────────────────────────────────────────────────────────────── */
 
 /**
- * MUTATION THUNK: Update email starred status
- */
-export const updateEmailStarredThunk = createAsyncThunk(
-  "mail/updateEmailStarred",
-  async ({ emailId, is_starred }, { rejectWithValue }) => {
-    try {
-      const response = await emailService.updateEmailStarred(emailId, is_starred);
-      // React Query cache invalidation is handled by RTK listener middleware.
-      return { emailId, is_starred, email: response };
-    } catch (error) {
-      console.error("Failed to update email starred status:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update starred status");
-    }
-  }
-);
-
-/**
  * MUTATION THUNK: Update email important status
  */
 export const updateEmailImportantThunk = createAsyncThunk(
@@ -343,7 +345,24 @@ export const deleteEmailThunk = createAsyncThunk("mail/deleteEmail", async ({ em
  * ────────────────────────────────────────────────────────────────────────── */
 
 /**
- * BULK MUTATION THUNK: Update multiple emails' starred status
+ * MUTATION THUNK: Update individual email starred status
+ * Uses individual email endpoint: PATCH /v1/emails/{email_id}/star
+ */
+export const updateEmailStarredThunk = createAsyncThunk(
+  "mail/updateEmailStarred",
+  async ({ emailId, is_starred }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateEmailStarred(emailId, is_starred);
+      return { emailId, is_starred, response };
+    } catch (error) {
+      console.error("Failed to update email starred status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update starred status");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Update multiple emails' starred status using bulk endpoint
  */
 export const bulkUpdateEmailStarredThunk = createAsyncThunk(
   "mail/bulkUpdateEmailStarred",
