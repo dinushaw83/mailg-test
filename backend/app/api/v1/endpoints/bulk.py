@@ -40,7 +40,6 @@ from app.utils.label_utils import (
     bulk_sync_category_labels,
 )
 from app.utils.bulk_utils import (
-    get_user_accessible_emails,
     get_user_accessible_threads,
     create_bulk_response,
     bulk_update_emails_with_threads,

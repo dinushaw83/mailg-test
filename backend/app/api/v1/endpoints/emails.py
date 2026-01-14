@@ -45,7 +45,6 @@ from app.utils.label_utils import (
 from app.utils.email_utils import (
     format_email_response,
     format_email_list_response,
-    mark_emails_as_read_background,
     deliver_email_to_recipients_background,
     FOLDER_TO_LABEL,
 )

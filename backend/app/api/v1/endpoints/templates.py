@@ -16,9 +16,7 @@ import logging
 from app.db.session import get_db
 from app.models.email_template import EmailTemplate
 from app.models.email import Email
-from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
-from app.models.user import User
 from app.schemas.email_template import (
     EmailTemplateCreate, EmailTemplateUpdate, EmailTemplateResponse,
     EmailTemplateListResponse, EmailTemplateApplyRequest
@@ -39,8 +37,6 @@ def format_template_response(template: EmailTemplate) -> dict:
     return {
         "id": template.id,
         "name": template.name,
-        "description": template.description,
-        "subject": template.subject,
         "body": template.body,
         "html_body": template.html_body,
         "is_shared": template.is_shared,
@@ -57,8 +53,6 @@ def format_template_list_response(template: EmailTemplate) -> dict:
     return {
         "id": template.id,
         "name": template.name,
-        "description": template.description,
-        "subject": template.subject,
         "is_shared": template.is_shared,
         "owner_id": template.owner_id,
         "owner_name": template.owner.name if template.owner else None,
@@ -81,8 +75,6 @@ def create_template(
     
     template = EmailTemplate(
         name=template_data.name,
-        description=template_data.description,
-        subject=template_data.subject,
         body=template_data.body,
         html_body=template_data.html_body,
         is_shared=template_data.is_shared,
@@ -108,7 +100,7 @@ def list_templates(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     include_shared: bool = Query(True, description="Include shared templates from others"),
-    search: Optional[str] = Query(None, description="Search in name and description"),
+    search: Optional[str] = Query(None, description="Search in name"),
 ) -> dict:
     """List email templates with pagination and filtering.
     
@@ -135,11 +127,7 @@ def list_templates(
     if search:
         search_term = f"%{search}%"
         query = query.filter(
-            or_(
-                EmailTemplate.name.ilike(search_term),
-                EmailTemplate.description.ilike(search_term),
-                EmailTemplate.subject.ilike(search_term)
-            )
+            EmailTemplate.name.ilike(search_term)
         )
     
     # Get total count
@@ -337,7 +325,7 @@ def apply_template(
     
     # Create draft email from template
     email = Email(
-        subject=template.subject or "",
+        subject=template.name or "",
         body=body,
         html_body=html_body,
         status=EmailStatus.DRAFT.value,
@@ -348,29 +336,6 @@ def apply_template(
     
     try:
         db.add(email)
-        db.flush()
-        
-        # Add recipients if provided
-        if apply_data.recipients:
-            for recipient in apply_data.recipients:
-                # Try to find user by email
-                recipient_email = recipient.get("email", "")
-                recipient_name = recipient.get("name")
-                recipient_type = recipient.get("type", "to")
-                
-                recipient_user = db.query(User).filter(
-                    User.email == recipient_email
-                ).first()
-                
-                email_recipient = EmailRecipient(
-                    email_id=email.id,
-                    recipient_id=recipient_user.id if recipient_user else None,
-                    recipient_email=recipient_email,
-                    recipient_name=recipient_name or (recipient_user.name if recipient_user else None),
-                    recipient_type=recipient_type,
-                )
-                db.add(email_recipient)
-        
         db.commit()
 
         # Reload email with all relationships for proper formatting

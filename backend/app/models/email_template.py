@@ -17,11 +17,9 @@ class EmailTemplate(Base):
     __tablename__ = "email_templates"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    name = Column(String(255), nullable=False)  # Template name for identification
-    description = Column(String(500))  # Optional description of template purpose
+    name = Column(String(255), nullable=False)  # Template name for identification (used as email subject)
     
     # Template content
-    subject = Column(String(500))  # Email subject template
     body = Column(Text)  # Plain text body template
     html_body = Column(Text)  # HTML body template
     
