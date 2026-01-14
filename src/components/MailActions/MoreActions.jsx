@@ -31,18 +31,16 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
   const { selection, labels, setSnackbar, emails, setEmails } = useGlobalContext();
-  console.log({ selection });
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
     () => threads.filter((thread) => selectedIds.includes(thread.thread_id)),
     [threads, selectedIds]
   );
-  const selectedEmails = useMemo(() => {
-    if (!selectedThreads.length) return [];
-    const thread_idSet = new Set(selectedThreads.map((thread) => thread.thread_id));
-    return emails.filter((email) => thread_idSet.has(email.thread_id));
-  }, [selectedThreads, emails]);
+  // Use selectedThreads directly since they contain all needed email data (id, is_starred, etc.)
+  // This fixes the issue where emails from non-inbox folders weren't being found
+  // because useGlobalContext().emails always returns inbox emails
+  const selectedEmails = selectedThreads;
 
   const selectedThreadIds = useMemo(
     () => [...new Set(selectedEmails.map((email) => email.thread_id).filter(Boolean))],
