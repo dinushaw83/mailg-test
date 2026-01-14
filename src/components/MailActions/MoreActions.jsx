@@ -43,6 +43,12 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     const thread_idSet = new Set(selectedThreads.map((thread) => thread.thread_id));
     return emails.filter((email) => thread_idSet.has(email.thread_id));
   }, [selectedThreads, emails]);
+
+  const selectedThreadIds = useMemo(
+    () => [...new Set(selectedEmails.map((email) => email.thread_id).filter(Boolean))],
+    [selectedEmails]
+  );
+
   const moreVertRef = useRef(null);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -231,7 +237,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const idsToUpdate = previousStates.filter((state) => state.starred !== value).map((state) => state.id);
 
       if (idsToUpdate.length) {
-        setStar(idsToUpdate, value);
+        // Pass 'list' context since this is from the toolbar/list actions
+        setStar(idsToUpdate, value, "list");
       }
 
       selection.clear();
@@ -258,10 +265,10 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
         const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
 
         if (toStar.length) {
-          setStar(toStar, true);
+          setStar(toStar, true, "list");
         }
         if (toUnstar.length) {
-          setStar(toUnstar, false);
+          setStar(toUnstar, false, "list");
         }
 
         setSnackbar({
@@ -649,6 +656,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds,
+          threadIds: selectedThreadIds,
           handleClose,
           onOpenCreateLabelDialog: () => {
             setCreateOpen(true);

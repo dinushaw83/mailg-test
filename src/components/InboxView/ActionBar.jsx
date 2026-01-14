@@ -214,15 +214,29 @@ const MailActions = ({ thread }) => {
     return pathParts.slice(0, -1).join("/") || "/inbox";
   }, [location.pathname]);
 
-  const threadEmails = useMemo(
-    () => emails.filter((email) => email.thread_id === thread.thread_id),
-    [emails, thread.thread_id]
-  );
+  const threadEmails = useMemo(() => {
+    // Try to get emails from the global context first
+    const globalEmails = emails.filter((email) => email.thread_id === thread.thread_id);
+
+    // If not found in global context, use the thread's emails array if available
+    if (globalEmails.length === 0 && thread.emails && Array.isArray(thread.emails)) {
+      return thread.emails;
+    }
+
+    return globalEmails;
+  }, [emails, thread.thread_id, thread.emails]);
   useEffect(() => {
     hasRunOnceRef.current = false;
   }, [thread.thread_id]);
 
   const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
+
+  // Extract thread IDs from threadEmails for label operations
+  const threadIdsForLabels = useMemo(() => {
+    const ids = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
+    return ids;
+  }, [threadEmails]);
+
   const conversationMatchKeys = useMemo(() => {
     const keys = new Set();
     const add = (value) => {
@@ -373,7 +387,8 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setStar(idsToUpdate, nextValue);
+    // Pass 'detail' context to indicate this is from email detail page
+    setStar(idsToUpdate, nextValue, "detail");
 
     setSnackbar({
       open: true,
@@ -386,8 +401,8 @@ const MailActions = ({ thread }) => {
           onClick={() => {
             const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
             const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
-            if (toStar.length) setStar(toStar, true);
-            if (toUnstar.length) setStar(toUnstar, false);
+            if (toStar.length) setStar(toStar, true, "detail");
+            if (toUnstar.length) setStar(toUnstar, false, "detail");
             setSnackbar({
               open: true,
               message: "Action undone.",
@@ -829,7 +844,9 @@ const MailActions = ({ thread }) => {
   });
 
   const handleReportSpam = useCallback(() => {
-    if (!threadEmails.length) return;
+    if (!threadEmails.length) {
+      return;
+    }
 
     // Use actual email IDs instead of conversationMatchKeys
     const emailIds = threadEmails.map((email) => email.id);
@@ -975,6 +992,7 @@ const MailActions = ({ thread }) => {
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds: threadMessageIds,
+          threadIds: threadIdsForLabels,
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },

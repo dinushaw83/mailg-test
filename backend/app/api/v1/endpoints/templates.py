@@ -122,7 +122,6 @@ def list_templates(
     # Base query - user's own templates or shared templates
     if include_shared:
         query = db.query(EmailTemplate).filter(
-            EmailTemplate.is_deleted == False,
             or_(
                 EmailTemplate.owner_id == current_user.id,
                 EmailTemplate.is_shared == True
@@ -130,8 +129,7 @@ def list_templates(
         )
     else:
         query = db.query(EmailTemplate).filter(
-            EmailTemplate.owner_id == current_user.id,
-            EmailTemplate.is_deleted == False
+            EmailTemplate.owner_id == current_user.id
         )
     
     if search:
@@ -179,8 +177,7 @@ def get_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -218,8 +215,7 @@ def update_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -256,12 +252,8 @@ def update_template(
 def delete_template(
     template_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete an email template.
-    
-    Args:
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete their own templates
@@ -270,8 +262,7 @@ def delete_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -287,20 +278,16 @@ def delete_template(
             detail="Not authorized to delete this template"
         )
     
-    if permanent:
-        # Permanently delete from database
-        db.delete(template)
-    else:
-        # Soft delete
-        template.is_deleted = True
+    # Permanently delete from database
+    db.delete(template)
     
     try:
         db.commit()
     except Exception:
         db.rollback()
         raise
-    
-    logger.info(f"Template {template.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
+
+    logger.info(f"Template {template.id} permanently deleted by user {current_user.id}")
 
 
 @router.post("/templates/{template_id}/apply", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -320,8 +307,7 @@ def apply_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -373,8 +359,7 @@ def apply_template(
                 recipient_type = recipient.get("type", "to")
                 
                 recipient_user = db.query(User).filter(
-                    User.email == recipient_email,
-                    User.is_deleted == False
+                    User.email == recipient_email
                 ).first()
                 
                 email_recipient = EmailRecipient(

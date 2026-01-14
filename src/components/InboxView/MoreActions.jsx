@@ -102,14 +102,15 @@ const MoreActions = ({
     const idsToUpdate = previousStates.filter((state) => state.starred !== nextValue).map((state) => state.id);
 
     if (idsToUpdate.length) {
-      setStar(idsToUpdate, nextValue);
+      // Pass 'detail' context since MoreActions is used in detail view
+      setStar(idsToUpdate, nextValue, "detail");
     }
 
     const undo = () => {
       const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
       const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
-      if (toStar.length) setStar(toStar, true);
-      if (toUnstar.length) setStar(toUnstar, false);
+      if (toStar.length) setStar(toStar, true, "detail");
+      if (toUnstar.length) setStar(toUnstar, false, "detail");
       setSnackbar({
         open: true,
         message: "Action undone.",

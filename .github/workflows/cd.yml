@@ -1,0 +1,464 @@
+# =============================================================================
+# CD Pipeline - Build, Push & Deploy
+# =============================================================================
+# Triggers: dev branch (push/merge)
+# Purpose: Test → Build → Push to GHCR → Deploy to GCP VM
+# =============================================================================
+
+name: CD - Deploy
+
+on:
+  push:
+    branches:
+      - staging
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip tests (emergency deploy only)'
+        required: false
+        default: false
+        type: boolean
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false  # Don't cancel deployments
+
+env:
+  REGISTRY: ghcr.io
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+  BACKEND_PORT: 8766
+  FRONTEND_PORT: 3002
+  # Secrets referenced
+  VM_HOST: ${{ secrets.GCP_VM_HOST }}
+  VM_USER: ${{ secrets.GCP_VM_USER }}
+
+jobs:
+  # ===========================================================================
+  # Stage 1: Test & Validate
+  # ===========================================================================
+  test-backend:
+    name: 🧪 Backend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.skip_tests != 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: './backend/requirements.txt'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        working-directory: ./backend
+        env:
+          PYTHONPATH: ${{ github.workspace }}/backend
+        run: |
+          pytest tests/ -v \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --tb=short \
+            -x
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./backend/coverage.xml
+          flags: backend-cd
+        continue-on-error: true
+
+  test-frontend:
+    name: 🧪 Frontend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.inputs.skip_tests != 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build verification
+        run: npm run build
+        env:
+          CI: true
+
+      - name: Run tests
+        run: npm run test --if-present || echo "No tests configured"
+        continue-on-error: true
+
+  # ===========================================================================
+  # Stage 2: Build & Push to GHCR
+  # ===========================================================================
+  build-backend:
+    name: 📦 Build Backend Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [test-backend, test-frontend]
+    if: |
+      always() &&
+      (needs.test-backend.result == 'success' || github.event.inputs.skip_tests == 'true') &&
+      (needs.test-frontend.result == 'success' || github.event.inputs.skip_tests == 'true')
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+      digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set registry owner
+        id: owner
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Output image info
+        run: |
+          echo "📦 Backend image pushed:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
+
+  build-frontend:
+    name: 📦 Build Frontend Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [test-backend, test-frontend]
+    if: |
+      always() &&
+      (needs.test-backend.result == 'success' || github.event.inputs.skip_tests == 'true') &&
+      (needs.test-frontend.result == 'success' || github.event.inputs.skip_tests == 'true')
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+      digest: ${{ steps.build.outputs.digest }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set registry owner
+        id: owner
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=raw,value=latest
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          build-args: |
+            VITE_APP_URL=${{ secrets.VITE_APP_URL }}
+
+      - name: Output image info
+        run: |
+          echo "📦 Frontend image pushed:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
+
+  # ===========================================================================
+  # Stage 3: Deploy to GCP VM
+  # ===========================================================================
+  deploy:
+    name: 🚀 Deploy to GCP
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build-backend, build-frontend]
+    if: always() && needs.build-backend.result == 'success' && needs.build-frontend.result == 'success'
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set registry owner
+        id: owner
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Validate deployment secrets
+        run: |
+          echo "🔐 Validating deployment configuration..."
+          
+          if [ -z "${{ secrets.GCP_SSH_PRIVATE_KEY }}" ]; then
+            echo "::error::GCP_SSH_PRIVATE_KEY secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ env.VM_HOST }}" ]; then
+            echo "::error::GCP_VM_HOST secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ env.VM_USER }}" ]; then
+            echo "::error::GCP_VM_USER secret is not configured"
+            exit 1
+          fi
+          
+          echo "✅ All deployment secrets configured"
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
+      - name: Configure SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Extract image tags from build outputs
+        id: images
+        run: |
+          # docker/metadata-action with type=sha,prefix= uses short SHA (7 chars)
+          FULL_SHA="${{ github.sha }}"
+          SHORT_SHA=$(echo "$FULL_SHA" | cut -c1-7)
+          
+          # Construct image tags using the short commit SHA (matches what docker/metadata-action pushed)
+          BACKEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${SHORT_SHA}"
+          FRONTEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${SHORT_SHA}"
+          
+          echo "Full commit SHA: $FULL_SHA"
+          echo "Short SHA (7 chars): $SHORT_SHA"
+          echo "Backend image: $BACKEND_IMAGE_TAG"
+          echo "Frontend image: $FRONTEND_IMAGE_TAG"
+          
+          # Set outputs
+          echo "backend_image=$BACKEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=$FRONTEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Copy deployment files
+        run: |
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
+
+      - name: Deploy containers
+        env:
+          SYSTEM_URL: ${{ vars.SYSTEM_URL }}
+        run: |
+          if [ -z "$SYSTEM_URL" ]; then
+            echo "::error::SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
+          # Set BACKEND_API_URL from SYSTEM_URL
+          BACKEND_API_URL="${SYSTEM_URL}/api"
+          
+          echo "📦 Deploying with images:"
+          echo "  Backend: ${{ steps.images.outputs.backend_image }}"
+          echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
+          echo "  Backend API URL: ${BACKEND_API_URL}"
+          
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
+            set -e
+            cd ~/mailg-deploy
+            
+            echo "🔑 Logging into GHCR..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            
+            echo "📥 Pulling new images..."
+            docker pull "${{ steps.images.outputs.backend_image }}"
+            docker pull "${{ steps.images.outputs.frontend_image }}"
+            
+            echo "🔄 Updating deployment..."
+            chmod +x deploy-from-registry.sh
+            
+            BACKEND_IMAGE="${{ steps.images.outputs.backend_image }}" \
+            FRONTEND_IMAGE="${{ steps.images.outputs.frontend_image }}" \
+            BACKEND_API_URL="${BACKEND_API_URL}" \
+            GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
+            GITHUB_ACTOR="${{ github.actor }}" \
+            ./deploy-from-registry.sh
+            
+            echo "✅ Deployment completed"
+          EOF
+
+      - name: Health check
+        id: health
+        run: |
+          SYSTEM_URL="${{ vars.SYSTEM_URL }}"
+          
+          if [ -z "$SYSTEM_URL" ]; then
+            echo "::error::SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
+          echo "⏳ Waiting for services to start..."
+          sleep 15
+          
+          # Backend health check with retries
+          echo "Checking backend health at ${SYSTEM_URL}/api/health..."
+          for i in {1..30}; do
+            if curl -sf --max-time 5 "${SYSTEM_URL}/api/health" > /dev/null; then
+              echo "✅ Backend is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Backend health check failed after 30 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 5
+          done
+          
+          # Frontend health check with retries
+          echo "Checking frontend health at ${SYSTEM_URL}/api/health..."
+          for i in {1..30}; do
+            if curl -sf --max-time 5 "${SYSTEM_URL}" > /dev/null; then
+              echo "✅ Frontend is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Frontend health check failed after 30 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 5
+          done
+          
+          echo "health_status=success" >> $GITHUB_OUTPUT
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          STATUS="✅ Success"
+          [ "${{ steps.health.outputs.health_status }}" != "success" ] && STATUS="❌ Failed"
+          
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Deployment Summary
+          
+          | Property | Value |
+          |----------|-------|
+          | **Status** | ${STATUS} |
+          | **Environment** | ${{ github.event.inputs.environment || 'staging' }} |
+          | **Branch** | \`${{ github.ref_name }}\` |
+          | **Commit** | \`${{ github.sha }}\` |
+          | **Deployed by** | @${{ github.actor }} |
+          
+          ### 📦 Docker Images
+          - Backend: \`${{ steps.images.outputs.backend_image }}\`
+          - Frontend: \`${{ steps.images.outputs.frontend_image }}\`
+          
+          ### 🔗 Access URLs
+          - **Application**: ${{ vars.SYSTEM_URL }}
+          - **API**: ${{ vars.SYSTEM_URL }}/api
+          - **Health Check**: ${{ vars.SYSTEM_URL }}/api/health
+          EOF
+
+  # ===========================================================================
+  # Notification (Optional)
+  # ===========================================================================
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [deploy]
+    if: always()
+    
+    steps:
+      - name: Send notification
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "🎉 Deployment successful!"
+            # Add Slack/Discord/Email notification here if needed
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"✅ Deployment to ${{ github.event.inputs.environment || 'staging' }} succeeded!"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            echo "❌ Deployment failed!"
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"❌ Deployment to ${{ github.event.inputs.environment || 'staging' }} failed!"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+

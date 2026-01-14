@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 from app.api.v1.endpoints import auth, users, db_snapshot
-from app.api.v1.endpoints import emails, labels, attachments, search, bulk, templates
+from app.api.v1.endpoints import emails, threads, labels, attachments, search, bulk, templates
 from app.api.v1.endpoints import metrics
 
 router = APIRouter()
@@ -14,6 +14,7 @@ router.include_router(db_snapshot.router, tags=["db-snapshot"])
 
 # Email-related routers
 router.include_router(emails.router, tags=["emails"])
+router.include_router(threads.router, tags=["threads"])
 router.include_router(labels.router, tags=["labels"])
 router.include_router(attachments.router, tags=["attachments"])
 router.include_router(search.router, tags=["search"])

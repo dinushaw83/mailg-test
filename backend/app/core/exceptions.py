@@ -87,11 +87,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     
     content = wrap_error_response(
         message="Validation error",
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         data={"errors": errors}
     )
     response = JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content=content,
     )
     return add_cors_headers(response, request)

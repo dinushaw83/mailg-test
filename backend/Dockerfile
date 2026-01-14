@@ -5,10 +5,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app/backend
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    BUILD_ESSENTIAL_VERSION=$(apt-cache madison build-essential | head -1 | awk '{print $3}') && \
+    CURL_VERSION=$(apt-cache madison curl | head -1 | awk '{print $3}') && \
+    apt-get install -y --no-install-recommends \
+        build-essential=${BUILD_ESSENTIAL_VERSION} \
+        curl=${CURL_VERSION} && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

@@ -31,16 +31,14 @@ class EmailTemplate(Base):
     # Ownership
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     
-    # Soft delete and timestamps
-    is_deleted = Column(Boolean, default=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-    
+    # timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
     # Relationships
     owner = relationship("User", foreign_keys=[owner_id], lazy="joined")
     
     # Indexes for common queries
     __table_args__ = (
-        Index("ix_email_templates_owner_deleted", "owner_id", "is_deleted"),
         Index("ix_email_templates_shared", "is_shared"),
     )

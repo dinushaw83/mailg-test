@@ -1,7 +1,7 @@
 """Tests for Undo Send feature API endpoints."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from app.models.email import Email
 from app.core.constants import FolderType
 from app.models.email_recipient import EmailRecipient
@@ -183,7 +183,7 @@ class TestCancelSend:
             status="queued",
             sender_id=user.id,
             folder=FolderType.SENT.value,
-            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+            scheduled_send_at=datetime.now(UTC) + timedelta(seconds=30)
         )
         db_session.add(queued_email)
         db_session.commit()
@@ -212,7 +212,7 @@ class TestCancelSend:
             status="sent",
             sender_id=user.id,
             folder=FolderType.SENT.value,
-            sent_at=datetime.utcnow()
+            sent_at=datetime.now(UTC)
         )
         db_session.add(sent_email)
         db_session.commit()
@@ -260,7 +260,7 @@ class TestCancelSend:
             status="queued",
             sender_id=user.id,
             folder=FolderType.SENT.value,
-            scheduled_send_at=datetime.utcnow() - timedelta(seconds=1)
+            scheduled_send_at=datetime.now(UTC) - timedelta(seconds=1)
         )
         db_session.add(queued_email)
         db_session.commit()
@@ -289,7 +289,7 @@ class TestConfirmSend:
             status="queued",
             sender_id=user.id,
             folder=FolderType.SENT.value,
-            scheduled_send_at=datetime.utcnow() + timedelta(seconds=30)
+            scheduled_send_at=datetime.now(UTC) + timedelta(seconds=30)
         )
         db_session.add(queued_email)
         db_session.commit()
@@ -319,7 +319,7 @@ class TestConfirmSend:
             status="sent",
             sender_id=user.id,
             folder=FolderType.SENT.value,
-            sent_at=datetime.utcnow()
+            sent_at=datetime.now(UTC)
         )
         db_session.add(sent_email)
         db_session.commit()
@@ -340,7 +340,7 @@ class TestEmailResponseFields:
         """Test that email response includes scheduled_send_at field."""
         client, token, user = client_with_auth
         
-        scheduled_time = datetime.utcnow() + timedelta(seconds=30)
+        scheduled_time = datetime.now(UTC) + timedelta(seconds=30)
         queued_email = Email(
             subject="Test Email",
             body="Test body",
@@ -367,7 +367,7 @@ class TestEmailResponseFields:
         """Test that email list response includes scheduled_send_at field."""
         client, token, user = client_with_auth
         
-        scheduled_time = datetime.utcnow() + timedelta(seconds=30)
+        scheduled_time = datetime.now(UTC) + timedelta(seconds=30)
         queued_email = Email(
             subject="Listed Queued Email",
             body="Test body",

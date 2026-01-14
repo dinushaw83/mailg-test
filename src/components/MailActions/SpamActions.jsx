@@ -566,14 +566,40 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
           setSpamModalOpen(false);
         }}
         onReportSpam={() => {
+          if (!selectionMatchKeys.length) {
+            setSpamModalOpen(false);
+            return;
+          }
+
           moveToSpam(selectionMatchKeys);
           selection.clear();
           setSpamModalOpen(false);
+          setSnackbar({
+            open: true,
+            message:
+              selectedConversationCount > 1
+                ? `${selectedConversationCount} conversations marked as spam.`
+                : "Conversation marked as spam.",
+            autoHideDuration: 10000,
+          });
         }}
         onUnsubscribe={() => {
+          if (!selectionMatchKeys.length) {
+            setSpamModalOpen(false);
+            return;
+          }
+
           moveToSpam(selectionMatchKeys);
           selection.clear();
           setSpamModalOpen(false);
+          setSnackbar({
+            open: true,
+            message:
+              selectedConversationCount > 1
+                ? `${selectedConversationCount} conversations marked as spam.`
+                : "Conversation marked as spam.",
+            autoHideDuration: 10000,
+          });
         }}
       />
     </div>

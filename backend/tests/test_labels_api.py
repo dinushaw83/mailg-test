@@ -678,10 +678,10 @@ class TestNestedLabelOperations:
         db_session.add(child)
         db_session.commit()
         
-        # Move to root using null UUID (00000000-0000-0000-0000-000000000000)
+        # Move to root using null (None)
         response = client.put(
             f"/api/v1/labels/{child.id}",
-            json={"parent_id": "00000000-0000-0000-0000-000000000000"},
+            json={"parent_id": None},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -760,13 +760,13 @@ class TestNestedLabelOperations:
         # Verify parent and children are deleted
         db_session.expire_all()
         parent_check = db_session.query(Label).filter(
-            Label.id == parent_id, Label.is_deleted == False
+            Label.id == parent_id
         ).first()
         child1_check = db_session.query(Label).filter(
-            Label.id == child1_id, Label.is_deleted == False
+            Label.id == child1_id
         ).first()
         child2_check = db_session.query(Label).filter(
-            Label.id == child2_id, Label.is_deleted == False
+            Label.id == child2_id
         ).first()
         
         assert parent_check is None
@@ -804,13 +804,13 @@ class TestNestedLabelOperations:
         # Verify all descendants are deleted
         db_session.expire_all()
         grandparent_check = db_session.query(Label).filter(
-            Label.id == grandparent_id, Label.is_deleted == False
+            Label.id == grandparent_id
         ).first()
         parent_check = db_session.query(Label).filter(
-            Label.id == parent_id, Label.is_deleted == False
+            Label.id == parent_id
         ).first()
         child_check = db_session.query(Label).filter(
-            Label.id == child_id, Label.is_deleted == False
+            Label.id == child_id
         ).first()
         
         assert grandparent_check is None
@@ -839,28 +839,3 @@ class TestNestedLabelOperations:
         db_session.expire_all()
         label_check = db_session.query(Label).filter(Label.id == label_id).first()
         assert label_check is None
-
-    def test_delete_label_soft_delete_default(self, client_with_auth, db_session):
-        """Test default delete is soft delete (is_deleted=True)."""
-        client, token, user = client_with_auth
-        
-        # Create label
-        label = Label(name="SoftDelete", owner_id=user.id)
-        db_session.add(label)
-        db_session.commit()
-        label_id = label.id
-        
-        # Delete without permanent flag (soft delete)
-        response = client.delete(
-            f"/api/v1/labels/{label_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify label still exists but is marked deleted
-        db_session.expire_all()
-        label_check = db_session.query(Label).filter(Label.id == label_id).first()
-        assert label_check is not None
-        assert label_check.is_deleted == True
-

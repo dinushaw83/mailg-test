@@ -1,8 +1,10 @@
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   updateLabelsThunk,
+  bulkUpdateLabelsThunk,
   updateEmailStarredThunk,
   updateEmailImportantThunk,
   snoozeEmailThunk,
@@ -19,6 +21,8 @@ import {
   bulkArchiveEmailsThunk,
   bulkSnoozeEmailsThunk,
   bulkUnsnoozeEmailsThunk,
+  bulkUnstarThreadsThunk,
+  updateThreadImportantThunk,
 } from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
@@ -37,9 +41,13 @@ const buildIdIndex = (selection) =>
             item.id,
             item.messageId,
             item.threadId,
+            item.thread_id,
             item.legacyThreadId,
             item.legacyLastMessageId,
             item.legacyLastNonDraftMessageId,
+            item.legacy_thread_id,
+            item.legacy_last_message_id,
+            item.legacy_last_non_draft_message_id,
           ];
         }
         return [item];
@@ -58,9 +66,13 @@ const collectKeysFromMessage = (m) => {
   add(m.id);
   add(m.messageId);
   add(m.threadId);
+  add(m.thread_id);
   add(m.legacyThreadId);
   add(m.legacyLastMessageId);
   add(m.legacyLastNonDraftMessageId);
+  add(m.legacy_thread_id);
+  add(m.legacy_last_message_id);
+  add(m.legacy_last_non_draft_message_id);
   return out;
 };
 
@@ -119,10 +131,34 @@ const withUndo = (ids, setEmails, operation) => {
 
 export default function useMailActions() {
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
 
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
+
+  // Helper to update React Query cache optimistically
+  const updateQueryCache = useCallback(
+    (ids, updater) => {
+      const match = makeMatch(ids);
+
+      // Update all queries that match the "emails" pattern
+      queryClient.setQueriesData({ queryKey: ["emails"] }, (oldData) => {
+        if (!oldData?.results) return oldData;
+
+        return {
+          ...oldData,
+          results: oldData.results.map((email) => {
+            if (match(email)) {
+              return updater(email);
+            }
+            return email;
+          }),
+        };
+      });
+    },
+    [queryClient]
+  );
 
   const updateByIds = useCallback(
     (ids, transform) => {
@@ -159,7 +195,7 @@ export default function useMailActions() {
   );
 
   const modifyLabels = useCallback(
-    (ids, { add = [], remove = [] }) => {
+    (ids, { add = [], remove = [] }, threadIds = null) => {
       // Transform composite keys to UUIDs for backend sync
       const transformToIds = (labelKeys) => {
         return labelKeys
@@ -182,7 +218,15 @@ export default function useMailActions() {
       const labelIdsToAdd = transformToIds(add);
       const labelIdsToRemove = transformToIds(remove);
 
-      // Update local state immediately for UI feedback
+      // Store previous state for rollback
+      const previousState = new Map();
+      emails.forEach((email) => {
+        if (ids.includes(email.id)) {
+          previousState.set(email.id, new Set(email.labels || []));
+        }
+      });
+
+      // Update local state immediately for optimistic UI feedback
       updateByIds(ids, (labelSet) => {
         for (const n of add) {
           if (n) labelSet.add(String(n));
@@ -201,21 +245,48 @@ export default function useMailActions() {
       );
 
       if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
-        // Determine final label state: add new ones, remove old ones
-        // For simplicity, we'll send the full label set, but backend should handle add/remove
-        // This might need adjustment based on actual backend API expectations
-        dispatch(
-          updateLabelsThunk({
-            emailIds: ids.map(String),
-            labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
-          })
-        ).catch((error) => {
-          console.error("Failed to sync labels with backend:", error);
-          // Could rollback local changes here if needed
-        });
+        // Use provided threadIds or extract from emails
+        let threadIdsToUse;
+
+        if (threadIds && threadIds.length > 0) {
+          // Thread IDs explicitly provided
+          threadIdsToUse = Array.isArray(threadIds) ? threadIds : [threadIds];
+        } else {
+          // Try to extract from emails context
+          threadIdsToUse = [
+            ...new Set(
+              emails
+                .filter((email) => ids.includes(email.id))
+                .map((email) => email.thread_id)
+                .filter(Boolean)
+            ),
+          ];
+        }
+
+        if (threadIdsToUse.length > 0) {
+          // Use bulk update endpoint with thread IDs
+          dispatch(
+            bulkUpdateLabelsThunk({
+              threadIds: threadIdsToUse,
+              labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
+            })
+          ).catch((error) => {
+            console.error("Failed to sync labels with backend:", error);
+            // Rollback local optimistic updates on error
+            setEmails((prevEmails) =>
+              prevEmails.map((email) => {
+                const prevLabels = previousState.get(email.id);
+                if (prevLabels) {
+                  return { ...email, labels: Array.from(prevLabels) };
+                }
+                return email;
+              })
+            );
+          });
+        }
       }
     },
-    [updateByIds, dispatch, keyToLabelIdMap]
+    [updateByIds, dispatch, keyToLabelIdMap, emails, setEmails]
   );
 
   const moveToInbox = useCallback(
@@ -276,37 +347,64 @@ export default function useMailActions() {
     (ids) => {
       // If ids are already email UUIDs (from ActionBar), use them directly
       // Otherwise, find matching emails by thread ID or other keys
-      let emailIds;
+      let emailIds = [];
+      const normalizedIds = ids.map((value) => String(value || "").trim()).filter(Boolean);
+      const uuidPattern = /^[0-9a-fA-F-]{32,}$/;
 
-      // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
-      const firstId = String(ids[0] || "");
-      const isUUID = firstId.includes("-") && firstId.length >= 32;
+      const match = makeMatch(normalizedIds);
+      const matchingEmails = emails.filter(match);
 
-      if (isUUID) {
-        // Already email IDs, use directly
-        emailIds = ids;
+      emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+
+      if (emailIds.length) {
+        // Successfully extracted email IDs from matching emails
+      } else if (normalizedIds.every((id) => uuidPattern.test(id))) {
+        emailIds = normalizedIds;
       } else {
-        // Find matching emails by thread/message IDs
-        const match = makeMatch(ids);
-        const matchingEmails = emails.filter(match);
-        emailIds = matchingEmails.map((email) => email.id);
+        console.warn("moveToSpam: could not resolve email IDs for selection", normalizedIds);
       }
 
-      // Call bulk backend API with all email IDs at once
-      if (emailIds.length > 0) {
-        dispatch(bulkMoveToSpamThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk move emails to spam:", error);
-        });
-      }
+      // Optimistically update React Query cache
+      updateQueryCache(ids, (email) => {
+        const updatedLabels = [...(email.labels || [])];
+        const labelSet = new Set(updatedLabels);
+        removeSystemLabels(labelSet, labels, ["Spam"]);
+        labelSet.add("Spam");
+        return { ...email, labels: [...labelSet] };
+      });
 
-      return withUndo(ids, setEmails, () => {
+      // Backward compatibility: update local state
+      const undo = withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
           removeSystemLabels(labelSet, labels, ["Spam"]);
           labelSet.add("Spam");
         });
       });
+
+      // Call bulk backend API with all email IDs at once
+      if (emailIds && emailIds.length > 0) {
+        dispatch(bulkMoveToSpamThunk({ emailIds }))
+          .unwrap()
+          .then(() => {
+            // Successfully moved emails to spam
+          })
+          .catch((error) => {
+            console.error("Failed to bulk move emails to spam:", error);
+            // Revert optimistic update on error
+            updateQueryCache(ids, (email) => {
+              const updatedLabels = [...(email.labels || [])];
+              const labelSet = new Set(updatedLabels);
+              labelSet.delete("Spam");
+              return { ...email, labels: [...labelSet] };
+            });
+          });
+      } else {
+        console.warn("moveToSpam: No email IDs to process, skipping API call");
+      }
+
+      return undo;
     },
-    [updateByIds, setEmails, labels, dispatch, emails]
+    [updateByIds, setEmails, labels, dispatch, emails, updateQueryCache]
   );
 
   const notSpam = useCallback(
@@ -315,19 +413,44 @@ export default function useMailActions() {
       const match = makeMatch(ids);
       const emailIds = emails.filter(match).map((email) => email.id);
 
-      // Call bulk backend API
+      // Call bulk backend API FIRST
       if (emailIds.length > 0) {
-        dispatch(bulkMoveFromSpamThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk remove spam from emails:", error);
-        });
+        dispatch(bulkMoveFromSpamThunk({ emailIds }))
+          .unwrap()
+          .then(() => {
+            // Successfully removed spam from emails
+          })
+          .catch((error) => {
+            console.error("Failed to bulk remove spam from emails:", error);
+            // Revert optimistic update on error
+            updateQueryCache(ids, (email) => {
+              const updatedLabels = [...(email.labels || [])];
+              const labelSet = new Set(updatedLabels);
+              labelSet.add("Spam");
+              labelSet.delete("Inbox");
+              return { ...email, labels: [...labelSet] };
+            });
+          });
       }
 
-      return updateByIds(ids, (labels) => {
+      // Optimistically update React Query cache
+      updateQueryCache(ids, (email) => {
+        const updatedLabels = [...(email.labels || [])];
+        const labelSet = new Set(updatedLabels);
+        labelSet.delete("Spam");
+        labelSet.add("Inbox");
+        return { ...email, labels: [...labelSet] };
+      });
+
+      // Backward compatibility: update local state
+      const undo = updateByIds(ids, (labels) => {
         labels.delete("Spam");
         labels.add("Inbox");
       });
+
+      return undo;
     },
-    [updateByIds, emails, dispatch]
+    [updateByIds, emails, dispatch, updateQueryCache]
   );
 
   const moveToTrash = useCallback(
@@ -377,24 +500,15 @@ export default function useMailActions() {
   );
 
   const toggleStar = useCallback(
-    (ids, currentStarredState) => {
+    (ids, currentStarredState, context = "list", threadIds = null) => {
       // Determine the new state - if currentStarredState is provided, use opposite
       // Otherwise, we'll need to look it up (not ideal, but fallback)
       const newState = currentStarredState !== undefined ? !currentStarredState : true;
 
-      // Call bulk backend API with all email IDs at once
-      if (ids.length > 0) {
-        dispatch(
-          bulkUpdateEmailStarredThunk({
-            emailIds: ids,
-            is_starred: newState,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync starred status with backend:", error);
-        });
-      }
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_starred: newState }));
 
-      // Update local state optimistically for immediate feedback
+      // Also update local state for backward compatibility
       const match = makeMatch(ids);
       setEmails((prev) => {
         return prev.map((m) => {
@@ -404,38 +518,84 @@ export default function useMailActions() {
           return m;
         });
       });
+
+      // Use ids directly as email IDs array
+      const emailIds = Array.isArray(ids) ? ids : [ids];
+
+      if (emailIds.length === 0) return;
+
+      // Determine which API to call based on number of emails and action
+      if (newState === true) {
+        // STARRING: Use individual endpoint for single email, bulk for multiple
+        if (emailIds.length === 1) {
+          // Single email - use individual endpoint
+          dispatch(
+            updateEmailStarredThunk({
+              emailId: emailIds[0],
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star email:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        } else {
+          // Multiple emails - use bulk endpoint
+          dispatch(
+            bulkUpdateEmailStarredThunk({
+              emailIds,
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star emails:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        }
+      } else {
+        // UNSTARRING: Different logic based on context
+        if (context === "list") {
+          // From List: Use thread-level unstar with thread IDs
+          // Use provided threadIds or fallback to extracting from emails
+          let threadIdsToUse = threadIds;
+          if (!threadIdsToUse || threadIdsToUse.length === 0) {
+            const match = makeMatch(ids);
+            threadIdsToUse = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+          }
+
+          if (threadIdsToUse && threadIdsToUse.length > 0) {
+            dispatch(bulkUnstarThreadsThunk({ threadIds: threadIdsToUse })).catch((error) => {
+              console.error("Failed to unstar threads:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          }
+        } else {
+          // From Detail: Use individual email endpoint for each email
+          const promises = emailIds.map((emailId) =>
+            dispatch(
+              updateEmailStarredThunk({
+                emailId,
+                is_starred: false,
+              })
+            )
+          );
+
+          Promise.all(promises).catch((error) => {
+            console.error("Failed to unstar emails:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+          });
+        }
+      }
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const setStar = useCallback(
-    (ids, value = true) => {
+    (ids, value = true, context = "detail") => {
       const match = makeMatch(ids);
 
-      // Collect all email IDs for bulk operation
-      const emailIds = [];
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            emailIds.push(m.id);
-          }
-        });
-        return prev;
-      });
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_starred: value }));
 
-      // Call bulk backend API with all email IDs at once
-      if (emailIds.length > 0) {
-        dispatch(
-          bulkUpdateEmailStarredThunk({
-            emailIds,
-            is_starred: value,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync starred status with backend:", error);
-        });
-      }
-
-      // Update local state immediately (optimistic update)
+      // Also update local state for backward compatibility
       setEmails((prev) => {
         return prev.map((m) => {
           if (match(m)) {
@@ -444,56 +604,124 @@ export default function useMailActions() {
           return m;
         });
       });
+
+      // Use ids directly as email IDs array
+      const emailIds = Array.isArray(ids) ? ids : [ids];
+
+      if (emailIds.length === 0) return;
+
+      // Determine which API to call based on number of emails and action
+      if (value === true) {
+        // STARRING: Use individual endpoint for single email, bulk for multiple
+        if (emailIds.length === 1) {
+          // Single email - use individual endpoint
+          dispatch(
+            updateEmailStarredThunk({
+              emailId: emailIds[0],
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star email:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        } else {
+          // Multiple emails - use bulk endpoint
+          dispatch(
+            bulkUpdateEmailStarredThunk({
+              emailIds,
+              is_starred: true,
+            })
+          ).catch((error) => {
+            console.error("Failed to star emails:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: false }));
+          });
+        }
+      } else {
+        // UNSTARRING: Different logic based on context
+        if (context === "list") {
+          // From List: Use thread-level unstar with ALL thread IDs
+          const threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+
+          if (threadIds.length > 0) {
+            dispatch(bulkUnstarThreadsThunk({ threadIds })).catch((error) => {
+              console.error("Failed to unstar threads:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          }
+        } else {
+          // From Detail: Use individual endpoint for each email with is_starred: false
+          if (emailIds.length === 1) {
+            // Single email - use individual endpoint
+            dispatch(
+              updateEmailStarredThunk({
+                emailId: emailIds[0],
+                is_starred: false,
+              })
+            ).catch((error) => {
+              console.error("Failed to unstar email:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          } else {
+            // Multiple emails - call individual endpoint for each
+            const promises = emailIds.map((emailId) =>
+              dispatch(
+                updateEmailStarredThunk({
+                  emailId,
+                  is_starred: false,
+                })
+              )
+            );
+
+            Promise.all(promises).catch((error) => {
+              console.error("Failed to unstar emails:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          }
+        }
+      }
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const markRead = useCallback(
     (ids, read = true) => {
       const match = makeMatch(ids);
 
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_read: read }));
+
+      // Also update local state for backward compatibility
+      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
+
       // Extract email IDs for backend sync
       const emailIds = [];
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            emailIds.push(m.id);
-          }
-        });
-        return prev;
+      emails.forEach((m) => {
+        if (match(m)) {
+          emailIds.push(m.id);
+        }
       });
 
       // Call bulk backend API
       if (emailIds.length > 0) {
         dispatch(bulkUpdateEmailReadThunk({ emailIds, is_read: read })).catch((error) => {
           console.error("Failed to bulk update read status:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_read: !read }));
         });
       }
-
-      // Update local state
-      setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const toggleImportant = useCallback(
-    (ids, currentImportantState) => {
+    (ids, currentImportantState, context = "list", threadIds = null) => {
       // Determine the new state
       const newState = currentImportantState !== undefined ? !currentImportantState : true;
 
-      // Call bulk backend API with all email IDs at once
-      if (ids.length > 0) {
-        dispatch(
-          bulkUpdateEmailImportantThunk({
-            emailIds: ids,
-            is_important: newState,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync important status with backend:", error);
-        });
-      }
+      // Optimistically update React Query cache immediately
+      updateQueryCache(ids, (email) => ({ ...email, is_important: newState }));
 
-      // Update local state optimistically for immediate feedback
+      // Also update local state for backward compatibility
       const match = makeMatch(ids);
       setEmails((prev) => {
         return prev.map((m) => {
@@ -503,36 +731,40 @@ export default function useMailActions() {
           return m;
         });
       });
+
+      // Get thread IDs - use provided ones or extract from emails
+      let threadIdsToUpdate = threadIds;
+      if (!threadIdsToUpdate || threadIdsToUpdate.length === 0) {
+        threadIdsToUpdate = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+      }
+
+      // Call thread-level endpoint for each thread
+      if (threadIdsToUpdate && threadIdsToUpdate.length > 0) {
+        const promises = threadIdsToUpdate.map((threadId) =>
+          dispatch(
+            updateThreadImportantThunk({
+              threadId,
+              is_important: newState,
+            })
+          )
+        );
+
+        Promise.all(promises).catch((error) => {
+          console.error("Failed to update important status:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_important: !newState }));
+        });
+      }
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const setImportant = useCallback(
     (ids, value = true) => {
       const match = makeMatch(ids);
 
-      // Collect all email IDs for bulk operation
-      const emailIds = [];
-      setEmails((prev) => {
-        prev.forEach((m) => {
-          if (match(m)) {
-            emailIds.push(m.id);
-          }
-        });
-        return prev;
-      });
-
-      // Call bulk backend API with all email IDs at once
-      if (emailIds.length > 0) {
-        dispatch(
-          bulkUpdateEmailImportantThunk({
-            emailIds,
-            is_important: !!value,
-          })
-        ).catch((error) => {
-          console.error("Failed to bulk sync important status with backend:", error);
-        });
-      }
+      // Optimistically update React Query cache
+      updateQueryCache(ids, (email) => ({ ...email, is_important: !!value }));
 
       // Update local state immediately (optimistic update)
       setEmails((prev) => {
@@ -543,8 +775,29 @@ export default function useMailActions() {
           return m;
         });
       });
+
+      // Collect thread IDs
+      const threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+
+      // Call thread-level endpoint for each thread
+      if (threadIds.length > 0) {
+        const promises = threadIds.map((threadId) =>
+          dispatch(
+            updateThreadImportantThunk({
+              threadId,
+              is_important: !!value,
+            })
+          )
+        );
+
+        Promise.all(promises).catch((error) => {
+          console.error("Failed to update important status:", error);
+          // Revert optimistic update on error
+          updateQueryCache(ids, (email) => ({ ...email, is_important: !value }));
+        });
+      }
     },
-    [setEmails, dispatch]
+    [setEmails, dispatch, updateQueryCache, emails]
   );
 
   const moveToLabel = useCallback(

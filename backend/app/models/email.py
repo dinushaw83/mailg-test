@@ -28,23 +28,22 @@ class Email(Base):
     category = Column(String(50), default="primary", index=True)
     
     # Snooze functionality
-    snooze_until = Column(DateTime, nullable=True, index=True)  # When email should reappear
+    snooze_until = Column(DateTime(timezone=True), nullable=True, index=True)  # When email should reappear
     
     # Undo send functionality
-    scheduled_send_at = Column(DateTime, nullable=True, index=True)  # When email will actually be sent
-    
+    scheduled_send_at = Column(DateTime(timezone=True), nullable=True, index=True)  # When email will actually be sent
+
     # Foreign keys
     sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id"), index=True)
     parent_email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id"))  # For replies/forwards
     
     # Timestamps
-    sent_at = Column(DateTime)
-    received_at = Column(DateTime)
-    is_deleted = Column(Boolean, default=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-    
+    sent_at = Column(DateTime(timezone=True))
+    received_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
     # Relationships for eager loading (JOIN queries)
     sender = relationship("User", foreign_keys=[sender_id], lazy="joined")
     thread = relationship("Thread", back_populates="emails", lazy="select")
@@ -61,8 +60,6 @@ class Email(Base):
     # Composite indexes for common query patterns
     __table_args__ = (
         Index("ix_emails_sender_status", "sender_id", "status"),
-        Index("ix_emails_folder_is_deleted", "folder", "is_deleted"),
-        Index("ix_emails_is_deleted_is_read", "is_deleted", "is_read"),
         Index("ix_emails_thread_created", "thread_id", "created_at"),
         Index("ix_emails_folder_category", "folder", "category"),
         Index("ix_emails_scheduled_send", "scheduled_send_at"),

@@ -518,8 +518,9 @@ const Table = ({
   );
 
   const handleImportant = useCallback(
-    (ids, currentlyImportant) => {
-      toggleImportant(ids, currentlyImportant);
+    (ids, currentlyImportant, threadIds) => {
+      // Pass 'list' context and threadIds to indicate this is from email list
+      toggleImportant(ids, currentlyImportant, "list", threadIds);
 
       const message = currentlyImportant
         ? "Conversation marked as not important."
@@ -533,7 +534,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleImportant(ids, !currentlyImportant); // Pass opposite state for undo
+              toggleImportant(ids, !currentlyImportant, "list", threadIds); // Pass opposite state for undo
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -725,8 +726,9 @@ const Table = ({
   );
 
   const handleStar = useCallback(
-    (ids, isStarred) => {
-      toggleStar(ids, isStarred);
+    (ids, isStarred, threadIds) => {
+      // Pass 'list' context and threadIds to indicate this is from email list
+      toggleStar(ids, isStarred, "list", threadIds);
 
       const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
       setSnackbar({
@@ -737,7 +739,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleStar(ids, !isStarred); // Pass opposite state for undo
+              toggleStar(ids, !isStarred, "list", threadIds); // Undo with same context
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -865,8 +867,8 @@ const Table = ({
                     getSenderClassName={getSenderClassName}
                     index={index}
                     formatDate={formatDate}
-                    toggleStar={() => handleStar([email.id], email.is_starred)}
-                    toggleImportant={() => toggleImportant([email.id], email.is_important)}
+                    toggleStar={() => handleStar([email.id], email.is_starred, [email.thread_id])}
+                    toggleImportant={() => handleImportant([email.id], email.is_important, [email.thread_id])}
                     density={density}
                   />
                 ) : (
@@ -880,7 +882,7 @@ const Table = ({
                         className="T-Jo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleStar([email.id], email.is_starred);
+                          handleStar([email.id], email.is_starred, [email.thread_id]);
                         }}
                         style={{
                           background: "transparent",
@@ -916,7 +918,7 @@ const Table = ({
                         data-is-important={email.is_important.toString()}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleImportant && handleImportant([email.id], email.is_important);
+                          handleImportant && handleImportant([email.id], email.is_important, [email.thread_id]);
                         }}
                       >
                         <div className="T-ays-a45 sf-hidden">

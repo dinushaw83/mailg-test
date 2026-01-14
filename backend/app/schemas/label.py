@@ -40,7 +40,6 @@ class LabelResponse(BaseModel):
     show_in_label_list: bool = True
     show_in_message_list: bool = True
     show_if_unread: bool = False
-    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
     thread_count: int = 0
@@ -61,7 +60,6 @@ class LabelListResponse(BaseModel):
     show_in_label_list: bool = True
     show_in_message_list: bool = True
     show_if_unread: bool = False
-    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
     thread_count: int = 0
@@ -81,7 +79,6 @@ class LabelTreeResponse(BaseModel):
     show_in_label_list: bool = True
     show_in_message_list: bool = True
     show_if_unread: bool = False
-    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
     thread_count: int = 0

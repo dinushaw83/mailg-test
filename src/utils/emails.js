@@ -632,12 +632,23 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
   // Filter by label or folder semantics
   const has = (row, name) => {
     // Labels are now objects with { id, name, color }
+    // Label names from backend use "/" for hierarchy (e.g., "Work/Projects")
+    // Composite keys from frontend use "::" (e.g., "Work::Projects")
+    // Normalize both to use "/" for comparison
+    const normalizedName = String(name || "").replace(/::/g, "/");
+
     const labels = row.labels;
     if (Array.isArray(labels)) {
-      return labels.some((l) => l.name === name);
+      return labels.some((l) => {
+        const labelName = String(l.name || "").replace(/::/g, "/");
+        return labelName === normalizedName;
+      });
     }
     if (labels instanceof Set) {
-      return Array.from(labels).some((l) => l.name === name);
+      return Array.from(labels).some((l) => {
+        const labelName = String(l.name || "").replace(/::/g, "/");
+        return labelName === normalizedName;
+      });
     }
     return false;
   };

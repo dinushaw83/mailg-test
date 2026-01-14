@@ -22,12 +22,13 @@ export const Labels = ({
   selectedLabelKeys,
   labelAnchorEl,
   selectedIds,
+  threadIds: providedThreadIds = null,
   handleClose,
   anchorOrigin = { vertical: "top", horizontal: "right" },
   transformOrigin = { vertical: "top", horizontal: "left" },
   onOpenCreateLabelDialog,
 }) => {
-  const { labels, setSnackbar, selection } = useGlobalContext();
+  const { labels, setSnackbar, selection, emails } = useGlobalContext();
   const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
@@ -48,7 +49,6 @@ export const Labels = ({
 
   // Get currently applied labels for selected emails, passing folder if present
   const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
-  console.log({ currentLabels, labelCounts, nSel, selectedIds });
 
   const availableLabels = useMemo(() => {
     return Object.entries(labels || {})
@@ -89,10 +89,27 @@ export const Labels = ({
       // "indeterminate" means leave it as-is
     }
 
-    modifyLabels(ids, { add: labelsToAdd, remove: labelsToRemove });
+    // Use provided threadIds or extract from emails
+    let threadIds;
+    if (providedThreadIds && Array.isArray(providedThreadIds) && providedThreadIds.length > 0) {
+      threadIds = providedThreadIds;
+    } else {
+      // Extract thread IDs from selected emails (fallback)
+      threadIds = [
+        ...new Set(
+          emails
+            .filter((email) => ids.includes(email.id))
+            .map((email) => email.thread_id)
+            .filter(Boolean)
+        ),
+      ];
+    }
+
+    const threadIdsForUndo = threadIds; // Capture for closure
+    modifyLabels(ids, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
 
     const undo = () => {
-      modifyLabels(ids, { add: labelsToRemove, remove: labelsToAdd });
+      modifyLabels(ids, { add: labelsToRemove, remove: labelsToAdd }, threadIdsForUndo);
       setSnackbar({
         open: true,
         message: "Action undone.",
@@ -131,7 +148,6 @@ export const Labels = ({
       ),
     }));
 
-    console.log({ overrides });
     selection.clear();
     setOverrides({}); // reset
 
@@ -147,9 +163,10 @@ export const Labels = ({
     handleClose,
     selectedIds,
     labels,
+    emails,
+    providedThreadIds,
   ]);
 
-  console.log({ availableLabels });
   return (
     <Popover
       open={Boolean(labelAnchorEl)}
@@ -249,7 +266,7 @@ export const Labels = ({
               }
               const baselineChecked = nSel > 0 && count === nSel;
               const baselineSome = nSel > 1 && count > 0 && count < nSel;
-              console.log({ label, baselineChecked, baselineSome, count, nSel, labelCounts });
+              // console.log({ label, baselineChecked, baselineSome, count, nSel, labelCounts });
 
               let baselineState = "unchecked";
               if (baselineChecked) baselineState = "checked";
@@ -385,7 +402,6 @@ export const Labels = ({
                   }}
                   onClick={() => {
                     // TODO: Implement manage labels
-                    console.log("Manage labels");
                   }}
                 >
                   <Box sx={{ width: "20px" }} />

@@ -21,14 +21,12 @@ class Attachment(Base):
     storage_path = Column(String)  # Path in storage system
     attachment_type = Column(String, default="file")  # file, image, document
     
-    is_deleted = Column(Boolean, default=False)
-    created_at = Column(DateTime, server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
     email = relationship("Email", back_populates="attachments")
     
     # Index for filtering attachments by type
     __table_args__ = (
-        Index("ix_attachments_email_deleted", "email_id", "is_deleted"),
         Index("ix_attachments_type", "attachment_type"),
     )

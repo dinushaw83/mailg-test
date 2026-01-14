@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
@@ -21,9 +21,10 @@ from sqlalchemy.orm import sessionmaker, selectinload
 from sqlalchemy.pool import NullPool
 
 from app.core.config import DATABASE_URL, POSTGRES_ADMIN_DB, POSTGRES_RUN_DB_PREFIX
-from app.core.constants import EmailStatus, FolderType
+from app.core.constants import EmailStatus, FolderType, SystemLabel
 from app.models.email import Email
 from app.utils.email_utils import deliver_email_to_recipients
+from app.utils.label_utils import remove_system_label_from_thread, add_system_label_to_thread
 
 logger = logging.getLogger(__name__)
 
@@ -80,21 +81,26 @@ def process_scheduled_emails_for_database(db_name: str) -> int:
         db = SessionLocal()
         try:
             # Find all queued emails whose scheduled_send_at has passed
-            now = datetime.utcnow()
+            now = datetime.now(UTC)
             queued_emails = db.query(Email).options(
                 selectinload(Email.recipients),
             ).filter(
                 Email.status == EmailStatus.QUEUED.value,
-                Email.scheduled_send_at <= now,
-                Email.is_deleted == False,
+                Email.scheduled_send_at <= now
             ).all()
             
             for email in queued_emails:
                 try:
-                    # Update email status to sent
+                    # Update email status and folder to sent
                     email.status = EmailStatus.SENT.value
-                    email.sent_at = datetime.utcnow()
+                    email.sent_at = datetime.now(UTC)
                     email.scheduled_send_at = None
+                    email.folder = FolderType.SENT.value
+                    
+                    # Update labels: Remove Scheduled, add Sent
+                    if email.thread_id and email.sender_id:
+                        remove_system_label_from_thread(db, email.thread_id, email.sender_id, SystemLabel.SCHEDULED)
+                        add_system_label_to_thread(db, email.thread_id, email.sender_id, SystemLabel.SENT)
                     
                     # Deliver to recipients (uses shared function from email_utils)
                     deliver_email_to_recipients(db, email, email.sender_id)

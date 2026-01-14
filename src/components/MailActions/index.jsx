@@ -1067,9 +1067,31 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         open={spamModalOpen}
         onClose={toggleSpamModal}
         onReportSpam={() => {
-          // Extract email IDs from selected threadIds
-          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
-          const emailIds = matchingEmails.map((email) => email.id);
+          // Collect ALL email IDs from ALL selected threads
+          const emailIds = [];
+          const seenIds = new Set();
+
+          selectedIds.forEach((threadId) => {
+            const threadIdStr = String(threadId);
+
+            const threadsEmails = emails.filter(
+              (email) => String(email.thread_id) === threadIdStr || String(email.threadId) === threadIdStr
+            );
+
+            threadsEmails.forEach((email) => {
+              if (email.id && !seenIds.has(email.id)) {
+                emailIds.push(email.id);
+                seenIds.add(email.id);
+              }
+            });
+          });
+
+          if (!emailIds.length) {
+            console.error("No email IDs found to spam!");
+            toggleSpamModal();
+            selection.clear();
+            return;
+          }
 
           const undo = moveToSpam(emailIds);
           toggleSpamModal();
@@ -1082,9 +1104,16 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           );
         }}
         onUnsubscribe={() => {
-          // Extract email IDs from selected threadIds
-          const matchingEmails = emails.filter((email) => selectedIds.includes(email.threadId));
-          const emailIds = matchingEmails.map((email) => email.id);
+          // Extract email IDs from selected threadIds - use thread_id not threadId
+          const matchingEmails = emails.filter((email) => selectedIds.includes(String(email.thread_id)));
+          const emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+
+          if (!emailIds.length) {
+            console.error("No email IDs found to spam!");
+            toggleSpamModal();
+            selection.clear();
+            return;
+          }
 
           moveToSpam(emailIds);
           toggleSpamModal();
@@ -1112,6 +1141,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds,
+          threadIds: Array.from(selectedThreadIdSet),
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },

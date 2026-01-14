@@ -56,6 +56,7 @@ const emailService = {
     is_important = null,
     is_snoozed = null,
     folder = null,
+    category = null,
     include_archived = null,
   } = {}) => {
     try {
@@ -78,7 +79,10 @@ const emailService = {
       if (is_snoozed !== null) {
         params.is_snoozed = is_snoozed;
       }
-
+      // Add category parameter if provided
+      if (category !== null) {
+        params.category = category;
+      }
       // Add folder parameter if provided
       if (folder !== null) {
         params.folder = folder;
@@ -134,13 +138,45 @@ const emailService = {
   },
 
   /**
+   * Fetch threads by label ID
+   * @param {string} labelId - Label UUID (not composite key)
+   * @param {number} page - Page number
+   * @param {number} pageSize - Items per page
+   * @returns {Promise<Object>} { results: [...], pagination: {...} }
+   */
+  getThreadsByLabel: async (labelId, page = 1, pageSize = 20) => {
+    try {
+      const response = await apiClient.get(`/v1/labels/${labelId}/threads`, {
+        params: { page, page_size: pageSize },
+      });
+
+      const payload = response?.data?.data ?? response?.data ?? {};
+      const results = Array.isArray(payload?.results) ? payload.results : [];
+
+      let mappedResults = emailAPIMapper(results);
+      return {
+        results: mappedResults,
+        pagination: {
+          total: payload?.total ?? results.length,
+          page: payload?.page ?? page,
+          pageSize: payload?.page_size ?? pageSize,
+          totalPages: payload?.total_pages ?? 1,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching threads by label:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Fetch a thread by email ID or thread ID
    * @param {string} thread_id - Email UUID or thread UUID
    * @returns {Promise<Array>} Array of email objects in the thread
    */
   getEmail: async (thread_id) => {
     try {
-      const response = await apiClient.get(`v1/emails/thread/${thread_id}`);
+      const response = await apiClient.get(`v1/threads/${thread_id}/emails`);
       const payload = response?.data?.data ?? response?.data ?? {};
 
       // API returns an array of emails in the thread
@@ -159,7 +195,7 @@ const emailService = {
    * Fetch a specific thread by ID
    */
   getThread: async (thread_id) => {
-    const response = await apiClient.get(`/emails/threads/${thread_id}`);
+    const response = await apiClient.get(`/threads/${thread_id}/emails`);
     return response.data;
   },
 
@@ -199,6 +235,17 @@ const emailService = {
   },
 
   /**
+   * Unstar all emails in a thread
+   * @param {string} threadId - Thread ID
+   * @returns {Promise<Object>} Response data
+   */
+  unstarThread: async (threadId) => {
+    const response = await apiClient.post(`/v1/threads/${threadId}/unstar`);
+    const payload = response?.data?.data ?? response?.data ?? {};
+    return payload;
+  },
+
+  /**
    * Update email important status
    * @param {string} emailId - Email ID
    * @param {boolean} is_important - Important status
@@ -211,6 +258,18 @@ const emailService = {
     // Map the response using emailAPIMapper to normalize
     const mapped = emailAPIMapper([payload]);
     return mapped[0] || payload;
+  },
+
+  /**
+   * Update thread important status
+   * @param {string} threadId - Thread ID
+   * @param {boolean} is_important - Important status
+   * @returns {Promise<Object>} Response data
+   */
+  updateThreadImportant: async (threadId, is_important) => {
+    const response = await apiClient.patch(`/v1/threads/${threadId}/important`, { is_important });
+    const payload = response?.data?.data ?? response?.data ?? {};
+    return payload;
   },
 
   /**
@@ -466,6 +525,25 @@ const emailService = {
     const response = await apiClient.post("/v1/bulk/labels/remove", {
       email_ids: emailIds,
       label_ids: labelIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk update labels on threads (add and/or remove labels in a single operation)
+   * @param {Array<string>} threadIds - Array of thread UUIDs
+   * @param {Object} labels - Labels to add and/or remove
+   * @param {Array<string>} labels.add - Array of label UUIDs to add
+   * @param {Array<string>} labels.remove - Array of label UUIDs to remove
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUpdateLabels: async (threadIds, labels) => {
+    const response = await apiClient.post("/v1/bulk/labels/update", {
+      thread_ids: threadIds,
+      labels: {
+        add: labels.add || [],
+        remove: labels.remove || [],
+      },
     });
     return response?.data?.data ?? response?.data ?? {};
   },

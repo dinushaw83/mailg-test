@@ -20,7 +20,6 @@ class ThreadResponse(BaseModel):
     email_count: int
     is_important: bool = False  # User-specific, from thread metadata
     last_email_at: Optional[datetime] = None
-    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
     emails: List[EmailListResponse] = []

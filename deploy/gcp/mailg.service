@@ -1,0 +1,19 @@
+[Unit]
+Description=MailG Docker Compose Application
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=%h/mailg-deploy
+EnvironmentFile=%h/mailg-deploy/.env.production
+ExecStart=/usr/bin/docker compose -f %h/mailg-deploy/docker-compose.prod.yaml up -d
+ExecStop=/usr/bin/docker compose -f %h/mailg-deploy/docker-compose.prod.yaml down
+TimeoutStartSec=0
+User=%i
+
+[Install]
+WantedBy=multi-user.target
+

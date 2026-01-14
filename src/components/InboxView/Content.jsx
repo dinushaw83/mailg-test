@@ -272,8 +272,8 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
       if (email?.id) {
         // Optimistically update local state immediately
         setIsStarred((prev) => !prev);
-        // Then sync with backend
-        toggleStar([email.id], isStarred);
+        // Then sync with backend - pass "detail" as context
+        toggleStar([email.id], isStarred, "detail");
       }
     },
     [email, toggleStar, isStarred]

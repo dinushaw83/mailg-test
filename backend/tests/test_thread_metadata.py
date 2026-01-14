@@ -1,13 +1,15 @@
 """Tests for Thread User Metadata (is_important) functionality."""
 
 import pytest
-import uuid
+
+from app.models.label import Label
 from app.models.email import Email
 from app.models.thread import Thread
+from app.models.thread_label import ThreadLabel
 from app.models.thread_user_metadata import ThreadUserMetadata
 from app.models.user import User
 from app.models.email_recipient import EmailRecipient
-from app.core.constants import FolderType
+from app.core.constants import FolderType, SystemLabel
 from app.utils.thread_metadata_utils import (
     mark_thread_important,
     get_thread_is_important,
@@ -284,9 +286,9 @@ class TestEmailAPIImportant:
         db_session.add(email)
         db_session.commit()
 
-        # Mark as important
+        # Mark as important via thread endpoint
         response = client.patch(
-            f"/api/v1/emails/{email.id}/important",
+            f"/api/v1/threads/{thread.id}/important",
             json={"is_important": True},
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -303,8 +305,8 @@ class TestEmailAPIImportant:
         assert metadata is not None
         assert metadata.is_important is True
 
-    def test_unmark_email_important_via_api(self, client_with_auth, db_session):
-        """Test unmarking a thread as important via email endpoint."""
+    def test_unmark_thread_important_via_api(self, client_with_auth, db_session):
+        """Test unmarking a thread as important via thread endpoint."""
         client, token, user = client_with_auth
 
         # Create a thread and email
@@ -332,7 +334,7 @@ class TestEmailAPIImportant:
 
         # Then unmark via API
         response = client.patch(
-            f"/api/v1/emails/{email.id}/important",
+            f"/api/v1/threads/{thread.id}/important",
             json={"is_important": False},
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -549,31 +551,147 @@ class TestEmailAPIImportant:
         data = response.json()["data"]
         assert data["is_important"] is False
 
-    def test_mark_important_without_thread(self, client_with_auth, db_session):
-        """Test that marking important fails for emails without a thread."""
+    def test_mark_important_nonexistent_thread(self, client_with_auth, db_session):
+        """Test that marking important fails for non-existent thread."""
+        import uuid
         client, token, user = client_with_auth
 
-        # Create an email without a thread (shouldn't happen in practice, but test edge case)
-        email = Email(
-            subject="Email without thread",
-            body="Body",
-            status="draft",
-            folder=FolderType.DRAFTS.value,
-            sender_id=user.id,
-            thread_id=None,
-        )
-        db_session.add(email)
-        db_session.commit()
-
-        # Try to mark as important
+        # Try to mark a non-existent thread as important
+        fake_thread_id = uuid.uuid4()
         response = client.patch(
-            f"/api/v1/emails/{email.id}/important",
+            f"/api/v1/threads/{fake_thread_id}/important",
             json={"is_important": True},
             headers={"Authorization": f"Bearer {token}"}
         )
 
-        assert response.status_code == 400
-        response_data = response.json()
-        # Check if error is in 'detail' or in the response structure
-        error_msg = response_data.get("detail", str(response_data)).lower()
-        assert "no associated thread" in error_msg or "thread" in error_msg
+        assert response.status_code == 404
+
+
+class TestThreadAPISpam:
+    
+    def test_mark_thread_spam_via_api(self, client_with_auth, db_session):
+        """Test marking a thread as spam via thread endpoint."""
+        client, token, user = client_with_auth
+        # Create a thread and email
+        thread = Thread(
+            subject="Spam Thread",
+            owner_id=user.id,
+        )
+        db_session.add(thread)
+        db_session.commit()
+
+        spam_label = Label(
+            name="Spam",
+            owner_id=user.id,
+            is_system=True
+        )
+        db_session.add(spam_label)
+        db_session.commit()
+
+        for i in range(2):
+            email = Email(
+                subject=f"Spam Email {i+1}",
+                body="Spam body",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread.id,
+            )
+            db_session.add(email)
+        db_session.commit()
+        # Mark as spam via thread endpoint
+        response = client.patch(
+            f"/api/v1/threads/{thread.id}/spam",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["thread_id"] == str(thread.id)
+        assert data["emails_count"] == 2
+
+        # verify emails moved to spam folder
+        spam_emails = db_session.query(Email).filter(
+            Email.thread_id == thread.id,
+            Email.folder == FolderType.SPAM.value
+        ).all()
+        assert len(spam_emails) == 2
+
+        #verify Spam label added
+        spam_label = db_session.query(ThreadLabel).filter(
+            ThreadLabel.thread_id == thread.id,
+            ThreadLabel.user_id == user.id,
+            ThreadLabel.label_id == db_session.query(Label.id).filter(
+                Label.owner_id == user.id,
+                Label.is_system == True,
+                Label.name == SystemLabel.SPAM.value
+            ).scalar_subquery()
+        ).first()
+        assert spam_label is not None
+
+    def test_unmark_thread_spam_via_api(self, client_with_auth, db_session):
+        """Test unmarking a thread as spam via thread endpoint."""
+        client, token, user = client_with_auth
+        # Create a thread and email
+        thread = Thread(
+            subject="Spam Thread",
+            owner_id=user.id,
+        )
+        db_session.add(thread)
+        db_session.commit()
+
+        spam_label = Label(
+            name="Spam",
+            owner_id=user.id,
+            is_system=True
+        )
+        db_session.add(spam_label)
+        db_session.commit()
+
+        thread_label = ThreadLabel(
+            thread_id=thread.id,
+            user_id=user.id,
+            label_id=spam_label.id
+        )
+        db_session.add(thread_label)
+        db_session.commit()
+
+        for i in range(2):
+            email = Email(
+                subject=f"Spam Email {i+1}",
+                body="Spam body",
+                status="received",
+                folder=FolderType.SPAM.value,
+                sender_id=user.id,
+                thread_id=thread.id,
+            )
+            db_session.add(email)
+        db_session.commit()
+
+        # unmark as spam
+        response = client.patch(
+            f"/api/v1/threads/{thread.id}/unspam",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["thread_id"] == str(thread.id)
+        assert data["emails_count"] == 2
+
+        # verify emails moved back to inbox folder
+        inbox_emails = db_session.query(Email).filter(
+            Email.thread_id == thread.id,
+            Email.folder == FolderType.INBOX.value
+        ).all()
+        assert len(inbox_emails) == 2
+
+        #verify Spam label removed
+        spam_label = db_session.query(ThreadLabel).filter(
+            ThreadLabel.thread_id == thread.id,
+            ThreadLabel.user_id == user.id,
+            ThreadLabel.label_id == db_session.query(Label.id).filter(
+                Label.owner_id == user.id,
+                Label.is_system == True,
+                Label.name == SystemLabel.SPAM.value
+            ).scalar_subquery()
+        ).first()
+        assert spam_label is None

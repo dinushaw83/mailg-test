@@ -28,7 +28,7 @@ const corsOptions = {
       /^http:\/\/localhost:\d+$/,    // any localhost port
       /^http:\/\/127\.0\.0\.1:\d+$/, // any 127.0.0.1 port
       'http://lite.mailg.rlgym.turing.com',
-      'https://lite.mailg.rlgym.turing.com',
+      'https://aws-gmail-staging.turing.com',
     ];
 
     const isAllowed = allowedOrigins.some((allowed) =>
@@ -73,6 +73,17 @@ app.post('/api/v1/get_actual_state', upload.single('localStorageDump'), asyncHan
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Mailg API server is running' });
+});
+
+// Config endpoint to expose backend API URL to frontend
+// Note: Using /config instead of /api/config to avoid routing to backend
+app.get('/config', (req, res) => {
+  // Read API URL from environment variable, with fallback for local development
+  const apiUrl = process.env.BACKEND_API_URL || process.env.API_URL || 'http://localhost:8766/api';
+  res.json({ 
+    apiUrl,
+    // Include other config if needed in the future
+  });
 });
 
 // ----------------------

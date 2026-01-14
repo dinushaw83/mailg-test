@@ -5,10 +5,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 3,
     "email_count": 25,
-    "last_email_at": "2025-12-26T12:08:44.429539",
-    "is_deleted": false,
-    "created_at": "2025-12-07T08:48:42.783472",
-    "updated_at": "2025-12-23T02:48:42.783472"
+    "last_email_at": "2025-12-26T12:08:44.429539Z",
+    "created_at": "2025-12-07T08:48:42.783472Z",
+    "updated_at": "2025-12-23T02:48:42.783472Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000002",
@@ -16,10 +15,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 4,
     "email_count": 19,
-    "last_email_at": "2025-12-07T21:31:44.430894",
-    "is_deleted": false,
-    "created_at": "2025-12-31T23:25:42.783501",
-    "updated_at": "2026-01-07T19:25:42.783501"
+    "last_email_at": "2025-12-07T21:31:44.430894Z",
+    "created_at": "2025-12-31T23:25:42.783501Z",
+    "updated_at": "2026-01-07T19:25:42.783501Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000003",
@@ -27,10 +25,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "participant_count": 2,
     "email_count": 18,
-    "last_email_at": "2025-12-02T01:15:44.475847",
-    "is_deleted": true,
-    "created_at": "2025-08-06T12:38:42.783526",
-    "updated_at": "2025-08-25T01:38:42.783526"
+    "last_email_at": "2025-12-02T01:15:44.475847Z",
+    "created_at": "2025-08-06T12:38:42.783526Z",
+    "updated_at": "2025-08-25T01:38:42.783526Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000004",
@@ -39,9 +36,8 @@
     "participant_count": 1,
     "email_count": 23,
     "last_email_at": "2025-12-10T08:00:00",
-    "is_deleted": false,
-    "created_at": "2025-12-24T21:13:42.783549",
-    "updated_at": "2025-12-27T08:13:42.783549"
+    "created_at": "2025-12-24T21:13:42.783549Z",
+    "updated_at": "2025-12-27T08:13:42.783549Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000005",
@@ -50,9 +46,8 @@
     "participant_count": 1,
     "email_count": 31,
     "last_email_at": "2025-12-15T18:00:00",
-    "is_deleted": false,
-    "created_at": "2025-02-03T01:45:42.783573",
-    "updated_at": "2025-02-21T08:45:42.783573"
+    "created_at": "2025-02-03T01:45:42.783573Z",
+    "updated_at": "2025-02-21T08:45:42.783573Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000006",
@@ -60,10 +55,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "participant_count": 2,
     "email_count": 19,
-    "last_email_at": "2025-12-26T21:46:44.396392",
-    "is_deleted": false,
-    "created_at": "2025-12-18T10:33:42.783597",
-    "updated_at": "2026-01-08T16:53:42.783606"
+    "last_email_at": "2025-12-26T21:46:44.396392Z",
+    "created_at": "2025-12-18T10:33:42.783597Z",
+    "updated_at": "2026-01-08T16:53:42.783606Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000007",
@@ -72,9 +66,8 @@
     "participant_count": 2,
     "email_count": 14,
     "last_email_at": "2025-12-13T16:30:00",
-    "is_deleted": false,
-    "created_at": "2025-09-22T17:41:42.783622",
-    "updated_at": "2025-09-29T11:41:42.783622"
+    "created_at": "2025-09-22T17:41:42.783622Z",
+    "updated_at": "2025-09-29T11:41:42.783622Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000008",
@@ -83,9 +76,8 @@
     "participant_count": 2,
     "email_count": 30,
     "last_email_at": "2025-12-12T10:15:00",
-    "is_deleted": false,
-    "created_at": "2025-02-21T11:39:42.783646",
-    "updated_at": "2025-02-23T04:39:42.783646"
+    "created_at": "2025-02-21T11:39:42.783646Z",
+    "updated_at": "2025-02-23T04:39:42.783646Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000009",
@@ -94,9 +86,8 @@
     "participant_count": 2,
     "email_count": 25,
     "last_email_at": "2025-12-11T14:20:00",
-    "is_deleted": false,
-    "created_at": "2025-07-29T20:54:42.783669",
-    "updated_at": "2025-08-04T07:54:42.783669"
+    "created_at": "2025-07-29T20:54:42.783669Z",
+    "updated_at": "2025-08-04T07:54:42.783669Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000010",
@@ -105,9 +96,8 @@
     "participant_count": 2,
     "email_count": 16,
     "last_email_at": "2025-11-10T09:00:00",
-    "is_deleted": false,
-    "created_at": "2025-08-14T23:05:42.783694",
-    "updated_at": "2025-08-19T09:05:42.783694"
+    "created_at": "2025-08-14T23:05:42.783694Z",
+    "updated_at": "2025-08-19T09:05:42.783694Z"
   },
   {
     "id": "50000000-0000-0000-0000-000000000011",
@@ -115,10 +105,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 1,
     "email_count": 31,
-    "last_email_at": "2025-12-16T23:38:44.506438",
-    "is_deleted": false,
-    "created_at": "2025-12-28T16:24:42.783718",
-    "updated_at": "2026-01-04T22:24:42.783718"
+    "last_email_at": "2025-12-16T23:38:44.506438Z",
+    "created_at": "2025-12-28T16:24:42.783718Z",
+    "updated_at": "2026-01-04T22:24:42.783718Z"
   },
   {
     "id": "c8fa7ae1-3abb-4703-8619-c470060b0502",
@@ -126,10 +115,9 @@
     "owner_id": "f64790b6-f672-4aba-8797-d7eafa6add81",
     "participant_count": 37,
     "email_count": 10,
-    "last_email_at": "2025-11-17T01:12:44.406529",
-    "is_deleted": false,
-    "created_at": "2025-10-30T13:12:42.768801",
-    "updated_at": "2025-11-17T20:12:42.768801"
+    "last_email_at": "2025-11-17T01:12:44.406529Z",
+    "created_at": "2025-10-30T13:12:42.768801Z",
+    "updated_at": "2025-11-17T20:12:42.768801Z"
   },
   {
     "id": "3b399f8b-3caf-4b25-9079-089a13687942",
@@ -137,10 +125,9 @@
     "owner_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "participant_count": 30,
     "email_count": 13,
-    "last_email_at": "2026-01-04T22:12:44.340565",
-    "is_deleted": false,
-    "created_at": "2025-04-03T12:21:42.768880",
-    "updated_at": "2025-04-29T02:21:42.768880"
+    "last_email_at": "2026-01-04T22:12:44.340565Z",
+    "created_at": "2025-04-03T12:21:42.768880Z",
+    "updated_at": "2025-04-29T02:21:42.768880Z"
   },
   {
     "id": "b62c75f6-c148-42a4-84f7-f4dff515c564",
@@ -148,10 +135,9 @@
     "owner_id": "fe44b541-81ef-441c-ad73-4bd4a454abca",
     "participant_count": 15,
     "email_count": 5,
-    "last_email_at": "2025-11-10T17:45:44.424749",
-    "is_deleted": false,
-    "created_at": "2025-03-21T16:55:42.768957",
-    "updated_at": "2025-04-04T18:55:42.768957"
+    "last_email_at": "2025-11-10T17:45:44.424749Z",
+    "created_at": "2025-03-21T16:55:42.768957Z",
+    "updated_at": "2025-04-04T18:55:42.768957Z"
   },
   {
     "id": "1ee509f4-76c2-4e8f-b91c-655cb3450158",
@@ -159,10 +145,9 @@
     "owner_id": "66627dbe-583e-4799-8d97-ea140fb96dad",
     "participant_count": 73,
     "email_count": 16,
-    "last_email_at": "2025-08-04T09:33:44.499029",
-    "is_deleted": false,
-    "created_at": "2025-06-27T05:03:42.769031",
-    "updated_at": "2025-06-29T01:03:42.769031"
+    "last_email_at": "2025-08-04T09:33:44.499029Z",
+    "created_at": "2025-06-27T05:03:42.769031Z",
+    "updated_at": "2025-06-29T01:03:42.769031Z"
   },
   {
     "id": "134b962c-f216-4987-aa71-aef662fd614c",
@@ -170,10 +155,9 @@
     "owner_id": "3a049f02-9d61-4988-8bf4-4b65a3d7c553",
     "participant_count": 95,
     "email_count": 12,
-    "last_email_at": "2025-12-23T15:43:44.401431",
-    "is_deleted": false,
-    "created_at": "2025-08-08T13:54:42.769106",
-    "updated_at": "2025-08-16T13:54:42.769106"
+    "last_email_at": "2025-12-23T15:43:44.401431Z",
+    "created_at": "2025-08-08T13:54:42.769106Z",
+    "updated_at": "2025-08-16T13:54:42.769106Z"
   },
   {
     "id": "cd8f5ea9-8168-4848-b14c-fe62a2357198",
@@ -181,10 +165,9 @@
     "owner_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "participant_count": 41,
     "email_count": 12,
-    "last_email_at": "2025-12-01T01:49:44.410807",
-    "is_deleted": false,
-    "created_at": "2025-06-02T15:23:42.769181",
-    "updated_at": "2025-06-21T15:23:42.769181"
+    "last_email_at": "2025-12-01T01:49:44.410807Z",
+    "created_at": "2025-06-02T15:23:42.769181Z",
+    "updated_at": "2025-06-21T15:23:42.769181Z"
   },
   {
     "id": "32667a02-8c01-415b-83b8-acf79fa379b7",
@@ -192,10 +175,9 @@
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "participant_count": 67,
     "email_count": 5,
-    "last_email_at": "2025-12-19T11:32:44.480158",
-    "is_deleted": false,
-    "created_at": "2025-05-08T08:29:42.769255",
-    "updated_at": "2025-05-09T17:29:42.769255"
+    "last_email_at": "2025-12-19T11:32:44.480158Z",
+    "created_at": "2025-05-08T08:29:42.769255Z",
+    "updated_at": "2025-05-09T17:29:42.769255Z"
   },
   {
     "id": "8eb37c53-fec8-493e-a7a0-459745a15201",
@@ -203,10 +185,9 @@
     "owner_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "participant_count": 83,
     "email_count": 15,
-    "last_email_at": "2025-12-31T01:41:44.473780",
-    "is_deleted": false,
-    "created_at": "2025-05-26T21:49:42.769329",
-    "updated_at": "2025-06-02T22:49:42.769329"
+    "last_email_at": "2025-12-31T01:41:44.473780Z",
+    "created_at": "2025-05-26T21:49:42.769329Z",
+    "updated_at": "2025-06-02T22:49:42.769329Z"
   },
   {
     "id": "8cda5312-ccef-4f5f-9e6f-0ccb4c80415d",
@@ -214,10 +195,9 @@
     "owner_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "participant_count": 5,
     "email_count": 19,
-    "last_email_at": "2025-12-09T16:05:44.492382",
-    "is_deleted": false,
-    "created_at": "2025-03-25T20:50:42.769402",
-    "updated_at": "2025-03-30T06:50:42.769402"
+    "last_email_at": "2025-12-09T16:05:44.492382Z",
+    "created_at": "2025-03-25T20:50:42.769402Z",
+    "updated_at": "2025-03-30T06:50:42.769402Z"
   },
   {
     "id": "a2e7e170-79de-4bc7-b10c-711f117289ab",
@@ -225,10 +205,9 @@
     "owner_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "participant_count": 95,
     "email_count": 14,
-    "last_email_at": "2025-09-12T01:34:44.460944",
-    "is_deleted": false,
-    "created_at": "2025-09-12T11:12:42.769476",
-    "updated_at": "2025-09-25T05:12:42.769476"
+    "last_email_at": "2025-09-12T01:34:44.460944Z",
+    "created_at": "2025-09-12T11:12:42.769476Z",
+    "updated_at": "2025-09-25T05:12:42.769476Z"
   },
   {
     "id": "fec0b373-658e-4623-99e4-55887a22a981",
@@ -236,10 +215,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 75,
     "email_count": 14,
-    "last_email_at": "2025-12-22T15:23:44.483374",
-    "is_deleted": false,
-    "created_at": "2025-10-06T08:58:42.769550",
-    "updated_at": "2025-10-10T06:58:42.769550"
+    "last_email_at": "2025-12-22T15:23:44.483374Z",
+    "created_at": "2025-10-06T08:58:42.769550Z",
+    "updated_at": "2025-10-10T06:58:42.769550Z"
   },
   {
     "id": "00a6fc75-6250-4982-84a3-42809dd61efb",
@@ -247,10 +225,9 @@
     "owner_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
     "participant_count": 17,
     "email_count": 10,
-    "last_email_at": "2025-12-23T01:03:44.419622",
-    "is_deleted": false,
-    "created_at": "2025-10-19T07:10:42.769625",
-    "updated_at": "2025-11-16T02:10:42.769625"
+    "last_email_at": "2025-12-23T01:03:44.419622Z",
+    "created_at": "2025-10-19T07:10:42.769625Z",
+    "updated_at": "2025-11-16T02:10:42.769625Z"
   },
   {
     "id": "fd05e02a-bb35-4bfe-8ec6-54189efd75f3",
@@ -258,10 +235,9 @@
     "owner_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "participant_count": 52,
     "email_count": 15,
-    "last_email_at": "2025-12-14T04:39:44.455739",
-    "is_deleted": false,
-    "created_at": "2025-05-04T17:45:42.769698",
-    "updated_at": "2025-05-23T03:45:42.769698"
+    "last_email_at": "2025-12-14T04:39:44.455739Z",
+    "created_at": "2025-05-04T17:45:42.769698Z",
+    "updated_at": "2025-05-23T03:45:42.769698Z"
   },
   {
     "id": "6710832c-c6b8-4828-9928-7249f4bff5e8",
@@ -269,10 +245,9 @@
     "owner_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "participant_count": 99,
     "email_count": 13,
-    "last_email_at": "2025-10-19T01:37:44.365663",
-    "is_deleted": false,
-    "created_at": "2025-04-23T14:59:42.769772",
-    "updated_at": "2025-05-06T10:59:42.769772"
+    "last_email_at": "2025-10-19T01:37:44.365663Z",
+    "created_at": "2025-04-23T14:59:42.769772Z",
+    "updated_at": "2025-05-06T10:59:42.769772Z"
   },
   {
     "id": "c3d9d1f9-19e6-4f34-9cd6-cc5009801786",
@@ -280,10 +255,9 @@
     "owner_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "participant_count": 64,
     "email_count": 9,
-    "last_email_at": "2025-12-19T15:04:44.388214",
-    "is_deleted": false,
-    "created_at": "2025-02-19T12:37:42.769846",
-    "updated_at": "2025-03-08T10:37:42.769846"
+    "last_email_at": "2025-12-19T15:04:44.388214Z",
+    "created_at": "2025-02-19T12:37:42.769846Z",
+    "updated_at": "2025-03-08T10:37:42.769846Z"
   },
   {
     "id": "b0a64394-cd5b-4f92-885f-8c2c60e9f805",
@@ -291,10 +265,9 @@
     "owner_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "participant_count": 49,
     "email_count": 5,
-    "last_email_at": "2025-08-28T06:17:44.341989",
-    "is_deleted": true,
-    "created_at": "2025-02-26T17:50:42.769920",
-    "updated_at": "2025-03-12T15:50:42.769920"
+    "last_email_at": "2025-08-28T06:17:44.341989Z",
+    "created_at": "2025-02-26T17:50:42.769920Z",
+    "updated_at": "2025-03-12T15:50:42.769920Z"
   },
   {
     "id": "60799eb1-7db6-4b67-a09a-50788ad239c8",
@@ -302,10 +275,9 @@
     "owner_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "participant_count": 71,
     "email_count": 8,
-    "last_email_at": "2025-11-18T18:35:44.463376",
-    "is_deleted": false,
-    "created_at": "2025-05-30T10:52:42.769999",
-    "updated_at": "2025-06-02T15:52:42.769999"
+    "last_email_at": "2025-11-18T18:35:44.463376Z",
+    "created_at": "2025-05-30T10:52:42.769999Z",
+    "updated_at": "2025-06-02T15:52:42.769999Z"
   },
   {
     "id": "308ac448-f561-4bbb-842d-963eb42b9318",
@@ -313,10 +285,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 96,
     "email_count": 12,
-    "last_email_at": "2025-12-08T10:32:44.470568",
-    "is_deleted": false,
-    "created_at": "2025-11-16T05:23:42.770074",
-    "updated_at": "2025-11-23T17:23:42.770074"
+    "last_email_at": "2025-12-08T10:32:44.470568Z",
+    "created_at": "2025-11-16T05:23:42.770074Z",
+    "updated_at": "2025-11-23T17:23:42.770074Z"
   },
   {
     "id": "a4c8d9cf-a9bf-4346-8131-8c24ddf783e8",
@@ -324,10 +295,9 @@
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "participant_count": 80,
     "email_count": 6,
-    "last_email_at": "2025-12-20T02:30:44.347190",
-    "is_deleted": false,
-    "created_at": "2025-05-12T08:30:42.770148",
-    "updated_at": "2025-05-18T02:30:42.770148"
+    "last_email_at": "2025-12-20T02:30:44.347190Z",
+    "created_at": "2025-05-12T08:30:42.770148Z",
+    "updated_at": "2025-05-18T02:30:42.770148Z"
   },
   {
     "id": "cdb44811-d591-4d32-89f3-21ac7a5e4379",
@@ -335,10 +305,9 @@
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "participant_count": 92,
     "email_count": 12,
-    "last_email_at": "2025-09-04T14:17:44.467813",
-    "is_deleted": false,
-    "created_at": "2025-01-18T00:07:42.770222",
-    "updated_at": "2025-02-06T07:07:42.770222"
+    "last_email_at": "2025-09-04T14:17:44.467813Z",
+    "created_at": "2025-01-18T00:07:42.770222Z",
+    "updated_at": "2025-02-06T07:07:42.770222Z"
   },
   {
     "id": "31f75c1e-74f4-4d4e-8350-b9a6e0b4cc1c",
@@ -346,10 +315,9 @@
     "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "participant_count": 43,
     "email_count": 4,
-    "last_email_at": "2025-05-24T16:13:44.329762",
-    "is_deleted": false,
-    "created_at": "2025-03-27T00:32:42.770296",
-    "updated_at": "2025-04-09T21:32:42.770296"
+    "last_email_at": "2025-05-24T16:13:44.329762Z",
+    "created_at": "2025-03-27T00:32:42.770296Z",
+    "updated_at": "2025-04-09T21:32:42.770296Z"
   },
   {
     "id": "20a829a0-74c3-4d8f-ba2a-415f5250186f",
@@ -357,10 +325,9 @@
     "owner_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "participant_count": 76,
     "email_count": 9,
-    "last_email_at": "2025-10-14T14:10:44.370275",
-    "is_deleted": false,
-    "created_at": "2025-07-11T08:34:42.770370",
-    "updated_at": "2025-07-13T08:34:42.770370"
+    "last_email_at": "2025-10-14T14:10:44.370275Z",
+    "created_at": "2025-07-11T08:34:42.770370Z",
+    "updated_at": "2025-07-13T08:34:42.770370Z"
   },
   {
     "id": "93448227-2527-45d2-b8e6-7be0780bc373",
@@ -368,10 +335,9 @@
     "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "participant_count": 75,
     "email_count": 14,
-    "last_email_at": "2025-12-04T06:53:44.442769",
-    "is_deleted": false,
-    "created_at": "2025-06-28T14:01:42.770473",
-    "updated_at": "2025-07-28T12:01:42.770473"
+    "last_email_at": "2025-12-04T06:53:44.442769Z",
+    "created_at": "2025-06-28T14:01:42.770473Z",
+    "updated_at": "2025-07-28T12:01:42.770473Z"
   },
   {
     "id": "23c6f238-dac9-4e22-9d44-00a26f89a8a2",
@@ -379,10 +345,9 @@
     "owner_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "participant_count": 62,
     "email_count": 6,
-    "last_email_at": "2025-08-29T00:00:44.440408",
-    "is_deleted": false,
-    "created_at": "2025-09-03T11:57:42.770684",
-    "updated_at": "2025-09-15T17:57:42.770684"
+    "last_email_at": "2025-08-29T00:00:44.440408Z",
+    "created_at": "2025-09-03T11:57:42.770684Z",
+    "updated_at": "2025-09-15T17:57:42.770684Z"
   },
   {
     "id": "5a78ca41-eaa4-4700-af8f-295d5a1dc911",
@@ -390,10 +355,9 @@
     "owner_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "participant_count": 41,
     "email_count": 8,
-    "last_email_at": "2025-12-04T16:25:44.401032",
-    "is_deleted": true,
-    "created_at": "2025-01-11T02:04:42.770813",
-    "updated_at": "2025-01-21T03:04:42.770813"
+    "last_email_at": "2025-12-04T16:25:44.401032Z",
+    "created_at": "2025-01-11T02:04:42.770813Z",
+    "updated_at": "2025-01-21T03:04:42.770813Z"
   },
   {
     "id": "93c2bd22-23d8-4dde-8b62-4b32debde080",
@@ -401,10 +365,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 21,
     "email_count": 9,
-    "last_email_at": "2026-01-02T22:22:44.409752",
-    "is_deleted": false,
-    "created_at": "2025-06-26T03:48:42.770889",
-    "updated_at": "2025-07-03T03:48:42.770889"
+    "last_email_at": "2026-01-02T22:22:44.409752Z",
+    "created_at": "2025-06-26T03:48:42.770889Z",
+    "updated_at": "2025-07-03T03:48:42.770889Z"
   },
   {
     "id": "b695a217-6e77-4670-8117-832e47ccf2d7",
@@ -412,10 +375,9 @@
     "owner_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "participant_count": 64,
     "email_count": 15,
-    "last_email_at": "2025-11-14T20:40:44.455135",
-    "is_deleted": false,
-    "created_at": "2025-03-08T01:17:42.770964",
-    "updated_at": "2025-04-03T16:17:42.770964"
+    "last_email_at": "2025-11-14T20:40:44.455135Z",
+    "created_at": "2025-03-08T01:17:42.770964Z",
+    "updated_at": "2025-04-03T16:17:42.770964Z"
   },
   {
     "id": "daa46942-46bd-46f9-8360-1971e57b4bc5",
@@ -423,10 +385,9 @@
     "owner_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "participant_count": 100,
     "email_count": 13,
-    "last_email_at": "2025-12-03T14:42:44.408762",
-    "is_deleted": false,
-    "created_at": "2025-10-27T09:40:42.771039",
-    "updated_at": "2025-11-19T17:40:42.771039"
+    "last_email_at": "2025-12-03T14:42:44.408762Z",
+    "created_at": "2025-10-27T09:40:42.771039Z",
+    "updated_at": "2025-11-19T17:40:42.771039Z"
   },
   {
     "id": "36a9d4dc-994e-4984-b85c-d9f73ee419f9",
@@ -434,10 +395,9 @@
     "owner_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "participant_count": 95,
     "email_count": 7,
-    "last_email_at": "2025-11-21T14:30:44.487059",
-    "is_deleted": false,
-    "created_at": "2025-04-17T22:18:42.771112",
-    "updated_at": "2025-05-15T01:18:42.771112"
+    "last_email_at": "2025-11-21T14:30:44.487059Z",
+    "created_at": "2025-04-17T22:18:42.771112Z",
+    "updated_at": "2025-05-15T01:18:42.771112Z"
   },
   {
     "id": "05f6fb39-c233-4701-9928-30ed38f94791",
@@ -445,10 +405,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 84,
     "email_count": 19,
-    "last_email_at": "2025-09-09T16:11:44.324818",
-    "is_deleted": false,
-    "created_at": "2025-10-09T07:55:42.771187",
-    "updated_at": "2025-10-12T20:55:42.771187"
+    "last_email_at": "2025-09-09T16:11:44.324818Z",
+    "created_at": "2025-10-09T07:55:42.771187Z",
+    "updated_at": "2025-10-12T20:55:42.771187Z"
   },
   {
     "id": "d342ff5d-d693-46e7-84ba-cfbe0b4278dd",
@@ -456,10 +415,9 @@
     "owner_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "participant_count": 54,
     "email_count": 6,
-    "last_email_at": "2025-10-03T11:31:44.405470",
-    "is_deleted": false,
-    "created_at": "2025-09-10T23:06:42.771262",
-    "updated_at": "2025-09-25T23:06:42.771262"
+    "last_email_at": "2025-10-03T11:31:44.405470Z",
+    "created_at": "2025-09-10T23:06:42.771262Z",
+    "updated_at": "2025-09-25T23:06:42.771262Z"
   },
   {
     "id": "ebe9c57a-5e8c-4399-94de-e01c22318416",
@@ -467,10 +425,9 @@
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "participant_count": 18,
     "email_count": 20,
-    "last_email_at": "2025-12-16T15:11:44.461388",
-    "is_deleted": false,
-    "created_at": "2025-10-04T20:09:42.771336",
-    "updated_at": "2025-10-19T14:09:42.771336"
+    "last_email_at": "2025-12-16T15:11:44.461388Z",
+    "created_at": "2025-10-04T20:09:42.771336Z",
+    "updated_at": "2025-10-19T14:09:42.771336Z"
   },
   {
     "id": "72b21e34-2d6c-4833-92aa-db29c0f49995",
@@ -478,10 +435,9 @@
     "owner_id": "3a049f02-9d61-4988-8bf4-4b65a3d7c553",
     "participant_count": 48,
     "email_count": 10,
-    "last_email_at": "2025-10-12T13:27:44.498119",
-    "is_deleted": false,
-    "created_at": "2025-11-06T18:05:42.771410",
-    "updated_at": "2025-11-17T05:05:42.771410"
+    "last_email_at": "2025-10-12T13:27:44.498119Z",
+    "created_at": "2025-11-06T18:05:42.771410Z",
+    "updated_at": "2025-11-17T05:05:42.771410Z"
   },
   {
     "id": "f4979a2c-59e2-4156-8a0c-ba3ecff381d1",
@@ -489,10 +445,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 60,
     "email_count": 6,
-    "last_email_at": "2025-09-18T19:11:44.363216",
-    "is_deleted": false,
-    "created_at": "2025-07-25T02:15:42.771484",
-    "updated_at": "2025-07-30T18:15:42.771484"
+    "last_email_at": "2025-09-18T19:11:44.363216Z",
+    "created_at": "2025-07-25T02:15:42.771484Z",
+    "updated_at": "2025-07-30T18:15:42.771484Z"
   },
   {
     "id": "6c992ba9-1c85-4fed-a639-0a85b7548e17",
@@ -500,10 +455,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 61,
     "email_count": 12,
-    "last_email_at": "2025-09-19T19:37:44.362081",
-    "is_deleted": false,
-    "created_at": "2025-08-13T16:53:42.771557",
-    "updated_at": "2025-08-27T06:53:42.771557"
+    "last_email_at": "2025-09-19T19:37:44.362081Z",
+    "created_at": "2025-08-13T16:53:42.771557Z",
+    "updated_at": "2025-08-27T06:53:42.771557Z"
   },
   {
     "id": "f9e4ae9a-f858-49d4-9c31-ed86f182cd56",
@@ -511,10 +465,9 @@
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "participant_count": 20,
     "email_count": 5,
-    "last_email_at": "2025-03-26T13:30:44.431726",
-    "is_deleted": false,
-    "created_at": "2025-12-26T02:24:42.771628",
-    "updated_at": "2026-01-08T16:53:42.771637"
+    "last_email_at": "2025-03-26T13:30:44.431726Z",
+    "created_at": "2025-12-26T02:24:42.771628Z",
+    "updated_at": "2026-01-08T16:53:42.771637Z"
   },
   {
     "id": "56bb5c6e-945d-4276-bedd-3ff628875b57",
@@ -522,10 +475,9 @@
     "owner_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
     "participant_count": 71,
     "email_count": 10,
-    "last_email_at": "2025-11-24T04:19:44.358720",
-    "is_deleted": false,
-    "created_at": "2025-06-22T14:52:42.771703",
-    "updated_at": "2025-06-25T09:52:42.771703"
+    "last_email_at": "2025-11-24T04:19:44.358720Z",
+    "created_at": "2025-06-22T14:52:42.771703Z",
+    "updated_at": "2025-06-25T09:52:42.771703Z"
   },
   {
     "id": "3c731d24-d766-4f21-87bb-5b5561534942",
@@ -533,10 +485,9 @@
     "owner_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "participant_count": 67,
     "email_count": 12,
-    "last_email_at": "2025-11-01T07:27:44.513674",
-    "is_deleted": false,
-    "created_at": "2025-10-19T10:40:42.771783",
-    "updated_at": "2025-11-18T10:40:42.771783"
+    "last_email_at": "2025-11-01T07:27:44.513674Z",
+    "created_at": "2025-10-19T10:40:42.771783Z",
+    "updated_at": "2025-11-18T10:40:42.771783Z"
   },
   {
     "id": "e9ce8bac-78b2-483f-8145-ecb1c8ff5dae",
@@ -544,10 +495,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 55,
     "email_count": 14,
-    "last_email_at": "2026-01-05T14:17:44.353406",
-    "is_deleted": false,
-    "created_at": "2025-03-10T07:20:42.771869",
-    "updated_at": "2025-03-31T13:20:42.771869"
+    "last_email_at": "2026-01-05T14:17:44.353406Z",
+    "created_at": "2025-03-10T07:20:42.771869Z",
+    "updated_at": "2025-03-31T13:20:42.771869Z"
   },
   {
     "id": "8218ea56-06df-4c78-8383-e10594dedc72",
@@ -555,10 +505,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "participant_count": 49,
     "email_count": 9,
-    "last_email_at": "2025-11-03T06:21:44.445758",
-    "is_deleted": false,
-    "created_at": "2025-02-27T05:50:42.771945",
-    "updated_at": "2025-03-02T14:50:42.771945"
+    "last_email_at": "2025-11-03T06:21:44.445758Z",
+    "created_at": "2025-02-27T05:50:42.771945Z",
+    "updated_at": "2025-03-02T14:50:42.771945Z"
   },
   {
     "id": "17377bb5-70dd-455b-87a3-67587d19a28d",
@@ -566,10 +515,9 @@
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "participant_count": 23,
     "email_count": 6,
-    "last_email_at": "2025-08-06T18:43:44.446777",
-    "is_deleted": true,
-    "created_at": "2025-07-06T13:07:42.772018",
-    "updated_at": "2025-07-16T07:07:42.772018"
+    "last_email_at": "2025-08-06T18:43:44.446777Z",
+    "created_at": "2025-07-06T13:07:42.772018Z",
+    "updated_at": "2025-07-16T07:07:42.772018Z"
   },
   {
     "id": "515d92ea-db3d-42b3-895e-9c9d2294892a",
@@ -577,10 +525,9 @@
     "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "participant_count": 4,
     "email_count": 7,
-    "last_email_at": "2025-10-29T00:09:44.367803",
-    "is_deleted": false,
-    "created_at": "2025-10-12T11:58:42.772092",
-    "updated_at": "2025-11-08T09:58:42.772092"
+    "last_email_at": "2025-10-29T00:09:44.367803Z",
+    "created_at": "2025-10-12T11:58:42.772092Z",
+    "updated_at": "2025-11-08T09:58:42.772092Z"
   },
   {
     "id": "61486735-30c7-4728-a64b-91852a5c84af",
@@ -588,10 +535,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 25,
     "email_count": 25,
-    "last_email_at": "2025-11-24T04:34:44.432156",
-    "is_deleted": false,
-    "created_at": "2025-02-09T15:40:42.772166",
-    "updated_at": "2025-02-16T00:40:42.772166"
+    "last_email_at": "2025-11-24T04:34:44.432156Z",
+    "created_at": "2025-02-09T15:40:42.772166Z",
+    "updated_at": "2025-02-16T00:40:42.772166Z"
   },
   {
     "id": "b58e02ff-daf8-4259-9410-9f6a69374b33",
@@ -599,10 +545,9 @@
     "owner_id": "66627dbe-583e-4799-8d97-ea140fb96dad",
     "participant_count": 82,
     "email_count": 7,
-    "last_email_at": "2025-10-14T23:17:44.394397",
-    "is_deleted": false,
-    "created_at": "2025-02-13T04:50:42.772239",
-    "updated_at": "2025-03-14T04:50:42.772239"
+    "last_email_at": "2025-10-14T23:17:44.394397Z",
+    "created_at": "2025-02-13T04:50:42.772239Z",
+    "updated_at": "2025-03-14T04:50:42.772239Z"
   },
   {
     "id": "272dcd1d-d046-4c44-a1ea-e5ad253246a8",
@@ -610,10 +555,9 @@
     "owner_id": "d58220f6-cc91-49ea-b0ad-f3b645a9fea0",
     "participant_count": 62,
     "email_count": 11,
-    "last_email_at": "2025-12-21T06:55:44.499425",
-    "is_deleted": true,
-    "created_at": "2025-12-16T10:28:42.772312",
-    "updated_at": "2026-01-08T03:28:42.772312"
+    "last_email_at": "2025-12-21T06:55:44.499425Z",
+    "created_at": "2025-12-16T10:28:42.772312Z",
+    "updated_at": "2026-01-08T03:28:42.772312Z"
   },
   {
     "id": "b3bc34b5-76ea-4964-809e-a95ca4433dd3",
@@ -621,10 +565,9 @@
     "owner_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
     "participant_count": 7,
     "email_count": 13,
-    "last_email_at": "2025-12-19T21:35:44.389410",
-    "is_deleted": false,
-    "created_at": "2025-12-29T08:44:42.772385",
-    "updated_at": "2026-01-08T16:53:42.772393"
+    "last_email_at": "2025-12-19T21:35:44.389410Z",
+    "created_at": "2025-12-29T08:44:42.772385Z",
+    "updated_at": "2026-01-08T16:53:42.772393Z"
   },
   {
     "id": "1354cc76-75ce-4d2d-bce7-704ee113fb55",
@@ -632,10 +575,9 @@
     "owner_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "participant_count": 71,
     "email_count": 19,
-    "last_email_at": "2025-09-26T16:53:44.472194",
-    "is_deleted": false,
-    "created_at": "2025-03-12T12:46:42.772458",
-    "updated_at": "2025-03-30T11:46:42.772458"
+    "last_email_at": "2025-09-26T16:53:44.472194Z",
+    "created_at": "2025-03-12T12:46:42.772458Z",
+    "updated_at": "2025-03-30T11:46:42.772458Z"
   },
   {
     "id": "e979d0f6-987b-456a-8716-0a2b0ba210d1",
@@ -643,10 +585,9 @@
     "owner_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "participant_count": 62,
     "email_count": 10,
-    "last_email_at": "2025-11-10T17:10:44.430712",
-    "is_deleted": false,
-    "created_at": "2025-05-09T21:01:42.772530",
-    "updated_at": "2025-06-05T10:01:42.772530"
+    "last_email_at": "2025-11-10T17:10:44.430712Z",
+    "created_at": "2025-05-09T21:01:42.772530Z",
+    "updated_at": "2025-06-05T10:01:42.772530Z"
   },
   {
     "id": "fccbc84b-7760-4955-8b6f-117c38e2e4cf",
@@ -654,10 +595,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "participant_count": 62,
     "email_count": 6,
-    "last_email_at": "2025-12-17T12:53:44.514712",
-    "is_deleted": false,
-    "created_at": "2025-02-13T10:49:42.772603",
-    "updated_at": "2025-02-19T04:49:42.772603"
+    "last_email_at": "2025-12-17T12:53:44.514712Z",
+    "created_at": "2025-02-13T10:49:42.772603Z",
+    "updated_at": "2025-02-19T04:49:42.772603Z"
   },
   {
     "id": "0dccc97e-01ec-4a3b-8628-ef126cf2ac6c",
@@ -665,10 +605,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 51,
     "email_count": 3,
-    "last_email_at": "2025-08-02T19:15:44.339417",
-    "is_deleted": false,
-    "created_at": "2025-04-17T14:34:42.772676",
-    "updated_at": "2025-05-09T13:34:42.772676"
+    "last_email_at": "2025-08-02T19:15:44.339417Z",
+    "created_at": "2025-04-17T14:34:42.772676Z",
+    "updated_at": "2025-05-09T13:34:42.772676Z"
   },
   {
     "id": "a2f94977-e921-4202-837f-6d6121b2dad8",
@@ -676,10 +615,9 @@
     "owner_id": "7fdb663d-4a8c-4c1c-9221-5c53baf1d5e7",
     "participant_count": 69,
     "email_count": 5,
-    "last_email_at": "2025-10-16T16:24:44.355988",
-    "is_deleted": false,
-    "created_at": "2025-01-27T04:21:42.772750",
-    "updated_at": "2025-02-12T13:21:42.772750"
+    "last_email_at": "2025-10-16T16:24:44.355988Z",
+    "created_at": "2025-01-27T04:21:42.772750Z",
+    "updated_at": "2025-02-12T13:21:42.772750Z"
   },
   {
     "id": "5e50d021-85c5-4051-a83b-ccc688a415bb",
@@ -687,10 +625,9 @@
     "owner_id": "d5b9294c-bf70-4f95-8b75-0a2c985d3dc5",
     "participant_count": 14,
     "email_count": 5,
-    "last_email_at": "2025-11-04T08:53:44.328274",
-    "is_deleted": false,
-    "created_at": "2025-06-10T07:11:42.772823",
-    "updated_at": "2025-07-09T06:11:42.772823"
+    "last_email_at": "2025-11-04T08:53:44.328274Z",
+    "created_at": "2025-06-10T07:11:42.772823Z",
+    "updated_at": "2025-07-09T06:11:42.772823Z"
   },
   {
     "id": "a3205d63-d6df-41b4-baa8-ed25aaf6c9f8",
@@ -698,10 +635,9 @@
     "owner_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "participant_count": 63,
     "email_count": 14,
-    "last_email_at": "2025-12-21T20:27:44.356330",
-    "is_deleted": false,
-    "created_at": "2025-02-01T20:11:42.772896",
-    "updated_at": "2025-02-16T12:11:42.772896"
+    "last_email_at": "2025-12-21T20:27:44.356330Z",
+    "created_at": "2025-02-01T20:11:42.772896Z",
+    "updated_at": "2025-02-16T12:11:42.772896Z"
   },
   {
     "id": "34d13eed-b346-40bd-b4f7-76fa1d9581cc",
@@ -709,10 +645,9 @@
     "owner_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "participant_count": 27,
     "email_count": 8,
-    "last_email_at": "2025-12-17T15:27:44.490967",
-    "is_deleted": false,
-    "created_at": "2025-09-04T11:00:42.772969",
-    "updated_at": "2025-09-08T02:00:42.772969"
+    "last_email_at": "2025-12-17T15:27:44.490967Z",
+    "created_at": "2025-09-04T11:00:42.772969Z",
+    "updated_at": "2025-09-08T02:00:42.772969Z"
   },
   {
     "id": "7a2a033b-0d9a-4ba2-88a5-f817fa5acdf7",
@@ -720,10 +655,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "participant_count": 50,
     "email_count": 12,
-    "last_email_at": "2025-11-05T06:47:44.385999",
-    "is_deleted": false,
-    "created_at": "2025-12-08T11:11:42.773043",
-    "updated_at": "2026-01-06T09:11:42.773043"
+    "last_email_at": "2025-11-05T06:47:44.385999Z",
+    "created_at": "2025-12-08T11:11:42.773043Z",
+    "updated_at": "2026-01-06T09:11:42.773043Z"
   },
   {
     "id": "dc6893ea-03f7-4447-a3a6-ce03ec3a4cb5",
@@ -731,10 +665,9 @@
     "owner_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "participant_count": 63,
     "email_count": 7,
-    "last_email_at": "2025-09-14T03:47:44.425120",
-    "is_deleted": false,
-    "created_at": "2025-08-13T03:46:42.773116",
-    "updated_at": "2025-08-26T16:46:42.773116"
+    "last_email_at": "2025-09-14T03:47:44.425120Z",
+    "created_at": "2025-08-13T03:46:42.773116Z",
+    "updated_at": "2025-08-26T16:46:42.773116Z"
   },
   {
     "id": "cb60b066-70a5-4cb4-8522-6df207b5daa9",
@@ -742,10 +675,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 75,
     "email_count": 6,
-    "last_email_at": "2025-11-22T12:01:44.396783",
-    "is_deleted": false,
-    "created_at": "2025-02-25T04:55:42.773189",
-    "updated_at": "2025-02-27T01:55:42.773189"
+    "last_email_at": "2025-11-22T12:01:44.396783Z",
+    "created_at": "2025-02-25T04:55:42.773189Z",
+    "updated_at": "2025-02-27T01:55:42.773189Z"
   },
   {
     "id": "1aae96e0-985d-4b5b-a4b8-26a538ed8e10",
@@ -753,10 +685,9 @@
     "owner_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "participant_count": 15,
     "email_count": 14,
-    "last_email_at": "2025-11-18T12:54:44.361911",
-    "is_deleted": false,
-    "created_at": "2025-05-18T00:11:42.773263",
-    "updated_at": "2025-06-15T13:11:42.773263"
+    "last_email_at": "2025-11-18T12:54:44.361911Z",
+    "created_at": "2025-05-18T00:11:42.773263Z",
+    "updated_at": "2025-06-15T13:11:42.773263Z"
   },
   {
     "id": "b2504c29-456b-43f5-841d-cc76c25588d7",
@@ -764,10 +695,9 @@
     "owner_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "participant_count": 54,
     "email_count": 7,
-    "last_email_at": "2025-12-05T10:58:44.376248",
-    "is_deleted": false,
-    "created_at": "2025-04-22T15:24:42.773337",
-    "updated_at": "2025-05-15T20:24:42.773337"
+    "last_email_at": "2025-12-05T10:58:44.376248Z",
+    "created_at": "2025-04-22T15:24:42.773337Z",
+    "updated_at": "2025-05-15T20:24:42.773337Z"
   },
   {
     "id": "eed64394-a678-4ceb-b3bd-4a0269ef452a",
@@ -775,10 +705,9 @@
     "owner_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "participant_count": 70,
     "email_count": 5,
-    "last_email_at": "2025-12-15T23:47:44.370072",
-    "is_deleted": false,
-    "created_at": "2025-10-17T05:54:42.773409",
-    "updated_at": "2025-11-05T03:54:42.773409"
+    "last_email_at": "2025-12-15T23:47:44.370072Z",
+    "created_at": "2025-10-17T05:54:42.773409Z",
+    "updated_at": "2025-11-05T03:54:42.773409Z"
   },
   {
     "id": "c9d205bd-2b59-4932-8aa0-76345ba50d09",
@@ -786,10 +715,9 @@
     "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
     "participant_count": 61,
     "email_count": 11,
-    "last_email_at": "2025-12-15T15:51:44.331039",
-    "is_deleted": false,
-    "created_at": "2025-08-07T15:53:42.773482",
-    "updated_at": "2025-08-24T20:53:42.773482"
+    "last_email_at": "2025-12-15T15:51:44.331039Z",
+    "created_at": "2025-08-07T15:53:42.773482Z",
+    "updated_at": "2025-08-24T20:53:42.773482Z"
   },
   {
     "id": "9274aa6b-5c67-4246-90f0-b74853419035",
@@ -797,10 +725,9 @@
     "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "participant_count": 67,
     "email_count": 3,
-    "last_email_at": "2025-11-10T02:44:44.503475",
-    "is_deleted": false,
-    "created_at": "2025-11-12T18:13:42.773556",
-    "updated_at": "2025-11-18T12:13:42.773556"
+    "last_email_at": "2025-11-10T02:44:44.503475Z",
+    "created_at": "2025-11-12T18:13:42.773556Z",
+    "updated_at": "2025-11-18T12:13:42.773556Z"
   },
   {
     "id": "4bad4ba0-0f74-4ae5-b1d3-cab656746861",
@@ -808,10 +735,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 47,
     "email_count": 4,
-    "last_email_at": "2025-08-28T12:51:44.511143",
-    "is_deleted": false,
-    "created_at": "2025-10-16T05:09:42.773629",
-    "updated_at": "2025-11-09T15:09:42.773629"
+    "last_email_at": "2025-08-28T12:51:44.511143Z",
+    "created_at": "2025-10-16T05:09:42.773629Z",
+    "updated_at": "2025-11-09T15:09:42.773629Z"
   },
   {
     "id": "3a28c462-833e-4300-91ad-f11321d87344",
@@ -819,10 +745,9 @@
     "owner_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "participant_count": 74,
     "email_count": 13,
-    "last_email_at": "2025-11-27T06:50:44.473390",
-    "is_deleted": false,
-    "created_at": "2025-08-14T04:51:42.773703",
-    "updated_at": "2025-09-11T06:51:42.773703"
+    "last_email_at": "2025-11-27T06:50:44.473390Z",
+    "created_at": "2025-08-14T04:51:42.773703Z",
+    "updated_at": "2025-09-11T06:51:42.773703Z"
   },
   {
     "id": "d7a0cef1-74c0-42c3-9c68-47bc281a8fb2",
@@ -830,10 +755,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 20,
     "email_count": 13,
-    "last_email_at": "2025-09-01T23:57:44.513888",
-    "is_deleted": false,
-    "created_at": "2025-12-21T12:59:42.773777",
-    "updated_at": "2026-01-08T16:53:42.773785"
+    "last_email_at": "2025-09-01T23:57:44.513888Z",
+    "created_at": "2025-12-21T12:59:42.773777Z",
+    "updated_at": "2026-01-08T16:53:42.773785Z"
   },
   {
     "id": "505d1e10-007d-45c0-b048-c2a6a4adb1e7",
@@ -841,10 +765,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 65,
     "email_count": 21,
-    "last_email_at": "2025-12-24T00:40:44.491964",
-    "is_deleted": false,
-    "created_at": "2025-11-28T10:10:42.773851",
-    "updated_at": "2025-12-17T07:10:42.773851"
+    "last_email_at": "2025-12-24T00:40:44.491964Z",
+    "created_at": "2025-11-28T10:10:42.773851Z",
+    "updated_at": "2025-12-17T07:10:42.773851Z"
   },
   {
     "id": "bc9042ab-08d2-40ca-bea8-07a68682f0c6",
@@ -852,10 +775,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 35,
     "email_count": 6,
-    "last_email_at": "2025-08-07T21:21:44.439736",
-    "is_deleted": false,
-    "created_at": "2025-01-25T15:33:42.773924",
-    "updated_at": "2025-02-16T20:33:42.773924"
+    "last_email_at": "2025-08-07T21:21:44.439736Z",
+    "created_at": "2025-01-25T15:33:42.773924Z",
+    "updated_at": "2025-02-16T20:33:42.773924Z"
   },
   {
     "id": "d8c4f850-8caf-4e42-888b-4fb300d8098c",
@@ -863,10 +785,9 @@
     "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
     "participant_count": 92,
     "email_count": 22,
-    "last_email_at": "2025-12-20T20:07:44.397722",
-    "is_deleted": false,
-    "created_at": "2025-01-29T02:26:42.773998",
-    "updated_at": "2025-01-31T19:26:42.773998"
+    "last_email_at": "2025-12-20T20:07:44.397722Z",
+    "created_at": "2025-01-29T02:26:42.773998Z",
+    "updated_at": "2025-01-31T19:26:42.773998Z"
   },
   {
     "id": "5450c12b-8b7b-4cb9-b89f-10418e3af174",
@@ -874,10 +795,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 3,
     "email_count": 11,
-    "last_email_at": "2025-12-10T09:37:44.358557",
-    "is_deleted": false,
-    "created_at": "2025-07-24T22:28:42.774072",
-    "updated_at": "2025-07-31T17:28:42.774072"
+    "last_email_at": "2025-12-10T09:37:44.358557Z",
+    "created_at": "2025-07-24T22:28:42.774072Z",
+    "updated_at": "2025-07-31T17:28:42.774072Z"
   },
   {
     "id": "e7697aaa-83c8-4242-b2be-1b0525d97ec2",
@@ -885,10 +805,9 @@
     "owner_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "participant_count": 21,
     "email_count": 17,
-    "last_email_at": "2025-12-18T09:30:44.442589",
-    "is_deleted": false,
-    "created_at": "2025-05-28T09:30:42.774145",
-    "updated_at": "2025-06-26T05:30:42.774145"
+    "last_email_at": "2025-12-18T09:30:44.442589Z",
+    "created_at": "2025-05-28T09:30:42.774145Z",
+    "updated_at": "2025-06-26T05:30:42.774145Z"
   },
   {
     "id": "3741c4e7-e666-4af3-a295-924528c24172",
@@ -896,10 +815,9 @@
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "participant_count": 96,
     "email_count": 7,
-    "last_email_at": "2025-12-05T02:07:44.337694",
-    "is_deleted": false,
-    "created_at": "2025-06-10T02:27:42.774218",
-    "updated_at": "2025-06-20T05:27:42.774218"
+    "last_email_at": "2025-12-05T02:07:44.337694Z",
+    "created_at": "2025-06-10T02:27:42.774218Z",
+    "updated_at": "2025-06-20T05:27:42.774218Z"
   },
   {
     "id": "35bdb7bd-86d6-44c1-8990-faf3faaf2ce2",
@@ -907,10 +825,9 @@
     "owner_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "participant_count": 97,
     "email_count": 8,
-    "last_email_at": "2025-11-20T16:13:44.381217",
-    "is_deleted": false,
-    "created_at": "2025-12-29T04:04:42.774294",
-    "updated_at": "2026-01-08T16:53:42.774302"
+    "last_email_at": "2025-11-20T16:13:44.381217Z",
+    "created_at": "2025-12-29T04:04:42.774294Z",
+    "updated_at": "2026-01-08T16:53:42.774302Z"
   },
   {
     "id": "3dca7e45-b5cc-4e7a-8cad-8cc02cd8c7c9",
@@ -918,10 +835,9 @@
     "owner_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "participant_count": 10,
     "email_count": 3,
-    "last_email_at": "2025-08-05T04:24:44.330107",
-    "is_deleted": false,
-    "created_at": "2025-04-27T11:04:42.774368",
-    "updated_at": "2025-04-28T11:04:42.774368"
+    "last_email_at": "2025-08-05T04:24:44.330107Z",
+    "created_at": "2025-04-27T11:04:42.774368Z",
+    "updated_at": "2025-04-28T11:04:42.774368Z"
   },
   {
     "id": "4750972f-ffb8-45e0-b93b-1ccb7815bce2",
@@ -929,10 +845,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 60,
     "email_count": 7,
-    "last_email_at": "2025-10-22T05:06:44.451446",
-    "is_deleted": false,
-    "created_at": "2025-12-17T10:13:42.774441",
-    "updated_at": "2025-12-30T05:13:42.774441"
+    "last_email_at": "2025-10-22T05:06:44.451446Z",
+    "created_at": "2025-12-17T10:13:42.774441Z",
+    "updated_at": "2025-12-30T05:13:42.774441Z"
   },
   {
     "id": "723a0628-7b05-4426-b2a4-026520ed7d85",
@@ -940,10 +855,9 @@
     "owner_id": "e74bb28e-1227-4995-89b7-a69cef6ec555",
     "participant_count": 2,
     "email_count": 10,
-    "last_email_at": "2025-11-09T01:20:44.345275",
-    "is_deleted": false,
-    "created_at": "2025-05-10T03:39:42.774683",
-    "updated_at": "2025-05-18T07:39:42.774683"
+    "last_email_at": "2025-11-09T01:20:44.345275Z",
+    "created_at": "2025-05-10T03:39:42.774683Z",
+    "updated_at": "2025-05-18T07:39:42.774683Z"
   },
   {
     "id": "470444d3-e416-496f-a4ce-8375ada2b0b1",
@@ -951,10 +865,9 @@
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "participant_count": 63,
     "email_count": 7,
-    "last_email_at": "2025-10-29T13:59:44.433302",
-    "is_deleted": false,
-    "created_at": "2025-05-09T16:38:42.774851",
-    "updated_at": "2025-05-10T11:38:42.774851"
+    "last_email_at": "2025-10-29T13:59:44.433302Z",
+    "created_at": "2025-05-09T16:38:42.774851Z",
+    "updated_at": "2025-05-10T11:38:42.774851Z"
   },
   {
     "id": "15d4e2f8-f0b1-4049-afb0-02a14bc29fe3",
@@ -962,10 +875,9 @@
     "owner_id": "7fdb663d-4a8c-4c1c-9221-5c53baf1d5e7",
     "participant_count": 61,
     "email_count": 4,
-    "last_email_at": "2025-12-28T23:10:44.419259",
-    "is_deleted": false,
-    "created_at": "2025-10-15T04:48:42.774940",
-    "updated_at": "2025-10-26T09:48:42.774940"
+    "last_email_at": "2025-12-28T23:10:44.419259Z",
+    "created_at": "2025-10-15T04:48:42.774940Z",
+    "updated_at": "2025-10-26T09:48:42.774940Z"
   },
   {
     "id": "fdfebd83-4967-49ce-a82c-2e5841149235",
@@ -973,10 +885,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 7,
     "email_count": 8,
-    "last_email_at": "2025-12-06T23:43:44.478043",
-    "is_deleted": false,
-    "created_at": "2025-04-27T17:57:42.775021",
-    "updated_at": "2025-05-16T05:57:42.775021"
+    "last_email_at": "2025-12-06T23:43:44.478043Z",
+    "created_at": "2025-04-27T17:57:42.775021Z",
+    "updated_at": "2025-05-16T05:57:42.775021Z"
   },
   {
     "id": "5066fb72-2d41-452b-afce-0a1ba3f3ee96",
@@ -984,10 +895,9 @@
     "owner_id": "378c6931-1410-4151-b6d7-f33f2098c460",
     "participant_count": 43,
     "email_count": 13,
-    "last_email_at": "2025-11-02T18:17:44.369850",
-    "is_deleted": true,
-    "created_at": "2025-06-10T21:33:42.775098",
-    "updated_at": "2025-07-01T06:33:42.775098"
+    "last_email_at": "2025-11-02T18:17:44.369850Z",
+    "created_at": "2025-06-10T21:33:42.775098Z",
+    "updated_at": "2025-07-01T06:33:42.775098Z"
   },
   {
     "id": "41f78c34-f7d8-42e3-994d-9a77c95c975b",
@@ -995,10 +905,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 45,
     "email_count": 6,
-    "last_email_at": "2025-11-09T23:03:44.468026",
-    "is_deleted": false,
-    "created_at": "2025-01-26T13:00:42.775174",
-    "updated_at": "2025-01-29T21:00:42.775174"
+    "last_email_at": "2025-11-09T23:03:44.468026Z",
+    "created_at": "2025-01-26T13:00:42.775174Z",
+    "updated_at": "2025-01-29T21:00:42.775174Z"
   },
   {
     "id": "594b2828-f9f3-40ad-a552-8cd1526cd5d1",
@@ -1006,10 +915,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "participant_count": 14,
     "email_count": 19,
-    "last_email_at": "2025-08-24T19:59:44.329161",
-    "is_deleted": false,
-    "created_at": "2025-11-08T06:30:42.775254",
-    "updated_at": "2025-11-25T05:30:42.775254"
+    "last_email_at": "2025-08-24T19:59:44.329161Z",
+    "created_at": "2025-11-08T06:30:42.775254Z",
+    "updated_at": "2025-11-25T05:30:42.775254Z"
   },
   {
     "id": "a74e748a-28d1-4ae2-ac33-00033681da55",
@@ -1017,10 +925,9 @@
     "owner_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "participant_count": 33,
     "email_count": 10,
-    "last_email_at": "2025-11-21T12:55:44.452291",
-    "is_deleted": false,
-    "created_at": "2025-08-24T06:16:42.775332",
-    "updated_at": "2025-09-20T11:16:42.775332"
+    "last_email_at": "2025-11-21T12:55:44.452291Z",
+    "created_at": "2025-08-24T06:16:42.775332Z",
+    "updated_at": "2025-09-20T11:16:42.775332Z"
   },
   {
     "id": "f54f55cf-4bd4-419d-97f5-0f1bf015b0f7",
@@ -1028,10 +935,9 @@
     "owner_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "participant_count": 100,
     "email_count": 16,
-    "last_email_at": "2025-12-20T17:50:44.437817",
-    "is_deleted": false,
-    "created_at": "2025-09-25T17:02:42.775406",
-    "updated_at": "2025-10-02T19:02:42.775406"
+    "last_email_at": "2025-12-20T17:50:44.437817Z",
+    "created_at": "2025-09-25T17:02:42.775406Z",
+    "updated_at": "2025-10-02T19:02:42.775406Z"
   },
   {
     "id": "8b9c5afc-4344-4f92-81eb-5f3695f986bb",
@@ -1039,10 +945,9 @@
     "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
     "participant_count": 1,
     "email_count": 7,
-    "last_email_at": "2025-09-07T03:14:44.476239",
-    "is_deleted": false,
-    "created_at": "2025-08-30T14:04:42.775484",
-    "updated_at": "2025-09-12T12:04:42.775484"
+    "last_email_at": "2025-09-07T03:14:44.476239Z",
+    "created_at": "2025-08-30T14:04:42.775484Z",
+    "updated_at": "2025-09-12T12:04:42.775484Z"
   },
   {
     "id": "aca09e5b-58fb-42e0-89c2-b096f1cf3f7a",
@@ -1050,10 +955,9 @@
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "participant_count": 7,
     "email_count": 15,
-    "last_email_at": "2025-11-20T05:05:44.488004",
-    "is_deleted": false,
-    "created_at": "2025-11-24T07:03:42.775559",
-    "updated_at": "2025-11-24T19:03:42.775559"
+    "last_email_at": "2025-11-20T05:05:44.488004Z",
+    "created_at": "2025-11-24T07:03:42.775559Z",
+    "updated_at": "2025-11-24T19:03:42.775559Z"
   },
   {
     "id": "3dee1d2f-82ce-4351-ae8c-de5db6df19c0",
@@ -1061,10 +965,9 @@
     "owner_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "participant_count": 28,
     "email_count": 4,
-    "last_email_at": "2026-01-07T14:35:44.398473",
-    "is_deleted": false,
-    "created_at": "2025-12-07T20:39:42.775632",
-    "updated_at": "2026-01-04T03:39:42.775632"
+    "last_email_at": "2026-01-07T14:35:44.398473Z",
+    "created_at": "2025-12-07T20:39:42.775632Z",
+    "updated_at": "2026-01-04T03:39:42.775632Z"
   },
   {
     "id": "a6f26473-ab70-4b2c-8f9e-5e70632067fa",
@@ -1072,10 +975,9 @@
     "owner_id": "e74bb28e-1227-4995-89b7-a69cef6ec555",
     "participant_count": 41,
     "email_count": 19,
-    "last_email_at": "2025-10-04T20:18:44.428150",
-    "is_deleted": false,
-    "created_at": "2025-02-24T10:56:42.775705",
-    "updated_at": "2025-03-25T23:56:42.775705"
+    "last_email_at": "2025-10-04T20:18:44.428150Z",
+    "created_at": "2025-02-24T10:56:42.775705Z",
+    "updated_at": "2025-03-25T23:56:42.775705Z"
   },
   {
     "id": "dd69bf6b-18ab-48bc-a196-b0377030907a",
@@ -1083,10 +985,9 @@
     "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "participant_count": 7,
     "email_count": 10,
-    "last_email_at": "2025-12-22T13:33:44.465383",
-    "is_deleted": false,
-    "created_at": "2025-12-23T06:45:42.775779",
-    "updated_at": "2026-01-04T05:45:42.775779"
+    "last_email_at": "2025-12-22T13:33:44.465383Z",
+    "created_at": "2025-12-23T06:45:42.775779Z",
+    "updated_at": "2026-01-04T05:45:42.775779Z"
   },
   {
     "id": "694f9768-ecf8-464b-9476-10bbcae1061a",
@@ -1094,10 +995,9 @@
     "owner_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "participant_count": 75,
     "email_count": 10,
-    "last_email_at": "2025-09-04T08:19:44.398315",
-    "is_deleted": false,
-    "created_at": "2025-02-07T05:19:42.775852",
-    "updated_at": "2025-02-15T20:19:42.775852"
+    "last_email_at": "2025-09-04T08:19:44.398315Z",
+    "created_at": "2025-02-07T05:19:42.775852Z",
+    "updated_at": "2025-02-15T20:19:42.775852Z"
   },
   {
     "id": "e264524e-763a-48ac-b0b9-391400f288fb",
@@ -1105,10 +1005,9 @@
     "owner_id": "d5b9294c-bf70-4f95-8b75-0a2c985d3dc5",
     "participant_count": 74,
     "email_count": 15,
-    "last_email_at": "2025-12-23T02:17:44.352832",
-    "is_deleted": false,
-    "created_at": "2025-06-21T07:43:42.775927",
-    "updated_at": "2025-07-10T23:43:42.775927"
+    "last_email_at": "2025-12-23T02:17:44.352832Z",
+    "created_at": "2025-06-21T07:43:42.775927Z",
+    "updated_at": "2025-07-10T23:43:42.775927Z"
   },
   {
     "id": "e0964e3f-07c5-495e-afb5-ff72f0eddee6",
@@ -1116,10 +1015,9 @@
     "owner_id": "66627dbe-583e-4799-8d97-ea140fb96dad",
     "participant_count": 0,
     "email_count": 14,
-    "last_email_at": "2025-11-19T13:37:44.392119",
-    "is_deleted": false,
-    "created_at": "2025-09-11T20:24:42.776002",
-    "updated_at": "2025-09-18T09:24:42.776002"
+    "last_email_at": "2025-11-19T13:37:44.392119Z",
+    "created_at": "2025-09-11T20:24:42.776002Z",
+    "updated_at": "2025-09-18T09:24:42.776002Z"
   },
   {
     "id": "5198fe08-683b-49b1-a434-9748cc3d8674",
@@ -1127,10 +1025,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 71,
     "email_count": 10,
-    "last_email_at": "2026-01-05T10:40:44.337185",
-    "is_deleted": false,
-    "created_at": "2025-08-03T11:34:42.776075",
-    "updated_at": "2025-08-06T10:34:42.776075"
+    "last_email_at": "2026-01-05T10:40:44.337185Z",
+    "created_at": "2025-08-03T11:34:42.776075Z",
+    "updated_at": "2025-08-06T10:34:42.776075Z"
   },
   {
     "id": "b74fb5b5-d3b0-41f6-bfe6-b2b6b35bf204",
@@ -1138,10 +1035,9 @@
     "owner_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "participant_count": 30,
     "email_count": 4,
-    "last_email_at": "2025-12-11T02:47:44.485521",
-    "is_deleted": false,
-    "created_at": "2025-07-02T02:30:42.776148",
-    "updated_at": "2025-07-15T01:30:42.776148"
+    "last_email_at": "2025-12-11T02:47:44.485521Z",
+    "created_at": "2025-07-02T02:30:42.776148Z",
+    "updated_at": "2025-07-15T01:30:42.776148Z"
   },
   {
     "id": "902e10a9-a77f-456f-99cc-7ef6ec9cb553",
@@ -1149,10 +1045,9 @@
     "owner_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "participant_count": 91,
     "email_count": 8,
-    "last_email_at": "2025-07-14T15:36:44.345024",
-    "is_deleted": false,
-    "created_at": "2025-09-22T23:48:42.776224",
-    "updated_at": "2025-09-26T22:48:42.776224"
+    "last_email_at": "2025-07-14T15:36:44.345024Z",
+    "created_at": "2025-09-22T23:48:42.776224Z",
+    "updated_at": "2025-09-26T22:48:42.776224Z"
   },
   {
     "id": "bbd9acc1-9c76-46b2-9bc6-e886cdbb2c3a",
@@ -1160,10 +1055,9 @@
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "participant_count": 73,
     "email_count": 5,
-    "last_email_at": "2025-10-08T10:20:44.335381",
-    "is_deleted": false,
-    "created_at": "2025-10-15T08:36:42.776297",
-    "updated_at": "2025-11-01T16:36:42.776297"
+    "last_email_at": "2025-10-08T10:20:44.335381Z",
+    "created_at": "2025-10-15T08:36:42.776297Z",
+    "updated_at": "2025-11-01T16:36:42.776297Z"
   },
   {
     "id": "b1eee338-f6f6-40e6-9178-38a2adcb9bce",
@@ -1171,10 +1065,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 86,
     "email_count": 9,
-    "last_email_at": "2025-12-28T02:11:44.361525",
-    "is_deleted": false,
-    "created_at": "2025-11-16T18:03:42.776369",
-    "updated_at": "2025-11-20T03:03:42.776369"
+    "last_email_at": "2025-12-28T02:11:44.361525Z",
+    "created_at": "2025-11-16T18:03:42.776369Z",
+    "updated_at": "2025-11-20T03:03:42.776369Z"
   },
   {
     "id": "4e340d09-b917-4b0d-8fe9-6dae43d43e70",
@@ -1182,10 +1075,9 @@
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "participant_count": 68,
     "email_count": 2,
-    "last_email_at": "2025-08-10T04:42:44.340909",
-    "is_deleted": false,
-    "created_at": "2025-10-11T06:21:42.776439",
-    "updated_at": "2025-11-05T14:21:42.776439"
+    "last_email_at": "2025-08-10T04:42:44.340909Z",
+    "created_at": "2025-10-11T06:21:42.776439Z",
+    "updated_at": "2025-11-05T14:21:42.776439Z"
   },
   {
     "id": "24a359d9-1922-4de7-9d5b-2603a18baf6f",
@@ -1193,10 +1085,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 52,
     "email_count": 8,
-    "last_email_at": "2025-11-04T09:50:44.353777",
-    "is_deleted": false,
-    "created_at": "2025-04-02T09:42:42.776512",
-    "updated_at": "2025-04-18T19:42:42.776512"
+    "last_email_at": "2025-11-04T09:50:44.353777Z",
+    "created_at": "2025-04-02T09:42:42.776512Z",
+    "updated_at": "2025-04-18T19:42:42.776512Z"
   },
   {
     "id": "7435469e-2c5d-4f50-bd86-8422c6b94c00",
@@ -1204,10 +1095,9 @@
     "owner_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "participant_count": 19,
     "email_count": 5,
-    "last_email_at": "2025-12-26T00:12:44.435345",
-    "is_deleted": false,
-    "created_at": "2025-03-25T02:58:42.776585",
-    "updated_at": "2025-04-10T16:58:42.776585"
+    "last_email_at": "2025-12-26T00:12:44.435345Z",
+    "created_at": "2025-03-25T02:58:42.776585Z",
+    "updated_at": "2025-04-10T16:58:42.776585Z"
   },
   {
     "id": "9468fa86-d2e4-40d2-8f2e-f68ebf388f92",
@@ -1215,10 +1105,9 @@
     "owner_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "participant_count": 16,
     "email_count": 9,
-    "last_email_at": "2025-06-18T04:02:44.327670",
-    "is_deleted": false,
-    "created_at": "2025-03-19T10:40:42.776657",
-    "updated_at": "2025-04-10T20:40:42.776657"
+    "last_email_at": "2025-06-18T04:02:44.327670Z",
+    "created_at": "2025-03-19T10:40:42.776657Z",
+    "updated_at": "2025-04-10T20:40:42.776657Z"
   },
   {
     "id": "d3a42eb4-adb6-46c9-b808-cb54ad297a77",
@@ -1226,10 +1115,9 @@
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "participant_count": 3,
     "email_count": 10,
-    "last_email_at": "2025-12-31T23:15:44.505599",
-    "is_deleted": false,
-    "created_at": "2025-07-10T08:35:42.776730",
-    "updated_at": "2025-08-01T01:35:42.776730"
+    "last_email_at": "2025-12-31T23:15:44.505599Z",
+    "created_at": "2025-07-10T08:35:42.776730Z",
+    "updated_at": "2025-08-01T01:35:42.776730Z"
   },
   {
     "id": "7b91ba58-3935-4731-a611-f9c703ec6752",
@@ -1237,10 +1125,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "participant_count": 1,
     "email_count": 28,
-    "last_email_at": "2025-12-16T12:26:44.419803",
-    "is_deleted": false,
-    "created_at": "2025-04-21T18:54:42.776802",
-    "updated_at": "2025-05-06T00:54:42.776802"
+    "last_email_at": "2025-12-16T12:26:44.419803Z",
+    "created_at": "2025-04-21T18:54:42.776802Z",
+    "updated_at": "2025-05-06T00:54:42.776802Z"
   },
   {
     "id": "c0b7d6c7-e4da-4c83-bbdb-418473f32576",
@@ -1248,10 +1135,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 58,
     "email_count": 7,
-    "last_email_at": "2025-12-02T02:39:44.434735",
-    "is_deleted": false,
-    "created_at": "2025-02-13T09:55:42.776872",
-    "updated_at": "2025-03-11T20:55:42.776872"
+    "last_email_at": "2025-12-02T02:39:44.434735Z",
+    "created_at": "2025-02-13T09:55:42.776872Z",
+    "updated_at": "2025-03-11T20:55:42.776872Z"
   },
   {
     "id": "d8fbd10e-75e7-4a3e-b9e1-35ba516ee692",
@@ -1259,10 +1145,9 @@
     "owner_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "participant_count": 80,
     "email_count": 11,
-    "last_email_at": "2025-09-15T10:41:44.411216",
-    "is_deleted": false,
-    "created_at": "2025-12-09T11:48:42.776945",
-    "updated_at": "2025-12-16T23:48:42.776945"
+    "last_email_at": "2025-09-15T10:41:44.411216Z",
+    "created_at": "2025-12-09T11:48:42.776945Z",
+    "updated_at": "2025-12-16T23:48:42.776945Z"
   },
   {
     "id": "4de21050-b8ca-43a2-bfef-7e6d1273e324",
@@ -1270,10 +1155,9 @@
     "owner_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "participant_count": 65,
     "email_count": 12,
-    "last_email_at": "2025-12-21T17:43:44.503707",
-    "is_deleted": false,
-    "created_at": "2025-06-27T02:32:42.777017",
-    "updated_at": "2025-07-21T00:32:42.777017"
+    "last_email_at": "2025-12-21T17:43:44.503707Z",
+    "created_at": "2025-06-27T02:32:42.777017Z",
+    "updated_at": "2025-07-21T00:32:42.777017Z"
   },
   {
     "id": "e36721d6-760f-4f22-8d42-b963744f1e75",
@@ -1281,10 +1165,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 52,
     "email_count": 3,
-    "last_email_at": "2025-09-23T20:06:44.444106",
-    "is_deleted": false,
-    "created_at": "2025-07-08T04:21:42.777091",
-    "updated_at": "2025-08-05T17:21:42.777091"
+    "last_email_at": "2025-09-23T20:06:44.444106Z",
+    "created_at": "2025-07-08T04:21:42.777091Z",
+    "updated_at": "2025-08-05T17:21:42.777091Z"
   },
   {
     "id": "c1d62758-dcb0-42c0-aee6-51c0f18e5d71",
@@ -1292,10 +1175,9 @@
     "owner_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "participant_count": 80,
     "email_count": 7,
-    "last_email_at": "2025-12-18T02:28:44.477045",
-    "is_deleted": false,
-    "created_at": "2025-02-21T13:59:42.777178",
-    "updated_at": "2025-03-11T14:59:42.777178"
+    "last_email_at": "2025-12-18T02:28:44.477045Z",
+    "created_at": "2025-02-21T13:59:42.777178Z",
+    "updated_at": "2025-03-11T14:59:42.777178Z"
   },
   {
     "id": "47c405d2-2a34-4fc0-bc9a-8a8bbc8a746a",
@@ -1303,10 +1185,9 @@
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "participant_count": 15,
     "email_count": 19,
-    "last_email_at": "2025-12-04T22:30:44.352118",
-    "is_deleted": false,
-    "created_at": "2025-07-13T12:58:42.777258",
-    "updated_at": "2025-08-06T00:58:42.777258"
+    "last_email_at": "2025-12-04T22:30:44.352118Z",
+    "created_at": "2025-07-13T12:58:42.777258Z",
+    "updated_at": "2025-08-06T00:58:42.777258Z"
   },
   {
     "id": "73f02fa6-b20d-447c-bd45-2775ec5da63c",
@@ -1314,10 +1195,9 @@
     "owner_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "participant_count": 71,
     "email_count": 19,
-    "last_email_at": "2025-09-06T16:38:44.350229",
-    "is_deleted": false,
-    "created_at": "2025-05-13T06:12:42.777333",
-    "updated_at": "2025-05-30T18:12:42.777333"
+    "last_email_at": "2025-09-06T16:38:44.350229Z",
+    "created_at": "2025-05-13T06:12:42.777333Z",
+    "updated_at": "2025-05-30T18:12:42.777333Z"
   },
   {
     "id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
@@ -1325,10 +1205,9 @@
     "owner_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
     "participant_count": 50,
     "email_count": 19,
-    "last_email_at": "2026-01-07T16:40:44.327852",
-    "is_deleted": false,
-    "created_at": "2025-05-01T03:36:42.777409",
-    "updated_at": "2025-05-10T18:36:42.777409"
+    "last_email_at": "2026-01-07T16:40:44.327852Z",
+    "created_at": "2025-05-01T03:36:42.777409Z",
+    "updated_at": "2025-05-10T18:36:42.777409Z"
   },
   {
     "id": "5759bd3a-1fee-47a5-b4bb-a36088eac311",
@@ -1336,10 +1215,9 @@
     "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "participant_count": 5,
     "email_count": 10,
-    "last_email_at": "2025-05-14T18:18:44.454170",
-    "is_deleted": false,
-    "created_at": "2025-09-19T01:33:42.777481",
-    "updated_at": "2025-09-21T10:33:42.777481"
+    "last_email_at": "2025-05-14T18:18:44.454170Z",
+    "created_at": "2025-09-19T01:33:42.777481Z",
+    "updated_at": "2025-09-21T10:33:42.777481Z"
   },
   {
     "id": "700077ca-c01d-414e-ad34-8453772c0d8d",
@@ -1347,10 +1225,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 96,
     "email_count": 7,
-    "last_email_at": "2025-11-21T23:53:44.402466",
-    "is_deleted": false,
-    "created_at": "2025-05-20T18:18:42.777553",
-    "updated_at": "2025-05-30T21:18:42.777553"
+    "last_email_at": "2025-11-21T23:53:44.402466Z",
+    "created_at": "2025-05-20T18:18:42.777553Z",
+    "updated_at": "2025-05-30T21:18:42.777553Z"
   },
   {
     "id": "8b69117e-4eff-4c5c-8ff3-dcb7aafaee9e",
@@ -1358,10 +1235,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 13,
     "email_count": 11,
-    "last_email_at": "2025-11-04T05:14:44.444461",
-    "is_deleted": false,
-    "created_at": "2025-11-12T13:02:42.777625",
-    "updated_at": "2025-12-08T08:02:42.777625"
+    "last_email_at": "2025-11-04T05:14:44.444461Z",
+    "created_at": "2025-11-12T13:02:42.777625Z",
+    "updated_at": "2025-12-08T08:02:42.777625Z"
   },
   {
     "id": "3af5210d-efac-49a0-8cff-80bb7a1f8b58",
@@ -1369,10 +1245,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "participant_count": 53,
     "email_count": 7,
-    "last_email_at": "2025-12-27T20:06:44.517174",
-    "is_deleted": false,
-    "created_at": "2025-11-20T18:44:42.777696",
-    "updated_at": "2025-12-20T07:44:42.777696"
+    "last_email_at": "2025-12-27T20:06:44.517174Z",
+    "created_at": "2025-11-20T18:44:42.777696Z",
+    "updated_at": "2025-12-20T07:44:42.777696Z"
   },
   {
     "id": "f76b2de5-a6fe-41c4-9718-0e583723e6d5",
@@ -1380,10 +1255,9 @@
     "owner_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "participant_count": 83,
     "email_count": 7,
-    "last_email_at": "2025-11-28T04:15:44.494774",
-    "is_deleted": false,
-    "created_at": "2025-11-05T17:10:42.777768",
-    "updated_at": "2025-11-18T04:10:42.777768"
+    "last_email_at": "2025-11-28T04:15:44.494774Z",
+    "created_at": "2025-11-05T17:10:42.777768Z",
+    "updated_at": "2025-11-18T04:10:42.777768Z"
   },
   {
     "id": "823b5eb9-ac65-4d2e-9685-71c0f9b5db7e",
@@ -1391,10 +1265,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "participant_count": 29,
     "email_count": 5,
-    "last_email_at": "2025-09-11T08:42:44.420584",
-    "is_deleted": false,
-    "created_at": "2025-10-26T08:14:42.777840",
-    "updated_at": "2025-11-20T16:14:42.777840"
+    "last_email_at": "2025-09-11T08:42:44.420584Z",
+    "created_at": "2025-10-26T08:14:42.777840Z",
+    "updated_at": "2025-11-20T16:14:42.777840Z"
   },
   {
     "id": "503b842b-22e3-49ba-9375-ae8dbc3fe222",
@@ -1402,10 +1275,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "participant_count": 6,
     "email_count": 20,
-    "last_email_at": "2025-11-13T13:28:44.439491",
-    "is_deleted": false,
-    "created_at": "2025-02-13T07:15:42.777912",
-    "updated_at": "2025-03-08T09:15:42.777912"
+    "last_email_at": "2025-11-13T13:28:44.439491Z",
+    "created_at": "2025-02-13T07:15:42.777912Z",
+    "updated_at": "2025-03-08T09:15:42.777912Z"
   },
   {
     "id": "f213d3ef-7df5-48e9-be64-7e18971cb3c7",
@@ -1413,10 +1285,9 @@
     "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "participant_count": 98,
     "email_count": 6,
-    "last_email_at": "2025-10-15T09:02:44.406940",
-    "is_deleted": false,
-    "created_at": "2025-07-08T22:56:42.777988",
-    "updated_at": "2025-07-17T02:56:42.777988"
+    "last_email_at": "2025-10-15T09:02:44.406940Z",
+    "created_at": "2025-07-08T22:56:42.777988Z",
+    "updated_at": "2025-07-17T02:56:42.777988Z"
   },
   {
     "id": "7261eb0b-92b9-4d06-98b9-5ef9dd9b8eef",
@@ -1424,10 +1295,9 @@
     "owner_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "participant_count": 44,
     "email_count": 8,
-    "last_email_at": "2025-08-04T04:14:44.404678",
-    "is_deleted": false,
-    "created_at": "2025-05-12T08:38:42.778060",
-    "updated_at": "2025-06-05T05:38:42.778060"
+    "last_email_at": "2025-08-04T04:14:44.404678Z",
+    "created_at": "2025-05-12T08:38:42.778060Z",
+    "updated_at": "2025-06-05T05:38:42.778060Z"
   },
   {
     "id": "3c64ae0a-4431-4ca1-aafc-5de22322a9a2",
@@ -1435,10 +1305,9 @@
     "owner_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "participant_count": 69,
     "email_count": 6,
-    "last_email_at": "2025-08-03T18:59:44.331803",
-    "is_deleted": false,
-    "created_at": "2025-06-13T13:32:42.778131",
-    "updated_at": "2025-06-25T09:32:42.778131"
+    "last_email_at": "2025-08-03T18:59:44.331803Z",
+    "created_at": "2025-06-13T13:32:42.778131Z",
+    "updated_at": "2025-06-25T09:32:42.778131Z"
   },
   {
     "id": "912b224a-b0bf-44eb-b201-876e176a9f75",
@@ -1446,10 +1315,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000003",
     "participant_count": 5,
     "email_count": 13,
-    "last_email_at": "2025-11-08T07:48:44.351327",
-    "is_deleted": false,
-    "created_at": "2025-09-25T16:48:42.778202",
-    "updated_at": "2025-10-13T04:48:42.778202"
+    "last_email_at": "2025-11-08T07:48:44.351327Z",
+    "created_at": "2025-09-25T16:48:42.778202Z",
+    "updated_at": "2025-10-13T04:48:42.778202Z"
   },
   {
     "id": "9b20e72f-8df1-46b8-9e2a-b7ab76b746a8",
@@ -1457,10 +1325,9 @@
     "owner_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "participant_count": 8,
     "email_count": 18,
-    "last_email_at": "2025-12-05T20:46:44.499609",
-    "is_deleted": false,
-    "created_at": "2025-01-12T21:15:42.778274",
-    "updated_at": "2025-01-17T04:15:42.778274"
+    "last_email_at": "2025-12-05T20:46:44.499609Z",
+    "created_at": "2025-01-12T21:15:42.778274Z",
+    "updated_at": "2025-01-17T04:15:42.778274Z"
   },
   {
     "id": "d0942bcc-10ce-4724-a644-08b135bc560e",
@@ -1468,10 +1335,9 @@
     "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "participant_count": 18,
     "email_count": 5,
-    "last_email_at": "2025-08-10T21:08:44.404882",
-    "is_deleted": false,
-    "created_at": "2025-06-23T16:29:42.778345",
-    "updated_at": "2025-07-14T15:29:42.778345"
+    "last_email_at": "2025-08-10T21:08:44.404882Z",
+    "created_at": "2025-06-23T16:29:42.778345Z",
+    "updated_at": "2025-07-14T15:29:42.778345Z"
   },
   {
     "id": "05cad32d-9402-401f-bc4a-2662efdf4909",
@@ -1479,10 +1345,9 @@
     "owner_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "participant_count": 36,
     "email_count": 13,
-    "last_email_at": "2025-10-18T14:06:44.339756",
-    "is_deleted": false,
-    "created_at": "2025-06-06T00:23:42.778416",
-    "updated_at": "2025-06-07T11:23:42.778416"
+    "last_email_at": "2025-10-18T14:06:44.339756Z",
+    "created_at": "2025-06-06T00:23:42.778416Z",
+    "updated_at": "2025-06-07T11:23:42.778416Z"
   },
   {
     "id": "52508c14-f995-481b-87a0-6048ddc09aac",
@@ -1490,10 +1355,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 66,
     "email_count": 8,
-    "last_email_at": "2025-11-26T12:11:44.344269",
-    "is_deleted": false,
-    "created_at": "2025-10-13T03:00:42.778487",
-    "updated_at": "2025-10-15T10:00:42.778487"
+    "last_email_at": "2025-11-26T12:11:44.344269Z",
+    "created_at": "2025-10-13T03:00:42.778487Z",
+    "updated_at": "2025-10-15T10:00:42.778487Z"
   },
   {
     "id": "8729fe1c-9bea-475e-b984-e1625fddbcf3",
@@ -1501,10 +1365,9 @@
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "participant_count": 14,
     "email_count": 13,
-    "last_email_at": "2025-11-09T01:25:44.502439",
-    "is_deleted": false,
-    "created_at": "2025-06-14T13:58:42.778558",
-    "updated_at": "2025-07-14T06:58:42.778558"
+    "last_email_at": "2025-11-09T01:25:44.502439Z",
+    "created_at": "2025-06-14T13:58:42.778558Z",
+    "updated_at": "2025-07-14T06:58:42.778558Z"
   },
   {
     "id": "85e59286-8fae-48f4-8e8c-f501d449783e",
@@ -1512,10 +1375,9 @@
     "owner_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "participant_count": 54,
     "email_count": 15,
-    "last_email_at": "2025-12-08T07:47:44.368166",
-    "is_deleted": false,
-    "created_at": "2026-01-02T14:34:42.778630",
-    "updated_at": "2026-01-06T11:34:42.778630"
+    "last_email_at": "2025-12-08T07:47:44.368166Z",
+    "created_at": "2026-01-02T14:34:42.778630Z",
+    "updated_at": "2026-01-06T11:34:42.778630Z"
   },
   {
     "id": "bc2671d2-4a09-4210-a2e4-9a5f494a3f44",
@@ -1523,10 +1385,9 @@
     "owner_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "participant_count": 94,
     "email_count": 13,
-    "last_email_at": "2025-10-04T22:35:44.408939",
-    "is_deleted": false,
-    "created_at": "2025-12-23T06:12:42.778701",
-    "updated_at": "2026-01-01T15:12:42.778701"
+    "last_email_at": "2025-10-04T22:35:44.408939Z",
+    "created_at": "2025-12-23T06:12:42.778701Z",
+    "updated_at": "2026-01-01T15:12:42.778701Z"
   },
   {
     "id": "b47e6530-8f6a-41b7-b5bc-df0621ce7c4b",
@@ -1534,10 +1395,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 47,
     "email_count": 12,
-    "last_email_at": "2025-12-19T19:41:44.413323",
-    "is_deleted": false,
-    "created_at": "2025-12-27T19:45:42.778773",
-    "updated_at": "2025-12-31T16:45:42.778773"
+    "last_email_at": "2025-12-19T19:41:44.413323Z",
+    "created_at": "2025-12-27T19:45:42.778773Z",
+    "updated_at": "2025-12-31T16:45:42.778773Z"
   },
   {
     "id": "45634cba-4c0e-4ba2-bea6-926d05742e36",
@@ -1545,10 +1405,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 96,
     "email_count": 7,
-    "last_email_at": "2025-11-25T07:33:44.391482",
-    "is_deleted": false,
-    "created_at": "2025-08-31T07:08:42.778845",
-    "updated_at": "2025-09-14T19:08:42.778845"
+    "last_email_at": "2025-11-25T07:33:44.391482Z",
+    "created_at": "2025-08-31T07:08:42.778845Z",
+    "updated_at": "2025-09-14T19:08:42.778845Z"
   },
   {
     "id": "8eb3afd3-91b9-480a-b1f8-a947f680a510",
@@ -1556,10 +1415,9 @@
     "owner_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "participant_count": 2,
     "email_count": 13,
-    "last_email_at": "2025-09-04T21:21:44.458193",
-    "is_deleted": false,
-    "created_at": "2025-03-16T17:06:42.778917",
-    "updated_at": "2025-03-30T20:06:42.778917"
+    "last_email_at": "2025-09-04T21:21:44.458193Z",
+    "created_at": "2025-03-16T17:06:42.778917Z",
+    "updated_at": "2025-03-30T20:06:42.778917Z"
   },
   {
     "id": "e6e0bc91-4853-41c1-a89f-ab754dd20a29",
@@ -1567,10 +1425,9 @@
     "owner_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "participant_count": 5,
     "email_count": 9,
-    "last_email_at": "2025-12-09T06:15:44.332176",
-    "is_deleted": false,
-    "created_at": "2025-06-15T02:21:42.778988",
-    "updated_at": "2025-07-09T13:21:42.778988"
+    "last_email_at": "2025-12-09T06:15:44.332176Z",
+    "created_at": "2025-06-15T02:21:42.778988Z",
+    "updated_at": "2025-07-09T13:21:42.778988Z"
   },
   {
     "id": "2a2c3e56-3266-454b-94e2-9e6dd8cee5bf",
@@ -1578,10 +1435,9 @@
     "owner_id": "f64790b6-f672-4aba-8797-d7eafa6add81",
     "participant_count": 16,
     "email_count": 13,
-    "last_email_at": "2025-11-07T13:27:44.407110",
-    "is_deleted": false,
-    "created_at": "2025-05-15T04:00:42.779058",
-    "updated_at": "2025-06-08T10:00:42.779058"
+    "last_email_at": "2025-11-07T13:27:44.407110Z",
+    "created_at": "2025-05-15T04:00:42.779058Z",
+    "updated_at": "2025-06-08T10:00:42.779058Z"
   },
   {
     "id": "cb347796-f74e-4768-9381-c4da4cc15e90",
@@ -1589,10 +1445,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "participant_count": 73,
     "email_count": 5,
-    "last_email_at": "2025-07-20T11:40:44.377545",
-    "is_deleted": false,
-    "created_at": "2025-05-11T18:16:42.779129",
-    "updated_at": "2025-05-20T12:16:42.779129"
+    "last_email_at": "2025-07-20T11:40:44.377545Z",
+    "created_at": "2025-05-11T18:16:42.779129Z",
+    "updated_at": "2025-05-20T12:16:42.779129Z"
   },
   {
     "id": "442c59fc-5eae-4ef8-b03b-b0ce90f5235d",
@@ -1600,10 +1455,9 @@
     "owner_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "participant_count": 9,
     "email_count": 13,
-    "last_email_at": "2025-12-25T17:12:44.438888",
-    "is_deleted": false,
-    "created_at": "2025-02-17T22:03:42.779200",
-    "updated_at": "2025-02-25T11:03:42.779200"
+    "last_email_at": "2025-12-25T17:12:44.438888Z",
+    "created_at": "2025-02-17T22:03:42.779200Z",
+    "updated_at": "2025-02-25T11:03:42.779200Z"
   },
   {
     "id": "26689012-3b11-4122-89a2-60d79a6ca2a9",
@@ -1611,10 +1465,9 @@
     "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "participant_count": 6,
     "email_count": 17,
-    "last_email_at": "2025-12-20T03:37:44.369123",
-    "is_deleted": true,
-    "created_at": "2025-07-16T15:48:42.779270",
-    "updated_at": "2025-07-30T00:48:42.779270"
+    "last_email_at": "2025-12-20T03:37:44.369123Z",
+    "created_at": "2025-07-16T15:48:42.779270Z",
+    "updated_at": "2025-07-30T00:48:42.779270Z"
   },
   {
     "id": "226f062c-b391-427d-9199-e02b20ccdb08",
@@ -1622,10 +1475,9 @@
     "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
     "participant_count": 73,
     "email_count": 24,
-    "last_email_at": "2025-12-26T03:53:44.375873",
-    "is_deleted": true,
-    "created_at": "2025-01-19T13:56:42.779339",
-    "updated_at": "2025-02-13T16:56:42.779339"
+    "last_email_at": "2025-12-26T03:53:44.375873Z",
+    "created_at": "2025-01-19T13:56:42.779339Z",
+    "updated_at": "2025-02-13T16:56:42.779339Z"
   },
   {
     "id": "ac9d9c60-64e6-49dc-b577-e0a69beefa3b",
@@ -1633,10 +1485,9 @@
     "owner_id": "3a049f02-9d61-4988-8bf4-4b65a3d7c553",
     "participant_count": 98,
     "email_count": 6,
-    "last_email_at": "2025-03-31T04:27:44.476643",
-    "is_deleted": false,
-    "created_at": "2025-09-18T12:51:42.779410",
-    "updated_at": "2025-10-07T15:51:42.779410"
+    "last_email_at": "2025-03-31T04:27:44.476643Z",
+    "created_at": "2025-09-18T12:51:42.779410Z",
+    "updated_at": "2025-10-07T15:51:42.779410Z"
   },
   {
     "id": "db355768-8563-4b34-b64c-455ded71d14b",
@@ -1644,10 +1495,9 @@
     "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "participant_count": 18,
     "email_count": 3,
-    "last_email_at": "2025-10-24T05:24:44.382337",
-    "is_deleted": false,
-    "created_at": "2025-03-01T17:57:42.779482",
-    "updated_at": "2025-03-12T18:57:42.779482"
+    "last_email_at": "2025-10-24T05:24:44.382337Z",
+    "created_at": "2025-03-01T17:57:42.779482Z",
+    "updated_at": "2025-03-12T18:57:42.779482Z"
   },
   {
     "id": "c644a6f9-fc30-4f4f-adb0-56b226aa489e",
@@ -1655,10 +1505,9 @@
     "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "participant_count": 87,
     "email_count": 10,
-    "last_email_at": "2025-09-11T18:55:44.326659",
-    "is_deleted": false,
-    "created_at": "2025-07-22T00:38:42.779555",
-    "updated_at": "2025-07-22T05:38:42.779555"
+    "last_email_at": "2025-09-11T18:55:44.326659Z",
+    "created_at": "2025-07-22T00:38:42.779555Z",
+    "updated_at": "2025-07-22T05:38:42.779555Z"
   },
   {
     "id": "7ad61d2a-4b49-474b-b513-0b7a68f5b657",
@@ -1666,10 +1515,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 59,
     "email_count": 11,
-    "last_email_at": "2025-12-14T13:49:44.335590",
-    "is_deleted": false,
-    "created_at": "2025-09-09T06:53:42.779634",
-    "updated_at": "2025-10-06T09:53:42.779634"
+    "last_email_at": "2025-12-14T13:49:44.335590Z",
+    "created_at": "2025-09-09T06:53:42.779634Z",
+    "updated_at": "2025-10-06T09:53:42.779634Z"
   },
   {
     "id": "549c9bdb-feae-4dfa-a8a1-196ddbe0fe8c",
@@ -1677,10 +1525,9 @@
     "owner_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "participant_count": 3,
     "email_count": 14,
-    "last_email_at": "2025-11-17T13:38:44.415213",
-    "is_deleted": false,
-    "created_at": "2025-03-31T21:22:42.779706",
-    "updated_at": "2025-04-05T23:22:42.779706"
+    "last_email_at": "2025-11-17T13:38:44.415213Z",
+    "created_at": "2025-03-31T21:22:42.779706Z",
+    "updated_at": "2025-04-05T23:22:42.779706Z"
   },
   {
     "id": "6693d667-2855-48cd-b6fa-c5e95afb6460",
@@ -1688,10 +1535,9 @@
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "participant_count": 34,
     "email_count": 13,
-    "last_email_at": "2025-12-25T23:40:44.455933",
-    "is_deleted": false,
-    "created_at": "2025-11-10T18:49:42.779777",
-    "updated_at": "2025-11-12T04:49:42.779777"
+    "last_email_at": "2025-12-25T23:40:44.455933Z",
+    "created_at": "2025-11-10T18:49:42.779777Z",
+    "updated_at": "2025-11-12T04:49:42.779777Z"
   },
   {
     "id": "007586ac-9ee2-4fbf-813e-515d87193c2e",
@@ -1699,10 +1545,9 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "participant_count": 94,
     "email_count": 12,
-    "last_email_at": "2025-07-27T09:26:44.378101",
-    "is_deleted": false,
-    "created_at": "2025-07-22T16:03:42.779848",
-    "updated_at": "2025-07-25T17:03:42.779848"
+    "last_email_at": "2025-07-27T09:26:44.378101Z",
+    "created_at": "2025-07-22T16:03:42.779848Z",
+    "updated_at": "2025-07-25T17:03:42.779848Z"
   },
   {
     "id": "1417b725-ed3b-4daa-b93e-9be23fa2b4c3",
@@ -1710,10 +1555,9 @@
     "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "participant_count": 45,
     "email_count": 18,
-    "last_email_at": "2026-01-04T01:25:44.497925",
-    "is_deleted": false,
-    "created_at": "2025-05-26T08:03:42.779922",
-    "updated_at": "2025-06-09T22:03:42.779922"
+    "last_email_at": "2026-01-04T01:25:44.497925Z",
+    "created_at": "2025-05-26T08:03:42.779922Z",
+    "updated_at": "2025-06-09T22:03:42.779922Z"
   },
   {
     "id": "5e730fa9-52bc-445c-8764-f80eabe54b3e",
@@ -1721,10 +1565,9 @@
     "owner_id": "378c6931-1410-4151-b6d7-f33f2098c460",
     "participant_count": 1,
     "email_count": 9,
-    "last_email_at": "2025-11-19T05:28:44.371245",
-    "is_deleted": true,
-    "created_at": "2025-10-27T07:04:42.779996",
-    "updated_at": "2025-11-19T16:04:42.779996"
+    "last_email_at": "2025-11-19T05:28:44.371245Z",
+    "created_at": "2025-10-27T07:04:42.779996Z",
+    "updated_at": "2025-11-19T16:04:42.779996Z"
   },
   {
     "id": "c79e9351-e0bc-4680-9074-9b6bb4eb130b",
@@ -1732,10 +1575,9 @@
     "owner_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "participant_count": 46,
     "email_count": 4,
-    "last_email_at": "2025-07-22T11:38:44.332934",
-    "is_deleted": false,
-    "created_at": "2025-05-27T05:46:42.780066",
-    "updated_at": "2025-06-22T17:46:42.780066"
+    "last_email_at": "2025-07-22T11:38:44.332934Z",
+    "created_at": "2025-05-27T05:46:42.780066Z",
+    "updated_at": "2025-06-22T17:46:42.780066Z"
   },
   {
     "id": "3ce52386-273d-4b33-95f0-4835db00643e",
@@ -1743,10 +1585,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 16,
     "email_count": 11,
-    "last_email_at": "2025-12-06T13:17:44.507940",
-    "is_deleted": false,
-    "created_at": "2025-08-20T18:28:42.780137",
-    "updated_at": "2025-09-17T02:28:42.780137"
+    "last_email_at": "2025-12-06T13:17:44.507940Z",
+    "created_at": "2025-08-20T18:28:42.780137Z",
+    "updated_at": "2025-09-17T02:28:42.780137Z"
   },
   {
     "id": "9df0de0d-3d57-4a54-a06a-b01b4181f768",
@@ -1754,10 +1595,9 @@
     "owner_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "participant_count": 0,
     "email_count": 14,
-    "last_email_at": "2025-12-04T23:20:44.425939",
-    "is_deleted": false,
-    "created_at": "2025-06-13T05:34:42.780208",
-    "updated_at": "2025-07-06T06:34:42.780208"
+    "last_email_at": "2025-12-04T23:20:44.425939Z",
+    "created_at": "2025-06-13T05:34:42.780208Z",
+    "updated_at": "2025-07-06T06:34:42.780208Z"
   },
   {
     "id": "8f67e599-5adf-416c-9acf-4a5e995d95eb",
@@ -1765,10 +1605,9 @@
     "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
     "participant_count": 58,
     "email_count": 14,
-    "last_email_at": "2025-10-20T00:20:44.361736",
-    "is_deleted": false,
-    "created_at": "2025-05-25T22:14:42.780282",
-    "updated_at": "2025-06-20T18:14:42.780282"
+    "last_email_at": "2025-10-20T00:20:44.361736Z",
+    "created_at": "2025-05-25T22:14:42.780282Z",
+    "updated_at": "2025-06-20T18:14:42.780282Z"
   },
   {
     "id": "6d0eaf1f-7784-440a-b23c-87e4366be2f5",
@@ -1776,10 +1615,9 @@
     "owner_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "participant_count": 81,
     "email_count": 7,
-    "last_email_at": "2025-11-13T05:49:44.471387",
-    "is_deleted": false,
-    "created_at": "2025-06-19T14:49:42.780352",
-    "updated_at": "2025-07-14T02:49:42.780352"
+    "last_email_at": "2025-11-13T05:49:44.471387Z",
+    "created_at": "2025-06-19T14:49:42.780352Z",
+    "updated_at": "2025-07-14T02:49:42.780352Z"
   },
   {
     "id": "d0a779a1-6e46-4e1a-898f-886418f8077e",
@@ -1787,10 +1625,9 @@
     "owner_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "participant_count": 14,
     "email_count": 8,
-    "last_email_at": "2025-11-11T22:27:44.473950",
-    "is_deleted": false,
-    "created_at": "2025-03-24T01:09:42.780423",
-    "updated_at": "2025-04-01T12:09:42.780423"
+    "last_email_at": "2025-11-11T22:27:44.473950Z",
+    "created_at": "2025-03-24T01:09:42.780423Z",
+    "updated_at": "2025-04-01T12:09:42.780423Z"
   },
   {
     "id": "6d2ff389-a838-4557-b6e8-1ef0b9b34769",
@@ -1798,10 +1635,9 @@
     "owner_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "participant_count": 63,
     "email_count": 4,
-    "last_email_at": "2025-12-28T18:55:44.346627",
-    "is_deleted": false,
-    "created_at": "2025-01-18T04:11:42.780506",
-    "updated_at": "2025-01-28T03:11:42.780506"
+    "last_email_at": "2025-12-28T18:55:44.346627Z",
+    "created_at": "2025-01-18T04:11:42.780506Z",
+    "updated_at": "2025-01-28T03:11:42.780506Z"
   },
   {
     "id": "03ccaf0e-b8d1-4c88-803d-a4bd7351d9b6",
@@ -1809,10 +1645,9 @@
     "owner_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "participant_count": 61,
     "email_count": 6,
-    "last_email_at": "2025-12-29T19:40:44.439070",
-    "is_deleted": true,
-    "created_at": "2025-04-13T20:46:42.780582",
-    "updated_at": "2025-04-29T06:46:42.780582"
+    "last_email_at": "2025-12-29T19:40:44.439070Z",
+    "created_at": "2025-04-13T20:46:42.780582Z",
+    "updated_at": "2025-04-29T06:46:42.780582Z"
   },
   {
     "id": "ce79d0c6-9d97-4b49-a296-aa2d23f62e3f",
@@ -1820,10 +1655,9 @@
     "owner_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "participant_count": 53,
     "email_count": 5,
-    "last_email_at": "2025-11-09T14:17:44.416812",
-    "is_deleted": false,
-    "created_at": "2025-09-02T12:26:42.780653",
-    "updated_at": "2025-09-11T03:26:42.780653"
+    "last_email_at": "2025-11-09T14:17:44.416812Z",
+    "created_at": "2025-09-02T12:26:42.780653Z",
+    "updated_at": "2025-09-11T03:26:42.780653Z"
   },
   {
     "id": "0c004e83-8897-4a9f-b6a0-7667ea685045",
@@ -1831,10 +1665,9 @@
     "owner_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "participant_count": 51,
     "email_count": 13,
-    "last_email_at": "2025-12-15T17:15:44.500032",
-    "is_deleted": false,
-    "created_at": "2025-10-19T00:37:42.780725",
-    "updated_at": "2025-11-06T02:37:42.780725"
+    "last_email_at": "2025-12-15T17:15:44.500032Z",
+    "created_at": "2025-10-19T00:37:42.780725Z",
+    "updated_at": "2025-11-06T02:37:42.780725Z"
   },
   {
     "id": "d428f6dc-fb4c-4d06-b79f-685d3c897f05",
@@ -1842,10 +1675,9 @@
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "participant_count": 39,
     "email_count": 3,
-    "last_email_at": "2025-09-22T11:06:44.449293",
-    "is_deleted": false,
-    "created_at": "2025-07-18T14:59:42.780797",
-    "updated_at": "2025-08-04T16:59:42.780797"
+    "last_email_at": "2025-09-22T11:06:44.449293Z",
+    "created_at": "2025-07-18T14:59:42.780797Z",
+    "updated_at": "2025-08-04T16:59:42.780797Z"
   },
   {
     "id": "66f392d5-7f19-4853-ae9a-756990f2f4e8",
@@ -1853,10 +1685,9 @@
     "owner_id": "fe44b541-81ef-441c-ad73-4bd4a454abca",
     "participant_count": 73,
     "email_count": 10,
-    "last_email_at": "2025-08-26T12:21:44.434312",
-    "is_deleted": false,
-    "created_at": "2025-09-12T14:41:42.780870",
-    "updated_at": "2025-10-01T02:41:42.780870"
+    "last_email_at": "2025-08-26T12:21:44.434312Z",
+    "created_at": "2025-09-12T14:41:42.780870Z",
+    "updated_at": "2025-10-01T02:41:42.780870Z"
   },
   {
     "id": "f307e18b-b819-42e9-9860-3e73518172a0",
@@ -1864,10 +1695,9 @@
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "participant_count": 34,
     "email_count": 11,
-    "last_email_at": "2025-10-04T04:43:44.456959",
-    "is_deleted": false,
-    "created_at": "2025-06-22T15:36:42.780941",
-    "updated_at": "2025-07-06T00:36:42.780941"
+    "last_email_at": "2025-10-04T04:43:44.456959Z",
+    "created_at": "2025-06-22T15:36:42.780941Z",
+    "updated_at": "2025-07-06T00:36:42.780941Z"
   },
   {
     "id": "4839b224-30b8-4764-842e-925baf74900a",
@@ -1876,9 +1706,8 @@
     "participant_count": 65,
     "email_count": 0,
     "last_email_at": null,
-    "is_deleted": false,
-    "created_at": "2025-01-15T05:04:42.781013",
-    "updated_at": "2025-01-22T07:04:42.781013"
+    "created_at": "2025-01-15T05:04:42.781013Z",
+    "updated_at": "2025-01-22T07:04:42.781013Z"
   },
   {
     "id": "e46bfcf2-b444-4e8a-9ad2-e1d293317f79",
@@ -1886,10 +1715,9 @@
     "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "participant_count": 72,
     "email_count": 7,
-    "last_email_at": "2025-09-03T14:42:44.370621",
-    "is_deleted": true,
-    "created_at": "2025-12-04T18:29:42.781087",
-    "updated_at": "2025-12-15T11:29:42.781087"
+    "last_email_at": "2025-09-03T14:42:44.370621Z",
+    "created_at": "2025-12-04T18:29:42.781087Z",
+    "updated_at": "2025-12-15T11:29:42.781087Z"
   },
   {
     "id": "943a7f5d-a0b7-4184-9a0b-4678764f6cee",
@@ -1897,10 +1725,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 57,
     "email_count": 5,
-    "last_email_at": "2025-04-18T12:50:44.333101",
-    "is_deleted": false,
-    "created_at": "2025-02-07T21:25:42.781160",
-    "updated_at": "2025-03-08T18:25:42.781160"
+    "last_email_at": "2025-04-18T12:50:44.333101Z",
+    "created_at": "2025-02-07T21:25:42.781160Z",
+    "updated_at": "2025-03-08T18:25:42.781160Z"
   },
   {
     "id": "e4824c26-caf5-40cb-a39f-2c9c2f7e370e",
@@ -1908,10 +1735,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 63,
     "email_count": 7,
-    "last_email_at": "2025-11-29T21:49:44.418921",
-    "is_deleted": false,
-    "created_at": "2025-11-29T20:48:42.781233",
-    "updated_at": "2025-12-21T08:48:42.781233"
+    "last_email_at": "2025-11-29T21:49:44.418921Z",
+    "created_at": "2025-11-29T20:48:42.781233Z",
+    "updated_at": "2025-12-21T08:48:42.781233Z"
   },
   {
     "id": "5b6305e7-3112-43e9-a157-82782d725efd",
@@ -1919,10 +1745,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 44,
     "email_count": 10,
-    "last_email_at": "2025-09-10T23:36:44.355244",
-    "is_deleted": false,
-    "created_at": "2025-12-13T07:11:42.781306",
-    "updated_at": "2025-12-28T19:11:42.781306"
+    "last_email_at": "2025-09-10T23:36:44.355244Z",
+    "created_at": "2025-12-13T07:11:42.781306Z",
+    "updated_at": "2025-12-28T19:11:42.781306Z"
   },
   {
     "id": "f60c47f6-e309-4cac-8dad-7bd3f3bdf2d9",
@@ -1930,10 +1755,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "participant_count": 97,
     "email_count": 8,
-    "last_email_at": "2025-10-08T18:38:44.436849",
-    "is_deleted": false,
-    "created_at": "2025-10-22T22:37:42.781379",
-    "updated_at": "2025-10-31T04:37:42.781379"
+    "last_email_at": "2025-10-08T18:38:44.436849Z",
+    "created_at": "2025-10-22T22:37:42.781379Z",
+    "updated_at": "2025-10-31T04:37:42.781379Z"
   },
   {
     "id": "fbfbd584-3d9f-4ef1-9194-756243a8eecb",
@@ -1941,10 +1765,9 @@
     "owner_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "participant_count": 89,
     "email_count": 16,
-    "last_email_at": "2025-10-26T09:53:44.515688",
-    "is_deleted": false,
-    "created_at": "2025-06-22T05:41:42.781450",
-    "updated_at": "2025-07-14T07:41:42.781450"
+    "last_email_at": "2025-10-26T09:53:44.515688Z",
+    "created_at": "2025-06-22T05:41:42.781450Z",
+    "updated_at": "2025-07-14T07:41:42.781450Z"
   },
   {
     "id": "6ca515fc-2a42-4a84-8c3f-f527e5e57b86",
@@ -1952,10 +1775,9 @@
     "owner_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "participant_count": 2,
     "email_count": 12,
-    "last_email_at": "2025-10-13T10:02:44.324983",
-    "is_deleted": false,
-    "created_at": "2025-04-30T23:41:42.781520",
-    "updated_at": "2025-05-11T20:41:42.781520"
+    "last_email_at": "2025-10-13T10:02:44.324983Z",
+    "created_at": "2025-04-30T23:41:42.781520Z",
+    "updated_at": "2025-05-11T20:41:42.781520Z"
   },
   {
     "id": "5379b3d0-d545-4185-be18-f65c6e8bfd52",
@@ -1963,10 +1785,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 31,
     "email_count": 14,
-    "last_email_at": "2026-01-05T08:37:44.451633",
-    "is_deleted": false,
-    "created_at": "2025-09-05T02:28:42.781593",
-    "updated_at": "2025-09-19T13:28:42.781593"
+    "last_email_at": "2026-01-05T08:37:44.451633Z",
+    "created_at": "2025-09-05T02:28:42.781593Z",
+    "updated_at": "2025-09-19T13:28:42.781593Z"
   },
   {
     "id": "9586e301-2a8b-4d2a-bea0-5be4ac7a884f",
@@ -1974,10 +1795,9 @@
     "owner_id": "a0a9c2ab-b726-40da-a704-340af755a526",
     "participant_count": 60,
     "email_count": 9,
-    "last_email_at": "2025-12-06T06:32:44.345629",
-    "is_deleted": false,
-    "created_at": "2025-09-15T12:33:42.781665",
-    "updated_at": "2025-10-03T07:33:42.781665"
+    "last_email_at": "2025-12-06T06:32:44.345629Z",
+    "created_at": "2025-09-15T12:33:42.781665Z",
+    "updated_at": "2025-10-03T07:33:42.781665Z"
   },
   {
     "id": "51eb93bc-0f00-4785-8a3d-32e4985f2854",
@@ -1985,10 +1805,9 @@
     "owner_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "participant_count": 30,
     "email_count": 9,
-    "last_email_at": "2025-10-11T05:43:44.390382",
-    "is_deleted": false,
-    "created_at": "2025-05-11T20:12:42.781735",
-    "updated_at": "2025-05-12T07:12:42.781735"
+    "last_email_at": "2025-10-11T05:43:44.390382Z",
+    "created_at": "2025-05-11T20:12:42.781735Z",
+    "updated_at": "2025-05-12T07:12:42.781735Z"
   },
   {
     "id": "2b0c95a4-92a2-44c8-9e39-a2d541676444",
@@ -1996,10 +1815,9 @@
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "participant_count": 55,
     "email_count": 13,
-    "last_email_at": "2025-10-13T08:25:44.327058",
-    "is_deleted": false,
-    "created_at": "2025-12-12T06:43:42.781807",
-    "updated_at": "2025-12-17T16:43:42.781807"
+    "last_email_at": "2025-10-13T08:25:44.327058Z",
+    "created_at": "2025-12-12T06:43:42.781807Z",
+    "updated_at": "2025-12-17T16:43:42.781807Z"
   },
   {
     "id": "c3f87b87-f0a1-4aba-83d0-5f571965c133",
@@ -2007,10 +1825,9 @@
     "owner_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "participant_count": 44,
     "email_count": 5,
-    "last_email_at": "2025-12-01T22:52:44.446597",
-    "is_deleted": false,
-    "created_at": "2025-06-10T14:02:42.781879",
-    "updated_at": "2025-06-20T10:02:42.781879"
+    "last_email_at": "2025-12-01T22:52:44.446597Z",
+    "created_at": "2025-06-10T14:02:42.781879Z",
+    "updated_at": "2025-06-20T10:02:42.781879Z"
   },
   {
     "id": "4b617547-9e0f-4078-a957-86e862af1b9c",
@@ -2018,10 +1835,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 36,
     "email_count": 5,
-    "last_email_at": "2025-09-20T21:17:44.451048",
-    "is_deleted": false,
-    "created_at": "2025-03-14T16:52:42.781951",
-    "updated_at": "2025-03-29T06:52:42.781951"
+    "last_email_at": "2025-09-20T21:17:44.451048Z",
+    "created_at": "2025-03-14T16:52:42.781951Z",
+    "updated_at": "2025-03-29T06:52:42.781951Z"
   },
   {
     "id": "a387cdd2-2d1f-46ea-9bdb-aa9cf4e7ebe7",
@@ -2029,10 +1845,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "participant_count": 51,
     "email_count": 8,
-    "last_email_at": "2025-11-04T14:00:44.366658",
-    "is_deleted": false,
-    "created_at": "2025-05-10T06:18:42.782025",
-    "updated_at": "2025-05-13T17:18:42.782025"
+    "last_email_at": "2025-11-04T14:00:44.366658Z",
+    "created_at": "2025-05-10T06:18:42.782025Z",
+    "updated_at": "2025-05-13T17:18:42.782025Z"
   },
   {
     "id": "53af5d92-9ee7-473f-adb3-4e0f5f8cb3cb",
@@ -2040,10 +1855,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 80,
     "email_count": 16,
-    "last_email_at": "2025-12-17T16:31:44.510529",
-    "is_deleted": false,
-    "created_at": "2025-03-10T04:39:42.782097",
-    "updated_at": "2025-04-02T14:39:42.782097"
+    "last_email_at": "2025-12-17T16:31:44.510529Z",
+    "created_at": "2025-03-10T04:39:42.782097Z",
+    "updated_at": "2025-04-02T14:39:42.782097Z"
   },
   {
     "id": "adffdd60-0a1d-4973-97f7-23a63fac3630",
@@ -2051,10 +1865,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "participant_count": 93,
     "email_count": 16,
-    "last_email_at": "2025-12-10T00:23:44.411806",
-    "is_deleted": false,
-    "created_at": "2025-02-17T09:26:42.782169",
-    "updated_at": "2025-03-02T20:26:42.782169"
+    "last_email_at": "2025-12-10T00:23:44.411806Z",
+    "created_at": "2025-02-17T09:26:42.782169Z",
+    "updated_at": "2025-03-02T20:26:42.782169Z"
   },
   {
     "id": "5bf96667-0df6-4ae5-abbe-d9630184d053",
@@ -2062,10 +1875,9 @@
     "owner_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "participant_count": 4,
     "email_count": 7,
-    "last_email_at": "2025-08-15T05:43:44.460571",
-    "is_deleted": false,
-    "created_at": "2025-04-30T13:51:42.782242",
-    "updated_at": "2025-05-15T10:51:42.782242"
+    "last_email_at": "2025-08-15T05:43:44.460571Z",
+    "created_at": "2025-04-30T13:51:42.782242Z",
+    "updated_at": "2025-05-15T10:51:42.782242Z"
   },
   {
     "id": "3c6486bc-bfff-4d26-b556-3cb019ca6177",
@@ -2073,10 +1885,9 @@
     "owner_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "participant_count": 5,
     "email_count": 13,
-    "last_email_at": "2025-12-19T00:54:44.343759",
-    "is_deleted": false,
-    "created_at": "2025-06-29T01:48:42.782314",
-    "updated_at": "2025-07-13T09:48:42.782314"
+    "last_email_at": "2025-12-19T00:54:44.343759Z",
+    "created_at": "2025-06-29T01:48:42.782314Z",
+    "updated_at": "2025-07-13T09:48:42.782314Z"
   },
   {
     "id": "4300d055-94ae-4451-be1c-16c34e363a6a",
@@ -2084,10 +1895,9 @@
     "owner_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "participant_count": 26,
     "email_count": 9,
-    "last_email_at": "2025-07-19T10:06:44.477847",
-    "is_deleted": false,
-    "created_at": "2025-02-07T22:48:42.782386",
-    "updated_at": "2025-02-09T06:48:42.782386"
+    "last_email_at": "2025-07-19T10:06:44.477847Z",
+    "created_at": "2025-02-07T22:48:42.782386Z",
+    "updated_at": "2025-02-09T06:48:42.782386Z"
   },
   {
     "id": "0108392d-52f8-4d34-bfc9-d66de44c1e7b",
@@ -2095,10 +1905,9 @@
     "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "participant_count": 30,
     "email_count": 4,
-    "last_email_at": "2025-12-06T01:03:44.448581",
-    "is_deleted": false,
-    "created_at": "2025-04-26T12:04:42.782458",
-    "updated_at": "2025-05-19T00:04:42.782458"
+    "last_email_at": "2025-12-06T01:03:44.448581Z",
+    "created_at": "2025-04-26T12:04:42.782458Z",
+    "updated_at": "2025-05-19T00:04:42.782458Z"
   },
   {
     "id": "6ebae383-7a6b-4fe9-b6e2-e0df44abe582",
@@ -2106,10 +1915,9 @@
     "owner_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "participant_count": 75,
     "email_count": 10,
-    "last_email_at": "2025-10-05T13:47:44.507362",
-    "is_deleted": false,
-    "created_at": "2025-08-15T02:48:42.782531",
-    "updated_at": "2025-08-28T01:48:42.782531"
+    "last_email_at": "2025-10-05T13:47:44.507362Z",
+    "created_at": "2025-08-15T02:48:42.782531Z",
+    "updated_at": "2025-08-28T01:48:42.782531Z"
   },
   {
     "id": "5ac62fe6-9c27-4b4d-9015-b460047dcc4e",
@@ -2117,10 +1925,9 @@
     "owner_id": "e74bb28e-1227-4995-89b7-a69cef6ec555",
     "participant_count": 40,
     "email_count": 5,
-    "last_email_at": "2026-01-06T20:22:44.346037",
-    "is_deleted": false,
-    "created_at": "2025-05-23T23:04:42.782622",
-    "updated_at": "2025-05-28T23:04:42.782622"
+    "last_email_at": "2026-01-06T20:22:44.346037Z",
+    "created_at": "2025-05-23T23:04:42.782622Z",
+    "updated_at": "2025-05-28T23:04:42.782622Z"
   },
   {
     "id": "41e7d6cd-4173-4af1-a59b-35c259985c67",
@@ -2128,10 +1935,9 @@
     "owner_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "participant_count": 56,
     "email_count": 6,
-    "last_email_at": "2025-10-03T04:10:44.437198",
-    "is_deleted": false,
-    "created_at": "2025-09-17T17:15:42.782725",
-    "updated_at": "2025-10-07T03:15:42.782725"
+    "last_email_at": "2025-10-03T04:10:44.437198Z",
+    "created_at": "2025-09-17T17:15:42.782725Z",
+    "updated_at": "2025-10-07T03:15:42.782725Z"
   },
   {
     "id": "a49f7231-0fad-4544-8c59-5bd405d97e2d",
@@ -2139,10 +1945,9 @@
     "owner_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "participant_count": 39,
     "email_count": 2,
-    "last_email_at": "2025-12-26T12:39:44.473028",
-    "is_deleted": false,
-    "created_at": "2025-09-24T15:23:42.782922",
-    "updated_at": "2025-10-01T19:23:42.782922"
+    "last_email_at": "2025-12-26T12:39:44.473028Z",
+    "created_at": "2025-09-24T15:23:42.782922Z",
+    "updated_at": "2025-10-01T19:23:42.782922Z"
   },
   {
     "id": "52308645-8134-4479-be17-2c040d283903",
@@ -2150,10 +1955,9 @@
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "participant_count": 98,
     "email_count": 9,
-    "last_email_at": "2025-12-12T13:13:44.344102",
-    "is_deleted": false,
-    "created_at": "2025-03-21T10:29:42.783078",
-    "updated_at": "2025-04-05T01:29:42.783078"
+    "last_email_at": "2025-12-12T13:13:44.344102Z",
+    "created_at": "2025-03-21T10:29:42.783078Z",
+    "updated_at": "2025-04-05T01:29:42.783078Z"
   },
   {
     "id": "2b47d722-1b62-43f1-b194-c6d7e71c904f",
@@ -2161,10 +1965,9 @@
     "owner_id": "00000000-0000-0000-0000-000000000001",
     "participant_count": 79,
     "email_count": 16,
-    "last_email_at": "2025-12-26T22:37:44.359124",
-    "is_deleted": false,
-    "created_at": "2025-02-21T04:25:42.783157",
-    "updated_at": "2025-03-08T05:25:42.783157"
+    "last_email_at": "2025-12-26T22:37:44.359124Z",
+    "created_at": "2025-02-21T04:25:42.783157Z",
+    "updated_at": "2025-03-08T05:25:42.783157Z"
   },
   {
     "id": "b468417e-f9cb-421c-8d53-41a4918ada61",
@@ -2172,10 +1975,9 @@
     "owner_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "participant_count": 14,
     "email_count": 20,
-    "last_email_at": "2025-07-24T12:28:44.401633",
-    "is_deleted": false,
-    "created_at": "2025-08-26T22:41:42.783230",
-    "updated_at": "2025-09-15T22:41:42.783230"
+    "last_email_at": "2025-07-24T12:28:44.401633Z",
+    "created_at": "2025-08-26T22:41:42.783230Z",
+    "updated_at": "2025-09-15T22:41:42.783230Z"
   },
   {
     "id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
@@ -2183,10 +1985,9 @@
     "owner_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "participant_count": 1,
     "email_count": 19,
-    "last_email_at": "2026-01-06T11:46:44.405684",
-    "is_deleted": false,
-    "created_at": "2025-05-21T10:23:42.783302",
-    "updated_at": "2025-06-16T04:23:42.783302"
+    "last_email_at": "2026-01-06T11:46:44.405684Z",
+    "created_at": "2025-05-21T10:23:42.783302Z",
+    "updated_at": "2025-06-16T04:23:42.783302Z"
   },
   {
     "id": "be0f765d-94e0-4776-a290-64a7beadb84e",
@@ -2194,9 +1995,8 @@
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "participant_count": 12,
     "email_count": 15,
-    "last_email_at": "2025-10-24T05:44:44.380103",
-    "is_deleted": false,
-    "created_at": "2025-10-27T13:46:42.783374",
-    "updated_at": "2025-11-05T06:46:42.783374"
+    "last_email_at": "2025-10-24T05:44:44.380103Z",
+    "created_at": "2025-10-27T13:46:42.783374Z",
+    "updated_at": "2025-11-05T06:46:42.783374Z"
   }
 ]

@@ -60,8 +60,7 @@ def get_system_label(
     return db.query(Label).filter(
         Label.owner_id == user_id,
         Label.name == label_name,
-        Label.is_system == True,
-        Label.is_deleted == False
+        Label.is_system == True
     ).first()
 
 
@@ -176,8 +175,7 @@ def replace_exclusive_labels(
     exclusive_label_ids = db.query(Label.id).filter(
         Label.owner_id == user_id,
         Label.name.in_(exclusive_label_names),
-        Label.is_system == True,
-        Label.is_deleted == False
+        Label.is_system == True
     ).all()
     
     exclusive_ids = [lid[0] for lid in exclusive_label_ids]
@@ -323,7 +321,6 @@ def format_label_response(label: Label, thread_count: int = 0) -> dict:
         "show_in_label_list": label.show_in_label_list,
         "show_in_message_list": label.show_in_message_list,
         "show_if_unread": label.show_if_unread,
-        "is_deleted": label.is_deleted,
         "created_at": label.created_at,
         "updated_at": label.updated_at,
         "thread_count": thread_count,
@@ -346,8 +343,7 @@ def get_all_descendant_ids(db: Session, label_id: UUID) -> Set[UUID]:
     while to_process:
         current_id = to_process.pop()
         children = db.query(Label.id).filter(
-            Label.parent_id == current_id,
-            Label.is_deleted == False
+            Label.parent_id == current_id
         ).all()
         
         for (child_id,) in children:
@@ -408,7 +404,6 @@ def build_label_tree(
             "show_in_label_list": label.show_in_label_list,
             "show_in_message_list": label.show_in_message_list,
             "show_if_unread": label.show_if_unread,
-            "is_deleted": label.is_deleted,
             "created_at": label.created_at,
             "updated_at": label.updated_at,
             "thread_count": count,
@@ -436,3 +431,203 @@ def build_label_tree(
     
     root_labels.sort(key=lambda x: x["name"])
     return root_labels
+
+
+def bulk_add_system_label_to_threads(
+    db: Session,
+    thread_ids: List[UUID],
+    user_id: UUID,
+    label: Union[SystemLabel, CategoryLabel, str],
+    commit: bool = False
+) -> int:
+    """Add a system label to multiple threads for a user.
+
+    Args:
+        db: Database session
+        thread_ids: List of thread IDs
+        user_id: User ID
+        label: SystemLabel, CategoryLabel enum or label name string
+        commit: Whether to commit the transaction
+
+    Returns:
+        Number of thread-label associations created
+    """
+    if not thread_ids:
+        return 0
+
+    label_obj = get_system_label(db, user_id, label)
+    if not label_obj:
+        return 0
+
+    # Get existing thread-label associations
+    existing = db.query(ThreadLabel.thread_id).filter(
+        ThreadLabel.thread_id.in_(thread_ids),
+        ThreadLabel.label_id == label_obj.id,
+        ThreadLabel.user_id == user_id
+    ).all()
+
+    existing_thread_ids = {tid[0] for tid in existing}
+
+    # Create new associations for threads that don't have this label
+    new_thread_labels = [
+        ThreadLabel(
+            thread_id=thread_id,
+            label_id=label_obj.id,
+            user_id=user_id
+        )
+        for thread_id in thread_ids
+        if thread_id not in existing_thread_ids
+    ]
+
+    if new_thread_labels:
+        db.bulk_save_objects(new_thread_labels)
+
+    if commit:
+        db.commit()
+
+    return len(new_thread_labels)
+
+
+def bulk_remove_system_label_from_threads(
+    db: Session,
+    thread_ids: List[UUID],
+    user_id: UUID,
+    label: Union[SystemLabel, CategoryLabel, str],
+    commit: bool = False
+) -> int:
+    """Remove a system label from multiple threads for a user.
+
+    Args:
+        db: Database session
+        thread_ids: List of thread IDs
+        user_id: User ID
+        label: SystemLabel, CategoryLabel enum or label name string
+        commit: Whether to commit the transaction
+
+    Returns:
+        Number of thread-label associations removed
+    """
+    if not thread_ids:
+        return 0
+
+    label_obj = get_system_label(db, user_id, label)
+    if not label_obj:
+        return 0
+
+    result = db.query(ThreadLabel).filter(
+        ThreadLabel.thread_id.in_(thread_ids),
+        ThreadLabel.label_id == label_obj.id,
+        ThreadLabel.user_id == user_id
+    ).delete(synchronize_session=False)
+
+    if commit:
+        db.commit()
+
+    return result
+
+
+def bulk_replace_exclusive_labels(
+    db: Session,
+    thread_ids: List[UUID],
+    user_id: UUID,
+    new_label: Union[SystemLabel, str],
+    commit: bool = False
+) -> int:
+    """Remove all exclusive system labels and add a new one for multiple threads.
+
+    Used for folder switching operations (move to trash, spam, inbox, etc.)
+    This removes any existing exclusive labels (Inbox, Sent, Drafts, Trash, Spam, etc.)
+    and adds the new specified label.
+
+    Args:
+        db: Database session
+        thread_ids: List of thread IDs
+        user_id: User ID
+        new_label: SystemLabel enum or label name string for the new exclusive label
+        commit: Whether to commit the transaction
+
+    Returns:
+        Number of threads processed
+    """
+    if not thread_ids:
+        return 0
+
+    # Get exclusive label names from the enum set
+    exclusive_label_names = [sl.value for sl in EXCLUSIVE_SYSTEM_LABELS]
+
+    # Get all user's system labels that are exclusive
+    exclusive_label_ids = db.query(Label.id).filter(
+        Label.owner_id == user_id,
+        Label.name.in_(exclusive_label_names),
+        Label.is_system == True
+    ).all()
+
+    exclusive_ids = [lid[0] for lid in exclusive_label_ids]
+
+    # Remove all exclusive labels from threads
+    if exclusive_ids:
+        db.query(ThreadLabel).filter(
+            ThreadLabel.thread_id.in_(thread_ids),
+            ThreadLabel.label_id.in_(exclusive_ids),
+            ThreadLabel.user_id == user_id
+        ).delete(synchronize_session=False)
+
+    # Add the new label to all threads
+    bulk_add_system_label_to_threads(db, thread_ids, user_id, new_label, commit=False)
+
+    if commit:
+        db.commit()
+
+    return len(thread_ids)
+
+
+def bulk_sync_category_labels(
+    db: Session,
+    thread_category_map: Dict[UUID, tuple],
+    user_id: UUID,
+    commit: bool = False
+) -> None:
+    """Sync category labels when email categories change for multiple threads.
+
+    Removes old category labels and adds new category labels in bulk.
+
+    Args:
+        db: Database session
+        thread_category_map: Dict mapping thread_id to (old_category, new_category) tuples
+        user_id: User ID
+        commit: Whether to commit the transaction
+    """
+    if not thread_category_map:
+        return
+
+    # Collect threads by old and new categories
+    threads_to_remove_category = {}  # category -> [thread_ids]
+    threads_to_add_category = {}  # category -> [thread_ids]
+
+    for thread_id, (old_cat, new_cat) in thread_category_map.items():
+        # Track old category removal
+        if old_cat and old_cat != EmailCategory.PRIMARY:
+            if old_cat not in threads_to_remove_category:
+                threads_to_remove_category[old_cat] = []
+            threads_to_remove_category[old_cat].append(thread_id)
+
+        # Track new category addition
+        if new_cat and new_cat != EmailCategory.PRIMARY:
+            if new_cat not in threads_to_add_category:
+                threads_to_add_category[new_cat] = []
+            threads_to_add_category[new_cat].append(thread_id)
+
+    # Bulk remove old category labels
+    for category, thread_ids in threads_to_remove_category.items():
+        category_label = CATEGORY_TO_LABEL.get(category)
+        if category_label:
+            bulk_remove_system_label_from_threads(db, thread_ids, user_id, category_label, commit=False)
+
+    # Bulk add new category labels
+    for category, thread_ids in threads_to_add_category.items():
+        category_label = CATEGORY_TO_LABEL.get(category)
+        if category_label:
+            bulk_add_system_label_to_threads(db, thread_ids, user_id, category_label, commit=False)
+
+    if commit:
+        db.commit()

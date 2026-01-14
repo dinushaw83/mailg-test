@@ -17,11 +17,11 @@ os.environ.setdefault("DATABASE_URL", "postgresql+psycopg2://mailg:mailg@127.0.0
 import uuid
 import pytest
 from unittest.mock import Mock
-from datetime import datetime, timezone
+from fastapi import Request
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool
 
 from app.main import app
 from app.db.base import Base
@@ -32,40 +32,92 @@ from app.models.email import Email
 from app.models.thread import Thread
 from app.models.email_recipient import EmailRecipient
 from app.models.attachment import Attachment
-from app.models.saved_search import SavedSearch
 from app.auth.token_manager import get_token_manager
 from app.core.constants import FolderType
 
 
-# Use in-memory SQLite for tests
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
+# PostgreSQL configuration for tests
+# Each test session gets its own isolated database
+TEST_DB_NAME = f"test_mailg_{uuid.uuid4().hex[:8]}"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://mailg:mailg@127.0.0.1:5436/postgres")
+# Build test database URL by replacing database name in connection string
+# Note: Don't use make_url().set() as it can cause authentication issues
+SQLALCHEMY_TEST_DATABASE_URL = DATABASE_URL.rsplit('/', 1)[0] + '/' + TEST_DB_NAME
+print(f"\n=== Using PostgreSQL for tests: {TEST_DB_NAME} ===\n")
 
 
-# Enable UUID support for SQLite by registering a custom type adapter
-def _sqlite_uuid_adapter():
-    """Configure SQLite to handle UUID columns as strings."""
-    import sqlite3
-    
-    # Register adapter to store UUIDs as strings
-    sqlite3.register_adapter(uuid.UUID, lambda u: str(u))
-    # Register converter to parse UUIDs from strings
-    sqlite3.register_converter("UUID", lambda b: uuid.UUID(b.decode()))
+def _create_postgres_test_database():
+    """Create a dedicated PostgreSQL test database."""
+    # Connect to the postgres admin database to create test database
+    admin_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://mailg:mailg@127.0.0.1:5436/postgres")
+    admin_engine = create_engine(admin_url, isolation_level="AUTOCOMMIT", poolclass=NullPool)
+
+    try:
+        # Use raw connection to ensure AUTOCOMMIT mode (CREATE DATABASE cannot run in transaction)
+        conn = admin_engine.raw_connection()
+        conn.set_isolation_level(0)  # AUTOCOMMIT
+        cursor = conn.cursor()
+
+        try:
+            # Check if test database already exists
+            cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (TEST_DB_NAME,))
+            if not cursor.fetchone():
+                # Create test database
+                cursor.execute(f'CREATE DATABASE "{TEST_DB_NAME}"')
+        finally:
+            cursor.close()
+            conn.close()
+    finally:
+        admin_engine.dispose()
 
 
-_sqlite_uuid_adapter()
+def _drop_postgres_test_database():
+    """Drop the PostgreSQL test database."""
+    admin_url = os.getenv("DATABASE_URL", "postgresql+psycopg2://mailg:mailg@127.0.0.1:5436/postgres")
+    admin_engine = create_engine(admin_url, isolation_level="AUTOCOMMIT", poolclass=NullPool)
+
+    try:
+        # Use raw connection to ensure AUTOCOMMIT mode (DROP DATABASE cannot run in transaction)
+        conn = admin_engine.raw_connection()
+        conn.set_isolation_level(0)  # AUTOCOMMIT
+        cursor = conn.cursor()
+
+        try:
+            # Terminate all connections to the test database
+            cursor.execute("""
+                SELECT pg_terminate_backend(pid)
+                FROM pg_stat_activity
+                WHERE datname = %s AND pid <> pg_backend_pid()
+            """, (TEST_DB_NAME,))
+
+            # Drop test database
+            cursor.execute(f'DROP DATABASE IF EXISTS "{TEST_DB_NAME}"')
+        finally:
+            cursor.close()
+            conn.close()
+    finally:
+        admin_engine.dispose()
 
 
 @pytest.fixture(scope="session")
 def db_engine():
     """Create a test database engine (once per test session for speed)."""
+    # Create PostgreSQL test database
+    _create_postgres_test_database()
+
+    # Create engine for test database
     engine = create_engine(
         SQLALCHEMY_TEST_DATABASE_URL,
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
+        pool_pre_ping=True,
+        poolclass=NullPool,
     )
     Base.metadata.create_all(bind=engine)
     yield engine
+
+    # Cleanup
     Base.metadata.drop_all(bind=engine)
+    engine.dispose()
+    _drop_postgres_test_database()
 
 
 @pytest.fixture(scope="function")
@@ -113,7 +165,7 @@ def base_client():
 @pytest.fixture(scope="function")
 def client(db_session, base_client):
     """Configure the test client with database dependency override for this test."""
-    def override_get_db():
+    def override_get_db(request: Request = None):
         try:
             yield db_session
         finally:
@@ -133,7 +185,6 @@ def sample_user(db_session):
         email="testuser@example.com",
         role="user",
         active=True,
-        is_deleted=False,
     )
     db_session.add(user)
     db_session.commit()
@@ -149,8 +200,7 @@ def sample_admin(db_session):
         last_name="Admin",
         email="admin@example.com",
         role="admin",
-        active=True,
-        is_deleted=False,
+        active=True
     )
     db_session.add(user)
     db_session.commit()

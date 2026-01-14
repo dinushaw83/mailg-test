@@ -45,7 +45,6 @@ def list_email_attachments(
     
     attachments = db.query(Attachment).filter(
         Attachment.email_id == email_id,
-        Attachment.is_deleted == False
     ).all()
     
     return [
@@ -79,8 +78,7 @@ def create_attachment(
     email = db.query(Email).filter(
         Email.id == email_id,
         Email.sender_id == current_user.id,
-        Email.status == "draft",
-        Email.is_deleted == False
+        Email.status == "draft"
     ).first()
     
     if not email:
@@ -130,8 +128,7 @@ def get_attachment(
     current_user = auth.user
     
     attachment = db.query(Attachment).filter(
-        Attachment.id == attachment_id,
-        Attachment.is_deleted == False
+        Attachment.id == attachment_id
     ).first()
     
     if not attachment:
@@ -150,12 +147,11 @@ def get_attachment(
 def delete_attachment(
     attachment_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete an attachment.
     
     Args:
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
+        attachment_id: ID of the attachment to delete.
     
     Permissions:
     - Users can only delete attachments on their own draft emails
@@ -163,8 +159,7 @@ def delete_attachment(
     current_user = auth.user
     
     attachment = db.query(Attachment).filter(
-        Attachment.id == attachment_id,
-        Attachment.is_deleted == False
+        Attachment.id == attachment_id
     ).first()
     
     if not attachment:
@@ -177,8 +172,7 @@ def delete_attachment(
     email = db.query(Email).filter(
         Email.id == attachment.email_id,
         Email.sender_id == current_user.id,
-        Email.status == "draft",
-        Email.is_deleted == False
+        Email.status == "draft"
     ).first()
     
     if not email and current_user.role != "admin":
@@ -187,20 +181,16 @@ def delete_attachment(
             detail="Can only delete attachments from your own draft emails"
         )
     
-    if permanent:
-        # Permanently delete from database
-        db.delete(attachment)
-    else:
-        # Soft delete
-        attachment.is_deleted = True
+    # Permanently delete from database
+    db.delete(attachment)
     
     try:
         db.commit()
     except Exception:
         db.rollback()
         raise
-    
-    logger.info(f"Attachment {attachment.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
+
+    logger.info(f"Attachment {attachment.id} permanently deleted by user {current_user.id}")
 
 
 @router.get("/attachments/{attachment_id}/download", dependencies=[Depends(authorized())])
@@ -219,8 +209,7 @@ def download_attachment(
     current_user = auth.user
     
     attachment = db.query(Attachment).filter(
-        Attachment.id == attachment_id,
-        Attachment.is_deleted == False
+        Attachment.id == attachment_id
     ).first()
     
     if not attachment:

@@ -5,9 +5,13 @@ import {
   sendEmailThunk,
   updateLabelThunk,
   updateLabelsThunk,
+  bulkUpdateLabelsThunk,
   updateEmailStarredThunk,
+  bulkUpdateEmailStarredThunk,
   updateEmailImportantThunk,
   bulkUpdateEmailsThunk,
+  bulkUnstarThreadsThunk,
+  updateThreadImportantThunk,
   snoozeEmailThunk,
   moveToTrashThunk,
   moveToSpamThunk,
@@ -33,6 +37,17 @@ export function registerReactQueryListeners(listenerMiddleware) {
 
   listenerMiddleware.startListening({
     actionCreator: updateLabelsThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries (all categories and folders)
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["labels"] });
+      // Invalidate email counts since label changes can move emails between categories
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUpdateLabelsThunk.fulfilled,
     effect: async () => {
       // Invalidate all email queries (all categories and folders)
       queryClient.invalidateQueries({ queryKey: ["emails"] });
@@ -90,6 +105,36 @@ export function registerReactQueryListeners(listenerMiddleware) {
       // Invalidate all email queries to refresh starred emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       // Invalidate email counts since starring affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUpdateEmailStarredThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh starred emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since starring affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUnstarThreadsThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh unstarred emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since unstarring affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: updateThreadImportantThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email queries to refresh important status
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since important status affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
   });

@@ -121,7 +121,6 @@ class LabelBriefResponse(BaseModel):
     parent_id: Optional[UUID] = None
     is_system: bool = False
     is_exclusive: bool = False
-    is_deleted: bool = False
 
 
 class EmailResponse(BaseModel):
@@ -137,6 +136,7 @@ class EmailResponse(BaseModel):
     is_read: bool
     is_starred: bool
     is_important: bool  # User-specific, derived from thread metadata
+    is_archived: bool = False  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
@@ -146,7 +146,7 @@ class EmailResponse(BaseModel):
     sent_at: Optional[datetime] = None
     received_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
-    snooze_until: Optional[datetime] = None
+    snooze_until: Optional[datetime] = None  # Thread-level, derived from thread metadata
     created_at: datetime
     updated_at: datetime
     attachment_count: int = 0
@@ -167,6 +167,7 @@ class EmailListResponse(BaseModel):
     is_read: bool
     is_starred: bool
     is_important: bool  # User-specific, derived from thread metadata
+    is_archived: bool = False  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
@@ -174,7 +175,7 @@ class EmailListResponse(BaseModel):
     thread_email_count: Optional[int] = None  # Number of emails in the thread
     sent_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
-    snooze_until: Optional[datetime] = None
+    snooze_until: Optional[datetime] = None  # Thread-level, derived from thread metadata
     created_at: datetime
     attachment_count: int = 0
     has_attachments: bool = False
