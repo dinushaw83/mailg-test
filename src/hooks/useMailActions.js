@@ -183,7 +183,6 @@ export default function useMailActions() {
         /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
       );
 
-      console.log({ backendLabelsToAdd, backendLabelsToRemove, ids });
       if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
         // Determine final label state: add new ones, remove old ones
         // For simplicity, we'll send the full label set, but backend should handle add/remove

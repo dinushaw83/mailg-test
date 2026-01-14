@@ -491,18 +491,15 @@ const ContactDetailsPage = () => {
     switch (action) {
       case "print":
         // TODO: Implement print functionality
-        console.log("Print contact");
         break;
       case "export":
         // TODO: Implement export functionality
-        console.log("Export contact");
         break;
       case "hide":
         hideContact();
         break;
       case "report":
         // TODO: Implement report profile content functionality
-        console.log("Report profile content");
         break;
       case "delete":
         setShowDeleteModal(true);

@@ -1,12 +1,13 @@
-import styled from "@emotion/styled";
 import { Box, Divider, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useState } from "react";
-import { Icon } from "./ActionBar";
-import Popover from "@mui/material/Popover";
-import Link from "@mui/material/Link";
-import { getAttachmentIcon } from "../EmailList/Table";
-import { useGlobalContext } from "../../contexts/GlobalContext";
 import { imageFileToThumbnailFile, videoFileToThumbnailFile } from "./thumb";
+
+import { Icon } from "./ActionBar";
+import Link from "@mui/material/Link";
+import Popover from "@mui/material/Popover";
+import { getAttachmentIcon } from "../EmailList/Table";
+import styled from "@emotion/styled";
+import { useGlobalContext } from "../../contexts/GlobalContext";
 
 const ImageContainer = styled.div`
   width: 180px;
@@ -264,7 +265,7 @@ export const Attachments = ({ attachments = [] }) => {
   };
 
   const handleSaveToDrive = async (attachment) => {
-    console.log("save to drive", attachment);
+    // TODO: Implement save to drive functionality
   };
 
   const openInNewTab = async (attachment) => {

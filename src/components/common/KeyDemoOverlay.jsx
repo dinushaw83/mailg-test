@@ -18,20 +18,8 @@ const KeyDemoOverlay = ({
     if (!isActive) return;
 
     const handleKeyDown = (event) => {
-      // Debug all key events
-      console.log("Key event:", {
-        key: event.key,
-        code: event.code,
-        ctrlKey: event.ctrlKey,
-        metaKey: event.metaKey,
-        altKey: event.altKey,
-        shiftKey: event.shiftKey,
-        target: event.target.tagName,
-      });
-
       // Prevent default behavior for certain keys to avoid conflicts
       if (event.ctrlKey || event.metaKey || event.altKey) {
-        console.log("Ignoring due to modifier keys");
         return;
       }
 
@@ -71,24 +59,7 @@ const KeyDemoOverlay = ({
       ];
 
       if (keysToIgnore.includes(event.key)) {
-        console.log("Ignoring key:", event.key);
         return;
-      }
-
-      // Special debugging for a and s keys
-      if (event.key === "a" || event.key === "s") {
-        console.log("Special debug for a/s key:", {
-          key: event.key,
-          code: event.code,
-          ctrlKey: event.ctrlKey,
-          metaKey: event.metaKey,
-          altKey: event.altKey,
-          shiftKey: event.shiftKey,
-          defaultPrevented: event.defaultPrevented,
-          target: event.target.tagName,
-          targetId: event.target.id,
-          targetClass: event.target.className,
-        });
       }
 
       const currentTime = Date.now();
@@ -122,9 +93,6 @@ const KeyDemoOverlay = ({
       // Update the display
       setKeySequence([...keyBufferRef.current]);
       setIsVisible(true);
-
-      // Debug logging
-      console.log("Key captured:", key, "Buffer:", keyBufferRef.current);
 
       // Call the callback if provided
       if (onKeySequence) {

@@ -207,7 +207,6 @@ const VerificationLocalStorage = () => {
           setInitialConfigState(baseline);
           const diff = generateConfigDiff(baseline, gatherLocalStorageConfig());
           setDiffData(diff);
-          console.log("✅ Baseline ready signal received — verification dashboard synced.");
         }
       }
     };
@@ -220,7 +219,6 @@ const VerificationLocalStorage = () => {
   const refreshConfig = useCallback(() => {
     // ⛔ Skip until baseline is definitely ready
     if (!window.initialConfig) {
-      console.log("⏸️ Skipping refresh — baseline not ready yet");
       return;
     }
 
@@ -244,10 +242,6 @@ const VerificationLocalStorage = () => {
       });
     }
     setLastUpdated(new Date());
-
-    console.log("🔄 Config refreshed");
-    if (window.initialConfig) console.log("Initial:", window.initialConfig);
-    console.log("Current:", window.currentConfig);
   }, []);
 
   // Auto-refresh every 2 seconds to detect changes

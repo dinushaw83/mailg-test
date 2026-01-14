@@ -144,6 +144,44 @@ export const sendEmailThunk = createAsyncThunk("mail/sendEmail", async (emailDat
 });
 
 /**
+ * MUTATION THUNK: Send email by ID (for drafts)
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const sendEmailByIdThunk = createAsyncThunk(
+  "mail/sendEmailById",
+  async (emailId, { rejectWithValue }) => {
+    try {
+      // Call service directly - React Query cache invalidation is handled by listeners
+      const response = await emailService.sendEmailById(emailId);
+      return { emailId, data: response };
+    } catch (error) {
+      console.error("❌ Failed to send email by ID:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Cancel/unsend email by ID (undo send)
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const cancelSendEmailByIdThunk = createAsyncThunk(
+  "mail/cancelSendEmailById",
+  async (emailId, { rejectWithValue }) => {
+    try {
+      // Call service directly - React Query cache invalidation is handled by listeners
+      const response = await emailService.cancelSendEmailById(emailId);
+      return { emailId, data: response };
+    } catch (error) {
+      console.error("❌ Failed to cancel send email by ID:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to cancel send email");
+    }
+  }
+);
+
+/**
  * MUTATION THUNK: Updates labels and revalidates.
  */
 export const updateLabelsThunk = createAsyncThunk(
@@ -226,6 +264,61 @@ export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, 
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
   }
 });
+
+/**
+ * MUTATION THUNK: Create a new draft
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const createDraftThunk = createAsyncThunk("mail/createDraft", async (draftData, { rejectWithValue }) => {
+  try {
+    const response = await emailService.createDraft(draftData);
+    // React Query cache invalidation is handled by RTK listener middleware.
+    return response;
+  } catch (error) {
+    console.error("❌ Failed to create draft:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to create draft");
+  }
+});
+
+/**
+ * MUTATION THUNK: Update an existing draft
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const updateDraftThunk = createAsyncThunk(
+  "mail/updateDraft",
+  async ({ emailId, draftData }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateDraft(emailId, draftData);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return response;
+    } catch (error) {
+      console.error("❌ Failed to update draft:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update draft");
+    }
+  }
+);
+
+/**
+ * Fetch a single email by ID
+ */
+export const fetchEmailByIdThunk = createAsyncThunk(
+  "mail/fetchEmailById",
+  async (emailId, { rejectWithValue }) => {
+    try {
+      const data = await queryClient.fetchQuery({
+        queryKey: ["email", emailId],
+        queryFn: () => emailService.getEmailById(emailId),
+        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+      });
+      return data;
+    } catch (error) {
+      console.error("❌ Failed to fetch email by ID:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email");
+    }
+  }
+);
 
 const mailSlice = createSlice({
   name: "mail",

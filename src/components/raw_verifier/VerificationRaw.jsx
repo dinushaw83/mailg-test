@@ -34,10 +34,8 @@ const VerificationRaw = () => {
           body: JSON.stringify({}), // No taskId = get all tasks
         });
 
-        console.log("Fetched assertions:", response, response.ok);
         if (response.ok) {
           const data = await response.json();
-          console.log("Fetched assertions:", data);
           setAssertions(data.verifiers || {});
         } else {
           console.error("Failed to fetch assertions:", response.statusText);
@@ -61,7 +59,6 @@ const VerificationRaw = () => {
   const currentIndex = selectedPrompt ? promptIds.indexOf(selectedPrompt.promptId) : -1;
 
   const handleOpenVerifier = (promptId) => {
-    console.log("Opening verifier for promptId:", promptId, assertions[promptId]);
     if (assertions[promptId]) {
       setSelectedPrompt({
         promptId,
@@ -124,8 +121,6 @@ const VerificationRaw = () => {
     localStorage.clear();
     window.location.reload();
   };
-
-  console.log("Assertions loaded:", assertions);
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "grey.50" }}>
