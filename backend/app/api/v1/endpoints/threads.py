@@ -19,9 +19,10 @@ from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_user_metadata import ThreadUserMetadata
 from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate
+from app.schemas.thread import ThreadOperationResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import SystemLabel, FolderType
+from app.core.constants import SystemLabel, FolderType, EmailStatus
 from app.utils.label_utils import (
     add_system_label_to_thread,
     remove_system_label_from_thread,
@@ -171,7 +172,11 @@ def restore_thread(
 ) -> None:
     """Restore a deleted thread for the current user.
     
-    Moves all user's emails in the thread from trash back to inbox.
+    Moves all user's emails in the thread from trash back to their appropriate folders:
+    - Sent emails are restored to the 'sent' folder
+    - Scheduled/queued emails are restored to the 'scheduled' folder
+    - Received emails are restored to the 'inbox' folder
+    - Draft emails are restored to the 'drafts' folder
     
     Permissions:
     - Users can only restore threads they have access to
@@ -198,12 +203,29 @@ def restore_thread(
             detail="No emails in trash for this thread"
         )
     
-    # Move emails from trash back to inbox
-    for email in user_emails_in_trash:
-        email.folder = FolderType.INBOX.value
+    # Track which labels need to be added based on restored email types
+    labels_to_add = set()
     
-    # Restore inbox label
-    add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.INBOX)
+    # Restore emails to appropriate folders based on their status
+    for email in user_emails_in_trash:
+        if email.status == EmailStatus.DRAFT.value:
+            email.folder = FolderType.DRAFTS.value
+            labels_to_add.add(SystemLabel.DRAFTS)
+        elif email.status == EmailStatus.QUEUED.value:
+            email.folder = FolderType.SCHEDULED.value
+            labels_to_add.add(SystemLabel.SCHEDULED)
+        elif email.status == EmailStatus.SENT.value:
+            email.folder = FolderType.SENT.value
+            labels_to_add.add(SystemLabel.SENT)
+        else:
+            # For received emails or any other status, restore to inbox
+            email.folder = FolderType.INBOX.value
+            labels_to_add.add(SystemLabel.INBOX)
+    
+    # Remove trash label and add appropriate labels
+    remove_system_label_from_thread(db, thread_id, current_user.id, SystemLabel.TRASH)
+    for label in labels_to_add:
+        add_system_label_to_thread(db, thread_id, current_user.id, label)
     
     try:
         db.commit()
@@ -563,11 +585,11 @@ def mark_thread_important_endpoint(
     return format_email_response(user_email, current_user.id)
 
 
-@router.patch("/{thread_id}/spam", response_model=dict, dependencies=[Depends(authorized())])
+@router.patch("/{thread_id}/spam", response_model=ThreadOperationResponse, dependencies=[Depends(authorized())])
 def mark_thread_spam_endpoint(
     thread_id: UUID,
     db: Session = Depends(get_db),
-) -> dict:
+) -> ThreadOperationResponse:
     """Mark a thread as spam for the current user.
 
     This updates the folder of all user's emails in the thread to SPAM.
@@ -619,19 +641,19 @@ def mark_thread_spam_endpoint(
 
     logger.info(f"Thread {thread_id} marked as spam by user {current_user.id}")
 
-    return {
-        "success": True,
-        "message": f"spam status updated for {emails_count} email(s) in thread",
-        "thread_id": str(thread_id),
-        "emails_count": emails_count
-    }
+    return ThreadOperationResponse(
+        success=True,
+        message=f"Spam status updated for {emails_count} email(s) in thread",
+        thread_id=thread_id,
+        emails_count=emails_count
+    )
 
 
-@router.patch("/{thread_id}/unspam", response_model=dict, dependencies=[Depends(authorized())])
+@router.patch("/{thread_id}/unspam", response_model=ThreadOperationResponse, dependencies=[Depends(authorized())])
 def unmark_thread_spam_endpoint(
     thread_id: UUID,
     db: Session = Depends(get_db),
-) -> dict:
+) -> ThreadOperationResponse:
     """Unmark a thread as spam for the current user.
 
     This updates the folder of all user's emails in the thread to INBOX.
@@ -683,12 +705,12 @@ def unmark_thread_spam_endpoint(
 
     logger.info(f"Thread {thread_id} marked as not spam by user {current_user.id}")
 
-    return {
-        "success": True,
-        "message": f"Unmarked spam status for {emails_count} email(s) in thread",
-        "thread_id": str(thread_id),
-        "emails_count": emails_count
-    }
+    return ThreadOperationResponse(
+        success=True,
+        message=f"Unmarked spam status for {emails_count} email(s) in thread",
+        thread_id=thread_id,
+        emails_count=emails_count
+    )
 
 
 @router.post("/{thread_id}/unstar", status_code=status.HTTP_200_OK, dependencies=[Depends(authorized())])

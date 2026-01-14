@@ -216,7 +216,6 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
                 is_archived = getattr(metadata, 'is_archived', False)
                 break
 
-    print(email.scheduled_send_at, datetime.now(UTC), email.id)
     # Determine if email can be cancelled (undo send)
     can_undo = (
         email.status == EmailStatus.QUEUED.value and
@@ -293,10 +292,12 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
     from app.models.email import Email
     from app.models.email_recipient import EmailRecipient
     from app.models.user import User
+    from app.models.thread import Thread
 
     # Use provided sender_id or fall back to email's sender_id
     actual_sender_id = sender_id if sender_id is not None else email.sender_id
 
+    emails_created = 0
     for recipient in email.recipients:
         if recipient.recipient_id:
             recipient_user = db.query(User).filter(
@@ -317,6 +318,7 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                 )
                 db.add(received_email)
                 db.flush()
+                emails_created += 1
 
                 recv_recipient = EmailRecipient(
                     email_id=received_email.id,
@@ -332,6 +334,12 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                 # Add category label if applicable
                 if email.category:
                     add_category_label_to_thread(db, email.thread_id, recipient_user.id, EmailCategory(email.category))
+
+    # Update thread email count if any emails were created
+    if emails_created > 0 and email.thread_id:
+        thread = db.query(Thread).filter(Thread.id == email.thread_id).first()
+        if thread:
+            thread.email_count = (thread.email_count or 0) + emails_created
 
 
 def deliver_email_to_recipients_background(email_id: UUID, sender_id: UUID, run_id: str = None) -> None:

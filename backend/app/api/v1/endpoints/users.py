@@ -153,6 +153,10 @@ def get_user(
 ) -> dict:
     """Get a specific user by ID.
     
+    Permissions:
+    - user: Can only view active users
+    - admin: Can view all users including inactive
+    
     Args:
         user_id: User ID.
         db: Database session.
@@ -161,11 +165,20 @@ def get_user(
         User details.
         
     Raises:
-        HTTPException: 404 if user not found.
+        HTTPException: 404 if user not found or inactive (for non-admin users).
     """
+    current_user = auth.user
+    
     user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User {user_id} not found"
+        )
+    
+    # Non-admin users can only see active users
+    if current_user.role != "admin" and not user.active:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User {user_id} not found"

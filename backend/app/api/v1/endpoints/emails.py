@@ -821,6 +821,11 @@ def cancel_send(
     email.scheduled_send_at = None
     email.folder = FolderType.DRAFTS.value
     
+    # Update labels: Remove Scheduled, add Drafts
+    if email.thread_id:
+        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
+    
     try:
         db.commit()
         db.refresh(email)
@@ -1004,6 +1009,11 @@ def reply_to_email(
         # Add Drafts label for sender
         add_system_label_to_thread(db, original_email.thread_id, current_user.id, SystemLabel.DRAFTS)
 
+        # Update thread email count
+        thread = db.query(Thread).filter(Thread.id == original_email.thread_id).first()
+        if thread:
+            thread.email_count = (thread.email_count or 0) + 1
+
         db.commit()
         db.refresh(reply_email)
 
@@ -1025,6 +1035,10 @@ def forward_email(
     db: Session = Depends(get_db),
 ) -> dict:
     """Forward an email.
+
+    If the user has undo_send_delay_seconds configured, the forwarded email will be
+    queued with a scheduled send time. During this window, the user can cancel
+    the send using the /emails/{email_id}/cancel-send endpoint.
 
     Email delivery to recipients is processed in the background for better performance.
     """
@@ -1052,6 +1066,11 @@ def forward_email(
     if forward_data.html_body or original_email.html_body:
         html_body = (forward_data.html_body or "") + "<hr><p>---------- Forwarded message ---------</p>" + (original_email.html_body or "")
     
+    # Check user's undo send delay preference
+    undo_delay = current_user.undo_send_delay_seconds or 0
+    if undo_delay > 0:
+        undo_delay = max(5, min(30, undo_delay))  # Clamp to valid range
+    
     # Create a new thread for the forwarded email
     thread = Thread(
         subject=subject,
@@ -1065,7 +1084,49 @@ def forward_email(
         db.add(thread)
         db.flush()
 
-        # Create forward email
+        # Determine status based on undo send delay
+        if undo_delay > 0:
+            from datetime import timedelta
+            forward_email_obj = Email(
+                subject=subject,
+                body=body,
+                html_body=html_body,
+                status=EmailStatus.QUEUED.value,
+                folder=FolderType.SCHEDULED.value,
+                sender_id=current_user.id,
+                thread_id=thread.id,
+                parent_email_id=email_id,
+                is_read=True,
+                scheduled_send_at=datetime.now(UTC) + timedelta(seconds=undo_delay),
+            )
+            db.add(forward_email_obj)
+            db.flush()
+
+            # Add recipients to forward email
+            for recipient in forward_data.recipients:
+                recipient_user = db.query(User).filter(
+                    User.email == recipient.email
+                ).first()
+
+                email_recipient = EmailRecipient(
+                    email_id=forward_email_obj.id,
+                    recipient_id=recipient_user.id if recipient_user else None,
+                    recipient_email=recipient.email,
+                    recipient_name=recipient.name,
+                    recipient_type=recipient.type,
+                )
+                db.add(email_recipient)
+
+            # Add Scheduled label for sender (undo send enabled)
+            add_system_label_to_thread(db, thread.id, current_user.id, SystemLabel.SCHEDULED)
+
+            db.commit()
+            db.refresh(forward_email_obj)
+
+            logger.info(f"Forward {forward_email_obj.id} queued for send in {undo_delay}s by user {current_user.id}")
+            return format_email_response(forward_email_obj, current_user.id)
+
+        # Immediate send (undo send disabled)
         forward_email_obj = Email(
             subject=subject,
             body=body,
@@ -1106,7 +1167,7 @@ def forward_email(
         db.rollback()
         raise
 
-    # Create received copies for recipients in background
+    # Create received copies for recipients in background (only for immediate send)
     run_id = getattr(request.state, "run_id", None)
     background_tasks.add_task(
         deliver_email_to_recipients_background,
@@ -1126,14 +1187,31 @@ def mark_email_read(
     read_data: EmailReadUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Mark an email as read or unread."""
+    """Mark an email as read or unread.
+    
+    Permissions:
+    - Users can only mark their own emails (sent or received)
+    """
     current_user = auth.user
     
-    email = db.query(Email).filter(
+    email = db.query(Email).options(
+        selectinload(Email.recipients),
+    ).filter(
         Email.id == email_id
     ).first()
     
     if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
@@ -1157,14 +1235,31 @@ def star_email(
     star_data: EmailStarUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Star or unstar an email."""
+    """Star or unstar an email.
+    
+    Permissions:
+    - Users can only star their own emails (sent or received)
+    """
     current_user = auth.user
     
-    email = db.query(Email).filter(
+    email = db.query(Email).options(
+        selectinload(Email.recipients),
+    ).filter(
         Email.id == email_id
     ).first()
     
     if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
@@ -1188,7 +1283,11 @@ def move_email(
     move_data: EmailMoveRequest,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Move an email to a different folder."""
+    """Move an email to a different folder.
+    
+    Permissions:
+    - Users can only move their own emails (sent or received)
+    """
     current_user = auth.user
     
     # Validate folder type
@@ -1198,11 +1297,24 @@ def move_email(
             detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
         )
     
-    email = db.query(Email).filter(
+    email = db.query(Email).options(
+        selectinload(Email.recipients),
+    ).filter(
         Email.id == email_id
     ).first()
     
     if not email:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Email {email_id} not found"
+        )
+    
+    # Check ownership
+    is_sender = email.sender_id == current_user.id
+    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
+    is_admin = current_user.role == "admin"
+    
+    if not (is_sender or is_recipient or is_admin):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
