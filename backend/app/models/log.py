@@ -11,7 +11,7 @@ class ApiLog(Base):
     __tablename__ = "api_logs"
 
     id = Column(Integer, Sequence('api_logs_id_seq', start=1, increment=1), primary_key=True, autoincrement=True, index=True)
-    timestamp = Column(DateTime, server_default=func.now(), index=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     level = Column(String, nullable=False, index=True)  # INFO, WARNING, ERROR
     operation = Column(
         String, nullable=False, index=True
@@ -31,7 +31,7 @@ class ApiLog(Base):
     response_data = Column(JSON)  # Response data (limited)
     error_message = Column(Text)  # Error message if operation failed
     duration_ms = Column(Integer)  # Request duration in milliseconds
-    created_at = Column(DateTime, server_default=func.now(), index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     __table_args__ = (
         # Common analytics/debug drill-downs:

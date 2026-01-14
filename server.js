@@ -75,6 +75,17 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Mailg API server is running' });
 });
 
+// Config endpoint to expose backend API URL to frontend
+// Note: Using /config instead of /api/config to avoid routing to backend
+app.get('/config', (req, res) => {
+  // Read API URL from environment variable, with fallback for local development
+  const apiUrl = process.env.BACKEND_API_URL || process.env.API_URL || 'http://localhost:8766/api';
+  res.json({ 
+    apiUrl,
+    // Include other config if needed in the future
+  });
+});
+
 // ----------------------
 // Serve Frontend
 // ----------------------

@@ -19,10 +19,10 @@ class Thread(Base):
     participant_count = Column(Integer, default=1)
     email_count = Column(Integer, default=0)
 
-    last_email_at = Column(DateTime)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-    
+    last_email_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
     # Relationships
     owner = relationship("User", foreign_keys=[owner_id], lazy="joined")
     emails = relationship("Email", back_populates="thread", lazy="dynamic",

@@ -1,13 +1,15 @@
 """Tests for Thread User Metadata (is_important) functionality."""
 
 import pytest
-import uuid
+
+from app.models.label import Label
 from app.models.email import Email
 from app.models.thread import Thread
+from app.models.thread_label import ThreadLabel
 from app.models.thread_user_metadata import ThreadUserMetadata
 from app.models.user import User
 from app.models.email_recipient import EmailRecipient
-from app.core.constants import FolderType
+from app.core.constants import FolderType, SystemLabel
 from app.utils.thread_metadata_utils import (
     mark_thread_important,
     get_thread_is_important,
@@ -563,3 +565,133 @@ class TestEmailAPIImportant:
         )
 
         assert response.status_code == 404
+
+
+class TestThreadAPISpam:
+    
+    def test_mark_thread_spam_via_api(self, client_with_auth, db_session):
+        """Test marking a thread as spam via thread endpoint."""
+        client, token, user = client_with_auth
+        # Create a thread and email
+        thread = Thread(
+            subject="Spam Thread",
+            owner_id=user.id,
+        )
+        db_session.add(thread)
+        db_session.commit()
+
+        spam_label = Label(
+            name="Spam",
+            owner_id=user.id,
+            is_system=True
+        )
+        db_session.add(spam_label)
+        db_session.commit()
+
+        for i in range(2):
+            email = Email(
+                subject=f"Spam Email {i+1}",
+                body="Spam body",
+                status="received",
+                folder=FolderType.INBOX.value,
+                sender_id=user.id,
+                thread_id=thread.id,
+            )
+            db_session.add(email)
+        db_session.commit()
+        # Mark as spam via thread endpoint
+        response = client.patch(
+            f"/api/v1/threads/{thread.id}/spam",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["thread_id"] == str(thread.id)
+        assert data["emails_count"] == 2
+
+        # verify emails moved to spam folder
+        spam_emails = db_session.query(Email).filter(
+            Email.thread_id == thread.id,
+            Email.folder == FolderType.SPAM.value
+        ).all()
+        assert len(spam_emails) == 2
+
+        #verify Spam label added
+        spam_label = db_session.query(ThreadLabel).filter(
+            ThreadLabel.thread_id == thread.id,
+            ThreadLabel.user_id == user.id,
+            ThreadLabel.label_id == db_session.query(Label.id).filter(
+                Label.owner_id == user.id,
+                Label.is_system == True,
+                Label.name == SystemLabel.SPAM.value
+            ).scalar_subquery()
+        ).first()
+        assert spam_label is not None
+
+    def test_unmark_thread_spam_via_api(self, client_with_auth, db_session):
+        """Test unmarking a thread as spam via thread endpoint."""
+        client, token, user = client_with_auth
+        # Create a thread and email
+        thread = Thread(
+            subject="Spam Thread",
+            owner_id=user.id,
+        )
+        db_session.add(thread)
+        db_session.commit()
+
+        spam_label = Label(
+            name="Spam",
+            owner_id=user.id,
+            is_system=True
+        )
+        db_session.add(spam_label)
+        db_session.commit()
+
+        thread_label = ThreadLabel(
+            thread_id=thread.id,
+            user_id=user.id,
+            label_id=spam_label.id
+        )
+        db_session.add(thread_label)
+        db_session.commit()
+
+        for i in range(2):
+            email = Email(
+                subject=f"Spam Email {i+1}",
+                body="Spam body",
+                status="received",
+                folder=FolderType.SPAM.value,
+                sender_id=user.id,
+                thread_id=thread.id,
+            )
+            db_session.add(email)
+        db_session.commit()
+
+        # unmark as spam
+        response = client.patch(
+            f"/api/v1/threads/{thread.id}/unspam",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["thread_id"] == str(thread.id)
+        assert data["emails_count"] == 2
+
+        # verify emails moved back to inbox folder
+        inbox_emails = db_session.query(Email).filter(
+            Email.thread_id == thread.id,
+            Email.folder == FolderType.INBOX.value
+        ).all()
+        assert len(inbox_emails) == 2
+
+        #verify Spam label removed
+        spam_label = db_session.query(ThreadLabel).filter(
+            ThreadLabel.thread_id == thread.id,
+            ThreadLabel.user_id == user.id,
+            ThreadLabel.label_id == db_session.query(Label.id).filter(
+                Label.owner_id == user.id,
+                Label.is_system == True,
+                Label.name == SystemLabel.SPAM.value
+            ).scalar_subquery()
+        ).first()
+        assert spam_label is None

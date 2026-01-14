@@ -324,12 +324,23 @@ jobs:
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
 
       - name: Deploy containers
+        env:
+          SYSTEM_URL: ${{ vars.SYSTEM_URL }}
         run: |
+          if [ -z "$SYSTEM_URL" ]; then
+            echo "::error::SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
+          # Set BACKEND_API_URL from SYSTEM_URL
+          BACKEND_API_URL="${SYSTEM_URL}/api"
+          
           echo "📦 Deploying with images:"
           echo "  Backend: ${{ steps.images.outputs.backend_image }}"
           echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
+          echo "  Backend API URL: ${BACKEND_API_URL}"
           
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << 'DEPLOY_SCRIPT'
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
             set -e
             cd ~/mailg-deploy
             
@@ -345,12 +356,13 @@ jobs:
             
             BACKEND_IMAGE="${{ steps.images.outputs.backend_image }}" \
             FRONTEND_IMAGE="${{ steps.images.outputs.frontend_image }}" \
+            BACKEND_API_URL="${BACKEND_API_URL}" \
             GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
             GITHUB_ACTOR="${{ github.actor }}" \
             ./deploy-from-registry.sh
             
             echo "✅ Deployment completed"
-          DEPLOY_SCRIPT
+          EOF
 
       - name: Health check
         id: health

@@ -6,7 +6,7 @@ This module provides helper functions for:
 """
 
 import re
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Optional
 
 
@@ -100,7 +100,7 @@ def parse_relative_date(relative: str) -> Optional[datetime]:
     value = int(match.group(1))
     unit = match.group(2)
     
-    now = datetime.utcnow()
+    now = datetime.now(UTC)
     if unit == 'd':
         return now - timedelta(days=value)
     elif unit == 'm':

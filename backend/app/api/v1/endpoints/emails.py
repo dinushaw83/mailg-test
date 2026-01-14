@@ -11,7 +11,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_
 from typing import Optional
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 import logging
 
@@ -85,7 +85,7 @@ def create_email(
             owner_id=current_user.id,
             participant_count=len(email_data.recipients) + 1,
             email_count=1,
-            last_email_at=datetime.utcnow(),
+            last_email_at=datetime.now(UTC),
         )
         db.add(thread)
         db.flush()  # Get thread ID
@@ -317,7 +317,7 @@ def list_emails(
             snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
                 ThreadUserMetadata.user_id == current_user.id,
                 ThreadUserMetadata.snooze_until.isnot(None),
-                ThreadUserMetadata.snooze_until > datetime.utcnow()
+                ThreadUserMetadata.snooze_until > datetime.now(UTC)
             ).subquery()
             
             query = query.filter(Email.thread_id.in_(db.query(snoozed_thread_ids.c.thread_id)))
@@ -327,7 +327,7 @@ def list_emails(
             snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
                 ThreadUserMetadata.user_id == current_user.id,
                 ThreadUserMetadata.snooze_until.isnot(None),
-                ThreadUserMetadata.snooze_until > datetime.utcnow()
+                ThreadUserMetadata.snooze_until > datetime.now(UTC)
             ).subquery()
             
             query = query.filter(
@@ -691,7 +691,7 @@ def send_email(
     
     if scheduled_send_at:
         # Explicit scheduled send time provided - override user's undo delay
-        if scheduled_send_at <= datetime.utcnow():
+        if scheduled_send_at <= datetime.now(UTC):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="scheduled_send_at must be in the future"
@@ -726,7 +726,7 @@ def send_email(
         # Queue the email with scheduled send time (undo send enabled)
         from datetime import timedelta
         email.status = EmailStatus.QUEUED.value
-        email.scheduled_send_at = datetime.utcnow() + timedelta(seconds=undo_delay)
+        email.scheduled_send_at = datetime.now(UTC) + timedelta(seconds=undo_delay)
         email.folder = FolderType.SCHEDULED.value
         
         # Update labels: Remove Drafts, add Scheduled
@@ -745,7 +745,7 @@ def send_email(
     
     # Immediate send (undo send disabled)
     email.status = EmailStatus.SENT.value
-    email.sent_at = datetime.utcnow()
+    email.sent_at = datetime.now(UTC)
     email.folder = FolderType.SENT.value
 
     # Update labels: Remove Drafts, add Sent + category
@@ -810,7 +810,7 @@ def cancel_send(
         )
     
     # Check if still within the undo window
-    if email.scheduled_send_at and email.scheduled_send_at <= datetime.utcnow():
+    if email.scheduled_send_at and email.scheduled_send_at <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Undo window has expired. The email has been sent."
@@ -871,9 +871,13 @@ def confirm_send(
     
     # Send immediately
     email.status = EmailStatus.SENT.value
-    email.sent_at = datetime.utcnow()
+    email.sent_at = datetime.now(UTC)
     email.scheduled_send_at = None
     email.folder = FolderType.SENT.value
+
+    # Update labels: Remove Scheduled, add Sent
+    remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
+    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
 
     try:
         db.commit()
@@ -900,13 +904,12 @@ def confirm_send(
 def reply_to_email(
     email_id: UUID,
     reply_data: EmailReplyRequest,
-    background_tasks: BackgroundTasks,
-    request: Request,
     db: Session = Depends(get_db),
 ) -> dict:
     """Reply to an email.
 
-    Email delivery to recipients is processed in the background for better performance.
+    This endpoint creates a draft reply. Use POST /emails/{id}/send to send the reply
+    (either immediately or scheduled for a specific time).
     """
     current_user = auth.user
     
@@ -922,7 +925,21 @@ def reply_to_email(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
         )
-    
+
+    # Validate that the original email is not a draft
+    if original_email.status == EmailStatus.DRAFT.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot reply to a draft email"
+        )
+
+    # Validate that the original email has a thread_id
+    if not original_email.thread_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot reply to an email without a thread"
+        )
+
     # Determine reply recipients
     recipients = []
     if reply_data.reply_all:
@@ -951,34 +968,18 @@ def reply_to_email(
     subject = original_email.subject
     if not subject.lower().startswith("re:"):
         subject = f"Re: {subject}"
-    
-    # Get or create thread
-    thread_id = original_email.thread_id
-    if not thread_id:
-        thread = Thread(
-            subject=original_email.subject,
-            owner_id=current_user.id,
-            participant_count=len(recipients) + 1,
-            email_count=2,
-            last_email_at=datetime.utcnow(),
-        )
-        db.add(thread)
-        db.flush()
-        thread_id = thread.id
-        original_email.thread_id = thread_id
-    
-    # Create reply email
+
+    # Create draft reply email
     reply_email = Email(
         subject=subject,
         body=reply_data.body,
         html_body=reply_data.html_body,
-        status=EmailStatus.SENT.value,
-        folder=FolderType.SENT.value,
+        status=EmailStatus.DRAFT.value,
+        folder=FolderType.DRAFTS.value,
         sender_id=current_user.id,
-        thread_id=thread_id,
+        thread_id=original_email.thread_id,
         parent_email_id=email_id,
         is_read=True,
-        sent_at=datetime.utcnow(),
     )
 
     try:
@@ -1000,8 +1001,8 @@ def reply_to_email(
             )
             db.add(email_recipient)
 
-        # Add Sent label for sender
-        add_system_label_to_thread(db, thread_id, current_user.id, SystemLabel.SENT)
+        # Add Drafts label for sender
+        add_system_label_to_thread(db, original_email.thread_id, current_user.id, SystemLabel.DRAFTS)
 
         db.commit()
         db.refresh(reply_email)
@@ -1010,16 +1011,7 @@ def reply_to_email(
         db.rollback()
         raise
 
-    # Create received copies for recipients in background
-    run_id = getattr(request.state, "run_id", None)
-    background_tasks.add_task(
-        deliver_email_to_recipients_background,
-        reply_email.id,
-        current_user.id,
-        run_id
-    )
-
-    logger.info(f"Reply {reply_email.id} to email {email_id} by user {current_user.id}")
+    logger.info(f"Draft reply {reply_email.id} created for email {email_id} by user {current_user.id}")
 
     return format_email_response(reply_email, current_user.id)
 
@@ -1066,7 +1058,7 @@ def forward_email(
         owner_id=current_user.id,
         participant_count=len(forward_data.recipients) + 1,
         email_count=1,
-        last_email_at=datetime.utcnow(),
+        last_email_at=datetime.now(UTC),
     )
     
     try:
@@ -1084,7 +1076,7 @@ def forward_email(
             thread_id=thread.id,
             parent_email_id=email_id,
             is_read=True,
-            sent_at=datetime.utcnow(),
+            sent_at=datetime.now(UTC),
         )
         db.add(forward_email_obj)
         db.flush()
