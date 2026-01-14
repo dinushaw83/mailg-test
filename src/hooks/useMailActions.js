@@ -637,46 +637,29 @@ export default function useMailActions() {
           });
         }
       } else {
-        // UNSTARRING: Different logic based on context
-        if (context === "list") {
-          // From List: Use thread-level unstar with ALL thread IDs
-          const threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
-
-          if (threadIds.length > 0) {
-            dispatch(bulkUnstarThreadsThunk({ threadIds })).catch((error) => {
-              console.error("Failed to unstar threads:", error);
-              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
-            });
-          }
+        // UNSTARRING: Use bulk email endpoint with is_starred: false
+        if (emailIds.length === 1) {
+          // Single email - use individual endpoint
+          dispatch(
+            updateEmailStarredThunk({
+              emailId: emailIds[0],
+              is_starred: false,
+            })
+          ).catch((error) => {
+            console.error("Failed to unstar email:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+          });
         } else {
-          // From Detail: Use individual endpoint for each email with is_starred: false
-          if (emailIds.length === 1) {
-            // Single email - use individual endpoint
-            dispatch(
-              updateEmailStarredThunk({
-                emailId: emailIds[0],
-                is_starred: false,
-              })
-            ).catch((error) => {
-              console.error("Failed to unstar email:", error);
-              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
-            });
-          } else {
-            // Multiple emails - call individual endpoint for each
-            const promises = emailIds.map((emailId) =>
-              dispatch(
-                updateEmailStarredThunk({
-                  emailId,
-                  is_starred: false,
-                })
-              )
-            );
-
-            Promise.all(promises).catch((error) => {
-              console.error("Failed to unstar emails:", error);
-              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
-            });
-          }
+          // Multiple emails - use bulk endpoint with is_starred: false
+          dispatch(
+            bulkUpdateEmailStarredThunk({
+              emailIds,
+              is_starred: false,
+            })
+          ).catch((error) => {
+            console.error("Failed to unstar emails:", error);
+            updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+          });
         }
       }
     },
