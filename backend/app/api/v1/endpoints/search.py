@@ -24,9 +24,7 @@ from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 from app.models.user import User
 from app.core.constants import VALID_FOLDER_TYPES
-from app.schemas.search import (
-    SearchQuery, SearchResult, SearchResponse,
-    SearchSuggestion, SearchSuggestionsResponse,
+from app.schemas.search import ( SearchSuggestionsResponse,
     SavedSearchCreate, SavedSearchResponse
 )
 from app.schemas.email import EmailListResponse

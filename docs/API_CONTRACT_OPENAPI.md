@@ -2450,6 +2450,10 @@ Email delivery to recipients is processed in the background for better performan
 
 Forward an email.
 
+If the user has undo_send_delay_seconds configured, the forwarded email will be
+queued with a scheduled send time. During this window, the user can cancel
+the send using the /emails/{email_id}/cancel-send endpoint.
+
 Email delivery to recipients is processed in the background for better performance.
 
 **Path Parameters**:
@@ -2669,6 +2673,9 @@ Special behavior for TRASH/SPAM labels:
 
 Move an email to a different folder.
 
+Permissions:
+- Users can only move their own emails (sent or received)
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -2744,6 +2751,9 @@ Move an email to a different folder.
 **PATCH** `/api/v1/emails/{email_id}/read`
 
 Mark an email as read or unread.
+
+Permissions:
+- Users can only mark their own emails (sent or received)
 
 **Path Parameters**:
 
@@ -3138,6 +3148,9 @@ Permissions:
 **PATCH** `/api/v1/emails/{email_id}/star`
 
 Star or unstar an email.
+
+Permissions:
+- Users can only star their own emails (sent or received)
 
 **Path Parameters**:
 
@@ -4393,7 +4406,7 @@ Permissions:
 - `page` (optional, integer): Page number
 - `page_size` (optional, integer): Items per page
 - `include_shared` (optional, boolean): Include shared templates from others
-- `search` (optional, object): Search in name and description
+- `search` (optional, object): Search in name
 
 **Responses**:
 
@@ -4409,10 +4422,9 @@ Permissions:
       {
         "id": null,
         "name": null,
-        "description": null,
-        "subject": null,
         "is_shared": null,
         "owner_id": null,
+        "owner_name": null,
         "created_at": null,
         "updated_at": null
       }
@@ -4471,8 +4483,6 @@ Permissions:
 ```json
 {
   "name": "string",
-  "description": "string",
-  "subject": "string",
   "body": "string",
   "html_body": "string",
   "is_shared": false
@@ -4491,8 +4501,6 @@ Permissions:
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "string",
-    "description": "string",
-    "subject": "string",
     "body": "string",
     "html_body": "string",
     "is_shared": false,
@@ -4610,8 +4618,6 @@ Permissions:
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "string",
-    "description": "string",
-    "subject": "string",
     "body": "string",
     "html_body": "string",
     "is_shared": false,
@@ -4673,8 +4679,6 @@ Permissions:
 ```json
 {
   "name": "string",
-  "description": "string",
-  "subject": "string",
   "body": "string",
   "html_body": "string",
   "is_shared": false
@@ -4693,8 +4697,6 @@ Permissions:
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "string",
-    "description": "string",
-    "subject": "string",
     "body": "string",
     "html_body": "string",
     "is_shared": false,
@@ -4758,9 +4760,6 @@ Permissions:
 ```json
 {
   "template_id": "00000000-0000-0000-0000-000000000000",
-  "recipients": [
-    {}
-  ],
   "additional_body": "string",
   "save_as_draft": true
 }
@@ -5125,7 +5124,11 @@ Other users' important status for the same thread is not affected.
 
 Restore a deleted thread for the current user.
 
-Moves all user's emails in the thread from trash back to inbox.
+Moves all user's emails in the thread from trash back to their appropriate folders:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only restore threads they have access to
@@ -5274,7 +5277,12 @@ Also adds the Spam system label accordingly.
   "success": false,
   "message": "string",
   "statusCode": 0,
-  "data": {}
+  "data": {
+    "success": true,
+    "message": "string",
+    "thread_id": "00000000-0000-0000-0000-000000000000",
+    "emails_count": 0
+  }
 }
 ```
 
@@ -5476,7 +5484,12 @@ Also removes the Spam system label accordingly.
   "success": false,
   "message": "string",
   "statusCode": 0,
-  "data": {}
+  "data": {
+    "success": true,
+    "message": "string",
+    "thread_id": "00000000-0000-0000-0000-000000000000",
+    "emails_count": 0
+  }
 }
 ```
 
@@ -5811,6 +5824,10 @@ Raises:
 
 Get a specific user by ID.
 
+Permissions:
+- user: Can only view active users
+- admin: Can view all users including inactive
+
 Args:
     user_id: User ID.
     db: Database session.
@@ -5819,7 +5836,7 @@ Returns:
     User details.
     
 Raises:
-    HTTPException: 404 if user not found.
+    HTTPException: 404 if user not found or inactive (for non-admin users).
 
 **Path Parameters**:
 

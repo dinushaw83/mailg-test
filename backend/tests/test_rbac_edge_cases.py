@@ -209,3 +209,102 @@ class TestIntegrationRBAC:
             auth_checker(mock_user)
         
         assert exc_info.value.status_code == 403
+
+
+class TestUserActiveStatusVisibility:
+    """Test that get_user endpoint correctly filters inactive users based on role.
+    
+    This tests the fix where non-admin users cannot see inactive users (get 404),
+    while admin users can see all users including inactive ones.
+    """
+
+    def test_get_inactive_user_as_regular_user_returns_404(self, client_with_auth, db_session):
+        """Test that non-admin users cannot see inactive users."""
+        client, token, user = client_with_auth
+        
+        # Create an inactive user
+        inactive_user = User(
+            first_name="Inactive",
+            last_name="User",
+            email="inactive@example.com",
+            role="user",
+            active=False
+        )
+        db_session.add(inactive_user)
+        db_session.commit()
+        
+        # Try to get the inactive user as regular user
+        response = client.get(
+            f"/api/v1/users/{inactive_user.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        # Should return 404 - user "not found" for non-admin
+        assert response.status_code == 404
+
+    def test_get_inactive_user_as_admin_succeeds(self, client_with_admin_auth, db_session):
+        """Test that admin users CAN see inactive users."""
+        client, token, admin = client_with_admin_auth
+        
+        # Create an inactive user
+        inactive_user = User(
+            first_name="Inactive",
+            last_name="User",
+            email="inactive_admin_view@example.com",
+            role="user",
+            active=False
+        )
+        db_session.add(inactive_user)
+        db_session.commit()
+        
+        # Get the inactive user as admin
+        response = client.get(
+            f"/api/v1/users/{inactive_user.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        # Admin should be able to see the inactive user
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["id"] == str(inactive_user.id)
+        assert data["active"] == False
+
+    def test_get_active_user_as_regular_user_succeeds(self, client_with_auth, db_session):
+        """Test that non-admin users CAN see active users."""
+        client, token, user = client_with_auth
+        
+        # Create an active user
+        active_user = User(
+            first_name="Active",
+            last_name="User",
+            email="active_other@example.com",
+            role="user",
+            active=True
+        )
+        db_session.add(active_user)
+        db_session.commit()
+        
+        # Get the active user as regular user
+        response = client.get(
+            f"/api/v1/users/{active_user.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        # Should succeed
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["id"] == str(active_user.id)
+
+    def test_get_own_user_works_regardless_of_active_status(self, client_with_auth, db_session):
+        """Test that users can always view their own profile."""
+        client, token, user = client_with_auth
+        
+        # Get own user
+        response = client.get(
+            f"/api/v1/users/{user.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["id"] == str(user.id)

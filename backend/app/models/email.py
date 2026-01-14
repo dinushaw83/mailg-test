@@ -27,9 +27,6 @@ class Email(Base):
     # Gmail-style category (Primary, Promotions, Social, Updates, Forums)
     category = Column(String(50), default="primary", index=True)
     
-    # Snooze functionality
-    snooze_until = Column(DateTime(timezone=True), nullable=True, index=True)  # When email should reappear
-    
     # Undo send functionality
     scheduled_send_at = Column(DateTime(timezone=True), nullable=True, index=True)  # When email will actually be sent
 

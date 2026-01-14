@@ -22,7 +22,7 @@ from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.schemas.label import (
-    LabelCreate, LabelUpdate, LabelResponse, LabelListResponse, LabelTreeResponse
+    LabelCreate, LabelUpdate, LabelResponse, LabelTreeResponse
 )
 from app.schemas.email import EmailListResponse
 from app.schemas.pagination import PaginatedListResponse
