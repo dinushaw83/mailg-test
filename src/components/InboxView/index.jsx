@@ -227,7 +227,8 @@ const InboxView = () => {
     queryKey: ["email", thread_id],
     queryFn: () => emailService.getEmail(thread_id),
     enabled: !!thread_id, // Always fetch if thread_id exists
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 0, // Always refetch to ensure fresh data after interactions
+    refetchOnMount: true, // Refetch when component mounts
   });
 
   // Use only fetched emails from API
