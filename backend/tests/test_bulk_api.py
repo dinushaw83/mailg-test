@@ -366,12 +366,23 @@ class TestBulkLabels:
         db_session.add_all([label2, label3])
         db_session.commit()
 
-        # Create multiple threads
+        # Create multiple threads with emails
         threads = []
         for i in range(3):
             thread = Thread(subject=f"Thread {i}", owner_id=user.id, email_count=1)
             db_session.add(thread)
+            db_session.flush()
             threads.append(thread)
+            # Create email in thread for access
+            email = Email(
+                subject=f"Email {i}",
+                body=f"Body {i}",
+                status="sent",
+                sender_id=user.id,
+                thread_id=thread.id,
+                folder=FolderType.SENT.value
+            )
+            db_session.add(email)
         db_session.commit()
 
         # Add label1 to all threads initially
@@ -414,9 +425,19 @@ class TestBulkLabels:
         """Test unified endpoint with only add operation."""
         client, token, user = client_with_auth
 
-        # Create thread and email
+        # Create thread with email
         thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
+        db_session.flush()
+        email = Email(
+            subject="Test Email",
+            body="Body",
+            status="sent",
+            sender_id=user.id,
+            thread_id=thread.id,
+            folder=FolderType.SENT.value
+        )
+        db_session.add(email)
         db_session.commit()
 
         response = client.post(
@@ -446,9 +467,19 @@ class TestBulkLabels:
         """Test unified endpoint with only remove operation."""
         client, token, user = client_with_auth
 
-        # Create thread with label
+        # Create thread with email and label
         thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
+        db_session.flush()
+        email = Email(
+            subject="Test Email",
+            body="Body",
+            status="sent",
+            sender_id=user.id,
+            thread_id=thread.id,
+            folder=FolderType.SENT.value
+        )
+        db_session.add(email)
         db_session.commit()
 
         thread_label = ThreadLabel(thread_id=thread.id, label_id=sample_label.id, user_id=user.id)
@@ -509,7 +540,7 @@ class TestBulkSnooze:
 
         client, token, user = client_with_auth
 
-        # Create multiple threads
+        # Create multiple threads with emails
         threads = []
         for i in range(3):
             thread = Thread(
@@ -518,7 +549,18 @@ class TestBulkSnooze:
                 email_count=1
             )
             db_session.add(thread)
+            db_session.flush()
             threads.append(thread)
+            # Create email in thread for access
+            email = Email(
+                subject=f"Email {i}",
+                body=f"Body {i}",
+                status="sent",
+                sender_id=user.id,
+                thread_id=thread.id,
+                folder=FolderType.SENT.value
+            )
+            db_session.add(email)
         db_session.commit()
 
         thread_ids = [str(t.id) for t in threads]
@@ -568,7 +610,7 @@ class TestBulkSnooze:
 
         client, token, user = client_with_auth
 
-        # Create multiple threads with snooze metadata
+        # Create multiple threads with emails and snooze metadata
         threads = []
         for i in range(3):
             thread = Thread(
@@ -579,6 +621,17 @@ class TestBulkSnooze:
             db_session.add(thread)
             db_session.flush()
             threads.append(thread)
+
+            # Create email in thread for access
+            email = Email(
+                subject=f"Email {i}",
+                body=f"Body {i}",
+                status="sent",
+                sender_id=user.id,
+                thread_id=thread.id,
+                folder=FolderType.SENT.value
+            )
+            db_session.add(email)
 
             # Create snooze metadata for thread
             metadata = ThreadUserMetadata(
@@ -618,15 +671,27 @@ class TestBulkArchive:
         """Test archiving multiple threads."""
         client, token, user = client_with_auth
 
-        # Create multiple threads
+        # Create multiple threads with emails
         threads = []
         for i in range(3):
             thread = Thread(
                 subject=f"Thread {i}",
-                owner_id=user.id
+                owner_id=user.id,
+                email_count=1
             )
             db_session.add(thread)
+            db_session.flush()
             threads.append(thread)
+            # Create email in thread for access
+            email = Email(
+                subject=f"Email {i}",
+                body=f"Body {i}",
+                status="sent",
+                sender_id=user.id,
+                thread_id=thread.id,
+                folder=FolderType.SENT.value
+            )
+            db_session.add(email)
         db_session.commit()
 
         thread_ids = [str(t.id) for t in threads]
@@ -657,17 +722,29 @@ class TestBulkArchive:
 
         client, token, user = client_with_auth
 
-        # Create multiple threads with archive metadata
+        # Create multiple threads with emails and archive metadata
         threads = []
         for i in range(3):
             # Create thread
             thread = Thread(
                 subject=f"Thread {i}",
-                owner_id=user.id
+                owner_id=user.id,
+                email_count=1
             )
             db_session.add(thread)
             db_session.flush()
             threads.append(thread)
+
+            # Create email in thread for access
+            email = Email(
+                subject=f"Email {i}",
+                body=f"Body {i}",
+                status="sent",
+                sender_id=user.id,
+                thread_id=thread.id,
+                folder=FolderType.SENT.value
+            )
+            db_session.add(email)
 
             # Create archive metadata for thread
             metadata = ThreadUserMetadata(

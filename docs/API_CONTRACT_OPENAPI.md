@@ -90,8 +90,10 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Mark Thread Important Endpoint](#mark-thread-important-endpoint)
   - [Restore Thread](#restore-thread)
   - [Snooze Thread](#snooze-thread)
+  - [Mark Thread Spam Endpoint](#mark-thread-spam-endpoint)
   - [Unarchive Thread](#unarchive-thread)
   - [Unsnooze Thread](#unsnooze-thread)
+  - [Unmark Thread Spam Endpoint](#unmark-thread-spam-endpoint)
   - [Unstar Thread](#unstar-thread)
 - [Users API](#users-api)
   - [List Users](#list-users)
@@ -2819,7 +2821,8 @@ Mark an email as read or unread.
 
 Reply to an email.
 
-Email delivery to recipients is processed in the background for better performance.
+This endpoint creates a draft reply. Use POST /emails/{id}/send to send the reply
+(either immediately or scheduled for a specific time).
 
 **Path Parameters**:
 
@@ -4093,20 +4096,19 @@ These can be combined: q="from:john subject:report has:attachment"
         "id": null,
         "subject": null,
         "snippet": null,
-        "sender_email": null,
-        "sender_name": null,
-        "recipients": null,
+        "folder": null,
+        "category": null,
         "is_read": null,
         "is_starred": null,
-        "has_attachment": null,
+        "is_important": null,
+        "sender_id": null,
         "created_at": null
       }
     ],
     "total": 0,
     "page": 0,
     "page_size": 0,
-    "total_pages": 0,
-    "query": "string"
+    "total_pages": 0
   }
 }
 ```
@@ -5250,6 +5252,64 @@ Permissions:
 
 ---
 
+### Mark Thread Spam Endpoint
+
+**PATCH** `/api/v1/threads/{thread_id}/spam`
+
+Mark a thread as spam for the current user.
+
+This updates the folder of all user's emails in the thread to SPAM.
+Also adds the Spam system label accordingly.
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Unarchive Thread
 
 **POST** `/api/v1/threads/{thread_id}/unarchive`
@@ -5359,6 +5419,64 @@ Permissions:
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unmark Thread Spam Endpoint
+
+**PATCH** `/api/v1/threads/{thread_id}/unspam`
+
+Unmark a thread as spam for the current user.
+
+This updates the folder of all user's emails in the thread to INBOX.
+Also removes the Spam system label accordingly.
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
 }
 ```
 

@@ -23,7 +23,7 @@ def get_user_accessible_emails(
     email_ids: List[UUID]
 ) -> Tuple[List[Email], List[UUID]]:
     """
-    Get emails that the user has access to (owned or received).
+    Get emails that the user has access to (sent or received).
     
     Args:
         db: Database session
@@ -34,17 +34,16 @@ def get_user_accessible_emails(
         Tuple of (accessible emails list, inaccessible email ids list)
     """
     # Query emails that user can access
-    emails = db.query(Email).filter(
+    # Uses same join pattern as search endpoint for consistency
+    emails = db.query(Email).outerjoin(
+        EmailRecipient, Email.id == EmailRecipient.email_id
+    ).filter(
         Email.id.in_(email_ids),
         or_(
             Email.sender_id == user_id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == user_id
-                )
-            )
+            EmailRecipient.recipient_id == user_id
         )
-    ).all()
+    ).distinct().all()
     
     found_ids = {e.id for e in emails}
     not_found = [eid for eid in email_ids if eid not in found_ids]
@@ -58,19 +57,33 @@ def get_user_accessible_threads(
     thread_ids: List[UUID]
 ) -> Tuple[List[Thread], List[UUID]]:
     """
-    Get threads that the user owns.
+    Get threads that the user has access to (sent or received emails in).
     
     Args:
         db: Database session
-        user_id: User ID to check ownership for
+        user_id: User ID to check access for
         thread_ids: List of thread IDs to check
     
     Returns:
         Tuple of (accessible threads list, inaccessible thread ids list)
     """
+    # Find thread IDs where user has sent or received emails
+    # Uses same join pattern as search endpoint for consistency
+    accessible_thread_ids = db.query(Email.thread_id).outerjoin(
+        EmailRecipient, Email.id == EmailRecipient.email_id
+    ).filter(
+        Email.thread_id.in_(thread_ids),
+        or_(
+            Email.sender_id == user_id,
+            EmailRecipient.recipient_id == user_id
+        )
+    ).distinct().all()
+    
+    accessible_ids = {row[0] for row in accessible_thread_ids}
+    
+    # Query threads for those accessible IDs
     threads = db.query(Thread).filter(
-        Thread.id.in_(thread_ids),
-        Thread.owner_id == user_id
+        Thread.id.in_(accessible_ids)
     ).all()
     
     found_ids = {t.id for t in threads}
@@ -137,15 +150,14 @@ def bulk_update_emails_with_threads(
         Tuple of (success_email_ids, thread_ids, failures_dict)
     """
     # Build query to get accessible emails with their thread IDs
-    query = db.query(Email.id, Email.thread_id).filter(
+    # Uses same join pattern as search endpoint for consistency
+    query = db.query(Email.id, Email.thread_id).outerjoin(
+        EmailRecipient, Email.id == EmailRecipient.email_id
+    ).filter(
         Email.id.in_(email_ids),
         or_(
             Email.sender_id == user_id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == user_id
-                )
-            )
+            EmailRecipient.recipient_id == user_id
         )
     )
 

@@ -8,7 +8,7 @@ This module provides:
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import func, or_, and_
+from sqlalchemy import func, or_, and_, cast, String
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -174,7 +174,7 @@ def search_emails(
         label_subq = db.query(Label.id).filter(
             Label.owner_id == current_user.id,
             Label.name.ilike(f"%{label_name}%")
-        ).subquery()
+        ).scalar_subquery()
         # Labels are user-specific on shared threads - filter by user_id
         query = query.join(Thread, Email.thread_id == Thread.id).join(
             ThreadLabel, Thread.id == ThreadLabel.thread_id
@@ -205,7 +205,7 @@ def search_emails(
             )
     
     if has_attachment:
-        att_subq = db.query(Attachment.email_id).distinct().subquery()
+        att_subq = db.query(Attachment.email_id).distinct().scalar_subquery()
         query = query.filter(Email.id.in_(att_subq))
     
     if date_from:
@@ -249,7 +249,12 @@ def search_emails(
     ).group_by(Email.thread_id).subquery()
     
     # Step 2: Get email IDs that are the latest in their thread
-    latest_email_ids_subq = db.query(Email.id).join(
+    # When multiple emails have the same max date, use max(id::text) as a tiebreaker
+    # to ensure only one email is returned per thread (PostgreSQL doesn't support MAX on UUID)
+    latest_with_max_date = db.query(
+        Email.thread_id,
+        func.max(cast(Email.id, String)).label("latest_id_text")
+    ).join(
         max_dates,
         and_(
             Email.thread_id == max_dates.c.thread_id,
@@ -257,9 +262,10 @@ def search_emails(
         )
     ).filter(
         Email.id.in_(filtered_email_ids)
-    ).subquery()
+    ).group_by(Email.thread_id).subquery()
     
     # Step 3: Build final query - latest email per thread OR emails without thread_id
+    # Compare email IDs as text since that's how we stored the max
     final_query = db.query(Email).options(
         joinedload(Email.sender),
         selectinload(Email.recipients),
@@ -269,7 +275,9 @@ def search_emails(
     ).filter(
         Email.id.in_(filtered_email_ids),
         or_(
-            Email.id.in_(db.query(latest_email_ids_subq.c.id)),
+            cast(Email.id, String).in_(
+                db.query(latest_with_max_date.c.latest_id_text)
+            ),
             Email.thread_id.is_(None)
         )
     )
