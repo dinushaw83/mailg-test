@@ -37,9 +37,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     () => threads.filter((thread) => selectedIds.includes(thread.thread_id)),
     [threads, selectedIds]
   );
-  // Use selectedThreads directly since they contain all needed email data (id, is_starred, etc.)
-  // This fixes the issue where emails from non-inbox folders weren't being found
-  // because useGlobalContext().emails always returns inbox emails
   const selectedEmails = selectedThreads;
 
   const selectedThreadIds = useMemo(
