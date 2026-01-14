@@ -19,10 +19,10 @@ export const Labels = ({
   setSearchQuery,
   setLabelAnchorEl,
   setSelectedLabelKeys,
-  selectedLabelKeys,
   labelAnchorEl,
   selectedIds,
   threadIds: providedThreadIds = null,
+  threadEmails: providedThreadEmails = null,
   handleClose,
   anchorOrigin = { vertical: "top", horizontal: "right" },
   transformOrigin = { vertical: "top", horizontal: "left" },
@@ -33,7 +33,7 @@ export const Labels = ({
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
   const inputRef = useRef(null);
-  const { folder } = useParams();
+  const { folder, label: labelParam } = useParams();
 
   // Get labelIdToKeyMap from Redux to convert UUID keys to composite keys for display
   const labelIdToKeyMap = useSelector((state) => state.mail.labelIdToKeyMap || {});
@@ -47,14 +47,22 @@ export const Labels = ({
 
   const hasChanges = Object.keys(overrides).length > 0;
 
-  // Get currently applied labels for selected emails, passing folder if present
-  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
+  const idsForSearch = providedThreadIds && providedThreadIds.length > 0 ? providedThreadIds : selectedIds;
+  
+  const folderOrLabel = folder || (labelParam ? `label:${labelParam}` : null);
+  
+  const { currentLabels, labelCounts, nSel } = getSelectionLabels(idsForSearch, folderOrLabel, providedThreadEmails);
+
 
   const availableLabels = useMemo(() => {
-    return Object.entries(labels || {})
-      .filter(([key, meta]) => !meta.system)
+    // Ensure labels is an object (Redux initializes it as [] but fills it as {})
+    const labelsObject = (labels && typeof labels === 'object' && !Array.isArray(labels)) 
+      ? labels 
+      : {};
+
+    return Object.entries(labelsObject)
       .map(([key, meta]) => {
-        const fullPath = buildLabelPath(key, meta, labels, labelIdToKeyMap, getPathLabelFromKey);
+        const fullPath = buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey);
 
         return {
           key, // Keep original key for operations (UUID or composite)
@@ -95,9 +103,12 @@ export const Labels = ({
       threadIds = providedThreadIds;
     } else {
       // Extract thread IDs from selected emails (fallback)
+      const emailsToSearch = (providedThreadEmails && providedThreadEmails.length > 0) 
+        ? providedThreadEmails 
+        : emails;
       threadIds = [
         ...new Set(
-          emails
+          emailsToSearch
             .filter((email) => ids.includes(email.id))
             .map((email) => email.thread_id)
             .filter(Boolean)
@@ -165,6 +176,7 @@ export const Labels = ({
     labels,
     emails,
     providedThreadIds,
+    providedThreadEmails,
   ]);
 
   return (

@@ -179,7 +179,7 @@ export const EmailContent = ({
 
   return (
     <InboxViewContainer isPreview={isPreview}>
-      {showActionBar && <ActionBar thread={thread} />}
+      {showActionBar && <ActionBar thread={thread} emails={emails} />}
       <ScrollableContent>
         <InnerContainer>
           <Subject subject={messages[0].subject} message={messages[0]} />

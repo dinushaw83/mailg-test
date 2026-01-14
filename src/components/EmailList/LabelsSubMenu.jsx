@@ -10,7 +10,7 @@ import Typography from "@mui/material/Typography";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 
-export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
+export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false, folder = null }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { labels, setSnackbar, selection, emails } = useGlobalContext();
   const { addLabels, removeLabels, modifyLabels } = useMailActions();
@@ -32,12 +32,25 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
 
   const hasChanges = Object.keys(overrides).length > 0;
 
-  // Get currently applied labels for selected emails
-  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds);
+  // Get currently applied labels for selected emails, passing folder if present
+  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
 
   const availableLabels = useMemo(() => {
-    return Object.entries(labels || {})
-      .filter(([key, meta]) => !meta.system)
+    const hiddenSystemLabels = new Set([
+      'Inbox', 'Sent', 'Trash', 'Spam', 'Scheduled', 'Snoozed', 'All Mail'
+    ]);
+
+    const labelsObject = (labels && typeof labels === 'object' && !Array.isArray(labels)) 
+      ? labels 
+      : {};
+
+    return Object.entries(labelsObject)
+      .filter(([key, meta]) => {
+        if (meta.system && hiddenSystemLabels.has(meta.name || key)) {
+          return false;
+        }
+        return true;
+      })
       .map(([key, meta]) => ({
         key,
         name: meta.name || key,
@@ -71,15 +84,8 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
 
     if (message) {
-      // Extract thread IDs from selected emails
-      const threadIds = [
-        ...new Set(
-          emails
-            .filter((email) => selectedIds.includes(email.id))
-            .map((email) => email.thread_id)
-            .filter(Boolean)
-        ),
-      ];
+
+      const threadIds = selectedIds.filter(Boolean);
 
       modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
 

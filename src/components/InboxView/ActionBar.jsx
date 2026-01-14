@@ -190,14 +190,14 @@ const useCustomHotKeys = ({
   });
 };
 
-const MailActions = ({ thread }) => {
+const MailActions = ({ thread, emails: providedEmails }) => {
   const navigate = useNavigate();
   const thread_id = thread.thread_id;
   const [state, dispatch] = useReducer(reducer, initialState);
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { setSnackbar, emails, setEmails } = useGlobalContext();
+  const { setSnackbar, emails: globalEmails, setEmails } = useGlobalContext();
 
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
@@ -215,16 +215,35 @@ const MailActions = ({ thread }) => {
   }, [location.pathname]);
 
   const threadEmails = useMemo(() => {
-    // Try to get emails from the global context first
-    const globalEmails = emails.filter((email) => email.thread_id === thread.thread_id);
+    // Normalize thread_id to string for comparison
+    const normalizedThreadId = String(thread?.thread_id ?? "").trim();
+    
+    if (providedEmails && Array.isArray(providedEmails) && providedEmails.length > 0) {
+      // Filter by thread_id, using string comparison for consistency
+      const filtered = providedEmails.filter((email) => {
+        const emailThreadId = String(email?.thread_id ?? "").trim();
+        return emailThreadId === normalizedThreadId;
+      });
+      if (filtered.length > 0) {
+        return filtered;
+      }
+      // If no matches, just return all provided emails (they should all be for this thread)
+      return providedEmails;
+    }
+
+    // Fallback: Try to get emails from the global context
+    const filteredGlobalEmails = globalEmails.filter((email) => {
+      const emailThreadId = String(email?.thread_id ?? "").trim();
+      return emailThreadId === normalizedThreadId;
+    });
 
     // If not found in global context, use the thread's emails array if available
-    if (globalEmails.length === 0 && thread.emails && Array.isArray(thread.emails)) {
+    if (filteredGlobalEmails.length === 0 && thread.emails && Array.isArray(thread.emails)) {
       return thread.emails;
     }
 
-    return globalEmails;
-  }, [emails, thread.thread_id, thread.emails]);
+    return filteredGlobalEmails;
+  }, [providedEmails, globalEmails, thread?.thread_id, thread?.emails]);
   useEffect(() => {
     hasRunOnceRef.current = false;
   }, [thread.thread_id]);
@@ -232,10 +251,15 @@ const MailActions = ({ thread }) => {
   const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
 
   // Extract thread IDs from threadEmails for label operations
+  // Include thread.thread_id as a fallback to ensure we always have at least one thread ID
   const threadIdsForLabels = useMemo(() => {
     const ids = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
+    // If no thread IDs found from emails, use thread.thread_id as fallback
+    if (ids.length === 0 && thread?.thread_id) {
+      return [thread.thread_id];
+    }
     return ids;
-  }, [threadEmails]);
+  }, [threadEmails, thread?.thread_id]);
 
   const conversationMatchKeys = useMemo(() => {
     const keys = new Set();
@@ -993,6 +1017,7 @@ const MailActions = ({ thread }) => {
           labelAnchorEl,
           selectedIds: threadMessageIds,
           threadIds: threadIdsForLabels,
+          threadEmails: threadEmails,
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },

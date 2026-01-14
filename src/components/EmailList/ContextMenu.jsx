@@ -650,6 +650,7 @@ ${email.body || email.preview || ""}
               openCreateLabelDialog();
             }}
             shouldFocus={hoveredSubmenu === "labelAs"}
+            folder={label ? `label:${label}` : folder}
           />
         </Submenu>
 
