@@ -2,8 +2,7 @@ import React from "react";
 
 const ThemesTab = () => {
   const handleSetTheme = () => {
-    console.log("Set theme clicked");
-    // Add theme selection logic here
+    // TODO: Add theme selection logic
   };
 
   return (

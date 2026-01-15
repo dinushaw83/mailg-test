@@ -123,7 +123,6 @@ export const EmailContent = ({
   emails,
   normalizedEmails,
 }) => {
-  console.log({ thread_id, folder, label, emails, normalizedEmails });
   const responseViewRef = React.useRef();
   const { markRead } = useMailActions();
 

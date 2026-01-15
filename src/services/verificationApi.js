@@ -32,8 +32,6 @@ async function processAssertion(assertion, data, modelResponse) {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`LLM assertion attempt ${attempt}/${maxRetries}`);
-
         // Use assertion engine for RDT operators
         const engine = new AssertionEngine();
         const engineResult = await engine.execute(assertion, data, modelResponse);
@@ -57,7 +55,6 @@ async function processAssertion(assertion, data, modelResponse) {
         lastError = error;
 
         if (attempt < maxRetries) {
-          console.log(`Retrying RDT assertion (attempt ${attempt + 1}/${maxRetries})...`);
           // Add a small delay before retry
           await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }

@@ -762,7 +762,6 @@ const Table = ({
     bulkMarkImportant,
   });
 
-  console.log({ emails });
   return (
     <div style={{ flex: 1, height: "100%", overflowY: "auto" }}>
       <table

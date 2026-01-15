@@ -31,7 +31,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
   const { selection, labels, setSnackbar, emails, setEmails } = useGlobalContext();
-  console.log({ selection });
   const { ids } = selection;
   const selectedIds = useMemo(() => [...ids], [ids]);
   const selectedThreads = useMemo(
