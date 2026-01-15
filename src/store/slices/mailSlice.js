@@ -6,6 +6,7 @@ import { initialLabels } from "../../contexts/fixtures/labels";
 import labelService from "../../services/labelService";
 import { queryClient } from "../../lib/query-client";
 import { transformLabelsArray } from "../../utils/labelTransform";
+import { buildEmailQueryKey } from "../../utils/emailQueryKeys";
 
 /**
  * @param {Object} options - Options for fetching
@@ -16,10 +17,13 @@ import { transformLabelsArray } from "../../utils/labelTransform";
  * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
  * @param {boolean} options.include_archived - Include archived emails (for all mail)
  */
-export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue }) => {
+export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue, getState }) => {
+  const state = getState();
+  const defaultPageSize = state?.ui?.itemsPerPage ?? 25;
+
   const {
     page = 1,
-    pageSize = 20,
+    pageSize = defaultPageSize,
     category = null,
     is_starred = null,
     is_important = null,
@@ -29,53 +33,17 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
   } = options;
 
   try {
-    // Structure query key for separate cache invalidation:
-    // - ["emails", "category", "primary", page, pageSize] for categories
-    // - ["emails", "is_starred", true, page, pageSize] for starred
-    // - ["emails", "is_important", true, page, pageSize] for important
-    // - ["emails", "is_snoozed", true, page, pageSize] for snoozed
-    // - ["emails", "folder", "sent", page, pageSize] for folders (sent, trash, spam, drafts)
-    // - ["emails", "all", page, pageSize] for all mail (folder=inbox&include_archived=true)
-    // - ["emails", "inbox", page, pageSize] for inbox (no filter)
-    let queryKey;
-    const filterType =
-      is_starred === true
-        ? "is_starred"
-        : is_important === true
-          ? "is_important"
-          : is_snoozed === true
-            ? "is_snoozed"
-            : include_archived === true
-              ? "all"
-              : folder
-                ? "folder"
-                : category
-                  ? "category"
-                  : "inbox";
-
-    switch (filterType) {
-      case "is_starred":
-        queryKey = ["emails", "is_starred", true, page, pageSize];
-        break;
-      case "is_important":
-        queryKey = ["emails", "is_important", true, page, pageSize];
-        break;
-      case "is_snoozed":
-        queryKey = ["emails", "is_snoozed", true, page, pageSize];
-        break;
-      case "all":
-        queryKey = ["emails", "all", page, pageSize];
-        break;
-      case "folder":
-        queryKey = ["emails", "folder", folder, page, pageSize];
-        break;
-      case "category":
-        queryKey = ["emails", "category", category, page, pageSize];
-        break;
-      default:
-        queryKey = ["emails", "inbox", page, pageSize];
-        break;
-    }
+    // Build query key using the shared utility function
+    const queryKey = buildEmailQueryKey({
+      page,
+      pageSize,
+      category,
+      is_starred,
+      is_important,
+      is_snoozed,
+      folder,
+      include_archived,
+    });
 
     const data = await queryClient.fetchQuery({
       queryKey,
@@ -148,19 +116,16 @@ export const sendEmailThunk = createAsyncThunk("mail/sendEmail", async (emailDat
  * Note: Mutations are called directly (not through React Query fetchQuery)
  * Cache invalidation is handled by RTK listener middleware.
  */
-export const sendEmailByIdThunk = createAsyncThunk(
-  "mail/sendEmailById",
-  async (emailId, { rejectWithValue }) => {
-    try {
-      // Call service directly - React Query cache invalidation is handled by listeners
-      const response = await emailService.sendEmailById(emailId);
-      return { emailId, data: response };
-    } catch (error) {
-      console.error("❌ Failed to send email by ID:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
-    }
+export const sendEmailByIdThunk = createAsyncThunk("mail/sendEmailById", async (emailId, { rejectWithValue }) => {
+  try {
+    // Call service directly - React Query cache invalidation is handled by listeners
+    const response = await emailService.sendEmailById(emailId);
+    return { emailId, data: response };
+  } catch (error) {
+    console.error("❌ Failed to send email by ID:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
   }
-);
+});
 
 /**
  * MUTATION THUNK: Cancel/unsend email by ID (undo send)
@@ -303,22 +268,19 @@ export const updateDraftThunk = createAsyncThunk(
 /**
  * Fetch a single email by ID
  */
-export const fetchEmailByIdThunk = createAsyncThunk(
-  "mail/fetchEmailById",
-  async (emailId, { rejectWithValue }) => {
-    try {
-      const data = await queryClient.fetchQuery({
-        queryKey: ["email", emailId],
-        queryFn: () => emailService.getEmailById(emailId),
-        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-      });
-      return data;
-    } catch (error) {
-      console.error("❌ Failed to fetch email by ID:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email");
-    }
+export const fetchEmailByIdThunk = createAsyncThunk("mail/fetchEmailById", async (emailId, { rejectWithValue }) => {
+  try {
+    const data = await queryClient.fetchQuery({
+      queryKey: ["email", emailId],
+      queryFn: () => emailService.getEmailById(emailId),
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
+    return data;
+  } catch (error) {
+    console.error("❌ Failed to fetch email by ID:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email");
   }
-);
+});
 
 const mailSlice = createSlice({
   name: "mail",
@@ -510,7 +472,7 @@ const mailSlice = createSlice({
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
-        
+
         state.labels = mergedLabels;
         state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
         state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };

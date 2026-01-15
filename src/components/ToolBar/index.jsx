@@ -17,6 +17,10 @@ import styled from "@emotion/styled";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useParams } from "react-router-dom";
+import { queryClient } from "../../lib/query-client";
+import { fetchEmails } from "../../store/slices/mailSlice";
+import { useDispatch } from "react-redux";
+import { buildEmailQueryKey } from "../../utils/emailQueryKeys";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -373,17 +377,97 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu, showPagination = true }) => {
-  const { folder = "inbox" } = useParams();
-  const { selection, refreshEmails, keyboardShortcuts, manualSyncCount, setManualSyncCount } = useGlobalContext();
+const ToolBar = ({
+  totalFilteredItems,
+  threads,
+  showAdvancedMenu,
+  setShowAdvancedMenu,
+  showPagination = true,
+  activeInboxTab = null,
+}) => {
+  const { folder = "inbox", label: labelParam } = useParams();
+  const label = labelParam ? decodeURIComponent(labelParam) : null;
+  const dispatch = useDispatch();
+  const {
+    selection,
+    refreshEmails,
+    keyboardShortcuts,
+    manualSyncCount,
+    setManualSyncCount,
+    currentPage,
+    itemsPerPage,
+  } = useGlobalContext();
   const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
-  const manualEmailSync = useCallback(() => {
+  const manualEmailSync = useCallback(async () => {
+    // Skip refresh if viewing a label route (labels don't use the same caching mechanism)
+    if (label) {
+      return;
+    }
+
     setIsManualSyncing(true);
     setManualSyncCount((prevCount) => prevCount + 1);
-    setTimeout(() => setIsManualSyncing(false), 2500);
-  }, [setManualSyncCount]);
+
+    try {
+      // Build fetch options using the same logic as useFolderEmails
+      const folderKey = String(folder || "inbox").toLowerCase();
+      const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "all"];
+
+      if (!validRoutes.includes(folderKey)) {
+        setIsManualSyncing(false);
+        return;
+      }
+
+      const fetchOptions = { page: currentPage, pageSize: itemsPerPage };
+
+      switch (folderKey) {
+        case "starred":
+          fetchOptions.is_starred = true;
+          break;
+        case "important":
+          fetchOptions.is_important = true;
+          break;
+        case "snoozed":
+          fetchOptions.is_snoozed = true;
+          break;
+        case "sent":
+        case "trash":
+        case "spam":
+        case "drafts":
+          fetchOptions.folder = folderKey;
+          break;
+        case "all":
+          fetchOptions.folder = "inbox";
+          fetchOptions.include_archived = true;
+          break;
+        case "inbox":
+          if (activeInboxTab) {
+            fetchOptions.category = activeInboxTab.toLowerCase();
+          }
+          break;
+        default:
+          setIsManualSyncing(false);
+          return;
+      }
+
+      // Build query key from fetch options
+      const queryKey = buildEmailQueryKey(fetchOptions);
+
+      // Force refetch by invalidating and then refetching the query
+      // This bypasses staleTime and ensures fresh data from the API
+      queryClient.invalidateQueries({ queryKey });
+      await queryClient.refetchQueries({ queryKey });
+
+      // Dispatch the fetchEmails thunk to update Redux state
+      // The thunk will use fetchQuery which will get fresh data since we invalidated above
+      await dispatch(fetchEmails(fetchOptions)).unwrap();
+      setIsManualSyncing(false);
+    } catch (error) {
+      console.error("Failed to refresh emails:", error);
+      setIsManualSyncing(false);
+    }
+  }, [folder, activeInboxTab, currentPage, itemsPerPage, label, setManualSyncCount, dispatch]);
 
   const thread_ids = threads.map((email) => email.thread_id);
   const { ids } = selection;
