@@ -48,7 +48,7 @@
     "sender_id": "fe44b541-81ef-441c-ad73-4bd4a454abca",
     "thread_id": "56bb5c6e-945d-4276-bedd-3ff628875b57",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-02T07:53:29.380298Z",
     "received_at": "2026-01-02T07:53:44.380298Z",
     "created_at": "2025-04-09T17:45:44.380282Z",
     "updated_at": "2025-04-29T07:45:44.380282Z"
@@ -138,7 +138,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "50000000-0000-0000-0000-000000000001",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-18T20:53:43.502451Z",
     "received_at": "2025-12-18T20:53:46.502451Z",
     "created_at": "2025-12-15T10:00:04.000000Z",
     "updated_at": "2025-12-15T10:15:00Z"
@@ -228,7 +228,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "50000000-0000-0000-0000-000000000007",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-26T20:53:15.518843Z",
     "received_at": "2025-12-26T20:53:44.518843Z",
     "created_at": "2025-12-13T16:30:02.000000Z",
     "updated_at": "2025-12-13T16:35:00Z"
@@ -282,7 +282,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "0dccc97e-01ec-4a3b-8628-ef126cf2ac6c",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-24T12:53:39.346848Z",
     "received_at": "2025-12-24T12:53:44.346848Z",
     "created_at": "2025-07-22T01:13:44.346836Z",
     "updated_at": "2025-08-20T15:13:44.346836Z"
@@ -336,7 +336,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "aca09e5b-58fb-42e0-89c2-b096f1cf3f7a",
     "parent_email_id": "66ec8e34-03d3-4d3d-a528-58d529a5340d",
-    "sent_at": null,
+    "sent_at": "2025-12-26T16:53:18.330089Z",
     "received_at": "2025-12-26T16:53:45.330089Z",
     "created_at": "2025-11-18T02:09:44.422608Z",
     "updated_at": "2025-11-26T09:09:44.422608Z"
@@ -354,7 +354,7 @@
     "sender_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "thread_id": "1aae96e0-985d-4b5b-a4b8-26a538ed8e10",
     "parent_email_id": "85162bc4-9338-4b95-8ded-dcd89166a20c",
-    "sent_at": null,
+    "sent_at": "2025-07-15T16:53:29.330658Z",
     "received_at": "2025-07-15T16:53:47.330658Z",
     "created_at": "2025-07-28T22:48:44.454703Z",
     "updated_at": "2025-08-08T23:48:44.454703Z"
@@ -372,7 +372,7 @@
     "sender_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "thread_id": "05f6fb39-c233-4701-9928-30ed38f94791",
     "parent_email_id": "4138acd3-6e35-49ba-b7c1-89da1a900143",
-    "sent_at": null,
+    "sent_at": "2025-12-14T12:53:44.339768Z",
     "received_at": "2025-12-14T12:53:52.339768Z",
     "created_at": "2025-03-23T19:11:44.499239Z",
     "updated_at": "2025-03-25T04:11:44.499239Z"
@@ -390,7 +390,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "50000000-0000-0000-0000-000000000009",
     "parent_email_id": "7a58b3cf-0784-44b2-91c9-f62e92eac034",
-    "sent_at": null,
+    "sent_at": "2025-12-30T15:53:32.455146Z",
     "received_at": "2025-12-30T15:53:47.455146Z",
     "created_at": "2025-12-11T14:20:02.000000Z",
     "updated_at": "2025-12-11T14:25:00Z"
@@ -516,7 +516,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "fdfebd83-4967-49ce-a82c-2e5841149235",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-19T17:53:43.324403Z",
     "received_at": "2025-12-19T17:53:44.324403Z",
     "created_at": "2025-02-01T21:50:44.324390Z",
     "updated_at": "2025-02-05T23:50:44.324390Z"
@@ -624,7 +624,7 @@
     "sender_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "thread_id": "fd05e02a-bb35-4bfe-8ec6-54189efd75f3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-04T10:53:29.325539Z",
     "received_at": "2026-01-04T10:53:44.325539Z",
     "created_at": "2025-09-10T11:51:44.325527Z",
     "updated_at": "2025-09-24T02:51:44.325527Z"
@@ -732,7 +732,7 @@
     "sender_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "thread_id": "c644a6f9-fc30-4f4f-adb0-56b226aa489e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-03T20:53:31.326671Z",
     "received_at": "2026-01-03T20:53:44.326671Z",
     "created_at": "2025-09-11T18:55:44.326659Z",
     "updated_at": "2025-09-28T12:55:44.326659Z"
@@ -768,7 +768,7 @@
     "sender_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "thread_id": "2b0c95a4-92a2-44c8-9e39-a2d541676444",
     "parent_email_id": "60000000-0000-0000-0000-000000000005",
-    "sent_at": null,
+    "sent_at": "2026-01-01T06:53:39.327070Z",
     "received_at": "2026-01-01T06:53:44.327070Z",
     "created_at": "2025-10-13T08:25:44.327058Z",
     "updated_at": "2025-11-06T06:25:44.327058Z"
@@ -786,7 +786,7 @@
     "sender_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "thread_id": "41f78c34-f7d8-42e3-994d-9a77c95c975b",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-01T07:53:31.327265Z",
     "received_at": "2026-01-01T07:53:44.327265Z",
     "created_at": "2025-06-24T20:25:44.327253Z",
     "updated_at": "2025-06-30T08:25:44.327253Z"
@@ -822,7 +822,7 @@
     "sender_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "thread_id": "9468fa86-d2e4-40d2-8f2e-f68ebf388f92",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-01T06:53:36.327070Z",
     "received_at": "2026-01-01T06:53:46.327070Z",
     "created_at": "2025-06-18T04:02:44.327670Z",
     "updated_at": "2025-07-16T17:02:44.327670Z"
@@ -912,7 +912,7 @@
     "sender_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "thread_id": "6710832c-c6b8-4828-9928-7249f4bff5e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T18:53:25.328665Z",
     "received_at": "2025-12-29T18:53:44.328665Z",
     "created_at": "2025-04-16T06:31:44.328654Z",
     "updated_at": "2025-05-05T07:31:44.328654Z"
@@ -1218,7 +1218,7 @@
     "sender_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "thread_id": "3c64ae0a-4431-4ca1-aafc-5de22322a9a2",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T14:53:28.331815Z",
     "received_at": "2025-12-11T14:53:44.331815Z",
     "created_at": "2025-08-03T18:59:44.331803Z",
     "updated_at": "2025-09-01T02:59:44.331803Z"
@@ -1272,7 +1272,7 @@
     "sender_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "thread_id": "9586e301-2a8b-4d2a-bea0-5be4ac7a884f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-09T13:53:27.332380Z",
     "received_at": "2025-12-09T13:53:44.332380Z",
     "created_at": "2025-08-12T14:36:44.332368Z",
     "updated_at": "2025-08-26T06:36:44.332368Z"
@@ -1290,7 +1290,7 @@
     "sender_id": "4120a0df-1fd6-4fa8-9687-0a55b249298c",
     "thread_id": "b0a64394-cd5b-4f92-885f-8c2c60e9f805",
     "parent_email_id": "3d9fe8ea-0bd8-4f33-bf2e-b87bbcffb888",
-    "sent_at": null,
+    "sent_at": "2025-12-17T09:53:15.332578Z",
     "received_at": "2025-12-17T09:53:44.332578Z",
     "created_at": "2025-03-05T23:56:44.332567Z",
     "updated_at": "2025-03-21T17:56:44.332567Z"
@@ -1326,7 +1326,7 @@
     "sender_id": "7fdb663d-4a8c-4c1c-9221-5c53baf1d5e7",
     "thread_id": "c79e9351-e0bc-4680-9074-9b6bb4eb130b",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-07-22T11:39:15.332934Z",
     "received_at": null,
     "created_at": "2025-07-22T11:38:44.332934Z",
     "updated_at": "2025-07-29T00:38:44.332934Z"
@@ -1398,7 +1398,7 @@
     "sender_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "thread_id": "05cad32d-9402-401f-bc4a-2662efdf4909",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-09-27T16:53:43.333668Z",
     "received_at": "2025-09-27T16:53:44.333668Z",
     "created_at": "2025-10-03T06:56:44.333680Z",
     "updated_at": "2025-10-28T03:56:44.333680Z"
@@ -1452,7 +1452,7 @@
     "sender_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "thread_id": "c79e9351-e0bc-4680-9074-9b6bb4eb130b",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-13T07:53:32.334230Z",
     "received_at": "2025-12-13T07:53:44.334230Z",
     "created_at": "2025-04-27T19:55:44.334219Z",
     "updated_at": "2025-05-17T10:55:44.334219Z"
@@ -1470,7 +1470,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-22T16:53:21.334422Z",
     "received_at": "2025-12-22T16:53:44.334422Z",
     "created_at": "2026-01-02T19:17:44.334410Z",
     "updated_at": "2026-01-05T10:17:44.334410Z"
@@ -1506,7 +1506,7 @@
     "sender_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "thread_id": "6710832c-c6b8-4828-9928-7249f4bff5e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-11-20T16:53:32.334774Z",
     "received_at": "2025-11-20T16:53:44.334774Z",
     "created_at": "2025-10-17T11:52:44.334787Z",
     "updated_at": "2025-11-10T14:52:44.334787Z"
@@ -1632,7 +1632,7 @@
     "sender_id": "a0a9c2ab-b726-40da-a704-340af755a526",
     "thread_id": "fec0b373-658e-4623-99e4-55887a22a981",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-07T17:53:23.336107Z",
     "received_at": "2026-01-07T17:53:44.336107Z",
     "created_at": "2025-06-08T11:43:44.336096Z",
     "updated_at": "2025-06-14T10:43:44.336096Z"
@@ -1668,7 +1668,7 @@
     "sender_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
     "thread_id": "3a28c462-833e-4300-91ad-f11321d87344",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-03-30T20:17:34.336450Z",
     "received_at": null,
     "created_at": "2025-03-30T20:16:44.336450Z",
     "updated_at": "2025-04-07T08:16:44.336450Z"
@@ -1740,7 +1740,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "5198fe08-683b-49b1-a434-9748cc3d8674",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-24T02:53:43.337197Z",
     "received_at": "2025-12-24T02:53:44.337197Z",
     "created_at": "2026-01-05T10:40:44.337185Z",
     "updated_at": "2026-01-08T16:53:45.327861Z"
@@ -1758,7 +1758,7 @@
     "sender_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "thread_id": "c8fa7ae1-3abb-4703-8619-c470060b0502",
     "parent_email_id": "87b3d630-6119-41ea-b3b9-73897c24494c",
-    "sent_at": null,
+    "sent_at": "2025-12-28T16:53:23.333113Z",
     "received_at": "2025-12-28T16:53:46.333113Z",
     "created_at": "2025-02-21T03:35:44.337360Z",
     "updated_at": "2025-03-17T06:35:44.337360Z"
@@ -1812,7 +1812,7 @@
     "sender_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "thread_id": "c0b7d6c7-e4da-4c83-bbdb-418473f32576",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-08T10:53:41.337883Z",
     "received_at": "2026-01-08T10:53:44.337883Z",
     "created_at": "2025-01-11T10:40:44.337871Z",
     "updated_at": "2025-01-31T17:40:44.337871Z"
@@ -1866,7 +1866,7 @@
     "sender_id": "d58220f6-cc91-49ea-b0ad-f3b645a9fea0",
     "thread_id": "f54f55cf-4bd4-419d-97f5-0f1bf015b0f7",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T02:53:22.338650Z",
     "received_at": "2025-12-29T02:53:44.338650Z",
     "created_at": "2025-12-05T18:04:44.338636Z",
     "updated_at": "2025-12-15T14:04:44.338636Z"
@@ -2028,7 +2028,7 @@
     "sender_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
     "thread_id": "26689012-3b11-4122-89a2-60d79a6ca2a9",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-18T19:53:28.340343Z",
     "received_at": "2025-12-18T19:53:44.340343Z",
     "created_at": "2025-11-16T09:53:44.340332Z",
     "updated_at": "2025-12-10T16:53:44.340332Z"
@@ -2136,7 +2136,7 @@
     "sender_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "thread_id": "e979d0f6-987b-456a-8716-0a2b0ba210d1",
     "parent_email_id": "c2118b1a-b646-4773-ba1c-e0d6c88a0b57",
-    "sent_at": null,
+    "sent_at": "2025-12-20T09:53:22.341440Z",
     "received_at": "2025-12-20T09:53:44.341440Z",
     "created_at": "2025-06-18T10:06:44.341428Z",
     "updated_at": "2025-07-04T20:06:44.341428Z"
@@ -2154,7 +2154,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000005",
     "thread_id": "f60c47f6-e309-4cac-8dad-7bd3f3bdf2d9",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-22T10:53:15.341627Z",
     "received_at": "2025-12-22T10:53:44.341627Z",
     "created_at": "2025-04-12T10:47:44.341615Z",
     "updated_at": "2025-04-13T04:47:44.341615Z"
@@ -2172,7 +2172,7 @@
     "sender_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "thread_id": "6ebae383-7a6b-4fe9-b6e2-e0df44abe582",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T09:53:36.341820Z",
     "received_at": "2025-12-11T09:53:44.341820Z",
     "created_at": "2025-09-20T21:12:44.341808Z",
     "updated_at": "2025-09-25T20:12:44.341808Z"
@@ -2370,7 +2370,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "3c6486bc-bfff-4d26-b556-3cb019ca6177",
     "parent_email_id": "60000000-0000-0000-0000-000000000015",
-    "sent_at": null,
+    "sent_at": "2025-12-28T07:53:26.343770Z",
     "received_at": "2025-12-28T07:53:44.343770Z",
     "created_at": "2025-12-19T00:54:44.343759Z",
     "updated_at": "2025-12-19T09:54:44.343759Z"
@@ -2478,7 +2478,7 @@
     "sender_id": "a0a9c2ab-b726-40da-a704-340af755a526",
     "thread_id": "e4824c26-caf5-40cb-a39f-2c9c2f7e370e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-07T19:53:29.344837Z",
     "received_at": "2026-01-07T19:53:44.344837Z",
     "created_at": "2025-01-28T13:27:44.344825Z",
     "updated_at": "2025-02-26T16:27:44.344825Z"
@@ -2640,7 +2640,7 @@
     "sender_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "thread_id": "6d2ff389-a838-4557-b6e8-1ef0b9b34769",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-16T07:53:14.346639Z",
     "received_at": "2025-12-16T07:53:44.346639Z",
     "created_at": "2025-12-28T18:55:44.346627Z",
     "updated_at": "2026-01-03T01:55:44.346627Z"
@@ -2820,7 +2820,7 @@
     "sender_id": "a0a9c2ab-b726-40da-a704-340af755a526",
     "thread_id": "1aae96e0-985d-4b5b-a4b8-26a538ed8e10",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T19:53:23.348723Z",
     "received_at": "2025-12-10T19:53:44.348723Z",
     "created_at": "2025-09-09T05:10:44.348712Z",
     "updated_at": "2025-10-02T05:10:44.348712Z"
@@ -2910,7 +2910,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "1417b725-ed3b-4daa-b93e-9be23fa2b4c3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-14T12:53:24.339768Z",
     "received_at": "2025-12-14T12:53:51.339768Z",
     "created_at": "2025-10-20T15:02:44.349560Z",
     "updated_at": "2025-11-04T23:02:44.349560Z"
@@ -2964,7 +2964,7 @@
     "sender_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "thread_id": "73f02fa6-b20d-447c-bd45-2775ec5da63c",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-09-06T16:38:50.350229Z",
     "received_at": null,
     "created_at": "2025-09-06T16:38:44.350229Z",
     "updated_at": "2025-10-06T13:38:44.350229Z"
@@ -3018,7 +3018,7 @@
     "sender_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "thread_id": "a3205d63-d6df-41b4-baa8-ed25aaf6c9f8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-03T00:53:19.325754Z",
     "received_at": "2026-01-03T00:53:46.325754Z",
     "created_at": "2025-04-06T07:52:44.350785Z",
     "updated_at": "2025-04-27T11:52:44.350785Z"
@@ -3054,7 +3054,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000005",
     "thread_id": "b74fb5b5-d3b0-41f6-bfe6-b2b6b35bf204",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-15T19:53:19.351166Z",
     "received_at": "2025-12-15T19:53:44.351166Z",
     "created_at": "2025-10-03T04:12:44.351155Z",
     "updated_at": "2025-10-23T23:12:44.351155Z"
@@ -3090,7 +3090,7 @@
     "sender_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "thread_id": "50000000-0000-0000-0000-000000000002",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-05-15T17:50:19.351540Z",
     "received_at": null,
     "created_at": "2025-05-15T17:49:44.351540Z",
     "updated_at": "2025-06-06T02:49:44.351540Z"
@@ -3108,7 +3108,7 @@
     "sender_id": "2a4a7bc5-4970-4c3c-9313-59564158edf4",
     "thread_id": "3c731d24-d766-4f21-87bb-5b5561534942",
     "parent_email_id": "8382343b-654d-4bb8-8e89-52f866513300",
-    "sent_at": null,
+    "sent_at": "2025-12-26T15:53:15.351739Z",
     "received_at": "2025-12-26T15:53:44.351739Z",
     "created_at": "2025-03-03T18:13:44.351728Z",
     "updated_at": "2025-03-29T01:13:44.351728Z"
@@ -3144,7 +3144,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "47c405d2-2a34-4fc0-bc9a-8a8bbc8a746a",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-05T05:53:43.352129Z",
     "received_at": "2026-01-05T05:53:44.352129Z",
     "created_at": "2025-12-04T22:30:44.352118Z",
     "updated_at": "2025-12-05T07:30:44.352118Z"
@@ -3198,7 +3198,7 @@
     "sender_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "thread_id": "50000000-0000-0000-0000-000000000005",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-17T04:53:19.352668Z",
     "received_at": "2025-12-17T04:53:44.352668Z",
     "created_at": "2025-05-02T12:42:44.352657Z",
     "updated_at": "2025-05-29T23:42:44.352657Z"
@@ -3234,7 +3234,7 @@
     "sender_id": "d58220f6-cc91-49ea-b0ad-f3b645a9fea0",
     "thread_id": "3a28c462-833e-4300-91ad-f11321d87344",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-06T15:53:20.353046Z",
     "received_at": "2026-01-06T15:53:44.353046Z",
     "created_at": "2025-07-27T06:02:44.353034Z",
     "updated_at": "2025-08-01T03:02:44.353034Z"
@@ -3252,7 +3252,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "9df0de0d-3d57-4a54-a06a-b01b4181f768",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-22T17:53:44.334622Z",
     "received_at": "2025-12-22T17:53:46.334622Z",
     "created_at": "2025-02-09T13:18:44.353188Z",
     "updated_at": "2025-02-21T08:18:44.353188Z"
@@ -3324,7 +3324,7 @@
     "sender_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "thread_id": "a4c8d9cf-a9bf-4346-8131-8c24ddf783e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T13:53:36.353953Z",
     "received_at": "2025-12-29T13:53:44.353953Z",
     "created_at": "2025-06-05T07:49:44.353942Z",
     "updated_at": "2025-06-24T23:49:44.353942Z"
@@ -3414,7 +3414,7 @@
     "sender_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "thread_id": "5bf96667-0df6-4ae5-abbe-d9630184d053",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T00:53:30.354860Z",
     "received_at": "2025-12-30T00:53:44.354860Z",
     "created_at": "2025-01-11T01:07:44.354848Z",
     "updated_at": "2025-01-12T14:07:44.354848Z"
@@ -3468,7 +3468,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "6ebae383-7a6b-4fe9-b6e2-e0df44abe582",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T22:53:28.355437Z",
     "received_at": "2025-12-10T22:53:44.355437Z",
     "created_at": "2025-03-25T07:36:44.355425Z",
     "updated_at": "2025-04-12T00:36:44.355425Z"
@@ -3486,7 +3486,7 @@
     "sender_id": "2a4a7bc5-4970-4c3c-9313-59564158edf4",
     "thread_id": "3741c4e7-e666-4af3-a295-924528c24172",
     "parent_email_id": "c2118b1a-b646-4773-ba1c-e0d6c88a0b57",
-    "sent_at": null,
+    "sent_at": "2025-12-25T21:53:36.355624Z",
     "received_at": "2025-12-25T21:53:44.355624Z",
     "created_at": "2025-08-06T07:50:44.355612Z",
     "updated_at": "2025-08-18T07:50:44.355612Z"
@@ -3594,7 +3594,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000002",
     "thread_id": "3c731d24-d766-4f21-87bb-5b5561534942",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-12T04:53:24.356700Z",
     "received_at": "2025-12-12T04:53:44.356700Z",
     "created_at": "2025-09-20T22:39:44.356688Z",
     "updated_at": "2025-09-25T21:39:44.356688Z"
@@ -3720,7 +3720,7 @@
     "sender_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "thread_id": "272dcd1d-d046-4c44-a1ea-e5ad253246a8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-08T07:53:24.357975Z",
     "received_at": "2026-01-08T07:53:44.357975Z",
     "created_at": "2025-10-18T12:00:44.357964Z",
     "updated_at": "2025-10-26T10:00:44.357964Z"
@@ -3738,7 +3738,7 @@
     "sender_id": "e74bb28e-1227-4995-89b7-a69cef6ec555",
     "thread_id": "c8fa7ae1-3abb-4703-8619-c470060b0502",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-21T09:53:17.358161Z",
     "received_at": "2025-12-21T09:53:44.358161Z",
     "created_at": "2025-08-26T03:41:44.358150Z",
     "updated_at": "2025-09-10T05:41:44.358150Z"
@@ -3756,7 +3756,7 @@
     "sender_id": "66627dbe-583e-4799-8d97-ea140fb96dad",
     "thread_id": "3ce52386-273d-4b33-95f0-4835db00643e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T15:53:27.358340Z",
     "received_at": "2025-12-11T15:53:44.358340Z",
     "created_at": "2025-06-03T17:10:44.358329Z",
     "updated_at": "2025-06-06T10:10:44.358329Z"
@@ -3774,7 +3774,7 @@
     "sender_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "thread_id": "5450c12b-8b7b-4cb9-b89f-10418e3af174",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T05:53:35.352843Z",
     "received_at": "2025-12-30T05:53:49.352843Z",
     "created_at": "2025-12-10T09:37:44.358557Z",
     "updated_at": "2025-12-22T05:37:44.358557Z"
@@ -3810,7 +3810,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "6710832c-c6b8-4828-9928-7249f4bff5e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T17:53:20.350598Z",
     "received_at": "2025-12-28T17:53:49.350598Z",
     "created_at": "2025-10-01T03:41:44.358922Z",
     "updated_at": "2025-10-19T08:41:44.358922Z"
@@ -3882,7 +3882,7 @@
     "sender_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "thread_id": "9df0de0d-3d57-4a54-a06a-b01b4181f768",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-24T09:53:32.359678Z",
     "received_at": "2025-12-24T09:53:44.359678Z",
     "created_at": "2025-11-30T20:34:44.359666Z",
     "updated_at": "2025-12-06T00:34:44.359666Z"
@@ -3918,7 +3918,7 @@
     "sender_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "thread_id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
     "parent_email_id": "bdae21f2-a940-4581-a6d1-9e7aecc07c95",
-    "sent_at": null,
+    "sent_at": "2025-12-26T22:53:21.360060Z",
     "received_at": "2025-12-26T22:53:44.360060Z",
     "created_at": "2025-07-05T12:21:44.360049Z",
     "updated_at": "2025-07-29T17:21:44.360049Z"
@@ -4026,7 +4026,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000005",
     "thread_id": "bc2671d2-4a09-4210-a2e4-9a5f494a3f44",
     "parent_email_id": "60000000-0000-0000-0000-000000000001",
-    "sent_at": null,
+    "sent_at": "2025-12-23T21:53:15.361207Z",
     "received_at": "2025-12-23T21:53:44.361207Z",
     "created_at": "2025-10-04T11:00:44.361196Z",
     "updated_at": "2025-10-25T16:00:44.361196Z"
@@ -4062,7 +4062,7 @@
     "sender_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "thread_id": "b1eee338-f6f6-40e6-9178-38a2adcb9bce",
     "parent_email_id": "f7cf4698-7128-4e47-9e43-aa128c8f409c",
-    "sent_at": null,
+    "sent_at": "2025-12-17T17:53:33.361536Z",
     "received_at": "2025-12-17T17:53:44.361536Z",
     "created_at": "2025-12-28T02:11:44.361525Z",
     "updated_at": "2025-12-29T01:11:44.361525Z"
@@ -4152,7 +4152,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000004",
     "thread_id": "e979d0f6-987b-456a-8716-0a2b0ba210d1",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T21:53:34.362458Z",
     "received_at": "2025-12-11T21:53:44.362458Z",
     "created_at": "2025-06-18T05:51:44.362444Z",
     "updated_at": "2025-06-23T07:51:44.362444Z"
@@ -4224,7 +4224,7 @@
     "sender_id": "378c6931-1410-4151-b6d7-f33f2098c460",
     "thread_id": "f4979a2c-59e2-4156-8a0c-ba3ecff381d1",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-18T09:53:37.347201Z",
     "received_at": "2025-12-18T09:53:47.347201Z",
     "created_at": "2025-09-18T19:11:44.363216Z",
     "updated_at": "2025-10-10T01:11:44.363216Z"
@@ -4242,7 +4242,7 @@
     "sender_id": "3a049f02-9d61-4988-8bf4-4b65a3d7c553",
     "thread_id": "549c9bdb-feae-4dfa-a8a1-196ddbe0fe8c",
     "parent_email_id": "c058ac0e-4eca-4ae2-aabb-79b86cc55897",
-    "sent_at": null,
+    "sent_at": "2026-01-05T02:53:36.363432Z",
     "received_at": "2026-01-05T02:53:44.363432Z",
     "created_at": "2025-03-02T03:29:44.363418Z",
     "updated_at": "2025-03-17T21:29:44.363418Z"
@@ -4296,7 +4296,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "3ce52386-273d-4b33-95f0-4835db00643e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-10-14T16:53:38.363954Z",
     "received_at": "2025-10-14T16:53:44.363954Z",
     "created_at": "2025-01-28T22:22:44.363966Z",
     "updated_at": "2025-02-12T10:22:44.363966Z"
@@ -4314,7 +4314,7 @@
     "sender_id": "e74bb28e-1227-4995-89b7-a69cef6ec555",
     "thread_id": "1354cc76-75ce-4d2d-bce7-704ee113fb55",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T05:53:22.364181Z",
     "received_at": "2025-12-10T05:53:44.364181Z",
     "created_at": "2025-04-10T22:41:44.364169Z",
     "updated_at": "2025-04-25T06:41:44.364169Z"
@@ -4350,7 +4350,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "bc9042ab-08d2-40ca-bea8-07a68682f0c6",
     "parent_email_id": "ea3aced6-5338-4832-8d2c-c73018bdd97e",
-    "sent_at": null,
+    "sent_at": "2025-12-24T18:53:37.364547Z",
     "received_at": "2025-12-24T18:53:44.364547Z",
     "created_at": "2025-03-12T13:09:44.364535Z",
     "updated_at": "2025-04-11T08:09:44.364535Z"
@@ -4440,7 +4440,7 @@
     "sender_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "thread_id": "e36721d6-760f-4f22-8d42-b963744f1e75",
     "parent_email_id": "9dc346cb-4bf8-47b2-845c-7b2710e1ca1f",
-    "sent_at": null,
+    "sent_at": "2025-12-14T06:53:26.365496Z",
     "received_at": "2025-12-14T06:53:44.365496Z",
     "created_at": "2025-06-27T16:19:44.365485Z",
     "updated_at": "2025-07-15T15:19:44.365485Z"
@@ -4458,7 +4458,7 @@
     "sender_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "thread_id": "6710832c-c6b8-4828-9928-7249f4bff5e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T18:53:37.328665Z",
     "received_at": "2025-12-29T18:53:47.328665Z",
     "created_at": "2025-10-19T01:37:44.365663Z",
     "updated_at": "2025-11-17T12:37:44.365663Z"
@@ -4548,7 +4548,7 @@
     "sender_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "thread_id": "a387cdd2-2d1f-46ea-9bdb-aa9cf4e7ebe7",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T05:53:29.366670Z",
     "received_at": "2025-12-20T05:53:44.366670Z",
     "created_at": "2025-11-04T14:00:44.366658Z",
     "updated_at": "2025-11-30T21:00:44.366658Z"
@@ -4566,7 +4566,7 @@
     "sender_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "thread_id": "7a2a033b-0d9a-4ba2-88a5-f817fa5acdf7",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-25T15:53:20.366874Z",
     "received_at": "2025-12-25T15:53:44.366874Z",
     "created_at": "2025-07-27T18:41:44.366863Z",
     "updated_at": "2025-08-18T06:41:44.366863Z"
@@ -4656,7 +4656,7 @@
     "sender_id": "a0a9c2ab-b726-40da-a704-340af755a526",
     "thread_id": "515d92ea-db3d-42b3-895e-9c9d2294892a",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-17T01:53:29.367814Z",
     "received_at": "2025-12-17T01:53:44.367814Z",
     "created_at": "2025-10-29T00:09:44.367803Z",
     "updated_at": "2025-11-16T01:09:44.367803Z"
@@ -4746,7 +4746,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "50000000-0000-0000-0000-000000000003",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-07T00:53:26.337538Z",
     "received_at": "2026-01-07T00:53:49.337538Z",
     "created_at": "2025-01-27T12:18:44.368735Z",
     "updated_at": "2025-02-12T04:18:44.368735Z"
@@ -4980,7 +4980,7 @@
     "sender_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "thread_id": "5e730fa9-52bc-445c-8764-f80eabe54b3e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-07-18T16:53:15.371233Z",
     "received_at": "2025-07-18T16:53:44.371233Z",
     "created_at": "2025-11-19T05:28:44.371245Z",
     "updated_at": "2025-12-01T13:28:44.371245Z"
@@ -5016,7 +5016,7 @@
     "sender_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "thread_id": "50000000-0000-0000-0000-000000000008",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-23T02:53:29.371608Z",
     "received_at": "2025-12-23T02:53:44.371608Z",
     "created_at": "2025-08-26T19:34:44.371595Z",
     "updated_at": "2025-09-06T13:34:44.371595Z"
@@ -5034,7 +5034,7 @@
     "sender_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "thread_id": "36a9d4dc-994e-4984-b85c-d9f73ee419f9",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-09T03:53:42.371813Z",
     "received_at": "2025-12-09T03:53:44.371813Z",
     "created_at": "2025-02-21T11:34:44.371799Z",
     "updated_at": "2025-03-14T19:34:44.371799Z"
@@ -5232,7 +5232,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "e7697aaa-83c8-4242-b2be-1b0525d97ec2",
     "parent_email_id": "3ff8e6e4-9f96-403f-b330-9808cde203f5",
-    "sent_at": null,
+    "sent_at": "2025-10-01T16:53:21.374159Z",
     "received_at": "2025-10-01T16:53:44.374159Z",
     "created_at": "2025-07-01T18:58:44.374173Z",
     "updated_at": "2025-07-13T18:58:44.374173Z"
@@ -5394,7 +5394,7 @@
     "sender_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-04T01:53:36.377165Z",
     "received_at": "2026-01-04T01:53:44.377165Z",
     "created_at": "2025-04-07T16:48:44.377152Z",
     "updated_at": "2025-04-29T12:48:44.377152Z"
@@ -5448,7 +5448,7 @@
     "sender_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "thread_id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
     "parent_email_id": "60000000-0000-0000-0000-000000000003",
-    "sent_at": null,
+    "sent_at": "2025-12-16T02:53:30.377759Z",
     "received_at": "2025-12-16T02:53:44.377759Z",
     "created_at": "2025-05-17T21:13:44.377747Z",
     "updated_at": "2025-06-05T15:13:44.377747Z"
@@ -5484,7 +5484,7 @@
     "sender_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
     "thread_id": "007586ac-9ee2-4fbf-813e-515d87193c2e",
     "parent_email_id": "4bd20a72-9b02-445a-8641-ff9b3a79c052",
-    "sent_at": null,
+    "sent_at": "2025-12-20T09:53:37.341440Z",
     "received_at": "2025-12-20T09:53:47.341440Z",
     "created_at": "2025-07-27T09:26:44.378101Z",
     "updated_at": "2025-08-03T05:26:44.378101Z"
@@ -5538,7 +5538,7 @@
     "sender_id": "3a049f02-9d61-4988-8bf4-4b65a3d7c553",
     "thread_id": "5066fb72-2d41-452b-afce-0a1ba3f3ee96",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-14T04:53:45.373389Z",
     "received_at": "2025-12-14T04:53:47.373389Z",
     "created_at": "2025-04-21T17:05:44.378729Z",
     "updated_at": "2025-05-10T03:05:44.378729Z"
@@ -5664,7 +5664,7 @@
     "sender_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "thread_id": "be0f765d-94e0-4776-a290-64a7beadb84e",
     "parent_email_id": "4b55f3f5-538b-4acd-9f84-93ca16d8d16a",
-    "sent_at": null,
+    "sent_at": "2025-12-13T18:53:17.380115Z",
     "received_at": "2025-12-13T18:53:44.380115Z",
     "created_at": "2025-10-24T05:44:44.380103Z",
     "updated_at": "2025-11-07T11:44:44.380103Z"
@@ -5754,7 +5754,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000002",
     "thread_id": "35bdb7bd-86d6-44c1-8990-faf3faaf2ce2",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-11-20T16:14:38.381217Z",
     "received_at": null,
     "created_at": "2025-11-20T16:13:44.381217Z",
     "updated_at": "2025-12-20T16:13:44.381217Z"
@@ -6024,7 +6024,7 @@
     "sender_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "thread_id": "e979d0f6-987b-456a-8716-0a2b0ba210d1",
     "parent_email_id": "8706c46b-8080-44cd-bb23-094b0b51a224",
-    "sent_at": null,
+    "sent_at": "2026-01-03T04:53:23.384179Z",
     "received_at": "2026-01-03T04:53:44.384179Z",
     "created_at": "2025-07-06T22:31:44.384167Z",
     "updated_at": "2025-07-23T07:31:44.384167Z"
@@ -6042,7 +6042,7 @@
     "sender_id": "7fdb663d-4a8c-4c1c-9221-5c53baf1d5e7",
     "thread_id": "53af5d92-9ee7-473f-adb3-4e0f5f8cb3cb",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-27T06:53:25.384386Z",
     "received_at": "2025-12-27T06:53:44.384386Z",
     "created_at": "2025-02-20T18:48:44.384374Z",
     "updated_at": "2025-03-20T16:48:44.384374Z"
@@ -6060,7 +6060,7 @@
     "sender_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "thread_id": "ce79d0c6-9d97-4b49-a296-aa2d23f62e3f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T05:53:39.384563Z",
     "received_at": "2025-12-29T05:53:44.384563Z",
     "created_at": "2025-05-09T00:34:44.384551Z",
     "updated_at": "2025-05-19T05:34:44.384551Z"
@@ -6114,7 +6114,7 @@
     "sender_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "thread_id": "50000000-0000-0000-0000-000000000001",
     "parent_email_id": "19b867e4-e321-42da-9e6c-d6e41c9ec503",
-    "sent_at": null,
+    "sent_at": "2025-12-22T15:53:42.344638Z",
     "received_at": "2025-12-22T15:53:51.344638Z",
     "created_at": "2025-05-28T07:12:44.385179Z",
     "updated_at": "2025-06-02T01:12:44.385179Z"
@@ -6150,7 +6150,7 @@
     "sender_id": "4120a0df-1fd6-4fa8-9687-0a55b249298c",
     "thread_id": "b47e6530-8f6a-41b7-b5bc-df0621ce7c4b",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T20:53:38.385570Z",
     "received_at": "2025-12-28T20:53:44.385570Z",
     "created_at": "2025-09-08T01:45:44.385559Z",
     "updated_at": "2025-09-23T03:45:44.385559Z"
@@ -6186,7 +6186,7 @@
     "sender_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "thread_id": "7a2a033b-0d9a-4ba2-88a5-f817fa5acdf7",
     "parent_email_id": "07d32855-a918-4582-84a4-eb3ffcc4f8d9",
-    "sent_at": null,
+    "sent_at": "2026-01-03T19:53:14.386011Z",
     "received_at": "2026-01-03T19:53:44.386011Z",
     "created_at": "2025-11-05T06:47:44.385999Z",
     "updated_at": "2025-11-19T04:47:44.385999Z"
@@ -6294,7 +6294,7 @@
     "sender_id": "4120a0df-1fd6-4fa8-9687-0a55b249298c",
     "thread_id": "05f6fb39-c233-4701-9928-30ed38f94791",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T05:53:41.366670Z",
     "received_at": "2025-12-20T05:53:46.366670Z",
     "created_at": "2025-04-18T00:40:44.387186Z",
     "updated_at": "2025-04-19T17:40:44.387186Z"
@@ -6312,7 +6312,7 @@
     "sender_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "thread_id": "6c992ba9-1c85-4fed-a639-0a85b7548e17",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-22T23:53:27.387421Z",
     "received_at": "2025-12-22T23:53:44.387421Z",
     "created_at": "2025-02-28T09:28:44.387409Z",
     "updated_at": "2025-03-07T00:28:44.387409Z"
@@ -6474,7 +6474,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "50000000-0000-0000-0000-000000000011",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T22:53:42.359855Z",
     "received_at": "2025-12-30T22:53:50.359855Z",
     "created_at": "2025-11-08T21:53:44.389209Z",
     "updated_at": "2025-11-18T01:53:44.389209Z"
@@ -6492,7 +6492,7 @@
     "sender_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "thread_id": "b3bc34b5-76ea-4964-809e-a95ca4433dd3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T11:53:35.389422Z",
     "received_at": "2025-12-29T11:53:44.389422Z",
     "created_at": "2025-12-19T21:35:44.389410Z",
     "updated_at": "2025-12-29T05:35:44.389410Z"
@@ -6510,7 +6510,7 @@
     "sender_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "thread_id": "50000000-0000-0000-0000-000000000002",
     "parent_email_id": "7140bdd0-04a5-4424-8f88-87e4ac22bfb2",
-    "sent_at": null,
+    "sent_at": "2025-12-17T12:53:33.389603Z",
     "received_at": "2025-12-17T12:53:44.389603Z",
     "created_at": "2025-10-21T16:52:44.389592Z",
     "updated_at": "2025-11-12T00:52:44.389592Z"
@@ -6672,7 +6672,7 @@
     "sender_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "thread_id": "503b842b-22e3-49ba-9375-ae8dbc3fe222",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T14:53:22.391322Z",
     "received_at": "2025-12-20T14:53:44.391322Z",
     "created_at": "2025-07-13T19:35:44.391311Z",
     "updated_at": "2025-08-03T15:35:44.391311Z"
@@ -6690,7 +6690,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "45634cba-4c0e-4ba2-bea6-926d05742e36",
     "parent_email_id": "666b1a9d-7aca-463c-8163-0f67ce9bd8ac",
-    "sent_at": null,
+    "sent_at": "2026-01-04T05:53:24.391493Z",
     "received_at": "2026-01-04T05:53:44.391493Z",
     "created_at": "2025-11-25T07:33:44.391482Z",
     "updated_at": "2025-12-24T16:33:44.391482Z"
@@ -6708,7 +6708,7 @@
     "sender_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "thread_id": "50000000-0000-0000-0000-000000000011",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-27T17:53:24.391678Z",
     "received_at": "2025-12-27T17:53:44.391678Z",
     "created_at": "2025-01-27T18:50:44.391667Z",
     "updated_at": "2025-02-20T10:50:44.391667Z"
@@ -6762,7 +6762,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "50000000-0000-0000-0000-000000000010",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-21T07:53:26.392355Z",
     "received_at": "2025-12-21T07:53:44.392355Z",
     "created_at": "2025-09-18T14:27:44.392344Z",
     "updated_at": "2025-10-17T00:27:44.392344Z"
@@ -6798,7 +6798,7 @@
     "sender_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "thread_id": "272dcd1d-d046-4c44-a1ea-e5ad253246a8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T00:53:39.381568Z",
     "received_at": "2025-12-20T00:53:46.381568Z",
     "created_at": "2025-05-25T12:00:44.392738Z",
     "updated_at": "2025-05-28T02:00:44.392738Z"
@@ -6816,7 +6816,7 @@
     "sender_id": "66627dbe-583e-4799-8d97-ea140fb96dad",
     "thread_id": "226f062c-b391-427d-9199-e02b20ccdb08",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T14:53:25.392945Z",
     "received_at": "2025-12-29T14:53:44.392945Z",
     "created_at": "2025-05-13T02:44:44.392933Z",
     "updated_at": "2025-06-08T22:44:44.392933Z"
@@ -6834,7 +6834,7 @@
     "sender_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "thread_id": "73f02fa6-b20d-447c-bd45-2775ec5da63c",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-31T03:53:28.393122Z",
     "received_at": "2025-12-31T03:53:44.393122Z",
     "created_at": "2025-06-11T11:04:44.393111Z",
     "updated_at": "2025-06-12T12:04:44.393111Z"
@@ -6870,7 +6870,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "503b842b-22e3-49ba-9375-ae8dbc3fe222",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T19:53:34.393495Z",
     "received_at": "2025-12-28T19:53:44.393495Z",
     "created_at": "2025-03-16T18:26:44.393484Z",
     "updated_at": "2025-03-23T19:26:44.393484Z"
@@ -6924,7 +6924,7 @@
     "sender_id": "fe44b541-81ef-441c-ad73-4bd4a454abca",
     "thread_id": "5a78ca41-eaa4-4700-af8f-295d5a1dc911",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T22:53:23.394242Z",
     "received_at": "2025-12-20T22:53:44.394242Z",
     "created_at": "2025-10-21T12:43:44.394230Z",
     "updated_at": "2025-11-18T10:43:44.394230Z"
@@ -6960,7 +6960,7 @@
     "sender_id": "66627dbe-583e-4799-8d97-ea140fb96dad",
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-17T04:53:40.352668Z",
     "received_at": "2025-12-17T04:53:47.352668Z",
     "created_at": "2025-03-14T17:11:44.394566Z",
     "updated_at": "2025-03-19T02:11:44.394566Z"
@@ -7050,7 +7050,7 @@
     "sender_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "thread_id": "be0f765d-94e0-4776-a290-64a7beadb84e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-25T02:53:19.395651Z",
     "received_at": "2025-12-25T02:53:44.395651Z",
     "created_at": "2025-08-22T01:58:44.395639Z",
     "updated_at": "2025-09-07T07:58:44.395639Z"
@@ -7194,7 +7194,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "442c59fc-5eae-4ef8-b03b-b0ce90f5235d",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T05:53:30.352843Z",
     "received_at": "2025-12-30T05:53:50.352843Z",
     "created_at": "2025-10-07T18:19:44.397187Z",
     "updated_at": "2025-11-03T19:19:44.397187Z"
@@ -7248,7 +7248,7 @@
     "sender_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "thread_id": "d8c4f850-8caf-4e42-888b-4fb300d8098c",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T20:08:34.397722Z",
     "received_at": null,
     "created_at": "2025-12-20T20:07:44.397722Z",
     "updated_at": "2025-12-28T07:07:44.397722Z"
@@ -7356,7 +7356,7 @@
     "sender_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "thread_id": "700077ca-c01d-414e-ad34-8453772c0d8d",
     "parent_email_id": "7893cb3b-34bc-4e07-9c42-efd6a2d7c068",
-    "sent_at": null,
+    "sent_at": "2025-12-25T01:53:14.398867Z",
     "received_at": "2025-12-25T01:53:44.398867Z",
     "created_at": "2025-09-25T12:50:44.398857Z",
     "updated_at": "2025-09-25T15:50:44.398857Z"
@@ -7446,7 +7446,7 @@
     "sender_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "thread_id": "e4824c26-caf5-40cb-a39f-2c9c2f7e370e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-14T20:53:30.399836Z",
     "received_at": "2025-12-14T20:53:44.399836Z",
     "created_at": "2025-03-13T03:17:44.399825Z",
     "updated_at": "2025-04-11T19:17:44.399825Z"
@@ -7608,7 +7608,7 @@
     "sender_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "thread_id": "c9d205bd-2b59-4932-8aa0-76345ba50d09",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T12:53:36.398326Z",
     "received_at": "2025-12-29T12:53:51.398326Z",
     "created_at": "2025-09-04T04:06:44.401836Z",
     "updated_at": "2025-09-08T12:06:44.401836Z"
@@ -7734,7 +7734,7 @@
     "sender_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "thread_id": "e9ce8bac-78b2-483f-8145-ecb1c8ff5dae",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-27T07:53:19.403399Z",
     "received_at": "2025-12-27T07:53:44.403399Z",
     "created_at": "2025-02-07T11:52:44.403347Z",
     "updated_at": "2025-02-22T11:52:44.403347Z"
@@ -7806,7 +7806,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "8b69117e-4eff-4c5c-8ff3-dcb7aafaee9e",
     "parent_email_id": "8c7edc11-5347-4197-b3a5-777fa54e7c67",
-    "sent_at": null,
+    "sent_at": "2025-12-17T17:53:27.361536Z",
     "received_at": "2025-12-17T17:53:46.361536Z",
     "created_at": "2025-07-14T02:22:44.404276Z",
     "updated_at": "2025-08-10T10:22:44.404276Z"
@@ -7878,7 +7878,7 @@
     "sender_id": "d5b9294c-bf70-4f95-8b75-0a2c985d3dc5",
     "thread_id": "bc2671d2-4a09-4210-a2e4-9a5f494a3f44",
     "parent_email_id": "44f3cb46-41c4-4b1f-83e1-cd0ae1c328c7",
-    "sent_at": null,
+    "sent_at": "2025-12-08T19:53:39.402477Z",
     "received_at": "2025-12-08T19:53:46.402477Z",
     "created_at": "2025-02-10T14:05:44.405074Z",
     "updated_at": "2025-03-10T22:05:44.405074Z"
@@ -7968,7 +7968,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "03ccaf0e-b8d1-4c88-803d-a4bd7351d9b6",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T02:53:27.406089Z",
     "received_at": "2025-12-28T02:53:44.406089Z",
     "created_at": "2025-02-11T12:45:44.406077Z",
     "updated_at": "2025-02-18T06:45:44.406077Z"
@@ -7986,7 +7986,7 @@
     "sender_id": "f64790b6-f672-4aba-8797-d7eafa6add81",
     "thread_id": "505d1e10-007d-45c0-b048-c2a6a4adb1e7",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-22T18:53:34.406295Z",
     "received_at": "2025-12-22T18:53:44.406295Z",
     "created_at": "2025-03-27T05:15:44.406284Z",
     "updated_at": "2025-04-20T08:15:44.406284Z"
@@ -8058,7 +8058,7 @@
     "sender_id": "e74bb28e-1227-4995-89b7-a69cef6ec555",
     "thread_id": "2a2c3e56-3266-454b-94e2-9e6dd8cee5bf",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-17T17:53:45.361536Z",
     "received_at": "2025-12-17T17:53:47.361536Z",
     "created_at": "2025-11-07T13:27:44.407110Z",
     "updated_at": "2025-11-08T20:27:44.407110Z"
@@ -8274,7 +8274,7 @@
     "sender_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "thread_id": "1ee509f4-76c2-4e8f-b91c-655cb3450158",
     "parent_email_id": "f36fe1b9-e1f2-4ea1-81b2-b5acac0481ee",
-    "sent_at": null,
+    "sent_at": "2025-12-22T21:53:33.409329Z",
     "received_at": "2025-12-22T21:53:44.409329Z",
     "created_at": "2025-03-28T00:07:44.409317Z",
     "updated_at": "2025-04-02T16:07:44.409317Z"
@@ -8292,7 +8292,7 @@
     "sender_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "thread_id": "d8c4f850-8caf-4e42-888b-4fb300d8098c",
     "parent_email_id": "e8e2c396-6492-4b55-990b-cb1fe5996fd7",
-    "sent_at": null,
+    "sent_at": "2026-01-07T03:53:38.409553Z",
     "received_at": "2026-01-07T03:53:44.409553Z",
     "created_at": "2025-08-04T23:31:44.409542Z",
     "updated_at": "2025-08-16T12:31:44.409542Z"
@@ -8382,7 +8382,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "1aae96e0-985d-4b5b-a4b8-26a538ed8e10",
     "parent_email_id": "a8c6e7bd-3321-407d-b019-197c21528038",
-    "sent_at": null,
+    "sent_at": "2025-12-09T09:53:42.410589Z",
     "received_at": "2025-12-09T09:53:44.410589Z",
     "created_at": "2025-04-12T23:10:44.410578Z",
     "updated_at": "2025-04-18T20:10:44.410578Z"
@@ -8436,7 +8436,7 @@
     "sender_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "thread_id": "d8fbd10e-75e7-4a3e-b9e1-35ba516ee692",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-14T01:53:30.330118Z",
     "received_at": "2025-12-14T01:53:47.330118Z",
     "created_at": "2025-09-15T10:41:44.411216Z",
     "updated_at": "2025-10-12T21:41:44.411216Z"
@@ -8472,7 +8472,7 @@
     "sender_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
     "thread_id": "66f392d5-7f19-4853-ae9a-756990f2f4e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T22:53:47.359855Z",
     "received_at": "2025-12-30T22:53:51.359855Z",
     "created_at": "2025-08-14T10:52:44.411625Z",
     "updated_at": "2025-08-23T13:52:44.411625Z"
@@ -8544,7 +8544,7 @@
     "sender_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": "b39daa7a-8d9e-48e9-bad9-d8971762799e",
-    "sent_at": null,
+    "sent_at": "2026-01-08T05:53:43.412383Z",
     "received_at": "2026-01-08T05:53:44.412383Z",
     "created_at": "2025-06-23T03:32:44.412372Z",
     "updated_at": "2025-07-01T23:32:44.412372Z"
@@ -8598,7 +8598,7 @@
     "sender_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "thread_id": "50000000-0000-0000-0000-000000000009",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T08:53:38.334034Z",
     "received_at": "2025-12-30T08:53:47.334034Z",
     "created_at": "2025-05-07T19:11:44.412957Z",
     "updated_at": "2025-05-09T16:11:44.412957Z"
@@ -8850,7 +8850,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "e7697aaa-83c8-4242-b2be-1b0525d97ec2",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-03T09:53:42.415638Z",
     "received_at": "2026-01-03T09:53:44.415638Z",
     "created_at": "2025-07-06T08:24:44.415625Z",
     "updated_at": "2025-07-15T13:24:44.415625Z"
@@ -9048,7 +9048,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000004",
     "thread_id": "cdb44811-d591-4d32-89f3-21ac7a5e4379",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T00:53:18.354860Z",
     "received_at": "2025-12-30T00:53:46.354860Z",
     "created_at": "2025-03-29T03:24:44.417754Z",
     "updated_at": "2025-04-14T15:24:44.417754Z"
@@ -9084,7 +9084,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000002",
     "thread_id": "5450c12b-8b7b-4cb9-b89f-10418e3af174",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-25T03:53:43.338138Z",
     "received_at": "2025-12-25T03:53:52.338138Z",
     "created_at": "2025-01-29T03:58:44.418124Z",
     "updated_at": "2025-02-14T05:58:44.418124Z"
@@ -9246,7 +9246,7 @@
     "sender_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "thread_id": "7b91ba58-3935-4731-a611-f9c703ec6752",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T04:53:21.419814Z",
     "received_at": "2025-12-11T04:53:44.419814Z",
     "created_at": "2025-12-16T12:26:44.419803Z",
     "updated_at": "2025-12-16T19:26:44.419803Z"
@@ -9300,7 +9300,7 @@
     "sender_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "thread_id": "e46bfcf2-b444-4e8a-9ad2-e1d293317f79",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-10-28T16:53:31.372993Z",
     "received_at": "2025-10-28T16:53:47.372993Z",
     "created_at": "2025-08-14T10:03:44.420407Z",
     "updated_at": "2025-09-06T19:03:44.420407Z"
@@ -9498,7 +9498,7 @@
     "sender_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "thread_id": "50000000-0000-0000-0000-000000000005",
     "parent_email_id": "1571307d-882f-499b-9c2e-7adde623a01d",
-    "sent_at": null,
+    "sent_at": "2026-01-08T00:53:16.422788Z",
     "received_at": "2026-01-08T00:53:44.422788Z",
     "created_at": "2025-09-22T20:53:44.422777Z",
     "updated_at": "2025-10-06T15:53:44.422777Z"
@@ -9552,7 +9552,7 @@
     "sender_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "thread_id": "50000000-0000-0000-0000-000000000005",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-18T12:53:37.331050Z",
     "received_at": "2025-12-18T12:53:49.331050Z",
     "created_at": "2025-11-08T22:49:44.423344Z",
     "updated_at": "2025-11-26T16:49:44.423344Z"
@@ -9570,7 +9570,7 @@
     "sender_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "thread_id": "fbfbd584-3d9f-4ef1-9194-756243a8eecb",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-08-27T23:00:13.423543Z",
     "received_at": null,
     "created_at": "2025-08-27T22:59:44.423543Z",
     "updated_at": "2025-09-12T18:59:44.423543Z"
@@ -9624,7 +9624,7 @@
     "sender_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "thread_id": "73f02fa6-b20d-447c-bd45-2775ec5da63c",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T02:53:24.335947Z",
     "received_at": "2025-12-20T02:53:50.335947Z",
     "created_at": "2025-02-21T03:48:44.424133Z",
     "updated_at": "2025-03-19T19:48:44.424133Z"
@@ -9732,7 +9732,7 @@
     "sender_id": "df943c11-5903-4f9e-94f2-bf08258c3008",
     "thread_id": "c8fa7ae1-3abb-4703-8619-c470060b0502",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-15T19:53:34.351166Z",
     "received_at": "2025-12-15T19:53:47.351166Z",
     "created_at": "2025-10-07T12:01:44.425296Z",
     "updated_at": "2025-10-12T04:01:44.425296Z"
@@ -9840,7 +9840,7 @@
     "sender_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "thread_id": "f76b2de5-a6fe-41c4-9718-0e583723e6d5",
     "parent_email_id": "48eb1b75-8a42-4ea2-b03f-d3a181caa3e4",
-    "sent_at": null,
+    "sent_at": "2025-12-29T01:53:16.426543Z",
     "received_at": "2025-12-29T01:53:44.426543Z",
     "created_at": "2025-08-16T08:04:44.426531Z",
     "updated_at": "2025-08-22T22:04:44.426531Z"
@@ -9894,7 +9894,7 @@
     "sender_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "thread_id": "8729fe1c-9bea-475e-b984-e1625fddbcf3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-19T10:53:33.420205Z",
     "received_at": "2025-12-19T10:53:51.420205Z",
     "created_at": "2025-01-10T16:59:44.427123Z",
     "updated_at": "2025-02-05T06:59:44.427123Z"
@@ -10020,7 +10020,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000005",
     "thread_id": "50000000-0000-0000-0000-000000000007",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-16T19:53:17.428582Z",
     "received_at": "2025-12-16T19:53:44.428582Z",
     "created_at": "2025-07-10T21:10:44.428571Z",
     "updated_at": "2025-07-25T07:10:44.428571Z"
@@ -10038,7 +10038,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "e6e0bc91-4853-41c1-a89f-ab754dd20a29",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-02T22:53:32.372017Z",
     "received_at": "2026-01-02T22:53:46.372017Z",
     "created_at": "2025-04-15T06:19:44.428772Z",
     "updated_at": "2025-05-07T22:19:44.428772Z"
@@ -10470,7 +10470,7 @@
     "sender_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "thread_id": "2b47d722-1b62-43f1-b194-c6d7e71c904f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T09:53:39.341440Z",
     "received_at": "2025-12-20T09:53:52.341440Z",
     "created_at": "2025-03-07T15:44:44.433522Z",
     "updated_at": "2025-03-28T14:44:44.433522Z"
@@ -10542,7 +10542,7 @@
     "sender_id": "e74bb28e-1227-4995-89b7-a69cef6ec555",
     "thread_id": "66f392d5-7f19-4853-ae9a-756990f2f4e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-27T17:53:34.391678Z",
     "received_at": "2025-12-27T17:53:46.391678Z",
     "created_at": "2025-08-26T12:21:44.434312Z",
     "updated_at": "2025-08-31T00:21:44.434312Z"
@@ -10560,7 +10560,7 @@
     "sender_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "thread_id": "e6e0bc91-4853-41c1-a89f-ab754dd20a29",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T04:53:47.325925Z",
     "received_at": "2025-12-10T04:53:49.325925Z",
     "created_at": "2025-03-07T13:36:44.434511Z",
     "updated_at": "2025-03-10T15:36:44.434511Z"
@@ -10614,7 +10614,7 @@
     "sender_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "thread_id": "7a2a033b-0d9a-4ba2-88a5-f817fa5acdf7",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T11:53:50.432957Z",
     "received_at": "2025-12-20T11:53:51.432957Z",
     "created_at": "2025-06-24T06:42:44.435117Z",
     "updated_at": "2025-07-06T04:42:44.435117Z"
@@ -10686,7 +10686,7 @@
     "sender_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "thread_id": "1417b725-ed3b-4daa-b93e-9be23fa2b4c3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-06T17:53:35.369134Z",
     "received_at": "2026-01-06T17:53:50.369134Z",
     "created_at": "2025-01-28T13:23:44.435903Z",
     "updated_at": "2025-02-09T11:23:44.435903Z"
@@ -10704,7 +10704,7 @@
     "sender_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "thread_id": "b695a217-6e77-4670-8117-832e47ccf2d7",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T16:53:26.324588Z",
     "received_at": "2025-12-30T16:53:47.324588Z",
     "created_at": "2025-04-26T08:35:44.436088Z",
     "updated_at": "2025-05-26T00:35:44.436088Z"
@@ -10758,7 +10758,7 @@
     "sender_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
     "thread_id": "f60c47f6-e309-4cac-8dad-7bd3f3bdf2d9",
     "parent_email_id": "4358b6ff-54ec-4e6a-8307-c4f1a31fab38",
-    "sent_at": null,
+    "sent_at": "2025-12-27T03:53:37.436859Z",
     "received_at": "2025-12-27T03:53:44.436859Z",
     "created_at": "2025-10-08T18:38:44.436849Z",
     "updated_at": "2025-10-13T08:38:44.436849Z"
@@ -10830,7 +10830,7 @@
     "sender_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "thread_id": "36a9d4dc-994e-4984-b85c-d9f73ee419f9",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-18T10:53:31.437627Z",
     "received_at": "2025-12-18T10:53:44.437627Z",
     "created_at": "2025-10-21T00:02:44.437616Z",
     "updated_at": "2025-10-27T09:02:44.437616Z"
@@ -10956,7 +10956,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "03ccaf0e-b8d1-4c88-803d-a4bd7351d9b6",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T00:53:20.413917Z",
     "received_at": "2025-12-10T00:53:46.413917Z",
     "created_at": "2025-12-29T19:40:44.439070Z",
     "updated_at": "2026-01-08T16:54:06.327861Z"
@@ -11064,7 +11064,7 @@
     "sender_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "thread_id": "23c6f238-dac9-4e22-9d44-00a26f89a8a2",
     "parent_email_id": "6fd49048-c928-48db-a7ac-8f2e102e94d5",
-    "sent_at": null,
+    "sent_at": "2026-01-05T23:53:26.431517Z",
     "received_at": "2026-01-05T23:53:50.431517Z",
     "created_at": "2025-08-29T00:00:44.440408Z",
     "updated_at": "2025-09-16T18:00:44.440408Z"
@@ -11118,7 +11118,7 @@
     "sender_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "thread_id": "00a6fc75-6250-4982-84a3-42809dd61efb",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T14:53:39.391322Z",
     "received_at": "2025-12-20T14:53:47.391322Z",
     "created_at": "2025-03-08T08:07:44.441095Z",
     "updated_at": "2025-03-29T02:07:44.441095Z"
@@ -11136,7 +11136,7 @@
     "sender_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "thread_id": "bc9042ab-08d2-40ca-bea8-07a68682f0c6",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-07T16:53:24.372360Z",
     "received_at": "2025-12-07T16:53:46.372360Z",
     "created_at": "2025-05-16T08:32:44.441283Z",
     "updated_at": "2025-05-20T03:32:44.441283Z"
@@ -11226,7 +11226,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000005",
     "thread_id": "93c2bd22-23d8-4dde-8b62-4b32debde080",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-16T11:53:17.401442Z",
     "received_at": "2025-12-16T11:53:47.401442Z",
     "created_at": "2025-06-24T19:12:44.442409Z",
     "updated_at": "2025-07-08T14:12:44.442409Z"
@@ -11298,7 +11298,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "5759bd3a-1fee-47a5-b4bb-a36088eac311",
     "parent_email_id": "4dffc93c-9744-4ace-bae2-3eaf2195743b",
-    "sent_at": null,
+    "sent_at": "2025-12-16T10:53:25.443163Z",
     "received_at": "2025-12-16T10:53:44.443163Z",
     "created_at": "2025-03-15T23:41:44.443151Z",
     "updated_at": "2025-03-20T02:41:44.443151Z"
@@ -11388,7 +11388,7 @@
     "sender_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "thread_id": "e36721d6-760f-4f22-8d42-b963744f1e75",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-10-03T16:53:42.350363Z",
     "received_at": "2025-10-03T16:53:45.350363Z",
     "created_at": "2025-09-23T20:06:44.444106Z",
     "updated_at": "2025-10-21T06:06:44.444106Z"
@@ -11442,7 +11442,7 @@
     "sender_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "thread_id": "03ccaf0e-b8d1-4c88-803d-a4bd7351d9b6",
     "parent_email_id": "381ef65c-d8b5-4234-81fb-9ee393d80b47",
-    "sent_at": null,
+    "sent_at": "2025-12-15T09:53:38.444681Z",
     "received_at": "2025-12-15T09:53:44.444681Z",
     "created_at": "2025-01-23T14:08:44.444669Z",
     "updated_at": "2025-01-30T14:08:44.444669Z"
@@ -11496,7 +11496,7 @@
     "sender_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "thread_id": "3c731d24-d766-4f21-87bb-5b5561534942",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-07-15T16:53:37.330658Z",
     "received_at": "2025-07-15T16:53:46.330658Z",
     "created_at": "2025-09-07T10:46:44.445336Z",
     "updated_at": "2025-09-20T06:46:44.445336Z"
@@ -11532,7 +11532,7 @@
     "sender_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "thread_id": "8218ea56-06df-4c78-8383-e10594dedc72",
     "parent_email_id": "f1764d75-c138-4b9e-9a15-d256accf2eea",
-    "sent_at": null,
+    "sent_at": "2026-01-05T13:53:43.445770Z",
     "received_at": "2026-01-05T13:53:44.445770Z",
     "created_at": "2025-11-03T06:21:44.445758Z",
     "updated_at": "2025-11-07T19:21:44.445758Z"
@@ -11550,7 +11550,7 @@
     "sender_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "thread_id": "5b6305e7-3112-43e9-a157-82782d725efd",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-31T09:53:34.445983Z",
     "received_at": "2025-12-31T09:53:44.445983Z",
     "created_at": "2025-02-14T16:42:44.445970Z",
     "updated_at": "2025-02-27T09:42:44.445970Z"
@@ -11604,7 +11604,7 @@
     "sender_id": "195f16ce-5cc9-46b9-b18d-49394d85a92e",
     "thread_id": "c3f87b87-f0a1-4aba-83d0-5f571965c133",
     "parent_email_id": "d2a9c4dd-e136-4881-966d-c80ef3376aba",
-    "sent_at": null,
+    "sent_at": "2025-12-11T14:53:27.331815Z",
     "received_at": "2025-12-11T14:53:46.331815Z",
     "created_at": "2025-12-01T22:52:44.446597Z",
     "updated_at": "2025-12-17T10:52:44.446597Z"
@@ -11712,7 +11712,7 @@
     "sender_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "thread_id": "3c6486bc-bfff-4d26-b556-3cb019ca6177",
     "parent_email_id": "94d517f6-2182-4ebf-b90d-b9b3c9f0b99c",
-    "sent_at": null,
+    "sent_at": "2026-01-01T18:53:28.326894Z",
     "received_at": "2026-01-01T18:53:46.326894Z",
     "created_at": "2025-05-10T01:20:44.447732Z",
     "updated_at": "2025-06-08T00:20:44.447732Z"
@@ -11928,7 +11928,7 @@
     "sender_id": "7fdb663d-4a8c-4c1c-9221-5c53baf1d5e7",
     "thread_id": "e264524e-763a-48ac-b0b9-391400f288fb",
     "parent_email_id": "cbc3af17-b1bc-48c9-95be-9886b554c25b",
-    "sent_at": null,
+    "sent_at": "2025-12-09T10:53:42.450097Z",
     "received_at": "2025-12-09T10:53:44.450097Z",
     "created_at": "2025-06-21T02:32:44.450087Z",
     "updated_at": "2025-07-19T12:32:44.450087Z"
@@ -11982,7 +11982,7 @@
     "sender_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "thread_id": "549c9bdb-feae-4dfa-a8a1-196ddbe0fe8c",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-13T09:53:15.450688Z",
     "received_at": "2025-12-13T09:53:44.450688Z",
     "created_at": "2025-05-05T13:58:44.450677Z",
     "updated_at": "2025-05-31T06:58:44.450677Z"
@@ -12054,7 +12054,7 @@
     "sender_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "thread_id": "4750972f-ffb8-45e0-b93b-1ccb7815bce2",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-10-22T05:07:37.451446Z",
     "received_at": null,
     "created_at": "2025-10-22T05:06:44.451446Z",
     "updated_at": "2025-11-17T22:06:44.451446Z"
@@ -12090,7 +12090,7 @@
     "sender_id": "fe44b541-81ef-441c-ad73-4bd4a454abca",
     "thread_id": "cdb44811-d591-4d32-89f3-21ac7a5e4379",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-15T05:53:35.365293Z",
     "received_at": "2025-12-15T05:53:53.365293Z",
     "created_at": "2025-02-26T08:51:44.451836Z",
     "updated_at": "2025-03-16T07:51:44.451836Z"
@@ -12108,7 +12108,7 @@
     "sender_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "thread_id": "3c64ae0a-4431-4ca1-aafc-5de22322a9a2",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-06T08:53:34.452080Z",
     "received_at": "2026-01-06T08:53:44.452080Z",
     "created_at": "2025-08-01T19:51:44.452068Z",
     "updated_at": "2025-08-14T07:51:44.452068Z"
@@ -12126,7 +12126,7 @@
     "sender_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "thread_id": "a74e748a-28d1-4ae2-ac33-00033681da55",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-07T08:53:28.329173Z",
     "received_at": "2026-01-07T08:53:47.329173Z",
     "created_at": "2025-11-21T12:55:44.452291Z",
     "updated_at": "2025-12-18T23:55:44.452291Z"
@@ -12486,7 +12486,7 @@
     "sender_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "thread_id": "8218ea56-06df-4c78-8383-e10594dedc72",
     "parent_email_id": "d64bd3ea-5976-4080-a07a-c791863a120c",
-    "sent_at": null,
+    "sent_at": "2026-01-01T00:53:43.456564Z",
     "received_at": "2026-01-01T00:53:44.456564Z",
     "created_at": "2025-07-05T16:56:44.456552Z",
     "updated_at": "2025-07-21T07:56:44.456552Z"
@@ -12504,7 +12504,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "85e59286-8fae-48f4-8e8c-f501d449783e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-18T14:53:42.442781Z",
     "received_at": "2025-12-18T14:53:51.442781Z",
     "created_at": "2025-08-27T06:59:44.456755Z",
     "updated_at": "2025-09-22T15:59:44.456755Z"
@@ -12594,7 +12594,7 @@
     "sender_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "thread_id": "05f6fb39-c233-4701-9928-30ed38f94791",
     "parent_email_id": "545b46d8-ea8d-4522-b311-0df10f154f00",
-    "sent_at": null,
+    "sent_at": "2025-12-26T15:53:25.351739Z",
     "received_at": "2025-12-26T15:53:47.351739Z",
     "created_at": "2025-07-21T20:55:44.457752Z",
     "updated_at": "2025-07-28T11:55:44.457752Z"
@@ -12612,7 +12612,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000002",
     "thread_id": "50000000-0000-0000-0000-000000000007",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-01T23:53:32.362092Z",
     "received_at": "2026-01-01T23:53:51.362092Z",
     "created_at": "2025-05-29T12:16:44.457968Z",
     "updated_at": "2025-06-13T04:16:44.457968Z"
@@ -12738,7 +12738,7 @@
     "sender_id": "fe44b541-81ef-441c-ad73-4bd4a454abca",
     "thread_id": "4de21050-b8ca-43a2-bfef-7e6d1273e324",
     "parent_email_id": "e052cf95-2521-4558-992c-6def2405b645",
-    "sent_at": null,
+    "sent_at": "2026-01-05T18:53:16.459360Z",
     "received_at": "2026-01-05T18:53:44.459360Z",
     "created_at": "2025-08-25T18:57:44.459348Z",
     "updated_at": "2025-09-10T06:57:44.459348Z"
@@ -12756,7 +12756,7 @@
     "sender_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "thread_id": "d3a42eb4-adb6-46c9-b808-cb54ad297a77",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T12:53:25.459530Z",
     "received_at": "2025-12-10T12:53:44.459530Z",
     "created_at": "2025-09-14T17:59:44.459519Z",
     "updated_at": "2025-09-15T14:59:44.459519Z"
@@ -12846,7 +12846,7 @@
     "sender_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "thread_id": "53af5d92-9ee7-473f-adb3-4e0f5f8cb3cb",
     "parent_email_id": "1706959c-b6a3-41f6-a6bd-2ddaaad9e693",
-    "sent_at": null,
+    "sent_at": "2025-12-23T14:53:16.460778Z",
     "received_at": "2025-12-23T14:53:44.460778Z",
     "created_at": "2025-03-22T14:48:44.460767Z",
     "updated_at": "2025-04-09T10:48:44.460767Z"
@@ -12882,7 +12882,7 @@
     "sender_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
     "thread_id": "d3a42eb4-adb6-46c9-b808-cb54ad297a77",
     "parent_email_id": "b4b8d5a0-a9c5-423c-8133-9058f674c380",
-    "sent_at": null,
+    "sent_at": "2026-01-02T14:53:32.461157Z",
     "received_at": "2026-01-02T14:53:44.461157Z",
     "created_at": "2025-11-16T18:58:44.461145Z",
     "updated_at": "2025-11-24T17:58:44.461145Z"
@@ -12918,7 +12918,7 @@
     "sender_id": "52123fab-244b-46dd-897a-142d8d53d666",
     "thread_id": "adffdd60-0a1d-4973-97f7-23a63fac3630",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T05:53:26.364181Z",
     "received_at": "2025-12-10T05:53:46.364181Z",
     "created_at": "2025-09-29T05:45:44.461601Z",
     "updated_at": "2025-10-13T13:45:44.461601Z"
@@ -13026,7 +13026,7 @@
     "sender_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "thread_id": "d0a779a1-6e46-4e1a-898f-886418f8077e",
     "parent_email_id": "e0a2b1d1-0510-4c5f-bdf5-414b7381f3c8",
-    "sent_at": null,
+    "sent_at": "2025-12-13T11:53:35.462751Z",
     "received_at": "2025-12-13T11:53:44.462751Z",
     "created_at": "2025-01-08T21:03:44.462740Z",
     "updated_at": "2025-01-17T07:03:44.462740Z"
@@ -13206,7 +13206,7 @@
     "sender_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "thread_id": "fd05e02a-bb35-4bfe-8ec6-54189efd75f3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T17:53:36.350598Z",
     "received_at": "2025-12-28T17:53:50.350598Z",
     "created_at": "2025-02-19T12:27:44.464740Z",
     "updated_at": "2025-02-27T03:27:44.464740Z"
@@ -13224,7 +13224,7 @@
     "sender_id": "927b54cc-5c7b-4375-9a0e-ad15bf805b83",
     "thread_id": "943a7f5d-a0b7-4184-9a0b-4678764f6cee",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T10:53:29.464952Z",
     "received_at": "2025-12-28T10:53:44.464952Z",
     "created_at": "2025-01-28T17:14:44.464939Z",
     "updated_at": "2025-02-21T12:14:44.464939Z"
@@ -13278,7 +13278,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000002",
     "thread_id": "5e730fa9-52bc-445c-8764-f80eabe54b3e",
     "parent_email_id": "47601def-ab0e-4530-8b8a-f4c64edd35c1",
-    "sent_at": null,
+    "sent_at": "2025-12-29T00:53:27.345473Z",
     "received_at": "2025-12-29T00:53:47.345473Z",
     "created_at": "2025-02-14T03:10:44.465601Z",
     "updated_at": "2025-02-14T22:10:44.465601Z"
@@ -13296,7 +13296,7 @@
     "sender_id": "4120a0df-1fd6-4fa8-9687-0a55b249298c",
     "thread_id": "be0f765d-94e0-4776-a290-64a7beadb84e",
     "parent_email_id": "f7cf4698-7128-4e47-9e43-aa128c8f409c",
-    "sent_at": null,
+    "sent_at": "2025-12-21T17:53:36.410176Z",
     "received_at": "2025-12-21T17:53:46.410176Z",
     "created_at": "2025-01-24T13:06:44.465786Z",
     "updated_at": "2025-01-29T21:06:44.465786Z"
@@ -13314,7 +13314,7 @@
     "sender_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "thread_id": "50000000-0000-0000-0000-000000000004",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-06T02:53:30.466018Z",
     "received_at": "2026-01-06T02:53:44.466018Z",
     "created_at": "2025-08-16T05:10:44.466006Z",
     "updated_at": "2025-08-18T13:10:44.466006Z"
@@ -13422,7 +13422,7 @@
     "sender_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "thread_id": "8eb3afd3-91b9-480a-b1f8-a947f680a510",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T13:53:21.344446Z",
     "received_at": "2025-12-11T13:53:49.344446Z",
     "created_at": "2025-04-18T21:05:44.467174Z",
     "updated_at": "2025-04-28T00:05:44.467174Z"
@@ -13440,7 +13440,7 @@
     "sender_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "thread_id": "505d1e10-007d-45c0-b048-c2a6a4adb1e7",
     "parent_email_id": "3f8f60ee-65c4-4acf-9cd1-ef987650a35a",
-    "sent_at": null,
+    "sent_at": "2025-12-28T12:53:29.467413Z",
     "received_at": "2025-12-28T12:53:44.467413Z",
     "created_at": "2025-11-23T23:27:44.467401Z",
     "updated_at": "2025-12-12T20:27:44.467401Z"
@@ -13476,7 +13476,7 @@
     "sender_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "thread_id": "cdb44811-d591-4d32-89f3-21ac7a5e4379",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-10T10:53:15.467824Z",
     "received_at": "2025-12-10T10:53:44.467824Z",
     "created_at": "2025-09-04T14:17:44.467813Z",
     "updated_at": "2025-09-20T19:17:44.467813Z"
@@ -13530,7 +13530,7 @@
     "sender_id": "4120a0df-1fd6-4fa8-9687-0a55b249298c",
     "thread_id": "6693d667-2855-48cd-b6fa-c5e95afb6460",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-05T22:53:41.329364Z",
     "received_at": "2026-01-05T22:53:47.329364Z",
     "created_at": "2025-05-24T15:15:44.468419Z",
     "updated_at": "2025-06-19T21:15:44.468419Z"
@@ -13566,7 +13566,7 @@
     "sender_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "thread_id": "e264524e-763a-48ac-b0b9-391400f288fb",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-18T14:53:46.442781Z",
     "received_at": "2025-12-18T14:53:52.442781Z",
     "created_at": "2025-10-16T02:47:44.468858Z",
     "updated_at": "2025-11-01T23:47:44.468858Z"
@@ -13602,7 +13602,7 @@
     "sender_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "thread_id": "3c6486bc-bfff-4d26-b556-3cb019ca6177",
     "parent_email_id": "96f63015-df57-4694-9e7a-bbc2fb8bd429",
-    "sent_at": null,
+    "sent_at": "2025-12-24T06:53:37.469222Z",
     "received_at": "2025-12-24T06:53:44.469222Z",
     "created_at": "2025-10-13T01:51:44.469210Z",
     "updated_at": "2025-10-27T17:51:44.469210Z"
@@ -13620,7 +13620,7 @@
     "sender_id": "d58220f6-cc91-49ea-b0ad-f3b645a9fea0",
     "thread_id": "b468417e-f9cb-421c-8d53-41a4918ada61",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-15T08:53:24.469404Z",
     "received_at": "2025-12-15T08:53:44.469404Z",
     "created_at": "2025-03-16T08:27:44.469392Z",
     "updated_at": "2025-03-19T20:27:44.469392Z"
@@ -13674,7 +13674,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "9586e301-2a8b-4d2a-bea0-5be4ac7a884f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T05:53:49.443338Z",
     "received_at": "2025-12-28T05:53:51.443338Z",
     "created_at": "2025-02-12T23:09:44.469957Z",
     "updated_at": "2025-02-14T09:09:44.469957Z"
@@ -13728,7 +13728,7 @@
     "sender_id": "7fdb663d-4a8c-4c1c-9221-5c53baf1d5e7",
     "thread_id": "308ac448-f561-4bbb-842d-963eb42b9318",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-31T15:53:14.470579Z",
     "received_at": "2025-12-31T15:53:44.470579Z",
     "created_at": "2025-12-08T10:32:44.470568Z",
     "updated_at": "2025-12-12T19:32:44.470568Z"
@@ -13764,7 +13764,7 @@
     "sender_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "thread_id": "723a0628-7b05-4426-b2a4-026520ed7d85",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-09-21T16:53:18.369643Z",
     "received_at": "2025-09-21T16:53:47.369643Z",
     "created_at": "2025-01-27T02:06:44.471013Z",
     "updated_at": "2025-02-13T03:06:44.471013Z"
@@ -13782,7 +13782,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "3af5210d-efac-49a0-8cff-80bb7a1f8b58",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-23T02:53:17.371608Z",
     "received_at": "2025-12-23T02:53:46.371608Z",
     "created_at": "2025-08-23T13:48:44.471214Z",
     "updated_at": "2025-09-18T10:48:44.471214Z"
@@ -13818,7 +13818,7 @@
     "sender_id": "cf056368-25b4-4483-bea2-a00f011affc5",
     "thread_id": "66f392d5-7f19-4853-ae9a-756990f2f4e8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-23T03:53:40.471626Z",
     "received_at": "2025-12-23T03:53:44.471626Z",
     "created_at": "2025-06-09T23:50:44.471614Z",
     "updated_at": "2025-06-10T19:50:44.471614Z"
@@ -13836,7 +13836,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "5a78ca41-eaa4-4700-af8f-295d5a1dc911",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-11-04T16:53:24.330269Z",
     "received_at": "2025-11-04T16:53:47.330269Z",
     "created_at": "2025-03-23T07:28:44.471797Z",
     "updated_at": "2025-03-29T12:28:44.471797Z"
@@ -14016,7 +14016,7 @@
     "sender_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "thread_id": "8eb37c53-fec8-493e-a7a0-459745a15201",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-31T02:53:44.399392Z",
     "received_at": "2025-12-31T02:53:47.399392Z",
     "created_at": "2025-12-31T01:41:44.473780Z",
     "updated_at": "2026-01-03T00:41:44.473780Z"
@@ -14052,7 +14052,7 @@
     "sender_id": "72403152-4c8d-4a8e-bbf6-6a5841b3959b",
     "thread_id": "51eb93bc-0f00-4785-8a3d-32e4985f2854",
     "parent_email_id": "0769f71f-bfda-4ca7-8dad-89b353d151e7",
-    "sent_at": null,
+    "sent_at": "2025-12-20T00:53:25.381568Z",
     "received_at": "2025-12-20T00:53:47.381568Z",
     "created_at": "2025-04-28T20:27:44.474150Z",
     "updated_at": "2025-05-05T15:27:44.474150Z"
@@ -14178,7 +14178,7 @@
     "sender_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "thread_id": "308ac448-f561-4bbb-842d-963eb42b9318",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-27T04:53:22.475483Z",
     "received_at": "2025-12-27T04:53:44.475483Z",
     "created_at": "2025-05-11T06:12:44.475472Z",
     "updated_at": "2025-05-31T18:12:44.475472Z"
@@ -14214,7 +14214,7 @@
     "sender_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "thread_id": "50000000-0000-0000-0000-000000000003",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-21T05:53:25.475858Z",
     "received_at": "2025-12-21T05:53:44.475858Z",
     "created_at": "2025-12-02T01:15:44.475847Z",
     "updated_at": "2025-12-22T01:15:44.475847Z"
@@ -14232,7 +14232,7 @@
     "sender_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
     "thread_id": "9274aa6b-5c67-4246-90f0-b74853419035",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-02T03:53:43.350393Z",
     "received_at": "2026-01-02T03:53:46.350393Z",
     "created_at": "2025-05-10T18:05:44.476016Z",
     "updated_at": "2025-05-22T21:05:44.476016Z"
@@ -14268,7 +14268,7 @@
     "sender_id": "d5b9294c-bf70-4f95-8b75-0a2c985d3dc5",
     "thread_id": "fbfbd584-3d9f-4ef1-9194-756243a8eecb",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T05:53:26.352843Z",
     "received_at": "2025-12-30T05:53:51.352843Z",
     "created_at": "2025-07-14T15:13:44.476416Z",
     "updated_at": "2025-08-03T15:13:44.476416Z"
@@ -14448,7 +14448,7 @@
     "sender_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "thread_id": "1354cc76-75ce-4d2d-bce7-704ee113fb55",
     "parent_email_id": "7226e973-a412-4435-a78f-0b49924fec28",
-    "sent_at": null,
+    "sent_at": "2025-12-27T07:53:38.403399Z",
     "received_at": "2025-12-27T07:53:47.403399Z",
     "created_at": "2025-02-01T05:23:44.478442Z",
     "updated_at": "2025-02-16T08:23:44.478442Z"
@@ -14520,7 +14520,7 @@
     "sender_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
     "thread_id": "adffdd60-0a1d-4973-97f7-23a63fac3630",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-28T15:53:21.479230Z",
     "received_at": "2025-12-28T15:53:44.479230Z",
     "created_at": "2025-11-14T00:50:44.479219Z",
     "updated_at": "2025-11-24T20:50:44.479219Z"
@@ -14538,7 +14538,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000004",
     "thread_id": "61486735-30c7-4728-a64b-91852a5c84af",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-02T15:53:20.362285Z",
     "received_at": "2026-01-02T15:53:47.362285Z",
     "created_at": "2025-06-06T23:39:44.479439Z",
     "updated_at": "2025-06-17T02:39:44.479439Z"
@@ -14628,7 +14628,7 @@
     "sender_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "thread_id": "d3a42eb4-adb6-46c9-b808-cb54ad297a77",
     "parent_email_id": "75eea7fc-7bfe-48f3-8aab-857a4a7dda3a",
-    "sent_at": null,
+    "sent_at": "2025-12-26T23:53:30.480382Z",
     "received_at": "2025-12-26T23:53:44.480382Z",
     "created_at": "2025-04-17T00:35:44.480371Z",
     "updated_at": "2025-04-19T01:35:44.480371Z"
@@ -14664,7 +14664,7 @@
     "sender_id": "378c6931-1410-4151-b6d7-f33f2098c460",
     "thread_id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
     "parent_email_id": "9d0b1ad6-6cf7-4d86-a1f4-9881febf58e6",
-    "sent_at": null,
+    "sent_at": "2026-01-04T05:53:32.391493Z",
     "received_at": "2026-01-04T05:53:46.391493Z",
     "created_at": "2025-11-01T23:17:44.480789Z",
     "updated_at": "2025-11-19T13:17:44.480789Z"
@@ -14754,7 +14754,7 @@
     "sender_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "thread_id": "cb347796-f74e-4768-9381-c4da4cc15e90",
     "parent_email_id": "f0a05fe6-daee-452e-bfcb-3be195d9e843",
-    "sent_at": null,
+    "sent_at": "2025-12-18T07:53:30.481776Z",
     "received_at": "2025-12-18T07:53:44.481776Z",
     "created_at": "2025-05-25T16:12:44.481764Z",
     "updated_at": "2025-06-12T21:12:44.481764Z"
@@ -14772,7 +14772,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "72b21e34-2d6c-4833-92aa-db29c0f49995",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T11:53:26.481950Z",
     "received_at": "2025-12-11T11:53:44.481950Z",
     "created_at": "2025-01-19T18:11:44.481939Z",
     "updated_at": "2025-02-07T23:11:44.481939Z"
@@ -14790,7 +14790,7 @@
     "sender_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
     "thread_id": "3ce52386-273d-4b33-95f0-4835db00643e",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-31T10:53:30.482148Z",
     "received_at": "2025-12-31T10:53:44.482148Z",
     "created_at": "2025-12-02T00:39:44.482136Z",
     "updated_at": "2025-12-26T10:39:44.482136Z"
@@ -14808,7 +14808,7 @@
     "sender_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "thread_id": "e7697aaa-83c8-4242-b2be-1b0525d97ec2",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-07-17T16:53:21.400229Z",
     "received_at": "2025-07-17T16:53:46.400229Z",
     "created_at": "2025-05-15T11:41:44.482316Z",
     "updated_at": "2025-06-14T11:41:44.482316Z"
@@ -14844,7 +14844,7 @@
     "sender_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "thread_id": "e9ce8bac-78b2-483f-8145-ecb1c8ff5dae",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-31T10:53:32.482148Z",
     "received_at": "2025-12-31T10:53:46.482148Z",
     "created_at": "2025-06-17T04:23:44.482727Z",
     "updated_at": "2025-07-15T06:23:44.482727Z"
@@ -14970,7 +14970,7 @@
     "sender_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "thread_id": "a387cdd2-2d1f-46ea-9bdb-aa9cf4e7ebe7",
     "parent_email_id": "191226ed-2d2e-47b9-8511-7af21d44338b",
-    "sent_at": null,
+    "sent_at": "2025-12-23T20:53:24.427336Z",
     "received_at": "2025-12-23T20:53:46.427336Z",
     "created_at": "2025-05-25T14:37:44.484251Z",
     "updated_at": "2025-05-26T07:37:44.484251Z"
@@ -15006,7 +15006,7 @@
     "sender_id": "4f595f08-f11f-43dd-b1fd-25f527714dca",
     "thread_id": "505d1e10-007d-45c0-b048-c2a6a4adb1e7",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-27T11:53:32.405257Z",
     "received_at": "2025-12-27T11:53:46.405257Z",
     "created_at": "2025-06-14T13:24:44.484657Z",
     "updated_at": "2025-06-17T09:24:44.484657Z"
@@ -15078,7 +15078,7 @@
     "sender_id": "d5b9294c-bf70-4f95-8b75-0a2c985d3dc5",
     "thread_id": "b74fb5b5-d3b0-41f6-bfe6-b2b6b35bf204",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-02T03:53:23.350393Z",
     "received_at": "2026-01-02T03:53:47.350393Z",
     "created_at": "2025-12-11T02:47:44.485521Z",
     "updated_at": "2025-12-15T14:47:44.485521Z"
@@ -15150,7 +15150,7 @@
     "sender_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "thread_id": "56bb5c6e-945d-4276-bedd-3ff628875b57",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-05T04:53:26.486276Z",
     "received_at": "2026-01-05T04:53:44.486276Z",
     "created_at": "2025-04-02T18:19:44.486265Z",
     "updated_at": "2025-04-13T04:19:44.486265Z"
@@ -15222,7 +15222,7 @@
     "sender_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "thread_id": "36a9d4dc-994e-4984-b85c-d9f73ee419f9",
     "parent_email_id": "d0bbcc7a-2a12-410c-8a70-14e99b1f6204",
-    "sent_at": null,
+    "sent_at": "2025-12-23T17:53:22.382179Z",
     "received_at": "2025-12-23T17:53:47.382179Z",
     "created_at": "2025-11-21T14:30:44.487059Z",
     "updated_at": "2025-12-14T20:30:44.487059Z"
@@ -15258,7 +15258,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000004",
     "thread_id": "d8c4f850-8caf-4e42-888b-4fb300d8098c",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T16:53:36.324588Z",
     "received_at": "2025-12-30T16:53:50.324588Z",
     "created_at": "2025-12-14T00:11:44.487411Z",
     "updated_at": "2025-12-26T09:11:44.487411Z"
@@ -15384,7 +15384,7 @@
     "sender_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "thread_id": "8eb37c53-fec8-493e-a7a0-459745a15201",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-08T14:53:27.488782Z",
     "received_at": "2026-01-08T14:53:44.488782Z",
     "created_at": "2025-07-29T15:53:44.488771Z",
     "updated_at": "2025-08-18T22:53:44.488771Z"
@@ -15420,7 +15420,7 @@
     "sender_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "thread_id": "50000000-0000-0000-0000-000000000006",
     "parent_email_id": "ea3aced6-5338-4832-8d2c-c73018bdd97e",
-    "sent_at": null,
+    "sent_at": "2025-12-19T21:53:27.489181Z",
     "received_at": "2025-12-19T21:53:44.489181Z",
     "created_at": "2025-01-16T03:07:44.489170Z",
     "updated_at": "2025-01-21T05:07:44.489170Z"
@@ -15636,7 +15636,7 @@
     "sender_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "thread_id": "50000000-0000-0000-0000-000000000003",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-08T01:53:29.448756Z",
     "received_at": "2026-01-08T01:53:49.448756Z",
     "created_at": "2025-10-26T00:41:44.491557Z",
     "updated_at": "2025-11-16T22:41:44.491557Z"
@@ -15708,7 +15708,7 @@
     "sender_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "thread_id": "8cda5312-ccef-4f5f-9e6f-0ccb4c80415d",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-01T05:53:40.467656Z",
     "received_at": "2026-01-01T05:53:46.467656Z",
     "created_at": "2025-12-09T16:05:44.492382Z",
     "updated_at": "2025-12-29T07:05:44.492382Z"
@@ -15798,7 +15798,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "52308645-8134-4479-be17-2c040d283903",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-12T23:53:39.493410Z",
     "received_at": "2025-12-12T23:53:44.493410Z",
     "created_at": "2025-06-12T17:17:44.493398Z",
     "updated_at": "2025-06-24T11:17:44.493398Z"
@@ -15888,7 +15888,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000003",
     "thread_id": "515d92ea-db3d-42b3-895e-9c9d2294892a",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-08T17:53:31.402021Z",
     "received_at": "2025-12-08T17:53:48.402021Z",
     "created_at": "2025-02-05T23:20:44.494395Z",
     "updated_at": "2025-02-11T06:20:44.494395Z"
@@ -15906,7 +15906,7 @@
     "sender_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
     "thread_id": "50000000-0000-0000-0000-000000000009",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-01T11:53:20.494586Z",
     "received_at": "2026-01-01T11:53:44.494586Z",
     "created_at": "2025-08-31T15:50:44.494575Z",
     "updated_at": "2025-09-22T07:50:44.494575Z"
@@ -15960,7 +15960,7 @@
     "sender_id": "5a14f3ca-cc22-4623-8674-1dddfdb549f2",
     "thread_id": "503b842b-22e3-49ba-9375-ae8dbc3fe222",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-15T19:53:18.351166Z",
     "received_at": "2025-12-15T19:53:48.351166Z",
     "created_at": "2025-05-31T12:47:44.495182Z",
     "updated_at": "2025-06-11T10:47:44.495182Z"
@@ -16050,7 +16050,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "912b224a-b0bf-44eb-b201-876e176a9f75",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-29T16:53:25.448732Z",
     "received_at": "2025-12-29T16:53:46.448732Z",
     "created_at": "2025-04-27T14:14:44.496186Z",
     "updated_at": "2025-05-09T04:14:44.496186Z"
@@ -16212,7 +16212,7 @@
     "sender_id": "cfa49852-b1b1-4395-876c-cca5d20c34cc",
     "thread_id": "1417b725-ed3b-4daa-b93e-9be23fa2b4c3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-22T06:53:43.372804Z",
     "received_at": "2025-12-22T06:53:50.372804Z",
     "created_at": "2026-01-04T01:25:44.497925Z",
     "updated_at": "2026-01-08T16:54:10.327861Z"
@@ -16230,7 +16230,7 @@
     "sender_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "thread_id": "72b21e34-2d6c-4833-92aa-db29c0f49995",
     "parent_email_id": "daeacce5-4fe6-41dc-b6b2-36fbee767ed9",
-    "sent_at": null,
+    "sent_at": "2026-01-05T19:53:22.380892Z",
     "received_at": "2026-01-05T19:53:51.380892Z",
     "created_at": "2025-10-12T13:27:44.498119Z",
     "updated_at": "2025-11-10T21:27:44.498119Z"
@@ -16266,7 +16266,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000005",
     "thread_id": "1354cc76-75ce-4d2d-bce7-704ee113fb55",
     "parent_email_id": "4138acd3-6e35-49ba-b7c1-89da1a900143",
-    "sent_at": null,
+    "sent_at": "2025-12-26T23:53:28.480382Z",
     "received_at": "2025-12-26T23:53:46.480382Z",
     "created_at": "2025-06-27T18:45:44.498599Z",
     "updated_at": "2025-07-07T10:45:44.498599Z"
@@ -16302,7 +16302,7 @@
     "sender_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "thread_id": "1ee509f4-76c2-4e8f-b91c-655cb3450158",
     "parent_email_id": "dea7dde6-c836-4c9c-bd8b-a8cf5b712118",
-    "sent_at": null,
+    "sent_at": "2025-12-26T07:53:35.499040Z",
     "received_at": "2025-12-26T07:53:44.499040Z",
     "created_at": "2025-08-04T09:33:44.499029Z",
     "updated_at": "2025-08-14T05:33:44.499029Z"
@@ -16320,7 +16320,7 @@
     "sender_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "thread_id": "272dcd1d-d046-4c44-a1ea-e5ad253246a8",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-20T11:53:26.432957Z",
     "received_at": "2025-12-20T11:53:52.432957Z",
     "created_at": "2025-12-21T06:55:44.499425Z",
     "updated_at": "2026-01-08T16:54:11.327861Z"
@@ -16500,7 +16500,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "a74e748a-28d1-4ae2-ac33-00033681da55",
     "parent_email_id": "200b6948-7b0d-4ebd-bab1-1150d615e82e",
-    "sent_at": null,
+    "sent_at": "2026-01-04T11:53:25.327461Z",
     "received_at": "2026-01-04T11:53:51.327461Z",
     "created_at": "2025-03-11T05:01:44.501397Z",
     "updated_at": "2025-03-17T09:01:44.501397Z"
@@ -16518,7 +16518,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "4750972f-ffb8-45e0-b93b-1ccb7815bce2",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-10-18T16:53:30.447340Z",
     "received_at": "2025-10-18T16:53:45.447340Z",
     "created_at": "2025-10-02T07:19:44.501603Z",
     "updated_at": "2025-10-06T06:19:44.501603Z"
@@ -16626,7 +16626,7 @@
     "sender_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "thread_id": "1aae96e0-985d-4b5b-a4b8-26a538ed8e10",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-07T02:53:33.502816Z",
     "received_at": "2026-01-07T02:53:44.502816Z",
     "created_at": "2025-01-16T08:13:44.502805Z",
     "updated_at": "2025-02-05T10:13:44.502805Z"
@@ -16644,7 +16644,7 @@
     "sender_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "thread_id": "50000000-0000-0000-0000-000000000008",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-08T04:53:20.398132Z",
     "received_at": "2026-01-08T04:53:50.398132Z",
     "created_at": "2025-04-05T06:04:44.503016Z",
     "updated_at": "2025-04-18T16:04:44.503016Z"
@@ -16662,7 +16662,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000005",
     "thread_id": "50000000-0000-0000-0000-000000000006",
     "parent_email_id": "5796e57e-eb6d-401d-88f3-b78fd4ebda2c",
-    "sent_at": null,
+    "sent_at": "2025-12-20T12:53:18.482497Z",
     "received_at": "2025-12-20T12:53:46.482497Z",
     "created_at": "2025-01-15T15:45:44.503240Z",
     "updated_at": "2025-02-03T04:45:44.503240Z"
@@ -16716,7 +16716,7 @@
     "sender_id": "3a049f02-9d61-4988-8bf4-4b65a3d7c553",
     "thread_id": "2b0c95a4-92a2-44c8-9e39-a2d541676444",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-12T14:53:30.342859Z",
     "received_at": "2025-12-12T14:53:51.342859Z",
     "created_at": "2025-01-23T07:46:44.503886Z",
     "updated_at": "2025-02-09T19:46:44.503886Z"
@@ -16788,7 +16788,7 @@
     "sender_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "thread_id": "72b21e34-2d6c-4833-92aa-db29c0f49995",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-25T09:53:41.504761Z",
     "received_at": "2025-12-25T09:53:44.504761Z",
     "created_at": "2025-04-21T21:05:44.504750Z",
     "updated_at": "2025-04-28T20:05:44.504750Z"
@@ -16914,7 +16914,7 @@
     "sender_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "thread_id": "308ac448-f561-4bbb-842d-963eb42b9318",
     "parent_email_id": "229c4585-5d5c-41ed-8787-b2db3aad90b4",
-    "sent_at": null,
+    "sent_at": "2025-12-20T01:53:43.506244Z",
     "received_at": "2025-12-20T01:53:44.506244Z",
     "created_at": "2025-04-25T06:24:44.506233Z",
     "updated_at": "2025-05-07T06:24:44.506233Z"
@@ -17040,7 +17040,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000004",
     "thread_id": "2a2c3e56-3266-454b-94e2-9e6dd8cee5bf",
     "parent_email_id": "b0485be5-aed0-4d0c-b884-f0ca4a47f9a1",
-    "sent_at": null,
+    "sent_at": "2026-01-04T09:53:41.507579Z",
     "received_at": "2026-01-04T09:53:44.507579Z",
     "created_at": "2025-08-24T22:35:44.507568Z",
     "updated_at": "2025-08-26T02:35:44.507568Z"
@@ -17094,7 +17094,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "8729fe1c-9bea-475e-b984-e1625fddbcf3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-07T22:53:36.508152Z",
     "received_at": "2026-01-07T22:53:44.508152Z",
     "created_at": "2025-07-13T20:36:44.508141Z",
     "updated_at": "2025-07-28T16:36:44.508141Z"
@@ -17130,7 +17130,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000002",
     "thread_id": "943a7f5d-a0b7-4184-9a0b-4678764f6cee",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-01-21T03:27:48.508543Z",
     "received_at": null,
     "created_at": "2025-01-21T03:27:44.508543Z",
     "updated_at": "2025-02-05T12:27:44.508543Z"
@@ -17184,7 +17184,7 @@
     "sender_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "thread_id": "c8fa7ae1-3abb-4703-8619-c470060b0502",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-11T12:53:30.509190Z",
     "received_at": "2025-12-11T12:53:44.509190Z",
     "created_at": "2025-05-10T14:40:44.509179Z",
     "updated_at": "2025-05-19T11:40:44.509179Z"
@@ -17256,7 +17256,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000006",
     "thread_id": "470444d3-e416-496f-a4ce-8375ada2b0b1",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-06T12:53:28.509919Z",
     "received_at": "2026-01-06T12:53:44.509919Z",
     "created_at": "2025-06-11T05:38:44.509907Z",
     "updated_at": "2025-06-16T03:38:44.509907Z"
@@ -17346,7 +17346,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000002",
     "thread_id": "50000000-0000-0000-0000-000000000003",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-14T09:53:19.440925Z",
     "received_at": "2025-12-14T09:53:49.440925Z",
     "created_at": "2025-07-17T23:32:44.510952Z",
     "updated_at": "2025-07-30T13:32:44.510952Z"
@@ -17454,7 +17454,7 @@
     "sender_id": "00000000-0000-0000-0000-000000000001",
     "thread_id": "7435469e-2c5d-4f50-bd86-8422c6b94c00",
     "parent_email_id": "0572ecfe-bdd8-4511-9cd1-a08e38cd133c",
-    "sent_at": null,
+    "sent_at": "2025-12-21T14:53:35.512201Z",
     "received_at": "2025-12-21T14:53:44.512201Z",
     "created_at": "2025-08-21T14:14:44.512189Z",
     "updated_at": "2025-08-31T22:14:44.512189Z"
@@ -17472,7 +17472,7 @@
     "sender_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "thread_id": "50000000-0000-0000-0000-000000000003",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-04-26T11:01:19.512403Z",
     "received_at": null,
     "created_at": "2025-04-26T11:00:44.512403Z",
     "updated_at": "2025-05-14T18:00:44.512403Z"
@@ -17688,7 +17688,7 @@
     "sender_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "thread_id": "6d2ff389-a838-4557-b6e8-1ef0b9b34769",
     "parent_email_id": "229a493e-7dd1-41ea-9e2e-617c0bd4a989",
-    "sent_at": null,
+    "sent_at": "2025-12-11T23:53:36.348353Z",
     "received_at": "2025-12-11T23:53:47.348353Z",
     "created_at": "2025-09-12T17:08:44.514891Z",
     "updated_at": "2025-10-11T21:08:44.514891Z"
@@ -17760,7 +17760,7 @@
     "sender_id": "7fdb663d-4a8c-4c1c-9221-5c53baf1d5e7",
     "thread_id": "fbfbd584-3d9f-4ef1-9194-756243a8eecb",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-05T15:53:42.515699Z",
     "received_at": "2026-01-05T15:53:44.515699Z",
     "created_at": "2025-10-26T09:53:44.515688Z",
     "updated_at": "2025-10-31T02:53:44.515688Z"
@@ -17868,7 +17868,7 @@
     "sender_id": "4120a0df-1fd6-4fa8-9687-0a55b249298c",
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2026-01-01T23:53:24.362092Z",
     "received_at": "2026-01-01T23:53:52.362092Z",
     "created_at": "2025-06-05T07:56:44.516797Z",
     "updated_at": "2025-06-10T08:56:44.516797Z"
@@ -17904,7 +17904,7 @@
     "sender_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "thread_id": "3af5210d-efac-49a0-8cff-80bb7a1f8b58",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-30T17:53:24.517186Z",
     "received_at": "2025-12-30T17:53:44.517186Z",
     "created_at": "2025-12-27T20:06:44.517174Z",
     "updated_at": "2026-01-08T16:54:13.327861Z"
@@ -17976,7 +17976,7 @@
     "sender_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "thread_id": "b3bc34b5-76ea-4964-809e-a95ca4433dd3",
     "parent_email_id": null,
-    "sent_at": null,
+    "sent_at": "2025-12-24T06:53:31.469222Z",
     "received_at": "2025-12-24T06:53:46.469222Z",
     "created_at": "2025-03-12T10:50:44.517893Z",
     "updated_at": "2025-04-03T18:50:44.517893Z"
