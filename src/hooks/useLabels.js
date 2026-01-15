@@ -370,7 +370,8 @@ export default function useLabels() {
         // Search by thread_id in provided emails
         const hasAnyId = (m) => {
           const threadId = String(m.thread_id ?? "").trim();
-          return threadId && ids.has(threadId);
+          const emailId = String(m.id ?? "").trim();
+          return (threadId && ids.has(threadId)) || (emailId && ids.has(emailId));
         };
 
         const selectedList = providedEmails.filter(hasAnyId);

@@ -1235,11 +1235,11 @@ const ActionsContainer = styled.div`
   justify-content: space-between;
 `;
 
-export default function ActionBar({ thread }) {
+export default function ActionBar({ thread, emails }) {
   return (
     <ActionBarContainer>
       <ActionsContainer>
-        <MailActions thread={thread} />
+        <MailActions thread={thread} emails={emails} />
         <NavigationActions />
       </ActionsContainer>
       {/* <Divider /> */}
