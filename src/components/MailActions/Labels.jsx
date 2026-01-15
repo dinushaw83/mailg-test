@@ -38,6 +38,13 @@ export const Labels = ({
   // Get labelIdToKeyMap from Redux to convert UUID keys to composite keys for display
   const labelIdToKeyMap = useSelector((state) => state.mail.labelIdToKeyMap || {});
 
+  useEffect(() => {
+    if (labelAnchorEl) {
+      // Reset the overrides state when the popup opens
+      setOverrides({});
+    }
+  }, [labelAnchorEl]);
+
   const handleLabelClose = () => {
     setLabelAnchorEl(null);
     setSearchQuery("");

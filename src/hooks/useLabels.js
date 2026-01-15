@@ -140,7 +140,9 @@ export default function useLabels() {
 
       // Dispatch thunk to create label in backend
       try {
-        await dispatch(createLabelThunk({ name: nm, color, parent_id })).unwrap();
+        const createdLabel = await dispatch(createLabelThunk({ name: nm, color, parent_id })).unwrap();
+        // Return the created label so the caller can use its UUID
+        return createdLabel;
       } catch (error) {
         console.error("Failed to create label:", error);
         throw error;

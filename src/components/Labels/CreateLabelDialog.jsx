@@ -111,7 +111,7 @@ export default function CreateLabelDialog({
     onClose?.();
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     // validate on submit
     if (missingName || isDup || missingParent) {
       setAttempted(true);
@@ -119,8 +119,8 @@ export default function CreateLabelDialog({
     }
     try {
       const pk = nest ? parentKey : ROOT;
-      createLabel(trimmed, { parentKey: pk });
-      onAfterCreate?.(trimmed, pk, isMoving);
+      const createdLabel = await createLabel(trimmed, { parentKey: pk });
+      onAfterCreate?.(trimmed, pk, isMoving, createdLabel?.id);
 
       handleClose();
     } catch (e) {

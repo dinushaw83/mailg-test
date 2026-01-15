@@ -30,6 +30,13 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
   }, [shouldFocus]);
 
+  useEffect(() => {
+    if (shouldFocus) {
+      setOverrides({});
+      setSearchQuery("");
+    }
+  }, [shouldFocus]);
+
   const hasChanges = Object.keys(overrides).length > 0;
 
   // Get currently applied labels for selected emails, passing folder if present

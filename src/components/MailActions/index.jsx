@@ -73,6 +73,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     snooze,
     unsnooze,
     addLabels,
+    modifyLabels,
     deleteForever,
   } = useMailActions();
   const [{ moveToMenuOpen, spamModalOpen, createOpen, isMovingToLabel }, setState] = useState({
@@ -525,12 +526,12 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     ]
   );
 
-  const handleOnAfterCreate = (childName, parentKey) => {
+  const handleOnAfterCreate = (childName, parentKey, isMoving, createdLabelId) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
 
     if (!isMovingToLabel) {
-      handleOnAfterLabelCreate(childName, parentKey);
+      handleOnAfterLabelCreate(childName, parentKey, createdLabelId);
       return;
     }
 
@@ -610,14 +611,20 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     }
   };
 
-  const handleOnAfterLabelCreate = (childName, parentKey) => {
+  const handleOnAfterLabelCreate = (childName, parentKey, createdLabelId) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
 
     try {
       const newKey = makeKey(childName, parentKey);
 
-      addLabels(ids, [newKey]);
+      // Use modifyLabels with the created label's UUID to sync with backend
+      // The UUID is used for backend sync, the composite key is used for local state
+      modifyLabels(
+        ids, 
+        { add: createdLabelId ? [createdLabelId] : [newKey], remove: [] }, 
+        ids // Pass thread IDs for backend sync
+      );
 
       selection.clear();
 
@@ -635,8 +642,12 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
             size="small"
             onClick={() => {
               try {
-                // Remove the label from the selected emails
-                removeLabels(ids, [newKey]);
+                // Remove the label from the selected emails using modifyLabels
+                modifyLabels(
+                  ids, 
+                  { add: [], remove: createdLabelId ? [createdLabelId] : [newKey] }, 
+                  ids
+                );
 
                 setSnackbar({
                   open: true,
@@ -661,7 +672,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     } catch (e) {
       setSnackbar({
         open: true,
-        message: "Could not move selected conversations.",
+        message: "Could not add label to selected conversations.",
         autoHideDuration: 4000,
       });
     }
