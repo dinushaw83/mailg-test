@@ -589,7 +589,7 @@ export default function useMailActions() {
   );
 
   const setStar = useCallback(
-    (ids, value = true, context = "detail") => {
+    (ids, value = true, context = "detail", threadIds = null) => {
       const match = makeMatch(ids);
 
       // Optimistically update React Query cache immediately
@@ -637,29 +637,65 @@ export default function useMailActions() {
           });
         }
       } else {
-        // UNSTARRING: Use bulk email endpoint with is_starred: false
-        if (emailIds.length === 1) {
-          // Single email - use individual endpoint
-          dispatch(
-            updateEmailStarredThunk({
-              emailId: emailIds[0],
-              is_starred: false,
-            })
-          ).catch((error) => {
-            console.error("Failed to unstar email:", error);
-            updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
-          });
+        // UNSTARRING: Different logic based on context
+        if (context === "list") {
+          // From List: Use thread-level unstar to unstar ALL emails in threads
+          let threadIdsToUse = threadIds;
+          if (!threadIdsToUse || threadIdsToUse.length === 0) {
+            // Extract thread IDs from the provided email IDs
+            threadIdsToUse = [...new Set(emails.filter(match).map((m) => m.thread_id).filter(Boolean))];
+          }
+
+          if (threadIdsToUse && threadIdsToUse.length > 0) {
+            const threadIdSet = new Set(threadIdsToUse);
+
+            // Optimistically update all emails in these threads
+            setEmails((prev) => {
+              return prev.map((m) => {
+                if (threadIdSet.has(m.thread_id)) {
+                  return { ...m, is_starred: false };
+                }
+                return m;
+              });
+            });
+
+            // Use thread-level unstar endpoint (unstars ALL emails in each thread)
+            dispatch(bulkUnstarThreadsThunk({ threadIds: threadIdsToUse })).catch((error) => {
+              console.error("Failed to unstar threads:", error);
+              // Revert optimistic update
+              setEmails((prev) => {
+                return prev.map((m) => {
+                  if (threadIdSet.has(m.thread_id)) {
+                    return { ...m, is_starred: true };
+                  }
+                  return m;
+                });
+              });
+            });
+          }
         } else {
-          // Multiple emails - use bulk endpoint with is_starred: false
-          dispatch(
-            bulkUpdateEmailStarredThunk({
-              emailIds,
-              is_starred: false,
-            })
-          ).catch((error) => {
-            console.error("Failed to unstar emails:", error);
-            updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
-          });
+          // From Detail: Use individual email endpoint
+          if (emailIds.length === 1) {
+            dispatch(
+              updateEmailStarredThunk({
+                emailId: emailIds[0],
+                is_starred: false,
+              })
+            ).catch((error) => {
+              console.error("Failed to unstar email:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          } else {
+            dispatch(
+              bulkUpdateEmailStarredThunk({
+                emailIds,
+                is_starred: false,
+              })
+            ).catch((error) => {
+              console.error("Failed to unstar emails:", error);
+              updateQueryCache(ids, (email) => ({ ...email, is_starred: true }));
+            });
+          }
         }
       }
     },

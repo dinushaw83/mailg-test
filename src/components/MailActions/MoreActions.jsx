@@ -231,13 +231,15 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const previousStates = selectedEmails.map((email) => ({
         id: email.id,
+        thread_id: email.thread_id,
         starred: !!email.is_starred,
       }));
       const idsToUpdate = previousStates.filter((state) => state.starred !== value).map((state) => state.id);
+      const threadIdsToUpdate = [...new Set(previousStates.filter((state) => state.starred !== value).map((state) => state.thread_id).filter(Boolean))];
 
       if (idsToUpdate.length) {
-        // Pass 'list' context since this is from the toolbar/list actions
-        setStar(idsToUpdate, value, "list");
+        // Pass 'list' context and thread IDs for proper thread-level unstarring
+        setStar(idsToUpdate, value, "list", threadIdsToUpdate);
       }
 
       selection.clear();
@@ -262,12 +264,13 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const undo = () => {
         const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
         const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
+        const toUnstarThreadIds = [...new Set(previousStates.filter((state) => !state.starred).map((state) => state.thread_id).filter(Boolean))];
 
         if (toStar.length) {
           setStar(toStar, true, "list");
         }
         if (toUnstar.length) {
-          setStar(toUnstar, false, "list");
+          setStar(toUnstar, false, "list", toUnstarThreadIds);
         }
 
         setSnackbar({

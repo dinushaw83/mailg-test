@@ -83,6 +83,8 @@ export const emailAPIMapper = (emails) => {
         can_undo_send: email?.can_undo_send,
         // Preserve parent_email_id for thread hierarchy
         parent_email_id: email?.parent_email_id,
+        // Preserve created_at for stable sorting (immutable timestamp)
+        created_at: email?.created_at,
       };
     })
     .filter((email) => email.thread_id);
@@ -209,12 +211,18 @@ export function normalizeEmails(messages) {
         labels: new Set(),
         updatedAt: 0,
         unreadCount: 0,
+        hasStarred: false,
         lastMessageId: null,
         subject: m.subject, // or from first message
         participants: new Map(),
         personalEmailSent: false,
       };
       threadsById[thread_id] = thread;
+    }
+
+    // Track if any message in the thread is starred
+    if (m.is_starred) {
+      thread.hasStarred = true;
     }
 
     const messageParticipants = collectParticipantsForMessage(m);
@@ -248,7 +256,16 @@ export function normalizeEmails(messages) {
   // finalize sets and order messages within threads
   Object.values(threadsById).forEach((t) => {
     t.labels = Array.from(t.labels);
-    t.messageIds.sort((a, b) => messagesById[a].timestampMs - messagesById[b].timestampMs);
+    // Sort by timestamp, with created_at as secondary sort for stable ordering
+    t.messageIds.sort((a, b) => {
+      const timeDiff = messagesById[a].timestampMs - messagesById[b].timestampMs;
+      if (timeDiff !== 0) return timeDiff;
+      // Use created_at as secondary sort (immutable), then ID as final tiebreaker
+      const createdAtA = new Date(messagesById[a].created_at || 0).getTime();
+      const createdAtB = new Date(messagesById[b].created_at || 0).getTime();
+      if (createdAtA !== createdAtB) return createdAtA - createdAtB;
+      return String(a).localeCompare(String(b));
+    });
 
     const firstMessageId = t.messageIds[0];
     const firstSenderEmail = firstMessageId ? (messagesById[firstMessageId]?.from?.email || "").toLowerCase() : "";
@@ -273,7 +290,12 @@ export function normalizeEmails(messages) {
   });
 
   const thread_ids = Object.values(threadsById)
-    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .sort((a, b) => {
+      const timeDiff = b.updatedAt - a.updatedAt;
+      if (timeDiff !== 0) return timeDiff;
+      // Use thread ID as tiebreaker for consistent ordering
+      return String(a.id).localeCompare(String(b.id));
+    })
     .map((t) => t.id);
 
   return { messagesById, threadsById, thread_ids };
@@ -605,9 +627,9 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
       subject: first.subject,
       preview: last.preview,
 
-      // Read/star/important from last message (as requested)
+      // Read/important from last message, starred if ANY message in thread is starred
       is_read: !!last.is_read,
-      is_starred: !!last.is_starred,
+      is_starred: !!t.hasStarred,
       is_important: !!last.is_important,
 
       // Display info
@@ -705,8 +727,12 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     }
   }
 
-  // Sort by last update desc (last message timestamp)
-  filtered.sort((a, b) => b.updatedAt - a.updatedAt);
+  // Sort by last update desc (last message timestamp), with thread_id as tiebreaker
+  filtered.sort((a, b) => {
+    const timeDiff = b.updatedAt - a.updatedAt;
+    if (timeDiff !== 0) return timeDiff;
+    return String(a.thread_id).localeCompare(String(b.thread_id));
+  });
 
   return filtered;
 }
@@ -737,9 +763,9 @@ export const getThread = (messages, { thread_id }) => {
     subject: first.subject,
     preview: last.preview,
 
-    // Read/star/important from last message (as requested)
+    // Read/important from last message, starred if ANY message in thread is starred
     is_read: !!last.is_read,
-    is_starred: !!last.is_starred,
+    is_starred: !!thread.hasStarred,
     is_important: !!last.is_important,
 
     // Display info
