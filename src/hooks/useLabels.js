@@ -56,6 +56,7 @@ function buildTree(labels, idToKeyMap = {}) {
       parentKey,
       system: !!meta?.system,
       children: [],
+      ...meta
     };
   });
 
@@ -82,6 +83,7 @@ export function flattenTreeForSelect(roots, depth = 0, out = []) {
       depth,
       system: node.system,
       children: node.children?.map((c) => c.key) ?? [], // keep child keys
+      ...node
     });
     if (node.children?.length) flattenTreeForSelect(node.children, depth + 1, out);
   }

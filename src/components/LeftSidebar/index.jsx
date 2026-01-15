@@ -1,17 +1,18 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
+
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
+import LabelItem from "./LabelItem";
+import ShortcutsModal from "./ShortcutsModal";
+import SidebarItem from "./SidebarItem";
+import { fetchLabels } from "../../store/slices/mailSlice";
+import { useComposeModal } from "../../hooks/useComposeModal";
 import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import useMailFolders from "../../hooks/useMailFolders";
-import LabelItem from "./LabelItem";
-import SidebarItem from "./SidebarItem";
-import useLabels, { flattenTreeForSelect } from "../../hooks/useLabels";
-import { useComposeModal } from "../../hooks/useComposeModal";
-import CreateLabelDialog from "../Labels/CreateLabelDialog";
-import ShortcutsModal from "./ShortcutsModal";
 import { useHotkeys } from "react-hotkeys-hook";
+import useMailFolders from "../../hooks/useMailFolders";
 import { useNavigate } from "react-router-dom";
-import { fetchLabels } from "../../store/slices/mailSlice";
+import { useQuery } from "@tanstack/react-query";
 
 function findNode(tree, key) {
   for (const node of tree) {
@@ -148,7 +149,7 @@ const LeftSidebar = () => {
   const customLabels = useMemo(() => {
     const flat = flattenTreeForSelect(labelTree);
     return flat
-      .filter((item) => !labels?.[item.key]?.system)
+      .filter((item) => !labels?.[item.key]?.is_system)
       .map((item) => ({
         key: item.key, // composite key: "Work::Q4"
         name: item.name, // just this node's name (for sidebar)
@@ -156,6 +157,7 @@ const LeftSidebar = () => {
         unread: labelIndex[item.key]?.unread ?? 0,
         total: labelIndex[item.key]?.total ?? 0,
         children: item.children,
+        ...item,
       }));
   }, [labelTree, labels, labelIndex]);
 
@@ -194,7 +196,7 @@ const LeftSidebar = () => {
     return customLabels.filter((item) => {
       const ancestors = getAncestors(item.key);
       return ancestors.every((a) => !collapsed[a]); // default open if not in map
-    });
+    }).filter((item) => !item.is_system);
   }, [customLabels, collapsed]);
 
   // Open a new compose window
