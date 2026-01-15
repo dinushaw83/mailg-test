@@ -52,7 +52,7 @@ export const Labels = ({
 
   const availableLabels = useMemo(() => {
     return Object.entries(labels || {})
-      .filter(([key, meta]) => !meta.system)
+      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
       .map(([key, meta]) => {
         const fullPath = buildLabelPath(key, meta, labels, labelIdToKeyMap, getPathLabelFromKey);
 
@@ -62,6 +62,7 @@ export const Labels = ({
           name: meta.name || key,
           color: meta.color,
           isCurrentlyApplied: currentLabels.has(key),
+          ...meta,
         };
       })
       .filter((label) => {
