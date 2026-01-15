@@ -398,6 +398,7 @@ export const Labels = ({
                     },
                   }}
                   onClick={() => {
+                    setSearchQuery(""); // Clear search query before opening create dialog
                     handleClose();
                     onOpenCreateLabelDialog();
                   }}
@@ -421,6 +422,7 @@ export const Labels = ({
                     },
                   }}
                   onClick={() => {
+                    setSearchQuery(""); // Clear search query
                     // TODO: Implement manage labels
                   }}
                 >
