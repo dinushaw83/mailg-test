@@ -1,4 +1,6 @@
 import React, { useRef, useState } from "react";
+import { beToFeDraft, feToBeDraftUpdatePayload } from "../utils/draftMapper";
+import { cancelSendEmailByIdThunk, fetchEmailByIdThunk, sendEmailByIdThunk, setEmailsForCategory, updateDraftThunk } from "../store/slices/mailSlice";
 import { extractEmbeddedImageIds, updateEmbeddedImagesEmailId } from "../utils/embeddedImages";
 import {
   generateLegacyThreadId,
@@ -9,11 +11,21 @@ import {
 } from "../utils/helperFunctions";
 
 import { Button } from "@mui/material";
+import { store } from "../store";
+import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { useNavigate } from "react-router-dom";
 
+// Helper to check if a string is a UUID
+const isUUID = (str) => {
+  if (!str || typeof str !== "string") return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+};
+
 export const useSendEmail = (replyType = null, originalEmail = null) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const {
     emails,
     setEmails,
@@ -149,6 +161,134 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     attachments,
     embeddedImages,
   }) => {
+    // If we have a draft ID (UUID from backend), use the send by ID API
+    if (currentDraftId && isUUID(currentDraftId.toString())) {
+      try {
+        // Show "Sending..." snackbar
+        setSnackbar({
+          open: true,
+          message: "Sending...",
+          action: null,
+          autoHideDuration: null,
+        });
+
+        // First, update the draft with latest compose window data
+        const recipients = [
+          ...(to || []).map((r) => ({
+            email: r.email || r.name || r,
+            name: r.name || r.email || r,
+            type: "to",
+          })),
+          ...(cc || []).map((r) => ({
+            email: r.email || r.name || r,
+            name: r.name || r.email || r,
+            type: "cc",
+          })),
+          ...(bcc || []).map((r) => ({
+            email: r.email || r.name || r,
+            name: r.name || r.email || r,
+            type: "bcc",
+          })),
+        ];
+        const updatePayload = feToBeDraftUpdatePayload({
+          subject,
+          content,
+          is_read: true,
+          is_starred: false,
+          is_important: false,
+          folder: "drafts",
+          category: "primary",
+          recipients,
+        });
+
+        // Update draft first
+        const updateAction = await dispatch(updateDraftThunk({ emailId: currentDraftId, draftData: updatePayload }));
+        
+        if (!updateDraftThunk.fulfilled.match(updateAction)) {
+          // If update fails, still try to send (draft might be up-to-date)
+          console.warn("Failed to update draft before sending:", updateAction.payload || updateAction.error);
+        }
+
+        // Then send email by ID
+        const action = await dispatch(sendEmailByIdThunk(currentDraftId));
+
+        if (sendEmailByIdThunk.fulfilled.match(action)) {
+          // Fetch the sent email to get complete data
+          const sentEmailData = await dispatch(fetchEmailByIdThunk(action.payload.emailId)).unwrap();
+          const feSentEmail = beToFeDraft(sentEmailData);
+
+          if (feSentEmail) {
+            // Add to Redux sent emails
+            const state = store.getState();
+            const currentSent = state.mail.sent || [];
+            const filteredSent = currentSent.filter(
+              (email) => email.id?.toString() !== feSentEmail.id?.toString()
+            );
+            const updatedSent = [feSentEmail, ...filteredSent];
+            dispatch(setEmailsForCategory({ category: "sent", emails: updatedSent }));
+
+            // Remove from drafts if it was a draft
+            if (isDraft) {
+              const currentDrafts = state.mail.drafts || [];
+              const filteredDrafts = currentDrafts.filter(
+                (email) => email.id?.toString() !== currentDraftId?.toString()
+              );
+              dispatch(setEmailsForCategory({ category: "drafts", emails: filteredDrafts }));
+            }
+          }
+
+          // Store sent email data in ref for un-send functionality
+          lastSentEmailRef.current = {
+            ...feSentEmail,
+            emailId: action.payload.emailId, // Store backend email ID for un-send API call
+          };
+
+          // Close compose window
+          onClose();
+
+          // Show success snackbar with Undo button
+          setSnackbar({
+            open: true,
+            message: "Message sent",
+            action: (
+              <React.Fragment>
+                <Button variant="text" size="medium" onClick={handleSnackbarUndo} sx={{ textTransform: "capitalize" }}>
+                  Undo
+                </Button>
+                <Button
+                  variant="text"
+                  size="medium"
+                  onClick={handleSnackbarViewMessage}
+                  sx={{ textTransform: "capitalize" }}
+                >
+                  View message
+                </Button>
+              </React.Fragment>
+            ),
+            autoHideDuration: 4000,
+          });
+        } else {
+          // Handle error
+          setSnackbar({
+            open: true,
+            message: action.payload || "Failed to send email",
+            action: null,
+            autoHideDuration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error("Error sending email:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to send email",
+          action: null,
+          autoHideDuration: 5000,
+        });
+      }
+      return;
+    }
+
+    // Fallback to existing local send logic for non-draft emails
     // Use the draftId if it exists, otherwise generate a new id
     const newId = currentDraftId ? currentDraftId : generateNextIntegerId(emails);
     // Use original email's thread IDs for replies/forwards, or generate new ones
@@ -331,7 +471,12 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     }, 1000);
   };
 
-  const handleSnackbarUndo = () => {
+  const handleSnackbarUndo = async () => {
+    if (!lastSentEmailRef.current) return;
+
+    const sentEmail = lastSentEmailRef.current;
+    const emailId = sentEmail.emailId || sentEmail.id;
+
     // Show "Undoing..." message
     setSnackbar({
       open: true,
@@ -340,47 +485,62 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       autoHideDuration: 1000,
     });
 
-    // After 1 second, remove email from state and show "Sending undone"
-    setTimeout(() => {
-      // Double-check that the email still exists
-      if (lastSentEmailRef.current && lastSentEmailRef.current.id) {
-        const emailToRestore = lastSentEmailRef.current;
+    try {
+      // Call un-send API endpoint
+      const action = await dispatch(cancelSendEmailByIdThunk(emailId));
 
-        // Remove the email from the state
-        setEmails((prevEmails) => {
-          return prevEmails.map((email) =>
-            email.id === emailToRestore.id
-              ? {
-                  ...email,
-                  labels: ["Drafts"],
-                  labelColor: "#e1e3e1",
-                  timestamp: new Date().toISOString(),
-                  timeDisplay: new Date().toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  }),
-                }
-              : email
+      if (cancelSendEmailByIdThunk.fulfilled.match(action)) {
+        // Fetch the updated email (now back to draft) to get complete data
+        const draftEmailData = await dispatch(fetchEmailByIdThunk(emailId)).unwrap();
+        const feDraftEmail = beToFeDraft(draftEmailData);
+
+        if (feDraftEmail) {
+          // Remove from sent emails
+          const state = store.getState();
+          const currentSent = state.mail.sent || [];
+          const filteredSent = currentSent.filter(
+            (email) => email.id?.toString() !== emailId?.toString()
           );
-        });
+          dispatch(setEmailsForCategory({ category: "sent", emails: filteredSent }));
 
-        // Navigate to the draft
-        if (!replyType) {
-          navigate(`?compose=${emailToRestore.id}`);
+          // Add back to drafts
+          const currentDrafts = state.mail.drafts || [];
+          const filteredDrafts = currentDrafts.filter(
+            (email) => email.id?.toString() !== emailId?.toString()
+          );
+          const updatedDrafts = [feDraftEmail, ...filteredDrafts];
+          dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
         }
 
-        // Clear the ref after successful state update
+        // Clear the ref
         lastSentEmailRef.current = null;
-      }
 
+        // Show success message
+        setSnackbar({
+          open: true,
+          message: "Sending undone.",
+          action: null,
+          autoHideDuration: 5000,
+        });
+      } else {
+        // Handle error
+        console.error("Failed to undo send:", action.payload || action.error);
+        setSnackbar({
+          open: true,
+          message: action.payload || "Failed to undo send.",
+          action: null,
+          autoHideDuration: 5000,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to undo send:", error);
       setSnackbar({
         open: true,
-        message: "Sending undone.",
+        message: "Failed to undo send.",
         action: null,
         autoHideDuration: 5000,
       });
-    }, 1000);
+    }
   };
 
   const handleSnackbarViewMessage = () => {

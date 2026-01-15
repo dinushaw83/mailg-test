@@ -316,7 +316,6 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
                 }}
                 onClick={() => {
                   // TODO: Implement manage labels
-                  console.log("Manage labels");
                 }}
               >
                 <Box sx={{ width: "20px" }} />

@@ -48,7 +48,7 @@ export const Labels = ({
 
   // Get currently applied labels for selected emails, passing folder if present
   const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
-  console.log({ currentLabels, labelCounts, nSel, selectedIds });
+  
 
   const availableLabels = useMemo(() => {
     return Object.entries(labels || {})
@@ -83,7 +83,12 @@ export const Labels = ({
       if (finalState === "checked" && !currentLabels.has(labelKey)) {
         labelsToAdd.push(labelKey);
       }
-      if (finalState === "unchecked" && currentLabels.has(labelKey)) {
+      if (finalState === "unchecked" 
+        /**
+         * This breaks when we select multiple meails which dont have same labels
+         */
+        // && currentLabels.has(labelKey)) 
+      ){
         labelsToRemove.push(labelKey);
       }
       // "indeterminate" means leave it as-is
@@ -131,7 +136,6 @@ export const Labels = ({
       ),
     }));
 
-    console.log({ overrides });
     selection.clear();
     setOverrides({}); // reset
 
@@ -149,7 +153,6 @@ export const Labels = ({
     labels,
   ]);
 
-  console.log({ availableLabels });
   return (
     <Popover
       open={Boolean(labelAnchorEl)}
@@ -249,7 +252,6 @@ export const Labels = ({
               }
               const baselineChecked = nSel > 0 && count === nSel;
               const baselineSome = nSel > 1 && count > 0 && count < nSel;
-              console.log({ label, baselineChecked, baselineSome, count, nSel, labelCounts });
 
               let baselineState = "unchecked";
               if (baselineChecked) baselineState = "checked";
@@ -385,7 +387,6 @@ export const Labels = ({
                   }}
                   onClick={() => {
                     // TODO: Implement manage labels
-                    console.log("Manage labels");
                   }}
                 >
                   <Box sx={{ width: "20px" }} />

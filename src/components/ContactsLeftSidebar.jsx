@@ -365,14 +365,6 @@ const ContactsLeftSidebar = () => {
         labels: contact.labels ? [...contact.labels, importLabelName] : [importLabelName],
       }));
 
-      console.log("Import Debug:", {
-        importLabelName,
-        importLabel,
-        importedContactsCount: importedContacts.length,
-        contactsWithLabelCount: contactsWithLabel.length,
-        firstContact: contactsWithLabel[0],
-      });
-
       // Store the previous recipients for undo functionality
       const previousRecipients = [...recipients];
       const previousLabels = [...recipientLabels];

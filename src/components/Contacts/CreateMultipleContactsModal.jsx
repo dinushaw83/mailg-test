@@ -289,7 +289,6 @@ const CreateMultipleContactsModal = ({ open, onClose }) => {
 
   const handleImportContacts = () => {
     // TODO: Implement import contacts logic
-    console.log("Import contacts clicked");
   };
 
   return (

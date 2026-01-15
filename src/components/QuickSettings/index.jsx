@@ -74,7 +74,7 @@ const QuickSettings = () => {
       label: "Default",
       imgSrc: "/assets/images/Classic.png",
       handleCustomize: () => {
-        console.log("customize");
+        // TODO: Implement customize functionality
       },
     },
     {
@@ -97,7 +97,7 @@ const QuickSettings = () => {
       label: "Priority Inbox",
       imgSrc: "/assets/images/Priorityinbox.png",
       handleCustomize: () => {
-        console.log("priority inbox");
+        // TODO: Implement priority inbox customize
       },
       ignore: true,
     },
@@ -106,7 +106,7 @@ const QuickSettings = () => {
       label: "Multiple Inboxes",
       imgSrc: "/assets/images/MultipleInboxes.png",
       handleCustomize: () => {
-        console.log("multiple inboxes");
+        // TODO: Implement multiple inboxes customize
       },
       ignore: true,
     },
