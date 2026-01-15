@@ -486,10 +486,10 @@ export const bulkUpdateEmailStarredThunk = createAsyncThunk(
  */
 export const bulkUpdateEmailImportantThunk = createAsyncThunk(
   "mail/bulkUpdateEmailImportant",
-  async ({ emailIds, is_important }, { rejectWithValue }) => {
+  async ({ threadIds, is_important }, { rejectWithValue }) => {
     try {
-      const response = await emailService.bulkImportantEmails(emailIds, is_important);
-      return { emailIds, is_important, response };
+      const response = await emailService.bulkImportantEmails(threadIds, is_important);
+      return { threadIds, is_important, response };
     } catch (error) {
       console.error("Failed to bulk update email important status:", error);
       return rejectWithValue(

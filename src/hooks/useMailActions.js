@@ -743,44 +743,40 @@ export default function useMailActions() {
   );
 
   const setImportant = useCallback(
-    (ids, value = true) => {
-      const match = makeMatch(ids);
+    (threadIds, value = true) => {
+      // threadIds are passed directly now (not email IDs)
+      const threadIdSet = new Set(Array.isArray(threadIds) ? threadIds : [threadIds]);
 
       // Optimistically update React Query cache
-      updateQueryCache(ids, (email) => ({ ...email, is_important: !!value }));
+      updateQueryCache(threadIds, (email) => ({ ...email, is_important: !!value }));
 
       // Update local state immediately (optimistic update)
       setEmails((prev) => {
         return prev.map((m) => {
-          if (match(m)) {
+          if (threadIdSet.has(m.thread_id)) {
             return { ...m, is_important: !!value };
           }
           return m;
         });
       });
 
-      // Collect thread IDs
-      const threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
+      const threadIdsArray = Array.isArray(threadIds) ? threadIds : [threadIds];
 
-      // Call thread-level endpoint for each thread
-      if (threadIds.length > 0) {
-        const promises = threadIds.map((threadId) =>
-          dispatch(
-            updateThreadImportantThunk({
-              threadId,
-              is_important: !!value,
-            })
-          )
-        );
-
-        Promise.all(promises).catch((error) => {
+      if (threadIdsArray.length > 0) {
+        // Use bulk endpoint for all threads at once
+        dispatch(
+          bulkUpdateEmailImportantThunk({
+            threadIds: threadIdsArray,
+            is_important: !!value,
+          })
+        ).catch((error) => {
           console.error("Failed to update important status:", error);
           // Revert optimistic update on error
-          updateQueryCache(ids, (email) => ({ ...email, is_important: !value }));
+          updateQueryCache(threadIds, (email) => ({ ...email, is_important: !value }));
         });
       }
     },
-    [setEmails, dispatch, updateQueryCache, emails]
+    [setEmails, dispatch, updateQueryCache]
   );
 
   const moveToLabel = useCallback(

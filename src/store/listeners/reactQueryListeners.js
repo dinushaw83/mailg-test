@@ -13,6 +13,7 @@ import {
   updateEmailStarredThunk,
   bulkUpdateEmailStarredThunk,
   updateEmailImportantThunk,
+  bulkUpdateEmailImportantThunk,
   bulkUpdateEmailsThunk,
   bulkUnstarThreadsThunk,
   updateThreadImportantThunk,
@@ -217,6 +218,18 @@ export function registerReactQueryListeners(listenerMiddleware) {
 
   listenerMiddleware.startListening({
     actionCreator: updateEmailImportantThunk.fulfilled,
+    effect: async () => {
+      // Invalidate all email list queries to refresh important emails
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
+      // Invalidate email counts since importance affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUpdateEmailImportantThunk.fulfilled,
     effect: async () => {
       // Invalidate all email list queries to refresh important emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });

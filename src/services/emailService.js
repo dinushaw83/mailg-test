@@ -460,9 +460,9 @@ const emailService = {
    * @param {boolean} is_important - Important status
    * @returns {Promise<Object>} Response data
    */
-  bulkImportantEmails: async (emailIds, is_important) => {
+  bulkImportantEmails: async (threadIds, is_important) => {
     const response = await apiClient.post("/v1/bulk/important", {
-      email_ids: emailIds,
+      thread_ids: threadIds,
       is_important,
     });
     return response?.data?.data ?? response?.data ?? {};

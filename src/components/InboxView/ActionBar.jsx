@@ -762,12 +762,12 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     if (!threadEmails.length) return;
 
     const previousStates = threadEmails.map((email) => ({
-      id: email.id,
+      thread_id: email.thread_id,
       important: !!email.is_important,
     }));
-    const idsToUpdate = previousStates.filter((state) => !state.important).map((state) => state.id);
+    const threadIdsToUpdate = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
 
-    if (!idsToUpdate.length) {
+    if (!threadIdsToUpdate.length) {
       setSnackbar({
         open: true,
         message: "Conversation already marked as important.",
@@ -777,7 +777,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       return;
     }
 
-    setImportant(idsToUpdate, true);
+    setImportant(threadIdsToUpdate, true);
     setSnackbar({
       open: true,
       message: "Conversation marked as important.",
@@ -787,8 +787,8 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            const toImportant = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
+            const toNotImportant = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({
@@ -809,12 +809,12 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     if (!threadEmails.length) return;
 
     const previousStates = threadEmails.map((email) => ({
-      id: email.id,
-      important: !!email.important,
+      thread_id: email.thread_id,
+      important: !!email.is_important,
     }));
-    const idsToUpdate = previousStates.filter((state) => state.important).map((state) => state.id);
+    const threadIdsToUpdate = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
 
-    if (!idsToUpdate.length) {
+    if (!threadIdsToUpdate.length) {
       setSnackbar({
         open: true,
         message: "Conversation already marked as not important.",
@@ -824,7 +824,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       return;
     }
 
-    setImportant(idsToUpdate, false);
+    setImportant(threadIdsToUpdate, false);
     setSnackbar({
       open: true,
       message: "Conversation marked as not important.",
@@ -834,8 +834,8 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            const toImportant = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
+            const toNotImportant = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({

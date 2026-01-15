@@ -141,18 +141,18 @@ const MoreActions = ({
       }
 
       const previousStates = threadEmails.map((email) => ({
-        id: email.id,
+        thread_id: email.thread_id,
         important: !!email.is_important,
       }));
-      const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
+      const threadIdsToUpdate = [...new Set(previousStates.filter((state) => state.important !== value).map((state) => state.thread_id).filter(Boolean))];
 
-      if (idsToUpdate.length) {
-        setImportant(idsToUpdate, value);
+      if (threadIdsToUpdate.length) {
+        setImportant(threadIdsToUpdate, value);
       }
 
       const undo = () => {
-        const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-        const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+        const toImportant = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
+        const toNotImportant = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
         if (toImportant.length) setImportant(toImportant, true);
         if (toNotImportant.length) setImportant(toNotImportant, false);
         setSnackbar({
