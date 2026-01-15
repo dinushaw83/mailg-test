@@ -27,6 +27,7 @@ from app.schemas.bulk import (
     BulkLabelsUpdateRequest, BulkSnoozeRequest,
     BulkUnsnoozeRequest, BulkArchiveRequest,
     BulkUnarchiveRequest, BulkSpamRequest, BulkUnspamRequest,
+    BulkThreadUnstarRequest,
     BulkOperationResponse,
 )
 from app.auth.rbac import authorized
@@ -803,3 +804,55 @@ def bulk_unspam(
     logger.info(f"Bulk unspam: {len(success_ids)} emails removed from spam by user {current_user.id}")
 
     return create_bulk_response(request.email_ids, success_ids, failures)
+
+@router.post("/bulk/threads/unstar", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
+def bulk_thread_unstar(
+    request: BulkThreadUnstarRequest,
+    db: Session = Depends(get_db),
+) -> BulkOperationResponse:
+    """Unstar all emails in multiple threads.
+
+    Sets is_starred=False for all emails in the specified threads where the user
+    is either the sender or recipient.
+
+    Optimized to use a single bulk UPDATE query for all emails across all threads.
+
+    Permissions:
+    - Users can only unstar emails in threads they have access to
+    """
+    current_user = auth.user
+
+    # Get accessible threads
+    threads, not_found = get_user_accessible_threads(db, current_user.id, request.thread_ids)
+
+    success_ids = [t.id for t in threads]
+    failures = {tid: "Thread not found or access denied" for tid in not_found}
+
+    if success_ids:
+        try:
+            # Bulk update all emails in the accessible threads with single query
+            # Only update emails where user is sender or recipient
+            db.query(Email).filter(
+                Email.thread_id.in_(success_ids),
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            ).update({Email.is_starred: False}, synchronize_session=False)
+
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Bulk thread unstar operation failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Bulk operation failed"
+            )
+
+    logger.info(f"Bulk thread unstar: {len(success_ids)} threads unstarred by user {current_user.id}")
+
+    return create_bulk_response(request.thread_ids, success_ids, failures)

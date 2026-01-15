@@ -91,6 +91,11 @@ class BulkUnspamRequest(BulkEmailIds):
     pass
 
 
+class BulkThreadUnstarRequest(BulkThreadIds):
+    """Schema for bulk unstar threads (unstar all emails in threads)."""
+    pass
+
+
 class BulkOperationResult(BaseModel):
     """Result of a single item in bulk operation."""
     id: UUID = Field(..., description="Email ID or Thread ID")
