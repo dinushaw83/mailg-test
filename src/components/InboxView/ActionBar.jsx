@@ -336,6 +336,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     unsnooze,
     addLabels,
     removeLabels,
+    modifyLabels,
     setStar,
     setImportant,
   } = useMailActions();
@@ -723,7 +724,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     dispatch({ type: "setLabelAnchorEl", labelAnchorEl: labelAnchorElRef.current });
   }, []);
 
-  const handleOnAfterCreate = (childName, parentKey, isMoving = true) => {
+  const handleOnAfterCreate = (childName, parentKey, isMoving = true, createdLabelId = null) => {
     if (!conversationMatchKeys.length) return;
 
     try {
@@ -733,14 +734,33 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       const inCustomLabel = curMeta && curMeta.system === false;
 
       if (isMoving) {
+        // Update local state
         if (inCustomLabel) {
           moveToLabelFrom(conversationMatchKeys, currentLabel, newKey);
         } else {
           moveToLabel(conversationMatchKeys, newKey);
         }
+        // Sync with backend using createdLabelId
+        if (createdLabelId) {
+          const removeLabelsForBackend = inCustomLabel && currentLabel ? [currentLabel] : [];
+          modifyLabels(
+            conversationMatchKeys,
+            { add: [createdLabelId], remove: removeLabelsForBackend },
+            conversationMatchKeys
+          );
+        }
       } else {
         // Always additive when not moving
-        addLabels(conversationMatchKeys, [newKey]);
+        // Use modifyLabels with the created label's UUID to sync with backend
+        if (createdLabelId) {
+          modifyLabels(
+            conversationMatchKeys,
+            { add: [createdLabelId], remove: [] },
+            conversationMatchKeys
+          );
+        } else {
+          addLabels(conversationMatchKeys, [newKey]);
+        }
       }
 
       showUndoSnackbar(conversationMatchKeys, currentLabel, newKey, inCustomLabel, isMoving, snapshot);
