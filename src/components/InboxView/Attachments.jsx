@@ -296,7 +296,7 @@ export const Attachments = ({ attachments = [] }) => {
 
   const getAttachmentWithPreviewURL = useCallback(
     async (attachment) => {
-      const isRelativeURL = attachment.url.startsWith("/");
+      const isRelativeURL = attachment?.url?.startsWith("/");
       if (isRelativeURL) {
         return { ...attachment, previewURL: attachment.url };
       }
