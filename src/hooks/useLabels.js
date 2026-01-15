@@ -428,10 +428,24 @@ export default function useLabels() {
         if (folder.startsWith("label:")) {
           // For label routes, search all emails across all folders
           // since labeled emails can be in any folder/category
-          const allFolders = ["inbox", "primary", "promotions", "social", "updates", "sent", "drafts", "trash", "spam", "is_starred", "is_important", "is_snoozed", "all"];
+          const allFolders = [
+            "inbox",
+            "primary",
+            "promotions",
+            "social",
+            "updates",
+            "sent",
+            "drafts",
+            "trash",
+            "spam",
+            "is_starred",
+            "is_important",
+            "is_snoozed",
+            "all",
+          ];
           const allEmails = [];
           const seenIds = new Set();
-          
+
           for (const folderName of allFolders) {
             const folderEmails = reduxMailState[folderName] || [];
             for (const email of folderEmails) {

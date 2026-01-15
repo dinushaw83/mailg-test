@@ -265,7 +265,6 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
   // Handle more actions dropdown
   const handleMoreActions = (contact, title, event) => {
-    console.log("handleMoreActions", contact, title, event);
     selectedContactRef.current = {
       contact,
       title,
@@ -302,7 +301,6 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
   // Handle print action
   const handlePrint = () => {
-    console.log("Print contact:", selectedContactRef.current);
     handleCloseMoreMenuWithoutChanges();
     // TODO: Implement print functionality
   };
@@ -784,10 +782,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
     switch (action) {
       case "print":
         // TODO: Implement bulk print functionality
-        console.log("Printing all contacts...");
         break;
       default:
-        console.log(`Unknown bulk action: ${action}`);
+        // Unknown bulk action
     }
   };
 
@@ -821,9 +818,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
   // Handle bulk print action
   const handleBulkPrint = () => {
     if (checkedContacts.size > 0) {
-      console.log("Bulk print action clicked for selected contacts:", Array.from(checkedContacts));
+      // Bulk print for selected contacts
     } else {
-      console.log("Print action clicked for all contacts (list settings)");
+      // Print action for all contacts (list settings)
     }
     handleCloseBulkMoreMenu();
     // TODO: Implement bulk print functionality
@@ -1101,9 +1098,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
   // Handle bulk delete action
   const handleBulkDelete = () => {
     if (checkedContacts.size > 0) {
-      console.log("Bulk delete action clicked for selected contacts:", Array.from(checkedContacts));
+      // Bulk delete for selected contacts
     } else {
-      console.log("Delete action clicked for all contacts (list settings)");
+      // Delete action for all contacts (list settings)
     }
     handleCloseBulkMoreMenu();
     setDeleteActionType("bulk");
@@ -1117,14 +1114,12 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
 
   // Handle display density action
   const handleDisplayDensity = () => {
-    console.log("Display Density clicked");
     handleCloseBulkMoreMenu();
     // TODO: Implement display density functionality
   };
 
   // Handle change column order action
   const handleChangeColumnOrder = () => {
-    console.log("Change column order clicked");
     handleCloseBulkMoreMenu();
     // TODO: Implement change column order functionality
   };
@@ -1834,7 +1829,9 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
                       >
                         <IconButton
                           size="medium"
-                          onClick={() => console.log("Email clicked for selected contacts")}
+                          onClick={() => {
+                            // TODO: Implement email action for selected contacts
+                          }}
                           sx={{ color: "#0b57d0" }}
                         >
                           <span className="material-symbols-outlined" style={{ fontSize: "20px" }}>

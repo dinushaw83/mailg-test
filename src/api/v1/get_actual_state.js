@@ -165,10 +165,7 @@ async function processAssertion(assertion, data, modelResponse) {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`LLM assertion attempt ${attempt}/${maxRetries}`);
-
         const response = await handleLLMAssertion(assertion, modelResponse || "");
-        console.log(`LLM assertion successful on attempt ${attempt}`);
 
         // Calculate weighted score from individual scores (1-5 scale)
         const scores = response.fact_scores || response.aspect_scores || response.precision_scores || {};
@@ -203,10 +200,6 @@ async function processAssertion(assertion, data, modelResponse) {
         const passThreshold = assertion.pass_threshold_percent || 80;
         const passed = percentScore >= passThreshold;
 
-        console.log(
-          `RDT Score: ${percentScore.toFixed(1)}% (threshold: ${passThreshold}%) - ${passed ? "PASS" : "FAIL"}`
-        );
-
         return {
           operator: operator,
           actual: scores,
@@ -223,7 +216,6 @@ async function processAssertion(assertion, data, modelResponse) {
         lastError = error;
 
         if (attempt < maxRetries) {
-          console.log(`Retrying LLM assertion (attempt ${attempt + 1}/${maxRetries})...`);
           await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
       }

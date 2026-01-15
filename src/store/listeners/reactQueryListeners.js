@@ -1,8 +1,12 @@
 import {
+  cancelSendEmailByIdThunk,
+  createDraftThunk,
   createLabelThunk,
   deleteLabelThunk,
   fetchLabels,
+  sendEmailByIdThunk,
   sendEmailThunk,
+  updateDraftThunk,
   updateLabelThunk,
   updateLabelsThunk,
   bulkUpdateLabelsThunk,
@@ -36,6 +40,36 @@ export function registerReactQueryListeners(listenerMiddleware) {
   });
 
   listenerMiddleware.startListening({
+    actionCreator: sendEmailByIdThunk.fulfilled,
+    effect: async (action) => {
+      const emailId = action.payload?.emailId;
+      // Invalidate specific email query
+      if (emailId) {
+        queryClient.invalidateQueries({ queryKey: ["email", emailId] });
+      }
+      // Invalidate all email queries
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: cancelSendEmailByIdThunk.fulfilled,
+    effect: async (action) => {
+      const emailId = action.payload?.emailId;
+      // Invalidate specific email query
+      if (emailId) {
+        queryClient.invalidateQueries({ queryKey: ["email", emailId] });
+      }
+      // Invalidate all email queries
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
     actionCreator: updateLabelsThunk.fulfilled,
     effect: async () => {
       // Invalidate all email list queries (all categories and folders)
@@ -57,6 +91,36 @@ export function registerReactQueryListeners(listenerMiddleware) {
       queryClient.invalidateQueries({ queryKey: ["email"] });
       queryClient.invalidateQueries({ queryKey: ["labels"] });
       // Invalidate email counts since label changes can move emails between categories
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: createDraftThunk.fulfilled,
+    effect: async (action) => {
+      const emailId = action.payload?.id;
+      // Invalidate specific email query
+      if (emailId) {
+        queryClient.invalidateQueries({ queryKey: ["email", emailId] });
+      }
+      // Invalidate all email queries (drafts might appear in different folders)
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since creating a draft affects counts
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: updateDraftThunk.fulfilled,
+    effect: async (action) => {
+      const emailId = action.meta.arg?.emailId;
+      // Invalidate specific email query
+      if (emailId) {
+        queryClient.invalidateQueries({ queryKey: ["email", emailId] });
+      }
+      // Invalidate all email queries (drafts might appear in different folders)
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate email counts since updating a draft might affect counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
   });

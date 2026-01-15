@@ -55,17 +55,14 @@ export const Labels = ({
   const hasChanges = Object.keys(overrides).length > 0;
 
   const idsForSearch = providedThreadIds && providedThreadIds.length > 0 ? providedThreadIds : selectedIds;
-  
-  const folderOrLabel = folder || (labelParam ? `label:${labelParam}` : null);
-  
-  const { currentLabels, labelCounts, nSel } = getSelectionLabels(idsForSearch, folderOrLabel, providedThreadEmails);
 
+  const folderOrLabel = folder || (labelParam ? `label:${labelParam}` : null);
+
+  const { currentLabels, labelCounts, nSel } = getSelectionLabels(idsForSearch, folderOrLabel, providedThreadEmails);
 
   const availableLabels = useMemo(() => {
     // Ensure labels is an object (Redux initializes it as [] but fills it as {})
-    const labelsObject = (labels && typeof labels === 'object' && !Array.isArray(labels)) 
-      ? labels 
-      : {};
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
 
     return Object.entries(labelsObject)
       .map(([key, meta]) => {
@@ -98,7 +95,13 @@ export const Labels = ({
       if (finalState === "checked" && !currentLabels.has(labelKey)) {
         labelsToAdd.push(labelKey);
       }
-      if (finalState === "unchecked" && currentLabels.has(labelKey)) {
+      if (
+        finalState === "unchecked"
+        /**
+         * This breaks when we select multiple meails which dont have same labels
+         */
+        // && currentLabels.has(labelKey))
+      ) {
         labelsToRemove.push(labelKey);
       }
       // "indeterminate" means leave it as-is
@@ -110,9 +113,7 @@ export const Labels = ({
       threadIds = providedThreadIds;
     } else {
       // Extract thread IDs from selected emails (fallback)
-      const emailsToSearch = (providedThreadEmails && providedThreadEmails.length > 0) 
-        ? providedThreadEmails 
-        : emails;
+      const emailsToSearch = providedThreadEmails && providedThreadEmails.length > 0 ? providedThreadEmails : emails;
       threadIds = [
         ...new Set(
           emailsToSearch
@@ -285,7 +286,6 @@ export const Labels = ({
               }
               const baselineChecked = nSel > 0 && count === nSel;
               const baselineSome = nSel > 1 && count > 0 && count < nSel;
-              // console.log({ label, baselineChecked, baselineSome, count, nSel, labelCounts });
 
               let baselineState = "unchecked";
               if (baselineChecked) baselineState = "checked";

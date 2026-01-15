@@ -208,6 +208,22 @@ const emailService = {
   },
 
   /**
+   * Send an email by ID (for drafts)
+   * @param {string} emailId - Email UUID
+   * @returns {Promise<Object>} Sent email object
+   */
+  sendEmailById: async (emailId) => {
+    try {
+      const response = await apiClient.post(`/v1/emails/${emailId}/send`);
+      const payload = response?.data?.data ?? response?.data;
+      return payload;
+    } catch (error) {
+      console.error("Error sending email by ID:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Update labels for specific emails
    * @param {Array} emailIds - Array of email IDs
    * @param {Array} labels - Array of label UUIDs (not composite keys)
@@ -217,6 +233,73 @@ const emailService = {
     // If composite keys are passed, they should be transformed before calling this method
     const response = await apiClient.post("/emails/labels", { emailIds, labels });
     return response.data;
+  },
+
+  /**
+   * Fetch a single email by ID
+   * @param {string} emailId - Email UUID
+   * @returns {Promise<Object>} Email object
+   */
+  getEmailById: async (emailId) => {
+    try {
+      const response = await apiClient.get(`/v1/emails/${emailId}`);
+      const payload = response?.data?.data ?? response?.data;
+      // Transform using emailAPIMapper
+      const mappedEmails = emailAPIMapper([payload]);
+      return mappedEmails[0] || payload;
+    } catch (error) {
+      console.error("Error fetching email by ID:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Create a new draft
+   * @param {Object} draftData - Draft payload (subject, recipients, body, html_body, is_draft, scheduled_send_at)
+   * @returns {Promise<Object>} Backend draft object
+   */
+  createDraft: async (draftData) => {
+    try {
+      const response = await apiClient.post("/v1/emails", draftData);
+      const payload = response?.data?.data ?? response?.data;
+      return payload;
+    } catch (error) {
+      console.error("Error creating draft:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update an existing draft
+   * @param {string} emailId - Email UUID
+   * @param {Object} draftData - Draft update payload
+   * @returns {Promise<Object>} Backend draft object
+   */
+  updateDraft: async (emailId, draftData) => {
+    try {
+      const response = await apiClient.put(`/v1/emails/${emailId}`, draftData);
+      const payload = response?.data?.data ?? response?.data;
+      return payload;
+    } catch (error) {
+      console.error("Error updating draft:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Cancel/unsend an email by ID (undo send)
+   * @param {string} emailId - Email UUID
+   * @returns {Promise<Object>} Email object (moved back to draft)
+   */
+  cancelSendEmailById: async (emailId) => {
+    try {
+      const response = await apiClient.post(`/v1/emails/${emailId}/cancel-send`);
+      const payload = response?.data?.data ?? response?.data;
+      return payload;
+    } catch (error) {
+      console.error("Error canceling send email by ID:", error);
+      throw error;
+    }
   },
 
   /**

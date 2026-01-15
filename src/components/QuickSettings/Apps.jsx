@@ -59,7 +59,7 @@ const Apps = () => {
                   paddingLeft: "12px",
                 }}
                 onClick={() => {
-                  console.log("customize");
+                  // TODO: Implement customize functionality
                 }}
               >
                 Customize
