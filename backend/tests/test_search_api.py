@@ -966,3 +966,1768 @@ class TestSearchResponseFormat:
         assert "name" in label_obj
         assert "color" in label_obj
         assert "owner_id" in label_obj
+
+
+class TestSearchTimezoneOffset:
+    """Test timezone offset (tz_offset) functionality for date parsing in search queries."""
+
+    def test_search_with_tz_offset_param_accepted(self, client_with_auth, db_session):
+        """Test that tz_offset parameter is accepted by the API."""
+        client, token, user = client_with_auth
+        
+        # Create a thread and email
+        thread = Thread(subject="Timezone Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Timezone Test",
+            body="Testing tz_offset",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Test with EST offset (300 minutes = UTC-5)
+        response = client.get(
+            "/api/v1/search?q=Timezone&tz_offset=300",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "results" in data
+
+    def test_search_tz_offset_with_after_operator(self, client_with_auth, db_session):
+        """Test that tz_offset correctly converts after: dates in q param."""
+        client, token, user = client_with_auth
+        
+        # Create email with known timestamp (today at midnight UTC)
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        thread = Thread(subject="After Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="After Test",
+            body="Testing after filter with tz_offset",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            created_at=today + timedelta(hours=3)  # 03:00 UTC today
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        today_str = today.strftime('%Y-%m-%d')
+        
+        # Without tz_offset: after:today means >= midnight UTC
+        # Email at 03:00 UTC should be found
+        response = client.get(
+            f"/api/v1/search?q=after:{today_str}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        found_without_offset = any(r["id"] == str(email.id) for r in data["results"])
+        
+        # With EST offset (300): after:today means >= 05:00 UTC (midnight EST = 05:00 UTC)
+        # Email at 03:00 UTC should NOT be found
+        response = client.get(
+            f"/api/v1/search?q=after:{today_str}&tz_offset=300",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        found_with_est_offset = any(r["id"] == str(email.id) for r in data["results"])
+        
+        # The email at 03:00 UTC should be found without offset but not with EST offset
+        assert found_without_offset == True
+        assert found_with_est_offset == False
+
+    def test_search_tz_offset_with_before_operator(self, client_with_auth, db_session):
+        """Test that tz_offset correctly converts before: dates in q param."""
+        client, token, user = client_with_auth
+        
+        # Create email with known timestamp
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        thread = Thread(subject="Before Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Before Test",
+            body="Testing before filter with tz_offset",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            created_at=today + timedelta(hours=3)  # 03:00 UTC today
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        tomorrow_str = (today + timedelta(days=1)).strftime('%Y-%m-%d')
+        
+        # With IST offset (-330): before:tomorrow means < 18:30 UTC today (midnight IST tomorrow = 18:30 UTC today)
+        # Email at 03:00 UTC should be found
+        response = client.get(
+            f"/api/v1/search?q=before:{tomorrow_str}&tz_offset=-330",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        found = any(r["id"] == str(email.id) for r in data["results"])
+        assert found == True
+
+    def test_search_tz_offset_does_not_affect_explicit_date_params(self, client_with_auth, db_session):
+        """Test that tz_offset only affects q param dates, not explicit date_from/date_to."""
+        client, token, user = client_with_auth
+        
+        # Create email with known timestamp
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        thread = Thread(subject="Explicit Date Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Explicit Date Test",
+            body="Testing explicit date params",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            created_at=today + timedelta(hours=3)  # 03:00 UTC today
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        today_str = today.strftime('%Y-%m-%d')
+        
+        # Explicit date_from param should be treated as UTC regardless of tz_offset
+        # Email at 03:00 UTC should be found with date_from=today (midnight UTC)
+        response = client.get(
+            f"/api/v1/search?date_from={today_str}&tz_offset=300",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        found = any(r["id"] == str(email.id) for r in data["results"])
+        # Should be found because explicit params are treated as UTC
+        assert found == True
+
+    def test_search_tz_offset_negative_value(self, client_with_auth, db_session):
+        """Test tz_offset with negative value (ahead of UTC, e.g., IST)."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Negative Offset", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Negative Offset",
+            body="Testing negative offset",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # IST offset is -330 (UTC+5:30)
+        response = client.get(
+            "/api/v1/search?q=Negative&tz_offset=-330",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+
+    def test_search_tz_offset_zero(self, client_with_auth, db_session):
+        """Test tz_offset with zero (UTC)."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Zero Offset", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Zero Offset",
+            body="Testing zero offset",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?q=Zero&tz_offset=0",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+
+    def test_search_tz_offset_invalid_falls_back_to_utc(self, client_with_auth, db_session):
+        """Test that invalid tz_offset values fall back to UTC."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Invalid Offset", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Invalid Offset",
+            body="Testing invalid offset",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Invalid offset (way out of range)
+        response = client.get(
+            "/api/v1/search?q=Invalid&tz_offset=99999",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        # Should still work, falling back to UTC
+        assert response.status_code == 200
+
+    def test_search_tz_offset_with_combined_operators(self, client_with_auth, db_session):
+        """Test tz_offset with combined search operators in q param."""
+        client, token, user = client_with_auth
+        
+        today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        
+        thread = Thread(subject="Combined Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Combined Test Report",
+            body="This is a test report email",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            is_starred=True,
+            created_at=today + timedelta(hours=12)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        today_str = today.strftime('%Y-%m-%d')
+        
+        # Complex query with date operator and other filters
+        response = client.get(
+            f"/api/v1/search?q=after:{today_str} is:starred report&tz_offset=300",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+
+    def test_search_tz_offset_with_newer_than_relative_date(self, client_with_auth, db_session):
+        """Test that tz_offset does NOT affect relative dates (newer_than/older_than)."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Relative Date Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Relative Date Test",
+            body="Testing relative dates",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            created_at=datetime.utcnow() - timedelta(days=3)  # 3 days ago
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # newer_than:7d should find emails from last 7 days regardless of tz_offset
+        response = client.get(
+            "/api/v1/search?q=newer_than:7d Relative&tz_offset=300",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        found = any(r["id"] == str(email.id) for r in data["results"])
+        assert found == True
+
+    def test_search_tz_offset_boundary_values(self, client_with_auth, db_session):
+        """Test tz_offset at boundary values (UTC-12 and UTC+14)."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Boundary Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Boundary Test",
+            body="Testing boundary offsets",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # UTC-12 (720 minutes) - Baker Island, westernmost timezone
+        response = client.get(
+            "/api/v1/search?q=Boundary&tz_offset=720",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        
+        # UTC+14 (-840 minutes) - Line Islands, easternmost timezone
+        response = client.get(
+            "/api/v1/search?q=Boundary&tz_offset=-840",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+
+
+class TestParseDateToUtc:
+    """Unit tests for parse_date_to_utc function."""
+
+    def test_parse_date_no_offset(self):
+        """Test parsing date without offset returns UTC midnight."""
+        from app.utils.search_utils import parse_date_to_utc
+        from datetime import UTC
+        
+        result = parse_date_to_utc('2024-01-15')
+        
+        assert result.year == 2024
+        assert result.month == 1
+        assert result.day == 15
+        assert result.hour == 0
+        assert result.minute == 0
+        assert result.tzinfo == UTC
+
+    def test_parse_date_with_positive_offset_est(self):
+        """Test parsing date with EST offset (300 minutes = UTC-5)."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        # EST: midnight local = 05:00 UTC
+        result = parse_date_to_utc('2024-01-15', tz_offset=300)
+        
+        assert result.year == 2024
+        assert result.month == 1
+        assert result.day == 15
+        assert result.hour == 5
+        assert result.minute == 0
+
+    def test_parse_date_with_negative_offset_ist(self):
+        """Test parsing date with IST offset (-330 minutes = UTC+5:30)."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        # IST: midnight local = previous day 18:30 UTC
+        result = parse_date_to_utc('2024-01-15', tz_offset=-330)
+        
+        assert result.year == 2024
+        assert result.month == 1
+        assert result.day == 14  # Previous day
+        assert result.hour == 18
+        assert result.minute == 30
+
+    def test_parse_date_with_zero_offset(self):
+        """Test parsing date with zero offset (UTC)."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        result = parse_date_to_utc('2024-01-15', tz_offset=0)
+        
+        assert result.hour == 0
+        assert result.minute == 0
+
+    def test_parse_date_invalid_offset_out_of_range_high(self):
+        """Test that offset > 840 falls back to UTC."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        result = parse_date_to_utc('2024-01-15', tz_offset=9999)
+        
+        # Should fall back to UTC midnight
+        assert result.hour == 0
+        assert result.minute == 0
+
+    def test_parse_date_invalid_offset_out_of_range_low(self):
+        """Test that offset < -720 falls back to UTC."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        result = parse_date_to_utc('2024-01-15', tz_offset=-9999)
+        
+        # Should fall back to UTC midnight
+        assert result.hour == 0
+        assert result.minute == 0
+
+    def test_parse_date_boundary_offset_utc_minus_12(self):
+        """Test boundary offset UTC-12 (720 minutes)."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        result = parse_date_to_utc('2024-01-15', tz_offset=720)
+        
+        # Midnight UTC-12 = 12:00 UTC same day
+        assert result.day == 15
+        assert result.hour == 12
+        assert result.minute == 0
+
+    def test_parse_date_boundary_offset_utc_plus_14(self):
+        """Test boundary offset UTC+14 (-840 minutes)."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        result = parse_date_to_utc('2024-01-15', tz_offset=-840)
+        
+        # Midnight UTC+14 on Jan 15 = 10:00 UTC on Jan 14 (14 hours earlier)
+        assert result.day == 14
+        assert result.hour == 10
+        assert result.minute == 0
+
+    def test_parse_date_year_boundary_positive_offset(self):
+        """Test date parsing across year boundary with positive offset."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        # New Year's Day in EST (UTC-5)
+        result = parse_date_to_utc('2024-01-01', tz_offset=300)
+        
+        # Midnight EST Jan 1 = 05:00 UTC Jan 1
+        assert result.year == 2024
+        assert result.month == 1
+        assert result.day == 1
+        assert result.hour == 5
+
+    def test_parse_date_year_boundary_negative_offset(self):
+        """Test date parsing across year boundary with negative offset."""
+        from app.utils.search_utils import parse_date_to_utc
+        
+        # New Year's Day in IST (UTC+5:30)
+        result = parse_date_to_utc('2024-01-01', tz_offset=-330)
+        
+        # Midnight IST Jan 1 = 18:30 UTC Dec 31 2023
+        assert result.year == 2023
+        assert result.month == 12
+        assert result.day == 31
+        assert result.hour == 18
+        assert result.minute == 30
+
+
+class TestParseSearchQueryTimezone:
+    """Unit tests for parse_search_query with timezone offset."""
+
+    def test_parse_query_after_with_offset(self):
+        """Test parsing after: operator with timezone offset."""
+        from app.utils.search_utils import parse_search_query
+        
+        result = parse_search_query('after:2024-01-15', tz_offset=300)
+        
+        assert 'date_from' in result
+        assert result['date_from'].hour == 5  # EST midnight = 05:00 UTC
+
+    def test_parse_query_before_with_offset(self):
+        """Test parsing before: operator with timezone offset."""
+        from app.utils.search_utils import parse_search_query
+        
+        result = parse_search_query('before:2024-01-15', tz_offset=-330)
+        
+        assert 'date_to' in result
+        # IST midnight = previous day 18:30 UTC
+        assert result['date_to'].day == 14
+        assert result['date_to'].hour == 18
+        assert result['date_to'].minute == 30
+
+    def test_parse_query_after_without_offset(self):
+        """Test parsing after: operator without timezone offset."""
+        from app.utils.search_utils import parse_search_query
+        
+        result = parse_search_query('after:2024-01-15')
+        
+        assert 'date_from' in result
+        assert result['date_from'].hour == 0  # UTC midnight
+
+    def test_parse_query_newer_than_ignores_offset(self):
+        """Test that newer_than relative date is not affected by tz_offset."""
+        from app.utils.search_utils import parse_search_query
+        from datetime import datetime, UTC
+        
+        now = datetime.now(UTC)
+        result = parse_search_query('newer_than:7d', tz_offset=300)
+        
+        assert 'date_from' in result
+        # Should be approximately 7 days ago from now, not affected by offset
+        expected = now - timedelta(days=7)
+        diff = abs((result['date_from'] - expected).total_seconds())
+        assert diff < 5  # Within 5 seconds
+
+    def test_parse_query_older_than_ignores_offset(self):
+        """Test that older_than relative date is not affected by tz_offset."""
+        from app.utils.search_utils import parse_search_query
+        from datetime import datetime, UTC
+        
+        now = datetime.now(UTC)
+        result = parse_search_query('older_than:30d', tz_offset=-330)
+        
+        assert 'date_to' in result
+        # Should be approximately 30 days ago from now, not affected by offset
+        expected = now - timedelta(days=30)
+        diff = abs((result['date_to'] - expected).total_seconds())
+        assert diff < 5  # Within 5 seconds
+
+    def test_parse_query_combined_date_and_text(self):
+        """Test parsing query with date operator and text."""
+        from app.utils.search_utils import parse_search_query
+        
+        result = parse_search_query('after:2024-01-15 important meeting', tz_offset=300)
+        
+        assert 'date_from' in result
+        assert result['date_from'].hour == 5
+        assert 'text' in result
+        assert 'important meeting' in result['text']
+
+    def test_parse_query_combined_before_after_with_offset(self):
+        """Test parsing query with both before: and after: operators."""
+        from app.utils.search_utils import parse_search_query
+        
+        result = parse_search_query('after:2024-01-01 before:2024-01-31', tz_offset=300)
+        
+        assert 'date_from' in result
+        assert 'date_to' in result
+        assert result['date_from'].day == 1
+        assert result['date_from'].hour == 5
+        assert result['date_to'].day == 31
+        assert result['date_to'].hour == 5
+
+    def test_parse_query_date_with_other_operators(self):
+        """Test parsing query with date and other operators."""
+        from app.utils.search_utils import parse_search_query
+        
+        result = parse_search_query(
+            'from:test@example.com after:2024-01-15 is:starred has:attachment',
+            tz_offset=300
+        )
+        
+        assert result['from_email'] == 'test@example.com'
+        assert result['date_from'].hour == 5
+        assert result['is_starred'] == True
+        assert result['has_attachment'] == True
+
+
+class TestSearchHasnotFilter:
+    """Test hasnot/exclusion filter."""
+
+    def test_search_hasnot_excludes_matching_emails(self, client_with_auth, db_session):
+        """Test that hasnot parameter excludes emails containing the term."""
+        client, token, user = client_with_auth
+        
+        # Create email with "spam" in body
+        thread1 = Thread(subject="Spam Email", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="Spam Email",
+            body="This is spam content",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        
+        # Create email without "spam"
+        thread2 = Thread(subject="Normal Email", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="Normal Email",
+            body="This is regular content",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.commit()
+        
+        # Search excluding "spam"
+        response = client.get(
+            "/api/v1/search?hasnot=spam",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Should not include email with "spam"
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email1.id) not in result_ids
+        assert str(email2.id) in result_ids
+
+    def test_search_hasnot_via_q_operator(self, client_with_auth, db_session):
+        """Test exclusion via -term in q parameter."""
+        client, token, user = client_with_auth
+        
+        thread1 = Thread(subject="Newsletter Update", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="Newsletter Update",
+            body="Weekly newsletter",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        
+        thread2 = Thread(subject="Important Update", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="Important Update",
+            body="Critical update",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.commit()
+        
+        # Search for "Update" excluding "newsletter"
+        response = client.get(
+            "/api/v1/search?q=Update -newsletter",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email1.id) not in result_ids
+        assert str(email2.id) in result_ids
+
+
+class TestSearchSizeFilters:
+    """Test size-based filters (based on total attachment size)."""
+
+    def test_search_size_larger_filter(self, client_with_auth, db_session):
+        """Test filtering emails larger than specified size (by attachment size)."""
+        client, token, user = client_with_auth
+        
+        # Create email with large attachment
+        thread1 = Thread(subject="Large Email", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="Large Email",
+            body="Has large attachment",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        db_session.flush()
+        
+        # Add large attachment
+        attachment1 = Attachment(
+            email_id=email1.id,
+            filename="large_file.zip",
+            content_type="application/zip",
+            size_bytes=15000
+        )
+        db_session.add(attachment1)
+        
+        # Create email with small attachment
+        thread2 = Thread(subject="Small Email", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="Small Email",
+            body="Has small attachment",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.flush()
+        
+        # Add small attachment
+        attachment2 = Attachment(
+            email_id=email2.id,
+            filename="small_file.txt",
+            content_type="text/plain",
+            size_bytes=100
+        )
+        db_session.add(attachment2)
+        db_session.commit()
+        
+        # Search for emails larger than 5000 bytes
+        response = client.get(
+            "/api/v1/search?larger=5000",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email1.id) in result_ids
+        assert str(email2.id) not in result_ids
+
+    def test_search_size_smaller_filter(self, client_with_auth, db_session):
+        """Test filtering emails smaller than specified size (by attachment size)."""
+        client, token, user = client_with_auth
+        
+        # Create email with large attachment
+        thread1 = Thread(subject="Large Email", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="Large Email",
+            body="Has large attachment",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        db_session.flush()
+        
+        attachment1 = Attachment(
+            email_id=email1.id,
+            filename="large_file.zip",
+            content_type="application/zip",
+            size_bytes=15000
+        )
+        db_session.add(attachment1)
+        
+        # Create email with small attachment
+        thread2 = Thread(subject="Small Email", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="Small Email",
+            body="Has small attachment",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.flush()
+        
+        attachment2 = Attachment(
+            email_id=email2.id,
+            filename="small_file.txt",
+            content_type="text/plain",
+            size_bytes=100
+        )
+        db_session.add(attachment2)
+        db_session.commit()
+        
+        # Search for emails smaller than 1000 bytes
+        response = client.get(
+            "/api/v1/search?smaller=1000",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email1.id) not in result_ids
+        assert str(email2.id) in result_ids
+
+    def test_search_size_via_q_larger_operator(self, client_with_auth, db_session):
+        """Test larger: operator in q parameter with K/M suffixes."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Size Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Size Test",
+            body="Content",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add large attachment (~2MB)
+        attachment = Attachment(
+            email_id=email.id,
+            filename="big_file.bin",
+            content_type="application/octet-stream",
+            size_bytes=2048000
+        )
+        db_session.add(attachment)
+        db_session.commit()
+        
+        # Search for emails larger than 1M
+        response = client.get(
+            "/api/v1/search?q=larger:1M",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_size_exact_filter(self, client_with_auth, db_session):
+        """Test filtering by exact size."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Exact Size", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Exact Size",
+            body="Content",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        attachment = Attachment(
+            email_id=email.id,
+            filename="exact.dat",
+            content_type="application/octet-stream",
+            size_bytes=5000
+        )
+        db_session.add(attachment)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?size=5000",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+
+
+class TestSearchCcBccFilters:
+    """Test CC and BCC recipient filters."""
+
+    def test_search_cc_filter(self, client_with_auth, db_session):
+        """Test filtering by CC recipients."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="CC Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="CC Test",
+            body="Email with CC",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add CC recipient
+        cc_recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="cc-user@example.com",
+            recipient_type="cc"
+        )
+        db_session.add(cc_recipient)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?cc=cc-user@example.com",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_bcc_filter(self, client_with_auth, db_session):
+        """Test filtering by BCC recipients."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="BCC Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="BCC Test",
+            body="Email with BCC",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add BCC recipient
+        bcc_recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="bcc-user@example.com",
+            recipient_type="bcc"
+        )
+        db_session.add(bcc_recipient)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?bcc=bcc-user@example.com",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_cc_via_q_operator(self, client_with_auth, db_session):
+        """Test cc: operator in q parameter."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="CC Q Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="CC Q Test",
+            body="Test email",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        cc_recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="manager@company.com",
+            recipient_type="cc"
+        )
+        db_session.add(cc_recipient)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?q=cc:manager@company.com",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+
+class TestSearchFilenameFilter:
+    """Test filename/attachment filter."""
+
+    def test_search_filename_filter(self, client_with_auth, db_session):
+        """Test filtering by attachment filename."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Document Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Document Email",
+            body="Please find attached",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add attachment
+        attachment = Attachment(
+            email_id=email.id,
+            filename="report.pdf",
+            content_type="application/pdf",
+            size_bytes=1024
+        )
+        db_session.add(attachment)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?filename=report.pdf",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_filename_extension_filter(self, client_with_auth, db_session):
+        """Test filtering by file extension."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="PDF Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="PDF Email",
+            body="PDF attached",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        attachment = Attachment(
+            email_id=email.id,
+            filename="quarterly-report.pdf",
+            content_type="application/pdf",
+            size_bytes=2048
+        )
+        db_session.add(attachment)
+        db_session.commit()
+        
+        # Search for .pdf files
+        response = client.get(
+            "/api/v1/search?filename=pdf",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_filename_via_q_operator(self, client_with_auth, db_session):
+        """Test filename: operator in q parameter."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Filename Q Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Filename Q Test",
+            body="Doc attached",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        attachment = Attachment(
+            email_id=email.id,
+            filename="invoice.xlsx",
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            size_bytes=4096
+        )
+        db_session.add(attachment)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?q=filename:xlsx",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+
+class TestSearchCategoryFilter:
+    """Test category filter."""
+
+    def test_search_category_primary(self, client_with_auth, db_session):
+        """Test filtering by primary category."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Primary Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Primary Email",
+            body="Important message",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            category=EmailCategory.PRIMARY.value
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?category=primary",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_category_promotions(self, client_with_auth, db_session):
+        """Test filtering by promotions category."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Sale Alert", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Sale Alert",
+            body="50% off everything",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            category=EmailCategory.PROMOTIONS.value
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?category=promotions",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_category_via_q_operator(self, client_with_auth, db_session):
+        """Test category: operator in q parameter."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Social Update", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Social Update",
+            body="New follower",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            category=EmailCategory.SOCIAL.value
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?q=category:social",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+
+class TestSearchInAnywhereFilter:
+    """Test in:anywhere filter to include spam/trash."""
+
+    def test_search_in_anywhere_includes_spam(self, client_with_auth, db_session):
+        """Test that in:anywhere includes spam folder."""
+        client, token, user = client_with_auth
+        
+        # Create email in spam
+        thread = Thread(subject="Spam Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Spam Email",
+            body="This is spam",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.SPAM.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Normal search should NOT include spam
+        response = client.get(
+            "/api/v1/search?q=Spam",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) not in result_ids
+        
+        # in:anywhere should include spam
+        response = client.get(
+            "/api/v1/search?in_anywhere=true&q=Spam",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_in_anywhere_includes_trash(self, client_with_auth, db_session):
+        """Test that in:anywhere includes trash folder."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Deleted Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Deleted Email",
+            body="In trash",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.TRASH.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Normal search should NOT include trash
+        response = client.get(
+            "/api/v1/search?q=Deleted",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) not in result_ids
+        
+        # in:anywhere should include trash
+        response = client.get(
+            "/api/v1/search?q=in:anywhere Deleted",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+
+class TestSearchInArchiveFilter:
+    """Test in:archive filter."""
+
+    def test_search_in_archive(self, client_with_auth, db_session):
+        """Test filtering archived emails."""
+        client, token, user = client_with_auth
+        
+        # Create archived email (is_archived = True)
+        thread = Thread(subject="Archived Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        # Create thread metadata with is_archived = True
+        metadata = ThreadUserMetadata(
+            thread_id=thread.id,
+            user_id=user.id,
+            is_archived=True
+        )
+        db_session.add(metadata)
+        
+        email = Email(
+            subject="Archived Email",
+            body="This is archived",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?in_archive=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+
+class TestSearchHasUserlabelsFilter:
+    """Test has_userlabels filter."""
+
+    def test_search_has_userlabels_true(self, client_with_auth, db_session):
+        """Test filtering emails with user labels."""
+        client, token, user = client_with_auth
+        
+        # Create label
+        label = Label(name="MyLabel", color="#ff0000", owner_id=user.id)
+        db_session.add(label)
+        db_session.flush()
+        
+        # Create thread with label
+        thread = Thread(subject="Labeled Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        thread_label = ThreadLabel(thread_id=thread.id, label_id=label.id, user_id=user.id)
+        db_session.add(thread_label)
+        
+        email = Email(
+            subject="Labeled Email",
+            body="Has label",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?has_userlabels=true",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_has_userlabels_false(self, client_with_auth, db_session):
+        """Test filtering emails without user labels."""
+        client, token, user = client_with_auth
+        
+        # Create email without label
+        thread = Thread(subject="Unlabeled Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Unlabeled Email",
+            body="No label",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?has_userlabels=false",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+
+class TestSearchDeliveredtoFilter:
+    """Test deliveredto filter."""
+
+    def test_search_deliveredto_filter(self, client_with_auth, db_session):
+        """Test filtering by delivered-to address."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Delivered To Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Delivered To Test",
+            body="Test email",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add to recipient
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="delivered@example.com",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?deliveredto=delivered@example.com",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+
+class TestSearchCommaSeperatedValues:
+    """Test comma-separated values for from, to, cc, bcc."""
+
+    def test_search_multiple_from_addresses(self, client_with_auth, db_session):
+        """Test filtering by multiple from addresses."""
+        client, token, user = client_with_auth
+        
+        # Create user2 for second sender
+        from app.models.user import User
+        user2 = User(
+            email="sender2@example.com",
+            first_name="Sender",
+            last_name="Two",
+            role="user"
+        )
+        db_session.add(user2)
+        db_session.flush()
+        
+        # Email from user (current user is sender, so they can see it)
+        thread1 = Thread(subject="From User 1", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="From User 1",
+            body="Email from user 1",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        
+        # Email from user2 to current user (current user is recipient, so they can see it)
+        thread2 = Thread(subject="From User 2", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="From User 2",
+            body="Email from user 2",
+            status="received",
+            sender_id=user2.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.flush()
+        
+        # Add current user as recipient so they can see this email
+        recipient = EmailRecipient(
+            email_id=email2.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search with comma-separated from addresses
+        response = client.get(
+            f"/api/v1/search?from={user.email},{user2.email}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        # Both emails should be found (user can see email1 as sender, email2 as recipient)
+        assert str(email1.id) in result_ids
+        assert str(email2.id) in result_ids
+
+
+class TestSearchQueryParsing:
+    """Test advanced query parsing features."""
+
+    def test_search_exact_phrase(self, client_with_auth, db_session):
+        """Test exact phrase matching with quotes."""
+        client, token, user = client_with_auth
+        
+        thread1 = Thread(subject="Exact Match Test", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="Exact Match Test",
+            body="This contains exact phrase match",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        
+        thread2 = Thread(subject="Partial Test", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="Partial Test",
+            body="This contains exact but not phrase",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.commit()
+        
+        # Search for exact phrase
+        response = client.get(
+            '/api/v1/search?q="exact phrase"',
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email1.id) in result_ids
+        assert str(email2.id) not in result_ids
+
+    def test_search_or_operator(self, client_with_auth, db_session):
+        """Test OR operator in search."""
+        client, token, user = client_with_auth
+        
+        thread1 = Thread(subject="Apple Report", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="Apple Report",
+            body="About apples",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        
+        thread2 = Thread(subject="Orange Report", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="Orange Report",
+            body="About oranges",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        
+        thread3 = Thread(subject="Banana Report", owner_id=user.id, email_count=1)
+        db_session.add(thread3)
+        db_session.flush()
+        
+        email3 = Email(
+            subject="Banana Report",
+            body="About bananas",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread3.id
+        )
+        db_session.add(email3)
+        db_session.commit()
+        
+        # Search for Apple OR Orange
+        response = client.get(
+            "/api/v1/search?q=Apple OR Orange",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email1.id) in result_ids
+        assert str(email2.id) in result_ids
+        assert str(email3.id) not in result_ids
+
+    def test_search_grouped_subject(self, client_with_auth, db_session):
+        """Test grouped terms in subject: operator."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Dinner and Movie Plans", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Dinner and Movie Plans",
+            body="Let's plan",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Search with grouped subject terms
+        response = client.get(
+            "/api/v1/search?q=subject:(dinner movie)",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+
+
+class TestSearchRelativeDates:
+    """Test relative date filters (newer_than, older_than)."""
+
+    def test_search_newer_than_days(self, client_with_auth, db_session):
+        """Test newer_than:Xd filter."""
+        client, token, user = client_with_auth
+        
+        # Create recent email
+        thread = Thread(subject="Recent Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Recent Email",
+            body="Created recently",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            created_at=datetime.utcnow() - timedelta(days=2)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Search for emails newer than 7 days
+        response = client.get(
+            "/api/v1/search?q=newer_than:7d Recent",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_older_than_days(self, client_with_auth, db_session):
+        """Test older_than:Xd filter."""
+        client, token, user = client_with_auth
+        
+        # Create old email
+        thread = Thread(subject="Old Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Old Email",
+            body="Created long ago",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            created_at=datetime.utcnow() - timedelta(days=60)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Search for emails older than 30 days
+        response = client.get(
+            "/api/v1/search?q=older_than:30d Old",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_newer_than_weeks(self, client_with_auth, db_session):
+        """Test newer_than:Xw filter."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Weekly Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Weekly Email",
+            body="Within a week",
+            status="received",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id,
+            created_at=datetime.utcnow() - timedelta(days=5)
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?q=newer_than:2w Weekly",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids

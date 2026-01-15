@@ -14,7 +14,6 @@ from app.core.middleware.cors import cors_middleware
 from app.core.middleware.auth import auth_middleware
 from app.core.middleware.response_wrapper import ResponseWrapperMiddleware
 from app.db.template import initialize_template_Database
-from app.db.bootstrap import initialize_template_database_schema_and_fixtures
 from app.tasks.cleanup import cleanup_old_databases
 from app.tasks.scheduled_sender import process_scheduled_emails
 from app.api.v1.router import router as v1_router
@@ -38,7 +37,6 @@ async def lifespan(app: FastAPI):
 
     try:
         initialize_template_Database()
-        # initialize_template_database_schema_and_fixtures()
     except Exception as e:
         # Log error but continue - cleanup task must always run
         logger.error(f"Failed to initialize database: {e}")
