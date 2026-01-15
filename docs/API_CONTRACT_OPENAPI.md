@@ -4061,24 +4061,28 @@ Example:
 Search emails with comprehensive filtering.
 
 Supports Gmail-like search operators in the 'q' parameter:
-- from:sender@example.com
-- to:recipient@example.com
-- subject:meeting
-- has:attachment
-- is:starred
-- is:unread
-- in:inbox
-- label:important
-- before:2024-12-31
-- after:2024-01-01
+- from:sender@example.com (comma-separated for multiple)
+- to:recipient@example.com (comma-separated for multiple)
+- cc:user@example.com, bcc:user@example.com
+- subject:meeting, subject:(dinner movie) for grouping
+- has:attachment, has:userlabels, has:nouserlabels
+- is:starred, is:unread, is:read, is:important
+- in:inbox, in:anywhere, in:archive, in:snoozed
+- label:important, category:primary
+- before:2024-12-31, after:2024-01-01
+- size:1000000, larger:10M, smaller:5K
+- filename:report.pdf, filename:pdf
+- deliveredto:user@example.com
+- -term (exclude), +term (exact match), "exact phrase"
+- term1 OR term2, {term1 term2}
 
-These can be combined: q="from:john subject:report has:attachment"
+These can be combined: q="from:john subject:report has:attachment -spam"
 
 **Query Parameters**:
 
 - `q` (optional, object): Search query with operators
-- `from` (optional, object): Filter by sender
-- `to` (optional, object): Filter by recipient
+- `from` (optional, object): Filter by sender (comma-separated for multiple)
+- `to` (optional, object): Filter by recipient (comma-separated for multiple)
 - `subject` (optional, object): Search in subject
 - `folder` (optional, object): Filter by folder: inbox, sent, drafts, trash, spam, starred
 - `label_id` (optional, object): Filter by label
@@ -4089,10 +4093,24 @@ These can be combined: q="from:john subject:report has:attachment"
 - `has_attachment` (optional, object): Has attachments
 - `date_from` (optional, object): Emails after date (YYYY-MM-DD)
 - `date_to` (optional, object): Emails before date (YYYY-MM-DD)
+- `hasnot` (optional, object): Exclude emails containing this text
+- `size` (optional, object): Filter by exact size in bytes
+- `larger` (optional, object): Emails larger than size in bytes
+- `smaller` (optional, object): Emails smaller than size in bytes
+- `cc` (optional, object): Filter by CC recipients (comma-separated)
+- `bcc` (optional, object): Filter by BCC recipients (comma-separated)
+- `filename` (optional, object): Filter by attachment filename or extension
+- `category` (optional, object): Filter by category: primary, promotions, social, updates, forums
+- `deliveredto` (optional, object): Filter by delivered-to address
+- `is_snoozed` (optional, object): Filter snoozed emails
+- `has_userlabels` (optional, object): Filter emails with/without user labels
+- `in_anywhere` (optional, object): Search all folders including spam/trash
+- `in_archive` (optional, object): Search archived messages
 - `page` (optional, integer)
 - `page_size` (optional, integer)
 - `sort_by` (optional, string): Sort by: date, subject, sender
 - `sort_order` (optional, string): asc or desc
+- `tz_offset` (optional, object): UTC offset in minutes from browser's getTimezoneOffset() for date interpretation in q
 
 **Responses**:
 
