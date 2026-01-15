@@ -26,21 +26,19 @@ from app.schemas.email import (
     EmailCreate, EmailUpdate, EmailResponse, EmailListResponse,
     EmailReadUpdate, EmailStarUpdate, EmailMoveRequest, EmailLabelRequest,
     EmailReplyRequest, EmailForwardRequest, EmailSnoozeRequest,
-    EmailCategoryUpdate, EmailCategoryCountsResponse, EmailSendRequest
+    EmailSendRequest
 )
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import (
-    VALID_RECIPIENT_TYPES, VALID_EMAIL_CATEGORIES,
+    VALID_RECIPIENT_TYPES,
     VALID_FOLDER_TYPES, EmailStatus, FolderType, EmailCategory, SystemLabel
 )
 from app.utils.label_utils import (
     add_system_label_to_thread,
     remove_system_label_from_thread,
     replace_exclusive_labels,
-    add_category_label_to_thread,
-    sync_category_labels,
 )
 from app.utils.email_utils import (
     format_email_response,
@@ -283,7 +281,45 @@ def list_emails(
         query = query.filter(Email.thread_id == thread_id)
     
     if category:
-        query = query.filter(Email.category == category.value)
+        # Filter by category label (is_system=True, is_exclusive=False)
+        from app.utils.label_utils import CATEGORY_TO_LABEL
+        from app.core.constants import CategoryLabel
+        
+        if category == EmailCategory.PRIMARY:
+            # PRIMARY = emails in threads WITHOUT any category label
+            # Get all category label IDs for this user
+            category_label_ids = db.query(Label.id).filter(
+                Label.owner_id == current_user.id,
+                Label.is_system == True,
+                Label.is_exclusive == False,
+                Label.name.in_([cl.value for cl in CategoryLabel])
+            ).subquery()
+            
+            # Find threads that have any category label
+            threads_with_category = db.query(ThreadLabel.thread_id).filter(
+                ThreadLabel.label_id.in_(db.query(category_label_ids.c.id)),
+                ThreadLabel.user_id == current_user.id
+            ).subquery()
+            
+            # Exclude those threads
+            query = query.filter(~Email.thread_id.in_(db.query(threads_with_category.c.thread_id)))
+        else:
+            # Other categories - filter by specific label
+            category_label_enum = CATEGORY_TO_LABEL.get(category)
+            if category_label_enum:
+                category_label = db.query(Label).filter(
+                    Label.owner_id == current_user.id,
+                    Label.name == category_label_enum.value,
+                    Label.is_system == True,
+                    Label.is_exclusive == False
+                ).first()
+                
+                if category_label:
+                    labeled_thread_ids = db.query(ThreadLabel.thread_id).filter(
+                        ThreadLabel.label_id == category_label.id,
+                        ThreadLabel.user_id == current_user.id
+                    ).subquery()
+                    query = query.filter(Email.thread_id.in_(db.query(labeled_thread_ids.c.thread_id)))
     
     if is_read is not None:
         query = query.filter(Email.is_read == is_read)
@@ -747,11 +783,9 @@ def send_email(
     email.sent_at = datetime.now(UTC)
     email.folder = FolderType.SENT.value
 
-    # Update labels: Remove Drafts, add Sent + category
+    # Update labels: Remove Drafts, add Sent
     remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
     add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
-    if email.category:
-        add_category_label_to_thread(db, email.thread_id, current_user.id, EmailCategory(email.category))
 
     try:
         db.commit()
@@ -1714,160 +1748,3 @@ def restore_email_from_trash(
     logger.info(f"Email {email.id} restored from trash to {email.folder} by user {current_user.id}")
     
     return format_email_response(email, current_user.id)
-
-
-@router.patch("/emails/{email_id}/category", response_model=EmailResponse, dependencies=[Depends(authorized())])
-def update_email_category(
-    email_id: UUID,
-    category_data: EmailCategoryUpdate,
-    db: Session = Depends(get_db),
-) -> dict:
-    """Update an email's category (Primary, Promotions, Social, Updates, Forums).
-    
-    Categories help organize inbox similar to Gmail tabs.
-    
-    Permissions:
-    - Users can only update categories on their own emails (sent or received)
-    """
-    current_user = auth.user
-    
-    # Validate category
-    if category_data.category not in VALID_EMAIL_CATEGORIES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid category. Must be one of: {', '.join(VALID_EMAIL_CATEGORIES)}"
-        )
-    
-    email = db.query(Email).options(
-        joinedload(Email.sender),
-        selectinload(Email.recipients),
-        selectinload(Email.attachments),
-        joinedload(Email.thread)
-            .selectinload(Thread.labels),
-        joinedload(Email.thread)
-            .selectinload(Thread.user_metadata),
-    ).filter(
-        Email.id == email_id
-    ).first()
-    
-    if not email:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Email {email_id} not found"
-        )
-    
-    # Check ownership
-    is_sender = email.sender_id == current_user.id
-    is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
-    is_admin = current_user.role == "admin"
-    
-    if not (is_sender or is_recipient or is_admin):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Email {email_id} not found"
-        )
-    
-    old_category = EmailCategory(email.category) if email.category else None
-    new_category = EmailCategory(category_data.category)
-    
-    email.category = category_data.category
-    
-    # Sync category labels
-    if email.thread_id:
-        sync_category_labels(db, email.thread_id, current_user.id, old_category, new_category)
-    
-    try:
-        db.commit()
-        db.refresh(email)
-    except Exception:
-        db.rollback()
-        raise
-    
-    logger.info(f"Email {email.id} category changed to {category_data.category} by user {current_user.id}")
-
-    return format_email_response(email, current_user.id)
-
-
-@router.get("/emails/stats/category-counts", response_model=EmailCategoryCountsResponse, dependencies=[Depends(authorized())])
-def get_email_category_counts(
-    db: Session = Depends(get_db),
-    folder: Optional[FolderType] = Query(None, description="Filter by folder"),
-    is_read: Optional[bool] = Query(None, description="Filter by read status"),
-    is_starred: Optional[bool] = Query(None, description="Filter by starred"),
-) -> dict:
-    """Get count of emails in each category (primary, promotions, social, updates, forums).
-
-    Returns the number of emails in each category for the current user.
-    Optionally filter by folder, read status, or starred status.
-
-    Permissions:
-    - Users can only see counts for their own emails (sent or received)
-    """
-    current_user = auth.user
-
-    # Base query for category counts
-    base_query = db.query(
-        Email.category,
-        func.count(Email.id).label('count')
-    )
-
-    # Apply folder filter with proper sender/recipient context
-    if folder:
-        base_query = base_query.filter(Email.folder == folder.value)
-        
-        if folder in (FolderType.INBOX,):
-            # Inbox should only count emails where user is a recipient
-            base_query = base_query.filter(
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
-        elif folder in (FolderType.SENT, FolderType.DRAFTS, FolderType.SCHEDULED):
-            # Sent/Drafts/Scheduled should only count emails where user is the sender
-            base_query = base_query.filter(Email.sender_id == current_user.id)
-        else:
-            # Other folders - count emails where user is sender or recipient
-            base_query = base_query.filter(
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
-            )
-    else:
-        # No folder filter - count all user's emails (sent or received)
-        base_query = base_query.filter(
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
-        )
-
-    if is_read is not None:
-        base_query = base_query.filter(Email.is_read == is_read)
-
-    if is_starred is not None:
-        base_query = base_query.filter(Email.is_starred == is_starred)
-
-    # Group by category
-    results = base_query.group_by(Email.category).all()
-
-    # Build category counts dictionary dynamically from VALID_EMAIL_CATEGORIES
-    category_counts = {category: 0 for category in VALID_EMAIL_CATEGORIES}
-
-    # Fill in actual counts from query results
-    for category, count in results:
-        category_key = category or EmailCategory.PRIMARY.value
-        if category_key in category_counts:
-            category_counts[category_key] = count
-
-    return category_counts

@@ -16,11 +16,10 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.core.constants import (
-    EmailStatus, FolderType, EmailCategory, SystemLabel
+    EmailStatus, FolderType, SystemLabel
 )
 from app.utils.label_utils import (
     add_system_label_to_thread,
-    add_category_label_to_thread,
 )
 
 logger = logging.getLogger(__name__)
@@ -151,7 +150,6 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         "body": email.body,
         "html_body": email.html_body,
         "folder": email.folder or FolderType.INBOX.value,
-        "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": is_important,
@@ -228,7 +226,6 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         "subject": email.subject,
         "snippet": get_snippet(email.body),
         "folder": email.folder or FolderType.INBOX.value,
-        "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": is_important,
@@ -310,7 +307,6 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                     html_body=email.html_body,
                     status=EmailStatus.RECEIVED.value,
                     folder=FolderType.INBOX.value,
-                    category=email.category,
                     sender_id=actual_sender_id,
                     is_read=False,
                     received_at=datetime.now(UTC),
@@ -331,9 +327,6 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
 
                 # Add Inbox label for recipient
                 add_system_label_to_thread(db, email.thread_id, recipient_user.id, SystemLabel.INBOX)
-                # Add category label if applicable
-                if email.category:
-                    add_category_label_to_thread(db, email.thread_id, recipient_user.id, EmailCategory(email.category))
 
     # Update thread email count if any emails were created
     if emails_created > 0 and email.thread_id:

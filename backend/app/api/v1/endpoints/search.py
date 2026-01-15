@@ -20,10 +20,11 @@ from app.models.email_recipient import EmailRecipient
 from app.models.label import Label
 from app.models.thread_label import ThreadLabel
 from app.models.thread import Thread
+from app.models.thread_user_metadata import ThreadUserMetadata
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
 from app.models.user import User
-from app.core.constants import VALID_FOLDER_TYPES
+from app.core.constants import VALID_FOLDER_TYPES, VALID_EMAIL_CATEGORIES
 from app.schemas.search import ( SearchSuggestionsResponse,
     SavedSearchCreate, SavedSearchResponse
 )
@@ -42,8 +43,8 @@ router = APIRouter()
 @router.get("/search", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
 def search_emails(
     q: Optional[str] = Query(None, description="Search query with operators"),
-    from_email: Optional[str] = Query(None, alias="from", description="Filter by sender"),
-    to_email: Optional[str] = Query(None, alias="to", description="Filter by recipient"),
+    from_email: Optional[str] = Query(None, alias="from", description="Filter by sender (comma-separated for multiple)"),
+    to_email: Optional[str] = Query(None, alias="to", description="Filter by recipient (comma-separated for multiple)"),
     subject: Optional[str] = Query(None, description="Search in subject"),
     folder: Optional[str] = Query(None, description="Filter by folder: inbox, sent, drafts, trash, spam, starred"),
     label_id: Optional[UUID] = Query(None, description="Filter by label"),
@@ -54,32 +55,51 @@ def search_emails(
     has_attachment: Optional[bool] = Query(None, description="Has attachments"),
     date_from: Optional[str] = Query(None, description="Emails after date (YYYY-MM-DD)"),
     date_to: Optional[str] = Query(None, description="Emails before date (YYYY-MM-DD)"),
+    hasnot: Optional[str] = Query(None, description="Exclude emails containing this text"),
+    size: Optional[int] = Query(None, description="Filter by exact size in bytes"),
+    size_larger: Optional[int] = Query(None, alias="larger", description="Emails larger than size in bytes"),
+    size_smaller: Optional[int] = Query(None, alias="smaller", description="Emails smaller than size in bytes"),
+    cc: Optional[str] = Query(None, description="Filter by CC recipients (comma-separated)"),
+    bcc: Optional[str] = Query(None, description="Filter by BCC recipients (comma-separated)"),
+    filename: Optional[str] = Query(None, description="Filter by attachment filename or extension"),
+    category: Optional[str] = Query(None, description="Filter by category: primary, promotions, social, updates, forums"),
+    deliveredto: Optional[str] = Query(None, description="Filter by delivered-to address"),
+    is_snoozed: Optional[bool] = Query(None, description="Filter snoozed emails"),
+    has_userlabels: Optional[bool] = Query(None, description="Filter emails with/without user labels"),
+    in_anywhere: Optional[bool] = Query(None, description="Search all folders including spam/trash"),
+    in_archive: Optional[bool] = Query(None, description="Search archived messages"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     sort_by: str = Query("date", description="Sort by: date, subject, sender"),
     sort_order: str = Query("desc", description="asc or desc"),
+    tz_offset: Optional[int] = Query(None, description="UTC offset in minutes from browser's getTimezoneOffset() for date interpretation in q"),
     db: Session = Depends(get_db),
 ) -> dict:
     """Search emails with comprehensive filtering.
     
     Supports Gmail-like search operators in the 'q' parameter:
-    - from:sender@example.com
-    - to:recipient@example.com
-    - subject:meeting
-    - has:attachment
-    - is:starred
-    - is:unread
-    - in:inbox
-    - label:important
-    - before:2024-12-31
-    - after:2024-01-01
+    - from:sender@example.com (comma-separated for multiple)
+    - to:recipient@example.com (comma-separated for multiple)
+    - cc:user@example.com, bcc:user@example.com
+    - subject:meeting, subject:(dinner movie) for grouping
+    - has:attachment, has:userlabels, has:nouserlabels
+    - is:starred, is:unread, is:read, is:important
+    - in:inbox, in:anywhere, in:archive, in:snoozed
+    - label:important, category:primary
+    - before:2024-12-31, after:2024-01-01
+    - size:1000000, larger:10M, smaller:5K
+    - filename:report.pdf, filename:pdf
+    - deliveredto:user@example.com
+    - -term (exclude), +term (exact match), "exact phrase"
+    - term1 OR term2, {term1 term2}
     
-    These can be combined: q="from:john subject:report has:attachment"
+    These can be combined: q="from:john subject:report has:attachment -spam"
     """
     current_user = auth.user
     
     # Parse Gmail-style operators from q parameter
-    parsed_filters = parse_search_query(q) if q else {}
+    # tz_offset only used for parsing dates in q string (date_from/date_to params are expected to be UTC)
+    parsed_filters = parse_search_query(q, tz_offset=tz_offset) if q else {}
     
     # Merge parsed filters with explicit parameters
     if 'from_email' in parsed_filters and not from_email:
@@ -100,18 +120,55 @@ def search_emails(
         is_important = parsed_filters['is_important']
     if 'has_attachment' in parsed_filters and has_attachment is None:
         has_attachment = parsed_filters['has_attachment']
+    # For dates parsed from q with tz_offset, keep the datetime object to preserve timezone info
+    # Use _date_from_dt and _date_to_dt for datetime objects (from q parsing)
+    _date_from_dt = None
+    _date_to_dt = None
+    
     if 'date_from' in parsed_filters and not date_from:
         if isinstance(parsed_filters['date_from'], datetime):
-            date_from = parsed_filters['date_from'].strftime('%Y-%m-%d')
+            _date_from_dt = parsed_filters['date_from']  # Keep datetime with tz info
         else:
             date_from = parsed_filters['date_from']
     if 'date_to' in parsed_filters and not date_to:
         if isinstance(parsed_filters['date_to'], datetime):
-            date_to = parsed_filters['date_to'].strftime('%Y-%m-%d')
+            _date_to_dt = parsed_filters['date_to']  # Keep datetime with tz info
         else:
             date_to = parsed_filters['date_to']
     
+    # Merge new Gmail-style filters
+    if 'cc_email' in parsed_filters and not cc:
+        cc = parsed_filters['cc_email']
+    if 'bcc_email' in parsed_filters and not bcc:
+        bcc = parsed_filters['bcc_email']
+    if 'size' in parsed_filters and size is None:
+        size = parsed_filters['size']
+    if 'size_larger' in parsed_filters and size_larger is None:
+        size_larger = parsed_filters['size_larger']
+    if 'size_smaller' in parsed_filters and size_smaller is None:
+        size_smaller = parsed_filters['size_smaller']
+    if 'filename' in parsed_filters and not filename:
+        filename = parsed_filters['filename']
+    if 'category' in parsed_filters and not category:
+        category = parsed_filters['category']
+    if 'deliveredto' in parsed_filters and not deliveredto:
+        deliveredto = parsed_filters['deliveredto']
+    if 'is_snoozed' in parsed_filters and is_snoozed is None:
+        is_snoozed = parsed_filters['is_snoozed']
+    if 'has_userlabels' in parsed_filters and has_userlabels is None:
+        has_userlabels = parsed_filters['has_userlabels']
+    if 'in_anywhere' in parsed_filters and in_anywhere is None:
+        in_anywhere = parsed_filters['in_anywhere']
+    if 'in_archive' in parsed_filters and in_archive is None:
+        in_archive = parsed_filters['in_archive']
+    
+    # Get advanced search parameters from parsed query
     text_search = parsed_filters.get('text')
+    exclusions = parsed_filters.get('exclusions', [])
+    exact_phrases = parsed_filters.get('exact_phrases', [])
+    exact_matches = parsed_filters.get('exact_matches', [])
+    or_groups = parsed_filters.get('or_groups', [])
+    grouped_terms = parsed_filters.get('grouped_terms', {})
     
     # Build base query - user's emails
     query = db.query(Email).options(
@@ -130,14 +187,25 @@ def search_emails(
     
     # Apply filters
     if from_email:
-        query = query.join(User, Email.sender_id == User.id).filter(
-            User.email.ilike(f"%{from_email}%")
-        )
+        # Support comma-separated values for multiple senders
+        from_emails = [e.strip() for e in from_email.split(',') if e.strip()]
+        if from_emails:
+            query = query.join(User, Email.sender_id == User.id)
+            if len(from_emails) == 1:
+                query = query.filter(User.email.ilike(f"%{from_emails[0]}%"))
+            else:
+                from_conditions = [User.email.ilike(f"%{e}%") for e in from_emails]
+                query = query.filter(or_(*from_conditions))
     
     if to_email:
-        query = query.filter(
-            EmailRecipient.recipient_email.ilike(f"%{to_email}%")
-        )
+        # Support comma-separated values for multiple recipients
+        to_emails = [e.strip() for e in to_email.split(',') if e.strip()]
+        if to_emails:
+            if len(to_emails) == 1:
+                query = query.filter(EmailRecipient.recipient_email.ilike(f"%{to_emails[0]}%"))
+            else:
+                to_conditions = [EmailRecipient.recipient_email.ilike(f"%{e}%") for e in to_emails]
+                query = query.filter(or_(*to_conditions))
     
     if subject:
         query = query.filter(Email.subject.ilike(f"%{subject}%"))
@@ -151,13 +219,23 @@ def search_emails(
             )
         )
     
-    if folder:
+    # Folder filtering logic:
+    # - in:anywhere: search ALL folders including spam/trash
+    # - folder param: search specific folder
+    # - default: exclude spam/trash
+    if in_anywhere:
+        # Search everywhere - no folder restrictions
+        pass
+    elif folder:
         if folder not in VALID_FOLDER_TYPES:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
             )
         query = query.filter(Email.folder == folder)
+    else:
+        # Default: exclude spam and trash
+        query = query.filter(~Email.folder.in_(['spam', 'trash']))
     
     if label_id:
         # Labels are user-specific on shared threads - filter by user_id
@@ -206,19 +284,237 @@ def search_emails(
         att_subq = db.query(Attachment.email_id).distinct().scalar_subquery()
         query = query.filter(Email.id.in_(att_subq))
     
-    if date_from:
+    # Apply date filters - prefer datetime objects from q parsing (with tz_offset), fall back to string params
+    if _date_from_dt:
+        # Datetime from q parsing (with tz_offset applied)
+        query = query.filter(Email.created_at >= _date_from_dt)
+    elif date_from:
+        # Explicit string param (treated as UTC)
         try:
             dt = datetime.strptime(date_from, '%Y-%m-%d')
             query = query.filter(Email.created_at >= dt)
         except ValueError:
             pass
     
-    if date_to:
+    if _date_to_dt:
+        # Datetime from q parsing (with tz_offset applied)
+        query = query.filter(Email.created_at <= _date_to_dt)
+    elif date_to:
+        # Explicit string param (treated as UTC)
         try:
             dt = datetime.strptime(date_to, '%Y-%m-%d')
             query = query.filter(Email.created_at <= dt)
         except ValueError:
             pass
+    
+    
+    # Hasnot / Exclusions - exclude emails containing these terms
+    if hasnot:
+        exclusions.append(hasnot)
+    if exclusions:
+        for term in exclusions:
+            query = query.filter(
+                and_(
+                    ~Email.subject.ilike(f"%{term}%"),
+                    ~Email.body.ilike(f"%{term}%")
+                )
+            )
+    
+    # Exact phrases - match exact phrases in subject or body
+    if exact_phrases:
+        for phrase in exact_phrases:
+            query = query.filter(
+                or_(
+                    Email.subject.ilike(f"%{phrase}%"),
+                    Email.body.ilike(f"%{phrase}%")
+                )
+            )
+    
+    # Exact matches (+word) - exact word match
+    if exact_matches:
+        for term in exact_matches:
+            # Use word boundaries for exact match
+            query = query.filter(
+                or_(
+                    Email.subject.op('~*')(f'\\m{term}\\M'),
+                    Email.body.op('~*')(f'\\m{term}\\M')
+                )
+            )
+    
+    # OR groups - match any of the terms in each group
+    if or_groups:
+        for group in or_groups:
+            or_conditions = []
+            for term in group:
+                or_conditions.append(Email.subject.ilike(f"%{term}%"))
+                or_conditions.append(Email.body.ilike(f"%{term}%"))
+            if or_conditions:
+                query = query.filter(or_(*or_conditions))
+    
+    # Grouped terms - e.g., subject:(dinner movie)
+    if grouped_terms:
+        for operator, terms in grouped_terms.items():
+            if operator == 'subject':
+                subject_conditions = [Email.subject.ilike(f"%{t}%") for t in terms]
+                query = query.filter(or_(*subject_conditions))
+            elif operator == 'from':
+                if not from_email:  # Only if not already filtered
+                    query = query.join(User, Email.sender_id == User.id)
+                from_conditions = [User.email.ilike(f"%{t}%") for t in terms]
+                query = query.filter(or_(*from_conditions))
+            elif operator == 'to':
+                to_conditions = [EmailRecipient.recipient_email.ilike(f"%{t}%") for t in terms]
+                query = query.filter(or_(*to_conditions))
+    
+    # CC filter
+    if cc:
+        cc_emails = [e.strip() for e in cc.split(',') if e.strip()]
+        if cc_emails:
+            cc_subq = db.query(EmailRecipient.email_id).filter(
+                EmailRecipient.recipient_type == 'cc',
+                or_(*[EmailRecipient.recipient_email.ilike(f"%{e}%") for e in cc_emails])
+            ).distinct().scalar_subquery()
+            query = query.filter(Email.id.in_(cc_subq))
+    
+    # BCC filter
+    if bcc:
+        bcc_emails = [e.strip() for e in bcc.split(',') if e.strip()]
+        if bcc_emails:
+            bcc_subq = db.query(EmailRecipient.email_id).filter(
+                EmailRecipient.recipient_type == 'bcc',
+                or_(*[EmailRecipient.recipient_email.ilike(f"%{e}%") for e in bcc_emails])
+            ).distinct().scalar_subquery()
+            query = query.filter(Email.id.in_(bcc_subq))
+    
+    # Size filters - filter by total attachment size
+    if size is not None or size_larger is not None or size_smaller is not None:
+        # Subquery to get total attachment size per email
+        size_subq = db.query(
+            Attachment.email_id,
+            func.coalesce(func.sum(Attachment.size_bytes), 0).label('total_size')
+        ).group_by(Attachment.email_id).subquery()
+        
+        query = query.outerjoin(size_subq, Email.id == size_subq.c.email_id)
+        
+        if size is not None:
+            query = query.filter(func.coalesce(size_subq.c.total_size, 0) == size)
+        if size_larger is not None:
+            query = query.filter(func.coalesce(size_subq.c.total_size, 0) >= size_larger)
+        if size_smaller is not None:
+            query = query.filter(func.coalesce(size_subq.c.total_size, 0) <= size_smaller)
+    
+    # Filename filter - filter by attachment filename
+    if filename:
+        filename_subq = db.query(Attachment.email_id).filter(
+            Attachment.filename.ilike(f"%{filename}%")
+        ).distinct().scalar_subquery()
+        query = query.filter(Email.id.in_(filename_subq))
+    
+    # Category filter - filter by category label (is_system=True, is_exclusive=False)
+    if category:
+        if category.lower() in VALID_EMAIL_CATEGORIES:
+            from app.utils.label_utils import CATEGORY_TO_LABEL
+            from app.core.constants import EmailCategory, CategoryLabel
+            
+            try:
+                category_enum = EmailCategory(category.lower())
+                
+                if category_enum == EmailCategory.PRIMARY:
+                    # PRIMARY = emails in threads WITHOUT any category label
+                    category_label_ids = db.query(Label.id).filter(
+                        Label.owner_id == current_user.id,
+                        Label.is_system == True,
+                        Label.is_exclusive == False,
+                        Label.name.in_([cl.value for cl in CategoryLabel])
+                    ).subquery()
+                    
+                    threads_with_category = db.query(ThreadLabel.thread_id).filter(
+                        ThreadLabel.label_id.in_(db.query(category_label_ids.c.id)),
+                        ThreadLabel.user_id == current_user.id
+                    ).subquery()
+                    
+                    query = query.filter(~Email.thread_id.in_(db.query(threads_with_category.c.thread_id)))
+                else:
+                    # Other categories - filter by specific label
+                    category_label_enum = CATEGORY_TO_LABEL.get(category_enum)
+                    if category_label_enum:
+                        category_label = db.query(Label).filter(
+                            Label.owner_id == current_user.id,
+                            Label.name == category_label_enum.value,
+                            Label.is_system == True,
+                            Label.is_exclusive == False
+                        ).first()
+                        
+                        if category_label:
+                            labeled_thread_ids = db.query(ThreadLabel.thread_id).filter(
+                                ThreadLabel.label_id == category_label.id,
+                                ThreadLabel.user_id == current_user.id
+                            ).subquery()
+                            query = query.filter(Email.thread_id.in_(db.query(labeled_thread_ids.c.thread_id)))
+            except ValueError:
+                pass
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid category. Must be one of: {', '.join(VALID_EMAIL_CATEGORIES)}"
+            )
+    
+    # Deliveredto filter - filter by recipient email
+    if deliveredto:
+        deliveredto_subq = db.query(EmailRecipient.email_id).filter(
+            EmailRecipient.recipient_email.ilike(f"%{deliveredto}%")
+        ).distinct().scalar_subquery()
+        query = query.filter(Email.id.in_(deliveredto_subq))
+    
+    # Is snoozed filter - filter by snooze status in thread metadata
+    if is_snoozed is not None:
+        snoozed_thread_subq = db.query(ThreadUserMetadata.thread_id).filter(
+            ThreadUserMetadata.user_id == current_user.id,
+            ThreadUserMetadata.snooze_until.isnot(None)
+        ).scalar_subquery()
+        
+        if is_snoozed:
+            query = query.filter(Email.thread_id.in_(snoozed_thread_subq))
+        else:
+            query = query.filter(
+                or_(
+                    Email.thread_id.is_(None),
+                    ~Email.thread_id.in_(snoozed_thread_subq)
+                )
+            )
+    
+    # Has userlabels filter - filter by presence/absence of user labels
+    if has_userlabels is not None:
+        labeled_thread_subq = db.query(ThreadLabel.thread_id).filter(
+            ThreadLabel.user_id == current_user.id
+        ).distinct().scalar_subquery()
+        
+        if has_userlabels:
+            query = query.filter(Email.thread_id.in_(labeled_thread_subq))
+        else:
+            query = query.filter(
+                or_(
+                    Email.thread_id.is_(None),
+                    ~Email.thread_id.in_(labeled_thread_subq)
+                )
+            )
+    
+    # In archive filter - filter for archived threads
+    if in_archive is not None:
+        archived_thread_subq = db.query(ThreadUserMetadata.thread_id).filter(
+            ThreadUserMetadata.user_id == current_user.id,
+            ThreadUserMetadata.is_archived == True
+        ).scalar_subquery()
+        
+        if in_archive:
+            query = query.filter(Email.thread_id.in_(archived_thread_subq))
+        else:
+            query = query.filter(
+                or_(
+                    Email.thread_id.is_(None),
+                    ~Email.thread_id.in_(archived_thread_subq)
+                )
+            )
     
     # First, get distinct email IDs that match the filters
     filtered_email_ids = [eid[0] for eid in query.with_entities(Email.id).distinct().all()]
@@ -401,6 +697,18 @@ def get_search_suggestions(
             {"value": "trash", "type": "folder", "description": "Trash folder"},
             {"value": "spam", "type": "folder", "description": "Spam folder"},
             {"value": "starred", "type": "folder", "description": "Starred items"},
+            {"value": "anywhere", "type": "folder", "description": "Search all folders"},
+            {"value": "archive", "type": "folder", "description": "Archived messages"},
+            {"value": "snoozed", "type": "folder", "description": "Snoozed messages"},
+        ]
+    
+    elif q.startswith("category:"):
+        suggestions["categories"] = [
+            {"value": "primary", "type": "category", "description": "Primary category"},
+            {"value": "social", "type": "category", "description": "Social category"},
+            {"value": "promotions", "type": "category", "description": "Promotions category"},
+            {"value": "updates", "type": "category", "description": "Updates category"},
+            {"value": "forums", "type": "category", "description": "Forums category"},
         ]
     
     else:
@@ -408,12 +716,22 @@ def get_search_suggestions(
         suggestions["operators"] = [
             {"value": "from:", "type": "operator", "description": "Search by sender"},
             {"value": "to:", "type": "operator", "description": "Search by recipient"},
+            {"value": "cc:", "type": "operator", "description": "Search by CC recipient"},
+            {"value": "bcc:", "type": "operator", "description": "Search by BCC recipient"},
             {"value": "subject:", "type": "operator", "description": "Search in subject"},
             {"value": "has:attachment", "type": "operator", "description": "Has attachments"},
+            {"value": "has:userlabels", "type": "operator", "description": "Has user labels"},
             {"value": "is:unread", "type": "operator", "description": "Unread emails"},
             {"value": "is:starred", "type": "operator", "description": "Starred emails"},
+            {"value": "is:important", "type": "operator", "description": "Important emails"},
             {"value": "in:", "type": "operator", "description": "Filter by folder"},
             {"value": "label:", "type": "operator", "description": "Filter by label"},
+            {"value": "category:", "type": "operator", "description": "Filter by category"},
+            {"value": "filename:", "type": "operator", "description": "Filter by attachment name"},
+            {"value": "size:", "type": "operator", "description": "Filter by size (e.g., size:10M)"},
+            {"value": "larger:", "type": "operator", "description": "Larger than size"},
+            {"value": "smaller:", "type": "operator", "description": "Smaller than size"},
+            {"value": "deliveredto:", "type": "operator", "description": "Delivered to address"},
         ]
         
         # Get recent searches

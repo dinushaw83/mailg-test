@@ -19,7 +19,6 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Create Token](#create-token)
 - [Bulk API](#bulk-api)
   - [Bulk Archive](#bulk-archive)
-  - [Bulk Update Category](#bulk-update-category)
   - [Bulk Delete](#bulk-delete)
   - [Bulk Important](#bulk-important)
   - [Bulk Update Labels](#bulk-update-labels)
@@ -38,12 +37,10 @@ This document describes the REST API endpoints for the Deskzen application.
 - [Emails API](#emails-api)
   - [List Emails](#list-emails)
   - [Create Email](#create-email)
-  - [Get Email Category Counts](#get-email-category-counts)
   - [Delete Email](#delete-email)
   - [Get Email](#get-email)
   - [Update Email](#update-email)
   - [Cancel Send](#cancel-send)
-  - [Update Email Category](#update-email-category)
   - [Confirm Send](#confirm-send)
   - [Forward Email](#forward-email)
   - [Add Label To Email](#add-label-to-email)
@@ -597,86 +594,6 @@ Permissions:
   "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ]
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "total_requested": 0,
-    "successful": 0,
-    "failed": 0,
-    "results": [
-      {
-        "id": null,
-        "success": null,
-        "error": null
-      }
-    ]
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Bulk Update Category
-
-**POST** `/api/v1/bulk/category`
-
-Update category for multiple emails.
-
-Optimized to use generic bulk update helper with batch category label sync.
-
-Categories: primary, promotions, social, updates, forums (Gmail-style tabs).
-
-Permissions:
-- Users can only update category on their own emails
-
-**Request Body**:
-
-```json
-{
-  "email_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
-  "category": "string"
 }
 ```
 
@@ -1804,7 +1721,6 @@ Permissions:
         "subject": null,
         "snippet": null,
         "folder": null,
-        "category": null,
         "is_read": null,
         "is_starred": null,
         "is_important": null,
@@ -1896,7 +1812,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -1904,69 +1819,6 @@ Permissions:
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
   }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Get Email Category Counts
-
-**GET** `/api/v1/emails/stats/category-counts`
-
-Get count of emails in each category (primary, promotions, social, updates, forums).
-
-Returns the number of emails in each category for the current user.
-Optionally filter by folder, read status, or starred status.
-
-Permissions:
-- Users can only see counts for their own emails (sent or received)
-
-**Query Parameters**:
-
-- `folder` (optional, object): Filter by folder
-- `is_read` (optional, object): Filter by read status
-- `is_starred` (optional, object): Filter by starred
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
 }
 ```
 
@@ -2090,7 +1942,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2178,7 +2029,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2249,88 +2099,6 @@ The email will be moved back to draft status so it can be edited or re-sent.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Update Email Category
-
-**PATCH** `/api/v1/emails/{email_id}/category`
-
-Update an email's category (Primary, Promotions, Social, Updates, Forums).
-
-Categories help organize inbox similar to Gmail tabs.
-
-Permissions:
-- Users can only update categories on their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Request Body**:
-
-```json
-{
-  "category": "string"
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2401,7 +2169,6 @@ Email delivery to recipients is processed in the background for better performan
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2491,7 +2258,6 @@ Email delivery to recipients is processed in the background for better performan
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2570,7 +2336,6 @@ Adding a label to an email will add it to the email's thread.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2703,7 +2468,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2782,7 +2546,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2863,7 +2626,6 @@ This endpoint creates a draft reply. Use POST /emails/{id}/send to send the repl
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2940,7 +2702,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3027,7 +2788,6 @@ Email delivery to recipients is processed in the background for better performan
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3100,7 +2860,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3179,7 +2938,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3252,7 +3010,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3736,7 +3493,6 @@ Permissions:
         "subject": null,
         "snippet": null,
         "folder": null,
-        "category": null,
         "is_read": null,
         "is_starred": null,
         "is_important": null,
@@ -4061,24 +3817,28 @@ Example:
 Search emails with comprehensive filtering.
 
 Supports Gmail-like search operators in the 'q' parameter:
-- from:sender@example.com
-- to:recipient@example.com
-- subject:meeting
-- has:attachment
-- is:starred
-- is:unread
-- in:inbox
-- label:important
-- before:2024-12-31
-- after:2024-01-01
+- from:sender@example.com (comma-separated for multiple)
+- to:recipient@example.com (comma-separated for multiple)
+- cc:user@example.com, bcc:user@example.com
+- subject:meeting, subject:(dinner movie) for grouping
+- has:attachment, has:userlabels, has:nouserlabels
+- is:starred, is:unread, is:read, is:important
+- in:inbox, in:anywhere, in:archive, in:snoozed
+- label:important, category:primary
+- before:2024-12-31, after:2024-01-01
+- size:1000000, larger:10M, smaller:5K
+- filename:report.pdf, filename:pdf
+- deliveredto:user@example.com
+- -term (exclude), +term (exact match), "exact phrase"
+- term1 OR term2, {term1 term2}
 
-These can be combined: q="from:john subject:report has:attachment"
+These can be combined: q="from:john subject:report has:attachment -spam"
 
 **Query Parameters**:
 
 - `q` (optional, object): Search query with operators
-- `from` (optional, object): Filter by sender
-- `to` (optional, object): Filter by recipient
+- `from` (optional, object): Filter by sender (comma-separated for multiple)
+- `to` (optional, object): Filter by recipient (comma-separated for multiple)
 - `subject` (optional, object): Search in subject
 - `folder` (optional, object): Filter by folder: inbox, sent, drafts, trash, spam, starred
 - `label_id` (optional, object): Filter by label
@@ -4089,10 +3849,24 @@ These can be combined: q="from:john subject:report has:attachment"
 - `has_attachment` (optional, object): Has attachments
 - `date_from` (optional, object): Emails after date (YYYY-MM-DD)
 - `date_to` (optional, object): Emails before date (YYYY-MM-DD)
+- `hasnot` (optional, object): Exclude emails containing this text
+- `size` (optional, object): Filter by exact size in bytes
+- `larger` (optional, object): Emails larger than size in bytes
+- `smaller` (optional, object): Emails smaller than size in bytes
+- `cc` (optional, object): Filter by CC recipients (comma-separated)
+- `bcc` (optional, object): Filter by BCC recipients (comma-separated)
+- `filename` (optional, object): Filter by attachment filename or extension
+- `category` (optional, object): Filter by category: primary, promotions, social, updates, forums
+- `deliveredto` (optional, object): Filter by delivered-to address
+- `is_snoozed` (optional, object): Filter snoozed emails
+- `has_userlabels` (optional, object): Filter emails with/without user labels
+- `in_anywhere` (optional, object): Search all folders including spam/trash
+- `in_archive` (optional, object): Search archived messages
 - `page` (optional, integer)
 - `page_size` (optional, integer)
 - `sort_by` (optional, string): Sort by: date, subject, sender
 - `sort_order` (optional, string): asc or desc
+- `tz_offset` (optional, object): UTC offset in minutes from browser's getTimezoneOffset() for date interpretation in q
 
 **Responses**:
 
@@ -4110,7 +3884,6 @@ These can be combined: q="from:john subject:report has:attachment"
         "subject": null,
         "snippet": null,
         "folder": null,
-        "category": null,
         "is_read": null,
         "is_starred": null,
         "is_important": null,
@@ -4780,7 +4553,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -4913,7 +4685,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -4995,7 +4766,6 @@ Permissions:
       "body": "string",
       "html_body": "string",
       "folder": "string",
-      "category": "string",
       "is_read": false,
       "is_starred": false,
       "is_important": false,
@@ -5075,7 +4845,6 @@ Other users' important status for the same thread is not affected.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -5212,7 +4981,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -5348,7 +5116,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -5419,7 +5186,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,

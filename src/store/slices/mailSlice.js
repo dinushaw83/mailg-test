@@ -823,7 +823,6 @@ const mailSlice = createSlice({
 
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-
         // Merge with system labels (keep system labels as-is, they use composite keys)
         const mergedLabels = { ...state.labels };
 
@@ -831,7 +830,7 @@ const mailSlice = createSlice({
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
-
+        
         state.labels = mergedLabels;
         state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
         state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };

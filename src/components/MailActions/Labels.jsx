@@ -74,6 +74,7 @@ export const Labels = ({
           name: meta.name || key,
           color: meta.color,
           isCurrentlyApplied: currentLabels.has(key),
+          ...meta,
         };
       })
       .filter((label) => {

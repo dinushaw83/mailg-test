@@ -109,6 +109,7 @@ export function beToFeLabel(beLabel, idToKeyMap) {
     parentKey: parentKey, // Composite key for tree building
     system: beLabel.is_system || false, // Preserve system label flag from backend
     email_count: beLabel.email_count || 0,
+    ...beLabel,
   };
 }
 
