@@ -2,7 +2,7 @@
 
 Tests cover:
 - Inbox filtering by INBOX system label
-- Inbox combined with category filtering
+- Inbox combined with category filtering (via labels with is_system=True, is_exclusive=False)
 - Spam folder behavior similar to trash
 - SPAM/TRASH label removal restores emails to inbox
 """
@@ -199,83 +199,30 @@ class TestInboxLabelFiltering:
 
 
 class TestInboxWithCategory:
-    """Test inbox combined with category filtering."""
-
-    def test_inbox_with_primary_category(self, client_with_auth, db_session):
-        """Test filtering inbox by primary category."""
-        client, token, user = client_with_auth
-        
-        # Create INBOX system label
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        db_session.add(inbox_label)
-        db_session.commit()
-        
-        # Create threads
-        thread1 = Thread(subject="Thread 1", owner_id=user.id, email_count=1)
-        thread2 = Thread(subject="Thread 2", owner_id=user.id, email_count=1)
-        db_session.add_all([thread1, thread2])
-        db_session.commit()
-        
-        # Create emails with different categories
-        email_primary = Email(
-            subject="Primary Email",
-            body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            category="primary",
-            sender_id=user.id,
-            thread_id=thread1.id
-        )
-        email_promo = Email(
-            subject="Promo Email",
-            body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            category="promotions",
-            sender_id=user.id,
-            thread_id=thread2.id
-        )
-        db_session.add_all([email_primary, email_promo])
-        db_session.commit()
-        
-        # Add INBOX label to both threads
-        for thread in [thread1, thread2]:
-            thread_label = ThreadLabel(
-                thread_id=thread.id,
-                label_id=inbox_label.id,
-                user_id=user.id
-            )
-            db_session.add(thread_label)
-        db_session.commit()
-        
-        # Filter inbox by primary category
-        response = client.get(
-            "/api/v1/emails?folder=inbox&category=primary",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        
-        # Should only see primary emails
-        assert len(data["results"]) == 1
-        assert data["results"][0]["category"] == "primary"
+    """Test inbox combined with category filtering.
+    
+    Category filtering now uses labels with is_system=True and is_exclusive=False.
+    """
 
     def test_inbox_with_promotions_category(self, client_with_auth, db_session):
-        """Test filtering inbox by promotions category."""
+        """Test filtering inbox by promotions category via label."""
         client, token, user = client_with_auth
         
         # Create INBOX system label
         inbox_label = Label(
             name=SystemLabel.INBOX.value,
             is_system=True,
+            is_exclusive=True,  # Inbox is exclusive
             owner_id=user.id
         )
-        db_session.add(inbox_label)
+        # Create Promotions category label
+        promo_label = Label(
+            name="Promotions",
+            is_system=True,
+            is_exclusive=False,  # Category labels are not exclusive
+            owner_id=user.id
+        )
+        db_session.add_all([inbox_label, promo_label])
         db_session.commit()
         
         # Create thread with promo email
@@ -288,7 +235,6 @@ class TestInboxWithCategory:
             body="50% off!",
             status="received",
             folder=FolderType.INBOX.value,
-            category="promotions",
             sender_id=user.id,
             thread_id=thread.id
         )
@@ -296,12 +242,18 @@ class TestInboxWithCategory:
         db_session.commit()
         
         # Add INBOX label
-        thread_label = ThreadLabel(
+        inbox_thread_label = ThreadLabel(
             thread_id=thread.id,
             label_id=inbox_label.id,
             user_id=user.id
         )
-        db_session.add(thread_label)
+        # Add Promotions label
+        promo_thread_label = ThreadLabel(
+            thread_id=thread.id,
+            label_id=promo_label.id,
+            user_id=user.id
+        )
+        db_session.add_all([inbox_thread_label, promo_thread_label])
         db_session.commit()
         
         # Filter inbox by promotions
@@ -313,7 +265,11 @@ class TestInboxWithCategory:
         assert response.status_code == 200
         data = response.json()["data"]
         assert len(data["results"]) == 1
-        assert data["results"][0]["category"] == "promotions"
+        # Category is now via labels, not email field
+        assert data["results"][0]["subject"] == "Sale Email"
+        # Verify Promotions label is in labels array
+        labels = data["results"][0].get("labels", [])
+        assert any(l.get("name") == "Promotions" for l in labels)
 
 
 class TestSpamFolder:

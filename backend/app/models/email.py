@@ -24,9 +24,6 @@ class Email(Base):
     # Folder type (enum-based): inbox, sent, drafts, trash, spam, starred
     folder = Column(String(20), default="inbox", index=True)
     
-    # Gmail-style category (Primary, Promotions, Social, Updates, Forums)
-    category = Column(String(50), default="primary", index=True)
-    
     # Undo send functionality
     scheduled_send_at = Column(DateTime(timezone=True), nullable=True, index=True)  # When email will actually be sent
 
@@ -58,6 +55,5 @@ class Email(Base):
     __table_args__ = (
         Index("ix_emails_sender_status", "sender_id", "status"),
         Index("ix_emails_thread_created", "thread_id", "created_at"),
-        Index("ix_emails_folder_category", "folder", "category"),
         Index("ix_emails_scheduled_send", "scheduled_send_at"),
     )

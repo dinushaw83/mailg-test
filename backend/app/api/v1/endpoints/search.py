@@ -410,10 +410,49 @@ def search_emails(
         ).distinct().scalar_subquery()
         query = query.filter(Email.id.in_(filename_subq))
     
-    # Category filter
+    # Category filter - filter by category label (is_system=True, is_exclusive=False)
     if category:
         if category.lower() in VALID_EMAIL_CATEGORIES:
-            query = query.filter(Email.category == category.lower())
+            from app.utils.label_utils import CATEGORY_TO_LABEL
+            from app.core.constants import EmailCategory, CategoryLabel
+            
+            try:
+                category_enum = EmailCategory(category.lower())
+                
+                if category_enum == EmailCategory.PRIMARY:
+                    # PRIMARY = emails in threads WITHOUT any category label
+                    category_label_ids = db.query(Label.id).filter(
+                        Label.owner_id == current_user.id,
+                        Label.is_system == True,
+                        Label.is_exclusive == False,
+                        Label.name.in_([cl.value for cl in CategoryLabel])
+                    ).subquery()
+                    
+                    threads_with_category = db.query(ThreadLabel.thread_id).filter(
+                        ThreadLabel.label_id.in_(db.query(category_label_ids.c.id)),
+                        ThreadLabel.user_id == current_user.id
+                    ).subquery()
+                    
+                    query = query.filter(~Email.thread_id.in_(db.query(threads_with_category.c.thread_id)))
+                else:
+                    # Other categories - filter by specific label
+                    category_label_enum = CATEGORY_TO_LABEL.get(category_enum)
+                    if category_label_enum:
+                        category_label = db.query(Label).filter(
+                            Label.owner_id == current_user.id,
+                            Label.name == category_label_enum.value,
+                            Label.is_system == True,
+                            Label.is_exclusive == False
+                        ).first()
+                        
+                        if category_label:
+                            labeled_thread_ids = db.query(ThreadLabel.thread_id).filter(
+                                ThreadLabel.label_id == category_label.id,
+                                ThreadLabel.user_id == current_user.id
+                            ).subquery()
+                            query = query.filter(Email.thread_id.in_(db.query(labeled_thread_ids.c.thread_id)))
+            except ValueError:
+                pass
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

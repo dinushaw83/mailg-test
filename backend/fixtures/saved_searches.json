@@ -86,9 +86,7 @@
     "id": "729f2780-c4fe-41f6-a361-67d09401865f",
     "name": "Urgent Items",
     "query": "larger:10MB",
-    "filters": {
-      "category": "primary"
-    },
+    "filters": null,
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "use_count": 61,
     "last_used_at": "2025-11-27T16:53:42.765447Z",
@@ -199,9 +197,7 @@
     "id": "1361e4b0-729b-4c10-82ba-d5600dc55031",
     "name": "Important Emails",
     "query": "to:me",
-    "filters": {
-      "category": "primary"
-    },
+    "filters": null,
     "owner_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "use_count": 40,
     "last_used_at": null,
@@ -310,9 +306,7 @@
     "id": "41067384-174e-496a-ad0e-9795b1b334cf",
     "name": "Important Emails",
     "query": "in:inbox",
-    "filters": {
-      "category": "primary"
-    },
+    "filters": null,
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "use_count": 38,
     "last_used_at": "2025-08-23T16:53:42.766676Z",
@@ -410,9 +404,7 @@
     "id": "0071776b-2c1f-405a-8e18-eb56613dfc35",
     "name": "Starred Messages",
     "query": "larger:10MB",
-    "filters": {
-      "category": "social"
-    },
+    "filters": null,
     "owner_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "use_count": 74,
     "last_used_at": "2025-10-20T16:53:42.767156Z",
@@ -436,9 +428,7 @@
     "id": "0869ba11-44f7-4ea0-ab72-d338b75b145f",
     "name": "Work Emails",
     "query": "is:unread",
-    "filters": {
-      "category": "promotions"
-    },
+    "filters": null,
     "owner_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "use_count": 7,
     "last_used_at": null,
@@ -462,9 +452,7 @@
     "id": "1fc7c5c3-88ac-4e8c-b07f-e4a5808212ef",
     "name": "Urgent Items",
     "query": "from:boss@company.com",
-    "filters": {
-      "category": "promotions"
-    },
+    "filters": null,
     "owner_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "use_count": 30,
     "last_used_at": "2025-11-17T16:53:42.767404Z",
@@ -536,9 +524,7 @@
     "id": "3f6d6867-ae27-467d-83e7-97f31bf241b3",
     "name": "Starred Messages",
     "query": "in:inbox",
-    "filters": {
-      "category": "social"
-    },
+    "filters": null,
     "owner_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "use_count": 57,
     "last_used_at": null,

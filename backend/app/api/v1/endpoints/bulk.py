@@ -8,7 +8,6 @@ This module provides:
 - Bulk label add/remove
 - Bulk snooze/unsnooze
 - Bulk archive
-- Bulk category update
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -26,18 +25,17 @@ from app.models.thread_user_metadata import ThreadUserMetadata
 from app.schemas.bulk import (
     BulkImportantRequest, BulkReadRequest, BulkStarRequest, BulkMoveRequest, BulkDeleteRequest,
     BulkLabelsUpdateRequest, BulkSnoozeRequest,
-    BulkUnsnoozeRequest, BulkArchiveRequest, BulkCategoryRequest,
+    BulkUnsnoozeRequest, BulkArchiveRequest,
     BulkUnarchiveRequest, BulkSpamRequest, BulkUnspamRequest,
     BulkOperationResponse,
 )
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.core.constants import FolderType, EmailCategory, SystemLabel, VALID_EMAIL_CATEGORIES, VALID_FOLDER_TYPES
+from app.core.constants import FolderType, SystemLabel, VALID_FOLDER_TYPES
 from app.utils.label_utils import (
     bulk_add_system_label_to_threads,
     bulk_remove_system_label_from_threads,
     bulk_replace_exclusive_labels,
-    bulk_sync_category_labels,
 )
 from app.utils.bulk_utils import (
     get_user_accessible_threads,
@@ -661,80 +659,6 @@ def bulk_archive(
     logger.info(f"Bulk archive: {len(success_ids)} threads archived by user {current_user.id}")
 
     return create_bulk_response(request.thread_ids, success_ids, failures)
-
-
-@router.post("/bulk/category", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
-def bulk_update_category(
-    request: BulkCategoryRequest,
-    db: Session = Depends(get_db),
-) -> BulkOperationResponse:
-    """Update category for multiple emails.
-
-    Optimized to use generic bulk update helper with batch category label sync.
-
-    Categories: primary, promotions, social, updates, forums (Gmail-style tabs).
-
-    Permissions:
-    - Users can only update category on their own emails
-    """
-    current_user = auth.user
-
-    # Validate category
-    if request.category not in VALID_EMAIL_CATEGORIES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid category. Must be one of: {', '.join(VALID_EMAIL_CATEGORIES)}"
-        )
-
-    new_category = EmailCategory(request.category)
-
-    # Get emails with their current categories and thread IDs
-    email_data = db.query(Email.id, Email.thread_id, Email.category).filter(
-        Email.id.in_(request.email_ids),
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
-                )
-            )
-        )
-    ).all()
-
-    success_ids = [ed[0] for ed in email_data]
-    not_found = [eid for eid in request.email_ids if eid not in success_ids]
-    failures = {eid: "Email not found or access denied" for eid in not_found}
-
-    # Build thread category mapping for bulk sync
-    thread_category_map = {}
-    for email_id, thread_id, old_cat_str in email_data:
-        if thread_id:
-            old_category = EmailCategory(old_cat_str) if old_cat_str else None
-            thread_category_map[thread_id] = (old_category, new_category)
-
-    if success_ids:
-        try:
-            # Bulk update category for all emails
-            db.query(Email).filter(
-                Email.id.in_(success_ids)
-            ).update({Email.category: request.category}, synchronize_session=False)
-
-            # Bulk sync category labels
-            if thread_category_map:
-                bulk_sync_category_labels(db, thread_category_map, current_user.id, commit=False)
-
-            db.commit()
-        except Exception as e:
-            db.rollback()
-            logger.error(f"Bulk category update operation failed: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Bulk operation failed"
-            )
-
-    logger.info(f"Bulk category: {len(success_ids)} emails updated to '{request.category}' by user {current_user.id}")
-
-    return create_bulk_response(request.email_ids, success_ids, failures)
 
 
 @router.post("/bulk/unarchive", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])

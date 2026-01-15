@@ -1878,618 +1878,8 @@ class TestThreadUnstar:
         assert data["is_starred"] == False
 
 
-class TestEmailCategory:
-    """Test email category (Gmail-style tabs) operations."""
-
-    def test_update_email_category_success(self, client_with_auth, db_session, sample_email):
-        """Test updating an email's category."""
-        client, token, user = client_with_auth
-        
-        response = client.patch(
-            f"/api/v1/emails/{sample_email.id}/category",
-            json={"category": "promotions"},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert data["category"] == "promotions"
-
-    def test_update_email_category_all_types(self, client_with_auth, db_session, sample_email):
-        """Test all valid category types."""
-        client, token, user = client_with_auth
-        
-        categories = ["primary", "promotions", "social", "updates", "forums"]
-        for category in categories:
-            response = client.patch(
-                f"/api/v1/emails/{sample_email.id}/category",
-                json={"category": category},
-                headers={"Authorization": f"Bearer {token}"}
-            )
-            
-            assert response.status_code == 200
-            data = response.json()["data"]
-            assert data["category"] == category
-
-    def test_update_email_category_invalid(self, client_with_auth, db_session, sample_email):
-        """Test updating with invalid category fails."""
-        client, token, user = client_with_auth
-        
-        response = client.patch(
-            f"/api/v1/emails/{sample_email.id}/category",
-            json={"category": "invalid_category"},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 400
-
-    def test_update_email_category_not_found(self, client_with_auth):
-        """Test updating category of non-existent email returns 404."""
-        client, token, user = client_with_auth
-        
-        response = client.patch(
-            f"/api/v1/emails/{NON_EXISTENT_UUID}/category",
-            json={"category": "promotions"},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 404
-
-    def test_update_email_category_unauthenticated(self, client, sample_email):
-        """Test updating category without authentication fails."""
-        response = client.patch(
-            f"/api/v1/emails/{sample_email.id}/category",
-            json={"category": "promotions"}
-        )
-        
-        assert response.status_code == 401
-
-    def test_list_emails_filter_by_category(self, client_with_auth, db_session):
-        """Test filtering emails by category."""
-        client, token, user = client_with_auth
-        
-        # Create emails with different categories
-        email_primary = Email(
-            subject="Primary Email",
-            body="Content",
-            status="received",
-            category="primary",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_promo = Email(
-            subject="Promo Email",
-            body="Content",
-            status="received",
-            category="promotions",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_social = Email(
-            subject="Social Email",
-            body="Content",
-            status="received",
-            category="social",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add_all([email_primary, email_promo, email_social])
-        db_session.commit()
-        
-        # Filter by category
-        response = client.get(
-            "/api/v1/emails?category=promotions",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        # All returned emails should have promotions category
-        for email in data["results"]:
-            assert email["category"] == "promotions"
-
-    def test_email_response_includes_category(self, client_with_auth, db_session, sample_email):
-        """Test that email response includes category field."""
-        client, token, user = client_with_auth
-        
-        response = client.get(
-            f"/api/v1/emails/{sample_email.id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert "category" in data
-
-    def test_email_default_category_is_primary(self, client_with_auth, db_session):
-        """Test that new emails default to 'primary' category."""
-        client, token, user = client_with_auth
-        
-        response = client.post(
-            "/api/v1/emails",
-            json={
-                "subject": "New Email",
-                "body": "Test body",
-                "recipients": [{"email": "test@example.com", "type": "to"}],
-                "is_draft": True
-            },
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 201
-        data = response.json()["data"]
-        assert data["category"] == "primary"
-
-
-class TestEmailCategoryCounts:
-    """Test email category counts statistics endpoint."""
-
-    def test_get_category_counts_success(self, client_with_auth, db_session):
-        """Test getting email category counts."""
-        client, token, user = client_with_auth
-
-        # Create emails with different categories
-        email_primary = Email(
-            subject="Primary Email",
-            body="Content",
-            status="received",
-            category="primary",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_promo1 = Email(
-            subject="Promo Email 1",
-            body="Content",
-            status="received",
-            category="promotions",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_promo2 = Email(
-            subject="Promo Email 2",
-            body="Content",
-            status="received",
-            category="promotions",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_social = Email(
-            subject="Social Email",
-            body="Content",
-            status="received",
-            category="social",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add_all([email_primary, email_promo1, email_promo2, email_social])
-        db_session.commit()
-
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # Verify counts - response is now a flat dict
-        assert data["primary"] == 1
-        assert data["promotions"] == 2
-        assert data["social"] == 1
-        assert data["updates"] == 0
-        assert data["forums"] == 0
-
-    def test_get_category_counts_includes_all_categories(self, client_with_auth, db_session):
-        """Test that all categories are included even with 0 count."""
-        from app.core.constants import VALID_EMAIL_CATEGORIES
-
-        client, token, user = client_with_auth
-
-        # Create only one email in primary category
-        email = Email(
-            subject="Primary Email",
-            body="Content",
-            status="received",
-            category="primary",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add(email)
-        db_session.commit()
-
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # All categories from VALID_EMAIL_CATEGORIES should be present
-        for category in VALID_EMAIL_CATEGORIES:
-            assert category in data
-            # All should have count >= 0
-            assert data[category] >= 0
-
-        # Verify primary has 1, all others have 0
-        assert data["primary"] == 1
-        for category in VALID_EMAIL_CATEGORIES:
-            if category != "primary":
-                assert data[category] == 0
-
-    def test_get_category_counts_empty(self, client_with_auth, db_session):
-        """Test getting category counts when no emails exist."""
-        from app.core.constants import VALID_EMAIL_CATEGORIES
-
-        client, token, user = client_with_auth
-
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # All categories should exist with 0 count
-        for category in VALID_EMAIL_CATEGORIES:
-            assert category in data
-            assert data[category] == 0
-
-    def test_get_category_counts_filter_by_folder(self, client_with_auth, db_session):
-        """Test filtering category counts by folder."""
-        client, token, user = client_with_auth
-
-        # Create another user as sender
-        other_user = User(
-            first_name="Other", last_name="User",
-            email="other@example.com", role="user", active=True
-        )
-        db_session.add(other_user)
-        db_session.flush()
-
-        # Create emails in different folders
-        # Inbox email: user is a recipient (not sender)
-        email_inbox = Email(
-            subject="Inbox Email",
-            body="Content",
-            status="received",
-            category="primary",
-            sender_id=other_user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_sent = Email(
-            subject="Sent Email",
-            body="Content",
-            status="sent",
-            category="primary",
-            sender_id=user.id,
-            folder=FolderType.SENT.value
-        )
-        db_session.add_all([email_inbox, email_sent])
-        db_session.flush()
-
-        # Add user as recipient of inbox email
-        recipient = EmailRecipient(
-            email_id=email_inbox.id,
-            recipient_id=user.id,
-            recipient_email=user.email,
-            recipient_name=user.first_name,
-            recipient_type="to"
-        )
-        db_session.add(recipient)
-        db_session.commit()
-
-        # Filter by inbox
-        response = client.get(
-            "/api/v1/emails/stats/category-counts?folder=inbox",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        assert data["primary"] == 1
-
-    def test_get_category_counts_filter_by_is_read(self, client_with_auth, db_session):
-        """Test filtering category counts by read status."""
-        client, token, user = client_with_auth
-
-        # Create read and unread emails
-        email_read = Email(
-            subject="Read Email",
-            body="Content",
-            status="received",
-            category="primary",
-            is_read=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_unread1 = Email(
-            subject="Unread Email 1",
-            body="Content",
-            status="received",
-            category="primary",
-            is_read=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_unread2 = Email(
-            subject="Unread Email 2",
-            body="Content",
-            status="received",
-            category="promotions",
-            is_read=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add_all([email_read, email_unread1, email_unread2])
-        db_session.commit()
-
-        # Filter by unread
-        response = client.get(
-            "/api/v1/emails/stats/category-counts?is_read=false",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        assert data["primary"] == 1
-        assert data["promotions"] == 1
-
-    def test_get_category_counts_filter_by_starred(self, client_with_auth, db_session):
-        """Test filtering category counts by starred status."""
-        client, token, user = client_with_auth
-
-        # Create starred and non-starred emails
-        email_starred1 = Email(
-            subject="Starred Email 1",
-            body="Content",
-            status="received",
-            category="primary",
-            is_starred=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_starred2 = Email(
-            subject="Starred Email 2",
-            body="Content",
-            status="received",
-            category="social",
-            is_starred=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        email_not_starred = Email(
-            subject="Not Starred Email",
-            body="Content",
-            status="received",
-            category="primary",
-            is_starred=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add_all([email_starred1, email_starred2, email_not_starred])
-        db_session.commit()
-
-        # Filter by starred
-        response = client.get(
-            "/api/v1/emails/stats/category-counts?is_starred=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        assert data["primary"] == 1
-        assert data["social"] == 1
-
-    def test_get_category_counts_combined_filters(self, client_with_auth, db_session):
-        """Test category counts with multiple filters combined."""
-        client, token, user = client_with_auth
-
-        # Create another user as sender for inbox emails
-        other_user = User(
-            first_name="Other", last_name="User",
-            email="other2@example.com", role="user", active=True
-        )
-        db_session.add(other_user)
-        db_session.flush()
-
-        # Create various emails - inbox emails have other_user as sender
-        email1 = Email(
-            subject="Email 1",
-            body="Content",
-            status="received",
-            category="primary",
-            is_read=False,
-            is_starred=True,
-            sender_id=other_user.id,
-            folder=FolderType.INBOX.value
-        )
-        email2 = Email(
-            subject="Email 2",
-            body="Content",
-            status="received",
-            category="primary",
-            is_read=False,
-            is_starred=False,
-            sender_id=other_user.id,
-            folder=FolderType.INBOX.value
-        )
-        email3 = Email(
-            subject="Email 3",
-            body="Content",
-            status="received",
-            category="promotions",
-            is_read=False,
-            is_starred=True,
-            sender_id=other_user.id,
-            folder=FolderType.INBOX.value
-        )
-        email4 = Email(
-            subject="Email 4",
-            body="Content",
-            status="sent",
-            category="primary",
-            is_read=True,
-            is_starred=True,
-            sender_id=user.id,
-            folder=FolderType.SENT.value
-        )
-        db_session.add_all([email1, email2, email3, email4])
-        db_session.flush()
-
-        # Add user as recipient of inbox emails
-        for email in [email1, email2, email3]:
-            recipient = EmailRecipient(
-                email_id=email.id,
-                recipient_id=user.id,
-                recipient_email=user.email,
-                recipient_name=user.first_name,
-                recipient_type="to"
-            )
-            db_session.add(recipient)
-        db_session.commit()
-
-        # Filter by inbox + unread + starred
-        response = client.get(
-            "/api/v1/emails/stats/category-counts?folder=inbox&is_read=false&is_starred=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # email1 and email3
-        assert data["primary"] == 1
-        assert data["promotions"] == 1
-
-    def test_get_category_counts_unauthenticated(self, client):
-        """Test getting category counts without authentication fails."""
-        response = client.get("/api/v1/emails/stats/category-counts")
-
-        assert response.status_code == 401
-
-    def test_get_category_counts_only_shows_user_emails(self, client_with_auth, db_session):
-        """Test that category counts only include user's own emails."""
-        client, token, user = client_with_auth
-
-        # Create another user
-        other_user = User(
-            first_name="Other",
-            last_name="User",
-            email="other@example.com",
-            role="user"
-        )
-        db_session.add(other_user)
-        db_session.commit()
-
-        # Create email for current user
-        email_user = Email(
-            subject="User Email",
-            body="Content",
-            status="received",
-            category="primary",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
-        )
-
-        # Create email for other user (should not be counted)
-        email_other = Email(
-            subject="Other User Email",
-            body="Content",
-            status="received",
-            category="primary",
-            sender_id=other_user.id,
-            folder=FolderType.INBOX.value
-        )
-
-        db_session.add_all([email_user, email_other])
-        db_session.commit()
-
-        # Get counts for current user
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # Only user's email
-        assert data["primary"] == 1
-
-    def test_get_category_counts_includes_received_emails(self, client_with_auth, db_session):
-        """Test that category counts include emails received by user."""
-        client, token, user = client_with_auth
-
-        # Create another user as sender
-        sender = User(
-            first_name="Sender",
-            last_name="User",
-            email="sender@example.com",
-            role="user"
-        )
-        db_session.add(sender)
-        db_session.commit()
-
-        # Create email sent from sender to current user
-        email = Email(
-            subject="Received Email",
-            body="Content",
-            status="received",
-            category="social",
-            sender_id=sender.id,
-            folder=FolderType.INBOX.value
-        )
-        db_session.add(email)
-        db_session.commit()
-
-        # Add current user as recipient
-        recipient = EmailRecipient(
-            email_id=email.id,
-            recipient_id=user.id,
-            recipient_email=user.email,
-            recipient_type="to"
-        )
-        db_session.add(recipient)
-        db_session.commit()
-
-        # Get counts - should include received email
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        assert data["social"] == 1
-
-    def test_get_category_counts_all_keys_present(self, client_with_auth, db_session):
-        """Test that all category keys are present in response."""
-        from app.core.constants import VALID_EMAIL_CATEGORIES
-
-        client, token, user = client_with_auth
-
-        response = client.get(
-            "/api/v1/emails/stats/category-counts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # Verify all category keys from VALID_EMAIL_CATEGORIES are present
-        expected_keys = set(VALID_EMAIL_CATEGORIES)
-        assert set(data.keys()) == expected_keys
-
-        # Verify all values are integers
-        for key, value in data.items():
-            assert isinstance(value, int)
-            assert value >= 0  # Counts should be non-negative
+# Note: TestEmailCategory and TestEmailCategoryCounts classes removed
+# Category is now handled via labels with is_system=True and is_exclusive=False
 
 
 class TestScheduledFolder:
@@ -3103,30 +2493,193 @@ class TestEmailAPIFilters:
             assert email["folder"] == "spam"
 
     def test_category_filter_with_inbox(self, client_with_auth, db_session):
-        """Test category filter combined with inbox (Gmail-style tabs)."""
+        """Test category filter combined with inbox (Gmail-style tabs).
+        
+        Category filtering now uses labels with is_system=True and is_exclusive=False.
+        """
+        from app.models.label import Label
+        from app.models.thread_label import ThreadLabel
+        
         client, token, user = client_with_auth
         
-        # Create emails with different categories
+        # Create system labels if they don't exist
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Inbox",
+            Label.is_system == True
+        ).first()
+        if not inbox_label:
+            inbox_label = Label(
+                name="Inbox",
+                is_system=True,
+                is_exclusive=True,
+                owner_id=user.id
+            )
+            db_session.add(inbox_label)
+        
+        promo_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Promotions",
+            Label.is_system == True,
+            Label.is_exclusive == False
+        ).first()
+        if not promo_label:
+            promo_label = Label(
+                name="Promotions",
+                is_system=True,
+                is_exclusive=False,
+                owner_id=user.id
+            )
+            db_session.add(promo_label)
+        
+        db_session.flush()
+        
+        # Create threads for emails
+        thread1 = Thread(subject="Primary Thread", owner_id=user.id, email_count=1)
+        thread2 = Thread(subject="Promo Thread", owner_id=user.id, email_count=1)
+        db_session.add_all([thread1, thread2])
+        db_session.flush()
+        
+        # Create emails
         primary_email = Email(
             subject="Primary Email",
             body="Content",
             status="received",
             folder=FolderType.INBOX.value,
-            category="primary",
-            sender_id=user.id
+            sender_id=user.id,
+            thread_id=thread1.id
         )
         promo_email = Email(
             subject="Promo Email",
             body="Content",
             status="received",
             folder=FolderType.INBOX.value,
-            category="promotions",
-            sender_id=user.id
+            sender_id=user.id,
+            thread_id=thread2.id
         )
         db_session.add_all([primary_email, promo_email])
+        db_session.flush()
+        
+        # Add inbox label to both threads
+        for thread in [thread1, thread2]:
+            thread_label = ThreadLabel(
+                thread_id=thread.id,
+                label_id=inbox_label.id,
+                user_id=user.id
+            )
+            db_session.add(thread_label)
+        
+        # Add promotions label to promo thread only
+        promo_thread_label = ThreadLabel(
+            thread_id=thread2.id,
+            label_id=promo_label.id,
+            user_id=user.id
+        )
+        db_session.add(promo_thread_label)
+        
         db_session.commit()
         
-        # Test primary category
+        # Test promotions category (filters by label)
+        response = client.get(
+            "/api/v1/emails?folder=inbox&category=promotions",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Should only return emails in threads with Promotions label
+        assert len(data["results"]) == 1
+        assert data["results"][0]["subject"] == "Promo Email"
+        
+        # Verify the email has the Promotions label
+        labels = data["results"][0].get("labels", [])
+        assert any(label.get("name") == "Promotions" for label in labels)
+
+    def test_primary_category_filter_excludes_categorized_emails(self, client_with_auth, db_session):
+        """Test that category=primary returns emails WITHOUT any category label.
+        
+        PRIMARY means emails in threads that don't have Promotions, Social, Updates, Forums, or Purchases labels.
+        """
+        from app.models.label import Label
+        from app.models.thread_label import ThreadLabel
+        
+        client, token, user = client_with_auth
+        
+        # Create system labels
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Inbox",
+            Label.is_system == True
+        ).first()
+        if not inbox_label:
+            inbox_label = Label(
+                name="Inbox",
+                is_system=True,
+                is_exclusive=True,
+                owner_id=user.id
+            )
+            db_session.add(inbox_label)
+        
+        promo_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Promotions",
+            Label.is_system == True,
+            Label.is_exclusive == False
+        ).first()
+        if not promo_label:
+            promo_label = Label(
+                name="Promotions",
+                is_system=True,
+                is_exclusive=False,
+                owner_id=user.id
+            )
+            db_session.add(promo_label)
+        
+        db_session.flush()
+        
+        # Create threads
+        thread_primary = Thread(subject="Primary Thread", owner_id=user.id, email_count=1)
+        thread_promo = Thread(subject="Promo Thread", owner_id=user.id, email_count=1)
+        db_session.add_all([thread_primary, thread_promo])
+        db_session.flush()
+        
+        # Create emails
+        primary_email = Email(
+            subject="Primary Email",
+            body="No category label",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread_primary.id
+        )
+        promo_email = Email(
+            subject="Promo Email",
+            body="Has promotions label",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread_promo.id
+        )
+        db_session.add_all([primary_email, promo_email])
+        db_session.flush()
+        
+        # Add inbox label to both threads
+        for thread in [thread_primary, thread_promo]:
+            tl = ThreadLabel(thread_id=thread.id, label_id=inbox_label.id, user_id=user.id)
+            db_session.add(tl)
+        
+        # Add promotions label to promo thread only
+        promo_thread_label = ThreadLabel(
+            thread_id=thread_promo.id,
+            label_id=promo_label.id,
+            user_id=user.id
+        )
+        db_session.add(promo_thread_label)
+        
+        db_session.commit()
+        
+        # Test PRIMARY category - should return only emails without category labels
         response = client.get(
             "/api/v1/emails?folder=inbox&category=primary",
             headers={"Authorization": f"Bearer {token}"}
@@ -3134,8 +2687,15 @@ class TestEmailAPIFilters:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        for email in data["results"]:
-            assert email["category"] == "primary"
+        
+        # Should only return the primary email (no category label)
+        assert len(data["results"]) == 1
+        assert data["results"][0]["subject"] == "Primary Email"
+        
+        # Verify it doesn't have any category labels
+        labels = data["results"][0].get("labels", [])
+        category_names = {"Promotions", "Social", "Updates", "Forums", "Purchases"}
+        assert not any(label.get("name") in category_names for label in labels)
 
     def test_is_important_filter(self, client_with_auth, db_session):
         """Test is_important filter uses ThreadUserMetadata."""
@@ -3289,16 +2849,15 @@ class TestEmailAPIFilters:
             body="Content",
             status="received",
             folder=FolderType.INBOX.value,
-            category="primary",
             is_read=False,
             sender_id=user.id
         )
         db_session.add(email)
         db_session.commit()
         
-        # Combine folder + category + is_read
+        # Combine folder + is_read
         response = client.get(
-            "/api/v1/emails?folder=inbox&category=primary&is_read=false",
+            "/api/v1/emails?folder=inbox&is_read=false",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -3306,7 +2865,6 @@ class TestEmailAPIFilters:
         data = response.json()["data"]
         for email in data["results"]:
             assert email["folder"] == "inbox"
-            assert email["category"] == "primary"
             assert email["is_read"] == False
 
     def test_all_mail_no_folder_filter(self, client_with_auth, db_session):
@@ -3348,7 +2906,6 @@ class TestEmailAPIFilters:
             body="Content",
             status="received",
             folder=FolderType.INBOX.value,
-            category="primary",
             is_read=True,
             is_starred=True,
             sender_id=user.id,
@@ -3381,7 +2938,7 @@ class TestEmailAPIFilters:
         assert "is_archived" in data  # ThreadUserMetadata.is_archived
         assert "snooze_until" in data  # ThreadUserMetadata.snooze_until
         assert "folder" in data  # Email.folder
-        assert "category" in data  # Email.category
+        assert "labels" in data  # Thread labels (category is now via labels)
         assert "is_read" in data  # Email.is_read
         
         # Verify values

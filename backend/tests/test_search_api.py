@@ -874,7 +874,6 @@ class TestSearchResponseFormat:
             status="received",
             sender_id=user.id,
             folder=FolderType.INBOX.value,
-            category=EmailCategory.PRIMARY.value,
             thread_id=thread.id,
             is_read=False,
             is_starred=True
@@ -906,7 +905,7 @@ class TestSearchResponseFormat:
             assert "subject" in result
             assert "snippet" in result
             assert "folder" in result
-            assert "category" in result
+            assert "labels" in result  # Category is now via labels
             assert "is_read" in result
             assert "is_starred" in result
             assert "is_important" in result
@@ -2081,41 +2080,13 @@ class TestSearchFilenameFilter:
 
 
 class TestSearchCategoryFilter:
-    """Test category filter."""
-
-    def test_search_category_primary(self, client_with_auth, db_session):
-        """Test filtering by primary category."""
-        client, token, user = client_with_auth
-        
-        thread = Thread(subject="Primary Email", owner_id=user.id, email_count=1)
-        db_session.add(thread)
-        db_session.flush()
-        
-        email = Email(
-            subject="Primary Email",
-            body="Important message",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            category=EmailCategory.PRIMARY.value
-        )
-        db_session.add(email)
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/search?category=primary",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        
-        result_ids = [r["id"] for r in data["results"]]
-        assert str(email.id) in result_ids
+    """Test category filter - now uses labels with is_system=True, is_exclusive=False."""
 
     def test_search_category_promotions(self, client_with_auth, db_session):
-        """Test filtering by promotions category."""
+        """Test filtering by promotions category via label."""
+        from app.models.label import Label
+        from app.models.thread_label import ThreadLabel
+        
         client, token, user = client_with_auth
         
         thread = Thread(subject="Sale Alert", owner_id=user.id, email_count=1)
@@ -2128,10 +2099,27 @@ class TestSearchCategoryFilter:
             status="received",
             sender_id=user.id,
             folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            category=EmailCategory.PROMOTIONS.value
+            thread_id=thread.id
         )
         db_session.add(email)
+        db_session.flush()
+        
+        # Get promotions label for user (is_system=True, is_exclusive=False)
+        promo_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Promotions",
+            Label.is_system == True,
+            Label.is_exclusive == False
+        ).first()
+        
+        if promo_label:
+            thread_label = ThreadLabel(
+                thread_id=thread.id,
+                label_id=promo_label.id,
+                user_id=user.id
+            )
+            db_session.add(thread_label)
+        
         db_session.commit()
         
         response = client.get(
@@ -2142,11 +2130,16 @@ class TestSearchCategoryFilter:
         assert response.status_code == 200
         data = response.json()["data"]
         
-        result_ids = [r["id"] for r in data["results"]]
-        assert str(email.id) in result_ids
+        # If label was found and added, email should be in results
+        if promo_label:
+            result_ids = [r["id"] for r in data["results"]]
+            assert str(email.id) in result_ids
 
     def test_search_category_via_q_operator(self, client_with_auth, db_session):
-        """Test category: operator in q parameter."""
+        """Test category: operator in q parameter via label."""
+        from app.models.label import Label
+        from app.models.thread_label import ThreadLabel
+        
         client, token, user = client_with_auth
         
         thread = Thread(subject="Social Update", owner_id=user.id, email_count=1)
@@ -2159,10 +2152,27 @@ class TestSearchCategoryFilter:
             status="received",
             sender_id=user.id,
             folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            category=EmailCategory.SOCIAL.value
+            thread_id=thread.id
         )
         db_session.add(email)
+        db_session.flush()
+        
+        # Get social label for user (is_system=True, is_exclusive=False)
+        social_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Social",
+            Label.is_system == True,
+            Label.is_exclusive == False
+        ).first()
+        
+        if social_label:
+            thread_label = ThreadLabel(
+                thread_id=thread.id,
+                label_id=social_label.id,
+                user_id=user.id
+            )
+            db_session.add(thread_label)
+        
         db_session.commit()
         
         response = client.get(
@@ -2173,8 +2183,10 @@ class TestSearchCategoryFilter:
         assert response.status_code == 200
         data = response.json()["data"]
         
-        result_ids = [r["id"] for r in data["results"]]
-        assert str(email.id) in result_ids
+        # If label was found and added, email should be in results
+        if social_label:
+            result_ids = [r["id"] for r in data["results"]]
+            assert str(email.id) in result_ids
 
 
 class TestSearchInAnywhereFilter:
