@@ -38,8 +38,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: updateLabelsThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries (all categories and folders)
+      // Invalidate all email list queries (all categories and folders)
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       queryClient.invalidateQueries({ queryKey: ["labels"] });
       // Invalidate email counts since label changes can move emails between categories
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
@@ -49,8 +51,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: bulkUpdateLabelsThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries (all categories and folders)
+      // Invalidate all email list queries (all categories and folders)
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       queryClient.invalidateQueries({ queryKey: ["labels"] });
       // Invalidate email counts since label changes can move emails between categories
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
@@ -102,8 +106,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: updateEmailStarredThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries to refresh starred emails
+      // Invalidate all email list queries to refresh starred emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       // Invalidate email counts since starring affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
@@ -112,8 +118,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: bulkUpdateEmailStarredThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries to refresh starred emails
+      // Invalidate all email list queries to refresh starred emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       // Invalidate email counts since starring affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
@@ -122,8 +130,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: bulkUnstarThreadsThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries to refresh unstarred emails
+      // Invalidate all email list queries to refresh unstarred emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       // Invalidate email counts since unstarring affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
@@ -132,8 +142,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: updateThreadImportantThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries to refresh important status
+      // Invalidate all email list queries to refresh important status
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       // Invalidate email counts since important status affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
@@ -142,8 +154,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: updateEmailImportantThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries to refresh important emails
+      // Invalidate all email list queries to refresh important emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       // Invalidate email counts since importance affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
@@ -152,8 +166,10 @@ export function registerReactQueryListeners(listenerMiddleware) {
   listenerMiddleware.startListening({
     actionCreator: bulkUpdateEmailsThunk.fulfilled,
     effect: async () => {
-      // Invalidate all email queries to refresh all affected emails
+      // Invalidate all email list queries to refresh all affected emails
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      // Invalidate single email detail queries (used by detail page)
+      queryClient.invalidateQueries({ queryKey: ["email"] });
       // Invalidate email counts since bulk updates affect counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
