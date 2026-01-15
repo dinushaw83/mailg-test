@@ -297,6 +297,11 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
     emails_created = 0
     for recipient in email.recipients:
         if recipient.recipient_id:
+            # Skip creating received copy for the sender themselves
+            # The sender already has the SENT copy, no need for a duplicate RECEIVED copy
+            if recipient.recipient_id == actual_sender_id:
+                continue
+            
             recipient_user = db.query(User).filter(
                 User.id == recipient.recipient_id
             ).first()
