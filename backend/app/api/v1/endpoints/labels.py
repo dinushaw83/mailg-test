@@ -512,6 +512,24 @@ def list_label_threads(
     # Get threads with pagination
     threads = threads_with_label.order_by(Thread.last_email_at.desc()).offset(offset).limit(page_size).all()
     
+    # Get thread IDs that have at least one starred email (for the current user)
+    thread_ids = [thread.id for thread in threads]
+    starred_thread_ids = set()
+    if thread_ids:
+        starred_results = db.query(Email.thread_id).filter(
+            Email.thread_id.in_(thread_ids),
+            Email.is_starred == True,
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        ).distinct().all()
+        starred_thread_ids = {tid for (tid,) in starred_results}
+    
     # For each thread, get the latest email where user is sender or recipient
     emails_data = []
     for thread in threads:
@@ -531,7 +549,12 @@ def list_label_threads(
         ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
         
         if latest_email:
-            emails_data.append(format_email_list_response(latest_email, thread.email_count, current_user.id))
+            emails_data.append(format_email_list_response(
+                latest_email, 
+                thread.email_count, 
+                current_user.id,
+                thread_is_starred=thread.id in starred_thread_ids
+            ))
     
     return PaginatedListResponse[EmailListResponse](
         results=emails_data,

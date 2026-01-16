@@ -695,3 +695,189 @@ class TestThreadAPISpam:
             ).scalar_subquery()
         ).first()
         assert spam_label is None
+
+
+class TestThreadIsStarredInListResponse:
+    """Test thread_is_starred functionality in email list endpoint."""
+
+    def test_list_emails_thread_is_starred_false_when_no_emails_starred(self, client_with_auth, db_session):
+        """Test that thread_is_starred is false in list response when no emails are starred."""
+        client, token, user = client_with_auth
+
+        # Create a thread with unstarred emails
+        thread = Thread(subject="Test Thread", owner_id=user.id)
+        db_session.add(thread)
+        db_session.commit()
+
+        email1 = Email(
+            subject="Email 1",
+            body="Body 1",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+            is_starred=False
+        )
+        email2 = Email(
+            subject="Email 2",
+            body="Body 2",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+            is_starred=False
+        )
+        db_session.add_all([email1, email2])
+        db_session.commit()
+
+        response = client.get(
+            "/api/v1/emails?folder=inbox",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # List returns one email per thread (the latest one)
+        assert len(data["results"]) >= 1
+
+        # Find our thread's email in results
+        thread_email = next((e for e in data["results"] if e["thread_id"] == str(thread.id)), None)
+        assert thread_email is not None
+        assert thread_email["is_starred"] is False
+        assert thread_email["thread_is_starred"] is False
+
+    def test_list_emails_thread_is_starred_true_when_any_email_starred(self, client_with_auth, db_session):
+        """Test that thread_is_starred is true in list response when any email in thread is starred."""
+        client, token, user = client_with_auth
+
+        # Create a thread where an older email is starred but the latest is not
+        thread = Thread(subject="Test Thread", owner_id=user.id)
+        db_session.add(thread)
+        db_session.commit()
+
+        from datetime import datetime, timedelta, UTC
+        
+        # Older email (starred)
+        email1 = Email(
+            subject="Older Email - Starred",
+            body="Body 1",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+            is_starred=True,
+            sent_at=datetime.now(UTC) - timedelta(hours=2)
+        )
+        # Newer email (not starred) - this one will be shown in list
+        email2 = Email(
+            subject="Newer Email - Not Starred",
+            body="Body 2",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+            is_starred=False,
+            sent_at=datetime.now(UTC)
+        )
+        db_session.add_all([email1, email2])
+        db_session.commit()
+
+        response = client.get(
+            "/api/v1/emails?folder=inbox",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+
+        # Find our thread's email in results (should be the latest one)
+        thread_email = next((e for e in data["results"] if e["thread_id"] == str(thread.id)), None)
+        assert thread_email is not None
+        
+        # The displayed email is not starred, but thread_is_starred should be true
+        # because another email in the thread is starred
+        assert thread_email["subject"] == "Newer Email - Not Starred"
+        assert thread_email["is_starred"] is False
+        assert thread_email["thread_is_starred"] is True
+
+    def test_list_emails_thread_is_starred_matches_individual_when_single_email(self, client_with_auth, db_session):
+        """Test that thread_is_starred matches is_starred when thread has single email."""
+        client, token, user = client_with_auth
+
+        # Create a thread with a single starred email
+        thread = Thread(subject="Single Email Thread", owner_id=user.id)
+        db_session.add(thread)
+        db_session.commit()
+
+        email = Email(
+            subject="Only Email",
+            body="Body",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+            is_starred=True
+        )
+        db_session.add(email)
+        db_session.commit()
+
+        response = client.get(
+            "/api/v1/emails?folder=inbox",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+
+        thread_email = next((e for e in data["results"] if e["thread_id"] == str(thread.id)), None)
+        assert thread_email is not None
+        assert thread_email["is_starred"] is True
+        assert thread_email["thread_is_starred"] is True
+
+    def test_search_emails_includes_thread_is_starred(self, client_with_auth, db_session):
+        """Test that search endpoint also includes thread_is_starred."""
+        client, token, user = client_with_auth
+
+        # Create a thread with mixed starred status
+        thread = Thread(subject="Search Test Thread", owner_id=user.id)
+        db_session.add(thread)
+        db_session.commit()
+
+        from datetime import datetime, timedelta, UTC
+
+        email1 = Email(
+            subject="Search Test Older",
+            body="Searchable content",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+            is_starred=True,
+            sent_at=datetime.now(UTC) - timedelta(hours=1)
+        )
+        email2 = Email(
+            subject="Search Test Newer",
+            body="Searchable content",
+            status="received",
+            folder=FolderType.INBOX.value,
+            sender_id=user.id,
+            thread_id=thread.id,
+            is_starred=False,
+            sent_at=datetime.now(UTC)
+        )
+        db_session.add_all([email1, email2])
+        db_session.commit()
+
+        response = client.get(
+            "/api/v1/search?q=Searchable",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+
+        thread_email = next((e for e in data["results"] if e["thread_id"] == str(thread.id)), None)
+        assert thread_email is not None
+        # Latest email is not starred, but thread should show as starred
+        assert thread_email["is_starred"] is False
+        assert thread_email["thread_is_starred"] is True

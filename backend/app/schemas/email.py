@@ -159,6 +159,7 @@ class EmailListResponse(BaseModel):
     folder: Optional[FolderType] = FolderType.INBOX
     is_read: bool
     is_starred: bool
+    thread_is_starred: bool = False  # True if any email in thread is starred by current user
     is_important: bool  # User-specific, derived from thread metadata
     is_archived: bool = False  # User-specific, derived from thread metadata
     sender_id: UUID

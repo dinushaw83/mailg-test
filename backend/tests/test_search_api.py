@@ -2743,3 +2743,1137 @@ class TestSearchRelativeDates:
         
         result_ids = [r["id"] for r in data["results"]]
         assert str(email.id) in result_ids
+
+
+class TestSearchByUserName:
+    """Test searching by user names in from/to/cc/bcc filters and free text."""
+
+    def test_search_from_by_first_name(self, client_with_auth, db_session):
+        """Test from filter matching sender's first_name."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create a sender with a distinctive name
+        sender = User(
+            email="johndoe@company.com",
+            first_name="Johnathan",
+            last_name="Smith",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="Email from Johnathan", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Email from Johnathan",
+            body="Test content",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add current user as recipient so they can see this email
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search by sender's first name
+        response = client.get(
+            "/api/v1/search?from=Johnathan",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_from_by_last_name(self, client_with_auth, db_session):
+        """Test from filter matching sender's last_name."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create a sender with a distinctive last name
+        sender = User(
+            email="jane@company.com",
+            first_name="Jane",
+            last_name="Fitzgerald",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="Email from Fitzgerald", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Email from Fitzgerald",
+            body="Test content",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add current user as recipient
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search by sender's last name
+        response = client.get(
+            "/api/v1/search?from=Fitzgerald",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_from_operator_by_name_in_q(self, client_with_auth, db_session):
+        """Test from: operator in q parameter matching sender name."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        sender = User(
+            email="mike@company.com",
+            first_name="Michael",
+            last_name="Anderson",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="Email via q operator", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Email via q operator",
+            body="Test content",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search using from: operator in q with first name
+        response = client.get(
+            "/api/v1/search?q=from:Michael",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_to_by_recipient_name(self, client_with_auth, db_session):
+        """Test to filter matching recipient_name."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Email to recipient", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Email to recipient",
+            body="Test content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add recipient with a name
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="bob@example.com",
+            recipient_name="Robert Williams",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search by recipient name
+        response = client.get(
+            "/api/v1/search?to=Robert",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_to_operator_by_name_in_q(self, client_with_auth, db_session):
+        """Test to: operator in q parameter matching recipient name."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Email to Williams", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Email to Williams",
+            body="Test content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="sarah@example.com",
+            recipient_name="Sarah Williams",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search using to: operator in q with name
+        response = client.get(
+            "/api/v1/search?q=to:Williams",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_cc_by_recipient_name(self, client_with_auth, db_session):
+        """Test cc filter matching recipient_name."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Email with CC", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Email with CC",
+            body="Test content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add CC recipient with a name
+        cc_recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="cc@example.com",
+            recipient_name="Christopher Brown",
+            recipient_type="cc"
+        )
+        db_session.add(cc_recipient)
+        db_session.commit()
+        
+        # Search by CC recipient name
+        response = client.get(
+            "/api/v1/search?cc=Christopher",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_bcc_by_recipient_name(self, client_with_auth, db_session):
+        """Test bcc filter matching recipient_name."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Email with BCC", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Email with BCC",
+            body="Test content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add BCC recipient with a name
+        bcc_recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="bcc@example.com",
+            recipient_name="Elizabeth Taylor",
+            recipient_type="bcc"
+        )
+        db_session.add(bcc_recipient)
+        db_session.commit()
+        
+        # Search by BCC recipient name
+        response = client.get(
+            "/api/v1/search?bcc=Elizabeth",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_free_text_matches_sender_name(self, client_with_auth, db_session):
+        """Test free text search (q without operator) matching sender name."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create a sender with a unique name
+        sender = User(
+            email="uniqueperson@company.com",
+            first_name="Bartholomew",
+            last_name="Johnson",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="Generic Subject", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Generic Subject",
+            body="Generic body content",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search by sender's name without any operator
+        # Should match because "Bartholomew" is in sender's first_name
+        response = client.get(
+            "/api/v1/search?q=Bartholomew",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_free_text_matches_recipient_name(self, client_with_auth, db_session):
+        """Test free text search (q without operator) matching recipient name."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Another Subject", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Another Subject",
+            body="Another body content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add recipient with a unique name
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="recipient@example.com",
+            recipient_name="Maximilian Theodore",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search by recipient's name without any operator
+        response = client.get(
+            "/api/v1/search?q=Maximilian",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_from_with_email_and_name_combined(self, client_with_auth, db_session):
+        """Test from filter: exact email match vs partial name match."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create sender
+        sender = User(
+            email="alice.wonderland@company.com",
+            first_name="Alice",
+            last_name="Wonderland",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="Alice Email", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Alice Email",
+            body="Content",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Partial email should NOT find (email requires exact match)
+        response1 = client.get(
+            "/api/v1/search?from=wonderland@company",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response1.status_code == 200
+        result_ids1 = [r["id"] for r in response1.json()["data"]["results"]]
+        assert str(email.id) not in result_ids1
+        
+        # Exact email should find
+        response2 = client.get(
+            "/api/v1/search?from=alice.wonderland@company.com",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response2.status_code == 200
+        result_ids2 = [r["id"] for r in response2.json()["data"]["results"]]
+        assert str(email.id) in result_ids2
+        
+        # Partial name should find (names use partial matching)
+        response3 = client.get(
+            "/api/v1/search?from=Wonderland",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response3.status_code == 200
+        result_ids3 = [r["id"] for r in response3.json()["data"]["results"]]
+        assert str(email.id) in result_ids3
+
+    def test_search_grouped_from_terms_by_name(self, client_with_auth, db_session):
+        """Test grouped from terms like from:(john mary) matching names."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create two senders
+        sender1 = User(
+            email="sender1@company.com",
+            first_name="John",
+            last_name="Doe",
+            role="user"
+        )
+        sender2 = User(
+            email="sender2@company.com",
+            first_name="Mary",
+            last_name="Jane",
+            role="user"
+        )
+        db_session.add(sender1)
+        db_session.add(sender2)
+        db_session.flush()
+        
+        thread1 = Thread(subject="From John", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="From John",
+            body="Content",
+            status="received",
+            sender_id=sender1.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        db_session.flush()
+        
+        recipient1 = EmailRecipient(
+            email_id=email1.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient1)
+        
+        thread2 = Thread(subject="From Mary", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="From Mary",
+            body="Content",
+            status="received",
+            sender_id=sender2.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.flush()
+        
+        recipient2 = EmailRecipient(
+            email_id=email2.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient2)
+        db_session.commit()
+        
+        # Search with grouped from terms by name
+        response = client.get(
+            "/api/v1/search?q=from:(John Mary)",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email1.id) in result_ids
+        assert str(email2.id) in result_ids
+
+    def test_search_multiple_from_names_comma_separated(self, client_with_auth, db_session):
+        """Test comma-separated from values matching names."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create two senders
+        sender1 = User(
+            email="peter@company.com",
+            first_name="Peter",
+            last_name="Parker",
+            role="user"
+        )
+        sender2 = User(
+            email="bruce@company.com",
+            first_name="Bruce",
+            last_name="Wayne",
+            role="user"
+        )
+        db_session.add(sender1)
+        db_session.add(sender2)
+        db_session.flush()
+        
+        thread1 = Thread(subject="From Peter", owner_id=user.id, email_count=1)
+        db_session.add(thread1)
+        db_session.flush()
+        
+        email1 = Email(
+            subject="From Peter",
+            body="Content",
+            status="received",
+            sender_id=sender1.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread1.id
+        )
+        db_session.add(email1)
+        db_session.flush()
+        
+        recipient1 = EmailRecipient(
+            email_id=email1.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient1)
+        
+        thread2 = Thread(subject="From Bruce", owner_id=user.id, email_count=1)
+        db_session.add(thread2)
+        db_session.flush()
+        
+        email2 = Email(
+            subject="From Bruce",
+            body="Content",
+            status="received",
+            sender_id=sender2.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread2.id
+        )
+        db_session.add(email2)
+        db_session.flush()
+        
+        recipient2 = EmailRecipient(
+            email_id=email2.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient2)
+        db_session.commit()
+        
+        # Search with comma-separated names
+        response = client.get(
+            "/api/v1/search?from=Peter,Wayne",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        result_ids = [r["id"] for r in data["results"]]
+        # Peter matches sender1's first_name, Wayne matches sender2's last_name
+        assert str(email1.id) in result_ids
+        assert str(email2.id) in result_ids
+
+    def test_search_partial_email_does_not_match(self, client_with_auth, db_session):
+        """Test that partial email does NOT match - emails require exact match."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        sender = User(
+            email="specific.user@company.com",
+            first_name="Specific",
+            last_name="User",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="Exact Email Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Exact Email Test",
+            body="Content",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Partial email (without domain) should NOT match email field
+        # But "Specific" name search should match via first_name
+        response1 = client.get(
+            "/api/v1/search?from=Specific",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response1.status_code == 200
+        result_ids1 = [r["id"] for r in response1.json()["data"]["results"]]
+        assert str(email.id) in result_ids1
+        
+        # Partial email domain should NOT match (no name contains "@company")
+        response2 = client.get(
+            "/api/v1/search?from=@company.com",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response2.status_code == 200
+        result_ids2 = [r["id"] for r in response2.json()["data"]["results"]]
+        assert str(email.id) not in result_ids2
+        
+        # Partial email (local part only) should NOT match
+        response3 = client.get(
+            "/api/v1/search?from=specific.user",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response3.status_code == 200
+        result_ids3 = [r["id"] for r in response3.json()["data"]["results"]]
+        # "specific.user" is not in any name field, so no match
+        assert str(email.id) not in result_ids3
+        
+        # Exact email should match
+        response4 = client.get(
+            "/api/v1/search?from=specific.user@company.com",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response4.status_code == 200
+        result_ids4 = [r["id"] for r in response4.json()["data"]["results"]]
+        assert str(email.id) in result_ids4
+
+    def test_search_to_partial_email_does_not_match(self, client_with_auth, db_session):
+        """Test that partial recipient email does NOT match - emails require exact match."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="To Exact Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="To Exact Test",
+            body="Content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email="john.smith@example.org",
+            recipient_name="John Smith",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Partial name "John" should match via recipient_name
+        response1 = client.get(
+            "/api/v1/search?to=John",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response1.status_code == 200
+        result_ids1 = [r["id"] for r in response1.json()["data"]["results"]]
+        assert str(email.id) in result_ids1
+        
+        # Partial email (local part only) should NOT match
+        response2 = client.get(
+            "/api/v1/search?to=john.smith",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response2.status_code == 200
+        result_ids2 = [r["id"] for r in response2.json()["data"]["results"]]
+        # "john.smith" is not in recipient_name "John Smith", so no match
+        assert str(email.id) not in result_ids2
+        
+        # Partial domain should NOT match
+        response3 = client.get(
+            "/api/v1/search?to=@example.org",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response3.status_code == 200
+        result_ids3 = [r["id"] for r in response3.json()["data"]["results"]]
+        assert str(email.id) not in result_ids3
+        
+        # Exact email should match
+        response4 = client.get(
+            "/api/v1/search?to=john.smith@example.org",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response4.status_code == 200
+        result_ids4 = [r["id"] for r in response4.json()["data"]["results"]]
+        assert str(email.id) in result_ids4
+
+
+class TestSearchMeKeyword:
+    """Test 'me' keyword in from/to/cc/bcc filters."""
+
+    def test_search_from_me_matches_current_user_sent(self, client_with_auth, db_session):
+        """Test from:me matches emails sent by current user."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Sent by me", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Sent by me",
+            body="I sent this email",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Search for "from:me"
+        response = client.get(
+            "/api/v1/search?from=me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_from_me_via_q_operator(self, client_with_auth, db_session):
+        """Test from:me in q parameter."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Q From Me Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Q From Me Test",
+            body="Content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?q=from:me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_to_me_matches_current_user_received(self, client_with_auth, db_session):
+        """Test to:me matches emails where current user is recipient."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create another user as sender
+        sender = User(
+            email="sender@example.com",
+            first_name="Another",
+            last_name="Sender",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="Received by me", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Received by me",
+            body="This is for me",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add current user as recipient
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_name=f"{user.first_name} {user.last_name}",
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # Search for "to:me"
+        response = client.get(
+            "/api/v1/search?to=me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_cc_me_matches_current_user(self, client_with_auth, db_session):
+        """Test cc:me matches emails where current user is CC'd."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        sender = User(
+            email="sender2@example.com",
+            first_name="Some",
+            last_name="Sender",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="CC Me Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="CC Me Test",
+            body="Content",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add current user as CC recipient
+        cc_recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="cc"
+        )
+        db_session.add(cc_recipient)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?cc=me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) in result_ids
+
+    def test_search_me_case_insensitive(self, client_with_auth, db_session):
+        """Test 'me' keyword is case-insensitive (me, Me, ME all work)."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Case Test", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Case Test",
+            body="Content",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        # Test lowercase "me"
+        response1 = client.get(
+            "/api/v1/search?from=me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response1.status_code == 200
+        assert str(email.id) in [r["id"] for r in response1.json()["data"]["results"]]
+        
+        # Test uppercase "ME"
+        response2 = client.get(
+            "/api/v1/search?from=ME",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response2.status_code == 200
+        assert str(email.id) in [r["id"] for r in response2.json()["data"]["results"]]
+        
+        # Test mixed case "Me"
+        response3 = client.get(
+            "/api/v1/search?from=Me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert response3.status_code == 200
+        assert str(email.id) in [r["id"] for r in response3.json()["data"]["results"]]
+
+    def test_search_from_me_does_not_match_others(self, client_with_auth, db_session):
+        """Test from:me does NOT match emails from other users."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create another user
+        other_user = User(
+            email="other@example.com",
+            first_name="Other",
+            last_name="Person",
+            role="user"
+        )
+        db_session.add(other_user)
+        db_session.flush()
+        
+        thread = Thread(subject="From Other", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="From Other",
+            body="Not from me",
+            status="received",
+            sender_id=other_user.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        # Add current user as recipient so they can see it
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        # from:me should NOT find this email
+        response = client.get(
+            "/api/v1/search?from=me",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        result_ids = [r["id"] for r in data["results"]]
+        assert str(email.id) not in result_ids
+
+
+class TestSearchResponseShowsMe:
+    """Test that responses show 'me' for current user's name."""
+
+    def test_response_shows_me_for_sender_when_current_user(self, client_with_auth, db_session):
+        """Test that sender_name is 'me' when sender is the current user."""
+        client, token, user = client_with_auth
+        
+        thread = Thread(subject="Sent by current user", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="Sent by current user",
+            body="I sent this",
+            status="sent",
+            sender_id=user.id,
+            folder=FolderType.SENT.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?folder=sent",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Find our email
+        our_result = next((r for r in data["results"] if r["id"] == str(email.id)), None)
+        assert our_result is not None
+        # sender_name should be "me"
+        assert our_result["sender_name"] == "me"
+
+    def test_response_shows_actual_name_for_other_sender(self, client_with_auth, db_session):
+        """Test that sender_name is actual name when sender is NOT current user."""
+        from app.models.user import User
+        client, token, user = client_with_auth
+        
+        # Create another user as sender
+        sender = User(
+            email="othersender@example.com",
+            first_name="Alice",
+            last_name="Johnson",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+        
+        thread = Thread(subject="From Alice", owner_id=user.id, email_count=1)
+        db_session.add(thread)
+        db_session.flush()
+        
+        email = Email(
+            subject="From Alice",
+            body="Alice sent this",
+            status="received",
+            sender_id=sender.id,
+            folder=FolderType.INBOX.value,
+            thread_id=thread.id
+        )
+        db_session.add(email)
+        db_session.flush()
+        
+        recipient = EmailRecipient(
+            email_id=email.id,
+            recipient_email=user.email,
+            recipient_id=user.id,
+            recipient_type="to"
+        )
+        db_session.add(recipient)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search?folder=inbox",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        
+        # Find our email
+        our_result = next((r for r in data["results"] if r["id"] == str(email.id)), None)
+        assert our_result is not None
+        # sender_name should be "Alice Johnson", NOT "me"
+        assert our_result["sender_name"] == "Alice Johnson"

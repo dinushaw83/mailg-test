@@ -455,6 +455,7 @@ def list_emails(
     # Get thread email counts for all threads in the result set
     thread_ids = [email.thread_id for email in emails if email.thread_id]
     thread_counts = {}
+    starred_thread_ids = set()
     if thread_ids:
         # Query count of emails per thread (accessible to this user)
         count_results = db.query(
@@ -473,10 +474,30 @@ def list_emails(
         ).group_by(Email.thread_id).all()
         
         thread_counts = {tid: cnt for tid, cnt in count_results}
+        
+        # Query threads that have at least one starred email (for the current user)
+        starred_results = db.query(Email.thread_id).filter(
+            Email.thread_id.in_(thread_ids),
+            Email.is_starred == True,
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        ).distinct().all()
+        starred_thread_ids = {tid for (tid,) in starred_results}
     
     # Format response with thread counts and user_id for label filtering
     emails_data = [
-        format_email_list_response(email, thread_counts.get(email.thread_id), current_user.id)
+        format_email_list_response(
+            email, 
+            thread_counts.get(email.thread_id), 
+            current_user.id,
+            thread_is_starred=email.thread_id in starred_thread_ids if email.thread_id else email.is_starred
+        )
         for email in emails
     ]
     
