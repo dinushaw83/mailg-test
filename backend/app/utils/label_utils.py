@@ -300,13 +300,14 @@ def generate_random_light_color() -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def format_label_response(label: Label, thread_count: int = 0) -> dict:
+def format_label_response(label: Label, thread_count: int = 0, unread_count: int = 0) -> dict:
     """Format label model to response dict.
-    
+
     Args:
         label: Label model instance
         thread_count: Number of threads with this label
-        
+        unread_count: Number of threads with this label that have unread emails
+
     Returns:
         Dictionary with label data formatted for API response
     """
@@ -324,6 +325,7 @@ def format_label_response(label: Label, thread_count: int = 0) -> dict:
         "created_at": label.created_at,
         "updated_at": label.updated_at,
         "thread_count": thread_count,
+        "unread_count": unread_count,
     }
 
 
