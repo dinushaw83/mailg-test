@@ -147,10 +147,12 @@ def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
     or_groups = []
 
     # Handle explicit OR: term1 OR term2
-    or_matches = re.findall(r'(\S+?)\s+OR\s+(\S+?)(?=\s|$)', query, re.IGNORECASE)
+    # Use specific character class to prevent ReDoS (word chars, dots, hyphens, @)
+    or_matches = re.findall(r'([\w.@-]+)\s+OR\s+([\w.@-]+)', query, re.IGNORECASE)
     for match in or_matches:
         or_groups.append(list(match))
-    query = re.sub(r'\S+?\s+OR\s+\S+?(?=\s|$)', '', query, flags=re.IGNORECASE)
+    query = re.sub(r'[\w.@-]+\s+OR\s+[\w.@-]+', '', query, flags=re.IGNORECASE)
+    
     # Handle brace syntax: {term1 term2 term3}
     # Limit to alphanumeric, space, underscore, hyphen to prevent ReDoS
     brace_matches = re.findall(r'\{([\w\s-]+?)\}', query)
