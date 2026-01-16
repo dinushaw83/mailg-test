@@ -379,22 +379,20 @@ def would_create_cycle(db: Session, label_id: UUID, new_parent_id: UUID) -> bool
 
 
 def build_label_tree(
-    labels_with_counts: List[tuple],
-    thread_counts: Dict[UUID, int]
+    labels_with_counts: List[tuple]
 ) -> List[dict]:
     """Build hierarchical tree from flat label list.
-    
+
     Args:
-        labels_with_counts: List of (label, count) tuples
-        thread_counts: Dict mapping label IDs to thread counts
-        
+        labels_with_counts: List of (label, thread_count, unread_count) tuples
+
     Returns:
         List of root label dicts with nested children arrays
     """
     # Create lookup dict
     label_map: Dict[UUID, dict] = {}
-    
-    for label, count in labels_with_counts:
+
+    for label, thread_count, unread_count in labels_with_counts:
         label_map[label.id] = {
             "id": label.id,
             "name": label.name,
@@ -408,7 +406,8 @@ def build_label_tree(
             "show_if_unread": label.show_if_unread,
             "created_at": label.created_at,
             "updated_at": label.updated_at,
-            "thread_count": count,
+            "thread_count": thread_count,
+            "unread_count": unread_count,
             "children": [],
         }
     

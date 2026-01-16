@@ -120,20 +120,20 @@ def create_label(
 @router.get("/labels", dependencies=[Depends(authorized())])
 def list_labels(
     db: Session = Depends(get_db),
-    include_counts: bool = Query(True, description="Include thread counts"),
+    include_counts: bool = Query(True, description="Include thread and unread counts"),
     flat: bool = Query(True, description="Return flat list (True) or hierarchical tree (False)"),
 ):
-    """List user's labels with thread counts.
-    
+    """List user's labels with thread and unread counts.
+
     Args:
-        include_counts: Include thread counts for each label
+        include_counts: Include thread counts and unread counts for each label
         flat: If True, returns flat list. If False, returns hierarchical tree structure.
-    
+
     Permissions:
     - Users can only see their own labels
     """
     current_user = auth.user
-    
+
     if include_counts:
         # Subquery for thread counts - filter by user_id for user-specific label associations
         thread_count_subq = (
@@ -148,34 +148,58 @@ def list_labels(
             .group_by(ThreadLabel.label_id)
             .subquery()
         )
-        
-        # Main query with JOIN to subquery
+
+        # Subquery for unread counts - count threads with at least one unread email
+        unread_count_subq = (
+            db.query(
+                ThreadLabel.label_id,
+                func.count(func.distinct(ThreadLabel.thread_id)).label("unread_count")
+            )
+            .join(Thread, Thread.id == ThreadLabel.thread_id)
+            .join(Email, Email.thread_id == Thread.id)
+            .filter(
+                ThreadLabel.user_id == current_user.id,
+                Email.is_read == False,
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            )
+            .group_by(ThreadLabel.label_id)
+            .subquery()
+        )
+
+        # Main query with JOINs to both subqueries
         labels = (
             db.query(
                 Label,
-                func.coalesce(thread_count_subq.c.thread_count, 0).label("thread_count")
+                func.coalesce(thread_count_subq.c.thread_count, 0).label("thread_count"),
+                func.coalesce(unread_count_subq.c.unread_count, 0).label("unread_count")
             )
             .outerjoin(thread_count_subq, Label.id == thread_count_subq.c.label_id)
+            .outerjoin(unread_count_subq, Label.id == unread_count_subq.c.label_id)
             .filter(
                 Label.owner_id == current_user.id
             )
             .order_by(Label.name)
             .all()
         )
-        
-        thread_counts = {label.id: count for label, count in labels}
+
     else:
-        labels = db.query(Label).filter(
+        labels_raw = db.query(Label).filter(
             Label.owner_id == current_user.id
         ).order_by(Label.name).all()
-        
-        labels = [(label, 0) for label in labels]
-        thread_counts = {}
-    
+
+        labels = [(label, 0, 0) for label in labels_raw]
+
     if not flat:
         # Return hierarchical tree structure
-        return build_label_tree(labels, thread_counts)
-    
+        return build_label_tree(labels)
+
     # Return flat list with hierarchical names
     return [
         {
@@ -193,25 +217,26 @@ def list_labels(
             "created_at": label.created_at,
             "updated_at": label.updated_at,
             "thread_count": thread_count,
+            "unread_count": unread_count,
         }
-        for label, thread_count in labels
+        for label, thread_count, unread_count in labels
     ]
 
 
 @router.get("/labels/tree", response_model=List[LabelTreeResponse], dependencies=[Depends(authorized())])
 def list_labels_tree(
     db: Session = Depends(get_db),
-    include_counts: bool = Query(True, description="Include thread counts"),
+    include_counts: bool = Query(True, description="Include thread and unread counts"),
 ) -> List[dict]:
     """List user's labels as hierarchical tree structure.
-    
+
     Returns labels organized in parent-child hierarchy with nested children arrays.
-    
+
     Permissions:
     - Users can only see their own labels
     """
     current_user = auth.user
-    
+
     if include_counts:
         # Subquery for thread counts - filter by user_id for user-specific label associations
         thread_count_subq = (
@@ -226,29 +251,53 @@ def list_labels_tree(
             .group_by(ThreadLabel.label_id)
             .subquery()
         )
-        
+
+        # Subquery for unread counts - count threads with at least one unread email
+        unread_count_subq = (
+            db.query(
+                ThreadLabel.label_id,
+                func.count(func.distinct(ThreadLabel.thread_id)).label("unread_count")
+            )
+            .join(Thread, Thread.id == ThreadLabel.thread_id)
+            .join(Email, Email.thread_id == Thread.id)
+            .filter(
+                ThreadLabel.user_id == current_user.id,
+                Email.is_read == False,
+                or_(
+                    Email.sender_id == current_user.id,
+                    Email.id.in_(
+                        db.query(EmailRecipient.email_id).filter(
+                            EmailRecipient.recipient_id == current_user.id
+                        )
+                    )
+                )
+            )
+            .group_by(ThreadLabel.label_id)
+            .subquery()
+        )
+
         labels = (
             db.query(
                 Label,
-                func.coalesce(thread_count_subq.c.thread_count, 0).label("thread_count")
+                func.coalesce(thread_count_subq.c.thread_count, 0).label("thread_count"),
+                func.coalesce(unread_count_subq.c.unread_count, 0).label("unread_count")
             )
             .outerjoin(thread_count_subq, Label.id == thread_count_subq.c.label_id)
+            .outerjoin(unread_count_subq, Label.id == unread_count_subq.c.label_id)
             .filter(
                 Label.owner_id == current_user.id
             )
             .all()
         )
-        
-        thread_counts = {label.id: count for label, count in labels}
+
     else:
         labels_raw = db.query(Label).filter(
             Label.owner_id == current_user.id
         ).all()
-        
-        labels = [(label, 0) for label in labels_raw]
-        thread_counts = {}
-    
-    return build_label_tree(labels, thread_counts)
+
+        labels = [(label, 0, 0) for label in labels_raw]
+
+    return build_label_tree(labels)
 
 
 @router.get("/labels/{label_id}", response_model=LabelResponse, dependencies=[Depends(authorized())])
