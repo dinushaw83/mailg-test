@@ -1,4 +1,4 @@
-import { Box, Divider } from "@mui/material";
+import { Box, Button, Divider } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { getThread, getThreadRows, normalizeEmails } from "../../utils/emails";
@@ -158,7 +158,7 @@ export const EmailContent = ({
   normalizedEmails,
 }) => {
   const responseViewRef = React.useRef();
-  const { markRead, unsnooze } = useMailActions();
+  const { markRead, snooze, unsnooze } = useMailActions();
   const { setSnackbar } = useGlobalContext();
 
   const { messagesById } = normalizedEmails;
@@ -224,14 +224,38 @@ export const EmailContent = ({
 
   const handleUnsnooze = useCallback(() => {
     if (thread?.thread_id) {
+      // Capture the current snooze time for undo
+      const prevSnoozeTime = snoozeUntil;
+
       unsnooze([], {}, [thread.thread_id]);
+
+      const undo = () => {
+        if (prevSnoozeTime) {
+          const when = new Date(prevSnoozeTime);
+          if (!isNaN(when.getTime())) {
+            snooze([], when, [thread.thread_id]);
+          }
+        }
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      };
+
       setSnackbar({
         open: true,
         message: "Conversation unsnoozed.",
-        autoHideDuration: 4000,
+        autoHideDuration: 8000,
+        action: (
+          <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+            Undo
+          </Button>
+        ),
       });
     }
-  }, [thread?.thread_id, unsnooze, setSnackbar]);
+  }, [thread?.thread_id, snoozeUntil, snooze, unsnooze, setSnackbar]);
 
   useEffect(() => {
     if (!markAsReadAfter) return undefined;
