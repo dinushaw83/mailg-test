@@ -14,7 +14,35 @@ import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions, { makeMatch } from "../../hooks/useMailActions";
 
-const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateTime, onConfirm }) => {
+// Helper to get a default date (tomorrow at 8 AM)
+const getDefaultDateTime = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  date.setHours(8, 0, 0, 0);
+  return date;
+};
+
+// Helper to ensure we have a valid Date object
+const ensureValidDate = (date) => {
+  if (!date) return getDefaultDateTime();
+  const d = date instanceof Date ? date : new Date(date);
+  return isNaN(d.getTime()) ? getDefaultDateTime() : d;
+};
+
+const CalendarPickerModal = ({
+  open = false,
+  onClose = () => {},
+  selectedDateTime: propDateTime,
+  setSelectedDateTime: propSetDateTime,
+  onConfirm = () => {},
+}) => {
+  // Use internal state if no external setter is provided
+  const [internalDateTime, setInternalDateTime] = useState(() => ensureValidDate(propDateTime));
+
+  // Determine which date/setter to use
+  const selectedDateTime = ensureValidDate(propDateTime ?? internalDateTime);
+  const setSelectedDateTime = propSetDateTime || setInternalDateTime;
+
   const [dateError, setDateError] = useState("");
   const [timeError, setTimeError] = useState("");
   const [dateInput, setDateInput] = useState("");
@@ -22,10 +50,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
 
   // Helper function to safely format date
   const formatDate = (date) => {
-    if (!date || typeof date.toLocaleDateString !== "function") {
-      return "";
-    }
-    return date.toLocaleDateString("en-GB", {
+    const safeDate = ensureValidDate(date);
+    return safeDate.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -34,10 +60,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
 
   // Helper function to safely format time
   const formatTime = (date) => {
-    if (!date || typeof date.toLocaleTimeString !== "function") {
-      return "";
-    }
-    return date.toLocaleTimeString("en-GB", {
+    const safeDate = ensureValidDate(date);
+    return safeDate.toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -61,7 +85,9 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
   };
 
   // Helper function to validate time
-  const validateTime = (timeString, selectedDate) => {
+  const validateTime = (timeString, dateToValidate) => {
+    if (!timeString) return "Invalid time format";
+
     const [hours, minutes] = timeString.split(":");
 
     if (!hours || !minutes) {
@@ -76,12 +102,13 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
     }
 
     // If the selected date is today, check if time is in the future
+    const safeDate = ensureValidDate(dateToValidate);
     const today = new Date();
-    const isToday = selectedDate.toDateString() === today.toDateString();
+    const isToday = safeDate.toDateString() === today.toDateString();
 
     if (isToday) {
       const now = new Date();
-      const inputTime = new Date(selectedDate);
+      const inputTime = new Date(safeDate);
       inputTime.setHours(hour, minute, 0, 0);
 
       if (inputTime <= now) {
@@ -98,15 +125,17 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
     setTimeInput(formatTime(selectedDateTime));
   }, [selectedDateTime]);
 
-  const handleConfirm = () => {
-    let candidate = new Date(selectedDateTime);
-
-    if (!candidate || Number.isNaN(candidate.getTime())) {
-      setDateError("Invalid Date");
-      setTimeError("Invalid time");
-      return;
+  // Sync internal state with prop when prop changes
+  useEffect(() => {
+    if (propDateTime) {
+      setInternalDateTime(ensureValidDate(propDateTime));
     }
+  }, [propDateTime]);
 
+  const handleConfirm = () => {
+    let candidate = new Date(ensureValidDate(selectedDateTime));
+
+    // Validate and apply date from input
     const parsedDate = new Date(dateInput);
     const dateValidationMessage = validateDate(dateInput);
 
@@ -118,6 +147,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
     candidate.setFullYear(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
     setDateError("");
 
+    // Validate and apply time from input
     const timeValidationMessage = validateTime(timeInput, candidate);
 
     if (timeValidationMessage) {
@@ -125,8 +155,10 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
       return;
     }
 
-    const [hours, minutes] = timeInput.split(":");
-    candidate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+    const timeParts = (timeInput || "").split(":");
+    const hours = parseInt(timeParts[0] || "0", 10);
+    const minutes = parseInt(timeParts[1] || "0", 10);
+    candidate.setHours(hours, minutes, 0, 0);
 
     if (Number.isNaN(candidate.getTime())) {
       setTimeError("Invalid time");
@@ -181,7 +213,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
               displayStaticWrapperAs="desktop"
               value={selectedDateTime}
               onChange={(newValue) => {
-                setSelectedDateTime(newValue);
+                const safeValue = ensureValidDate(newValue);
+                setSelectedDateTime(safeValue);
                 setDateError(""); // Clear date error when using calendar
                 setTimeError(""); // Clear time error when using calendar
               }}
@@ -221,7 +254,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
                   return;
                 }
 
-                const updated = new Date(selectedDateTime);
+                const updated = new Date(ensureValidDate(selectedDateTime));
                 updated.setFullYear(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
                 setDateError("");
                 setSelectedDateTime(updated);
@@ -234,7 +267,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
                   setDateError(error);
                   if (!error) {
                     const newDate = new Date(event.target.value);
-                    setSelectedDateTime(newDate);
+                    setSelectedDateTime(ensureValidDate(newDate));
                   }
                 }
               }}
@@ -251,11 +284,12 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   const timeString = event.target.value;
-                  const error = validateTime(timeString, selectedDateTime);
+                  const safeDate = ensureValidDate(selectedDateTime);
+                  const error = validateTime(timeString, safeDate);
                   setTimeError(error);
                   if (!error) {
                     const [hours, minutes] = timeString.split(":");
-                    const newDate = new Date(selectedDateTime);
+                    const newDate = new Date(safeDate);
                     newDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
                     setSelectedDateTime(newDate);
                   }
