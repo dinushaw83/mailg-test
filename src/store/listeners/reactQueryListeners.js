@@ -17,7 +17,10 @@ import {
   bulkUpdateEmailsThunk,
   bulkUnstarThreadsThunk,
   updateThreadImportantThunk,
-  snoozeEmailThunk,
+  snoozeThreadThunk,
+  unsnoozeThreadThunk,
+  bulkSnoozeThreadsThunk,
+  bulkUnsnoozeThreadsThunk,
   moveToTrashThunk,
   moveToSpamThunk,
   deleteEmailThunk,
@@ -222,9 +225,29 @@ export function registerReactQueryListeners(listenerMiddleware) {
 
   // Snooze, trash, spam, delete mutation listeners
   listenerMiddleware.startListening({
-    actionCreator: snoozeEmailThunk.fulfilled,
+    actionCreator: snoozeThreadThunk.fulfilled,
     effect: async () => {
-      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: unsnoozeThreadThunk.fulfilled,
+    effect: async () => {
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkSnoozeThreadsThunk.fulfilled,
+    effect: async () => {
+      queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: bulkUnsnoozeThreadsThunk.fulfilled,
+    effect: async () => {
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
   });

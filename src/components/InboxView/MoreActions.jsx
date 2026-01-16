@@ -6,7 +6,7 @@ import Divider from "@mui/material/Divider";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import Button from "@mui/material/Button";
@@ -29,7 +29,14 @@ const MoreActions = ({
 }) => {
   const { markRead, setStar, setImportant, snooze, unsnooze, setMuted } = useMailActions();
   const navigate = useNavigate();
+  const location = useLocation();
   const [internalAnchorEl, setInternalAnchorEl] = React.useState(null);
+
+  // Get the base path by removing the thread_id from the current path
+  const getBasePath = useCallback(() => {
+    const pathParts = location.pathname.split("/");
+    return pathParts.slice(0, -1).join("/") || "/inbox";
+  }, [location.pathname]);
   const [currentPopover, setCurrentPopover] = React.useState("main");
 
   const moreVertRef = useRef(null);
@@ -282,9 +289,10 @@ const MoreActions = ({
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
-      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      // Pass thread.thread_id explicitly since we're on the detail page
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil, [thread.thread_id]) || {};
       const undo = () => {
-        unsnooze(ids, { removedInboxIds });
+        unsnooze(ids, { removedInboxIds }, [thread.thread_id]);
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -302,8 +310,10 @@ const MoreActions = ({
           </Button>
         ),
       });
+      // Navigate back to the email list after snoozing
+      navigate(getBasePath());
     },
-    [snooze, unsnooze, setSnackbar]
+    [snooze, unsnooze, setSnackbar, thread.thread_id, navigate, getBasePath]
   );
 
   return (

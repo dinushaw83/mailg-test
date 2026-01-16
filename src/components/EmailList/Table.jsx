@@ -809,7 +809,7 @@ const Table = ({
         <tbody>
           {emails.map((email, index) => {
             const thread_id = email.thread_id;
-            const isActive = showSnoozePopover && snoozeId === email.id;
+            const isActive = showSnoozePopover && snoozeId === email.thread_id;
             const selected = selection.isSelected(thread_id);
 
             const isFocused = focusedRowIndex === index;
@@ -1152,7 +1152,7 @@ const Table = ({
                             e.stopPropagation();
                             setState((prev) => ({
                               ...prev,
-                              snoozeId: email.id,
+                              snoozeId: email.thread_id,
                               snoozeAnchorEl: e.currentTarget,
                             }));
                           }}
@@ -1182,7 +1182,7 @@ const Table = ({
               snoozeId: null,
             }));
           }}
-          selectedIds={selection.ids}
+          selectedIds={snoozeId ? [snoozeId] : [...selection.ids]}
           snooze={handleSnooze}
         />
       )}

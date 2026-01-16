@@ -370,17 +370,24 @@ const emailService = {
   },
 
   /**
-   * Snooze email until a specific date/time
-   * @param {string} emailId - Email ID
+   * Snooze a thread until a specific date/time
+   * @param {string} threadId - Thread ID
    * @param {string} snooze_until - ISO 8601 datetime string
-   * @returns {Promise<Object>} Updated email object
+   * @returns {Promise<Object>} Response data
    */
-  snoozeEmail: async (emailId, snooze_until) => {
-    const response = await apiClient.patch(`/v1/emails/${emailId}`, { snooze_until });
-    const payload = response?.data?.data ?? response?.data ?? {};
+  snoozeThread: async (threadId, snooze_until) => {
+    const response = await apiClient.post(`/v1/threads/${threadId}/snooze`, { snooze_until });
+    return response?.data?.data ?? response?.data ?? {};
+  },
 
-    const mapped = emailAPIMapper([payload]);
-    return mapped[0] || payload;
+  /**
+   * Unsnooze a thread, making it immediately visible again
+   * @param {string} threadId - Thread ID
+   * @returns {Promise<Object>} Response data
+   */
+  unsnoozeThread: async (threadId) => {
+    const response = await apiClient.post(`/v1/threads/${threadId}/unsnooze`);
+    return response?.data?.data ?? response?.data ?? {};
   },
 
   /**
@@ -571,27 +578,27 @@ const emailService = {
   },
 
   /**
-   * Bulk snooze emails
-   * @param {Array<string>} emailIds - Array of email IDs
+   * Bulk snooze threads
+   * @param {Array<string>} threadIds - Array of thread IDs
    * @param {string} snooze_until - ISO 8601 datetime string
    * @returns {Promise<Object>} Response data
    */
-  bulkSnoozeEmails: async (emailIds, snooze_until) => {
+  bulkSnoozeThreads: async (threadIds, snooze_until) => {
     const response = await apiClient.post("/v1/bulk/snooze", {
-      email_ids: emailIds,
+      thread_ids: threadIds,
       snooze_until,
     });
     return response?.data?.data ?? response?.data ?? {};
   },
 
   /**
-   * Bulk unsnooze emails
-   * @param {Array<string>} emailIds - Array of email IDs
+   * Bulk unsnooze threads
+   * @param {Array<string>} threadIds - Array of thread IDs
    * @returns {Promise<Object>} Response data
    */
-  bulkUnsnoozeEmails: async (emailIds) => {
+  bulkUnsnoozeThreads: async (threadIds) => {
     const response = await apiClient.post("/v1/bulk/unsnooze", {
-      email_ids: emailIds,
+      thread_ids: threadIds,
     });
     return response?.data?.data ?? response?.data ?? {};
   },

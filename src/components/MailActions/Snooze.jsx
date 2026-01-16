@@ -226,12 +226,6 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(8, 0, 0, 0);
 
-  // Later this week - next Friday at 8 AM
-  const laterThisWeek = new Date(today);
-  const daysUntilFriday = (5 - today.getDay() + 7) % 7;
-  laterThisWeek.setDate(today.getDate() + (daysUntilFriday === 0 ? 7 : daysUntilFriday));
-  laterThisWeek.setHours(8, 0, 0, 0);
-
   // This weekend - next Sunday at 8 AM
   const thisWeekend = new Date(today);
   const daysUntilSunday = (0 - today.getDay() + 7) % 7;
@@ -301,11 +295,11 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     onClose();
   };
 
-  // Check if any selected emails are snoozed
+  // Check if any selected emails are snoozed (snooze_until is not null)
   const hasSnoozedEmails = useMemo(() => {
     if (!selectedIds?.length) return false;
     const match = makeMatch(selectedIds);
-    return (emails || []).some((m) => match(m) && (m.snoozeUntil || (m.labels || []).includes("Snoozed")));
+    return (emails || []).some((m) => match(m) && (m.snooze_until || m.snoozeUntil));
   }, [selectedIds, emails]);
 
   const handleUnsnooze = () => {
@@ -314,8 +308,9 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     const match = makeMatch(selectedIds);
 
     (emails || []).forEach((m) => {
-      if (match(m) && m.snoozeUntil) {
-        prevSnoozeById[String(m.id)] = m.snoozeUntil;
+      const snoozeTime = m.snooze_until || m.snoozeUntil;
+      if (match(m) && snoozeTime) {
+        prevSnoozeById[String(m.id)] = snoozeTime;
       }
     });
 
@@ -390,14 +385,6 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
             }}
           />
           <ActionMenuItem
-            label="Later this week"
-            rightText={formatTime(laterThisWeek)}
-            onClick={() => {
-              handleSnoozeWithUndo(selectedIds, laterThisWeek);
-              onClose();
-            }}
-          />
-          <ActionMenuItem
             label="This weekend"
             rightText={formatTime(thisWeekend)}
             onClick={() => {
@@ -415,7 +402,12 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
           />
           <Divider sx={{ marginY: "6px" }} />
           <ActionMenuItem icon="calendar_month" label="Select date & time" onClick={handleCalendarOpen} />
-          {hasSnoozedEmails && <ActionMenuItem icon="cancel" label="Unsnooze" onClick={handleUnsnooze} />}
+          {hasSnoozedEmails && (
+            <>
+              <Divider sx={{ marginY: "6px" }} />
+              <ActionMenuItem icon="cancel" label="Unsnooze" onClick={handleUnsnooze} />
+            </>
+          )}
         </Box>
       </Popover>
 

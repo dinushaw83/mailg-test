@@ -924,9 +924,10 @@ const MailActions = ({ thread, emails: providedEmails }) => {
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
-      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      // Pass thread.thread_id explicitly since we're on the detail page
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil, [thread.thread_id]) || {};
       const undo = () => {
-        unsnooze(ids, { removedInboxIds });
+        unsnooze(ids, { removedInboxIds }, [thread.thread_id]);
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -944,8 +945,10 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           </Button>
         ),
       });
+      // Navigate back to the email list after snoozing
+      navigate(getBasePath());
     },
-    [snooze, unsnooze, setSnackbar]
+    [snooze, unsnooze, setSnackbar, thread.thread_id, navigate, getBasePath]
   );
 
   return (

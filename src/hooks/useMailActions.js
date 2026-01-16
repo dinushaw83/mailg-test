@@ -7,7 +7,8 @@ import {
   bulkUpdateLabelsThunk,
   updateEmailStarredThunk,
   updateEmailImportantThunk,
-  snoozeEmailThunk,
+  snoozeThreadThunk,
+  unsnoozeThreadThunk,
   moveToTrashThunk,
   moveToSpamThunk,
   deleteEmailThunk,
@@ -19,8 +20,8 @@ import {
   bulkMoveToTrashThunk,
   bulkDeleteEmailThunk,
   bulkArchiveEmailsThunk,
-  bulkSnoozeEmailsThunk,
-  bulkUnsnoozeEmailsThunk,
+  bulkSnoozeThreadsThunk,
+  bulkUnsnoozeThreadsThunk,
   bulkUnstarThreadsThunk,
   updateThreadImportantThunk,
 } from "../store/slices/mailSlice";
@@ -113,6 +114,32 @@ export default function useMailActions() {
               }
               return email;
             }),
+          };
+        }
+      );
+    },
+    [queryClient]
+  );
+
+  // Helper to remove items from React Query cache (for snooze, trash, etc.)
+  const removeFromQueryCache = useCallback(
+    (ids) => {
+      const match = makeMatch(ids);
+
+      // Remove from all queries that start with "emails"
+      queryClient.setQueriesData(
+        {
+          predicate: (query) => {
+            const key = query.queryKey;
+            return Array.isArray(key) && key[0] === "emails";
+          },
+        },
+        (oldData) => {
+          if (!oldData?.results) return oldData;
+
+          return {
+            ...oldData,
+            results: oldData.results.filter((email) => !match(email)),
           };
         }
       );
@@ -776,37 +803,53 @@ export default function useMailActions() {
   );
 
   const snooze = useCallback(
-    (ids, snoozeUntil) => {
-      const match = makeMatch(ids);
+    (ids, snoozeUntil, providedThreadIds = null) => {
+      // Resolve thread IDs - snooze is thread-level
+      const { threadIds: resolvedThreadIds, allIds, matchAll } = resolveIds(ids, providedThreadIds);
       const removedInboxIds = new Set();
       const snoozeUntilISO = snoozeUntil.toISOString();
 
-      // Call bulk backend API with all email IDs at once
-      if (ids.length > 0) {
+      // Call backend API with thread IDs
+      if (resolvedThreadIds.length === 1) {
+        // Single thread snooze
         dispatch(
-          bulkSnoozeEmailsThunk({
-            emailIds: ids,
+          snoozeThreadThunk({
+            threadId: resolvedThreadIds[0],
             snooze_until: snoozeUntilISO,
           })
-        ).catch((error) => {
-          console.error("Failed to bulk snooze emails:", error);
-        });
+        )
+          .then(() => invalidateEmailCaches(resolvedThreadIds))
+          .catch((error) => {
+            console.error("Failed to snooze thread:", error);
+          });
+      } else if (resolvedThreadIds.length > 1) {
+        // Bulk thread snooze
+        dispatch(
+          bulkSnoozeThreadsThunk({
+            threadIds: resolvedThreadIds,
+            snooze_until: snoozeUntilISO,
+          })
+        )
+          .then(() => invalidateEmailCaches(resolvedThreadIds))
+          .catch((error) => {
+            console.error("Failed to bulk snooze threads:", error);
+          });
       }
 
+      // Optimistic update - remove snoozed items from the current list and query cache
+      removeFromQueryCache(allIds);
       setEmails((prev) =>
-        prev.map((m) => {
-          if (!match(m)) return m;
+        prev.filter((m) => {
+          if (!matchAll(m)) return true; // Keep non-matching emails
 
+          // Track emails that had Inbox label for undo purposes
           const currentLabels = m.labels || [];
-          const hadInbox = currentLabels.includes("Inbox");
-          const withSnoozed = currentLabels.includes("Snoozed") ? currentLabels : [...currentLabels, "Snoozed"];
-          const labelsWithoutInbox = withSnoozed.filter((label) => label !== "Inbox");
-
-          if (hadInbox) {
+          if (currentLabels.includes("Inbox")) {
             removedInboxIds.add(String(m.id));
           }
 
-          return { ...m, labels: labelsWithoutInbox, snoozeUntil: snoozeUntilISO };
+          // Remove from list (filter out snoozed items)
+          return false;
         })
       );
 
@@ -824,38 +867,64 @@ export default function useMailActions() {
 
       return { removedInboxIds: [...removedInboxIds] };
     },
-    [setEmails, setSoftRemovedLabels]
+    [setEmails, setSoftRemovedLabels, dispatch, resolveIds, invalidateEmailCaches, removeFromQueryCache]
   );
 
   const unsnooze = useCallback(
-    (ids, options = {}) => {
-      const match = makeMatch(ids);
+    (ids, options = {}, providedThreadIds = null) => {
+      // Resolve thread IDs - unsnooze is thread-level
+      const { threadIds: resolvedThreadIds, allIds, matchAll } = resolveIds(ids, providedThreadIds);
       const overrideIds = new Set((options.removedInboxIds || []).map((id) => String(id)));
       const restoredInboxIds = new Set();
 
+      // Call backend API with thread IDs
+      if (resolvedThreadIds.length === 1) {
+        // Single thread unsnooze
+        dispatch(
+          unsnoozeThreadThunk({
+            threadId: resolvedThreadIds[0],
+          })
+        )
+          .then(() => invalidateEmailCaches(resolvedThreadIds))
+          .catch((error) => {
+            console.error("Failed to unsnooze thread:", error);
+          });
+      } else if (resolvedThreadIds.length > 1) {
+        // Bulk thread unsnooze
+        dispatch(
+          bulkUnsnoozeThreadsThunk({
+            threadIds: resolvedThreadIds,
+          })
+        )
+          .then(() => invalidateEmailCaches(resolvedThreadIds))
+          .catch((error) => {
+            console.error("Failed to bulk unsnooze threads:", error);
+          });
+      }
+
+      // Optimistic update - remove unsnoozed items from snoozed list view
+      // This removes them from the React Query cache (snoozed folder view)
+      removeFromQueryCache(allIds);
+
+      // Also filter out from local state (for snoozed folder view)
       setEmails((prev) =>
-        prev.map((m) => {
-          if (!match(m)) return m;
+        prev.filter((m) => {
+          if (!matchAll(m)) return true; // Keep non-matching emails
 
+          // Track emails that had Inbox label for undo purposes
           const currentLabels = m.labels || [];
-          const labelsWithoutSnoozed = currentLabels.filter((label) => label !== "Snoozed");
-
           const key = String(m.id);
           const softRemoved = softRemovedLabels[key] || [];
           const shouldRestoreFromSoftRemoved = softRemoved.includes("Inbox");
           const shouldRestoreFromOverride = overrideIds.has(key);
           const shouldRestoreInbox = shouldRestoreFromSoftRemoved || shouldRestoreFromOverride;
 
-          const nextLabels =
-            shouldRestoreInbox && !labelsWithoutSnoozed.includes("Inbox")
-              ? [...labelsWithoutSnoozed, "Inbox"]
-              : labelsWithoutSnoozed;
-
-          if (shouldRestoreInbox) {
+          if (shouldRestoreInbox || currentLabels.includes("Inbox")) {
             restoredInboxIds.add(key);
           }
 
-          return { ...m, labels: nextLabels, snoozeUntil: undefined };
+          // Remove from list (filter out unsnoozed items)
+          return false;
         })
       );
 
@@ -874,7 +943,7 @@ export default function useMailActions() {
         });
       }
     },
-    [setEmails, softRemovedLabels, setSoftRemovedLabels]
+    [setEmails, softRemovedLabels, setSoftRemovedLabels, dispatch, resolveIds, invalidateEmailCaches, removeFromQueryCache]
   );
 
   const toggleMuted = useCallback(

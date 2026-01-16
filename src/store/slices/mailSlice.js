@@ -388,17 +388,33 @@ export const bulkUpdateEmailsThunk = createAsyncThunk(
 );
 
 /**
- * MUTATION THUNK: Snooze email
+ * MUTATION THUNK: Snooze thread
  */
-export const snoozeEmailThunk = createAsyncThunk(
-  "mail/snoozeEmail",
-  async ({ emailId, snooze_until }, { rejectWithValue }) => {
+export const snoozeThreadThunk = createAsyncThunk(
+  "mail/snoozeThread",
+  async ({ threadId, snooze_until }, { rejectWithValue }) => {
     try {
-      const response = await emailService.snoozeEmail(emailId, snooze_until);
-      return { emailId, snooze_until, email: response };
+      const response = await emailService.snoozeThread(threadId, snooze_until);
+      return { threadId, snooze_until, response };
     } catch (error) {
-      console.error("Failed to snooze email:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to snooze email");
+      console.error("Failed to snooze thread:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to snooze thread");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Unsnooze thread
+ */
+export const unsnoozeThreadThunk = createAsyncThunk(
+  "mail/unsnoozeThread",
+  async ({ threadId }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.unsnoozeThread(threadId);
+      return { threadId, response };
+    } catch (error) {
+      console.error("Failed to unsnooze thread:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to unsnooze thread");
     }
   }
 );
@@ -610,33 +626,33 @@ export const bulkArchiveEmailsThunk = createAsyncThunk(
 );
 
 /**
- * BULK MUTATION THUNK: Snooze multiple emails
+ * BULK MUTATION THUNK: Snooze multiple threads
  */
-export const bulkSnoozeEmailsThunk = createAsyncThunk(
-  "mail/bulkSnoozeEmails",
-  async ({ emailIds, snooze_until }, { rejectWithValue }) => {
+export const bulkSnoozeThreadsThunk = createAsyncThunk(
+  "mail/bulkSnoozeThreads",
+  async ({ threadIds, snooze_until }, { rejectWithValue }) => {
     try {
-      const response = await emailService.bulkSnoozeEmails(emailIds, snooze_until);
-      return { emailIds, snooze_until, response };
+      const response = await emailService.bulkSnoozeThreads(threadIds, snooze_until);
+      return { threadIds, snooze_until, response };
     } catch (error) {
-      console.error("Failed to bulk snooze emails:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk snooze emails");
+      console.error("Failed to bulk snooze threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk snooze threads");
     }
   }
 );
 
 /**
- * BULK MUTATION THUNK: Unsnooze multiple emails
+ * BULK MUTATION THUNK: Unsnooze multiple threads
  */
-export const bulkUnsnoozeEmailsThunk = createAsyncThunk(
-  "mail/bulkUnsnoozeEmails",
-  async ({ emailIds }, { rejectWithValue }) => {
+export const bulkUnsnoozeThreadsThunk = createAsyncThunk(
+  "mail/bulkUnsnoozeThreads",
+  async ({ threadIds }, { rejectWithValue }) => {
     try {
-      const response = await emailService.bulkUnsnoozeEmails(emailIds);
-      return { emailIds, response };
+      const response = await emailService.bulkUnsnoozeThreads(threadIds);
+      return { threadIds, response };
     } catch (error) {
-      console.error("Failed to bulk unsnooze emails:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unsnooze emails");
+      console.error("Failed to bulk unsnooze threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unsnooze threads");
     }
   }
 );
@@ -932,9 +948,10 @@ const mailSlice = createSlice({
             "mail/bulkMoveToTrash/fulfilled",
             "mail/bulkDeleteEmail/fulfilled",
             "mail/bulkArchiveEmails/fulfilled",
-            "mail/bulkSnoozeEmails/fulfilled",
-            "mail/bulkUnsnoozeEmails/fulfilled",
-            "mail/snoozeEmail/fulfilled",
+            "mail/bulkSnoozeThreads/fulfilled",
+            "mail/bulkUnsnoozeThreads/fulfilled",
+            "mail/snoozeThread/fulfilled",
+            "mail/unsnoozeThread/fulfilled",
             "mail/moveToTrash/fulfilled",
             "mail/moveToSpam/fulfilled",
             "mail/deleteEmail/fulfilled",

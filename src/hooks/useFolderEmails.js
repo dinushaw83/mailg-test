@@ -124,6 +124,7 @@ export default function useFolderEmails({
               pageSize: itemsPerPage,
               folder: "inbox",
               category: categoryParam,
+              is_snoozed: false, // Exclude snoozed emails from inbox
             });
             break;
           }

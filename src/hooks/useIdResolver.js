@@ -2,15 +2,20 @@ import { useCallback } from "react";
 import { useSelector } from "react-redux";
 
 /**
- * Normalizes an array of IDs into a Set for fast lookup.
- * Handles both single values and arrays.
+ * Normalizes IDs into a Set for fast lookup.
+ * Handles single values, arrays, and Sets.
  */
-const buildIdIndex = (selection) =>
-  new Set(
-    (Array.isArray(selection) ? selection : [selection])
-      .map((x) => String(x ?? "").trim())
-      .filter(Boolean)
+const buildIdIndex = (selection) => {
+  let arr;
+  if (!selection) arr = [];
+  else if (Array.isArray(selection)) arr = selection;
+  else if (selection instanceof Set) arr = [...selection];
+  else arr = [selection];
+  
+  return new Set(
+    arr.map((x) => String(x ?? "").trim()).filter(Boolean)
   );
+};
 
 /**
  * Collects all possible ID keys from a message object for matching.
@@ -66,8 +71,14 @@ export function useIdResolver() {
    */
   const resolveIds = useCallback(
     (ids, providedThreadIds = null) => {
-      // Normalize email IDs to array
-      const emailIds = Array.isArray(ids) ? ids.filter(Boolean) : ids ? [ids] : [];
+      // Normalize email IDs to array (handle Array, Set, or single value)
+      const normalizeToArray = (input) => {
+        if (!input) return [];
+        if (Array.isArray(input)) return input.filter(Boolean);
+        if (input instanceof Set) return [...input].filter(Boolean);
+        return [input];
+      };
+      const emailIds = normalizeToArray(ids);
 
       // Create matcher for the input IDs
       const match = makeMatch(ids);
@@ -79,11 +90,13 @@ export function useIdResolver() {
       } else {
         // Extract thread IDs from matching emails
         threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id).filter(Boolean))];
+        
+        if (threadIds.length === 0 && emailIds.length > 0) {
+          threadIds = emailIds;
+        }
       }
 
-      // Combined IDs for cache matching (both email IDs and thread IDs)
-      // This ensures we can match list rows (keyed by thread) and detail items (keyed by email)
-      const allIds = [...emailIds, ...threadIds];
+      const allIds = [...new Set([...emailIds, ...threadIds])];
 
       // Create a matcher that matches against all IDs
       const matchAll = makeMatch(allIds);

@@ -788,5 +788,9 @@ export const getThread = (messages, { thread_id }) => {
 
     // Attachments
     attachments: last.attachments || [],
+
+    // Snooze info - use from last message or first message that has it
+    snooze_until: last.snooze_until || first.snooze_until,
+    snoozeUntil: last.snoozeUntil || first.snoozeUntil,
   };
 };
