@@ -1,7 +1,7 @@
 import { fetchEmailCounts, fetchLabels, setEmails, setEmailsForCategory } from "../store/slices/mailSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import emailService from "../services/emailService";
 
 /**
@@ -32,7 +32,6 @@ export default function useFolderEmails({
   setItemsPerPage,
 }) {
   const dispatch = useDispatch();
-  const queryClient = useQueryClient();
   const { accessToken } = useSelector((state) => state.user);
   const labels = useSelector((state) => state.mail.labels || {});
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
@@ -138,41 +137,15 @@ export default function useFolderEmails({
         return baseResult;
       }
 
-      // For each thread, fetch all emails and check if any is starred
-      // This is a workaround until the BE provides thread-level starred status
-      const threadIds = [...new Set(baseResult.results.map((e) => e.thread_id).filter(Boolean))];
-
-      // Fetch all threads in parallel, using cache when available
-      const threadEmailsMap = new Map();
-      await Promise.all(
-        threadIds.map(async (threadId) => {
-          try {
-            // Use fetchQuery to leverage React Query caching
-            // This will use cached data if available and not stale
-            const threadEmails = await queryClient.fetchQuery({
-              queryKey: ["email", threadId],
-              queryFn: () => emailService.getEmail(threadId),
-              staleTime: 5 * 60 * 1000, // 5 minutes - don't refetch if data is less than 5 min old
-            });
-            threadEmailsMap.set(threadId, threadEmails);
-          } catch (error) {
-            console.warn(`Failed to fetch thread ${threadId}:`, error);
-          }
-        })
-      );
-
-      // Update each result with the correct starred status and message count based on thread emails
-      const updatedResults = baseResult.results.map((email) => {
-        const threadEmails = threadEmailsMap.get(email.thread_id);
-        if (Array.isArray(threadEmails) && threadEmails.length > 0) {
-          // Check if ANY email in the thread is starred
-          const hasAnyStarred = threadEmails.some((e) => e.is_starred);
-          // Get the thread email count
-          const messageCount = threadEmails.length;
-          return { ...email, is_starred: hasAnyStarred, messageCount, thread_email_count: messageCount };
-        }
-        return email;
-      });
+      // Map results to use thread_is_starred for the list display
+      // The backend now provides thread_is_starred which is true if ANY email in the thread is starred
+      const updatedResults = baseResult.results.map((email) => ({
+        ...email,
+        // Use thread_is_starred from backend for list display (true if any email in thread is starred)
+        is_starred: email.thread_is_starred ?? email.is_starred,
+        // Use thread_email_count from backend if available
+        messageCount: email.thread_email_count || 1,
+      }));
 
       return {
         ...baseResult,

@@ -170,13 +170,20 @@ export default function useMailActions() {
 
   // Helper to invalidate thread cache and email list after actions (star, important, labels, etc.)
   // This ensures the list will refetch with correct thread-level status
+  // Accepts a single threadId or an array of threadIds to batch invalidations
   const invalidateEmailCaches = useCallback(
-    (threadId) => {
-      // Invalidate the specific thread cache so it gets fresh data
-      if (threadId) {
-        queryClient.invalidateQueries({ queryKey: ["email", threadId] });
-      }
-      // Invalidate email list queries so they refetch with updated status
+    (threadIds) => {
+      // Normalize to array
+      const ids = Array.isArray(threadIds) ? threadIds : [threadIds];
+
+      // Invalidate each specific thread cache so they get fresh data
+      ids.forEach((threadId) => {
+        if (threadId) {
+          queryClient.invalidateQueries({ queryKey: ["email", threadId] });
+        }
+      });
+
+      // Invalidate email list queries ONCE so they refetch with updated status
       queryClient.invalidateQueries({
         predicate: (query) => {
           const key = query.queryKey;
@@ -328,7 +335,7 @@ export default function useMailActions() {
           )
             .then(() => {
               // Invalidate caches after successful label update
-              threadIdsToUse.forEach((tid) => invalidateEmailCaches(tid));
+              invalidateEmailCaches(threadIdsToUse);
             })
             .catch((error) => {
               console.error("Failed to sync labels with backend:", error);
@@ -644,7 +651,7 @@ export default function useMailActions() {
             dispatch(bulkUnstarThreadsThunk({ threadIds: threadIdsToUse }))
               .then(() => {
                 // Invalidate caches after successful unstar
-                threadIdsToUse.forEach((tid) => invalidateEmailCaches(tid));
+                invalidateEmailCaches(threadIdsToUse);
               })
               .catch((error) => {
                 console.error("Failed to unstar threads:", error);
@@ -760,7 +767,7 @@ export default function useMailActions() {
             dispatch(bulkUnstarThreadsThunk({ threadIds: threadIdsToUse }))
               .then(() => {
                 // Invalidate caches after successful unstar
-                threadIdsToUse.forEach((tid) => invalidateEmailCaches(tid));
+                invalidateEmailCaches(threadIdsToUse);
               })
               .catch((error) => {
                 console.error("Failed to unstar threads:", error);
@@ -879,7 +886,7 @@ export default function useMailActions() {
         Promise.all(promises)
           .then(() => {
             // Invalidate caches after successful important update
-            threadIdsToUpdate.forEach((tid) => invalidateEmailCaches(tid));
+            invalidateEmailCaches(threadIdsToUpdate);
           })
           .catch((error) => {
             console.error("Failed to update important status:", error);
@@ -921,7 +928,7 @@ export default function useMailActions() {
         )
           .then(() => {
             // Invalidate caches after successful important update
-            threadIdsArray.forEach((tid) => invalidateEmailCaches(tid));
+            invalidateEmailCaches(threadIdsArray);
           })
           .catch((error) => {
             console.error("Failed to update important status:", error);
