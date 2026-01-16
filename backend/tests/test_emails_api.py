@@ -1315,9 +1315,10 @@ class TestEmailSendReplyForward:
         data = response.json()["data"]
         
         # Forwarded email should be queued when undo send is enabled
+        # but goes to sent folder (not scheduled) since no explicit schedule param
         assert data["scheduled_send_at"] is not None
         assert data["can_undo_send"] == True
-        assert data["folder"] == "scheduled"
+        assert data["folder"] == "sent"
 
     def test_forward_email_without_undo_send(self, client_with_auth, db_session, sample_email):
         """Test that forwarding an email is immediate when undo_send is disabled.
@@ -1919,8 +1920,8 @@ class TestScheduledFolder:
         for email in data["results"]:
             assert email["folder"] == "scheduled"
 
-    def test_queued_email_goes_to_scheduled_folder(self, client_with_auth, db_session, sample_draft_email):
-        """Test that sending a draft with undo_send enabled puts email in scheduled folder."""
+    def test_queued_email_goes_to_sent_folder_with_undo_delay(self, client_with_auth, db_session, sample_draft_email):
+        """Test that sending a draft with undo_send enabled puts email in sent folder (not scheduled)."""
         client, token, user = client_with_auth
         
         # Enable undo send (10 second delay)
@@ -1934,8 +1935,8 @@ class TestScheduledFolder:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        # Email should be in scheduled folder when queued
-        assert data["folder"] == "scheduled"
+        # Email goes to sent folder (not scheduled) when using undo delay without explicit schedule param
+        assert data["folder"] == "sent"
         assert data["can_undo_send"] == True
         assert data["scheduled_send_at"] is not None
 

@@ -783,11 +783,11 @@ def send_email(
         from datetime import timedelta
         email.status = EmailStatus.QUEUED.value
         email.scheduled_send_at = datetime.now(UTC) + timedelta(seconds=undo_delay)
-        email.folder = FolderType.SCHEDULED.value
+        email.folder = FolderType.SENT.value
         
-        # Update labels: Remove Drafts, add Scheduled
+        # Update labels: Remove Drafts, add Sent (not Scheduled - no explicit schedule param)
         remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
-        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
+        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
         
         try:
             db.commit()
@@ -1146,7 +1146,7 @@ def forward_email(
                 body=body,
                 html_body=html_body,
                 status=EmailStatus.QUEUED.value,
-                folder=FolderType.SCHEDULED.value,
+                folder=FolderType.SENT.value,
                 sender_id=current_user.id,
                 thread_id=thread.id,
                 parent_email_id=email_id,
@@ -1171,8 +1171,8 @@ def forward_email(
                 )
                 db.add(email_recipient)
 
-            # Add Scheduled label for sender (undo send enabled)
-            add_system_label_to_thread(db, thread.id, current_user.id, SystemLabel.SCHEDULED)
+            # Add Sent label for sender (no explicit schedule param - undo send only)
+            add_system_label_to_thread(db, thread.id, current_user.id, SystemLabel.SENT)
 
             db.commit()
             db.refresh(forward_email_obj)

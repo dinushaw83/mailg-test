@@ -91,14 +91,19 @@ def process_scheduled_emails_for_database(db_name: str) -> int:
             
             for email in queued_emails:
                 try:
+                    # Check if this was explicitly scheduled (folder == SCHEDULED)
+                    # vs undo delay (folder == SENT, already has Sent label)
+                    was_explicitly_scheduled = email.folder == FolderType.SCHEDULED.value
+                    
                     # Update email status and folder to sent
                     email.status = EmailStatus.SENT.value
                     email.sent_at = datetime.now(UTC)
                     email.scheduled_send_at = None
                     email.folder = FolderType.SENT.value
                     
-                    # Update labels: Remove Scheduled, add Sent
-                    if email.thread_id and email.sender_id:
+                    # Update labels only for explicitly scheduled emails
+                    # Undo delay emails already have Sent label set
+                    if email.thread_id and email.sender_id and was_explicitly_scheduled:
                         remove_system_label_from_thread(db, email.thread_id, email.sender_id, SystemLabel.SCHEDULED)
                         add_system_label_to_thread(db, email.thread_id, email.sender_id, SystemLabel.SENT)
                     
