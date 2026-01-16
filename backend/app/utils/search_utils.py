@@ -147,18 +147,18 @@ def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
     or_groups = []
     
     # Handle explicit OR: term1 OR term2
-    or_matches = re.findall(r'(\S+)\s+OR\s+(\S+)', query, re.IGNORECASE)
+    or_matches = re.findall(r'([^\s!]+)\s+OR\s+([^\s!]+)', query, re.IGNORECASE)
     for match in or_matches:
         or_groups.append(list(match))
-    query = re.sub(r'\S+\s+OR\s+\S+', '', query, flags=re.IGNORECASE)
+    query = re.sub(r'[^\s!]+\s+OR\s+[^\s!]+', '', query, flags=re.IGNORECASE)
     
     # Handle brace syntax: {term1 term2 term3}
-    brace_matches = re.findall(r'\{([^}]+)\}', query)
+    brace_matches = re.findall(r'\{([^}\r\n]+)\}', query)
     for match in brace_matches:
         terms = match.split()
         if len(terms) > 1:
             or_groups.append(terms)
-    query = re.sub(r'\{[^}]+\}', '', query)
+    query = re.sub(r'\{[^}\r\n]+\}', '', query)
     
     return or_groups, query
 
@@ -179,12 +179,12 @@ def extract_grouped_terms(query: str) -> Tuple[dict, str]:
     grouped = {}
     
     # Match operator:(term1 term2 ...)
-    matches = re.findall(r'(\w+):\(([^)]+)\)', query)
+    matches = re.findall(r'([A-Za-z_][A-Za-z0-9_]*):\(([^)\r\n]+)\)', query)
     for operator, terms_str in matches:
         terms = terms_str.split()
         grouped[operator.lower()] = terms
     
-    query = re.sub(r'\w+:\([^)]+\)', '', query)
+    query = re.sub(r'[A-Za-z_][A-Za-z0-9_]*:\([^)\r\n]+\)', '', query)
     
     return grouped, query
 
