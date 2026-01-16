@@ -99,16 +99,44 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
   }, [selectedDateTime]);
 
   const handleConfirm = () => {
-    if (!selectedDateTime || Number.isNaN(selectedDateTime.getTime())) {
+    let candidate = new Date(selectedDateTime);
+
+    if (!candidate || Number.isNaN(candidate.getTime())) {
       setDateError("Invalid Date");
+      setTimeError("Invalid time");
+      return;
+    }
+
+    const parsedDate = new Date(dateInput);
+    const dateValidationMessage = validateDate(dateInput);
+
+    if (dateValidationMessage || Number.isNaN(parsedDate.getTime())) {
+      setDateError(dateValidationMessage || "Invalid Date");
+      return;
+    }
+
+    candidate.setFullYear(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
+    setDateError("");
+
+    const timeValidationMessage = validateTime(timeInput, candidate);
+
+    if (timeValidationMessage) {
+      setTimeError(timeValidationMessage);
+      return;
+    }
+
+    const [hours, minutes] = timeInput.split(":");
+    candidate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+    if (Number.isNaN(candidate.getTime())) {
       setTimeError("Invalid time");
       return;
     }
 
     const now = new Date();
 
-    if (selectedDateTime <= now) {
-      const isSameDay = selectedDateTime.toDateString() === now.toDateString();
+    if (candidate <= now) {
+      const isSameDay = candidate.toDateString() === now.toDateString();
       setDateError(isSameDay ? "" : "Select a future date");
       setTimeError("Select a future time");
       return;
@@ -116,7 +144,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
 
     setDateError("");
     setTimeError("");
-    onConfirm(selectedDateTime);
+    setSelectedDateTime(candidate);
+    onConfirm(candidate);
   };
 
   return (
