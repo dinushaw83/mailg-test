@@ -364,9 +364,6 @@ jobs:
         run: |
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
-          # Copy backend/fixtures so docker-compose can mount them for seed data initialization
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy/backend'
-          scp -r backend/fixtures ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/backend/
 
       - name: Deploy containers
         env:
