@@ -367,8 +367,9 @@ jobs:
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
           # Copy backend/fixtures so docker-compose can mount them for seed data initialization
           # Use tar pipe to preserve permissions and avoid permission issues
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy/backend && rm -rf ~/mailg-deploy/backend/fixtures'
-          cd backend && tar czf - fixtures | ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'cd ~/mailg-deploy/backend && tar xzf -'
+          # Handle permission issues: try to remove existing fixtures, use sudo if needed, then fix ownership
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "mkdir -p ~/mailg-deploy/backend && (rm -rf ~/mailg-deploy/backend/fixtures 2>/dev/null || sudo rm -rf ~/mailg-deploy/backend/fixtures 2>/dev/null || true) && (sudo chown -R \$USER:\$USER ~/mailg-deploy/backend 2>/dev/null || true)"
+          cd backend && tar czf - fixtures | ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "cd ~/mailg-deploy/backend && tar xzf - && (sudo chown -R \$USER:\$USER ~/mailg-deploy/backend/fixtures 2>/dev/null || chown -R \$USER:\$USER ~/mailg-deploy/backend/fixtures 2>/dev/null || true)"
 
       - name: Deploy containers
         env:
