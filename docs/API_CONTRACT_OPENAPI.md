@@ -3139,10 +3139,10 @@ Permissions:
 
 **GET** `/api/v1/labels`
 
-List user's labels with thread counts.
+List user's labels with thread and unread counts.
 
 Args:
-    include_counts: Include thread counts for each label
+    include_counts: Include thread counts and unread counts for each label
     flat: If True, returns flat list. If False, returns hierarchical tree structure.
 
 Permissions:
@@ -3150,7 +3150,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include thread counts
+- `include_counts` (optional, boolean): Include thread and unread counts
 - `flat` (optional, boolean): Return flat list (True) or hierarchical tree (False)
 
 **Responses**:
@@ -3279,7 +3279,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include thread counts
+- `include_counts` (optional, boolean): Include thread and unread counts
 
 **Responses**:
 
@@ -3393,7 +3393,7 @@ Permissions:
 
 **GET** `/api/v1/labels/{label_id}`
 
-Get a specific label by ID.
+Get a specific label by ID with thread and unread counts.
 
 Permissions:
 - Users can only access their own labels
