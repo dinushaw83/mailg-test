@@ -1626,14 +1626,18 @@ def unmark_email_spam(
     db: Session = Depends(get_db),
 ) -> dict:
     """Remove spam mark from an email.
-    
-    Moves the email from spam folder back to inbox.
-    
+
+    Moves the email from spam folder back to its appropriate folder:
+    - Sent emails are restored to the 'sent' folder
+    - Scheduled/queued emails are restored to the 'scheduled' folder
+    - Received emails are restored to the 'inbox' folder
+    - Draft emails are restored to the 'drafts' folder
+
     Permissions:
     - Users can only unmark their own emails from spam (sent or received)
     """
     current_user = auth.user
-    
+
     email = db.query(Email).options(
         joinedload(Email.sender),
         selectinload(Email.recipients),
@@ -1645,45 +1649,58 @@ def unmark_email_spam(
     ).filter(
         Email.id == email_id
     ).first()
-    
+
     if not email:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
         )
-    
+
     # Check ownership
     is_sender = email.sender_id == current_user.id
     is_recipient = any(r.recipient_id == current_user.id for r in email.recipients)
     is_admin = current_user.role == "admin"
-    
+
     if not (is_sender or is_recipient or is_admin):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Email {email_id} not found"
         )
-    
+
     if email.folder != FolderType.SPAM.value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email is not in spam folder"
         )
-    
-    email.folder = FolderType.INBOX.value
-    
-    # Update labels: Replace Spam with Inbox
+
+    # Determine the appropriate folder based on email status
+    if email.status == EmailStatus.DRAFT.value:
+        email.folder = FolderType.DRAFTS.value
+        target_label = SystemLabel.DRAFTS
+    elif email.status == EmailStatus.QUEUED.value:
+        email.folder = FolderType.SCHEDULED.value
+        target_label = SystemLabel.SCHEDULED
+    elif email.status == EmailStatus.SENT.value:
+        email.folder = FolderType.SENT.value
+        target_label = SystemLabel.SENT
+    else:
+        # For received emails or any other status, restore to inbox
+        email.folder = FolderType.INBOX.value
+        target_label = SystemLabel.INBOX
+
+    # Update labels: Replace Spam with the appropriate label
     if email.thread_id:
-        replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.INBOX)
-    
+        replace_exclusive_labels(db, email.thread_id, current_user.id, target_label)
+
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
-    
-    logger.info(f"Email {email.id} removed from spam by user {current_user.id}")
-    
+
+    logger.info(f"Email {email.id} removed from spam to {email.folder} by user {current_user.id}")
+
     return format_email_response(email, current_user.id)
 
 

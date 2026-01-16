@@ -765,9 +765,11 @@ def bulk_unspam(
 ) -> BulkOperationResponse:
     """Remove spam mark from multiple emails.
 
-    Optimized to use generic bulk update helper with single UPDATE query.
-
-    Moves emails from spam folder back to inbox.
+    Moves emails from spam folder back to their appropriate folder:
+    - Sent emails are restored to the 'sent' folder
+    - Scheduled/queued emails are restored to the 'scheduled' folder
+    - Received emails are restored to the 'inbox' folder
+    - Draft emails are restored to the 'drafts' folder
 
     Permissions:
     - Users can only unmark their own emails from spam
@@ -775,22 +777,73 @@ def bulk_unspam(
     current_user = auth.user
 
     try:
-        # Use generic helper - filter only emails in spam folder
-        success_ids, thread_ids, failures = bulk_update_emails_with_threads(
-            db=db,
-            user_id=current_user.id,
-            email_ids=request.email_ids,
-            email_updates={Email.folder: FolderType.INBOX.value},
-            label_operation=lambda tids: bulk_replace_exclusive_labels(
-                db, tids, current_user.id, SystemLabel.INBOX
-            ),
-            additional_filters=[Email.folder == FolderType.SPAM.value]
-        )
+        # Fetch accessible spam emails with their status and thread_id
+        spam_emails = db.query(Email.id, Email.status, Email.thread_id).filter(
+            Email.id.in_(request.email_ids),
+            Email.folder == FolderType.SPAM.value,
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        ).all()
 
-        # Mark non-spam emails as failures
-        for eid in request.email_ids:
-            if eid not in success_ids and eid not in failures:
-                failures[eid] = "Email is not in spam folder"
+        success_ids = [e.id for e in spam_emails]
+        not_found = [eid for eid in request.email_ids if eid not in success_ids]
+        failures = {eid: "Email not found, access denied, or not in spam folder" for eid in not_found}
+
+        if spam_emails:
+            from app.core.constants import EmailStatus
+
+            # Group emails by target folder based on status
+            drafts = [e for e in spam_emails if e.status == EmailStatus.DRAFT.value]
+            scheduled = [e for e in spam_emails if e.status == EmailStatus.QUEUED.value]
+            sent = [e for e in spam_emails if e.status == EmailStatus.SENT.value]
+            inbox = [e for e in spam_emails if e.status not in [EmailStatus.DRAFT.value, EmailStatus.QUEUED.value, EmailStatus.SENT.value]]
+
+            # Bulk update each group to its appropriate folder
+            if drafts:
+                draft_ids = [e.id for e in drafts]
+                db.query(Email).filter(Email.id.in_(draft_ids)).update(
+                    {Email.folder: FolderType.DRAFTS.value},
+                    synchronize_session=False
+                )
+                draft_thread_ids = [e.thread_id for e in drafts if e.thread_id]
+                if draft_thread_ids:
+                    bulk_replace_exclusive_labels(db, draft_thread_ids, current_user.id, SystemLabel.DRAFTS)
+
+            if scheduled:
+                scheduled_ids = [e.id for e in scheduled]
+                db.query(Email).filter(Email.id.in_(scheduled_ids)).update(
+                    {Email.folder: FolderType.SCHEDULED.value},
+                    synchronize_session=False
+                )
+                scheduled_thread_ids = [e.thread_id for e in scheduled if e.thread_id]
+                if scheduled_thread_ids:
+                    bulk_replace_exclusive_labels(db, scheduled_thread_ids, current_user.id, SystemLabel.SCHEDULED)
+
+            if sent:
+                sent_ids = [e.id for e in sent]
+                db.query(Email).filter(Email.id.in_(sent_ids)).update(
+                    {Email.folder: FolderType.SENT.value},
+                    synchronize_session=False
+                )
+                sent_thread_ids = [e.thread_id for e in sent if e.thread_id]
+                if sent_thread_ids:
+                    bulk_replace_exclusive_labels(db, sent_thread_ids, current_user.id, SystemLabel.SENT)
+
+            if inbox:
+                inbox_ids = [e.id for e in inbox]
+                db.query(Email).filter(Email.id.in_(inbox_ids)).update(
+                    {Email.folder: FolderType.INBOX.value},
+                    synchronize_session=False
+                )
+                inbox_thread_ids = [e.thread_id for e in inbox if e.thread_id]
+                if inbox_thread_ids:
+                    bulk_replace_exclusive_labels(db, inbox_thread_ids, current_user.id, SystemLabel.INBOX)
 
         db.commit()
     except Exception as e:

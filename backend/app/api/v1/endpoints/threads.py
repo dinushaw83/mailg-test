@@ -656,11 +656,16 @@ def unmark_thread_spam_endpoint(
 ) -> ThreadOperationResponse:
     """Unmark a thread as spam for the current user.
 
-    This updates the folder of all user's emails in the thread to INBOX.
-    Also removes the Spam system label accordingly.
+    This updates the folder of all user's emails in the thread to their appropriate folder:
+    - Sent emails are restored to the 'sent' folder
+    - Scheduled/queued emails are restored to the 'scheduled' folder
+    - Received emails are restored to the 'inbox' folder
+    - Draft emails are restored to the 'drafts' folder
+
+    Also replaces the Spam system label with the appropriate label.
     """
     current_user = auth.user
-    
+
     # Check if user has access to this thread
     user_emails = db.query(Email).options(
         joinedload(Email.sender),
@@ -681,22 +686,42 @@ def unmark_thread_spam_endpoint(
             )
         )
     ).all()
-    
+
     if not user_emails:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Thread {thread_id} not found"
         )
 
-    # Update all user's emails in this thread to spam/inbox folder
+    # Update all user's emails in this thread to their appropriate folder based on status
+    # Track which label should be applied based on the emails in the thread
+    target_labels = set()
+
     for email in user_emails:
-        email.folder = FolderType.INBOX.value
-    
+        if email.status == EmailStatus.DRAFT.value:
+            email.folder = FolderType.DRAFTS.value
+            target_labels.add(SystemLabel.DRAFTS)
+        elif email.status == EmailStatus.QUEUED.value:
+            email.folder = FolderType.SCHEDULED.value
+            target_labels.add(SystemLabel.SCHEDULED)
+        elif email.status == EmailStatus.SENT.value:
+            email.folder = FolderType.SENT.value
+            target_labels.add(SystemLabel.SENT)
+        else:
+            # For received emails or any other status, restore to inbox
+            email.folder = FolderType.INBOX.value
+            target_labels.add(SystemLabel.INBOX)
+
     emails_count = len(user_emails)
 
-    # remove Spam label accordingly
+    # Remove Spam label
     remove_system_label_from_thread(db, thread_id, current_user.id, SystemLabel.SPAM)
-    
+
+    # Add appropriate label(s) based on the emails in the thread
+    # In most cases there will be one dominant label, but we add all that apply
+    for label in target_labels:
+        add_system_label_to_thread(db, thread_id, current_user.id, label)
+
     try:
         db.commit()
     except Exception:
