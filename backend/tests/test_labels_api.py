@@ -388,15 +388,120 @@ class TestLabelOperations:
     def test_get_label_by_id(self, client_with_auth, db_session, sample_label):
         """Test getting a label by ID."""
         client, token, user = client_with_auth
-        
+
         response = client.get(
             f"/api/v1/labels/{sample_label.id}",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
         assert "parent_id" in data
+
+    def test_get_label_includes_unread_count(self, client_with_auth, db_session):
+        """Test getting a label returns unread count for threads with unread emails."""
+        from datetime import datetime, timezone
+        from app.models.email_recipient import EmailRecipient
+
+        client, token, user = client_with_auth
+
+        # Create a label
+        label = Label(name="Important", owner_id=user.id)
+        db_session.add(label)
+        db_session.commit()
+
+        # Create 3 threads with emails
+        # Thread 1: Has unread email where user is recipient
+        thread1 = Thread(subject="Thread 1", owner_id=user.id)
+        db_session.add(thread1)
+        db_session.commit()
+
+        email1 = Email(
+            thread_id=thread1.id,
+            subject="Thread 1",
+            body="Unread email",
+            sender_id=user.id,  # Different user would be sender, but for simplicity using same user
+            folder=FolderType.INBOX,
+            is_read=False,  # Unread
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email1)
+        db_session.commit()
+
+        # Add user as recipient
+        recipient1 = EmailRecipient(
+            email_id=email1.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient1)
+
+        # Thread 2: Has read email
+        thread2 = Thread(subject="Thread 2", owner_id=user.id)
+        db_session.add(thread2)
+        db_session.commit()
+
+        email2 = Email(
+            thread_id=thread2.id,
+            subject="Thread 2",
+            body="Read email",
+            sender_id=user.id,
+            folder=FolderType.INBOX,
+            is_read=True,  # Read
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email2)
+        db_session.commit()
+
+        recipient2 = EmailRecipient(
+            email_id=email2.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient2)
+
+        # Thread 3: Has unread email where user is sender
+        thread3 = Thread(subject="Thread 3", owner_id=user.id)
+        db_session.add(thread3)
+        db_session.commit()
+
+        email3 = Email(
+            thread_id=thread3.id,
+            subject="Thread 3",
+            body="Another unread",
+            sender_id=user.id,
+            folder=FolderType.SENT,
+            is_read=False,  # Unread
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email3)
+        db_session.commit()
+
+        # Associate label with all 3 threads
+        thread_label1 = ThreadLabel(thread_id=thread1.id, label_id=label.id, user_id=user.id)
+        thread_label2 = ThreadLabel(thread_id=thread2.id, label_id=label.id, user_id=user.id)
+        thread_label3 = ThreadLabel(thread_id=thread3.id, label_id=label.id, user_id=user.id)
+        db_session.add(thread_label1)
+        db_session.add(thread_label2)
+        db_session.add(thread_label3)
+        db_session.commit()
+
+        # Get the label
+        response = client.get(
+            f"/api/v1/labels/{label.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+
+        # Verify counts
+        assert data["thread_count"] == 3  # Total threads with this label
+        assert data["unread_count"] == 2  # Threads 1 and 3 have unread emails
+        assert data["id"] == str(label.id)
+        assert data["name"] == "Important"
 
     def test_update_label(self, client_with_auth, db_session, sample_label):
         """Test updating a label."""

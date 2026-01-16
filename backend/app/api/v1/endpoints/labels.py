@@ -256,24 +256,24 @@ def get_label(
     label_id: UUID,
     db: Session = Depends(get_db),
 ) -> dict:
-    """Get a specific label by ID.
-    
+    """Get a specific label by ID with thread and unread counts.
+
     Permissions:
     - Users can only access their own labels
     """
     current_user = auth.user
-    
+
     label = db.query(Label).filter(
         Label.id == label_id,
         Label.owner_id == current_user.id
     ).first()
-    
+
     if not label:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Label {label_id} not found"
         )
-    
+
     # Get thread count - filter by user_id for user-specific label associations
     thread_count = db.query(func.count(ThreadLabel.thread_id)).join(
         Thread, Thread.id == ThreadLabel.thread_id
@@ -281,8 +281,28 @@ def get_label(
         ThreadLabel.label_id == label_id,
         ThreadLabel.user_id == current_user.id  # Only count this user's label associations
     ).scalar() or 0
-    
-    return format_label_response(label, thread_count=thread_count)
+
+    # Get unread count - count threads with this label that have at least one unread email
+    # for the current user (where user is sender or recipient)
+    unread_count = db.query(func.count(func.distinct(ThreadLabel.thread_id))).join(
+        Thread, Thread.id == ThreadLabel.thread_id
+    ).join(
+        Email, Email.thread_id == Thread.id
+    ).filter(
+        ThreadLabel.label_id == label_id,
+        ThreadLabel.user_id == current_user.id,
+        Email.is_read == False,
+        or_(
+            Email.sender_id == current_user.id,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == current_user.id
+                )
+            )
+        )
+    ).scalar() or 0
+
+    return format_label_response(label, thread_count=thread_count, unread_count=unread_count)
 
 
 @router.put("/labels/{label_id}", response_model=LabelResponse, dependencies=[Depends(authorized())])
