@@ -206,7 +206,26 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
             <TextField
               label="Date"
               value={dateInput}
-              onChange={(event) => setDateInput(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setDateInput(value);
+
+                const parsed = new Date(value);
+                if (Number.isNaN(parsed.getTime())) {
+                  return;
+                }
+
+                const validationMessage = validateDate(value);
+                if (validationMessage) {
+                  setDateError(validationMessage);
+                  return;
+                }
+
+                const updated = new Date(selectedDateTime);
+                updated.setFullYear(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+                setDateError("");
+                setSelectedDateTime(updated);
+              }}
               error={!!dateError}
               helperText={dateError}
               onKeyDown={(event) => {
