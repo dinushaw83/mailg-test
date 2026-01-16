@@ -136,11 +136,9 @@ export const bulkUnstarThreadsThunk = createAsyncThunk(
   "mail/bulkUnstarThreads",
   async ({ threadIds }, { rejectWithValue }) => {
     try {
-      // Call unstar endpoint for each thread
-      const promises = threadIds.map((threadId) => emailService.unstarThread(threadId));
-
-      const results = await Promise.all(promises);
-      return { threadIds, results };
+      // Use bulk endpoint to unstar all threads in a single request
+      const result = await emailService.bulkUnstarThreads(threadIds);
+      return { threadIds, result };
     } catch (error) {
       console.error("Failed to unstar threads:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to unstar threads");

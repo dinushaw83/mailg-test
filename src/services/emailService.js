@@ -455,6 +455,18 @@ const emailService = {
   },
 
   /**
+   * Bulk unstar threads (unstars all emails in the specified threads)
+   * @param {Array<string>} threadIds - Array of thread IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUnstarThreads: async (threadIds) => {
+    const response = await apiClient.post("/v1/bulk/threads/unstar", {
+      thread_ids: threadIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
    * Bulk mark emails as important/unimportant
    * @param {Array<string>} emailIds - Array of email IDs
    * @param {boolean} is_important - Important status
