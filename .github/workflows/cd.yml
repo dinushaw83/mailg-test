@@ -53,6 +53,21 @@ jobs:
     timeout-minutes: 15
     if: github.event.inputs.skip_tests != 'true'
     
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mailg
+          POSTGRES_PASSWORD: mailg
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -70,10 +85,37 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          python -c "
+          import time
+          import psycopg2
+          max_attempts = 30
+          for i in range(max_attempts):
+              try:
+                  conn = psycopg2.connect(
+                      host='localhost',
+                      port=5432,
+                      user='mailg',
+                      password='mailg',
+                      database='postgres'
+                  )
+                  conn.close()
+                  print('PostgreSQL is ready!')
+                  break
+              except psycopg2.OperationalError:
+                  if i < max_attempts - 1:
+                      print(f'Waiting for PostgreSQL... ({i+1}/{max_attempts})')
+                      time.sleep(2)
+                  else:
+                      raise
+          "
+
       - name: Run tests
         working-directory: ./backend
         env:
           PYTHONPATH: ${{ github.workspace }}/backend
+          DATABASE_URL: postgresql+psycopg2://mailg:mailg@localhost:5432/postgres
         run: |
           pytest tests/ -v \
             --cov=app \
