@@ -25,61 +25,10 @@ import {
   updateThreadImportantThunk,
 } from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { useIdResolver, makeMatch } from "./useIdResolver";
 
-/* ────────────────────────────────────────────────────────────────────────────
- * ID utilities (thread-aware)
- * ────────────────────────────────────────────────────────────────────────── */
-
-const toArray = (v) => (Array.isArray(v) ? v : v instanceof Set ? [...v] : v == null ? [] : [v]);
-
-const buildIdIndex = (selection) =>
-  new Set(
-    toArray(selection)
-      .flatMap((item) => {
-        if (item && typeof item === "object") {
-          return [
-            item.id,
-            item.messageId,
-            item.threadId,
-            item.thread_id,
-            item.legacyThreadId,
-            item.legacyLastMessageId,
-            item.legacyLastNonDraftMessageId,
-            item.legacy_thread_id,
-            item.legacy_last_message_id,
-            item.legacy_last_non_draft_message_id,
-          ];
-        }
-        return [item];
-      })
-      .map((x) => String(x ?? "").trim())
-      .filter(Boolean)
-  );
-
-const collectKeysFromMessage = (m) => {
-  const out = [];
-  const add = (v) => {
-    if (v == null) return;
-    const s = String(v).trim();
-    if (s) out.push(s);
-  };
-  add(m.id);
-  add(m.messageId);
-  add(m.threadId);
-  add(m.thread_id);
-  add(m.legacyThreadId);
-  add(m.legacyLastMessageId);
-  add(m.legacyLastNonDraftMessageId);
-  add(m.legacy_thread_id);
-  add(m.legacy_last_message_id);
-  add(m.legacy_last_non_draft_message_id);
-  return out;
-};
-
-export const makeMatch = (selection) => {
-  const index = buildIdIndex(selection);
-  return (m) => collectKeysFromMessage(m).some((k) => index.has(k));
-};
+// Re-export makeMatch for backward compatibility
+export { makeMatch };
 
 const normaliseLabels = (arr) => {
   const out = [];
@@ -133,6 +82,9 @@ export default function useMailActions() {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
+
+  // Centralized ID resolution hook
+  const { resolveIds, resolveThreadIds } = useIdResolver();
 
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
@@ -307,35 +259,20 @@ export default function useMailActions() {
       );
 
       if (backendLabelsToAdd.length > 0 || backendLabelsToRemove.length > 0) {
-        // Use provided threadIds or extract from emails
-        let threadIdsToUse;
+        // Use centralized ID resolver for thread IDs
+        const { threadIds: resolvedThreadIds } = resolveIds(ids, threadIds);
 
-        if (threadIds && threadIds.length > 0) {
-          // Thread IDs explicitly provided
-          threadIdsToUse = Array.isArray(threadIds) ? threadIds : [threadIds];
-        } else {
-          // Try to extract from emails context
-          threadIdsToUse = [
-            ...new Set(
-              emails
-                .filter((email) => ids.includes(email.id))
-                .map((email) => email.thread_id)
-                .filter(Boolean)
-            ),
-          ];
-        }
-
-        if (threadIdsToUse.length > 0) {
+        if (resolvedThreadIds.length > 0) {
           // Use bulk update endpoint with thread IDs
           dispatch(
             bulkUpdateLabelsThunk({
-              threadIds: threadIdsToUse,
+              threadIds: resolvedThreadIds,
               labels: { add: backendLabelsToAdd, remove: backendLabelsToRemove },
             })
           )
             .then(() => {
               // Invalidate caches after successful label update
-              invalidateEmailCaches(threadIdsToUse);
+              invalidateEmailCaches(resolvedThreadIds);
             })
             .catch((error) => {
               console.error("Failed to sync labels with backend:", error);
@@ -353,7 +290,7 @@ export default function useMailActions() {
         }
       }
     },
-    [updateByIds, dispatch, keyToLabelIdMap, emails, setEmails, invalidateEmailCaches]
+    [updateByIds, dispatch, keyToLabelIdMap, emails, setEmails, invalidateEmailCaches, resolveIds]
   );
 
   const moveToInbox = useCallback(
@@ -568,250 +505,115 @@ export default function useMailActions() {
 
   const toggleStar = useCallback(
     (ids, currentStarredState, context = "list", threadIds = null) => {
-      // Determine the new state - if currentStarredState is provided, use opposite
-      // Otherwise, we'll need to look it up (not ideal, but fallback)
+      // Determine the new state
       const newState = currentStarredState !== undefined ? !currentStarredState : true;
 
-      // Get thread IDs - use provided ones or extract from emails
-      const match = makeMatch(ids);
-      let threadIdsToUse = threadIds;
-      if (!threadIdsToUse || threadIdsToUse.length === 0) {
-        threadIdsToUse = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id).filter(Boolean))];
-      }
+      // Use centralized ID resolver
+      const { emailIds, threadIds: resolvedThreadIds, allIds, matchAll, isSingle } = resolveIds(ids, threadIds);
 
-      // Optimistically update React Query cache immediately
-      // Use both email IDs and thread IDs for matching to ensure list rows are updated
-      const allIdsForMatch = [...(Array.isArray(ids) ? ids : [ids]), ...(threadIdsToUse || [])];
-      updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: newState }));
+      if (!emailIds.length) return;
 
-      // Also update local state for backward compatibility
-      const matchAll = makeMatch(allIdsForMatch);
-      setEmails((prev) => {
-        return prev.map((m) => {
-          if (matchAll(m)) {
-            return { ...m, is_starred: newState };
-          }
-          return m;
-        });
-      });
+      // Optimistic updates using resolved IDs
+      updateQueryCache(allIds, (email) => ({ ...email, is_starred: newState }));
+      setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: newState } : m)));
 
-      // Use ids directly as email IDs array
-      const emailIds = Array.isArray(ids) ? ids : [ids];
+      // Revert function for error handling
+      const revertUpdate = () => {
+        updateQueryCache(allIds, (email) => ({ ...email, is_starred: !newState }));
+      };
 
-      if (emailIds.length === 0) return;
-
-      // Find thread_id for cache invalidation (from emails context or provided threadIds)
-      let threadIdForInvalidation = threadIdsToUse;
-      if (!threadIdForInvalidation || threadIdForInvalidation.length === 0) {
-        const matchingEmail = emails.find((m) => match(m));
-        threadIdForInvalidation = matchingEmail?.thread_id;
-      }
-
-      // Determine which API to call based on number of emails and action
+      // API call based on action and context
       if (newState === true) {
-        // STARRING: Use individual endpoint for single email, bulk for multiple
-        if (emailIds.length === 1) {
-          // Single email - use individual endpoint
-          dispatch(
-            updateEmailStarredThunk({
-              emailId: emailIds[0],
-              is_starred: true,
-            })
-          )
-            .then(() => {
-              // Invalidate caches after successful star
-              invalidateEmailCaches(threadIdForInvalidation);
-            })
-            .catch((error) => {
-              console.error("Failed to star email:", error);
-              updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: false }));
-            });
-        } else {
-          // Multiple emails - use bulk endpoint
-          dispatch(
-            bulkUpdateEmailStarredThunk({
-              emailIds,
-              is_starred: true,
-            })
-          )
-            .then(() => {
-              // Invalidate caches after successful star
-              invalidateEmailCaches(threadIdForInvalidation);
-            })
-            .catch((error) => {
-              console.error("Failed to star emails:", error);
-              updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: false }));
-            });
-        }
-      } else {
-        // UNSTARRING: Different logic based on context
-        if (context === "list") {
-          // From List: Use thread-level unstar with thread IDs
-          if (threadIdsToUse && threadIdsToUse.length > 0) {
-            dispatch(bulkUnstarThreadsThunk({ threadIds: threadIdsToUse }))
-              .then(() => {
-                // Invalidate caches after successful unstar
-                invalidateEmailCaches(threadIdsToUse);
-              })
-              .catch((error) => {
-                console.error("Failed to unstar threads:", error);
-                updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: true }));
-              });
-          }
-        } else {
-          // From Detail: Use individual email endpoint for each email
-          const promises = emailIds.map((emailId) =>
-            dispatch(
-              updateEmailStarredThunk({
-                emailId,
-                is_starred: false,
-              })
-            )
-          );
+        // STARRING: Use email-level endpoints
+        const apiCall = isSingle
+          ? dispatch(updateEmailStarredThunk({ emailId: emailIds[0], is_starred: true }))
+          : dispatch(bulkUpdateEmailStarredThunk({ emailIds, is_starred: true }));
 
-          Promise.all(promises)
-            .then(() => {
-              // Invalidate caches after successful unstar
-              invalidateEmailCaches(threadIdForInvalidation);
-            })
+        apiCall
+          .then(() => invalidateEmailCaches(resolvedThreadIds))
+          .catch((error) => {
+            console.error("Failed to star email(s):", error);
+            revertUpdate();
+          });
+      } else {
+        // UNSTARRING: Context-dependent
+        if (context === "list" && resolvedThreadIds.length > 0) {
+          // From List: Use thread-level unstar
+          dispatch(bulkUnstarThreadsThunk({ threadIds: resolvedThreadIds }))
+            .then(() => invalidateEmailCaches(resolvedThreadIds))
+            .catch((error) => {
+              console.error("Failed to unstar threads:", error);
+              revertUpdate();
+            });
+        } else {
+          // From Detail: Use individual email endpoints
+          Promise.all(emailIds.map((emailId) => dispatch(updateEmailStarredThunk({ emailId, is_starred: false }))))
+            .then(() => invalidateEmailCaches(resolvedThreadIds))
             .catch((error) => {
               console.error("Failed to unstar emails:", error);
-              updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: true }));
+              revertUpdate();
             });
         }
       }
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, emails]
+    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const setStar = useCallback(
     (ids, value = true, context = "detail", threadIds = null) => {
-      const match = makeMatch(ids);
+      // Use centralized ID resolver
+      const { emailIds, threadIds: resolvedThreadIds, allIds, matchAll, isSingle } = resolveIds(ids, threadIds);
 
-      // Get thread IDs - use provided ones or extract from emails
-      let threadIdsToUse = threadIds;
-      if (!threadIdsToUse || threadIdsToUse.length === 0) {
-        threadIdsToUse = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id).filter(Boolean))];
-      }
+      if (!emailIds.length) return;
 
-      // Optimistically update React Query cache immediately
-      // Use both email IDs and thread IDs for matching to ensure list rows are updated
-      const allIdsForMatch = [...(Array.isArray(ids) ? ids : [ids]), ...(threadIdsToUse || [])];
-      updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: value }));
+      // Optimistic updates using resolved IDs
+      updateQueryCache(allIds, (email) => ({ ...email, is_starred: value }));
+      setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: value } : m)));
 
-      // Also update local state for backward compatibility
-      const matchAll = makeMatch(allIdsForMatch);
-      setEmails((prev) => {
-        return prev.map((m) => {
-          if (matchAll(m)) {
-            return { ...m, is_starred: value };
-          }
-          return m;
-        });
-      });
+      // Revert function for error handling
+      const revertUpdate = () => {
+        updateQueryCache(allIds, (email) => ({ ...email, is_starred: !value }));
+      };
 
-      // Use ids directly as email IDs array
-      const emailIds = Array.isArray(ids) ? ids : [ids];
-
-      if (emailIds.length === 0) return;
-
-      // Find thread_id for cache invalidation (from emails context or provided threadIds)
-      let threadIdForInvalidation = threadIdsToUse;
-      if (!threadIdForInvalidation || threadIdForInvalidation.length === 0) {
-        const matchingEmail = emails.find((m) => match(m));
-        threadIdForInvalidation = matchingEmail?.thread_id;
-      }
-
-      // Determine which API to call based on number of emails and action
+      // API call based on action and context
       if (value === true) {
-        // STARRING: Use individual endpoint for single email, bulk for multiple
-        if (emailIds.length === 1) {
-          // Single email - use individual endpoint
-          dispatch(
-            updateEmailStarredThunk({
-              emailId: emailIds[0],
-              is_starred: true,
-            })
-          )
-            .then(() => {
-              // Invalidate caches after successful star
-              invalidateEmailCaches(threadIdForInvalidation);
-            })
-            .catch((error) => {
-              console.error("Failed to star email:", error);
-              updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: false }));
-            });
-        } else {
-          // Multiple emails - use bulk endpoint
-          dispatch(
-            bulkUpdateEmailStarredThunk({
-              emailIds,
-              is_starred: true,
-            })
-          )
-            .then(() => {
-              // Invalidate caches after successful star
-              invalidateEmailCaches(threadIdForInvalidation);
-            })
-            .catch((error) => {
-              console.error("Failed to star emails:", error);
-              updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: false }));
-            });
-        }
+        // STARRING: Use email-level endpoints
+        const apiCall = isSingle
+          ? dispatch(updateEmailStarredThunk({ emailId: emailIds[0], is_starred: true }))
+          : dispatch(bulkUpdateEmailStarredThunk({ emailIds, is_starred: true }));
+
+        apiCall
+          .then(() => invalidateEmailCaches(resolvedThreadIds))
+          .catch((error) => {
+            console.error("Failed to star email(s):", error);
+            revertUpdate();
+          });
       } else {
-        // UNSTARRING: Different logic based on context
-        if (context === "list") {
-          // From List: Use thread-level unstar to unstar ALL emails in threads
-          if (threadIdsToUse && threadIdsToUse.length > 0) {
-            // Use thread-level unstar endpoint (unstars ALL emails in each thread)
-            dispatch(bulkUnstarThreadsThunk({ threadIds: threadIdsToUse }))
-              .then(() => {
-                // Invalidate caches after successful unstar
-                invalidateEmailCaches(threadIdsToUse);
-              })
-              .catch((error) => {
-                console.error("Failed to unstar threads:", error);
-                // Revert optimistic update
-                updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: true }));
-              });
-          }
+        // UNSTARRING: Context-dependent
+        if (context === "list" && resolvedThreadIds.length > 0) {
+          // From List: Use thread-level unstar
+          dispatch(bulkUnstarThreadsThunk({ threadIds: resolvedThreadIds }))
+            .then(() => invalidateEmailCaches(resolvedThreadIds))
+            .catch((error) => {
+              console.error("Failed to unstar threads:", error);
+              revertUpdate();
+            });
         } else {
-          // From Detail: Use individual email endpoint
-          if (emailIds.length === 1) {
-            dispatch(
-              updateEmailStarredThunk({
-                emailId: emailIds[0],
-                is_starred: false,
-              })
-            )
-              .then(() => {
-                // Invalidate caches after successful unstar
-                invalidateEmailCaches(threadIdForInvalidation);
-              })
-              .catch((error) => {
-                console.error("Failed to unstar email:", error);
-                updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: true }));
-              });
-          } else {
-            dispatch(
-              bulkUpdateEmailStarredThunk({
-                emailIds,
-                is_starred: false,
-              })
-            )
-              .then(() => {
-                // Invalidate caches after successful unstar
-                invalidateEmailCaches(threadIdForInvalidation);
-              })
-              .catch((error) => {
-                console.error("Failed to unstar emails:", error);
-                updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_starred: true }));
-              });
-          }
+          // From Detail: Use email-level endpoints
+          const apiCall = isSingle
+            ? dispatch(updateEmailStarredThunk({ emailId: emailIds[0], is_starred: false }))
+            : dispatch(bulkUpdateEmailStarredThunk({ emailIds, is_starred: false }));
+
+          apiCall
+            .then(() => invalidateEmailCaches(resolvedThreadIds))
+            .catch((error) => {
+              console.error("Failed to unstar email(s):", error);
+              revertUpdate();
+            });
         }
       }
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, emails]
+    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const markRead = useCallback(
@@ -849,95 +651,65 @@ export default function useMailActions() {
       // Determine the new state
       const newState = currentImportantState !== undefined ? !currentImportantState : true;
 
-      // Get thread IDs - use provided ones or extract from emails
-      const match = makeMatch(ids);
-      let threadIdsToUpdate = threadIds;
-      if (!threadIdsToUpdate || threadIdsToUpdate.length === 0) {
-        threadIdsToUpdate = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id))];
-      }
+      // Use centralized ID resolver
+      const { threadIds: resolvedThreadIds, allIds, matchAll } = resolveIds(ids, threadIds);
 
-      // Optimistically update React Query cache immediately
-      // Use both email IDs and thread IDs for matching to ensure list rows are updated
-      const allIdsForMatch = [...ids, ...(threadIdsToUpdate || [])];
-      updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_important: newState }));
+      if (!resolvedThreadIds.length) return;
 
-      // Also update local state for backward compatibility
-      const matchAll = makeMatch(allIdsForMatch);
-      setEmails((prev) => {
-        return prev.map((m) => {
-          if (matchAll(m)) {
-            return { ...m, is_important: newState };
-          }
-          return m;
-        });
-      });
+      // Optimistic updates using resolved IDs
+      updateQueryCache(allIds, (email) => ({ ...email, is_important: newState }));
+      setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: newState } : m)));
+
+      // Revert function for error handling
+      const revertUpdate = () => {
+        updateQueryCache(allIds, (email) => ({ ...email, is_important: !newState }));
+      };
 
       // Call thread-level endpoint for each thread
-      if (threadIdsToUpdate && threadIdsToUpdate.length > 0) {
-        const promises = threadIdsToUpdate.map((threadId) =>
-          dispatch(
-            updateThreadImportantThunk({
-              threadId,
-              is_important: newState,
-            })
-          )
-        );
-
-        Promise.all(promises)
-          .then(() => {
-            // Invalidate caches after successful important update
-            invalidateEmailCaches(threadIdsToUpdate);
-          })
-          .catch((error) => {
-            console.error("Failed to update important status:", error);
-            // Revert optimistic update on error
-            updateQueryCache(allIdsForMatch, (email) => ({ ...email, is_important: !newState }));
-          });
-      }
+      Promise.all(
+        resolvedThreadIds.map((threadId) =>
+          dispatch(updateThreadImportantThunk({ threadId, is_important: newState }))
+        )
+      )
+        .then(() => invalidateEmailCaches(resolvedThreadIds))
+        .catch((error) => {
+          console.error("Failed to update important status:", error);
+          revertUpdate();
+        });
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, emails]
+    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const setImportant = useCallback(
     (threadIds, value = true) => {
-      // threadIds are passed directly now (not email IDs)
-      const threadIdSet = new Set(Array.isArray(threadIds) ? threadIds : [threadIds]);
+      // Use centralized thread ID resolver
+      const { threadIds: resolvedThreadIds, match } = resolveThreadIds(threadIds);
 
-      // Optimistically update React Query cache
-      updateQueryCache(threadIds, (email) => ({ ...email, is_important: !!value }));
+      if (!resolvedThreadIds.length) return;
 
-      // Update local state immediately (optimistic update)
-      setEmails((prev) => {
-        return prev.map((m) => {
-          if (threadIdSet.has(m.thread_id)) {
-            return { ...m, is_important: !!value };
-          }
-          return m;
+      // Optimistic updates
+      updateQueryCache(resolvedThreadIds, (email) => ({ ...email, is_important: !!value }));
+      setEmails((prev) =>
+        prev.map((m) => {
+          const threadIdSet = new Set(resolvedThreadIds);
+          return threadIdSet.has(m.thread_id) ? { ...m, is_important: !!value } : m;
+        })
+      );
+
+      // Revert function for error handling
+      const revertUpdate = () => {
+        updateQueryCache(resolvedThreadIds, (email) => ({ ...email, is_important: !value }));
+      };
+
+      // Use bulk endpoint for all threads at once
+      dispatch(bulkUpdateEmailImportantThunk({ threadIds: resolvedThreadIds, is_important: !!value }))
+        .then(() => invalidateEmailCaches(resolvedThreadIds))
+        .catch((error) => {
+          console.error("Failed to update important status:", error);
+          revertUpdate();
         });
-      });
-
-      const threadIdsArray = Array.isArray(threadIds) ? threadIds : [threadIds];
-
-      if (threadIdsArray.length > 0) {
-        // Use bulk endpoint for all threads at once
-        dispatch(
-          bulkUpdateEmailImportantThunk({
-            threadIds: threadIdsArray,
-            is_important: !!value,
-          })
-        )
-          .then(() => {
-            // Invalidate caches after successful important update
-            invalidateEmailCaches(threadIdsArray);
-          })
-          .catch((error) => {
-            console.error("Failed to update important status:", error);
-            // Revert optimistic update on error
-            updateQueryCache(threadIds, (email) => ({ ...email, is_important: !value }));
-          });
-      }
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches]
+    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveThreadIds]
   );
 
   const moveToLabel = useCallback(
