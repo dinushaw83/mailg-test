@@ -121,7 +121,7 @@ const UnsnoozeButton = styled.button`
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  
+
   &:hover {
     background-color: rgba(26, 115, 232, 0.04);
   }
@@ -188,32 +188,38 @@ export const EmailContent = ({
 
   // Format snooze time for display
   const formatSnoozeTime = useCallback((snoozeDate) => {
-    if (!snoozeDate) return "";
+    if (!snoozeDate) {
+      return "";
+    }
+
     const date = new Date(snoozeDate);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const isTomorrow = date.toDateString() === tomorrow.toDateString();
-    
+
     const timeStr = date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
     });
-    
+
     if (isToday) {
       return `Today, ${timeStr}`;
-    } else if (isTomorrow) {
-      return `Tomorrow, ${timeStr}`;
-    } else {
-      const dateStr = date.toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      });
-      return `${dateStr}, ${timeStr}`;
     }
+
+    if (isTomorrow) {
+      return `Tomorrow, ${timeStr}`;
+    }
+
+    const dateStr = date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+    const yearSuffix = date.getFullYear() !== now.getFullYear() ? `, ${date.getFullYear()}` : "";
+    return `${dateStr}, ${timeStr}${yearSuffix}`;
   }, []);
 
   const handleUnsnooze = useCallback(() => {
