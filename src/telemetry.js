@@ -4,119 +4,191 @@
  * This module configures metrics collection and sends them to an OTEL collector.
  * It tracks HTTP request duration via fetch instrumentation.
  */
+import { metrics, ValueType } from "@opentelemetry/api";
+import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
+import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { resourceFromAttributes } from "@opentelemetry/resources";
+import apiClient from "./services/apiClient";
 
 // Check if instrumentation is enabled via environment variable
 const ENABLE_INSTRUMENTATION = import.meta.env.VITE_ENABLE_INSTRUMENTATION === "true";
-const OTEL_COLLECTOR_URL = import.meta.env.VITE_OTEL_COLLECTOR_URL || "http://localhost:4318";
+const OTEL_COLLECTOR_URL = apiClient.defaults.baseURL + "/v1/otel-metrics";
 
-/**
- * Initialize OpenTelemetry instrumentation for the frontend.
- * Only runs if VITE_ENABLE_INSTRUMENTATION=true
- */
-async function initTelemetry() {
-  if (!ENABLE_INSTRUMENTATION) {
-    console.log("[Telemetry] Disabled (set VITE_ENABLE_INSTRUMENTATION=true to enable)");
-    return;
-  }
-
-  try {
-    const { metrics } = await import("@opentelemetry/api");
-    const { MeterProvider, PeriodicExportingMetricReader } = await import("@opentelemetry/sdk-metrics");
-    const { OTLPMetricExporter } = await import("@opentelemetry/exporter-metrics-otlp-http");
-    const { Resource } = await import("@opentelemetry/resources");
-    const { SEMRESATTRS_SERVICE_NAME } = await import("@opentelemetry/semantic-conventions");
-
-    // Create resource with service name
-    const resource = new Resource({
-      [SEMRESATTRS_SERVICE_NAME]: "mailg-frontend",
-    });
-
-    // Setup metrics exporter
-    const metricExporter = new OTLPMetricExporter({
-      url: `${OTEL_COLLECTOR_URL}/v1/metrics`,
-    });
-
-    const meterProvider = new MeterProvider({
-      resource,
-      readers: [
-        new PeriodicExportingMetricReader({
-          exporter: metricExporter,
-          exportIntervalMillis: 15000, // Export every 15 seconds
-        }),
-      ],
-    });
-
-    metrics.setGlobalMeterProvider(meterProvider);
-
-    // Create meter for custom metrics
-    const meter = metrics.getMeter("mailg-frontend");
-
-    // Create histogram for HTTP request duration
-    const httpRequestDuration = meter.createHistogram("http_request_duration_milliseconds", {
-      description: "Duration of HTTP requests in milliseconds",
-      unit: "ms",
-    });
-
-    // Create counter for HTTP requests
-    const httpRequestCounter = meter.createCounter("http_request_total", {
-      description: "Total number of HTTP requests",
-    });
-
-    // Instrument fetch to track HTTP requests
-    const originalFetch = window.fetch;
-    window.fetch = async function instrumentedFetch(input, init) {
-      const startTime = performance.now();
-      const url = typeof input === "string" ? input : input.url;
-      const method = init?.method || "GET";
-
-      // Extract path from URL (remove query string and origin)
-      let path = "/";
-      try {
-        const urlObj = new URL(url, window.location.origin);
-        path = urlObj.pathname;
-      } catch {
-        path = url.split("?")[0];
-      }
-
-      try {
-        const response = await originalFetch.apply(this, arguments);
-        const duration = performance.now() - startTime;
-
-        // Record metrics
-        const attributes = {
-          method,
-          path,
-          status: response.status.toString(),
-        };
-
-        httpRequestDuration.record(duration, attributes);
-        httpRequestCounter.add(1, attributes);
-
-        return response;
-      } catch (error) {
-        const duration = performance.now() - startTime;
-
-        // Record failed request
-        const attributes = {
-          method,
-          path,
-          status: "error",
-        };
-
-        httpRequestDuration.record(duration, attributes);
-        httpRequestCounter.add(1, attributes);
-
-        throw error;
-      }
-    };
-
-    console.log(`[Telemetry] Enabled - exporting to ${OTEL_COLLECTOR_URL}`);
-  } catch (error) {
-    console.warn("[Telemetry] Failed to initialize:", error.message);
-  }
+if (ENABLE_INSTRUMENTATION) {
+  setupInstrumentation();
 }
 
-// Initialize telemetry
-initTelemetry();
+function setupInstrumentation() {
+  const baseExporter = new OTLPMetricExporter({
+    url: OTEL_COLLECTOR_URL,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-export default initTelemetry;
+  // Custom exporter that only sends when there's actual data
+  const conditionalExporter = {
+    export: (metrics, resultCallback) => {
+      // Check if there's any actual data to send
+      const hasData = metrics.scopeMetrics?.some((sm) =>
+          sm.metrics?.some(
+              (m) =>
+                  m.dataPoints?.length > 0 ||
+                  m.histogram?.dataPoints?.length > 0 ||
+                  m.sum?.dataPoints?.length > 0 ||
+                  m.gauge?.dataPoints?.length > 0
+          )
+      );
+
+      if (!hasData) {
+        // No data, skip export
+        resultCallback({ code: 0 }); // Success without sending
+        return;
+      }
+
+      // Has data, forward to actual exporter
+      baseExporter.export(metrics, resultCallback);
+    },
+    forceFlush: () => baseExporter.forceFlush(),
+    shutdown: () => baseExporter.shutdown(),
+  };
+
+  const metricReader = new PeriodicExportingMetricReader({
+    exporter: conditionalExporter,
+    exportIntervalMillis: 30000,
+  });
+
+  const meterProvider = new MeterProvider({
+    resource: resourceFromAttributes({
+      "service.name": "mailg-frontend",
+    }),
+    readers: [metricReader],
+  });
+
+  metrics.setGlobalMeterProvider(meterProvider);
+
+  const meter = metrics.getMeter("network-requests-meter");
+
+  const requestDurationHistogram = meter.createHistogram("http_request_duration", {
+    description: "Duration of HTTP requests in milliseconds",
+    unit: "ms",
+    valueType: ValueType.DOUBLE,
+  });
+
+  const requestCountCounter = meter.createCounter("http_request_count", {
+    description: "Count of HTTP requests",
+    valueType: ValueType.INT,
+  });
+
+  // Extract path from URL (strip protocol, host, port - keep path and query)
+  function getUrlPath(url) {
+    try {
+      const parsed = new URL(url, window.location.href);
+      return parsed.pathname + parsed.search;
+    } catch {
+      return url;
+    }
+  }
+
+  // Record metrics for a completed request
+  function recordRequestMetrics(method, path, status, durationMs, success) {
+    const index = path.indexOf("?");
+    const pathname = index === -1 ? path : path.substring(0, index);
+    const query = index !== -1 && path.substring(index + 1);
+    const attributes = {
+      method: method.toUpperCase(),
+      path: pathname,
+      query: query,
+      status_code: status || 0,
+      success: success,
+    };
+
+    requestDurationHistogram.record(durationMs, attributes);
+    requestCountCounter.add(1, attributes);
+  }
+
+  // Proxy fetch
+  const originalFetch = window.fetch;
+  window.fetch = async function (...args) {
+    const url = typeof args[0] === "string" ? args[0] : args[0]?.url || "unknown";
+    const method = args[1]?.method || "GET";
+    const startTime = performance.now();
+    const urlPath = getUrlPath(url);
+
+    // Skip recording metrics for the metrics endpoint itself
+    const isMetricsEndpoint = urlPath.includes("/otel-metrics");
+
+    try {
+      const response = await originalFetch.apply(this, args);
+      const duration = performance.now() - startTime;
+
+      if (!isMetricsEndpoint) {
+        recordRequestMetrics(method, urlPath, response.status, duration, response.ok);
+      }
+
+      return response;
+    } catch (error) {
+      const duration = performance.now() - startTime;
+
+      if (!isMetricsEndpoint) {
+        recordRequestMetrics(method, urlPath, 0, duration, false);
+      }
+
+      throw error;
+    }
+  };
+
+  // Proxy XMLHttpRequest
+  const OriginalXHR = window.XMLHttpRequest;
+  window.XMLHttpRequest = function () {
+    const xhr = new OriginalXHR();
+
+    let method = "GET";
+    let urlPath = "unknown";
+    let startTime = 0;
+
+    const originalOpen = xhr.open;
+    xhr.open = function (m, u, ...rest) {
+      method = m;
+      urlPath = getUrlPath(u);
+      return originalOpen.apply(this, [m, u, ...rest]);
+    };
+
+    const originalSend = xhr.send;
+    xhr.send = function (...args) {
+      startTime = performance.now();
+      return originalSend.apply(this, args);
+    };
+
+    xhr.addEventListener("loadend", function () {
+      const duration = performance.now() - startTime;
+      const success = xhr.status >= 200 && xhr.status < 400;
+
+      recordRequestMetrics(method, urlPath, xhr.status, duration, success);
+    });
+
+    xhr.addEventListener("error", function () {
+      const duration = performance.now() - startTime;
+
+      recordRequestMetrics(method, urlPath, 0, duration, false);
+    });
+
+    xhr.addEventListener("abort", function () {
+      const duration = performance.now() - startTime;
+
+      recordRequestMetrics(method, urlPath, 0, duration, false);
+    });
+
+    return xhr;
+  };
+
+  // Copy static properties and prototype
+  Object.keys(OriginalXHR).forEach((key) => {
+    try {
+      window.XMLHttpRequest[key] = OriginalXHR[key];
+    } catch (e) {
+      // Some properties may not be writable
+    }
+  });
+  window.XMLHttpRequest.prototype = OriginalXHR.prototype;
+}

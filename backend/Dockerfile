@@ -16,6 +16,23 @@ RUN apt-get update && \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# these are here because code doesn't depend on them
+RUN pip install \
+  opentelemetry-distro \
+  opentelemetry-exporter-otlp \
+  opentelemetry-instrumentation-system-metrics
+
+ENV OTEL_METRICS_EXPORTER=otlp \
+    OTEL_TRACES_EXPORTER=none \
+    OTEL_LOGS_EXPORTER=none \
+    OTEL_SERVICE_NAME=backend \
+    OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317 \
+    OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=cumulative \
+    OTEL_METRIC_EXPORT_INTERVAL=10000 \
+    OTEL_PYTHON_RUNTIME_METRICS_ENABLED=true
+
+RUN opentelemetry-bootstrap -a install
+
 COPY . .
 
 # Create logs + reports directory
@@ -30,5 +47,5 @@ EXPOSE 8765
 
 # Set entrypoint and default command
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["sh", "-c", "gunicorn app.main:app -c gunicorn_config.py"]
+CMD ["opentelemetry-instrument", "gunicorn", "app.main:app", "-c", "gunicorn_config.py"]
 

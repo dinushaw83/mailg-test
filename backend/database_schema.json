@@ -1,407 +1,111 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Mailg Database Schema",
-  "description": "Database schema for Mailg - An email application",
-  "version": "1.0.0",
-  "generatedAt": "2026-01-04T00:00:00.000000Z",
+  "title": "Database Schema",
+  "description": "Auto-generated schema from PostgreSQL database with full constraint information",
+  "version": "2.0",
+  "generatedAt": "2026-01-16T06:14:28.219663Z",
   "type": "object",
   "properties": {
     "tables": {
       "type": "object",
       "properties": {
-        "users": {
+        "_data_generator_marker": {
           "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "primaryKey": true,
-              "indexed": true
-            },
-            "first_name": {
-              "type": "string",
-              "nullable": false
-            },
-            "last_name": {
-              "type": "string",
-              "nullable": false
-            },
-            "email": {
-              "type": "string",
-              "nullable": false,
-              "unique": true,
-              "indexed": true
-            },
-            "email_label": {
+            "generated_at": {
               "type": "string",
               "nullable": true,
-              "default": "Home"
-            },
-            "role": {
-              "type": "string",
-              "nullable": false,
-              "indexed": true,
-              "enum": [
-                "admin",
-                "user"
-              ]
-            },
-            "photo": {
-              "type": "string",
-              "nullable": true
-            },
-            "company": {
-              "type": "string",
-              "nullable": true
-            },
-            "job_title": {
-              "type": "string",
-              "nullable": true
-            },
-            "phone": {
-              "type": "string",
-              "nullable": true
-            },
-            "phone_country_code": {
-              "type": "string",
-              "nullable": true,
-              "default": "+1"
-            },
-            "phone_label": {
-              "type": "string",
-              "nullable": true,
-              "default": "Mobile"
-            },
-            "address": {
-              "type": "string",
-              "nullable": true
-            },
-            "birthday_month": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true
-            },
-            "birthday_day": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true
-            },
-            "birthday_year": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true
-            },
-            "significant_dates": {
-              "type": "array",
-              "nullable": true
-            },
-            "website": {
-              "type": "string",
-              "nullable": true
-            },
-            "related_persons": {
-              "type": "array",
-              "nullable": true
-            },
-            "labels": {
-              "type": "array",
-              "nullable": true
-            },
-            "custom_fields": {
-              "type": "array",
-              "nullable": true
-            },
-            "notes": {
-              "type": "string",
-              "nullable": true
-            },
-            "undo_send_delay_seconds": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true,
-              "default": 10
-            },
-            "active": {
-              "type": "boolean",
-              "nullable": false,
-              "default": true,
-              "indexed": true
-            },
-            "is_deleted": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false,
-              "indexed": true
-            },
-            "created_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            },
-            "updated_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
+              "format": "date-time"
             }
           },
-          "required": [
-            "id",
-            "first_name",
-            "last_name",
-            "email",
-            "role",
-            "active",
-            "is_deleted",
-            "created_at",
-            "updated_at"
-          ]
+          "required": []
         },
-        "threads": {
+        "attachments": {
           "properties": {
             "id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "primaryKey": true,
               "indexed": true
             },
-            "subject": {
+            "email_id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "foreignKey": "emails.id",
+              "onDelete": "CASCADE",
+              "indexed": true
+            },
+            "filename": {
               "type": "string",
               "nullable": false
             },
-            "owner_id": {
+            "content_type": {
               "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "foreignKey": "users.id",
-              "indexed": true
+              "nullable": true
             },
-            "participant_count": {
+            "size_bytes": {
               "type": "integer",
-              "subtype": "smallint",
-              "nullable": false,
-              "default": 1
+              "nullable": true
             },
-            "email_count": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": false,
-              "default": 0
+            "storage_path": {
+              "type": "string",
+              "nullable": true
             },
-            "last_email_at": {
+            "attachment_type": {
               "type": "string",
               "nullable": true,
-              "format": "date-time"
+              "indexed": true
             },
             "is_deleted": {
               "type": "boolean",
-              "nullable": false,
-              "default": false,
+              "nullable": true,
               "indexed": true
             },
             "created_at": {
               "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            },
-            "updated_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
+              "nullable": true,
+              "format": "date-time"
             }
           },
           "required": [
             "id",
-            "subject",
-            "owner_id",
-            "participant_count",
-            "email_count",
-            "is_deleted",
-            "created_at",
-            "updated_at"
-          ]
-        },
-        "emails": {
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "primaryKey": true,
-              "indexed": true
-            },
-            "subject": {
-              "type": "string",
-              "nullable": false,
-              "maxLength": 500
-            },
-            "body": {
-              "type": "string",
-              "nullable": true
-            },
-            "html_body": {
-              "type": "string",
-              "nullable": true
-            },
-            "status": {
-              "type": "string",
-              "nullable": false,
-              "default": "draft",
-              "indexed": true,
-              "enum": [
-                "draft",
-                "queued",
-                "sent",
-                "received",
-                "archived",
-                "cancelled"
-              ]
-            },
-            "is_read": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false,
-              "indexed": true
-            },
-            "is_starred": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false,
-              "indexed": true
-            },
-            "is_important": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false
-            },
-            "category": {
-              "type": "string",
-              "nullable": false,
-              "maxLength": 50,
-              "default": "primary",
-              "indexed": true,
-              "enum": [
-                "primary",
-                "promotions",
-                "social",
-                "updates",
-                "forums"
-              ]
-            },
-            "folder": {
-              "type": "string",
-              "nullable": false,
-              "maxLength": 20,
-              "default": "inbox",
-              "indexed": true,
-              "enum": [
-                "inbox",
-                "sent",
-                "drafts",
-                "trash",
-                "spam"
-              ]
-            },
-            "snooze_until": {
-              "type": "string",
-              "nullable": true,
-              "format": "date-time",
-              "indexed": true
-            },
-            "scheduled_send_at": {
-              "type": "string",
-              "nullable": true,
-              "format": "date-time",
-              "indexed": true
-            },
-            "sender_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "foreignKey": "users.id",
-              "indexed": true
-            },
-            "thread_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": true,
-              "foreignKey": "threads.id",
-              "indexed": true
-            },
-            "parent_email_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": true,
-              "foreignKey": "emails.id"
-            },
-            "sent_at": {
-              "type": "string",
-              "nullable": true,
-              "format": "date-time"
-            },
-            "received_at": {
-              "type": "string",
-              "nullable": true,
-              "format": "date-time"
-            },
-            "is_deleted": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false,
-              "indexed": true
-            },
-            "created_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            },
-            "updated_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
+            "email_id",
+            "filename"
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_attachments_email_deleted",
+              "columns": [
+                "email_id",
+                "is_deleted"
+              ],
+              "unique": false,
+              "type": "btree"
             }
-          },
-          "required": [
-            "id",
-            "subject",
-            "status",
-            "folder",
-            "is_read",
-            "is_starred",
-            "is_important",
-            "category",
-            "sender_id",
-            "is_deleted",
-            "created_at",
-            "updated_at"
           ]
         },
         "email_recipients": {
           "properties": {
             "id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
-              "primaryKey": true
+              "format": "uuid",
+              "primaryKey": true,
+              "indexed": true
             },
             "email_id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "foreignKey": "emails.id",
               "onDelete": "CASCADE",
               "indexed": true
             },
             "recipient_id": {
               "type": "string",
-              "format": "uuid",
               "nullable": true,
+              "format": "uuid",
               "foreignKey": "users.id",
               "onDelete": "SET NULL",
               "indexed": true
@@ -417,11 +121,7 @@
             "recipient_type": {
               "type": "string",
               "nullable": false,
-              "enum": [
-                "to",
-                "cc",
-                "bcc"
-              ]
+              "indexed": true
             }
           },
           "required": [
@@ -429,87 +129,278 @@
             "email_id",
             "recipient_email",
             "recipient_type"
-          ]
-        },
-        "attachments": {
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "primaryKey": true,
-              "indexed": true
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_email_recipients_email_type",
+              "columns": [
+                "email_id",
+                "recipient_type"
+              ],
+              "unique": false,
+              "type": "btree"
             },
-            "email_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "foreignKey": "emails.id",
-              "onDelete": "CASCADE",
-              "indexed": true
-            },
-            "filename": {
-              "type": "string",
-              "nullable": false,
-              "maxLength": 255
-            },
-            "content_type": {
-              "type": "string",
-              "nullable": true
-            },
-            "size_bytes": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true
-            },
-            "storage_path": {
-              "type": "string",
-              "nullable": true
-            },
-            "attachment_type": {
-              "type": "string",
-              "nullable": false,
-              "default": "file",
-              "enum": [
-                "file",
-                "image",
-                "document"
-              ]
-            },
-            "is_deleted": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false
-            },
-            "created_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
+            {
+              "name": "ix_email_recipients_recipient",
+              "columns": [
+                "recipient_id",
+                "email_id"
+              ],
+              "unique": false,
+              "type": "btree"
             }
-          },
-          "required": [
-            "id",
-            "email_id",
-            "filename",
-            "attachment_type",
-            "is_deleted",
-            "created_at"
           ]
         },
-        "labels": {
+        "email_templates": {
           "properties": {
             "id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "primaryKey": true,
               "indexed": true
             },
             "name": {
               "type": "string",
               "nullable": false,
-              "maxLength": 100
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "nullable": true,
+              "maxLength": 500
+            },
+            "subject": {
+              "type": "string",
+              "nullable": true,
+              "maxLength": 500
+            },
+            "body": {
+              "type": "string",
+              "nullable": true
+            },
+            "html_body": {
+              "type": "string",
+              "nullable": true
+            },
+            "is_shared": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "owner_id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "owner_id"
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_email_templates_owner_deleted",
+              "columns": [
+                "owner_id",
+                "is_deleted"
+              ],
+              "unique": false,
+              "type": "btree"
+            }
+          ]
+        },
+        "emails": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "primaryKey": true,
+              "indexed": true
+            },
+            "subject": {
+              "type": "string",
+              "nullable": false
+            },
+            "body": {
+              "type": "string",
+              "nullable": true
+            },
+            "html_body": {
+              "type": "string",
+              "nullable": true
+            },
+            "status": {
+              "type": "string",
+              "nullable": true,
+              "indexed": true
+            },
+            "is_read": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "is_starred": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "folder": {
+              "type": "string",
+              "nullable": true,
+              "maxLength": 20,
+              "indexed": true
+            },
+            "category": {
+              "type": "string",
+              "nullable": true,
+              "maxLength": 50,
+              "indexed": true
+            },
+            "snooze_until": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "indexed": true
+            },
+            "scheduled_send_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "indexed": true
+            },
+            "sender_id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "thread_id": {
+              "type": "string",
+              "nullable": true,
+              "format": "uuid",
+              "foreignKey": "threads.id",
+              "indexed": true
+            },
+            "parent_email_id": {
+              "type": "string",
+              "nullable": true,
+              "format": "uuid",
+              "foreignKey": "emails.id"
+            },
+            "sent_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "received_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "indexed": true
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "subject",
+            "sender_id"
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_emails_folder_category",
+              "columns": [
+                "folder",
+                "category"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "ix_emails_folder_is_deleted",
+              "columns": [
+                "folder",
+                "is_deleted"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "ix_emails_is_deleted_is_read",
+              "columns": [
+                "is_deleted",
+                "is_read"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "ix_emails_sender_status",
+              "columns": [
+                "sender_id",
+                "status"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "ix_emails_thread_created",
+              "columns": [
+                "thread_id",
+                "created_at"
+              ],
+              "unique": false,
+              "type": "btree"
+            }
+          ]
+        },
+        "labels": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "primaryKey": true,
+              "indexed": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": false,
+              "indexed": true
             },
             "color": {
               "type": "string",
@@ -517,60 +408,52 @@
             },
             "owner_id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "foreignKey": "users.id",
               "indexed": true
             },
             "parent_id": {
               "type": "string",
-              "format": "uuid",
               "nullable": true,
+              "format": "uuid",
               "foreignKey": "labels.id",
               "indexed": true
             },
+            "is_system": {
+              "type": "boolean",
+              "nullable": false
+            },
+            "is_exclusive": {
+              "type": "boolean",
+              "nullable": false
+            },
+            "show_in_label_list": {
+              "type": "boolean",
+              "nullable": false
+            },
+            "show_in_message_list": {
+              "type": "boolean",
+              "nullable": false
+            },
+            "show_if_unread": {
+              "type": "boolean",
+              "nullable": false
+            },
             "is_deleted": {
               "type": "boolean",
-              "nullable": false,
-              "default": false,
+              "nullable": true,
               "indexed": true
             },
             "created_at": {
               "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
+              "nullable": true,
+              "format": "date-time"
             },
             "updated_at": {
               "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            },
-            "is_system": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false
-            },
-            "is_exclusive": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false
-            },
-            "show_in_label_list": {
-              "type": "boolean",
-              "nullable": false,
-              "default": true
-            },
-            "show_in_message_list": {
-              "type": "boolean",
-              "nullable": false,
-              "default": true
-            },
-            "show_if_unread": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false
+              "nullable": true,
+              "format": "date-time"
             }
           },
           "required": [
@@ -581,57 +464,155 @@
             "is_exclusive",
             "show_in_label_list",
             "show_in_message_list",
-            "show_if_unread",
-            "is_deleted",
-            "created_at",
-            "updated_at"
+            "show_if_unread"
+          ],
+          "uniqueConstraints": [
+            {
+              "name": "uq_labels_owner_parent_name",
+              "columns": [
+                "owner_id",
+                "parent_id",
+                "name"
+              ]
+            }
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_labels_owner_deleted",
+              "columns": [
+                "owner_id",
+                "is_deleted"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "uq_labels_owner_parent_name",
+              "columns": [
+                "owner_id",
+                "parent_id",
+                "name"
+              ],
+              "unique": true,
+              "type": "btree"
+            }
+          ]
+        },
+        "saved_searches": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "primaryKey": true,
+              "indexed": true
+            },
+            "name": {
+              "type": "string",
+              "nullable": false
+            },
+            "query": {
+              "type": "string",
+              "nullable": false
+            },
+            "filters": {
+              "type": "object",
+              "nullable": true
+            },
+            "owner_id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "use_count": {
+              "type": "integer",
+              "nullable": true
+            },
+            "last_used_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "query",
+            "owner_id"
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_saved_searches_owner_deleted",
+              "columns": [
+                "owner_id",
+                "is_deleted"
+              ],
+              "unique": false,
+              "type": "btree"
+            }
           ]
         },
         "thread_labels": {
           "properties": {
             "id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
-              "primaryKey": true
+              "format": "uuid",
+              "primaryKey": true,
+              "indexed": true
             },
             "thread_id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "foreignKey": "threads.id",
               "onDelete": "CASCADE",
               "indexed": true
             },
             "label_id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "foreignKey": "labels.id",
               "onDelete": "CASCADE",
               "indexed": true
             },
             "user_id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "foreignKey": "users.id",
               "onDelete": "CASCADE",
               "indexed": true
             },
             "created_at": {
               "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
+              "nullable": true,
+              "format": "date-time"
             }
           },
           "required": [
             "id",
             "thread_id",
             "label_id",
-            "user_id",
-            "created_at"
+            "user_id"
           ],
           "uniqueConstraints": [
             {
@@ -661,266 +642,350 @@
               ],
               "unique": false,
               "type": "btree"
+            },
+            {
+              "name": "uq_thread_labels_user",
+              "columns": [
+                "thread_id",
+                "label_id",
+                "user_id"
+              ],
+              "unique": true,
+              "type": "btree"
             }
           ]
         },
-        "email_templates": {
+        "thread_user_metadata": {
           "properties": {
             "id": {
               "type": "string",
-              "format": "uuid",
               "nullable": false,
+              "format": "uuid",
               "primaryKey": true,
               "indexed": true
             },
-            "name": {
+            "thread_id": {
               "type": "string",
               "nullable": false,
-              "maxLength": 255
-            },
-            "description": {
-              "type": "string",
-              "nullable": true,
-              "maxLength": 500
-            },
-            "subject": {
-              "type": "string",
-              "nullable": true,
-              "maxLength": 500
-            },
-            "body": {
-              "type": "string",
-              "nullable": true
-            },
-            "html_body": {
-              "type": "string",
-              "nullable": true
-            },
-            "is_shared": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false
-            },
-            "owner_id": {
-              "type": "string",
               "format": "uuid",
-              "nullable": false,
-              "foreignKey": "users.id",
+              "foreignKey": "threads.id",
+              "onDelete": "CASCADE",
               "indexed": true
             },
-            "is_deleted": {
-              "type": "boolean",
+            "user_id": {
+              "type": "string",
               "nullable": false,
-              "default": false,
+              "format": "uuid",
+              "foreignKey": "users.id",
+              "onDelete": "CASCADE",
+              "indexed": true
+            },
+            "is_important": {
+              "type": "boolean",
+              "nullable": true,
               "indexed": true
             },
             "created_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            },
-            "updated_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            }
-          },
-          "required": [
-            "id",
-            "name",
-            "is_shared",
-            "owner_id",
-            "is_deleted",
-            "created_at",
-            "updated_at"
-          ]
-        },
-        "saved_searches": {
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "primaryKey": true,
-              "indexed": true
-            },
-            "name": {
-              "type": "string",
-              "nullable": false
-            },
-            "query": {
-              "type": "string",
-              "nullable": false
-            },
-            "filters": {
-              "type": "object",
-              "nullable": true
-            },
-            "owner_id": {
-              "type": "string",
-              "format": "uuid",
-              "nullable": false,
-              "foreignKey": "users.id",
-              "indexed": true
-            },
-            "use_count": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": false,
-              "default": 0
-            },
-            "last_used_at": {
               "type": "string",
               "nullable": true,
               "format": "date-time"
             },
-            "is_deleted": {
-              "type": "boolean",
-              "nullable": false,
-              "default": false,
-              "indexed": true
-            },
-            "created_at": {
-              "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
-            },
             "updated_at": {
               "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()"
+              "nullable": true,
+              "format": "date-time"
             }
           },
           "required": [
             "id",
-            "name",
-            "query",
-            "owner_id",
-            "use_count",
-            "is_deleted",
-            "created_at",
-            "updated_at"
+            "thread_id",
+            "user_id"
+          ],
+          "uniqueConstraints": [
+            {
+              "name": "uq_thread_user_metadata",
+              "columns": [
+                "thread_id",
+                "user_id"
+              ]
+            }
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_thread_user_metadata_important",
+              "columns": [
+                "user_id",
+                "is_important"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "ix_thread_user_metadata_user_thread",
+              "columns": [
+                "user_id",
+                "thread_id"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "uq_thread_user_metadata",
+              "columns": [
+                "thread_id",
+                "user_id"
+              ],
+              "unique": true,
+              "type": "btree"
+            }
           ]
         },
-        "api_logs": {
+        "threads": {
           "properties": {
             "id": {
-              "type": "integer",
-              "subtype": "bigint",
+              "type": "string",
               "nullable": false,
+              "format": "uuid",
               "primaryKey": true,
               "indexed": true
             },
-            "timestamp": {
+            "subject": {
+              "type": "string",
+              "nullable": false
+            },
+            "owner_id": {
               "type": "string",
               "nullable": false,
+              "format": "uuid",
+              "foreignKey": "users.id",
+              "indexed": true
+            },
+            "participant_count": {
+              "type": "integer",
+              "nullable": true
+            },
+            "email_count": {
+              "type": "integer",
+              "nullable": true
+            },
+            "last_email_at": {
+              "type": "string",
+              "nullable": true,
               "format": "date-time",
-              "default": "now()",
               "indexed": true
             },
-            "level": {
-              "type": "string",
-              "nullable": false,
-              "indexed": true,
-              "enum": [
-                "INFO",
-                "WARNING",
-                "ERROR"
-              ]
-            },
-            "operation": {
-              "type": "string",
-              "nullable": false,
-              "indexed": true,
-              "enum": [
-                "CREATE",
-                "READ",
-                "UPDATE",
-                "DELETE",
-                "RESTORE"
-              ]
-            },
-            "resource": {
-              "type": "string",
-              "nullable": false,
-              "indexed": true
-            },
-            "resource_id": {
-              "type": "string",
+            "is_deleted": {
+              "type": "boolean",
               "nullable": true,
               "indexed": true
-            },
-            "method": {
-              "type": "string",
-              "nullable": false
-            },
-            "endpoint": {
-              "type": "string",
-              "nullable": false
-            },
-            "status_code": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true,
-              "indexed": true
-            },
-            "user_id": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true,
-              "indexed": true
-            },
-            "ip_address": {
-              "type": "string",
-              "nullable": true
-            },
-            "request_data": {
-              "type": "object",
-              "nullable": true
-            },
-            "response_data": {
-              "type": "object",
-              "nullable": true
-            },
-            "error_message": {
-              "type": "string",
-              "nullable": true
-            },
-            "duration_ms": {
-              "type": "integer",
-              "subtype": "smallint",
-              "nullable": true
             },
             "created_at": {
               "type": "string",
-              "nullable": false,
-              "format": "date-time",
-              "default": "now()",
-              "indexed": true
+              "nullable": true,
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
             }
           },
           "required": [
             "id",
-            "timestamp",
-            "level",
-            "operation",
-            "resource",
-            "method",
-            "endpoint",
-            "created_at"
+            "subject",
+            "owner_id"
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_threads_owner_deleted",
+              "columns": [
+                "owner_id",
+                "is_deleted"
+              ],
+              "unique": false,
+              "type": "btree"
+            }
+          ]
+        },
+        "users": {
+          "properties": {
+            "id": {
+              "type": "string",
+              "nullable": false,
+              "format": "uuid",
+              "primaryKey": true,
+              "indexed": true
+            },
+            "first_name": {
+              "type": "string",
+              "nullable": false
+            },
+            "last_name": {
+              "type": "string",
+              "nullable": false
+            },
+            "email": {
+              "type": "string",
+              "nullable": false,
+              "indexed": true
+            },
+            "email_label": {
+              "type": "string",
+              "nullable": true
+            },
+            "role": {
+              "type": "string",
+              "nullable": false,
+              "indexed": true
+            },
+            "photo": {
+              "type": "string",
+              "nullable": true
+            },
+            "company": {
+              "type": "string",
+              "nullable": true
+            },
+            "job_title": {
+              "type": "string",
+              "nullable": true
+            },
+            "phone": {
+              "type": "string",
+              "nullable": true
+            },
+            "phone_country_code": {
+              "type": "string",
+              "nullable": true
+            },
+            "phone_label": {
+              "type": "string",
+              "nullable": true
+            },
+            "address": {
+              "type": "string",
+              "nullable": true
+            },
+            "birthday_month": {
+              "type": "integer",
+              "nullable": true
+            },
+            "birthday_day": {
+              "type": "integer",
+              "nullable": true
+            },
+            "birthday_year": {
+              "type": "integer",
+              "nullable": true
+            },
+            "significant_dates": {
+              "type": "object",
+              "nullable": true
+            },
+            "website": {
+              "type": "string",
+              "nullable": true
+            },
+            "related_persons": {
+              "type": "object",
+              "nullable": true
+            },
+            "labels": {
+              "type": "object",
+              "nullable": true
+            },
+            "custom_fields": {
+              "type": "object",
+              "nullable": true
+            },
+            "notes": {
+              "type": "string",
+              "nullable": true
+            },
+            "undo_send_delay_seconds": {
+              "type": "integer",
+              "nullable": true
+            },
+            "active": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "is_deleted": {
+              "type": "boolean",
+              "nullable": true,
+              "indexed": true
+            },
+            "created_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "first_name",
+            "last_name",
+            "email",
+            "role"
+          ],
+          "compositeIndexes": [
+            {
+              "name": "ix_users_is_deleted_active",
+              "columns": [
+                "is_deleted",
+                "active"
+              ],
+              "unique": false,
+              "type": "btree"
+            },
+            {
+              "name": "ix_users_is_deleted_role",
+              "columns": [
+                "is_deleted",
+                "role"
+              ],
+              "unique": false,
+              "type": "btree"
+            }
           ]
         }
       }
     },
     "relationships": {
       "type": "array",
-      "default": [
+      "items": [
         {
-          "from_table": "threads",
+          "from_table": "attachments",
+          "from_column": "email_id",
+          "to_table": "emails",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "email_recipients",
+          "from_column": "email_id",
+          "to_table": "emails",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "email_recipients",
+          "from_column": "recipient_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "SET NULL"
+        },
+        {
+          "from_table": "email_templates",
           "from_column": "owner_id",
           "to_table": "users",
           "to_column": "id",
@@ -952,30 +1017,6 @@
           "onDelete": "NO ACTION"
         },
         {
-          "from_table": "email_recipients",
-          "from_column": "email_id",
-          "to_table": "emails",
-          "to_column": "id",
-          "onUpdate": "NO ACTION",
-          "onDelete": "CASCADE"
-        },
-        {
-          "from_table": "email_recipients",
-          "from_column": "recipient_id",
-          "to_table": "users",
-          "to_column": "id",
-          "onUpdate": "NO ACTION",
-          "onDelete": "SET NULL"
-        },
-        {
-          "from_table": "attachments",
-          "from_column": "email_id",
-          "to_table": "emails",
-          "to_column": "id",
-          "onUpdate": "NO ACTION",
-          "onDelete": "CASCADE"
-        },
-        {
           "from_table": "labels",
           "from_column": "owner_id",
           "to_table": "users",
@@ -987,6 +1028,14 @@
           "from_table": "labels",
           "from_column": "parent_id",
           "to_table": "labels",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "NO ACTION"
+        },
+        {
+          "from_table": "saved_searches",
+          "from_column": "owner_id",
+          "to_table": "users",
           "to_column": "id",
           "onUpdate": "NO ACTION",
           "onDelete": "NO ACTION"
@@ -1008,15 +1057,31 @@
           "onDelete": "CASCADE"
         },
         {
-          "from_table": "email_templates",
-          "from_column": "owner_id",
+          "from_table": "thread_labels",
+          "from_column": "user_id",
           "to_table": "users",
           "to_column": "id",
           "onUpdate": "NO ACTION",
-          "onDelete": "NO ACTION"
+          "onDelete": "CASCADE"
         },
         {
-          "from_table": "saved_searches",
+          "from_table": "thread_user_metadata",
+          "from_column": "thread_id",
+          "to_table": "threads",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "thread_user_metadata",
+          "from_column": "user_id",
+          "to_table": "users",
+          "to_column": "id",
+          "onUpdate": "NO ACTION",
+          "onDelete": "CASCADE"
+        },
+        {
+          "from_table": "threads",
           "from_column": "owner_id",
           "to_table": "users",
           "to_column": "id",
