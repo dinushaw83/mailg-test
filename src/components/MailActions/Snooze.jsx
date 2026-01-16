@@ -98,6 +98,27 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
     setTimeInput(formatTime(selectedDateTime));
   }, [selectedDateTime]);
 
+  const handleConfirm = () => {
+    if (!selectedDateTime || Number.isNaN(selectedDateTime.getTime())) {
+      setDateError("Invalid Date");
+      setTimeError("Invalid time");
+      return;
+    }
+
+    const now = new Date();
+
+    if (selectedDateTime <= now) {
+      const isSameDay = selectedDateTime.toDateString() === now.toDateString();
+      setDateError(isSameDay ? "" : "Select a future date");
+      setTimeError("Select a future time");
+      return;
+    }
+
+    setDateError("");
+    setTimeError("");
+    onConfirm(selectedDateTime);
+  };
+
   return (
     <Modal
       open={open}
@@ -201,7 +222,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
           <Button onClick={onClose} variant="outlined">
             Cancel
           </Button>
-          <Button onClick={onConfirm} variant="contained">
+          <Button onClick={handleConfirm} variant="contained">
             Confirm
           </Button>
         </Box>
@@ -220,6 +241,7 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
   // Later today - set to 6 PM today
   const laterToday = new Date(today);
   laterToday.setHours(18, 0, 0, 0);
+  const shouldShowLaterToday = today < laterToday;
 
   // Tomorrow - set to 8 AM tomorrow
   const tomorrow = new Date(today);
@@ -289,8 +311,8 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     onClose();
   };
 
-  const handleDateTimeConfirm = () => {
-    handleSnoozeWithUndo(selectedIds, selectedDateTime);
+  const handleDateTimeConfirm = (date) => {
+    handleSnoozeWithUndo(selectedIds, date);
     setCalendarModalOpen(false);
     onClose();
   };
@@ -368,14 +390,16 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
 
           {/* <Divider sx={{ marginY: "6px" }} /> */}
 
-          <ActionMenuItem
-            label="Later today"
-            rightText={formatTime(laterToday)}
-            onClick={() => {
-              handleSnoozeWithUndo(selectedIds, laterToday);
-              onClose();
-            }}
-          />
+          {shouldShowLaterToday && (
+            <ActionMenuItem
+              label="Later today"
+              rightText={formatTime(laterToday)}
+              onClick={() => {
+                handleSnoozeWithUndo(selectedIds, laterToday);
+                onClose();
+              }}
+            />
+          )}
           <ActionMenuItem
             label="Tomorrow"
             rightText={formatTime(tomorrow)}

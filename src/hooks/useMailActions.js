@@ -694,9 +694,7 @@ export default function useMailActions() {
 
       // Call thread-level endpoint for each thread
       Promise.all(
-        resolvedThreadIds.map((threadId) =>
-          dispatch(updateThreadImportantThunk({ threadId, is_important: newState }))
-        )
+        resolvedThreadIds.map((threadId) => dispatch(updateThreadImportantThunk({ threadId, is_important: newState })))
       )
         .then(() => invalidateEmailCaches(resolvedThreadIds))
         .catch((error) => {
@@ -943,7 +941,15 @@ export default function useMailActions() {
         });
       }
     },
-    [setEmails, softRemovedLabels, setSoftRemovedLabels, dispatch, resolveIds, invalidateEmailCaches, removeFromQueryCache]
+    [
+      setEmails,
+      softRemovedLabels,
+      setSoftRemovedLabels,
+      dispatch,
+      resolveIds,
+      invalidateEmailCaches,
+      removeFromQueryCache,
+    ]
   );
 
   const toggleMuted = useCallback(
