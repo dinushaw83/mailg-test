@@ -27,6 +27,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Bulk Snooze](#bulk-snooze)
   - [Bulk Spam](#bulk-spam)
   - [Bulk Star](#bulk-star)
+  - [Bulk Thread Unstar](#bulk-thread-unstar)
   - [Bulk Unarchive](#bulk-unarchive)
   - [Bulk Unsnooze](#bulk-unsnooze)
   - [Bulk Unspam](#bulk-unspam)
@@ -1228,6 +1229,86 @@ Permissions:
     "00000000-0000-0000-0000-000000000000"
   ],
   "is_starred": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Bulk Thread Unstar
+
+**POST** `/api/v1/bulk/threads/unstar`
+
+Unstar all emails in multiple threads.
+
+Sets is_starred=False for all emails in the specified threads where the user
+is either the sender or recipient.
+
+Optimized to use a single bulk UPDATE query for all emails across all threads.
+
+Permissions:
+- Users can only unstar emails in threads they have access to
+
+**Request Body**:
+
+```json
+{
+  "thread_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ]
 }
 ```
 

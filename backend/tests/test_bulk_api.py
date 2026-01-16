@@ -858,4 +858,177 @@ class TestBulkAccessControl:
                 assert "error" in result
 
 
+class TestBulkThreadUnstar:
+    """Test bulk thread unstar operations."""
+
+    def test_bulk_thread_unstar_success(self, client_with_auth, db_session):
+        """Test unstarring all emails in multiple threads."""
+        client, token, user = client_with_auth
+
+        # Create multiple threads with multiple starred emails each
+        threads = []
+        all_emails = []
+        for i in range(3):
+            thread = Thread(
+                subject=f"Thread {i}",
+                owner_id=user.id,
+                email_count=2
+            )
+            db_session.add(thread)
+            db_session.flush()
+            threads.append(thread)
+
+            # Create 2 starred emails per thread
+            for j in range(2):
+                email = Email(
+                    subject=f"Email {i}-{j}",
+                    body=f"Body {i}-{j}",
+                    status="sent",
+                    is_starred=True,
+                    sender_id=user.id,
+                    thread_id=thread.id,
+                    folder=FolderType.SENT.value
+                )
+                db_session.add(email)
+                all_emails.append(email)
+        db_session.commit()
+
+        thread_ids = [str(t.id) for t in threads]
+
+        response = client.post(
+            "/api/v1/bulk/threads/unstar",
+            json={"thread_ids": thread_ids},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["total_requested"] == 3
+        assert data["successful"] == 3
+        assert data["failed"] == 0
+
+        # Verify all emails in all threads are unstarred
+        for email in all_emails:
+            db_session.refresh(email)
+            assert email.is_starred == False
+
+    def test_bulk_thread_unstar_partial_success(self, client_with_auth, db_session):
+        """Test bulk thread unstar with some invalid thread IDs."""
+        client, token, user = client_with_auth
+
+        # Create one valid thread with starred email
+        thread = Thread(
+            subject="Valid Thread",
+            owner_id=user.id,
+            email_count=1
+        )
+        db_session.add(thread)
+        db_session.flush()
+
+        email = Email(
+            subject="Email",
+            body="Body",
+            status="sent",
+            is_starred=True,
+            sender_id=user.id,
+            thread_id=thread.id,
+            folder=FolderType.SENT.value
+        )
+        db_session.add(email)
+        db_session.commit()
+
+        # Mix valid and invalid thread IDs
+        thread_ids = [str(thread.id), NON_EXISTENT_UUID, NON_EXISTENT_UUID_2]
+
+        response = client.post(
+            "/api/v1/bulk/threads/unstar",
+            json={"thread_ids": thread_ids},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["total_requested"] == 3
+        assert data["successful"] == 1
+        assert data["failed"] == 2
+
+        # Verify the valid thread's email is unstarred
+        db_session.refresh(email)
+        assert email.is_starred == False
+
+    def test_bulk_thread_unstar_empty_list_fails(self, client_with_auth):
+        """Test bulk thread unstar with empty thread list fails validation."""
+        client, token, user = client_with_auth
+
+        response = client.post(
+            "/api/v1/bulk/threads/unstar",
+            json={"thread_ids": []},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 422
+
+    def test_bulk_thread_unstar_unauthenticated(self, client):
+        """Test bulk thread unstar without authentication fails."""
+        response = client.post(
+            "/api/v1/bulk/threads/unstar",
+            json={"thread_ids": [NON_EXISTENT_UUID]}
+        )
+
+        assert response.status_code == 401
+
+    def test_bulk_thread_unstar_other_user_thread(self, client_with_auth, db_session):
+        """Test that users cannot unstar threads they don't have access to."""
+        client, token, user = client_with_auth
+
+        # Create another user
+        other_user = User(
+            first_name="Other",
+            last_name="User",
+            email="other_thread_unstar@example.com",
+            role="user",
+            active=True
+        )
+        db_session.add(other_user)
+        db_session.commit()
+
+        # Create thread owned by other user with starred email
+        other_thread = Thread(
+            subject="Other's Thread",
+            owner_id=other_user.id,
+            email_count=1
+        )
+        db_session.add(other_thread)
+        db_session.flush()
+
+        other_email = Email(
+            subject="Other's Email",
+            body="Body",
+            status="sent",
+            is_starred=True,
+            sender_id=other_user.id,
+            thread_id=other_thread.id,
+            folder=FolderType.SENT.value
+        )
+        db_session.add(other_email)
+        db_session.commit()
+
+        # Try to unstar other user's thread
+        response = client.post(
+            "/api/v1/bulk/threads/unstar",
+            json={"thread_ids": [str(other_thread.id)]},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Should fail for the other user's thread
+        assert data["failed"] == 1
+        assert data["successful"] == 0
+
+        # Verify email is still starred
+        db_session.refresh(other_email)
+        assert other_email.is_starred == True
+
+
 # Note: TestBulkCategory removed - category is now handled via labels
