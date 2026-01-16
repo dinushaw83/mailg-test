@@ -118,9 +118,8 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
       });
     }
 
-    selection.clear();
     setOverrides({}); // reset
-  }, [overrides, currentLabels, modifyLabels, setSnackbar, selection, selectedIds, labels, emails]);
+  }, [overrides, currentLabels, modifyLabels, setSnackbar, selectedIds, labels, emails]);
 
   return (
     <Box sx={{ width: "280px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>

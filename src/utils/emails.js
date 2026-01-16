@@ -614,6 +614,10 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
     const sentToLabel = folder === "sent" ? buildSentToLabel(t) : null;
     const label = sentToLabel || defaultLabel;
 
+    // Use pre-computed messageCount if available (from useFolderEmails thread fetch),
+    // otherwise fall back to calculated count from available messages
+    const preComputedMessageCount = last.messageCount || last.thread_email_count || first.messageCount || first.thread_email_count;
+
     return {
       // Keep navigation compatible with message details by using last message id
       id: last.id,
@@ -640,7 +644,7 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 
       // Aggregates
       labels: t.labels, // union
-      messageCount: t.messageIds.length,
+      messageCount: preComputedMessageCount || t.messageIds.length,
       unreadCount: t.unreadCount,
       updatedAt: t.updatedAt,
 

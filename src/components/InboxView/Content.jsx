@@ -334,10 +334,11 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
         <ActionsContainer>
           <Time timestamp={timestamp} />
           <Icon
-            name={isStarred ? "star" : "star_border"}
+            name="star"
             label={isStarred ? "Starred" : "Not starred"}
             onClick={handleStar}
             color={isStarred ? "#f4b400" : "rgb(68, 68, 68)"}
+            filled={isStarred}
           />
           <Icon name="mood" label="Add a reaction" />
           <Icon name="reply" label="Reply" onClick={handleReply} />

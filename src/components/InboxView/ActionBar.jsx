@@ -47,6 +47,7 @@ export const Icon = ({
   width = 36,
   height = 36,
   fontSize = 20,
+  filled = false,
   _ref,
 }) => {
   return (
@@ -70,6 +71,7 @@ export const Icon = ({
           style={{
             fontSize,
             color: disabled ? "#b8b8b8" : color,
+            fontVariationSettings: filled ? "'FILL' 1" : "'FILL' 0",
           }}
         >
           {name}

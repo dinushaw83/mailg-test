@@ -282,43 +282,36 @@ const useCustomHotKeys = ({
   useHotkeys(shortcutsOn ? "e" : "", () => {
     const selectedIds = [...selection.ids];
     handleArchive(selectedIds);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "m" : "", () => {
     const selectedIds = selection.ids;
     handleMuteAction([...selectedIds]);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Shift+3" : "", () => {
     const selectedIds = selection.ids;
     handleDelete([...selectedIds]);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Shift+i" : "", () => {
     const selectedIds = [...selection.ids];
     bulkMarkRead(selectedIds, true);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Equal, Shift+Equal" : "", () => {
     const selectedIds = selection.ids;
     bulkMarkImportant([...selectedIds], true);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Minus" : "", () => {
     const selectedIds = [...selection.ids];
     bulkMarkImportant([...selectedIds], false);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Shift+u" : "", () => {
     const selectedIds = [...selection.ids];
     bulkMarkRead(selectedIds, false);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "b" : "", () => {
@@ -697,7 +690,6 @@ const Table = ({
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
       const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
-      selection.clear();
       const message = ids.size > 1 ? `${ids.size} Conversations snoozed` : "Conversation snoozed.";
       setSnackbar({
         open: true,
@@ -722,7 +714,7 @@ const Table = ({
         ),
       });
     },
-    [snooze, selection, unsnooze, setSnackbar]
+    [snooze, unsnooze, setSnackbar]
   );
 
   const handleStar = useCallback(

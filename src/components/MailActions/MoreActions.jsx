@@ -97,8 +97,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
         moveToLabel(ids, newKey);
       }
 
-      selection.clear();
-
       // --- UNDO action ---
       setSnackbar({
         open: true,
@@ -242,7 +240,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
         setStar(idsToUpdate, value, "list", threadIdsToUpdate);
       }
 
-      selection.clear();
       handleClose();
 
       const changedThreadCount =
@@ -320,7 +317,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
         setImportant(threadIdsToUpdate, value);
       }
 
-      selection.clear();
       handleClose();
 
       const changedThreadCount =
@@ -398,7 +394,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       setMuted(idsToUpdate, nextValue);
     }
 
-    selection.clear();
     handleClose();
 
     const undo = () => {
@@ -458,7 +453,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     }
 
     markRead(idsToUpdate, false);
-    selection.clear();
 
     const undo = () => {
       const idsToRestore = previousStates.filter((state) => state.read).map((state) => state.id);

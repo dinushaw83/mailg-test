@@ -1,7 +1,7 @@
 import { fetchEmailCounts, fetchLabels, setEmails, setEmailsForCategory } from "../store/slices/mailSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import emailService from "../services/emailService";
 
 /**
@@ -32,6 +32,7 @@ export default function useFolderEmails({
   setItemsPerPage,
 }) {
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { accessToken } = useSelector((state) => state.user);
   const labels = useSelector((state) => state.mail.labels || {});
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
@@ -58,6 +59,8 @@ export default function useFolderEmails({
   const { data: emailsData, isLoading } = useQuery({
     queryKey,
     queryFn: async () => {
+      let baseResult;
+
       // Handle label routes
       if (label) {
         const labelId = getLabelId(label);
@@ -67,65 +70,117 @@ export default function useFolderEmails({
           return { results: [], pagination: null };
         }
 
-        return emailService.getThreadsByLabel(labelId, currentPage, itemsPerPage);
-      }
-
-      const folderKey = String(activeFolder).toLowerCase();
-      const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "all"];
-      if (!validRoutes.includes(folderKey)) {
-        return { results: [], pagination: null };
-      }
-
-      switch (folderKey) {
-        case "starred":
-          return emailService.getEmailsByFilter({
-            page: currentPage,
-            pageSize: itemsPerPage,
-            is_starred: true,
-          });
-        case "important":
-          return emailService.getEmailsByFilter({
-            page: currentPage,
-            pageSize: itemsPerPage,
-            is_important: true,
-          });
-        case "snoozed":
-          return emailService.getEmailsByFilter({
-            page: currentPage,
-            pageSize: itemsPerPage,
-            is_snoozed: true,
-          });
-        case "sent":
-        case "trash":
-        case "spam":
-        case "drafts":
-          return emailService.getEmailsByFilter({
-            page: currentPage,
-            pageSize: itemsPerPage,
-            folder: folderKey,
-          });
-        case "all":
-          return emailService.getEmailsByFilter({
-            page: currentPage,
-            pageSize: itemsPerPage,
-            folder: "inbox",
-            include_archived: true,
-          });
-        case "inbox": {
-          const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
-          return emailService.getEmailsByFilter({
-            page: currentPage,
-            pageSize: itemsPerPage,
-            folder: "inbox",
-            category: categoryParam,
-          });
-        }
-        default:
+        baseResult = await emailService.getThreadsByLabel(labelId, currentPage, itemsPerPage);
+      } else {
+        const folderKey = String(activeFolder).toLowerCase();
+        const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "all"];
+        if (!validRoutes.includes(folderKey)) {
           return { results: [], pagination: null };
+        }
+
+        switch (folderKey) {
+          case "starred":
+            baseResult = await emailService.getEmailsByFilter({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_starred: true,
+            });
+            break;
+          case "important":
+            baseResult = await emailService.getEmailsByFilter({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_important: true,
+            });
+            break;
+          case "snoozed":
+            baseResult = await emailService.getEmailsByFilter({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              is_snoozed: true,
+            });
+            break;
+          case "sent":
+          case "trash":
+          case "spam":
+          case "drafts":
+            baseResult = await emailService.getEmailsByFilter({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              folder: folderKey,
+            });
+            break;
+          case "all":
+            baseResult = await emailService.getEmailsByFilter({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              folder: "inbox",
+              include_archived: true,
+            });
+            break;
+          case "inbox": {
+            const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
+            baseResult = await emailService.getEmailsByFilter({
+              page: currentPage,
+              pageSize: itemsPerPage,
+              folder: "inbox",
+              category: categoryParam,
+            });
+            break;
+          }
+          default:
+            return { results: [], pagination: null };
+        }
       }
+
+      // If no results, return early
+      if (!baseResult?.results?.length) {
+        return baseResult;
+      }
+
+      // For each thread, fetch all emails and check if any is starred
+      // This is a workaround until the BE provides thread-level starred status
+      const threadIds = [...new Set(baseResult.results.map((e) => e.thread_id).filter(Boolean))];
+
+      // Fetch all threads in parallel, using cache when available
+      const threadEmailsMap = new Map();
+      await Promise.all(
+        threadIds.map(async (threadId) => {
+          try {
+            // Use fetchQuery to leverage React Query caching
+            // This will use cached data if available and not stale
+            const threadEmails = await queryClient.fetchQuery({
+              queryKey: ["email", threadId],
+              queryFn: () => emailService.getEmail(threadId),
+              staleTime: 5 * 60 * 1000, // 5 minutes - don't refetch if data is less than 5 min old
+            });
+            threadEmailsMap.set(threadId, threadEmails);
+          } catch (error) {
+            console.warn(`Failed to fetch thread ${threadId}:`, error);
+          }
+        })
+      );
+
+      // Update each result with the correct starred status and message count based on thread emails
+      const updatedResults = baseResult.results.map((email) => {
+        const threadEmails = threadEmailsMap.get(email.thread_id);
+        if (Array.isArray(threadEmails) && threadEmails.length > 0) {
+          // Check if ANY email in the thread is starred
+          const hasAnyStarred = threadEmails.some((e) => e.is_starred);
+          // Get the thread email count
+          const messageCount = threadEmails.length;
+          return { ...email, is_starred: hasAnyStarred, messageCount, thread_email_count: messageCount };
+        }
+        return email;
+      });
+
+      return {
+        ...baseResult,
+        results: updatedResults,
+      };
     },
     enabled: !!accessToken,
-    staleTime: 0, // Always refetch when query is invalidated
+    staleTime: 30 * 1000, // 30 seconds - list data is fresh for 30s
   });
 
   // Sync React Query data to Redux for backward compatibility

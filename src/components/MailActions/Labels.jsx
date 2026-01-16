@@ -168,7 +168,6 @@ export const Labels = ({
       ),
     }));
 
-    selection.clear();
     setOverrides({}); // reset
 
     handleLabelClose();
@@ -178,7 +177,6 @@ export const Labels = ({
     currentLabels,
     modifyLabels,
     setSnackbar,
-    selection,
     handleLabelClose,
     handleClose,
     selectedIds,

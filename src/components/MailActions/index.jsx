@@ -223,8 +223,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     const undo = moveToTrash(idsToUpdate);
     const conversations = selectedConversationCount || 1;
 
-    selection.clear();
-
     setSnackbar({
       open: true,
       message: conversations > 1 ? `${conversations} conversations moved to Trash.` : "Conversation moved to Trash.",
@@ -346,7 +344,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
     try {
       archive(idsToArchive);
-      selection.clear();
       setSnackbar({
         open: true,
         message: conversations > 1 ? `${conversations} conversations archived.` : "Conversation archived.",
@@ -404,7 +401,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         autoHideDuration: 3000,
         action: null,
       });
-      selection.clear();
     } catch (e) {
       console.error("Move to Inbox failed:", e);
     }
@@ -503,7 +499,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           ...prev,
           moveToMenuOpen: false,
         }));
-        selection.clear();
       } catch (e) {
         console.error("Move failed:", e);
       }
@@ -520,7 +515,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       selectedConversationCount,
       showUndoSnackbarForLabelMove,
       toggleSpamModal,
-      selection,
       showNoConversationsSelectedSnackbar,
       collectLabelSnapshot,
     ]
@@ -554,8 +548,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       } else {
         moveToLabel(ids, newKey);
       }
-
-      selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
@@ -625,8 +617,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         { add: createdLabelId ? [createdLabelId] : [newKey], remove: [] }, 
         ids // Pass thread IDs for backend sync
       );
-
-      selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
@@ -716,7 +706,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     }
 
     markRead(idsToUpdate, isMarkingAsRead);
-    selection.clear();
 
     const affectedConversations =
       new Set(targetStates.map((state) => state.thread_id)).size || selectedConversationCount || 1;
@@ -851,9 +840,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       autoHideDuration: 2000,
       action: null,
     });
-
-    // Clear selection
-    selection.clear();
   };
 
   // Handle undo move to inbox
@@ -919,7 +905,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
     // Store the action ids
     lastActionIds.current = [...selectedIds];
-    selection.clear();
 
     // Display snackbar with undo action
     setSnackbar({
@@ -967,7 +952,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     (ids, snoozeUntil) => {
       const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
       handleSnoozeClose();
-      selection.clear();
 
       const message = ids.length > 1 ? `${ids.length} conversations snoozed` : "Conversation snoozed.";
 
@@ -992,7 +976,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         ),
       });
     },
-    [snooze, unsnooze, handleSnoozeClose, selection, setSnackbar]
+    [snooze, unsnooze, handleSnoozeClose, setSnackbar]
   );
 
   if (!visible) return null;
@@ -1100,13 +1084,11 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           if (!emailIds.length) {
             console.error("No email IDs found to spam!");
             toggleSpamModal();
-            selection.clear();
             return;
           }
 
           const undo = moveToSpam(emailIds);
           toggleSpamModal();
-          selection.clear();
           showUndoSnackbar(
             selectedIds.length > 1
               ? `${selectedIds.length} conversations marked as spam.`
@@ -1122,13 +1104,11 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           if (!emailIds.length) {
             console.error("No email IDs found to spam!");
             toggleSpamModal();
-            selection.clear();
             return;
           }
 
           moveToSpam(emailIds);
           toggleSpamModal();
-          selection.clear();
           showUndoSnackbar("We'll try to unsubscribe you from these emails.", () => {});
         }}
       />
