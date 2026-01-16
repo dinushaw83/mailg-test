@@ -46,8 +46,8 @@ export default function CreateLabelDialog({
   const inputRef = React.useRef(null);
 
   const parentChoices = useMemo(
-    () => flattenTreeForSelect(labelTree).filter((opt) => !labels?.[opt.key]?.system),
-    [labelTree, labels]
+    () => flattenTreeForSelect(labelTree).filter((opt) => !opt.system),
+    [labelTree]
   );
 
   const trimmed = name.trim();
