@@ -13,6 +13,9 @@ RUN npm ci --include=dev
 ARG VITE_APP_URL
 ENV VITE_APP_URL=$VITE_APP_URL
 
+ARG VITE_ENABLE_INSTRUMENTATION=false
+ENV VITE_ENABLE_INSTRUMENTATION=$VITE_ENABLE_INSTRUMENTATION
+
 # Copy build configuration and source files
 COPY vite.config.js ./
 COPY index.html ./
@@ -34,6 +37,9 @@ RUN apt-get update && \
 # Keep env available at runtime (for server or diagnostics)
 ARG VITE_APP_URL
 ENV VITE_APP_URL=$VITE_APP_URL
+
+ARG VITE_ENABLE_INSTRUMENTATION=false
+ENV VITE_ENABLE_INSTRUMENTATION=$VITE_ENABLE_INSTRUMENTATION
 
 ENV NODE_ENV=production
 ENV PORT=3000

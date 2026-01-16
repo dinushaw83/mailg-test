@@ -76,12 +76,10 @@ services:
       - JWT_ACCESS_TOKEN_TTL_SECONDS=86400
       # OpenTelemetry configuration
       - OTEL_SDK_DISABLED=${OTEL_SDK_DISABLED:-true}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=mailg-backend
       # Prometheus URL for metrics API
       - PROMETHEUS_URL=http://prometheus:9090
-      # Data generation
-      - GENERATE_ADDITIONAL_DATA=${GENERATE_ADDITIONAL_DATA:-0}
     volumes:
       - backend_logs:/app/backend/logs
       - ./backend/fixtures:/seed/fixtures:ro
@@ -103,6 +101,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_ENABLE_INSTRUMENTATION: "${VITE_ENABLE_INSTRUMENTATION:-false}"
     container_name: ui-gym-mailg-frontend
     ports:
       - "3002:3000" 
@@ -112,7 +112,6 @@ services:
       - VITE_RUN_MODE=localstorage
       # OpenTelemetry configuration
       - VITE_ENABLE_INSTRUMENTATION=${VITE_ENABLE_INSTRUMENTATION:-false}
-      - VITE_OTEL_COLLECTOR_URL=${VITE_OTEL_COLLECTOR_URL:-http://localhost:4318}
     networks:
       - mailg-network
     restart: unless-stopped
