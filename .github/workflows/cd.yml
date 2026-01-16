@@ -12,6 +12,7 @@ on:
     branches:
       - staging
       - develop
+      - bugfix/backend-test-db-adding
   workflow_dispatch:
     inputs:
       environment:
@@ -365,8 +366,9 @@ jobs:
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
           # Copy backend/fixtures so docker-compose can mount them for seed data initialization
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy/backend'
-          scp -r backend/fixtures ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/backend/
+          # Use tar pipe to preserve permissions and avoid permission issues
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy/backend && rm -rf ~/mailg-deploy/backend/fixtures'
+          cd backend && tar czf - fixtures | ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'cd ~/mailg-deploy/backend && tar xzf -'
 
       - name: Deploy containers
         env:
