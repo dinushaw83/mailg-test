@@ -130,13 +130,13 @@ def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
     """Extract OR groups from query.
     
     Handles both explicit OR syntax and brace syntax.
-    
+
     Args:
         query: The search query string
-        
+
     Returns:
         Tuple of (list of OR groups, remaining query)
-        
+
     Examples:
         extract_or_groups('meeting OR conference') ->
         ([['meeting', 'conference']], '')
@@ -145,47 +145,47 @@ def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
         ([['urgent', 'important']], '')
     """
     or_groups = []
-    
+
     # Handle explicit OR: term1 OR term2
-    or_matches = re.findall(r'([^\s!]+)\s+OR\s+([^\s!]+)', query, re.IGNORECASE)
+    or_matches = re.findall(r'(\S+?)\s+OR\s+(\S+?)(?=\s|$)', query, re.IGNORECASE)
     for match in or_matches:
         or_groups.append(list(match))
-    query = re.sub(r'[^\s!]+\s+OR\s+[^\s!]+', '', query, flags=re.IGNORECASE)
-    
+    query = re.sub(r'\S+?\s+OR\s+\S+?(?=\s|$)', '', query, flags=re.IGNORECASE)
     # Handle brace syntax: {term1 term2 term3}
-    brace_matches = re.findall(r'\{([^}\r\n]+)\}', query)
+    # Limit to alphanumeric, space, underscore, hyphen to prevent ReDoS
+    brace_matches = re.findall(r'\{([\w\s-]+?)\}', query)
     for match in brace_matches:
         terms = match.split()
         if len(terms) > 1:
             or_groups.append(terms)
-    query = re.sub(r'\{[^}\r\n]+\}', '', query)
-    
+    query = re.sub(r'\{[\w\s-]+?\}', '', query)
     return or_groups, query
 
 
 def extract_grouped_terms(query: str) -> Tuple[dict, str]:
     """Extract grouped terms like subject:(term1 term2).
-    
+
     Args:
         query: The search query string
-        
+
     Returns:
         Tuple of (dict with operator as key and list of terms, remaining query)
-        
+
     Example:
         extract_grouped_terms('subject:(dinner movie)') ->
         ({'subject': ['dinner', 'movie']}, '')
     """
     grouped = {}
-    
+
     # Match operator:(term1 term2 ...)
-    matches = re.findall(r'([A-Za-z_][A-Za-z0-9_]*):\(([^)\r\n]+)\)', query)
+    # Use non-greedy quantifier and limit identifier length to prevent ReDoS
+    matches = re.findall(r'([A-Za-z_]\w{0,50}):\(([\w\s-]+?)\)', query)
     for operator, terms_str in matches:
         terms = terms_str.split()
         grouped[operator.lower()] = terms
-    
-    query = re.sub(r'[A-Za-z_][A-Za-z0-9_]*:\([^)\r\n]+\)', '', query)
-    
+
+    query = re.sub(r'[A-Za-z_]\w{0,50}:\([\w\s-]+?\)', '', query)
+
     return grouped, query
 
 
