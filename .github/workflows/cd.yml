@@ -12,7 +12,6 @@ on:
     branches:
       - staging
       - develop
-      - bugfix/backend-test-db-adding
   workflow_dispatch:
     inputs:
       environment:
