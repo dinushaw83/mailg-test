@@ -200,28 +200,121 @@ class TestLabelList:
     def test_list_labels_flat_param(self, client_with_auth, db_session):
         """Test flat=false parameter returns tree structure."""
         client, token, user = client_with_auth
-        
+
         parent = Label(name="Projects", owner_id=user.id)
         db_session.add(parent)
         db_session.commit()
-        
+
         child = Label(name="2025", parent_id=parent.id, owner_id=user.id)
         db_session.add(child)
         db_session.commit()
-        
+
         response = client.get(
             "/api/v1/labels?flat=false",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
-        
+
         # Tree structure should have children arrays
         projects = next((l for l in data if l["name"] == "Projects"), None)
         assert projects is not None
         assert "children" in projects
         assert any(c["name"] == "2025" for c in projects["children"])
+
+    def test_list_labels_includes_unread_counts(self, client_with_auth, db_session):
+        """Test that list_labels returns unread counts for each label."""
+        from datetime import datetime, timezone
+        from app.models.email_recipient import EmailRecipient
+
+        client, token, user = client_with_auth
+
+        # Create two labels
+        label1 = Label(name="Important", owner_id=user.id)
+        label2 = Label(name="Personal", owner_id=user.id)
+        db_session.add_all([label1, label2])
+        db_session.commit()
+
+        # Create thread with unread email for label1
+        thread1 = Thread(subject="Thread 1", owner_id=user.id)
+        db_session.add(thread1)
+        db_session.commit()
+
+        email1 = Email(
+            thread_id=thread1.id,
+            subject="Unread email",
+            body="Content",
+            sender_id=user.id,
+            folder=FolderType.INBOX,
+            is_read=False,
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email1)
+        db_session.commit()
+
+        recipient1 = EmailRecipient(
+            email_id=email1.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient1)
+        db_session.commit()
+
+        # Create thread with read email for label2
+        thread2 = Thread(subject="Thread 2", owner_id=user.id)
+        db_session.add(thread2)
+        db_session.commit()
+
+        email2 = Email(
+            thread_id=thread2.id,
+            subject="Read email",
+            body="Content",
+            sender_id=user.id,
+            folder=FolderType.INBOX,
+            is_read=True,
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email2)
+        db_session.commit()
+
+        recipient2 = EmailRecipient(
+            email_id=email2.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient2)
+        db_session.commit()
+
+        # Associate labels with threads
+        thread_label1 = ThreadLabel(thread_id=thread1.id, label_id=label1.id, user_id=user.id)
+        thread_label2 = ThreadLabel(thread_id=thread2.id, label_id=label2.id, user_id=user.id)
+        db_session.add_all([thread_label1, thread_label2])
+        db_session.commit()
+
+        # Get labels list
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+
+        # Find our labels
+        important = next((l for l in data if l["name"] == "Important"), None)
+        personal = next((l for l in data if l["name"] == "Personal"), None)
+
+        # Verify counts
+        assert important is not None
+        assert important["thread_count"] == 1
+        assert important["unread_count"] == 1  # Has unread email
+
+        assert personal is not None
+        assert personal["thread_count"] == 1
+        assert personal["unread_count"] == 0  # Email is read
 
 
 class TestLabelFullName:
