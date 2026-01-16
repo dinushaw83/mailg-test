@@ -86,17 +86,21 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
 
     Args:
         email: The email model instance
-        user_id: Current user's ID - used to filter labels and get thread metadata
+        user_id: Current user's ID - used to filter labels, get thread metadata, and show "me" for current user
 
     Returns:
         Dictionary with email data formatted for API response
     """
     recipients = []
     for r in email.recipients:
+        # Show "me" if recipient is the current user
+        recipient_name = r.recipient_name
+        if user_id and r.recipient_id == user_id:
+            recipient_name = "me"
         recipients.append({
             "id": r.id,
             "email": r.recipient_email,
-            "name": r.recipient_name,
+            "name": recipient_name,
             "type": r.recipient_type,
         })
 
@@ -144,6 +148,11 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         email.scheduled_send_at > datetime.now(UTC)
     )
 
+    # Show "me" if sender is the current user
+    sender_name = email.sender.name if email.sender else None
+    if user_id and email.sender_id == user_id:
+        sender_name = "me"
+
     return {
         "id": email.id,
         "subject": email.subject,
@@ -155,7 +164,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         "is_important": is_important,
         "is_archived": is_archived,
         "sender_id": email.sender_id,
-        "sender_name": email.sender.name if email.sender else None,
+        "sender_name": sender_name,
         "sender_email": email.sender.email if email.sender else None,
         "recipients": recipients,
         "thread_id": email.thread_id,
@@ -173,13 +182,14 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
     }
 
 
-def format_email_list_response(email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None) -> dict:
+def format_email_list_response(email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None, thread_is_starred: Optional[bool] = None) -> dict:
     """Format email model for list responses.
 
     Args:
         email: The email model instance (with thread.user_metadata eager loaded if available)
         thread_email_count: Optional count of emails in the thread
-        user_id: Current user's ID - used to filter labels and get thread metadata
+        user_id: Current user's ID - used to filter labels, get thread metadata, and show "me" for current user
+        thread_is_starred: Optional thread-level starred status (true if any email in thread is starred).
 
     Returns:
         Dictionary with email data formatted for list API response
@@ -221,6 +231,11 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         email.scheduled_send_at > datetime.now(UTC)
     )
 
+    # Show "me" if sender is the current user
+    sender_name = email.sender.name if email.sender else None
+    if user_id and email.sender_id == user_id:
+        sender_name = "me"
+
     return {
         "id": email.id,
         "subject": email.subject,
@@ -228,10 +243,11 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         "folder": email.folder or FolderType.INBOX.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
+        "thread_is_starred": thread_is_starred if thread_is_starred is not None else email.is_starred,
         "is_important": is_important,
         "is_archived": is_archived,
         "sender_id": email.sender_id,
-        "sender_name": email.sender.name if email.sender else None,
+        "sender_name": sender_name,
         "sender_email": email.sender.email if email.sender else None,
         "thread_id": email.thread_id,
         "thread_email_count": thread_email_count,

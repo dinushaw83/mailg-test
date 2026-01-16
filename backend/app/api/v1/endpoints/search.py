@@ -185,37 +185,106 @@ def search_emails(
         )
     )
     
+    # Helper to check if term is "me" keyword (refers to current user)
+    def is_me_keyword(term: str) -> bool:
+        return term.lower() == 'me'
+    
     # Apply filters
     if from_email:
         # Support comma-separated values for multiple senders
+        # Prioritizes name match (partial) over email match (exact)
+        # "me" keyword matches the current user
         from_emails = [e.strip() for e in from_email.split(',') if e.strip()]
         if from_emails:
             query = query.join(User, Email.sender_id == User.id)
             if len(from_emails) == 1:
-                query = query.filter(User.email.ilike(f"%{from_emails[0]}%"))
+                e = from_emails[0]
+                if is_me_keyword(e):
+                    # "me" = current user
+                    query = query.filter(Email.sender_id == current_user.id)
+                else:
+                    query = query.filter(
+                        or_(
+                            # Name matching - partial/fuzzy (prioritized)
+                            User.first_name.ilike(f"%{e}%"),
+                            User.last_name.ilike(f"%{e}%"),
+                            # Email matching - exact (case-insensitive)
+                            User.email.ilike(e)
+                        )
+                    )
             else:
-                from_conditions = [User.email.ilike(f"%{e}%") for e in from_emails]
+                from_conditions = []
+                for e in from_emails:
+                    if is_me_keyword(e):
+                        # "me" = current user
+                        from_conditions.append(Email.sender_id == current_user.id)
+                    else:
+                        # Name matching - partial/fuzzy (prioritized)
+                        from_conditions.append(User.first_name.ilike(f"%{e}%"))
+                        from_conditions.append(User.last_name.ilike(f"%{e}%"))
+                        # Email matching - exact (case-insensitive)
+                        from_conditions.append(User.email.ilike(e))
                 query = query.filter(or_(*from_conditions))
     
     if to_email:
         # Support comma-separated values for multiple recipients
+        # Prioritizes name match (partial) over email match (exact)
+        # "me" keyword matches the current user
         to_emails = [e.strip() for e in to_email.split(',') if e.strip()]
         if to_emails:
             if len(to_emails) == 1:
-                query = query.filter(EmailRecipient.recipient_email.ilike(f"%{to_emails[0]}%"))
+                e = to_emails[0]
+                if is_me_keyword(e):
+                    # "me" = current user as recipient
+                    query = query.filter(EmailRecipient.recipient_id == current_user.id)
+                else:
+                    query = query.filter(
+                        or_(
+                            # Name matching - partial/fuzzy (prioritized)
+                            EmailRecipient.recipient_name.ilike(f"%{e}%"),
+                            # Email matching - exact (case-insensitive)
+                            EmailRecipient.recipient_email.ilike(e)
+                        )
+                    )
             else:
-                to_conditions = [EmailRecipient.recipient_email.ilike(f"%{e}%") for e in to_emails]
+                to_conditions = []
+                for e in to_emails:
+                    if is_me_keyword(e):
+                        # "me" = current user as recipient
+                        to_conditions.append(EmailRecipient.recipient_id == current_user.id)
+                    else:
+                        # Name matching - partial/fuzzy (prioritized)
+                        to_conditions.append(EmailRecipient.recipient_name.ilike(f"%{e}%"))
+                        # Email matching - exact (case-insensitive)
+                        to_conditions.append(EmailRecipient.recipient_email.ilike(e))
                 query = query.filter(or_(*to_conditions))
     
     if subject:
         query = query.filter(Email.subject.ilike(f"%{subject}%"))
     
     if text_search:
+        # Free text wildcard search - matches subject, body, sender name, or recipient name
         search_term = f"%{text_search}%"
+        # Build sender name subquery (emails where sender name matches)
+        sender_match_subq = db.query(Email.id).join(
+            User, Email.sender_id == User.id
+        ).filter(
+            or_(
+                User.first_name.ilike(search_term),
+                User.last_name.ilike(search_term)
+            )
+        ).scalar_subquery()
+        # Build recipient name subquery (emails where any recipient name matches)
+        recipient_match_subq = db.query(EmailRecipient.email_id).filter(
+            EmailRecipient.recipient_name.ilike(search_term)
+        ).distinct().scalar_subquery()
+        
         query = query.filter(
             or_(
                 Email.subject.ilike(search_term),
-                Email.body.ilike(search_term)
+                Email.body.ilike(search_term),
+                Email.id.in_(sender_match_subq),
+                Email.id.in_(recipient_match_subq)
             )
         )
     
@@ -352,37 +421,81 @@ def search_emails(
                 query = query.filter(or_(*or_conditions))
     
     # Grouped terms - e.g., subject:(dinner movie)
+    # "me" keyword supported in from/to operators
     if grouped_terms:
         for operator, terms in grouped_terms.items():
             if operator == 'subject':
                 subject_conditions = [Email.subject.ilike(f"%{t}%") for t in terms]
                 query = query.filter(or_(*subject_conditions))
             elif operator == 'from':
+                # Prioritizes name match (partial) over email match (exact)
                 if not from_email:  # Only if not already filtered
                     query = query.join(User, Email.sender_id == User.id)
-                from_conditions = [User.email.ilike(f"%{t}%") for t in terms]
+                from_conditions = []
+                for t in terms:
+                    if is_me_keyword(t):
+                        # "me" = current user
+                        from_conditions.append(Email.sender_id == current_user.id)
+                    else:
+                        # Name matching - partial/fuzzy (prioritized)
+                        from_conditions.append(User.first_name.ilike(f"%{t}%"))
+                        from_conditions.append(User.last_name.ilike(f"%{t}%"))
+                        # Email matching - exact (case-insensitive)
+                        from_conditions.append(User.email.ilike(t))
                 query = query.filter(or_(*from_conditions))
             elif operator == 'to':
-                to_conditions = [EmailRecipient.recipient_email.ilike(f"%{t}%") for t in terms]
+                # Prioritizes name match (partial) over email match (exact)
+                to_conditions = []
+                for t in terms:
+                    if is_me_keyword(t):
+                        # "me" = current user as recipient
+                        to_conditions.append(EmailRecipient.recipient_id == current_user.id)
+                    else:
+                        # Name matching - partial/fuzzy (prioritized)
+                        to_conditions.append(EmailRecipient.recipient_name.ilike(f"%{t}%"))
+                        # Email matching - exact (case-insensitive)
+                        to_conditions.append(EmailRecipient.recipient_email.ilike(t))
                 query = query.filter(or_(*to_conditions))
     
-    # CC filter
+    # CC filter - prioritizes name match (partial) over email match (exact)
+    # "me" keyword matches the current user
     if cc:
         cc_emails = [e.strip() for e in cc.split(',') if e.strip()]
         if cc_emails:
+            cc_conditions = []
+            for e in cc_emails:
+                if is_me_keyword(e):
+                    # "me" = current user as CC recipient
+                    cc_conditions.append(EmailRecipient.recipient_id == current_user.id)
+                else:
+                    # Name matching - partial/fuzzy (prioritized)
+                    cc_conditions.append(EmailRecipient.recipient_name.ilike(f"%{e}%"))
+                    # Email matching - exact (case-insensitive)
+                    cc_conditions.append(EmailRecipient.recipient_email.ilike(e))
             cc_subq = db.query(EmailRecipient.email_id).filter(
                 EmailRecipient.recipient_type == 'cc',
-                or_(*[EmailRecipient.recipient_email.ilike(f"%{e}%") for e in cc_emails])
+                or_(*cc_conditions)
             ).distinct().scalar_subquery()
             query = query.filter(Email.id.in_(cc_subq))
     
-    # BCC filter
+    # BCC filter - prioritizes name match (partial) over email match (exact)
+    # "me" keyword matches the current user
     if bcc:
         bcc_emails = [e.strip() for e in bcc.split(',') if e.strip()]
         if bcc_emails:
+            bcc_conditions = []
+            for e in bcc_emails:
+                if is_me_keyword(e):
+                    # "me" = current user as BCC recipient
+                    bcc_conditions.append(EmailRecipient.recipient_id == current_user.id)
+                else:
+                    # Name matching - partial/fuzzy (prioritized)
+                    bcc_conditions.append(EmailRecipient.recipient_name.ilike(f"%{e}%"))
+                    # Email matching - exact (case-insensitive)
+                    bcc_conditions.append(EmailRecipient.recipient_email.ilike(e))
             bcc_subq = db.query(EmailRecipient.email_id).filter(
                 EmailRecipient.recipient_type == 'bcc',
-                or_(*[EmailRecipient.recipient_email.ilike(f"%{e}%") for e in bcc_emails])
+                or_(*bcc_conditions)
             ).distinct().scalar_subquery()
             query = query.filter(Email.id.in_(bcc_subq))
     
@@ -602,6 +715,7 @@ def search_emails(
     # Get thread email counts for all threads in the result set
     thread_ids = [email.thread_id for email in emails if email.thread_id]
     thread_counts = {}
+    starred_thread_ids = set()
     if thread_ids:
         # Query count of emails per thread (accessible to this user)
         count_results = db.query(
@@ -620,10 +734,30 @@ def search_emails(
         ).group_by(Email.thread_id).all()
         
         thread_counts = {tid: cnt for tid, cnt in count_results}
+        
+        # Query threads that have at least one starred email (for the current user)
+        starred_results = db.query(Email.thread_id).filter(
+            Email.thread_id.in_(thread_ids),
+            Email.is_starred == True,
+            or_(
+                Email.sender_id == current_user.id,
+                Email.id.in_(
+                    db.query(EmailRecipient.email_id).filter(
+                        EmailRecipient.recipient_id == current_user.id
+                    )
+                )
+            )
+        ).distinct().all()
+        starred_thread_ids = {tid for (tid,) in starred_results}
     
     # Format response with thread counts and user_id for label filtering
     emails_data = [
-        format_email_list_response(email, thread_counts.get(email.thread_id), current_user.id)
+        format_email_list_response(
+            email, 
+            thread_counts.get(email.thread_id), 
+            current_user.id,
+            thread_is_starred=email.thread_id in starred_thread_ids if email.thread_id else email.is_starred
+        )
         for email in emails
     ]
     
