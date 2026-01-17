@@ -10,7 +10,8 @@ import os
 # - workers should be tuned based on CPU and expected concurrency.
 # - Keepalive/timeout are bumped for long-ish requests.
 
-workers = int(os.getenv("UVICORN_WORKERS", "8"))
+# workers = int(os.getenv("UVICORN_WORKERS", "8"))
+workers = 8
 worker_class = "uvicorn.workers.UvicornWorker"
 
 bind = os.getenv("BIND", "0.0.0.0:8765")
