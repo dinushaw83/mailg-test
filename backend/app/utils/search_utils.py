@@ -162,8 +162,23 @@ def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
         query = query[:start] + ' ' + query[end+1:]
 
     # Handle explicit OR: term1 OR term2
-    # Split by OR and reconstruct pairs
-    parts = re.split(r'\s+OR\s+', query, flags=re.IGNORECASE)
+    # Use case-insensitive string search to split by OR
+    parts = []
+    query_upper = query.upper()
+    start = 0
+
+    while True:
+        # Find next occurrence of " OR " (with spaces)
+        pos = query_upper.find(' OR ', start)
+        if pos == -1:
+            # No more OR found, add remaining part
+            parts.append(query[start:])
+            break
+
+        # Add part before OR
+        parts.append(query[start:pos])
+        # Move past " OR "
+        start = pos + 4
 
     if len(parts) > 1:
         # Process pairs of adjacent parts
