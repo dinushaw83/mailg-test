@@ -128,8 +128,10 @@ def extract_exclusions(query: str) -> Tuple[List[str], str]:
 
 def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
     """Extract OR groups from query.
-    
+
     Handles both explicit OR syntax and brace syntax.
+
+    Uses simple string operations to avoid ReDoS vulnerabilities.
 
     Args:
         query: The search query string
@@ -140,28 +142,45 @@ def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
     Examples:
         extract_or_groups('meeting OR conference') ->
         ([['meeting', 'conference']], '')
-        
+
         extract_or_groups('{urgent important}') ->
         ([['urgent', 'important']], '')
     """
     or_groups = []
 
-    # Handle explicit OR: term1 OR term2
-    # Use specific character class to prevent ReDoS (word chars, dots, hyphens, @)
-    or_matches = re.findall(r'([\w.@\-]+)\s+OR\s+([\w.@\-]+)', query, re.IGNORECASE)
-    for match in or_matches:
-        or_groups.append(list(match))
-    query = re.sub(r'[\w.@\-]+\s+OR\s+[\w.@\-]+', '', query, flags=re.IGNORECASE)
-    
     # Handle brace syntax: {term1 term2 term3}
-    # Limit to alphanumeric, space, underscore, hyphen to prevent ReDoS
-    brace_matches = re.findall(r'\{([\w\s\-]+?)\}', query)
-    for match in brace_matches:
-        terms = match.split()
+    while '{' in query:
+        start = query.find('{')
+        end = query.find('}', start)
+        if end == -1:
+            break
+        content = query[start+1:end]
+        terms = content.split()
         if len(terms) > 1:
             or_groups.append(terms)
-    query = re.sub(r'\{[\w\s\-]+?\}', '', query)
-    return or_groups, query
+        # Remove the brace group from query
+        query = query[:start] + ' ' + query[end+1:]
+
+    # Handle explicit OR: term1 OR term2
+    # Split by OR and reconstruct pairs
+    parts = re.split(r'\s+OR\s+', query, flags=re.IGNORECASE)
+
+    if len(parts) > 1:
+        # Process pairs of adjacent parts
+        for i in range(len(parts) - 1):
+            left_words = parts[i].strip().split()
+            right_words = parts[i+1].strip().split()
+
+            if left_words and right_words:
+                # Take last word from left and first word from right
+                or_groups.append([left_words[-1], right_words[0]])
+                # Remove these words from the parts
+                parts[i] = ' '.join(left_words[:-1]) if len(left_words) > 1 else ''
+                parts[i+1] = ' '.join(right_words[1:]) if len(right_words) > 1 else ''
+
+    # Join remaining parts
+    remaining = ' '.join(p for p in parts if p.strip())
+    return or_groups, remaining
 
 
 def extract_grouped_terms(query: str) -> Tuple[dict, str]:
