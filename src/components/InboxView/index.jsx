@@ -176,7 +176,6 @@ export const EmailContent = ({
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
 
-  console.log({isLastScheduled, lastMessage})
   return (
     <InboxViewContainer isPreview={isPreview}>
       {showActionBar && <ActionBar thread={thread} />}
