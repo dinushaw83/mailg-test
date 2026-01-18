@@ -6,17 +6,20 @@ import { Button } from "@mui/material";
 import EmailRecipients from "../common/EmailRecipients";
 import InfoModal from "../ComposeEmail/InfoModal";
 import RichTextEditor from "../RichTextEditor/RichTextEditor";
+import { deleteEmailThunk } from "../../store/slices/mailSlice";
 import dropdownArrow from "../../icons/dropdownarrow.png";
 import forwardIcon from "../../icons/forward.png";
 import replyAllIcon from "../../icons/replyall.png";
 import replyIcon from "../../icons/reply.png";
+import { useDispatch } from "react-redux";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 import { useSendEmail } from "../../hooks/useSendEmail";
 
-const ReplyContainer = forwardRef(({ email, replyType, currentDraftId, onClose, onUndoDelete }, ref) => {
+const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, onClose, onUndoDelete }, ref) => {
   const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
+  const dispatch = useDispatch();
 
   useImperativeHandle(ref, () => ({
     focusEditor: () => {
@@ -28,10 +31,7 @@ const ReplyContainer = forwardRef(({ email, replyType, currentDraftId, onClose, 
     },
   }));
   const firstLetter = loggedInUser.name.charAt(0);
-  const [selectedReplyOption, setSelectedReplyOption] = useState(replyType);
-  const [subject, setSubject] = useState(`${replyType === "forward" ? "Fwd: " : "Re: "}${email.subject}`);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-
+  
   const calculateRecipients = (type) => {
     const calculatedRecipients = {
       to: type === "forward" ? [] : [email.from.email],
@@ -49,7 +49,39 @@ const ReplyContainer = forwardRef(({ email, replyType, currentDraftId, onClose, 
     return calculatedRecipients;
   };
 
-  const [recipients, setRecipients] = useState(() => calculateRecipients(replyType));
+  const [selectedReplyOption, setSelectedReplyOption] = useState(draft?.replyType || replyType);
+  const [subject, setSubject] = useState(() => {
+    if (draft?.subject) {
+      return draft.subject === "(no subject)" ? "" : draft.subject;
+    }
+    return `${replyType === "forward" ? "Fwd: " : "Re: "}${email.subject}`;
+  });
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Initialize recipients from draft or calculate from replyType
+  const [recipients, setRecipients] = useState(() => {
+    if (draft) {
+      // Handle backend format: recipients array with type field OR transformed to/cc/bcc arrays
+      if (draft.recipients && Array.isArray(draft.recipients)) {
+        // Backend format: recipients array with {id, email, name, type: "to"|"cc"|"bcc"}
+        const to = (draft.recipients.filter((r) => r.type === "to") || []).map((r) => r.email || r.name || "").filter(Boolean);
+        const cc = (draft.recipients.filter((r) => r.type === "cc") || []).map((r) => r.email || r.name || "").filter(Boolean);
+        const bcc = (draft.recipients.filter((r) => r.type === "bcc") || []).map((r) => r.email || r.name || "").filter(Boolean);
+        return { to, cc, bcc };
+      } else {
+        // Transformed format: to/cc/bcc arrays (already converted by emailAPIMapper)
+        const toStrings = (draft.to || []).map((addr) => (typeof addr === "string" ? addr : addr.email || addr.name || ""));
+        const ccStrings = (draft.cc || []).map((addr) => (typeof addr === "string" ? addr : addr.email || addr.name || ""));
+        const bccStrings = (draft.bcc || []).map((addr) => (typeof addr === "string" ? addr : addr.email || addr.name || ""));
+        return {
+          to: toStrings.filter(Boolean),
+          cc: ccStrings.filter(Boolean),
+          bcc: bccStrings.filter(Boolean),
+        };
+      }
+    }
+    return calculateRecipients(replyType);
+  });
 
   // Build forwarded header HTML when forwarding
   const buildForwardedHeader = () => {
@@ -86,7 +118,11 @@ ${email.body}
 </p>`;
   };
 
+  // Initialize content from draft or empty/forward header
   const [content, setContent] = useState(() => {
+    if (draft) {
+      return { html: draft.html_body || draft.body || "", plainText: draft.body || draft.preview || "" };
+    }
     if (replyType === "forward") {
       const forwardedHeader = buildForwardedHeader();
       return { html: forwardedHeader, plainText: forwardedHeader };
@@ -114,9 +150,49 @@ ${email.body}
     replyType: selectedReplyOption,
   });
 
+  // Track if draft has been initially loaded to prevent reset on updates
+  const hasLoadedDraftRef = useRef(false);
+  const lastLoadedDraftIdRef = useRef(null);
+
   // Load an existing draft (e.g., after undo) into the reply UI
   useEffect(() => {
-    if (!currentDraftId) return;
+    // Reset ref if currentDraftId changed (different draft to load)
+    if (currentDraftId !== lastLoadedDraftIdRef.current) {
+      hasLoadedDraftRef.current = false;
+      lastLoadedDraftIdRef.current = currentDraftId;
+    }
+    // If draft prop is provided (from API thread), use it directly as primary source
+    if (draft && currentDraftId === draft.id) {
+      // Only load on initial mount, don't overwrite user's typing on updates
+      if (!hasLoadedDraftRef.current) {
+        // Handle backend format: recipients array with type field OR transformed to/cc/bcc arrays
+        let to, cc, bcc;
+        if (draft.recipients && Array.isArray(draft.recipients)) {
+          // Backend format: recipients array with {id, email, name, type: "to"|"cc"|"bcc"}
+          to = (draft.recipients.filter((r) => r.type === "to") || []).map((r) => r.email || r.name || "").filter(Boolean);
+          cc = (draft.recipients.filter((r) => r.type === "cc") || []).map((r) => r.email || r.name || "").filter(Boolean);
+          bcc = (draft.recipients.filter((r) => r.type === "bcc") || []).map((r) => r.email || r.name || "").filter(Boolean);
+        } else {
+          // Transformed format: to/cc/bcc arrays (already converted by emailAPIMapper)
+          to = (draft.to || []).map((addr) => (typeof addr === "string" ? addr : addr.email || addr.name || "")).filter(Boolean);
+          cc = (draft.cc || []).map((addr) => (typeof addr === "string" ? addr : addr.email || addr.name || "")).filter(Boolean);
+          bcc = (draft.bcc || []).map((addr) => (typeof addr === "string" ? addr : addr.email || addr.name || "")).filter(Boolean);
+        }
+        setRecipients({ to, cc, bcc });
+        setSubject(draft.subject === "(no subject)" ? "" : draft.subject);
+        if (draft.replyType) {
+          setSelectedReplyOption(draft.replyType);
+        }
+        setContent({ html: draft.html_body || draft.body || "", plainText: draft.body || draft.preview || "" });
+        hasLoadedDraftRef.current = true;
+      }
+      return;
+    }
+
+    // Fallback: search in emails context (for drafts loaded from Redux/different sources)
+    // Only load on initial mount, don't overwrite user's typing on updates
+    if (!currentDraftId || hasLoadedDraftRef.current) return;
+    
     const existingDraft = emails.find(
       (e) => e.id?.toString() === currentDraftId?.toString() && e.labels?.includes("Drafts")
     );
@@ -130,8 +206,9 @@ ${email.body}
         setSelectedReplyOption(existingDraft.replyType);
       }
       setContent({ html: existingDraft.body, plainText: existingDraft.preview });
+      hasLoadedDraftRef.current = true;
     }
-  }, [currentDraftId, emails]);
+  }, [currentDraftId, draft, emails]);
 
   useEffect(() => {
     if (currentDraftId && isInitialLoad) {
@@ -273,42 +350,78 @@ ${email.body}
     });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (isDraft && draftId) {
-      // Store the draft data for potential restoration
-      lastDeletedDraftRef.current = {
-        id: draftId,
-        thread_id: email.thread_id,
-        legacyThreadId: email.legacyThreadId,
-        legacyLastMessageId: email.legacyLastMessageId,
-        to: recipientsForDraft.to,
-        cc: recipientsForDraft.cc,
-        bcc: recipientsForDraft.bcc,
-        replyType: selectedReplyOption,
-        subject,
-        content,
-      };
+      // Check if draftId is a UUID (backend ID)
+      const isBackendId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(draftId.toString());
 
-      deleteDraft();
+      if (isBackendId) {
+        // Get thread_id from email prop
+        const thread_id = email?.thread_id;
 
-      setContent({ html: "", plainText: "" });
-      if (onClose) {
-        onClose();
+        // Store draft data for potential restoration
+        lastDeletedDraftRef.current = {
+          id: draftId,
+          thread_id: thread_id,
+          legacyThreadId: email.legacyThreadId,
+          legacyLastMessageId: email.legacyLastMessageId,
+          to: recipientsForDraft.to,
+          cc: recipientsForDraft.cc,
+          bcc: recipientsForDraft.bcc,
+          replyType: selectedReplyOption,
+          subject,
+          content,
+        };
+
+        try {
+          // Delete email via API, passing thread_id for refetch
+          await dispatch(deleteEmailThunk({ emailId: draftId, thread_id })).unwrap();
+
+          // Close reply container
+          setContent({ html: "", plainText: "" });
+          if (onClose) {
+            onClose();
+          }
+
+          // Show "Draft discarded" snackbar
+          setSnackbar({
+            open: true,
+            message: "Draft discarded.",
+            action: (
+              <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
+                Undo
+              </Button>
+            ),
+            autoHideDuration: 4000,
+          });
+        } catch (error) {
+          console.error("Failed to delete draft:", error);
+          setSnackbar({
+            open: true,
+            message: "Failed to delete draft.",
+            autoHideDuration: 3000,
+          });
+        }
+      } else {
+        // Local draft - existing local delete logic
+        deleteDraft();
+        setContent({ html: "", plainText: "" });
+        if (onClose) {
+          onClose();
+        }
+        setSnackbar({
+          open: true,
+          message: "Draft discarded.",
+          action: (
+            <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
+              Undo
+            </Button>
+          ),
+          autoHideDuration: 4000,
+        });
       }
-
-      // Show "Draft discarded" snackbar with undo button
-      setSnackbar({
-        open: true,
-        message: "Draft discarded.",
-        action: (
-          <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
-            Undo
-          </Button>
-        ),
-        autoHideDuration: 4000,
-      });
     } else {
-      // If not a draft, just close
+      // Not a draft - just close
       setContent({ html: "", plainText: "" });
       if (onClose) {
         onClose();
