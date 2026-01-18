@@ -298,6 +298,7 @@ def parse_search_query(query: str, tz_offset: Optional[int] = None) -> dict:
         (r'in:anywhere', ('in_anywhere', True)),
         (r'in:archive', ('in_archive', True)),
         (r'in:snoozed', ('is_snoozed', True)),
+        (r'in:starred', ('is_starred', True)),
         (r'in:(\w+)', 'folder_type'),
         
         # Label and category
