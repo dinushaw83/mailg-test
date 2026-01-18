@@ -233,6 +233,24 @@ const emailService = {
     }
   },
 
+  
+  /**
+   * Create a reply draft
+   * @param {string} emailId - Email UUID to reply to
+   * @param {Object} draftData - Reply draft payload (body, html_body, reply_all)
+   * @returns {Promise<Object>} Backend draft object
+   */
+  createReplyDraft: async (emailId, draftData) => {
+    try {
+      const response = await apiClient.post(`/v1/emails/${emailId}/reply`, draftData);
+      const payload = response?.data?.data ?? response?.data;
+      return payload;
+    } catch (error) {
+      console.error("Error creating reply draft:", error);
+      throw error;
+    }
+  },
+
   /**
    * Update an existing draft
    * @param {string} emailId - Email UUID
@@ -262,6 +280,22 @@ const emailService = {
       return payload;
     } catch (error) {
       console.error("Error canceling send email by ID:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Delete an email by ID
+   * @param {string} emailId - Email UUID
+   * @returns {Promise<Object>} Delete response
+   */
+  deleteEmail: async (emailId) => {
+    try {
+      const response = await apiClient.delete(`/v1/emails/${emailId}?permanent=true`);
+      const payload = response?.data?.data ?? response?.data;
+      return payload;
+    } catch (error) {
+      console.error("Error deleting email:", error);
       throw error;
     }
   },

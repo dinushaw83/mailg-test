@@ -1,5 +1,5 @@
-import { beToFeDraft, feToBeDraftPayload, feToBeDraftUpdatePayload } from "../utils/draftMapper";
-import { createDraftThunk, fetchEmailByIdThunk, setEmailsForCategory, updateDraftThunk } from "../store/slices/mailSlice";
+import { beToFeDraft, feToBeDraftPayload, feToBeDraftUpdatePayload, feToBeReplyDraftPayload } from "../utils/draftMapper";
+import { createDraftThunk, createReplyDraftThunk, fetchEmailByIdThunk, setEmailsForCategory, updateDraftThunk } from "../store/slices/mailSlice";
 import {
   generateLegacyThreadId,
   generateNextIntegerId,
@@ -30,6 +30,8 @@ export const useDraftManagement = ({
   replyType,
   composeWindowId,
   setComposeWindows,
+  isReply = false,
+  replyAll = false,
 }) => {
   const { mailFolders, loggedInUser } = useGlobalContext();
   const emails = mailFolders.drafts || [];
@@ -136,12 +138,26 @@ export const useDraftManagement = ({
         let action;
 
         if (isFirstSave) {
+          // Determine if this is a reply from replyType (if isReply not explicitly set)
+          const isReplyMode = isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
+          const isReplyAllMode = replyAll || (replyType === "replyAll");
+          
           // POST to create new draft
-          const payload = feToBeDraftPayload(to, cc, bcc, subject, content, null);
-          action = await dispatch(createDraftThunk(payload));
+          if (isReplyMode && parentEmail?.id) {
+            // Use reply endpoint for replies - payload only needs body, html_body, reply_all
+            const payload = feToBeReplyDraftPayload(content, isReplyAllMode);
+            action = await dispatch(createReplyDraftThunk({ emailId: parentEmail.id, draftData: payload }));
+          } else {
+            // Use regular draft endpoint for compose emails
+            const payload = feToBeDraftPayload(to, cc, bcc, subject, content, null);
+            action = await dispatch(createDraftThunk(payload));
+          }
         } else {
           // PUT to update existing draft
-          const backendId = backendDraftIdRef.current;
+          // Use currentDraftId if it's a UUID (from backend), otherwise fallback to backendDraftIdRef
+          const backendId = (currentDraftId && isUUID(currentDraftId.toString())) 
+            ? currentDraftId.toString() 
+            : backendDraftIdRef.current;
           if (!backendId) {
             console.warn("Cannot update draft: no backend draft ID");
             return;
@@ -178,7 +194,7 @@ export const useDraftManagement = ({
         }
 
         // Check if thunk was fulfilled
-        if (createDraftThunk.fulfilled.match(action)) {
+        if (createDraftThunk.fulfilled.match(action) || createReplyDraftThunk.fulfilled.match(action)) {
           const backendDraft = action.payload;
           const newBackendId = backendDraft.id;
 
@@ -352,7 +368,7 @@ export const useDraftManagement = ({
           }
 
           // Note: React Query cache invalidation is handled by listeners in reactQueryListeners.js
-        } else if (createDraftThunk.rejected.match(action) || updateDraftThunk.rejected.match(action)) {
+        } else if (createDraftThunk.rejected.match(action) || createReplyDraftThunk.rejected.match(action) || updateDraftThunk.rejected.match(action)) {
           console.error("Error saving draft to backend:", action.payload || action.error);
           // Don't break local save flow - just log the error
         }
@@ -361,7 +377,7 @@ export const useDraftManagement = ({
         // Don't break local save flow - just log the error
       }
     },
-    [to, cc, bcc, subject, content, draftId, composeWindowId, setComposeWindows, dispatch]
+    [to, cc, bcc, subject, content, draftId, composeWindowId, setComposeWindows, dispatch, isReply, parentEmail, replyAll, replyType]
   );
 
   // Create draft email object
@@ -559,6 +575,46 @@ export const useDraftManagement = ({
 
   // Debounced API call - triggers directly on input changes
   useEffect(() => {
+    // Determine if this is first save: no currentDraftId OR currentDraftId is not a UUID (local draft)
+    const isFirstSave = !currentDraftId || !isUUID(currentDraftId.toString());
+
+    // Determine if this is a reply from replyType (if isReply not explicitly set)
+    const isReplyMode = isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
+
+    // For reply drafts on first save, check body content AND valid recipients AND content changed
+    if (isReplyMode && isFirstSave) {
+      const hasBody = content.html.trim().length > 0 || content.plainText.trim().length > 0;
+      const hasValidRecipients =
+        getValidRecipients(to).length > 0 || getValidRecipients(cc).length > 0 || getValidRecipients(bcc).length > 0;
+      
+      // Only create draft if user typed something AND there are valid recipients
+      if (!hasBody || !hasValidRecipients) {
+        return;
+      }
+      
+      // For existing drafts that were already saved, check if content actually changed
+      // This prevents API calls on scroll when content reference changes but values are the same
+      if (lastApiContentRef.current && !hasApiContentChanged()) {
+        return;
+      }
+      
+      // Clear existing API call timeout
+      if (apiCallTimeoutRef.current) {
+        clearTimeout(apiCallTimeoutRef.current);
+      }
+      // 1 second delay for reply drafts
+      apiCallTimeoutRef.current = setTimeout(() => {
+        saveDraftToBackend(isFirstSave);
+      }, 1000);
+      // Cleanup timeout on unmount or dependency change
+      return () => {
+        if (apiCallTimeoutRef.current) {
+          clearTimeout(apiCallTimeoutRef.current);
+        }
+      };
+    }
+
+    // For regular drafts or updates, use existing logic
     // Check if there's content worth saving
     const hasValidRecipients =
       getValidRecipients(to).length > 0 || getValidRecipients(cc).length > 0 || getValidRecipients(bcc).length > 0;
@@ -571,9 +627,6 @@ export const useDraftManagement = ({
     if (!hasContent) {
       return;
     }
-
-    // Determine if this is first save (no draft ID exists)
-    const isFirstSave = isFirstSaveRef.current && !backendDraftIdRef.current;
 
     // For PUT calls (updates), only proceed if content has changed
     if (!isFirstSave && !hasApiContentChanged()) {
@@ -599,7 +652,7 @@ export const useDraftManagement = ({
         clearTimeout(apiCallTimeoutRef.current);
       }
     };
-  }, [to, cc, bcc, subject, content, saveDraftToBackend, hasApiContentChanged]);
+  }, [to, cc, bcc, subject, content,  hasApiContentChanged, isReply, parentEmail, replyAll, replyType, currentDraftId]);
 
   // Initialize previous content reference when form state is loaded for existing draft
   useEffect(() => {

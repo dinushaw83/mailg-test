@@ -282,6 +282,25 @@ export const createDraftThunk = createAsyncThunk("mail/createDraft", async (draf
 });
 
 /**
+ * MUTATION THUNK: Create a reply draft
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const createReplyDraftThunk = createAsyncThunk(
+  "mail/createReplyDraft",
+  async ({ emailId, draftData }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.createReplyDraft(emailId, draftData);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return response;
+    } catch (error) {
+      console.error("❌ Failed to create reply draft:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to create reply draft");
+    }
+  }
+);
+
+/**
  * MUTATION THUNK: Update an existing draft
  * Note: Mutations are called directly (not through React Query fetchQuery)
  * Cache invalidation is handled by RTK listener middleware.
@@ -296,6 +315,28 @@ export const updateDraftThunk = createAsyncThunk(
     } catch (error) {
       console.error("❌ Failed to update draft:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to update draft");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Delete an email by ID
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ * @param {Object} params - Parameters
+ * @param {string} params.emailId - Email UUID
+ * @param {string} params.thread_id - Thread ID for refetching thread after deletion
+ */
+export const deleteEmailThunk = createAsyncThunk(
+  "mail/deleteEmail",
+  async ({ emailId, thread_id }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.deleteEmail(emailId);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { emailId, thread_id, data: response };
+    } catch (error) {
+      console.error("❌ Failed to delete email:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete email");
     }
   }
 );
@@ -588,6 +629,17 @@ const mailSlice = createSlice({
               }
             }
           });
+        }
+      })
+
+      // Delete Email
+      .addCase(deleteEmailThunk.fulfilled, (state, action) => {
+        const emailId = action.payload?.emailId;
+        if (emailId) {
+          // Remove email from drafts array
+          state.drafts = state.drafts.filter(
+            (email) => email.id?.toString() !== emailId?.toString()
+          );
         }
       })
 
