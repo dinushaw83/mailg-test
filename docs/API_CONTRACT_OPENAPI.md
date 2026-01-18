@@ -1534,9 +1534,11 @@ Permissions:
 
 Remove spam mark from multiple emails.
 
-Optimized to use generic bulk update helper with single UPDATE query.
-
-Moves emails from spam folder back to inbox.
+Moves emails from spam folder back to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam
@@ -3067,7 +3069,11 @@ Permissions:
 
 Remove spam mark from an email.
 
-Moves the email from spam folder back to inbox.
+Moves the email from spam folder back to its appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam (sent or received)
@@ -5315,8 +5321,13 @@ Permissions:
 
 Unmark a thread as spam for the current user.
 
-This updates the folder of all user's emails in the thread to INBOX.
-Also removes the Spam system label accordingly.
+This updates the folder of all user's emails in the thread to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
+
+Also replaces the Spam system label with the appropriate label.
 
 **Path Parameters**:
 

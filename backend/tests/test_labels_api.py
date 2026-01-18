@@ -7,6 +7,7 @@ from app.models.email import Email
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.core.constants import FolderType
+from tests.conftest import create_received_email_for_user
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -730,7 +731,7 @@ class TestHierarchicalLabelNames:
         db_session.add(family)
         db_session.commit()
         
-        # Create thread and email with nested label (labels are linked to threads)
+        # Create thread and email with nested label (perspective-aware)
         thread = Thread(
             subject="Family Reunion",
             owner_id=user.id,
@@ -739,15 +740,12 @@ class TestHierarchicalLabelNames:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Family Reunion",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         thread_label = ThreadLabel(thread_id=thread.id, label_id=family.id, user_id=user.id)

@@ -11016,5 +11016,47 @@
     "show_if_unread": false,
     "created_at": "2026-01-08T19:40:13.810362Z",
     "updated_at": "2026-01-08T19:40:13.810362Z"
+  },
+  {
+    "id": "1bae5401-0c2d-4c9b-aed9-9fd7cb258f84",
+    "name": "All Mail",
+    "color": "#e1e3e1",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "parent_id": null,
+    "is_system": true,
+    "is_exclusive": true,
+    "show_in_label_list": true,
+    "show_in_message_list": true,
+    "show_if_unread": false,
+    "created_at": "2026-01-08T17:53:16.009988Z",
+    "updated_at": "2026-01-08T17:53:16.009988Z"
+  },
+  {
+    "id": "fe8bb66f-8f98-46a3-becd-ae391aaaf084",
+    "name": "All Mail",
+    "color": "#e1e3e1",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "parent_id": null,
+    "is_system": true,
+    "is_exclusive": true,
+    "show_in_label_list": true,
+    "show_in_message_list": true,
+    "show_if_unread": false,
+    "created_at": "2026-01-08T17:53:16.009988Z",
+    "updated_at": "2026-01-08T17:53:16.009988Z"
+  },
+  {
+    "id": "d8e60a1b-b2d2-4efa-9871-03a9b0ff931f",
+    "name": "All Mail",
+    "color": "#e1e3e1",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "parent_id": null,
+    "is_system": true,
+    "is_exclusive": true,
+    "show_in_label_list": true,
+    "show_in_message_list": true,
+    "show_if_unread": false,
+    "created_at": "2026-01-08T17:53:16.009988Z",
+    "updated_at": "2026-01-08T17:53:16.009988Z"
   }
 ]

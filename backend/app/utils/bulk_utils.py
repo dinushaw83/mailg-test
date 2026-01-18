@@ -9,12 +9,21 @@ This module provides helper functions for:
 from typing import Callable, Tuple, Dict, List
 from uuid import UUID
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.schemas.bulk import BulkOperationResponse, BulkOperationResult
+from app.core.constants import EmailStatus
+
+# Sender statuses - these emails belong to the sender's perspective
+SENDER_STATUSES = [
+    EmailStatus.DRAFT.value,
+    EmailStatus.QUEUED.value,
+    EmailStatus.SENT.value,
+    EmailStatus.CANCELLED.value,
+]
 
 
 def get_user_accessible_emails(
@@ -23,7 +32,9 @@ def get_user_accessible_emails(
     email_ids: List[UUID]
 ) -> Tuple[List[Email], List[UUID]]:
     """
-    Get emails that the user has access to (sent or received).
+    Get emails that the user has access to from their perspective.
+    
+    Perspective-aware: senders see sent/draft emails, recipients see received emails.
     
     Args:
         db: Database session
@@ -33,15 +44,22 @@ def get_user_accessible_emails(
     Returns:
         Tuple of (accessible emails list, inaccessible email ids list)
     """
-    # Query emails that user can access
-    # Uses same join pattern as search endpoint for consistency
+    # Query emails that user can access (perspective-aware)
     emails = db.query(Email).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
     ).filter(
         Email.id.in_(email_ids),
         or_(
-            Email.sender_id == user_id,
-            EmailRecipient.recipient_id == user_id
+            # Sender's emails (draft/queued/sent/cancelled)
+            and_(
+                Email.sender_id == user_id,
+                Email.status.in_(SENDER_STATUSES)
+            ),
+            # Received emails where user is recipient
+            and_(
+                Email.status == EmailStatus.RECEIVED.value,
+                EmailRecipient.recipient_id == user_id
+            )
         )
     ).distinct().all()
     
@@ -57,7 +75,9 @@ def get_user_accessible_threads(
     thread_ids: List[UUID]
 ) -> Tuple[List[Thread], List[UUID]]:
     """
-    Get threads that the user has access to (sent or received emails in).
+    Get threads that the user has access to from their perspective.
+    
+    Perspective-aware: only threads with emails the user "owns" from their perspective.
     
     Args:
         db: Database session
@@ -67,15 +87,22 @@ def get_user_accessible_threads(
     Returns:
         Tuple of (accessible threads list, inaccessible thread ids list)
     """
-    # Find thread IDs where user has sent or received emails
-    # Uses same join pattern as search endpoint for consistency
+    # Find thread IDs where user has emails from their perspective
     accessible_thread_ids = db.query(Email.thread_id).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
     ).filter(
         Email.thread_id.in_(thread_ids),
         or_(
-            Email.sender_id == user_id,
-            EmailRecipient.recipient_id == user_id
+            # Sender's emails (draft/queued/sent/cancelled)
+            and_(
+                Email.sender_id == user_id,
+                Email.status.in_(SENDER_STATUSES)
+            ),
+            # Received emails where user is recipient
+            and_(
+                Email.status == EmailStatus.RECEIVED.value,
+                EmailRecipient.recipient_id == user_id
+            )
         )
     ).distinct().all()
     
@@ -131,7 +158,7 @@ def bulk_update_emails_with_threads(
     label_operation: Callable[[List[UUID]], None] = None,
     additional_filters: List = None
 ) -> Tuple[List[UUID], List[UUID], Dict[UUID, str]]:
-    """Generic bulk email update with thread label support.
+    """Generic bulk email update with thread label support (perspective-aware).
 
     This is the core pattern used by most bulk operations:
     1. Get accessible email IDs and thread IDs in single query
@@ -149,15 +176,22 @@ def bulk_update_emails_with_threads(
     Returns:
         Tuple of (success_email_ids, thread_ids, failures_dict)
     """
-    # Build query to get accessible emails with their thread IDs
-    # Uses same join pattern as search endpoint for consistency
+    # Build query to get accessible emails with their thread IDs (perspective-aware)
     query = db.query(Email.id, Email.thread_id).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
     ).filter(
         Email.id.in_(email_ids),
         or_(
-            Email.sender_id == user_id,
-            EmailRecipient.recipient_id == user_id
+            # Sender's emails (draft/queued/sent/cancelled)
+            and_(
+                Email.sender_id == user_id,
+                Email.status.in_(SENDER_STATUSES)
+            ),
+            # Received emails where user is recipient
+            and_(
+                Email.status == EmailStatus.RECEIVED.value,
+                EmailRecipient.recipient_id == user_id
+            )
         )
     )
 
