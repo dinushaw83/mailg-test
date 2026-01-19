@@ -29,6 +29,29 @@ const TimestampBox = styled(Box)`
   }
 `;
 
+// Styled component for "Snoozed email" indicator (same color as star)
+const SnoozedEmailIndicator = styled("span")`
+  color: #f4b400;
+  font-size: 0.75rem;
+  font-weight: 500;
+`;
+
+// Helper to check if an email has recently returned from snooze
+// Shows badge for 5 minutes after snooze expires, then disappears automatically
+const hasRecentlyExpiredSnooze = (email) => {
+  const snoozeTime = email?.snooze_until || email?.snoozeUntil;
+  if (!snoozeTime) return false;
+  
+  const snoozeDate = new Date(snoozeTime);
+  if (isNaN(snoozeDate.getTime())) return false;
+  
+  const now = new Date();
+  const fiveMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
+  
+  // Show badge if snooze expired within the last 5 minutes
+  return snoozeDate <= now && snoozeDate >= fiveMinutesAgo;
+};
+
 const HoverDiv = styled.div`
   display: none;
   align-items: center;
@@ -88,6 +111,7 @@ const OneColumnData = ({
   toggleImportant,
   density,
   height = "60px",
+  folder,
 }) => {
   return (
     <td className="xY" style={{ width: "90%", height }}>
@@ -137,7 +161,11 @@ const OneColumnData = ({
                 fontSize: "0.75rem",
               }}
             >
-              <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+              {hasRecentlyExpiredSnooze(email) && folder === "inbox" ? (
+                <SnoozedEmailIndicator>Snoozed email</SnoozedEmailIndicator>
+              ) : (
+                <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+              )}
             </span>
           </Box>
         </Box>
@@ -861,6 +889,7 @@ const Table = ({
                     toggleStar={() => handleStar([email.id], email.is_starred, [email.thread_id])}
                     toggleImportant={() => handleImportant([email.id], email.is_important, [email.thread_id])}
                     density={density}
+                    folder={folder}
                   />
                 ) : (
                   <>
@@ -1104,7 +1133,11 @@ const Table = ({
                           id={`:pu${index}`}
                           aria-label={new Date(email.timestamp).toLocaleString()}
                         >
-                          <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                          {hasRecentlyExpiredSnooze(email) && folder === "inbox" ? (
+                            <SnoozedEmailIndicator>Snoozed email</SnoozedEmailIndicator>
+                          ) : (
+                            <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                          )}
                         </span>
                       </TimestampBox>
                       <HoverDiv>

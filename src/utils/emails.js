@@ -652,6 +652,9 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
       attachments: last.attachments || [],
       embeddedImages: last.embeddedImages || [],
       label,
+
+      // Snooze info
+      snooze_until: last.snooze_until || first.snooze_until,
     };
   });
 
