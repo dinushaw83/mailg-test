@@ -24,6 +24,7 @@ from app.core.constants import (
     CategoryLabel,
     FolderType,
     EXCLUSIVE_SYSTEM_LABELS,
+    MUTUALLY_EXCLUSIVE_FOLDER_LABELS,
 )
 
 
@@ -197,23 +198,24 @@ def replace_exclusive_labels(
     Returns:
         True if successful
     """
-    # Get exclusive label names from the enum set
-    exclusive_label_names = [sl.value for sl in EXCLUSIVE_SYSTEM_LABELS]
+    # Get mutually exclusive folder label names
+    # This ensures Starred/Snoozed/Important persist across folder changes
+    folder_label_names = [sl.value for sl in MUTUALLY_EXCLUSIVE_FOLDER_LABELS]
     
-    # Get all user's system labels that are exclusive
-    exclusive_label_ids = db.query(Label.id).filter(
+    # Get all user's mutually exclusive folder labels
+    folder_label_ids = db.query(Label.id).filter(
         Label.owner_id == user_id,
-        Label.name.in_(exclusive_label_names),
+        Label.name.in_(folder_label_names),
         Label.is_system == True
     ).all()
     
-    exclusive_ids = [lid[0] for lid in exclusive_label_ids]
+    folder_ids = [lid[0] for lid in folder_label_ids]
     
-    # Remove all exclusive labels from thread
-    if exclusive_ids:
+    # Remove all mutually exclusive folder labels from thread
+    if folder_ids:
         db.query(ThreadLabel).filter(
             ThreadLabel.thread_id == thread_id,
-            ThreadLabel.label_id.in_(exclusive_ids),
+            ThreadLabel.label_id.in_(folder_ids),
             ThreadLabel.user_id == user_id
         ).delete(synchronize_session=False)
     
@@ -582,23 +584,24 @@ def bulk_replace_exclusive_labels(
     if not thread_ids:
         return 0
 
-    # Get exclusive label names from the enum set
-    exclusive_label_names = [sl.value for sl in EXCLUSIVE_SYSTEM_LABELS]
+    # Get mutually exclusive folder label names
+    # This ensures Starred/Snoozed/Important persist across folder changes
+    folder_label_names = [sl.value for sl in MUTUALLY_EXCLUSIVE_FOLDER_LABELS]
 
-    # Get all user's system labels that are exclusive
-    exclusive_label_ids = db.query(Label.id).filter(
+    # Get all user's mutually exclusive folder labels
+    folder_label_ids = db.query(Label.id).filter(
         Label.owner_id == user_id,
-        Label.name.in_(exclusive_label_names),
+        Label.name.in_(folder_label_names),
         Label.is_system == True
     ).all()
 
-    exclusive_ids = [lid[0] for lid in exclusive_label_ids]
+    folder_ids = [lid[0] for lid in folder_label_ids]
 
-    # Remove all exclusive labels from threads
-    if exclusive_ids:
+    # Remove all mutually exclusive folder labels from threads
+    if folder_ids:
         db.query(ThreadLabel).filter(
             ThreadLabel.thread_id.in_(thread_ids),
-            ThreadLabel.label_id.in_(exclusive_ids),
+            ThreadLabel.label_id.in_(folder_ids),
             ThreadLabel.user_id == user_id
         ).delete(synchronize_session=False)
 

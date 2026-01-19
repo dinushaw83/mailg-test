@@ -314,9 +314,9 @@ def create_system_labels_for_user(db_session, user_id):
     # System labels to create (if not already existing)
     all_labels = [
         (SystemLabel.INBOX.value, True),
-        (SystemLabel.STARRED.value, False),
-        (SystemLabel.SNOOZED.value, False),
-        (SystemLabel.IMPORTANT.value, False),
+        (SystemLabel.STARRED.value, True),
+        (SystemLabel.SNOOZED.value, True),
+        (SystemLabel.IMPORTANT.value, True),
         (SystemLabel.SENT.value, True),
         (SystemLabel.SCHEDULED.value, True),
         (SystemLabel.DRAFTS.value, True),
