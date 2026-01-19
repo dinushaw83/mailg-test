@@ -26,7 +26,6 @@ import {
   bulkUnsnoozeThreadsThunk,
   moveToTrashThunk,
   moveToSpamThunk,
-  deleteEmailThunk,
 } from "../slices/mailSlice";
 import { logout, setAuth } from "../slices/userSlice";
 

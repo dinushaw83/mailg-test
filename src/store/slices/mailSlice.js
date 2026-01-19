@@ -458,19 +458,6 @@ export const moveToSpamThunk = createAsyncThunk("mail/moveToSpam", async ({ emai
   }
 });
 
-/**
- * MUTATION THUNK: Permanently delete email
- */
-export const deleteEmailThunk = createAsyncThunk("mail/deleteEmail", async ({ emailId }, { rejectWithValue }) => {
-  try {
-    const response = await emailService.deleteEmail(emailId);
-    return { emailId, response };
-  } catch (error) {
-    console.error("Failed to delete email:", error);
-    return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete email");
-  }
-});
-
 /* ────────────────────────────────────────────────────────────────────────────
  * BULK OPERATION THUNKS
  * ────────────────────────────────────────────────────────────────────────── */
