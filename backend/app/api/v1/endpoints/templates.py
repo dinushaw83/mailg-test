@@ -221,9 +221,17 @@ def update_template(
     
     # Apply updates
     update_data = template_data.model_dump(exclude_unset=True)
+
+    # Validate that at least one field is being updated
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one field must be provided for update"
+        )
+
     for field, value in update_data.items():
         setattr(template, field, value)
-    
+
     try:
         db.commit()
         db.refresh(template)
