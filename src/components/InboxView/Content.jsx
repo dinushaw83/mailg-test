@@ -231,15 +231,11 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
   // Manage important state locally as well
   const [isImportant, setIsImportant] = useState(email?.is_important || false);
 
-  // Sync local starred state when email prop changes
+  // Sync local starred and important states when email prop changes
   useEffect(() => {
     setIsStarred(email?.is_starred || false);
-  }, [email?.id, email?.is_starred]);
-
-  // Sync local important state when email prop changes
-  useEffect(() => {
     setIsImportant(email?.is_important || false);
-  }, [email?.id, email?.is_important]);
+  }, [email?.id, email?.is_starred, email?.is_important]);
 
   const senderContact = useMemo(() => {
     // Check if sender email is of logged in user
