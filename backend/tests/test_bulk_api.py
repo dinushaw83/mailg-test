@@ -4,11 +4,69 @@ import pytest
 import uuid
 from datetime import UTC, datetime, timedelta
 from app.models.email import Email
+from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
-from app.core.constants import FolderType
+from app.core.constants import FolderType, EmailStatus
 from app.models.label import Label
 from app.models.thread_label import ThreadLabel
 from app.models.user import User
+
+
+def create_received_email_for_user(db_session, user, subject="Test Email", body="Body", is_read=False, is_starred=False, folder=FolderType.INBOX.value, sender=None):
+    """Helper to create a properly perspective-aware received email for a user.
+    
+    Creates an email with status='received' and an EmailRecipient record
+    linking the email to the user as a recipient.
+    """
+    if sender is None:
+        # Create a dummy sender
+        sender = User(
+            email=f"sender_{uuid.uuid4().hex[:8]}@test.com",
+            first_name="Sender",
+            last_name="User",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+    
+    email = Email(
+        subject=subject,
+        body=body,
+        status=EmailStatus.RECEIVED.value,
+        is_read=is_read,
+        is_starred=is_starred,
+        sender_id=sender.id,
+        folder=folder
+    )
+    db_session.add(email)
+    db_session.flush()
+    
+    # Add recipient record for the user
+    recipient = EmailRecipient(
+        email_id=email.id,
+        recipient_id=user.id,
+        recipient_email=user.email,
+        recipient_name=f"{user.first_name} {user.last_name}",
+        recipient_type="to"
+    )
+    db_session.add(recipient)
+    
+    return email
+
+
+def create_sent_email_for_user(db_session, user, subject="Test Email", body="Body", is_read=True, is_starred=False, folder=FolderType.SENT.value):
+    """Helper to create a properly perspective-aware sent email for a user."""
+    email = Email(
+        subject=subject,
+        body=body,
+        status=EmailStatus.SENT.value,
+        is_read=is_read,
+        is_starred=is_starred,
+        sender_id=user.id,
+        folder=folder
+    )
+    db_session.add(email)
+    return email
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -23,18 +81,15 @@ class TestBulkRead:
         """Test marking multiple emails as read."""
         client, token, user = client_with_auth
         
-        # Create multiple unread emails
+        # Create multiple unread received emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
-                subject=f"Email {i}",
+            email = create_received_email_for_user(
+                db_session, user, 
+                subject=f"Email {i}", 
                 body=f"Body {i}",
-                status="received",
-                is_read=False,
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
+                is_read=False
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -61,18 +116,15 @@ class TestBulkRead:
         """Test marking multiple emails as unread."""
         client, token, user = client_with_auth
         
-        # Create multiple read emails
+        # Create multiple read received emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Email {i}",
                 body=f"Body {i}",
-                status="received",
-                is_read=True,
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
+                is_read=True
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -97,16 +149,13 @@ class TestBulkRead:
         """Test bulk read with some invalid email IDs."""
         client, token, user = client_with_auth
         
-        # Create one valid email
-        email = Email(
+        # Create one valid received email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Valid Email",
             body="Body",
-            status="received",
-            is_read=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value
+            is_read=False
         )
-        db_session.add(email)
         db_session.commit()
         
         # Mix valid and invalid IDs
@@ -153,18 +202,15 @@ class TestBulkStar:
         """Test starring multiple emails."""
         client, token, user = client_with_auth
         
-        # Create multiple unstarred emails
+        # Create multiple unstarred received emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Email {i}",
                 body=f"Body {i}",
-                status="received",
-                is_starred=False,
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
+                is_starred=False
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -189,18 +235,15 @@ class TestBulkStar:
         """Test unstarring multiple emails."""
         client, token, user = client_with_auth
         
-        # Create multiple starred emails
+        # Create multiple starred received emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Email {i}",
                 body=f"Body {i}",
-                status="received",
-                is_starred=True,
-                sender_id=user.id,
-                folder=FolderType.INBOX.value
+                is_starred=True
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -224,17 +267,15 @@ class TestBulkMove:
         """Test moving multiple emails to a folder."""
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple received emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Email {i}",
                 body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
                 folder=FolderType.INBOX.value
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -259,15 +300,13 @@ class TestBulkMove:
         """Test bulk move to invalid folder fails."""
         client, token, user = client_with_auth
         
-        # Create an email
-        email = Email(
+        # Create a received email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Test Email",
             body="Body",
-            status="received",
-            sender_id=user.id,
             folder=FolderType.INBOX.value
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.post(
@@ -286,17 +325,15 @@ class TestBulkDelete:
         """Test deleting multiple emails (moves to trash)."""
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple received emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Email {i}",
                 body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
                 folder=FolderType.INBOX.value
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -321,17 +358,15 @@ class TestBulkDelete:
         """Test permanently deleting multiple emails."""
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple received emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Email {i}",
                 body=f"Body {i}",
-                status="received",
-                sender_id=user.id,
                 folder=FolderType.INBOX.value
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -795,13 +830,13 @@ class TestBulkAccessControl:
         db_session.add(other_user)
         db_session.commit()
         
-        # Create email owned by other user
+        # Create email owned by other user (as sender of a sent email)
         other_email = Email(
             subject="Other's Email",
             body="Body",
-            status="received",
+            status=EmailStatus.SENT.value,
             sender_id=other_user.id,
-            folder=FolderType.INBOX.value
+            folder=FolderType.SENT.value
         )
         db_session.add(other_email)
         db_session.commit()
@@ -823,15 +858,13 @@ class TestBulkAccessControl:
         """Test that bulk response has correct structure."""
         client, token, user = client_with_auth
         
-        # Create an email
-        email = Email(
+        # Create a received email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Test Email",
             body="Body",
-            status="received",
-            sender_id=user.id,
             folder=FolderType.INBOX.value
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.post(

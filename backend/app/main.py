@@ -18,6 +18,7 @@ from app.tasks.cleanup import cleanup_old_databases
 from app.tasks.scheduled_sender import process_scheduled_emails
 from app.api.v1.router import router as v1_router
 from app.api.v1.endpoints import ingestion
+from app.api.v1.endpoints import instrumentation
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,7 @@ async def lifespan(app: FastAPI):
 
     try:
         initialize_template_Database()
+        instrumentation.initialize(app)
     except Exception as e:
         # Log error but continue - cleanup task must always run
         logger.error(f"Failed to initialize database: {e}")
@@ -82,7 +84,7 @@ register_exception_handlers(app)
 app.include_router(v1_router, prefix=API_V1_PREFIX)
 
 app.include_router(ingestion.router, prefix=API_V1_PREFIX, tags=["ingestion"], include_in_schema=False)
-
+app.include_router(instrumentation.router, prefix=API_V1_PREFIX, tags=["instrumentation"], include_in_schema=False)
 
 
 @app.get("/")

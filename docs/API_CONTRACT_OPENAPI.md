@@ -1534,9 +1534,11 @@ Permissions:
 
 Remove spam mark from multiple emails.
 
-Optimized to use generic bulk update helper with single UPDATE query.
-
-Moves emails from spam folder back to inbox.
+Moves emails from spam folder back to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam
@@ -3067,7 +3069,11 @@ Permissions:
 
 Remove spam mark from an email.
 
-Moves the email from spam folder back to inbox.
+Moves the email from spam folder back to its appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam (sent or received)
@@ -3139,10 +3145,10 @@ Permissions:
 
 **GET** `/api/v1/labels`
 
-List user's labels with thread counts.
+List user's labels with thread and unread counts.
 
 Args:
-    include_counts: Include thread counts for each label
+    include_counts: Include thread counts and unread counts for each label
     flat: If True, returns flat list. If False, returns hierarchical tree structure.
 
 Permissions:
@@ -3150,7 +3156,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include thread counts
+- `include_counts` (optional, boolean): Include thread and unread counts
 - `flat` (optional, boolean): Return flat list (True) or hierarchical tree (False)
 
 **Responses**:
@@ -3279,7 +3285,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include thread counts
+- `include_counts` (optional, boolean): Include thread and unread counts
 
 **Responses**:
 
@@ -3393,7 +3399,7 @@ Permissions:
 
 **GET** `/api/v1/labels/{label_id}`
 
-Get a specific label by ID.
+Get a specific label by ID with thread and unread counts.
 
 Permissions:
 - Users can only access their own labels
@@ -5315,8 +5321,13 @@ Permissions:
 
 Unmark a thread as spam for the current user.
 
-This updates the folder of all user's emails in the thread to INBOX.
-Also removes the Spam system label accordingly.
+This updates the folder of all user's emails in the thread to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
+
+Also replaces the Spam system label with the appropriate label.
 
 **Path Parameters**:
 

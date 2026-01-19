@@ -439,7 +439,6 @@ mailg:
     - VITE_RUN_MODE=localstorage
     # OpenTelemetry configuration (NEW)
     - VITE_ENABLE_INSTRUMENTATION=${VITE_ENABLE_INSTRUMENTATION:-false}
-    - VITE_OTEL_COLLECTOR_URL=${VITE_OTEL_COLLECTOR_URL:-http://localhost:4318}
   networks:
     - mailg-network
   restart: unless-stopped
@@ -453,7 +452,6 @@ mailg:
 
 **Changes Made**:
 - Added `VITE_ENABLE_INSTRUMENTATION` - Controls frontend telemetry
-- Added `VITE_OTEL_COLLECTOR_URL` - OTEL Collector endpoint
 - Added `networks: mailg-network` - For service discovery
 
 ---
@@ -824,7 +822,6 @@ npm install
 
 // Check if instrumentation is enabled via environment variable
 const ENABLE_INSTRUMENTATION = import.meta.env.VITE_ENABLE_INSTRUMENTATION === "true";
-const OTEL_COLLECTOR_URL = import.meta.env.VITE_OTEL_COLLECTOR_URL || "http://localhost:4318";
 
 /**
  * Initialize OpenTelemetry instrumentation for the frontend.
@@ -856,7 +853,7 @@ async function initTelemetry() {
 
     // Setup metrics exporter
     const metricExporter = new OTLPMetricExporter({
-      url: `${OTEL_COLLECTOR_URL}/v1/metrics`,
+      url: `${OTEL_COLLECTOR_URL}`,
     });
 
     const meterProvider = new MeterProvider({
@@ -1264,10 +1261,9 @@ Located in `instrumentation/grafana/dashboards/`:
 
 ### Frontend
 
-| Variable | Default | Description |
-|----------|---------|-------------|
+| Variable                      | Default | Description |
+|-------------------------------|---------|-------------|
 | `VITE_ENABLE_INSTRUMENTATION` | `false` | Enable frontend telemetry |
-| `VITE_OTEL_COLLECTOR_URL` | `http://localhost:4318` | OTEL Collector URL |
 
 ### Grafana
 

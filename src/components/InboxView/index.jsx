@@ -316,7 +316,7 @@ export const EmailContent = ({
   const { messageIds } = thread;
   const messages = messageIds.map((id) => messagesById[id]);
   const lastMessage = messages[messages.length - 1];
-  const isLastDraft = hasLabel(lastMessage?.labels, "Drafts");
+  const isLastDraft = lastMessage?.folder === "drafts";
   const isLastScheduled = hasLabel(lastMessage?.labels, "Scheduled");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
   const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
@@ -345,6 +345,7 @@ export const EmailContent = ({
             return (
               <React.Fragment key={message.id}>
                 <Content
+                  id={JSON.stringify(message.id)}
                   body={message.body}
                   timestamp={message.timestamp}
                   senderName={message.from.name}
@@ -538,6 +539,7 @@ const InboxView = () => {
   return (
     <DetailContainer>
       <EmailContent
+        id={thread_id}
         thread_id={thread_id}
         folder={folder}
         label={label}

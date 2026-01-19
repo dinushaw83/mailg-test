@@ -29,7 +29,7 @@ class LabelUpdate(BaseModel):
 class LabelResponse(BaseModel):
     """Schema for label response."""
     model_config = {"from_attributes": True}
-    
+
     id: UUID
     name: str
     color: Optional[str] = None
@@ -43,12 +43,13 @@ class LabelResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     thread_count: int = 0
+    unread_count: int = 0
 
 
 class LabelListResponse(BaseModel):
     """Label info for list responses."""
     model_config = {"from_attributes": True}
-    
+
     id: UUID
     name: str
     full_name: Optional[str] = None  # Hierarchical name (e.g., "parent/child/grandchild")
@@ -63,12 +64,13 @@ class LabelListResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     thread_count: int = 0
+    unread_count: int = 0
 
 
 class LabelTreeResponse(BaseModel):
     """Hierarchical label response with nested children."""
     model_config = {"from_attributes": True}
-    
+
     id: UUID
     name: str
     color: Optional[str] = None
@@ -82,6 +84,7 @@ class LabelTreeResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     thread_count: int = 0
+    unread_count: int = 0
     children: List["LabelTreeResponse"] = []
 
 

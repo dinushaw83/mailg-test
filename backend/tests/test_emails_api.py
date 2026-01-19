@@ -7,7 +7,8 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.user import User
-from app.core.constants import FolderType
+from app.core.constants import FolderType, EmailStatus
+from tests.conftest import create_received_email_for_user, create_sent_email_for_user
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -81,16 +82,9 @@ class TestEmailList:
         """Test listing emails with pagination."""
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple emails (perspective-aware)
         for i in range(5):
-            email = Email(
-                subject=f"Email {i}",
-                body=f"Body {i}",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-            )
-            db_session.add(email)
+            create_received_email_for_user(db_session, user, subject=f"Email {i}", body=f"Body {i}")
         db_session.commit()
         
         response = client.get(
@@ -119,12 +113,9 @@ class TestEmailList:
         """Test filtering unread emails."""
         client, token, user = client_with_auth
         
-        # Create emails with different read status
-        email1 = Email(subject="Read", body="Content", status="received", folder=FolderType.INBOX.value,
-                       is_read=True, sender_id=user.id)
-        email2 = Email(subject="Unread", body="Content", status="received", folder=FolderType.INBOX.value,
-                       is_read=False, sender_id=user.id)
-        db_session.add_all([email1, email2])
+        # Create emails with different read status (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Read", body="Content", is_read=True)
+        email2 = create_received_email_for_user(db_session, user, subject="Unread", body="Content", is_read=False)
         db_session.commit()
         
         response = client.get(
@@ -150,19 +141,18 @@ class TestEmailList:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create emails in the thread
-        email1 = Email(subject="Thread Email 1", body="First message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Re: Thread Email 1", body="Reply message", status="sent",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email3 = Email(subject="Re: Thread Email 1", body="Another reply", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
+        # Create emails in the thread - properly perspective-aware
+        email1 = create_received_email_for_user(db_session, user, subject="Thread Email 1", 
+                                                body="First message", thread=thread)
+        email2 = create_sent_email_for_user(db_session, user, subject="Re: Thread Email 1",
+                                            body="Reply message", folder=FolderType.SENT.value, thread=thread)
+        email3 = create_received_email_for_user(db_session, user, subject="Re: Thread Email 1", 
+                                                body="Another reply", thread=thread)
         
-        # Create an email NOT in the thread
-        email_other = Email(subject="Other Email", body="Not in thread", status="received",
-                            sender_id=user.id, folder=FolderType.INBOX.value, thread_id=None)
+        # Create an email NOT in the thread (as sent by user - perspective-aware)
+        email_other = create_sent_email_for_user(db_session, user, subject="Other Email",
+                                                  body="Not in thread")
         
-        db_session.add_all([email1, email2, email3, email_other])
         db_session.commit()
         
         # Filter by thread_id
@@ -198,17 +188,14 @@ class TestThreadEmailCount:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create 3 emails in the thread
+        # Create 3 emails in the thread (perspective-aware)
         for i in range(3):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread Email {i}",
                 body=f"Content {i}",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread.id
+                thread=thread
             )
-            db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -228,16 +215,9 @@ class TestThreadEmailCount:
         """Test that emails without a thread have null thread_email_count."""
         client, token, user = client_with_auth
         
-        # Create an email without a thread
-        email = Email(
-            subject="No Thread Email",
-            body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=None
-        )
-        db_session.add(email)
+        # Create a sent email without a thread (perspective-aware - use sent status)
+        email = create_sent_email_for_user(db_session, user, subject="No Thread Email", body="Content")
+        email.thread_id = None
         db_session.commit()
         
         response = client.get(
@@ -269,18 +249,15 @@ class TestThreadEmailCount:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create 5 emails in the thread
+        # Create 5 emails in the thread - perspective-aware
         for i in range(5):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread Email {i}",
                 body=f"Content {i}",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread.id,
-                sent_at=datetime.now(UTC) - timedelta(hours=5-i)
+                thread=thread
             )
-            db_session.add(email)
+            email.sent_at = datetime.now(UTC) - timedelta(hours=5-i)
         db_session.commit()
         
         # Use threaded mode to get only latest email per thread
@@ -401,29 +378,23 @@ class TestThreadEmailCount:
         db_session.refresh(thread1)
         db_session.refresh(thread2)
         
-        # Create 2 emails in thread 1
+        # Create 2 emails in thread 1 (perspective-aware)
         for i in range(2):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread1 Email {i}",
                 body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread1.id
+                thread=thread1
             )
-            db_session.add(email)
         
-        # Create 4 emails in thread 2
+        # Create 4 emails in thread 2 (perspective-aware)
         for i in range(4):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread2 Email {i}",
                 body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread2.id
+                thread=thread2
             )
-            db_session.add(email)
         
         db_session.commit()
         
@@ -462,12 +433,11 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create emails in the thread
-        email1 = Email(subject="Thread Email 1", body="First message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Re: Thread Email 1", body="Reply", status="sent",
-                       sender_id=user.id, folder=FolderType.SENT.value, thread_id=thread.id)
-        db_session.add_all([email1, email2])
+        # Create emails in the thread (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Thread Email 1", 
+                                                body="First message", thread=thread)
+        email2 = create_sent_email_for_user(db_session, user, subject="Re: Thread Email 1",
+                                            body="Reply", folder=FolderType.SENT.value, thread=thread)
         db_session.commit()
         
         response = client.get(
@@ -497,14 +467,13 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create unread emails in the thread
-        email1 = Email(subject="Unread 1", body="First", status="received", is_read=False,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Unread 2", body="Second", status="received", is_read=False,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email3 = Email(subject="Already Read", body="Third", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        db_session.add_all([email1, email2, email3])
+        # Create unread emails in the thread (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Unread 1", 
+                                                body="First", is_read=False, thread=thread)
+        email2 = create_received_email_for_user(db_session, user, subject="Unread 2",
+                                                body="Second", is_read=False, thread=thread)
+        email3 = create_received_email_for_user(db_session, user, subject="Already Read",
+                                                body="Third", is_read=True, thread=thread)
         db_session.commit()
         
         email1_id, email2_id = email1.id, email2.id
@@ -550,12 +519,11 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create already read emails
-        email1 = Email(subject="Read 1", body="First", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Read 2", body="Second", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        db_session.add_all([email1, email2])
+        # Create already read emails (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Read 1",
+                                                body="First", is_read=True, thread=thread)
+        email2 = create_received_email_for_user(db_session, user, subject="Read 2",
+                                                body="Second", is_read=True, thread=thread)
         db_session.commit()
         
         with patch('app.api.v1.endpoints.threads.mark_emails_as_read_background') as mock_mark_read:
@@ -587,12 +555,11 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create already read emails
-        email1 = Email(subject="Read 1", body="First", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Read 2", body="Second", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        db_session.add_all([email1, email2])
+        # Create already read emails (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Read 1",
+                                                body="First", is_read=True, thread=thread)
+        email2 = create_received_email_for_user(db_session, user, subject="Read 2",
+                                                body="Second", is_read=True, thread=thread)
         db_session.commit()
         
         response = client.get(
@@ -703,17 +670,16 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create emails with different timestamps
-        email1 = Email(subject="First", body="First message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
-                       sent_at=datetime.now(UTC) - timedelta(hours=2))
-        email2 = Email(subject="Second", body="Second message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
-                       sent_at=datetime.now(UTC) - timedelta(hours=1))
-        email3 = Email(subject="Third", body="Third message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
-                       sent_at=datetime.now(UTC))
-        db_session.add_all([email3, email1, email2])  # Add in wrong order
+        # Create emails with different timestamps (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="First",
+                                                body="First message", thread=thread)
+        email1.sent_at = datetime.now(UTC) - timedelta(hours=2)
+        email2 = create_received_email_for_user(db_session, user, subject="Second",
+                                                body="Second message", thread=thread)
+        email2.sent_at = datetime.now(UTC) - timedelta(hours=1)
+        email3 = create_received_email_for_user(db_session, user, subject="Third",
+                                                body="Third message", thread=thread)
+        email3.sent_at = datetime.now(UTC)
         db_session.commit()
         
         response = client.get(
@@ -734,12 +700,11 @@ class TestGetEmailsByThread:
         from unittest.mock import patch, MagicMock
         from app.utils.email_utils import mark_emails_as_read_background
         
-        # Create test emails
-        email1 = Email(subject="Email 1", body="Content", status="received", is_read=False,
-                       sender_id=sample_user.id, folder=FolderType.INBOX.value)
-        email2 = Email(subject="Email 2", body="Content", status="received", is_read=False,
-                       sender_id=sample_user.id, folder=FolderType.INBOX.value)
-        db_session.add_all([email1, email2])
+        # Create test emails (perspective-aware)
+        email1 = create_received_email_for_user(db_session, sample_user, subject="Email 1",
+                                                body="Content", is_read=False)
+        email2 = create_received_email_for_user(db_session, sample_user, subject="Email 2",
+                                                body="Content", is_read=False)
         db_session.commit()
         
         email_ids = [email1.id, email2.id]
@@ -1315,9 +1280,10 @@ class TestEmailSendReplyForward:
         data = response.json()["data"]
         
         # Forwarded email should be queued when undo send is enabled
+        # but goes to sent folder (not scheduled) since no explicit schedule param
         assert data["scheduled_send_at"] is not None
         assert data["can_undo_send"] == True
-        assert data["folder"] == "scheduled"
+        assert data["folder"] == "sent"
 
     def test_forward_email_without_undo_send(self, client_with_auth, db_session, sample_email):
         """Test that forwarding an email is immediate when undo_send is disabled.
@@ -1485,15 +1451,13 @@ class TestThreadSnooze:
         db_session.add(snoozed_thread)
         db_session.flush()
         
-        snoozed_email = Email(
+        # Create perspective-aware email
+        snoozed_email = create_received_email_for_user(
+            db_session, user,
             subject="Snoozed Email",
             body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=snoozed_thread.id
+            thread=snoozed_thread
         )
-        db_session.add(snoozed_email)
         db_session.flush()
         
         # Set snooze at thread level via ThreadUserMetadata
@@ -1514,15 +1478,13 @@ class TestThreadSnooze:
         db_session.add(normal_thread)
         db_session.flush()
         
-        normal_email = Email(
+        # Create perspective-aware email
+        normal_email = create_received_email_for_user(
+            db_session, user,
             subject="Normal Email",
             body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=normal_thread.id
+            thread=normal_thread
         )
-        db_session.add(normal_email)
         db_session.commit()
         
         # Test is_snoozed=true filter
@@ -1557,15 +1519,13 @@ class TestThreadSnooze:
         db_session.add(snoozed_thread)
         db_session.flush()
         
-        snoozed_email = Email(
+        # Create perspective-aware email
+        snoozed_email = create_received_email_for_user(
+            db_session, user,
             subject="Snoozed Email",
             body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=snoozed_thread.id
+            thread=snoozed_thread
         )
-        db_session.add(snoozed_email)
         db_session.flush()
         
         # Set snooze at thread level via ThreadUserMetadata
@@ -1586,15 +1546,13 @@ class TestThreadSnooze:
         db_session.add(normal_thread)
         db_session.flush()
         
-        normal_email = Email(
+        # Create perspective-aware email
+        normal_email = create_received_email_for_user(
+            db_session, user,
             subject="Normal Email",
             body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=normal_thread.id
+            thread=normal_thread
         )
-        db_session.add(normal_email)
         db_session.commit()
         
         # Test is_snoozed=false filter
@@ -1755,26 +1713,21 @@ class TestThreadUnstar:
         db_session.add(thread)
         db_session.commit()
         
-        # Create two starred emails in the thread
-        email1 = Email(
+        # Create two starred emails in the thread (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Email 1",
             body="Body 1",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Email 2",
             body="Body 2",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Unstar all emails in the thread
@@ -1806,26 +1759,21 @@ class TestThreadUnstar:
         db_session.add(thread)
         db_session.commit()
         
-        # Create one starred and one unstarred email
-        email1 = Email(
+        # Create one starred and one unstarred email (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Email 1",
             body="Body 1",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Email 2",
             body="Body 2",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=False
+            is_starred=False,
+            thread=thread
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Unstar all emails in the thread
@@ -1919,8 +1867,8 @@ class TestScheduledFolder:
         for email in data["results"]:
             assert email["folder"] == "scheduled"
 
-    def test_queued_email_goes_to_scheduled_folder(self, client_with_auth, db_session, sample_draft_email):
-        """Test that sending a draft with undo_send enabled puts email in scheduled folder."""
+    def test_queued_email_goes_to_sent_folder_with_undo_delay(self, client_with_auth, db_session, sample_draft_email):
+        """Test that sending a draft with undo_send enabled puts email in sent folder (not scheduled)."""
         client, token, user = client_with_auth
         
         # Enable undo send (10 second delay)
@@ -1934,8 +1882,8 @@ class TestScheduledFolder:
         
         assert response.status_code == 200
         data = response.json()["data"]
-        # Email should be in scheduled folder when queued
-        assert data["folder"] == "scheduled"
+        # Email goes to sent folder (not scheduled) when using undo delay without explicit schedule param
+        assert data["folder"] == "sent"
         assert data["can_undo_send"] == True
         assert data["scheduled_send_at"] is not None
 
@@ -2448,14 +2396,13 @@ class TestEmailAPIFilters:
         """Test folder=trash filter returns trashed emails."""
         client, token, user = client_with_auth
         
-        trash_email = Email(
+        # Create perspective-aware email
+        trash_email = create_received_email_for_user(
+            db_session, user,
             subject="Trash Email",
             body="Content",
-            status="received",
-            folder=FolderType.TRASH.value,
-            sender_id=user.id
+            folder=FolderType.TRASH.value
         )
-        db_session.add(trash_email)
         db_session.commit()
         
         response = client.get(
@@ -2472,14 +2419,13 @@ class TestEmailAPIFilters:
         """Test folder=spam filter returns spam emails."""
         client, token, user = client_with_auth
         
-        spam_email = Email(
+        # Create perspective-aware email
+        spam_email = create_received_email_for_user(
+            db_session, user,
             subject="Spam Email",
             body="Content",
-            status="received",
-            folder=FolderType.SPAM.value,
-            sender_id=user.id
+            folder=FolderType.SPAM.value
         )
-        db_session.add(spam_email)
         db_session.commit()
         
         response = client.get(
@@ -2540,24 +2486,19 @@ class TestEmailAPIFilters:
         db_session.add_all([thread1, thread2])
         db_session.flush()
         
-        # Create emails
-        primary_email = Email(
+        # Create emails (perspective-aware)
+        primary_email = create_received_email_for_user(
+            db_session, user,
             subject="Primary Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread1.id
+            thread=thread1
         )
-        promo_email = Email(
+        promo_email = create_received_email_for_user(
+            db_session, user,
             subject="Promo Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add_all([primary_email, promo_email])
         db_session.flush()
         
         # Add inbox label to both threads
@@ -2644,24 +2585,19 @@ class TestEmailAPIFilters:
         db_session.add_all([thread_primary, thread_promo])
         db_session.flush()
         
-        # Create emails
-        primary_email = Email(
+        # Create emails (perspective-aware)
+        primary_email = create_received_email_for_user(
+            db_session, user,
             subject="Primary Email",
             body="No category label",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread_primary.id
+            thread=thread_primary
         )
-        promo_email = Email(
+        promo_email = create_received_email_for_user(
+            db_session, user,
             subject="Promo Email",
             body="Has promotions label",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread_promo.id
+            thread=thread_promo
         )
-        db_session.add_all([primary_email, promo_email])
         db_session.flush()
         
         # Add inbox label to both threads
@@ -2703,20 +2639,17 @@ class TestEmailAPIFilters:
         
         client, token, user = client_with_auth
         
-        # Create thread and email
+        # Create thread and email (perspective-aware)
         thread = Thread(subject="Important Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Important Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Mark thread as important via metadata
@@ -2809,21 +2742,17 @@ class TestEmailAPIFilters:
         """Test search filter searches subject and body."""
         client, token, user = client_with_auth
         
-        email1 = Email(
+        # Create emails (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Meeting Tomorrow",
-            body="Let's discuss the project",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id
+            body="Let's discuss the project"
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Random Email",
-            body="Nothing important",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id
+            body="Nothing important"
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Search for "Meeting"
@@ -2843,16 +2772,13 @@ class TestEmailAPIFilters:
         """Test multiple filters can be combined."""
         client, token, user = client_with_auth
         
-        # Create email matching multiple criteria
-        email = Email(
+        # Create email matching multiple criteria (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Combined Filter Test",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            is_read=False,
-            sender_id=user.id
+            is_read=False
         )
-        db_session.add(email)
         db_session.commit()
         
         # Combine folder + is_read
@@ -2871,12 +2797,9 @@ class TestEmailAPIFilters:
         """Test no folder filter returns all mail (per documentation)."""
         client, token, user = client_with_auth
         
-        # Create emails in different folders
-        inbox = Email(subject="Inbox", body="C", status="received", 
-                      folder=FolderType.INBOX.value, sender_id=user.id)
-        sent = Email(subject="Sent", body="C", status="sent",
-                     folder=FolderType.SENT.value, sender_id=user.id)
-        db_session.add_all([inbox, sent])
+        # Create emails in different folders (perspective-aware)
+        inbox = create_received_email_for_user(db_session, user, subject="Inbox", body="C")
+        sent = create_sent_email_for_user(db_session, user, subject="Sent", body="C")
         db_session.commit()
         
         # No folder filter = All Mail
@@ -2955,25 +2878,23 @@ class TestEmailAPIFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email1 = Email(
+        # Create emails (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="First Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
-            sent_at=datetime.now(UTC) - timedelta(hours=1)
+            thread=thread
         )
-        email2 = Email(
+        email1.sent_at = datetime.now(UTC) - timedelta(hours=1)
+        
+        email2 = create_sent_email_for_user(
+            db_session, user,
             subject="Reply Email",
             body="Reply content",
-            status="sent",
-            folder=FolderType.SENT.value,
-            sender_id=user.id,
-            thread_id=thread.id,
-            sent_at=datetime.now(UTC)
+            thread=thread
         )
-        db_session.add_all([email1, email2])
+        email2.sent_at = datetime.now(UTC)
+        
         db_session.commit()
         
         response = client.get(
@@ -3096,6 +3017,10 @@ class TestComplexConversationScenarios:
         )
         db_session.add(recipient4)
         db_session.commit()
+        
+        # Sync thread labels for user_a (adds SENT, INBOX labels based on folders)
+        from app.utils.label_utils import sync_thread_labels
+        sync_thread_labels(db_session, thread.id, user_a.id, commit=True)
         
         # Verify thread contains all emails in correct order
         response = client.get(
@@ -4193,15 +4118,13 @@ class TestUnarchiveThread:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Unarchive Test Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Archive the thread first
@@ -4235,15 +4158,13 @@ class TestUnarchiveThread:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Not Archived Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Create metadata with is_archived=False
@@ -4345,15 +4266,13 @@ class TestUnarchiveThread:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="No Metadata Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # No metadata exists
@@ -4795,16 +4714,13 @@ class TestPaginationEdgeCases:
         """Test page_size=1 returns single result."""
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple emails (perspective-aware)
         for i in range(5):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Page Size Email {i}",
-                body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id
+                body="Content"
             )
-            db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -4868,16 +4784,13 @@ class TestPaginationEdgeCases:
         """Test pagination metadata is accurate."""
         client, token, user = client_with_auth
         
-        # Create 15 emails
+        # Create 15 emails (perspective-aware)
         for i in range(15):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Pagination Email {i}",
-                body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id
+                body="Content"
             )
-            db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -4979,17 +4892,15 @@ class TestDeleteEdgeCases:
         db_session.add(thread)
         db_session.flush()
         
+        # Create emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread Email {i}",
                 body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread.id
+                thread=thread
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -5235,15 +5146,13 @@ class TestIdempotencyAndRepeatOperations:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Archive Me Twice",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Already archived
@@ -5273,15 +5182,13 @@ class TestIdempotencyAndRepeatOperations:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Snooze Update Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Already snoozed
@@ -5318,15 +5225,13 @@ class TestIdempotencyAndRepeatOperations:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Toggle Important",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Mark important

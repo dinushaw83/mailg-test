@@ -40,6 +40,20 @@ export const feToBeDraftPayload = (to, cc, bcc, subject, content, scheduled_send
 };
 
 /**
+ * Transform frontend reply draft data to backend POST payload format for reply endpoint
+ * @param {Object} content - { html: string, plainText: string }
+ * @param {boolean} replyAll - Whether this is a reply-all
+ * @returns {Object} Backend payload for POST /api/v1/emails/{email_id}/reply
+ */
+export const feToBeReplyDraftPayload = (content, replyAll = false) => {
+  return {
+    body: content.plainText || null,
+    html_body: content.html || "",
+    reply_all: replyAll,
+  };
+};
+
+/**
  * Transform frontend draft data to backend PUT payload format
  * @param {string} subject - Email subject
  * @param {Object} content - { html: string, plainText: string }

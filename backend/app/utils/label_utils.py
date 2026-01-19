@@ -2,6 +2,7 @@
 
 This module provides helper functions to:
 - Add, remove, and manage system labels (Inbox, Sent, Drafts, Trash, Spam, etc.)
+- Sync thread labels dynamically based on actual email state
 - Format label responses
 - Build label hierarchy trees
 - Generate label colors
@@ -9,9 +10,11 @@ This module provides helper functions to:
 """
 
 import random
+from datetime import datetime, UTC
 from typing import Optional, Union, List, Dict, Set
 from uuid import UUID
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.models.label import Label
 from app.models.thread_label import ThreadLabel
@@ -19,8 +22,34 @@ from app.core.constants import (
     EmailCategory,
     SystemLabel,
     CategoryLabel,
+    FolderType,
     EXCLUSIVE_SYSTEM_LABELS,
 )
+
+
+# Mapping from folder type to system label enum
+FOLDER_TO_LABEL = {
+    FolderType.INBOX.value: SystemLabel.INBOX,
+    FolderType.SENT.value: SystemLabel.SENT,
+    FolderType.DRAFTS.value: SystemLabel.DRAFTS,
+    FolderType.TRASH.value: SystemLabel.TRASH,
+    FolderType.SPAM.value: SystemLabel.SPAM,
+    FolderType.SCHEDULED.value: SystemLabel.SCHEDULED,
+}
+
+# System labels that are dynamically synced (excludes ALL_MAIL which is a virtual view)
+SYNCABLE_SYSTEM_LABELS = {
+    SystemLabel.INBOX,
+    SystemLabel.SENT,
+    SystemLabel.DRAFTS,
+    SystemLabel.TRASH,
+    SystemLabel.SPAM,
+    SystemLabel.SCHEDULED,
+    SystemLabel.STARRED,
+    SystemLabel.IMPORTANT,
+    SystemLabel.SNOOZED,
+    SystemLabel.ALL_MAIL,  # Always added for any email in thread
+}
 
 
 # Mapping from EmailCategory enum to CategoryLabel enum
@@ -300,13 +329,14 @@ def generate_random_light_color() -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def format_label_response(label: Label, thread_count: int = 0) -> dict:
+def format_label_response(label: Label, thread_count: int = 0, unread_count: int = 0) -> dict:
     """Format label model to response dict.
-    
+
     Args:
         label: Label model instance
         thread_count: Number of threads with this label
-        
+        unread_count: Number of threads with this label that have unread emails
+
     Returns:
         Dictionary with label data formatted for API response
     """
@@ -324,6 +354,7 @@ def format_label_response(label: Label, thread_count: int = 0) -> dict:
         "created_at": label.created_at,
         "updated_at": label.updated_at,
         "thread_count": thread_count,
+        "unread_count": unread_count,
     }
 
 
@@ -377,22 +408,20 @@ def would_create_cycle(db: Session, label_id: UUID, new_parent_id: UUID) -> bool
 
 
 def build_label_tree(
-    labels_with_counts: List[tuple],
-    thread_counts: Dict[UUID, int]
+    labels_with_counts: List[tuple]
 ) -> List[dict]:
     """Build hierarchical tree from flat label list.
-    
+
     Args:
-        labels_with_counts: List of (label, count) tuples
-        thread_counts: Dict mapping label IDs to thread counts
-        
+        labels_with_counts: List of (label, thread_count, unread_count) tuples
+
     Returns:
         List of root label dicts with nested children arrays
     """
     # Create lookup dict
     label_map: Dict[UUID, dict] = {}
-    
-    for label, count in labels_with_counts:
+
+    for label, thread_count, unread_count in labels_with_counts:
         label_map[label.id] = {
             "id": label.id,
             "name": label.name,
@@ -406,7 +435,8 @@ def build_label_tree(
             "show_if_unread": label.show_if_unread,
             "created_at": label.created_at,
             "updated_at": label.updated_at,
-            "thread_count": count,
+            "thread_count": thread_count,
+            "unread_count": unread_count,
             "children": [],
         }
     
@@ -631,3 +661,204 @@ def bulk_sync_category_labels(
 
     if commit:
         db.commit()
+
+
+def get_user_emails_in_thread(
+    db: Session,
+    thread_id: UUID,
+    user_id: UUID
+) -> List:
+    """Get all emails in a thread that belong to a user from THEIR perspective.
+    
+    Perspective-aware ownership:
+    - For sent/draft/queued/cancelled emails: User must be the sender
+    - For received emails: User must be a recipient
+    
+    This prevents senders from seeing "received" copies created for recipients,
+    ensuring correct folder-based label assignment.
+    
+    Args:
+        db: Database session
+        thread_id: Thread ID
+        user_id: User ID
+        
+    Returns:
+        List of Email objects for this user in the thread from their perspective
+    """
+    from app.models.email import Email
+    from app.models.email_recipient import EmailRecipient
+    from app.utils.email_utils import get_perspective_email_filter
+    
+    return db.query(Email).filter(
+        Email.thread_id == thread_id,
+        get_perspective_email_filter(db, user_id)
+    ).all()
+
+
+def get_threads_with_system_label(
+    db: Session,
+    user_id: UUID,
+    label: Union[SystemLabel, str]
+):
+    """Get a subquery of thread IDs that have a specific system label for this user.
+    
+    Args:
+        db: Database session
+        user_id: User ID
+        label: SystemLabel enum or label name string
+        
+    Returns:
+        Subquery that can be used in .in_() filters, or None if label not found
+    """
+    label_obj = get_system_label(db, user_id, label)
+    if not label_obj:
+        return None
+    
+    return db.query(ThreadLabel.thread_id).filter(
+        ThreadLabel.label_id == label_obj.id,
+        ThreadLabel.user_id == user_id
+    ).subquery()
+
+
+def sync_thread_labels(
+    db: Session,
+    thread_id: UUID,
+    user_id: UUID,
+    commit: bool = False
+) -> None:
+    """Sync all system labels for a thread based on actual state.
+    
+    Scans the thread's actual state and ensures labels match:
+    1. Folder-based labels: Based on email.folder values (INBOX, SENT, DRAFTS, etc.)
+    2. STARRED: If any email in thread is starred
+    3. IMPORTANT: From ThreadUserMetadata.is_important
+    4. SNOOZED: From ThreadUserMetadata.snooze_until (if set and in future)
+    
+    Adds missing labels and removes labels that no longer apply.
+    
+    Args:
+        db: Database session
+        thread_id: Thread ID (required, None will skip silently)
+        user_id: User ID
+        commit: Whether to commit the transaction
+    """
+    # Guard against None thread_id (e.g., emails not yet assigned to a thread)
+    if thread_id is None:
+        return
+    
+    from app.models.thread_user_metadata import ThreadUserMetadata
+    
+    # Get all user's emails in this thread
+    user_emails = get_user_emails_in_thread(db, thread_id, user_id)
+    
+    # Determine which labels should exist based on actual state
+    labels_should_have: Set[SystemLabel] = set()
+    
+    # 1. Folder-based labels - scan email folders
+    for email in user_emails:
+        folder_label = FOLDER_TO_LABEL.get(email.folder)
+        if folder_label:
+            labels_should_have.add(folder_label)
+    
+    # All emails belong to ALL_MAIL (if user has any emails in this thread)
+    if user_emails:
+        labels_should_have.add(SystemLabel.ALL_MAIL)
+    
+    # 2. STARRED - if any email is starred
+    if any(email.is_starred for email in user_emails):
+        labels_should_have.add(SystemLabel.STARRED)
+    
+    # 3. IMPORTANT and SNOOZED - from thread metadata
+    metadata = db.query(ThreadUserMetadata).filter(
+        ThreadUserMetadata.thread_id == thread_id,
+        ThreadUserMetadata.user_id == user_id
+    ).first()
+    
+    if metadata:
+        if metadata.is_important:
+            labels_should_have.add(SystemLabel.IMPORTANT)
+        if metadata.snooze_until and metadata.snooze_until > datetime.now(UTC):
+            labels_should_have.add(SystemLabel.SNOOZED)
+    
+    # Get all user's syncable system labels
+    syncable_label_names = [sl.value for sl in SYNCABLE_SYSTEM_LABELS]
+    user_system_labels = db.query(Label).filter(
+        Label.owner_id == user_id,
+        Label.name.in_(syncable_label_names),
+        Label.is_system == True
+    ).all()
+    
+    # Create lookup: label_name -> label_id
+    label_name_to_id = {label.name: label.id for label in user_system_labels}
+    label_id_to_name = {label.id: label.name for label in user_system_labels}
+    
+    # Get current labels on thread for this user (only syncable ones)
+    current_thread_labels = db.query(ThreadLabel).filter(
+        ThreadLabel.thread_id == thread_id,
+        ThreadLabel.user_id == user_id,
+        ThreadLabel.label_id.in_([l.id for l in user_system_labels])
+    ).all()
+    
+    current_label_ids = {tl.label_id for tl in current_thread_labels}
+    
+    # Determine labels to add and remove
+    labels_should_have_ids = {
+        label_name_to_id.get(label.value) 
+        for label in labels_should_have 
+        if label.value in label_name_to_id
+    }
+    labels_should_have_ids.discard(None)
+    
+    labels_to_add = labels_should_have_ids - current_label_ids
+    labels_to_remove = current_label_ids - labels_should_have_ids
+    
+    # Add missing labels
+    for label_id in labels_to_add:
+        thread_label = ThreadLabel(
+            thread_id=thread_id,
+            label_id=label_id,
+            user_id=user_id
+        )
+        db.add(thread_label)
+    
+    # Remove labels that no longer apply
+    if labels_to_remove:
+        db.query(ThreadLabel).filter(
+            ThreadLabel.thread_id == thread_id,
+            ThreadLabel.user_id == user_id,
+            ThreadLabel.label_id.in_(labels_to_remove)
+        ).delete(synchronize_session=False)
+    
+    if commit:
+        db.commit()
+
+
+def bulk_sync_thread_labels(
+    db: Session,
+    thread_ids: List[UUID],
+    user_id: UUID,
+    commit: bool = False
+) -> int:
+    """Sync system labels for multiple threads based on actual state.
+    
+    Calls sync_thread_labels for each thread.
+    
+    Args:
+        db: Database session
+        thread_ids: List of thread IDs
+        user_id: User ID
+        commit: Whether to commit the transaction
+        
+    Returns:
+        Number of threads processed
+    """
+    if not thread_ids:
+        return 0
+    
+    for thread_id in thread_ids:
+        sync_thread_labels(db, thread_id, user_id, commit=False)
+    
+    if commit:
+        db.commit()
+    
+    return len(thread_ids)
