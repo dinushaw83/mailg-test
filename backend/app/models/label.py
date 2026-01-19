@@ -20,7 +20,7 @@ class Label(Base):
     name = Column(String, nullable=False)
     color = Column(String)  # Hex color
     
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     
     # Hierarchical relationship - self-referential
     parent_id = Column(UUID(as_uuid=True), ForeignKey("labels.id"), nullable=True, index=True)

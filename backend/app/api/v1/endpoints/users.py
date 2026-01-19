@@ -333,35 +333,50 @@ def delete_user(
     user_id: UUID,
     db: Session = Depends(get_db),
 ) -> None:
-    """Delete a user.
-    
+    """Delete a user and all associated data.
+
+    This performs a hard delete that removes the user and cascades to all related data:
+    - User's labels (system and custom) - CASCADE
+    - User's email templates - CASCADE
+    - User's saved searches - CASCADE
+    - User's emails (as sender) - CASCADE
+    - User's threads (as owner) - CASCADE
+    - Thread labels and metadata - CASCADE via threads
+    - Email recipients where user is recipient - SET NULL by DB
+
+    All cascade behavior is handled at the database level via foreign key constraints.
+
     Permissions:
     - admin: Can delete any user
     - user: Not allowed
-    
+
     Args:
         user_id: User ID.
-        
+
     Raises:
         HTTPException: 404 if user not found.
     """
     user = db.query(User).filter(User.id == user_id).first()
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User {user_id} not found"
         )
-    
-    # Permanently delete from database
-    db.delete(user)
-    
+
     try:
+        # Simply delete the user - database CASCADE constraints handle all related data
+        db.delete(user)
         db.commit()
-    except Exception:
+
+    except Exception as e:
         db.rollback()
-        raise
-    
-    logger.info(f"User {user.id} permanently deleted by admin {auth.user.id}")
+        logger.error(f"Failed to delete user {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete user: {str(e)}"
+        )
+
+    logger.info(f"User {user.id} and all associated data permanently deleted by admin {auth.user.id}")
 
     return None

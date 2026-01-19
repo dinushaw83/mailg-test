@@ -28,8 +28,8 @@ class Email(Base):
     scheduled_send_at = Column(DateTime(timezone=True), nullable=True, index=True)  # When email will actually be sent
 
     # Foreign keys
-    sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id"), index=True)
+    sender_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    thread_id = Column(UUID(as_uuid=True), ForeignKey("threads.id", ondelete="CASCADE"), index=True)
     parent_email_id = Column(UUID(as_uuid=True), ForeignKey("emails.id"))  # For replies/forwards
     
     # Timestamps

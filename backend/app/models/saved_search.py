@@ -17,7 +17,7 @@ class SavedSearch(Base):
     query = Column(String, nullable=False)  # The search query string
     filters = Column(JSON)  # Additional parsed filters as JSON
     
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     
     use_count = Column(Integer, default=0)  # Track usage for suggestions
     last_used_at = Column(DateTime(timezone=True))
