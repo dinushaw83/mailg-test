@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import emailService from "../../services/emailService";
+import searchService from "../../services/searchService";
 import { initialEmails } from "../../contexts/fixtures/emails";
 import { initialLabels } from "../../contexts/fixtures/labels";
 import labelService from "../../services/labelService";
@@ -269,7 +270,7 @@ export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, 
   }
 });
 
-/**
+/*
  * MUTATION THUNK: Create a new draft
  * Note: Mutations are called directly (not through React Query fetchQuery)
  * Cache invalidation is handled by RTK listener middleware.
@@ -361,6 +362,25 @@ export const fetchEmailByIdThunk = createAsyncThunk("mail/fetchEmailById", async
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email");
   }
 });
+/*
+ * Fetch search results from backend API
+ */
+export const fetchSearchResults = createAsyncThunk(
+  "mail/fetchSearchResults",
+  async (searchParams, { rejectWithValue }) => {
+    try {
+      const data = await searchService.searchEmails(searchParams);
+      return {
+        results: data.results,
+        pagination: data.pagination,
+        query: data.query,
+        execution_time_ms: data.execution_time_ms,
+        originalParams: searchParams.originalParams || {},
+      };
+    } catch (error) {
+      console.error("❌ Failed to fetch search results:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch search results");
+    }
 
 /* ────────────────────────────────────────────────────────────────────────────
  * EMAIL MUTATION THUNKS
@@ -690,6 +710,13 @@ const mailSlice = createSlice({
     mutationLoading: false, // Separate loading for mutations
     labelLoading: false, // Separate loading for label operations
     error: null,
+    // Search results state
+    searchResults: [],
+    searchPagination: null,
+    searchQuery: "",
+    searchLoading: false,
+    searchError: null,
+    searchOriginalParams: {}, // Store original params for frontend post-processing
     lastMutationTime: null, // Timestamp of last mutation to trigger refetch
   },
   reducers: {
@@ -925,6 +952,25 @@ const mailSlice = createSlice({
         }
       })
 
+      // Fetch Search Results
+      .addCase(fetchSearchResults.pending, (state) => {
+        state.searchLoading = true;
+        state.searchError = null;
+      })
+      .addCase(fetchSearchResults.fulfilled, (state, action) => {
+        state.searchLoading = false;
+        state.searchResults = action.payload.results || [];
+        state.searchPagination = action.payload.pagination || null;
+        state.searchQuery = action.payload.query || "";
+        state.searchOriginalParams = action.payload.originalParams || {};
+      })
+      .addCase(fetchSearchResults.rejected, (state, action) => {
+        state.searchLoading = false;
+        state.searchError = action.payload;
+        state.searchResults = [];
+        state.searchPagination = null;
+        state.searchOriginalParams = {};
+      })
       // Delete Email
       .addCase(deleteEmailThunk.fulfilled, (state, action) => {
         const emailId = action.payload?.emailId;

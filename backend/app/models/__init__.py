@@ -10,6 +10,8 @@ from app.models.attachment import Attachment
 from app.models.thread import Thread
 from app.models.saved_search import SavedSearch
 from app.models.email_template import EmailTemplate
+from app.models.general_settings import GeneralSettings, DefaultTextStyle, Signature
+from app.models.advanced_settings import AdvancedSettings
 
 __all__ = [
     "User",
@@ -22,4 +24,8 @@ __all__ = [
     "Thread",
     "SavedSearch",
     "EmailTemplate",
+    "GeneralSettings",
+    "DefaultTextStyle",
+    "Signature",
+    "AdvancedSettings",
 ]

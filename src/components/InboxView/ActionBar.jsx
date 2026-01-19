@@ -971,7 +971,10 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           // background: "pink",
         }}
       >
-        <Icon name="arrow_back" onClick={() => navigate(getBasePath())} style={{ marginRight: "20px" }} label="Back" />
+        <Icon name="arrow_back" onClick={() => {
+          // Needed to support going back to filters
+          navigate(-1)
+          }} style={{ marginRight: "20px" }} label="Back" />
 
         <>
           <Icon name="archive" label="Archive" onClick={handleArchive} />

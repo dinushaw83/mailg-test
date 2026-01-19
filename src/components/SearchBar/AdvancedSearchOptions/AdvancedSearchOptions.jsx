@@ -6,17 +6,13 @@ import EmailField from "./EmailField";
 import styles from "./AdvancedSearchOptions.module.css";
 import { addAdvancedSearchQuery } from "../../../utils/search";
 import {
-  parseSearchStringToFormData,
-  buildSearchBarFromUrl,
-  containsSearchOperators,
-} from "../../../utils/helperFunctions";
-import {
   dateWithinOptions,
   subsetOptions,
   AdvancedSearchSelectHoverStyle,
   AdvancedSearchTextFieldInputStyle,
 } from "./constants";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
+import { buildSearchParams, getDateString } from "../../../utils/searchParams";
 
 const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigger }, ref) => {
   const navigate = useNavigate();
@@ -50,6 +46,181 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
     },
   }));
 
+  const handleSearch = () => {
+    // Check if form has any values (excluding default values)
+    const hasSearchCriteria =
+      formData.from.trim() ||
+      formData.to.trim() ||
+      formData.subject.trim() ||
+      formData.has.trim() ||
+      formData.hasnot.trim() ||
+      formData.size.trim() ||
+      formData.attachment ||
+      formData.excludeChats ||
+      formData.subset !== "All Mail" ||
+      formData.date;
+    // If no search criteria provided, show snackbar and return
+    if (!hasSearchCriteria) {
+      setSnackbar({
+        open: true,
+        message: "Invalid search query - returning all mail.",
+        autoHideDuration: 4000,
+      });
+    }
+    // Track advanced search query in localStorage
+    addAdvancedSearchQuery(formData);
+
+    // Create search criteria object
+    const searchCriteria = {
+      from: formData.from
+        .split(",")
+        .map((email) => email.trim())
+        .filter(Boolean),
+      to: formData.to
+        .split(",")
+        .map((email) => email.trim())
+        .filter(Boolean),
+      subject: formData.subject,
+      has: formData.has,
+      hasnot: formData.hasnot,
+      size: formData.size,
+      sizeOperator: formData.sizeOperator,
+      sizeUnit: formData.sizeUnit,
+      within: formData.within,
+      date: formData.date,
+      subset: formData.subset,
+      attachment: formData.attachment,
+      excludeChats: formData.excludeChats,
+    };
+
+    // Create a query string from the criteria
+    const queryParams = new URLSearchParams();
+    let searchQuery = [];
+
+    if (searchCriteria.from.length > 0) {
+      queryParams.append("from", searchCriteria.from.join(","));
+      searchQuery.push(`from:(${searchCriteria.from.join(",")})`);
+    }
+    if (searchCriteria.to.length > 0) {
+      queryParams.append("to", searchCriteria.to.join(","));
+      searchQuery.push(`to:(${searchCriteria.to.join(",")})`);
+    }
+
+    if (searchCriteria.subject) {
+      queryParams.append("subject", searchCriteria.subject);
+      searchQuery.push(`subject:(${searchCriteria.subject})`);
+    }
+
+    if (searchCriteria.hasnot) {
+      searchQuery.push(`-${searchCriteria.hasnot}`);
+      queryParams.append("hasnot", searchCriteria.hasnot);
+    }
+    if (searchCriteria.size) {
+      if (searchCriteria.sizeOperator === "less than") {
+        searchQuery.push(`smaller:${searchCriteria.size}${searchCriteria.sizeUnit}`);
+      } else {
+        searchQuery.push(`larger:${searchCriteria.size}${searchCriteria.sizeUnit}`);
+      }
+      queryParams.append("size", searchCriteria.size);
+      queryParams.append("sizeUnit", searchCriteria.sizeUnit);
+      queryParams.append("sizeOperator", searchCriteria.sizeOperator);
+    }
+    if (searchCriteria.within && searchCriteria.date) {
+      const startDate = new Date(searchCriteria.date);
+      const endDate = new Date(searchCriteria.date);
+      switch (searchCriteria.within) {
+        case "1 day":
+          endDate.setDate(endDate.getDate() + 1);
+          startDate.setDate(startDate.getDate() - 1);
+          break;
+        case "3 days":
+          endDate.setDate(endDate.getDate() + 3);
+          startDate.setDate(startDate.getDate() - 3);
+          break;
+        case "1 week":
+          endDate.setDate(endDate.getDate() + 7);
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case "2 weeks":
+          endDate.setDate(endDate.getDate() + 14);
+          startDate.setDate(startDate.getDate() - 14);
+          break;
+        case "1 month":
+          endDate.setMonth(endDate.getMonth() + 1);
+          startDate.setMonth(startDate.getDate() - 1);
+          break;
+        case "2 months":
+          endDate.setMonth(endDate.getMonth() + 2);
+          startDate.setMonth(startDate.getDate() - 2);
+          break;
+        case "3 months":
+          endDate.setMonth(endDate.getMonth() + 3);
+          startDate.setMonth(startDate.getDate() - 3);
+          break;
+        case "6 months":
+          endDate.setMonth(endDate.getMonth() + 6);
+          startDate.setMonth(startDate.getDate() - 6);
+          break;
+        case "1 year":
+          endDate.setFullYear(endDate.getFullYear() + 1);
+          startDate.setFullYear(startDate.getFullYear() - 1);
+          break;
+      }
+      searchQuery.push(`before:${getDateString(endDate)}`);
+      searchQuery.push(`after:${getDateString(startDate)}`);
+      queryParams.append("before", getDateString(endDate));
+      queryParams.append("after", getDateString(startDate));
+    }
+
+    if (searchCriteria.subset !== "All Mail") {
+      searchQuery.push(`in:${searchCriteria.subset}`);
+      queryParams.append("subset", searchCriteria.subset);
+    }
+
+    if (searchCriteria.attachment) {
+      searchQuery.push("has:attachment");
+      queryParams.append("attachment", "true");
+    }
+
+    if (searchCriteria.excludeChats) {
+      searchQuery.push("hasnot:chat");
+      queryParams.append("excludeChats", "true");
+    }
+    if (searchCriteria.has) {
+      searchQuery.push(searchCriteria.has);
+    }
+
+    if (searchQuery.length > 0) {
+      searchQuery = searchQuery.join(" ");
+      queryParams.append("q", searchQuery);
+    }
+
+    // Navigate to search results with advanced criteria
+    const queryString = queryParams.toString();
+    if (queryString) {
+      navigate(
+        {
+          pathname: `/search/advanced`,
+          search: queryString,
+        },
+        {
+          replace: true,
+        }
+      );
+    } else {
+      navigate(
+        {
+          pathname: `/search/advanced`,
+        },
+        {
+          replace: true,
+        }
+      );
+    }
+
+    onClose();
+  };
+
   useEffect(() => {
     const currentPath = location.pathname;
     const isCurrentlyOnSearchResults = currentPath.startsWith("/search/");
@@ -67,91 +238,150 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
   // Sync formData with search string/URL parameters when modal opens
   useEffect(() => {
     if (isOpen) {
-      // If searchValue prop is explicitly empty (user cleared the search bar),
-      // prioritize that over URL to maintain sync with the visible search bar state
-      if (searchValue === "") {
-        setFormData(getDefaultFormData());
-        return;
-      }
+      // Use buildSearchParams to get parsed data from URL and search query
+      const { apiParams } = buildSearchParams(location);
+      // Helper function to extract advanced search fields from buildSearchParams response
+      const extractAdvancedSearchFields = () => {
+        const fields = {};
 
-      // If searchValue prop exists, use it (user typed but hasn't searched yet)
-      if (searchValue && searchValue.trim()) {
-        const searchValueHasOperators = containsSearchOperators(searchValue);
+        // Extract from - use apiParams.from (already merged from URL and search query)
+        if (apiParams.from) {
+          fields.from = apiParams.from;
+        }
 
-        // Parse URL params directly for within and date
-        const urlParams = new URLSearchParams(location.search);
-        const withinParam = urlParams.get("within");
-        const dateParam = urlParams.get("date");
+        // Extract to - use apiParams.to (already merged from URL and search query)
+        if (apiParams.to) {
+          fields.to = apiParams.to;
+        }
+        // Extract subject - use apiParams.subject (already merged from URL and search query)
+        if (apiParams.subject) {
+          fields.subject = apiParams.subject;
+        }
 
-        if (searchValueHasOperators) {
-          // searchValue has operators, parse it
-          const parsedData = parseSearchStringToFormData(searchValue);
-          if (parsedData) {
-            setFormData({
-              ...parsedData,
-              // Override with URL params if they exist
-              within: withinParam || parsedData.within || "1 day",
-              date: dateParam || parsedData.date || "",
-            });
-          } else {
-            setFormData(getDefaultFormData());
+        // Extract hasnot - use apiParams.hasnot (already merged from URL and search query)
+        if (apiParams.hasnot) {
+          fields.hasnot = apiParams.hasnot;
+        }
+
+        if (apiParams.folder) {
+          // Map folder back to subset (capitalize first letter)
+          const folderName = apiParams.folder;
+          fields.subset = folderName.charAt(0).toUpperCase() + folderName.slice(1);
+        } else if (apiParams.label_name) {
+          fields.subset = apiParams.label_name;
+        }
+
+        // Extract attachment - use apiParams.has_attachment
+        if (apiParams.has_attachment === true) {
+          fields.attachment = true;
+        }
+
+        if (apiParams.q) {
+          fields.has = apiParams.q;
+        }
+
+        if (apiParams.date_from && apiParams.date_to) {
+          const beforeDate = new Date(apiParams.date_to);
+          const afterDate = new Date(apiParams.date_from);
+
+          const middleDate = new Date((beforeDate.getTime() + afterDate.getTime()) / 2);
+          let foundMatch = false;
+          const oneDayBeforeDate = new Date(middleDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const oneDayAfterDate = new Date(middleDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          if (
+            oneDayBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            oneDayAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "1 day";
           }
-        } else {
-          // searchValue is plain text
-          setFormData({
-            ...getDefaultFormData(),
-            has: searchValue,
-            // Include URL params for within and date
-            within: withinParam || "1 day",
-            date: dateParam || "",
-          });
+          const threeDaysBeforeDate = new Date(middleDate.getTime() - 3 * 24 * 60 * 60 * 1000);
+          const threeDaysAfterDate = new Date(middleDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+          if (
+            threeDaysBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            threeDaysAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "3 days";
+          }
+          const weekBeforeDate = new Date(middleDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const weekAfterDate = new Date(middleDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          if (
+            weekBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            weekAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "1 week";
+          }
+          const twoWeeksBeforeDate = new Date(middleDate.getTime() - 14 * 24 * 60 * 60 * 1000);
+          const twoWeeksAfterDate = new Date(middleDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+          if (
+            twoWeeksBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            twoWeeksAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "2 weeks";
+          }
+          const monthBeforeDate = new Date(middleDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+          const monthAfterDate = new Date(middleDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+          if (
+            monthBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            monthAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "1 month";
+          }
+          const twoMonthsBeforeDate = new Date(middleDate.getTime() - 60 * 24 * 60 * 60 * 1000);
+          const twoMonthsAfterDate = new Date(middleDate.getTime() + 60 * 24 * 60 * 60 * 1000);
+          if (
+            twoMonthsBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            twoMonthsAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "2 months";
+          }
+          const threeMonthsBeforeDate = new Date(middleDate.getTime() - 90 * 24 * 60 * 60 * 1000);
+          const threeMonthsAfterDate = new Date(middleDate.getTime() + 90 * 24 * 60 * 60 * 1000);
+          if (
+            threeMonthsBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            threeMonthsAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "3 months";
+          }
+          const sixMonthsBeforeDate = new Date(middleDate.getTime() - 180 * 24 * 60 * 60 * 1000);
+          const sixMonthsAfterDate = new Date(middleDate.getTime() + 180 * 24 * 60 * 60 * 1000);
+          if (
+            sixMonthsBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            sixMonthsAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "6 months";
+          }
+          const yearBeforeDate = new Date(middleDate.getTime() - 365 * 24 * 60 * 60 * 1000);
+          const yearAfterDate = new Date(middleDate.getTime() + 365 * 24 * 60 * 60 * 1000);
+          if (
+            yearBeforeDate.toISOString().split("T")[0] === afterDate.toISOString().split("T")[0] &&
+            yearAfterDate.toISOString().split("T")[0] === beforeDate.toISOString().split("T")[0]
+          ) {
+            foundMatch = true;
+            fields.within = "1 year";
+          }
+          if (!foundMatch) {
+            fields.within = "1 day";
+          } else {
+            fields.date = middleDate.toISOString().split("T")[0];
+          }
         }
-        return;
-      }
 
-      // No searchValue prop, so check the URL (e.g., after page reload)
-      const searchString = buildSearchBarFromUrl(location);
+        return fields;
+      };
 
-      // Check if the search string contains operators
-      const hasOperators = searchString && containsSearchOperators(searchString);
-
-      // Parse URL params directly for within and date
-      const urlParams = new URLSearchParams(location.search);
-      const withinParam = urlParams.get("within");
-      const dateParam = urlParams.get("date");
-
-      // If searchString has operators, parse it completely
-      if (hasOperators) {
-        const parsedData = parseSearchStringToFormData(searchString);
-
-        if (parsedData) {
-          setFormData({
-            ...parsedData,
-            // Override with URL params if they exist (more reliable than parsing from search string)
-            within: withinParam || parsedData.within || "1 day",
-            date: dateParam || parsedData.date || "",
-          });
-        } else {
-          // Parsing failed, use defaults
-          setFormData(getDefaultFormData());
-        }
-      } else if (searchString && searchString.trim()) {
-        // searchString exists but has no operators - treat as plain text for "has"
-        setFormData({
-          ...getDefaultFormData(),
-          has: searchString,
-          // Include URL params for within and date
-          within: withinParam || "1 day",
-          date: dateParam || "",
-        });
-      } else {
-        // No search string, use defaults but check for URL params
-        setFormData({
-          ...getDefaultFormData(),
-          within: withinParam || "1 day",
-          date: dateParam || "",
-        });
-      }
+      const urlFields = extractAdvancedSearchFields();
+      setFormData({
+        ...getDefaultFormData(),
+        ...urlFields,
+      });
     }
   }, [isOpen, location.search, location.pathname, searchValue]);
 
@@ -176,93 +406,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
 
       // Handle Enter key to submit the form
       if (event.key === "Enter" && isOpen) {
-        // Check if we're in a text field (not in EmailField which handles its own Enter)
-        const target = event.target;
-        const isInTextField = target.tagName === "INPUT" && target.type === "text";
-
-        // Only submit if in a regular text field (EmailField stops propagation)
-        if (isInTextField) {
-          // Check if form has any values (excluding default values)
-          const hasSearchCriteria =
-            formData.from.trim() ||
-            formData.to.trim() ||
-            formData.subject.trim() ||
-            formData.has.trim() ||
-            formData.hasnot.trim() ||
-            formData.size.trim() ||
-            formData.attachment ||
-            formData.excludeChats ||
-            formData.subset !== "All Mail";
-
-          // If no search criteria provided, show snackbar and return
-          if (!hasSearchCriteria) {
-            setSnackbar({
-              open: true,
-              message: "Invalid search query - returning all mail.",
-              autoHideDuration: 4000,
-            });
-          }
-
-          // Trigger search by calling the search handler
-          // Track advanced search query in localStorage
-          addAdvancedSearchQuery(formData);
-
-          // Set date to current date only if within field is changed and no date was chosen
-          const shouldDefaultDate = formData.within !== "1 day" && !formData.date;
-          const finalDate = shouldDefaultDate ? new Date().toISOString().split("T")[0] : formData.date;
-
-          // Create search criteria object
-          const searchCriteria = {
-            from: formData.from,
-            to: formData.to,
-            subject: formData.subject,
-            has: formData.has,
-            hasnot: formData.hasnot,
-            size: formData.size,
-            sizeOperator: formData.sizeOperator,
-            sizeUnit: formData.sizeUnit,
-            within: formData.within,
-            date: finalDate,
-            subset: formData.subset,
-            attachment: formData.attachment,
-            excludeChats: formData.excludeChats,
-          };
-
-          // Create a query string from the criteria
-          const queryParams = new URLSearchParams();
-
-          // Add non-empty criteria to query params (excluding default values)
-          const hasSize = searchCriteria.size && searchCriteria.size.trim();
-
-          Object.entries(searchCriteria).forEach(([key, value]) => {
-            // Skip default values that shouldn't be included in URL
-            // BUT include sizeOperator and sizeUnit if size is provided
-            const isDefaultValue =
-              (key === "subset" && value === "All Mail") ||
-              (key === "sizeOperator" && value === "less than" && !hasSize) ||
-              (key === "sizeUnit" && value === "MB" && !hasSize);
-
-            // Include boolean true values, non-empty strings, and other truthy values (but not default values)
-            if (!isDefaultValue && (value === true || (value && value !== ""))) {
-              // Convert sizeOperator spaces to underscores for URL
-              if (key === "sizeOperator") {
-                queryParams.append(key, value.replace(/ /g, "_"));
-              } else {
-                queryParams.append(key, value);
-              }
-            }
-          });
-
-          // Navigate to search results with advanced criteria
-          const queryString = queryParams.toString();
-          if (queryString) {
-            navigate(`/search/advanced?${queryString}`);
-          } else {
-            navigate(`/search/advanced`);
-          }
-
-          onClose();
-        }
+        handleSearch();
       }
     };
 
@@ -287,88 +431,6 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
         [field]: value,
       };
     });
-  };
-
-  const handleSearch = () => {
-    // Check if form has any values (excluding default values)
-    const hasSearchCriteria =
-      formData.from.trim() ||
-      formData.to.trim() ||
-      formData.subject.trim() ||
-      formData.has.trim() ||
-      formData.hasnot.trim() ||
-      formData.size.trim() ||
-      formData.attachment ||
-      formData.excludeChats ||
-      formData.subset !== "All Mail";
-
-    // If no search criteria provided, show snackbar and return
-    if (!hasSearchCriteria) {
-      setSnackbar({
-        open: true,
-        message: "Invalid search query - returning all mail.",
-        autoHideDuration: 4000,
-      });
-    }
-
-    // Track advanced search query in localStorage
-    addAdvancedSearchQuery(formData);
-
-    // Set date to current date only if within field is changed and no date was chosen
-    const shouldDefaultDate = formData.within !== "1 day" && !formData.date;
-    const finalDate = shouldDefaultDate ? new Date().toISOString().split("T")[0] : formData.date;
-
-    // Create search criteria object
-    const searchCriteria = {
-      from: formData.from,
-      to: formData.to,
-      subject: formData.subject,
-      has: formData.has,
-      hasnot: formData.hasnot,
-      size: formData.size,
-      sizeOperator: formData.sizeOperator,
-      sizeUnit: formData.sizeUnit,
-      within: formData.within,
-      date: finalDate,
-      subset: formData.subset,
-      attachment: formData.attachment,
-      excludeChats: formData.excludeChats,
-    };
-
-    // Create a query string from the criteria
-    const queryParams = new URLSearchParams();
-
-    // Add non-empty criteria to query params (excluding default values)
-    const hasSize = searchCriteria.size && searchCriteria.size.trim();
-
-    Object.entries(searchCriteria).forEach(([key, value]) => {
-      // Skip default values that shouldn't be included in URL
-      // BUT include sizeOperator and sizeUnit if size is provided
-      const isDefaultValue =
-        (key === "subset" && value === "All Mail") ||
-        (key === "sizeOperator" && value === "less than" && !hasSize) ||
-        (key === "sizeUnit" && value === "MB" && !hasSize);
-
-      // Include boolean true values, non-empty strings, and other truthy values (but not default values)
-      if (!isDefaultValue && (value === true || (value && value !== ""))) {
-        // Convert sizeOperator spaces to underscores for URL
-        if (key === "sizeOperator") {
-          queryParams.append(key, value.replace(/ /g, "_"));
-        } else {
-          queryParams.append(key, value);
-        }
-      }
-    });
-
-    // Navigate to search results with advanced criteria
-    const queryString = queryParams.toString();
-    if (queryString) {
-      navigate(`/search/advanced?${queryString}`);
-    } else {
-      navigate(`/search/advanced`);
-    }
-
-    onClose();
   };
 
   const handleCreateFilter = () => {

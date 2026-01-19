@@ -1,7 +1,7 @@
 """Central router for API v1 endpoints."""
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, users, db_snapshot
+from app.api.v1.endpoints import auth, users, user_settings, db_snapshot
 from app.api.v1.endpoints import emails, threads, labels, attachments, search, bulk, templates
 from app.api.v1.endpoints import metrics
 
@@ -10,6 +10,7 @@ router = APIRouter()
 # Include all v1 endpoint routers
 router.include_router(auth.router, tags=["auth"])
 router.include_router(users.router, tags=["users"])
+router.include_router(user_settings.router, tags=["user-settings"])
 router.include_router(db_snapshot.router, tags=["db-snapshot"])
 
 # Email-related routers

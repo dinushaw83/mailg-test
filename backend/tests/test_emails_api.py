@@ -1285,15 +1285,22 @@ class TestEmailSendReplyForward:
         assert data["can_undo_send"] == True
         assert data["folder"] == "sent"
 
-    def test_forward_email_without_undo_send(self, client_with_auth, db_session, sample_email):
-        """Test that forwarding an email is immediate when undo_send is disabled.
+    def test_forward_email_with_undo_send(self, client_with_auth, db_session, sample_email):
+        """Test that forwarding an email is queued when undo_send is enabled.
         
-        This verifies that with undo_send_delay_seconds=0, the email is sent immediately.
+        This verifies that with undo_send_delay_seconds set, the email is queued.
+        Note: undo_send_delay_seconds must be one of [5, 10, 20, 30].
         """
+        from app.models.general_settings import GeneralSettings
+        
         client, token, user = client_with_auth
         
-        # Disable undo send
-        user.undo_send_delay_seconds = 0
+        # Set undo send delay via general settings
+        settings = db_session.query(GeneralSettings).filter(GeneralSettings.user_id == user.id).first()
+        if not settings:
+            settings = GeneralSettings(user_id=user.id)
+            db_session.add(settings)
+        settings.undo_send_delay_seconds = 5
         db_session.commit()
         
         response = client.post(
@@ -1302,7 +1309,7 @@ class TestEmailSendReplyForward:
                 "recipients": [
                     {"email": "forward_immediate@example.com", "type": "to"}
                 ],
-                "body": "FYI - forwarded immediately"
+                "body": "FYI - forwarded with undo"
             },
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -1310,10 +1317,9 @@ class TestEmailSendReplyForward:
         assert response.status_code == 201
         data = response.json()["data"]
         
-        # Forwarded email should be sent immediately when undo send is disabled
-        assert data["sent_at"] is not None
-        assert data["can_undo_send"] == False
-        assert data["folder"] == "sent"
+        # Forwarded email should be queued when undo send is enabled
+        assert data["scheduled_send_at"] is not None
+        assert data["can_undo_send"] == True
 
 
 class TestThreadSnooze:

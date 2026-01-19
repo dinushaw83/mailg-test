@@ -12,16 +12,32 @@ import {
   searchContacts,
   addBasicSearchQuery,
   removeFromSearchHistory,
+  getMatchingPreviousSearches,
+  getAllPreviousSearches,
 } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
-import { encodeForPath, buildSearchBarFromUrl, buildSearchUrlWithFilters } from "../../utils/helperFunctions";
+import { encodeForPath, buildSearchBarFromUrl } from "../../utils/helperFunctions";
 import AutocompleteInput from "./AutocompleteInput/AutocompleteInput";
 import { useActiveFiltersSync } from "./hooks/useActiveFiltersSync";
+import { ACTIVE_FILTERS } from "../../utils/searchParams";
 
 // Filter options for the search bar
-const filterOptions = ["Has attachment", "Last 7 days", "From me"];
+const filterOptions = [
+  {
+    label: "Has attachment",
+    value: ACTIVE_FILTERS.HAS_ATTACHMENT,
+  },
+  {
+    label: "From me",
+    value: ACTIVE_FILTERS.FROM_ME,
+  },
+  {
+    label: "Last 7 days",
+    value: ACTIVE_FILTERS.LAST_WEEK,
+  },
+];
 
 const useCustomHotKeys = ({ focusInput, goToLabel }) => {
   const { keyboardShortcuts } = useGlobalContext();
@@ -86,19 +102,19 @@ const SearchBar = () => {
     let filtered = [...emails];
 
     // Apply "Has attachment" filter
-    if (activeFilters.includes("Has attachment")) {
+    if (activeFilters.includes(ACTIVE_FILTERS.HAS_ATTACHMENT)) {
       filtered = filtered.filter((email) => email.attachments && email.attachments.length > 0);
     }
 
     // Apply "Last 7 days" filter (last 7 days including today)
-    if (activeFilters.includes("Last 7 days")) {
+    if (activeFilters.includes(ACTIVE_FILTERS.LAST_WEEK)) {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
       filtered = filtered.filter((email) => new Date(email.timestamp) >= sevenDaysAgo);
     }
 
     // Apply "From me" filter
-    if (activeFilters.includes("From me")) {
+    if (activeFilters.includes(ACTIVE_FILTERS.FROM_ME)) {
       filtered = filtered.filter((email) => email.from?.email === "john.doe@example.com" || email.from?.name === "me");
     }
 
@@ -106,7 +122,27 @@ const SearchBar = () => {
     return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
   }, [emails, activeFilters]);
 
-  // Get recent suggestions
+  // Get previous searches that match current input (when typing)
+  const matchingPreviousSearches = useMemo(() => {
+    if (!searchValue.trim()) {
+      return [];
+    }
+    const matches = getMatchingPreviousSearches(searchValue, 5);
+    // Filter out suggestions that were removed in this session
+    return matches.filter((suggestion) => !removedSuggestionsInSession.includes(suggestion));
+  }, [searchValue, removedSuggestionsInSession]);
+
+  // Get all previous searches (when input is empty)
+  const allPreviousSearches = useMemo(() => {
+    if (searchValue.trim()) {
+      return [];
+    }
+    const previousSearches = getAllPreviousSearches(6);
+    // Filter out suggestions that were removed in this session
+    return previousSearches.filter((suggestion) => !removedSuggestionsInSession.includes(suggestion));
+  }, [searchValue, removedSuggestionsInSession]);
+
+  // Get recent suggestions (when input is empty) - includes email subjects/names
   const recentSuggestions = useMemo(() => {
     if (searchValue.trim() || !isSearchIndexReady()) {
       return [];
@@ -133,35 +169,60 @@ const SearchBar = () => {
       // When both search and filters are active, apply filters to search results
       let filtered = searchResults.filter((result) => {
         // Apply "Has attachment" filter
-        if (activeFilters.includes("Has attachment")) {
+        if (activeFilters.includes(ACTIVE_FILTERS.HAS_ATTACHMENT)) {
           if (!result.attachments || result.attachments.length === 0) return false;
         }
 
         // Apply "From me" filter
-        if (activeFilters.includes("From me")) {
+        if (activeFilters.includes(ACTIVE_FILTERS.FROM_ME)) {
           if (result.from?.email !== "john.doe@example.com" && result.from?.name !== "me") return false;
         }
 
         return true;
       });
 
-      // Show only 1 recent suggestion when filters are active, then filtered results
-      const limitedSuggestions = recentSuggestions.slice(0, 1);
-      const combined = [...limitedSuggestions, ...filtered];
+      // Show matching previous searches first, then filtered results
+      const combined = [...matchingPreviousSearches, ...filtered];
 
       return combined;
     } else if (searchValue.trim()) {
-      return searchResults;
-    } else if (activeFilters.length > 0) {
-      // Show only 1 recent suggestion when filters are active, then filtered emails
-      const limitedSuggestions = recentSuggestions.slice(0, 1);
-      const combined = [...limitedSuggestions, ...filteredEmails];
+      // Show matching previous searches first, then search results
+      return [...matchingPreviousSearches, ...searchResults];
+    } else if (isFocused) {
+      // When input is empty and focused, show previous searches first, then recent suggestions
+      // Combine previous searches with recent suggestions, avoiding duplicates
+      const combined = [];
+      const seen = new Set();
+      
+      // Add previous searches first
+      allPreviousSearches.forEach((search) => {
+        if (!seen.has(search)) {
+          combined.push(search);
+          seen.add(search);
+        }
+      });
+      
+      // Add recent suggestions that aren't already in previous searches
+      recentSuggestions.forEach((suggestion) => {
+        if (!seen.has(suggestion) && combined.length < 6) {
+          combined.push(suggestion);
+          seen.add(suggestion);
+        }
+      });
+      
       return combined;
-    } else if (isFocused && isSearchIndexReady()) {
-      return recentSuggestions;
     }
     return [];
-  }, [searchValue, searchResults, recentSuggestions, isFocused, activeFilters, filteredEmails]);
+  }, [
+    searchValue,
+    searchResults,
+    recentSuggestions,
+    isFocused,
+    activeFilters,
+    filteredEmails,
+    matchingPreviousSearches,
+    allPreviousSearches,
+  ]);
 
   // Combined list of all navigable items (contacts + expanded content)
   const allNavigableItems = useMemo(() => {
@@ -191,9 +252,9 @@ const SearchBar = () => {
   // Helper function to convert activeFilters array to filter object
   const getFilterObject = () => {
     return {
-      hasAttachment: activeFilters.includes("Has attachment"),
-      fromMe: activeFilters.includes("From me"),
-      lastSevenDays: activeFilters.includes("Last 7 days"),
+      hasAttachment: activeFilters.includes(ACTIVE_FILTERS.HAS_ATTACHMENT),
+      fromMe: activeFilters.includes(ACTIVE_FILTERS.FROM_ME),
+      lastSevenDays: activeFilters.includes(ACTIVE_FILTERS.LAST_WEEK),
     };
   };
 
@@ -204,7 +265,6 @@ const SearchBar = () => {
         // Remove filter if already active
         return prev.filter((f) => f !== filter);
       } else {
-        // Add filter if not active
         return [...prev, filter];
       }
     });
@@ -248,44 +308,44 @@ const SearchBar = () => {
       }
     } else if (e.key === "Enter") {
       // If an item is highlighted, select it
-      if (highlightedIndex >= 0 && highlightedIndex < allNavigableItems.length) {
-        e.preventDefault();
-        const selectedItem = allNavigableItems[highlightedIndex];
-        handleResultClick(selectedItem.data);
-        setHighlightedIndex(-1);
-      } else {
-        // Check if there are any active filters (including all filter parameters from URL)
-        const urlParams = new URLSearchParams(location.search);
-        const filterParams = [
-          "from",
-          "to",
-          "attach_or_drive",
-          "datestart",
-          "dateend",
-          "daterangetype",
-          "is_unread",
-          "has_drive",
-          "has_youtube",
-        ];
-        const hasUrlFilters = filterParams.some((param) => urlParams.has(param));
-        const hasAnyFilters = activeFilters.length > 0 || hasUrlFilters;
-
-        // Add search query to history when submitted
-        if (searchValue.trim()) {
-          addToSearchHistory(searchValue);
-          addBasicSearchQuery(searchValue, getFilterObject());
-        } else if (!hasAnyFilters) {
-          // Don't navigate if no search value and no filters
-          return;
-        }
-
-        // Build URL with filters if any are active
-        const searchUrl = buildSearchUrlWithFilters(searchValue, activeFilters, loggedInUser?.email);
-        navigate(searchUrl);
-        setIsFocused(false);
-
-        e.target.blur();
+      // When searching from input bar, ignore all other advanced filters
+      // and just parse what's in the input
+      if (!searchValue.trim() && activeFilters.length === 0) {
+        // Don't navigate if no search value
+        return;
       }
+
+      // Add search query to history when submitted
+      addToSearchHistory(searchValue);
+      addBasicSearchQuery(searchValue, {});
+      const queryParams = new URLSearchParams();
+
+      let finalsEachValue = searchValue;
+      if (activeFilters.includes(ACTIVE_FILTERS.HAS_ATTACHMENT)) {
+        queryParams.set("attachment", "true");
+      }
+      if (activeFilters.includes(ACTIVE_FILTERS.FROM_ME)) {
+        queryParams.set("from", loggedInUser?.email);
+      }
+      if (activeFilters.includes(ACTIVE_FILTERS.LAST_WEEK)) {
+        finalsEachValue = finalsEachValue
+          .replace(/after:(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/g, "")
+          .replace(/before:(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/g, "");
+        const todayDate = new Date().toISOString().split("T")[0];
+        const targetDate = new Date(todayDate);
+        targetDate.setDate(targetDate.getDate() - 7);
+        const startDate = targetDate.toISOString().split("T")[0];
+        const endDate = todayDate;
+        queryParams.set("after", startDate);
+        queryParams.set("before", endDate);
+      }
+
+      // Build simple search URL with only the input value (ignore all filters)
+      const searchUrl = `/search/${encodeForPath(finalsEachValue)}?${queryParams.toString()}`;
+      navigate(searchUrl);
+      setIsFocused(false);
+
+      e.target.blur();
     } else if (e.key === "Escape" || e.key === "Esc") {
       setIsFocused(false);
       setHighlightedIndex(-1);
@@ -412,15 +472,17 @@ const SearchBar = () => {
           {/* Filter pills */}
           <div className={styles.filterPills}>
             {filterOptions.map((filter, index) => {
-              const isActive = activeFilters.includes(filter);
+              const isActive = activeFilters.includes(filter.value);
               return (
                 <Chip
                   key={index}
-                  label={filter}
+                  label={filter.label}
                   size="small"
                   className={`${styles.filterChip} ${isActive ? styles.filterChipActive : ""}`}
                   variant="outlined"
-                  onClick={() => handleFilterClick(filter)}
+                  onClick={() => {
+                    handleFilterClick(filter.value);
+                  }}
                   onMouseDown={(e) => e.preventDefault()}
                   icon={
                     isActive ? (
@@ -436,7 +498,6 @@ const SearchBar = () => {
               );
             })}
           </div>
-
           {/* Search results or suggestions */}
           <div className={styles.recentSearches}>
             <List
@@ -496,7 +557,6 @@ const SearchBar = () => {
                   })}
                 </>
               )}
-
               {expandedContent.length > 0 ? (
                 // Show search results or suggestions
                 expandedContent.map((item, contentIndex) => {
@@ -636,7 +696,6 @@ const SearchBar = () => {
               )}
             </List>
           </div>
-
           {/* All search result navigation */}
           {(searchValue || activeFilters.length > 0) && (
             <div className={styles.allSearchResults}>

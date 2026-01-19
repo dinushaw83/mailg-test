@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { Box, Chip, Menu, MenuItem, Divider, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import CustomDateRange from "./CustomDateRange";
+import { ACTIVE_FILTERS, getActiveFilters } from "../../utils/searchParams";
 
 export default function DateFilterChip({ label }) {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -31,49 +32,25 @@ export default function DateFilterChip({ label }) {
     });
   };
 
-  // Get current active filter
-  const getActiveFilter = () => {
-    const dateRangeType = searchParams.get("daterangetype");
-    const dateStart = searchParams.get("datestart");
-    const dateEnd = searchParams.get("dateend");
-
-    if (!dateRangeType || (!dateStart && !dateEnd)) return "Any time";
-
-    // If we have both datestart and dateend, it's a custom range
-    if (dateStart && dateEnd) {
-      return `${formatDate(dateStart)} – ${formatDate(dateEnd)}`;
-    }
-
-    // If we have only datestart, it's "After" filter (Last 7 days default)
-    if (dateStart) {
-      return `After ${formatDate(dateStart)}`;
-    }
-
-    // If we have only dateend, check which preset it matches
-    if (dateEnd) {
-      const endDate = new Date(dateEnd);
-      const today = new Date();
-      const diffTime = today - endDate;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      if (diffDays >= 6 && diffDays <= 8) return "Older than a week";
-      if (diffDays >= 28 && diffDays <= 32) return "Older than a month";
-      if (diffDays >= 180 && diffDays <= 185) return "Older than 6 months";
-      if (diffDays >= 363 && diffDays <= 367) return "Older than a year";
-
-      return `Before ${formatDate(dateEnd)}`;
-    }
-
-    return "Any time";
-  };
-
   // Get chip label
   const getChipLabel = () => {
-    const activeFilter = getActiveFilter();
-    if (activeFilter === "Any time") {
-      return label;
+    const activeFilters = getActiveFilters(location);
+    if (activeFilters.includes(ACTIVE_FILTERS.LAST_WEEK)) {
+      return "Older than a week";
     }
-    return activeFilter;
+    if (activeFilters.includes(ACTIVE_FILTERS.LAST_MONTH)) {
+      return "Older than a month";
+    }
+    if (activeFilters.includes(ACTIVE_FILTERS.LAST_6_MONTHS)) {
+      return "Older than 6 months";
+    }
+    if (activeFilters.includes(ACTIVE_FILTERS.LAST_YEAR)) {
+      return "Older than a year";
+    }
+    if (activeFilters.includes(ACTIVE_FILTERS.CUSTOM_RANGE)) {
+      return "Custom range";
+    }
+    return "Any time";
   };
 
   // Handle date filter selection
@@ -82,60 +59,63 @@ export default function DateFilterChip({ label }) {
 
     if (filterType === "Any time") {
       // Remove all date filters
-      newSearchParams.delete("datestart");
-      newSearchParams.delete("dateend");
-      newSearchParams.delete("daterangetype");
+      newSearchParams.delete("after");
+      newSearchParams.delete("before");
     } else {
       const today = new Date();
-      let targetDate;
+      let startDate;
+      let endDate;
 
       // Calculate the date based on filter type
       switch (filterType) {
-        case "Older than a week":
-          targetDate = new Date(today);
-          targetDate.setDate(today.getDate() - 7);
+        case "Older than a week": {
+          const newStartDate = new Date(today);
+          newStartDate.setDate(today.getDate() - 7);
+          startDate = newStartDate;
+          const newEndDate = new Date(today);
+          newEndDate.setDate(today.getDate() + 7);
+          endDate = newEndDate;
           break;
+        }
         case "Older than a month":
-          targetDate = new Date(today);
-          targetDate.setMonth(today.getMonth() - 1);
+          const newStartDate = new Date(today);
+          newStartDate.setMonth(today.getMonth() - 1);
+          startDate = newStartDate;
+          const newEndDate = new Date(today);
+          newEndDate.setMonth(today.getMonth() + 1);
+          endDate = newEndDate;
           break;
-        case "Older than 6 months":
-          targetDate = new Date(today);
-          targetDate.setMonth(today.getMonth() - 6);
+        case "Older than 6 months": {
+          const newStartDate = new Date(today);
+          newStartDate.setMonth(today.getMonth() - 6);
+          startDate = newStartDate;
+          const newEndDate = new Date(today);
+          newEndDate.setMonth(today.getMonth() + 6);
+          endDate = newEndDate;
           break;
-        case "Older than a year":
-          targetDate = new Date(today);
-          targetDate.setFullYear(today.getFullYear() - 1);
+        }
+        case "Older than a year": {
+          const newStartDate = new Date(today);
+          newStartDate.setFullYear(today.getFullYear() - 1);
+          startDate = newStartDate;
+          const newEndDate = new Date(today);
+          newEndDate.setFullYear(today.getFullYear() + 1);
+          endDate = newEndDate;
           break;
+        }
         default:
           return;
       }
 
-      const dateString = targetDate.toISOString().split("T")[0];
+      startDate = startDate.toISOString().split("T")[0];
+      endDate = endDate.toISOString().split("T")[0];
+
+      newSearchParams.set("after", startDate);
+      newSearchParams.set("before", endDate);
 
       // For "Older than..." filters, use dateend
-      newSearchParams.delete("datestart");
-      newSearchParams.set("dateend", dateString);
-      newSearchParams.set("daterangetype", "custom_range");
     }
 
-    // Check if any filters remain active
-    const hasOtherFilters =
-      newSearchParams.has("from") ||
-      newSearchParams.has("to") ||
-      newSearchParams.has("attach_or_drive") ||
-      newSearchParams.has("is_unread");
-    const hasDateFilter = newSearchParams.has("datestart") || newSearchParams.has("dateend");
-
-    // Set isrefinement=true if any filters are active (prevents filter params from appearing in searchbar)
-    // Delete it if no filters remain
-    if (hasDateFilter || hasOtherFilters) {
-      newSearchParams.set("isrefinement", "true");
-    } else {
-      newSearchParams.delete("isrefinement");
-    }
-
-    // Update URL
     navigate(
       {
         pathname: location.pathname,
@@ -160,9 +140,8 @@ export default function DateFilterChip({ label }) {
     const newSearchParams = new URLSearchParams(location.search);
 
     // Set both datestart and dateend for custom range
-    newSearchParams.set("datestart", startDate);
-    newSearchParams.set("dateend", endDate);
-    newSearchParams.set("daterangetype", "custom_range");
+    newSearchParams.set("after", startDate);
+    newSearchParams.set("before", endDate);
 
     // Always set isrefinement=true when applying date filters
     // This prevents date parameters from appearing in the search bar
@@ -180,9 +159,9 @@ export default function DateFilterChip({ label }) {
     handleCustomRangeClose();
   };
 
-  const activeFilter = getActiveFilter();
+  const activeFilter = getActiveFilters(location);
   // Chip is only active when a date filter is actually applied (not "Any time")
-  const chipIsActive = activeFilter !== "Any time";
+  const chipIsActive = getChipLabel() !== "Any time";
 
   const menuItems = ["Any time", "Older than a week", "Older than a month", "Older than 6 months", "Older than a year"];
 
