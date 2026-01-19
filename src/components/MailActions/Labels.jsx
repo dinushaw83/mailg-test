@@ -63,29 +63,31 @@ export const Labels = ({
   const availableLabels = useMemo(() => {
     // Ensure labels is an object (Redux initializes it as [] but fills it as {})
     const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
-    return Object.entries(labelsObject)
-      // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
-      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
-      .map(([key, meta]) => {
-        const fullPath = buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey);
+    return (
+      Object.entries(labelsObject)
+        // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+        .map(([key, meta]) => {
+          const fullPath = buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey);
 
-        return {
-          key, // Keep original key for operations (UUID or composite)
-          fullPath, // Full path for display (e.g., "Parent/child/subchild")
-          name: meta.name || key,
-          color: meta.color,
-          isCurrentlyApplied: currentLabels.has(key),
-          ...meta,
-        };
-      })
-      .filter((label) => {
-        // Use full path for search filtering
-        return label.fullPath.toLowerCase().includes(searchQuery.toLowerCase());
-      })
-      .sort((a, b) => {
-        // Sort by full path
-        return a.fullPath.localeCompare(b.fullPath);
-      });
+          return {
+            key, // Keep original key for operations (UUID or composite)
+            fullPath, // Full path for display (e.g., "Parent/child/subchild")
+            name: meta.name || key,
+            color: meta.color,
+            isCurrentlyApplied: currentLabels.has(key),
+            ...meta,
+          };
+        })
+        .filter((label) => {
+          // Use full path for search filtering
+          return label.fullPath.toLowerCase().includes(searchQuery.toLowerCase());
+        })
+        .sort((a, b) => {
+          // Sort by full path
+          return a.fullPath.localeCompare(b.fullPath);
+        })
+    );
   }, [labels, searchQuery, currentLabels, labelIdToKeyMap]);
 
   const handleApplyLabels = useCallback(() => {

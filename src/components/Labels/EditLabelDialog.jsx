@@ -40,10 +40,7 @@ export default function EditLabelDialog({
     setParentKey(defaultParentKey ?? null);
   }, [defaultParentKey]);
 
-  const parentChoices = useMemo(
-    () => flattenTreeForSelect(labelTree).filter((opt) => !opt.system),
-    [labelTree]
-  );
+  const parentChoices = useMemo(() => flattenTreeForSelect(labelTree).filter((opt) => !opt.system), [labelTree]);
 
   const trimmed = name.trim();
   const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;

@@ -1,5 +1,16 @@
-import { beToFeDraft, feToBeDraftPayload, feToBeDraftUpdatePayload, feToBeReplyDraftPayload } from "../utils/draftMapper";
-import { createDraftThunk, createReplyDraftThunk, fetchEmailByIdThunk, setEmailsForCategory, updateDraftThunk } from "../store/slices/mailSlice";
+import {
+  beToFeDraft,
+  feToBeDraftPayload,
+  feToBeDraftUpdatePayload,
+  feToBeReplyDraftPayload,
+} from "../utils/draftMapper";
+import {
+  createDraftThunk,
+  createReplyDraftThunk,
+  fetchEmailByIdThunk,
+  setEmailsForCategory,
+  updateDraftThunk,
+} from "../store/slices/mailSlice";
 import {
   generateLegacyThreadId,
   generateNextIntegerId,
@@ -153,9 +164,10 @@ export const useDraftManagement = ({
 
         if (isFirstSave) {
           // Determine if this is a reply from replyType (if isReply not explicitly set)
-          const isReplyMode = isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
-          const isReplyAllMode = replyAll || (replyType === "replyAll");
-          
+          const isReplyMode =
+            isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
+          const isReplyAllMode = replyAll || replyType === "replyAll";
+
           // POST to create new draft
           if (isReplyMode && parentEmail?.id) {
             // Use reply endpoint for replies - payload only needs body, html_body, reply_all
@@ -169,9 +181,8 @@ export const useDraftManagement = ({
         } else {
           // PUT to update existing draft
           // Use currentDraftId if it's a UUID (from backend), otherwise fallback to backendDraftIdRef
-          const backendId = (currentDraftId && isUUID(currentDraftId.toString())) 
-            ? currentDraftId.toString() 
-            : backendDraftIdRef.current;
+          const backendId =
+            currentDraftId && isUUID(currentDraftId.toString()) ? currentDraftId.toString() : backendDraftIdRef.current;
           if (!backendId) {
             console.warn("Cannot update draft: no backend draft ID");
             return;
@@ -228,8 +239,7 @@ export const useDraftManagement = ({
                 const currentDrafts = state.mail.drafts || [];
                 const filteredDrafts = currentDrafts.filter(
                   (email) =>
-                    email.id?.toString() !== draftId?.toString() &&
-                    email.id?.toString() !== backendDraft.id?.toString()
+                    email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
                 );
                 const updatedDrafts = [feDraftFallback, ...filteredDrafts];
                 dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
@@ -252,7 +262,9 @@ export const useDraftManagement = ({
                 // Update compose window draft ID
                 if (composeWindowId && setComposeWindows) {
                   setComposeWindows((prev) =>
-                    prev.map((window) => (window.id === composeWindowId ? { ...window, draftId: newBackendId } : window))
+                    prev.map((window) =>
+                      window.id === composeWindowId ? { ...window, draftId: newBackendId } : window
+                    )
                   );
                 }
               }
@@ -264,8 +276,7 @@ export const useDraftManagement = ({
             const currentDrafts = state.mail.drafts || [];
             const filteredDrafts = currentDrafts.filter(
               (email) =>
-                email.id?.toString() !== draftId?.toString() &&
-                email.id?.toString() !== fetchedDraft.id?.toString()
+                email.id?.toString() !== draftId?.toString() && email.id?.toString() !== fetchedDraft.id?.toString()
             );
             const updatedDrafts = [feDraft, ...filteredDrafts];
             dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
@@ -302,8 +313,7 @@ export const useDraftManagement = ({
               const currentDrafts = state.mail.drafts || [];
               const filteredDrafts = currentDrafts.filter(
                 (email) =>
-                  email.id?.toString() !== draftId?.toString() &&
-                  email.id?.toString() !== backendDraft.id?.toString()
+                  email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
               );
               const updatedDrafts = [feDraft, ...filteredDrafts];
               dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
@@ -382,7 +392,11 @@ export const useDraftManagement = ({
           }
 
           // Note: React Query cache invalidation is handled by listeners in reactQueryListeners.js
-        } else if (createDraftThunk.rejected.match(action) || createReplyDraftThunk.rejected.match(action) || updateDraftThunk.rejected.match(action)) {
+        } else if (
+          createDraftThunk.rejected.match(action) ||
+          createReplyDraftThunk.rejected.match(action) ||
+          updateDraftThunk.rejected.match(action)
+        ) {
           console.error("Error saving draft to backend:", action.payload || action.error);
           // Don't break local save flow - just log the error
         }
@@ -391,7 +405,21 @@ export const useDraftManagement = ({
         // Don't break local save flow - just log the error
       }
     },
-    [to, cc, bcc, subject, content, draftId, composeWindowId, setComposeWindows, dispatch, isReply, parentEmail, replyAll, replyType]
+    [
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      draftId,
+      composeWindowId,
+      setComposeWindows,
+      dispatch,
+      isReply,
+      parentEmail,
+      replyAll,
+      replyType,
+    ]
   );
 
   // Create draft email object
@@ -508,7 +536,6 @@ export const useDraftManagement = ({
 
       // Note: API call is debounced separately in useEffect below
 
-
       return true;
     },
     [
@@ -598,25 +625,26 @@ export const useDraftManagement = ({
     const isFirstSave = !hasBackendDraft && !hasCurrentDraftId && isFirstSaveRef.current;
 
     // Determine if this is a reply from replyType (if isReply not explicitly set)
-    const isReplyMode = isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
+    const isReplyMode =
+      isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
 
     // For reply drafts on first save, check body content AND valid recipients AND content changed
     if (isReplyMode && isFirstSave) {
       const hasBody = content.html.trim().length > 0 || content.plainText.trim().length > 0;
       const hasValidRecipients =
         getValidRecipients(to).length > 0 || getValidRecipients(cc).length > 0 || getValidRecipients(bcc).length > 0;
-      
+
       // Only create draft if user typed something AND there are valid recipients
       if (!hasBody || !hasValidRecipients) {
         return;
       }
-      
+
       // For existing drafts that were already saved, check if content actually changed
       // This prevents API calls on scroll when content reference changes but values are the same
       if (lastApiContentRef.current && !hasApiContentChanged()) {
         return;
       }
-      
+
       // Clear existing API call timeout
       if (apiCallTimeoutRef.current) {
         clearTimeout(apiCallTimeoutRef.current);
@@ -671,7 +699,7 @@ export const useDraftManagement = ({
         clearTimeout(apiCallTimeoutRef.current);
       }
     };
-  }, [to, cc, bcc, subject, content,  hasApiContentChanged, isReply, parentEmail, replyAll, replyType, currentDraftId]);
+  }, [to, cc, bcc, subject, content, hasApiContentChanged, isReply, parentEmail, replyAll, replyType, currentDraftId]);
 
   // Initialize previous content reference when form state is loaded for existing draft
   useEffect(() => {

@@ -45,10 +45,7 @@ export default function CreateLabelDialog({
 
   const inputRef = React.useRef(null);
 
-  const parentChoices = useMemo(
-    () => flattenTreeForSelect(labelTree).filter((opt) => !opt.system),
-    [labelTree]
-  );
+  const parentChoices = useMemo(() => flattenTreeForSelect(labelTree).filter((opt) => !opt.system), [labelTree]);
 
   const trimmed = name.trim();
   const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;

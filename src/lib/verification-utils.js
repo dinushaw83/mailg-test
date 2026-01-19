@@ -3,7 +3,7 @@ export const KEYS_TO_CLEAN = ["plain_body", "body", "description"];
 export const stringifyReplacer = (key, value) => {
   const ignoredFields = [
     "createdAt",
-    "updatedAt", 
+    "updatedAt",
     "lastUpdated",
     "created_at",
     "updated_at",
@@ -23,7 +23,7 @@ export const stringifyReplacer = (key, value) => {
     "lastSearchInfo",
     "searchResults",
   ];
-  
+
   if (ignoredFields.includes(key) || /id$/i.test(key)) {
     return undefined;
   }
@@ -53,25 +53,25 @@ export const sortObjectKeys = (obj) => {
       // For object arrays, sort the objects by a consistent key
       // and then sort the keys within each object
       const sortedArray = obj.map(sortObjectKeys);
-      
+
       // Try to sort by common keys that might exist in cart items
-      if (sortedArray.length > 0 && typeof sortedArray[0] === 'object' && sortedArray[0] !== null) {
+      if (sortedArray.length > 0 && typeof sortedArray[0] === "object" && sortedArray[0] !== null) {
         const firstItem = sortedArray[0];
         // Check for common sorting keys in cart items
-        if ('id' in firstItem) {
+        if ("id" in firstItem) {
           return sortedArray.sort((a, b) => {
-            if (typeof a.id === 'number' && typeof b.id === 'number') {
+            if (typeof a.id === "number" && typeof b.id === "number") {
               return a.id - b.id;
             }
             return String(a.id).localeCompare(String(b.id));
           });
-        } else if ('itemName' in firstItem) {
-          return sortedArray.sort((a, b) => String(a.itemName || '').localeCompare(String(b.itemName || '')));
-        } else if ('name' in firstItem) {
-          return sortedArray.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+        } else if ("itemName" in firstItem) {
+          return sortedArray.sort((a, b) => String(a.itemName || "").localeCompare(String(b.itemName || "")));
+        } else if ("name" in firstItem) {
+          return sortedArray.sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
         }
       }
-      
+
       return sortedArray;
     }
   }
@@ -83,4 +83,3 @@ export const sortObjectKeys = (obj) => {
       return result;
     }, {});
 };
-

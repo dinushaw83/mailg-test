@@ -1,6 +1,12 @@
 import React, { useRef, useState } from "react";
 import { beToFeDraft, feToBeDraftUpdatePayload } from "../utils/draftMapper";
-import { cancelSendEmailByIdThunk, fetchEmailByIdThunk, sendEmailByIdThunk, setEmailsForCategory, updateDraftThunk } from "../store/slices/mailSlice";
+import {
+  cancelSendEmailByIdThunk,
+  fetchEmailByIdThunk,
+  sendEmailByIdThunk,
+  setEmailsForCategory,
+  updateDraftThunk,
+} from "../store/slices/mailSlice";
 import { extractEmbeddedImageIds, updateEmbeddedImagesEmailId } from "../utils/embeddedImages";
 import {
   generateLegacyThreadId,
@@ -203,7 +209,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
 
         // Update draft first
         const updateAction = await dispatch(updateDraftThunk({ emailId: currentDraftId, draftData: updatePayload }));
-        
+
         if (!updateDraftThunk.fulfilled.match(updateAction)) {
           // If update fails, still try to send (draft might be up-to-date)
           console.warn("Failed to update draft before sending:", updateAction.payload || updateAction.error);
@@ -221,9 +227,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
             // Add to Redux sent emails
             const state = store.getState();
             const currentSent = state.mail.sent || [];
-            const filteredSent = currentSent.filter(
-              (email) => email.id?.toString() !== feSentEmail.id?.toString()
-            );
+            const filteredSent = currentSent.filter((email) => email.id?.toString() !== feSentEmail.id?.toString());
             const updatedSent = [feSentEmail, ...filteredSent];
             dispatch(setEmailsForCategory({ category: "sent", emails: updatedSent }));
 
@@ -498,16 +502,12 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           // Remove from sent emails
           const state = store.getState();
           const currentSent = state.mail.sent || [];
-          const filteredSent = currentSent.filter(
-            (email) => email.id?.toString() !== emailId?.toString()
-          );
+          const filteredSent = currentSent.filter((email) => email.id?.toString() !== emailId?.toString());
           dispatch(setEmailsForCategory({ category: "sent", emails: filteredSent }));
 
           // Add back to drafts
           const currentDrafts = state.mail.drafts || [];
-          const filteredDrafts = currentDrafts.filter(
-            (email) => email.id?.toString() !== emailId?.toString()
-          );
+          const filteredDrafts = currentDrafts.filter((email) => email.id?.toString() !== emailId?.toString());
           const updatedDrafts = [feDraftEmail, ...filteredDrafts];
           dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
         }

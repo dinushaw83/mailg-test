@@ -193,7 +193,7 @@ const SearchBar = () => {
       // Combine previous searches with recent suggestions, avoiding duplicates
       const combined = [];
       const seen = new Set();
-      
+
       // Add previous searches first
       allPreviousSearches.forEach((search) => {
         if (!seen.has(search)) {
@@ -201,7 +201,7 @@ const SearchBar = () => {
           seen.add(search);
         }
       });
-      
+
       // Add recent suggestions that aren't already in previous searches
       recentSuggestions.forEach((suggestion) => {
         if (!seen.has(suggestion) && combined.length < 6) {
@@ -209,7 +209,7 @@ const SearchBar = () => {
           seen.add(suggestion);
         }
       });
-      
+
       return combined;
     }
     return [];

@@ -269,7 +269,6 @@ const emailService = {
     }
   },
 
-  
   /**
    * Create a reply draft
    * @param {string} emailId - Email UUID to reply to

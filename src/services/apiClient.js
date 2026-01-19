@@ -32,19 +32,19 @@ async function fetchConfig() {
         },
       });
 
-      const response = await tempClient.get('/config');
+      const response = await tempClient.get("/config");
       const { apiUrl } = response.data;
-      
+
       if (apiUrl) {
         apiClient.defaults.baseURL = apiUrl;
       } else {
         // Fallback to Vite env var or default
         apiClient.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:8766/api";
       }
-      
+
       return apiUrl || apiClient.defaults.baseURL;
     } catch (error) {
-      console.warn('Failed to fetch API config, using fallback:', error);
+      console.warn("Failed to fetch API config, using fallback:", error);
       // Fallback to Vite env var or default if config fetch fails
       apiClient.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:8766/api";
       return apiClient.defaults.baseURL;

@@ -285,13 +285,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
     } catch (e) {
       console.error("Delete forever failed:", e);
     }
-  }, [
-    selectionMatchKeys,
-    showNoConversationsSelectedSnackbar,
-    deleteForever,
-    selectedConversationCount,
-    setSnackbar,
-  ]);
+  }, [selectionMatchKeys, showNoConversationsSelectedSnackbar, deleteForever, selectedConversationCount, setSnackbar]);
 
   const hasUnreadEmails = useMemo(() => {
     return selectedEmails.some((email) => !email.is_read);
