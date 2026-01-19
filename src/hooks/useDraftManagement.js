@@ -575,8 +575,13 @@ export const useDraftManagement = ({
 
   // Debounced API call - triggers directly on input changes
   useEffect(() => {
-    // Determine if this is first save: no currentDraftId OR currentDraftId is not a UUID (local draft)
-    const isFirstSave = !currentDraftId || !isUUID(currentDraftId.toString());
+    // Determine if this is first save
+    // Check if we have a backend draft ID from a previous POST (for reply drafts without composeWindowId)
+    const hasBackendDraft = backendDraftIdRef.current !== null;
+    // Check if currentDraftId prop indicates an existing draft (for drafts loaded from parent)
+    const hasCurrentDraftId = currentDraftId && isUUID(currentDraftId.toString());
+    // It's first save only if we have neither AND isFirstSaveRef is still true
+    const isFirstSave = !hasBackendDraft && !hasCurrentDraftId && isFirstSaveRef.current;
 
     // Determine if this is a reply from replyType (if isReply not explicitly set)
     const isReplyMode = isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
