@@ -27,7 +27,6 @@ import {
 } from "../store/slices/mailSlice";
 import { useGlobalContext } from "../contexts/GlobalContext";
 import { useIdResolver, makeMatch } from "./useIdResolver";
-import { clearSnoozeViewed } from "../utils/snoozeTracking";
 
 // Re-export makeMatch for backward compatibility
 export { makeMatch };
@@ -807,9 +806,6 @@ export default function useMailActions() {
       const { threadIds: resolvedThreadIds, allIds, matchAll } = resolveIds(ids, providedThreadIds);
       const removedInboxIds = new Set();
       const snoozeUntilISO = snoozeUntil.toISOString();
-
-      // Clear "viewed after snooze" tracking for re-snoozed threads
-      resolvedThreadIds.forEach(clearSnoozeViewed);
 
       // Call backend API with thread IDs
       if (resolvedThreadIds.length === 1) {

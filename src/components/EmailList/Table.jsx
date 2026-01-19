@@ -17,7 +17,6 @@ import { useElementDimensions } from "../../hooks/useElementDimensions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import useMailActions from "../../hooks/useMailActions";
-import { shouldShowSnoozeBadge } from "../../utils/snoozeTracking";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -36,6 +35,12 @@ const SnoozedEmailIndicator = styled("span")`
   font-size: 0.75rem;
   font-weight: 500;
 `;
+
+// Check if email should show "Snoozed email" badge
+// Uses backend-provided `recently_unsnoozed` field set when snooze time passes
+const shouldShowSnoozeBadge = (email) => {
+  return email?.recently_unsnoozed === true;
+};
 
 const HoverDiv = styled.div`
   display: none;

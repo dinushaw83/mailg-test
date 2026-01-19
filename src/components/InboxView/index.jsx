@@ -15,7 +15,6 @@ import styled from "@emotion/styled";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 import { useQuery } from "@tanstack/react-query";
-import { markSnoozeViewed, clearSnoozeViewed } from "../../utils/snoozeTracking";
 
 // Mapping of folder keys to display names for document title
 const FOLDER_DISPLAY_NAMES = {
@@ -193,20 +192,6 @@ export const EmailContent = ({
     const snoozeDate = new Date(snoozeUntil);
     return !isNaN(snoozeDate.getTime()) && snoozeDate > new Date();
   })();
-
-  // Mark snooze as viewed when email is opened after snooze has expired
-  // This removes the "Snoozed email" badge from the email list
-  useEffect(() => {
-    if (!thread?.thread_id || !snoozeUntil) return;
-    
-    const snoozeDate = new Date(snoozeUntil);
-    if (isNaN(snoozeDate.getTime())) return;
-    
-    // If snooze has expired (time has passed), mark it as viewed
-    if (snoozeDate <= new Date()) {
-      markSnoozeViewed(thread.thread_id);
-    }
-  }, [thread?.thread_id, snoozeUntil]);
 
   // Format snooze time for display
   const formatSnoozeTime = useCallback((snoozeDate) => {
