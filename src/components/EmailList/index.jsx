@@ -211,38 +211,13 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   const getLabelBadges = (email) => {
-    // Filter out system labels and only show user-created labels with colors
-    // System labels: Inbox, Sent, Drafts, Spam, Trash, Starred, Important, etc.
-    const systemLabels = new Set([
-      "inbox",
-      "sent",
-      "drafts",
-      "spam",
-      "trash",
-      "starred",
-      "important",
-      "snoozed",
-      "scheduled",
-      "all",
-      "chats",
-      "category_primary",
-      "category_social",
-      "category_promotions",
-      "category_updates",
-      "category_forums",
-    ]);
-
-    return (email.labels || [])
-      .filter((labelObj) => {
-        // Only include labels that have a name and are not system labels
-        const name = (labelObj?.name || "").toLowerCase();
-        return name && !systemLabels.has(name) && labelObj.color;
-      })
-      .map((labelObj) => ({
-        key: labelObj.id || labelObj.name,
-        displayName: labelObj.name,
-        color: labelObj.color,
-      }));
+    // Simply return the label objects with their id, name, and color
+    // Labels are already in object format: { id, name, color }
+    return (email.labels || []).map((labelObj) => ({
+      key: labelObj.id || labelObj.name,
+      displayName: labelObj.name,
+      color: labelObj.color,
+    }));
   };
 
   useEffect(() => {
