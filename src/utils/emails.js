@@ -616,7 +616,8 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 
     // Use pre-computed messageCount if available (from useFolderEmails thread fetch),
     // otherwise fall back to calculated count from available messages
-    const preComputedMessageCount = last.messageCount || last.thread_email_count || first.messageCount || first.thread_email_count;
+    const preComputedMessageCount =
+      last.messageCount || last.thread_email_count || first.messageCount || first.thread_email_count;
 
     return {
       // Keep navigation compatible with message details by using last message id

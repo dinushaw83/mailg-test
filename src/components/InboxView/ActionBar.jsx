@@ -219,7 +219,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   const threadEmails = useMemo(() => {
     // Normalize thread_id to string for comparison
     const normalizedThreadId = String(thread?.thread_id ?? "").trim();
-    
+
     if (providedEmails && Array.isArray(providedEmails) && providedEmails.length > 0) {
       // Filter by thread_id, using string comparison for consistency
       const filtered = providedEmails.filter((email) => {
@@ -755,11 +755,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         // Always additive when not moving
         // Use modifyLabels with the created label's UUID to sync with backend
         if (createdLabelId) {
-          modifyLabels(
-            conversationMatchKeys,
-            { add: [createdLabelId], remove: [] },
-            conversationMatchKeys
-          );
+          modifyLabels(conversationMatchKeys, { add: [createdLabelId], remove: [] }, conversationMatchKeys);
         } else {
           addLabels(conversationMatchKeys, [newKey]);
         }
@@ -787,7 +783,14 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       thread_id: email.thread_id,
       important: !!email.is_important,
     }));
-    const threadIdsToUpdate = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
+    const threadIdsToUpdate = [
+      ...new Set(
+        previousStates
+          .filter((state) => !state.important)
+          .map((state) => state.thread_id)
+          .filter(Boolean)
+      ),
+    ];
 
     if (!threadIdsToUpdate.length) {
       setSnackbar({
@@ -809,8 +812,22 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
-            const toNotImportant = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
+            const toImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
+            const toNotImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => !state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({
@@ -834,7 +851,14 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       thread_id: email.thread_id,
       important: !!email.is_important,
     }));
-    const threadIdsToUpdate = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
+    const threadIdsToUpdate = [
+      ...new Set(
+        previousStates
+          .filter((state) => state.important)
+          .map((state) => state.thread_id)
+          .filter(Boolean)
+      ),
+    ];
 
     if (!threadIdsToUpdate.length) {
       setSnackbar({
@@ -856,8 +880,22 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
-            const toNotImportant = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
+            const toImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
+            const toNotImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => !state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({
@@ -971,10 +1009,15 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           // background: "pink",
         }}
       >
-        <Icon name="arrow_back" onClick={() => {
-          // Needed to support going back to filters
-          navigate(-1)
-          }} style={{ marginRight: "20px" }} label="Back" />
+        <Icon
+          name="arrow_back"
+          onClick={() => {
+            // Needed to support going back to filters
+            navigate(-1);
+          }}
+          style={{ marginRight: "20px" }}
+          label="Back"
+        />
 
         <>
           <Icon name="archive" label="Archive" onClick={handleArchive} />

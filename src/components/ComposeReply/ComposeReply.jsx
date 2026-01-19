@@ -71,10 +71,11 @@ const ComposeReply = React.forwardRef(({ email, draft }, ref) => {
           } catch (deleteError) {
             // If draft doesn't exist (404), that's fine - it's already deleted
             // Check for 404 in both error response formats
-            const is404 = deleteError?.statusCode === 404 || 
-                          deleteError?.response?.status === 404 ||
-                          deleteError?.message?.includes("not found");
-            
+            const is404 =
+              deleteError?.statusCode === 404 ||
+              deleteError?.response?.status === 404 ||
+              deleteError?.message?.includes("not found");
+
             // Only log non-404 errors
             if (!is404) {
               console.error("Failed to delete existing draft:", deleteError);

@@ -11,10 +11,8 @@ const buildIdIndex = (selection) => {
   else if (Array.isArray(selection)) arr = selection;
   else if (selection instanceof Set) arr = [...selection];
   else arr = [selection];
-  
-  return new Set(
-    arr.map((x) => String(x ?? "").trim()).filter(Boolean)
-  );
+
+  return new Set(arr.map((x) => String(x ?? "").trim()).filter(Boolean));
 };
 
 /**
@@ -89,8 +87,15 @@ export function useIdResolver() {
         threadIds = Array.isArray(providedThreadIds) ? providedThreadIds.filter(Boolean) : [providedThreadIds];
       } else {
         // Extract thread IDs from matching emails
-        threadIds = [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id).filter(Boolean))];
-        
+        threadIds = [
+          ...new Set(
+            emails
+              .filter((m) => match(m))
+              .map((m) => m.thread_id)
+              .filter(Boolean)
+          ),
+        ];
+
         if (threadIds.length === 0 && emailIds.length > 0) {
           threadIds = emailIds;
         }
@@ -102,11 +107,11 @@ export function useIdResolver() {
       const matchAll = makeMatch(allIds);
 
       return {
-        emailIds,        // Array of email IDs
-        threadIds,       // Array of thread IDs
-        allIds,          // Combined array for cache matching
-        match,           // Matcher for original input IDs
-        matchAll,        // Matcher for all IDs (email + thread)
+        emailIds, // Array of email IDs
+        threadIds, // Array of thread IDs
+        allIds, // Combined array for cache matching
+        match, // Matcher for original input IDs
+        matchAll, // Matcher for all IDs (email + thread)
         hasEmailIds: emailIds.length > 0,
         hasThreadIds: threadIds.length > 0,
         isSingle: emailIds.length === 1,
@@ -144,7 +149,14 @@ export function useIdResolver() {
   const getThreadIdsForEmails = useCallback(
     (emailIds) => {
       const match = makeMatch(emailIds);
-      return [...new Set(emails.filter((m) => match(m)).map((m) => m.thread_id).filter(Boolean))];
+      return [
+        ...new Set(
+          emails
+            .filter((m) => match(m))
+            .map((m) => m.thread_id)
+            .filter(Boolean)
+        ),
+      ];
     },
     [emails]
   );
@@ -158,7 +170,10 @@ export function useIdResolver() {
   const getEmailIdsForThreads = useCallback(
     (threadIds) => {
       const threadIdSet = new Set(Array.isArray(threadIds) ? threadIds : [threadIds]);
-      return emails.filter((m) => threadIdSet.has(m.thread_id)).map((m) => m.id).filter(Boolean);
+      return emails
+        .filter((m) => threadIdSet.has(m.thread_id))
+        .map((m) => m.id)
+        .filter(Boolean);
     },
     [emails]
   );

@@ -1,10 +1,10 @@
 // RDT operators that require model response input
-export const RDT_OPERATORS = ['FACTUAL_VERIFICATION', 'REASONING_QUALITY', 'INFORMATION_PRECISION'];
+export const RDT_OPERATORS = ["FACTUAL_VERIFICATION", "REASONING_QUALITY", "INFORMATION_PRECISION"];
 
 // Import judges.json
-// Vite handles this automatically. For Node.js contexts that require 'with', 
+// Vite handles this automatically. For Node.js contexts that require 'with',
 // we handle it via other means or use a fallback.
-import judgesDataRaw from '../../data/judges.json' with { type: 'json' };
+import judgesDataRaw from "../../data/judges.json" with { type: "json" };
 
 // Handle both default export and named export formats
 const judgesData = judgesDataRaw.default || judgesDataRaw;
@@ -14,12 +14,12 @@ const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   // Load judges.json if not already loaded
   if (!judgesData) {
     try {
-      const judgesDataRaw = await import('../../data/judges.json');
+      const judgesDataRaw = await import("../../data/judges.json");
       judgesData = judgesDataRaw.default || judgesDataRaw;
     } catch (e) {
       // Fallback for environments where dynamic import of JSON is not supported without attributes
       // (like Node.js v22+ if this were ever called from the server side)
-      console.error('Failed to load judges.json via import:', e);
+      console.error("Failed to load judges.json via import:", e);
       throw e;
     }
   }
@@ -31,9 +31,7 @@ const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   const OPENROUTER_MODEL = import.meta.env?.VITE_OPENROUTER_MODEL || process.env?.OPENROUTER_MODEL;
 
   if (!OPENROUTER_URL || !OPENROUTER_API_KEY || !OPENROUTER_MODEL) {
-    throw new Error(
-      'Missing required environment variables: OPENROUTER_URL, OPENROUTER_API_KEY, or OPENROUTER_MODEL'
-    );
+    throw new Error("Missing required environment variables: OPENROUTER_URL, OPENROUTER_API_KEY, or OPENROUTER_MODEL");
   }
 
   // Get the judge prompt template from judges.json
@@ -51,20 +49,20 @@ const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   if (assertion.expected_facts) {
     const factsSection = assertion.expected_facts
       .map((fact, index) => {
-        if (typeof fact === 'string') {
+        if (typeof fact === "string") {
           return `${index + 1}. ${fact}`;
         }
         return `${index + 1}. ${fact.fact} (Weight: ${fact.weight})`;
       })
-      .join('\n');
+      .join("\n");
     prompt = prompt.replace(/{{#each expected_facts}}[\s\S]*?{{\/each}}/g, factsSection);
   }
 
-  // Handle Handlebars-style each loops for aspects  
+  // Handle Handlebars-style each loops for aspects
   if (assertion.aspects) {
     const aspectsSection = assertion.aspects
       .map((aspect, index) => `${index + 1}. ${aspect.aspect} (Weight: ${aspect.weight})`)
-      .join('\n');
+      .join("\n");
     prompt = prompt.replace(/{{#each aspects}}[\s\S]*?{{\/each}}/g, aspectsSection);
   }
 
@@ -72,22 +70,22 @@ const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   if (assertion.expected_reasonings) {
     const reasoningsSection = assertion.expected_reasonings
       .map((reasoning, index) => `${index + 1}. ${reasoning}`)
-      .join('\n');
+      .join("\n");
     prompt = prompt.replace(/{{#each expected_reasonings}}[\s\S]*?{{\/each}}/g, reasoningsSection);
   }
 
   const response = await fetch(OPENROUTER_URL, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify({
       model: OPENROUTER_MODEL,
       messages: [
         {
-          role: 'user',
-          content: prompt
-        }
+          role: "user",
+          content: prompt,
+        },
       ],
     }),
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${OPENROUTER_API_KEY}` },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${OPENROUTER_API_KEY}` },
   });
 
   if (!response.ok) {
@@ -99,43 +97,41 @@ const handleRDTAssertion = async (judgeTemplate, assertion, modelResponse) => {
   // Extract the content from the LLM response
   const content = data.choices?.[0]?.message?.content;
   if (!content) {
-    throw new Error('No content returned from LLM');
+    throw new Error("No content returned from LLM");
   }
 
   try {
     // Clean the content - remove markdown code blocks if present
     let cleanedContent = content.trim();
-    
+
     // Remove markdown code blocks (```json or ```)
-    if (cleanedContent.startsWith('```')) {
+    if (cleanedContent.startsWith("```")) {
       // Find the first newline after ```
-      const firstNewline = cleanedContent.indexOf('\n');
+      const firstNewline = cleanedContent.indexOf("\n");
       if (firstNewline !== -1) {
         cleanedContent = cleanedContent.substring(firstNewline + 1);
       }
       // Remove trailing ```
-      cleanedContent = cleanedContent.replace(/```\s*$/, '').trim();
+      cleanedContent = cleanedContent.replace(/```\s*$/, "").trim();
     }
-    
+
     // Parse the JSON response from the LLM
     const parsedResponse = JSON.parse(cleanedContent);
 
     // Validate the response structure
     if (!parsedResponse.operator) {
-      throw new Error('Invalid LLM response structure - missing operator');
+      throw new Error("Invalid LLM response structure - missing operator");
     }
 
     return parsedResponse;
   } catch (parseError) {
     // If parsing fails, return a structured error response
     return {
-      operator: judgeTemplate.replace('_judge_v1', '').toUpperCase(),
+      operator: judgeTemplate.replace("_judge_v1", "").toUpperCase(),
       fact_scores: {},
       aspect_scores: {},
       precision_scores: {},
-      error: `LLM response parsing failed: ${
-        parseError instanceof Error ? parseError.message : 'Unknown error'
-      }`,
+      error: `LLM response parsing failed: ${parseError instanceof Error ? parseError.message : "Unknown error"}`,
     };
   }
 };
@@ -160,7 +156,7 @@ export const matchingOperators = {
       return JSON.stringify(actualSorted) === JSON.stringify(expectedSorted);
     }
 
-    if (allowExtraKeys && typeof actual === 'object' && typeof expected === 'object') {
+    if (allowExtraKeys && typeof actual === "object" && typeof expected === "object") {
       for (const key in expected) {
         if (JSON.stringify(actual[key]) !== JSON.stringify(expected[key])) {
           return false;
@@ -177,24 +173,24 @@ export const matchingOperators = {
       return false;
     }
 
-    const { mode = 'some', orderSensitive = false, matchBy = 'deep', key } = options;
+    const { mode = "some", orderSensitive = false, matchBy = "deep", key } = options;
 
-    if (matchBy === 'key' && !key) {
+    if (matchBy === "key" && !key) {
       throw new Error("key is required when matchBy is 'key'");
     }
 
-    if (!['some', 'all', 'exact'].includes(mode)) {
+    if (!["some", "all", "exact"].includes(mode)) {
       throw new Error("mode must be 'some', 'all', or 'exact'");
     }
 
-    if (!['deep', 'key'].includes(matchBy)) {
+    if (!["deep", "key"].includes(matchBy)) {
       throw new Error("matchBy must be 'deep' or 'key'");
     }
 
     // Helper function to compare items based on matchBy
     const compareItems = (actualItem, expectedItem) => {
-      if (matchBy === 'key' && key) {
-        if (typeof actualItem === 'object' && actualItem !== null) {
+      if (matchBy === "key" && key) {
+        if (typeof actualItem === "object" && actualItem !== null) {
           // Use JSON.stringify for proper comparison of arrays/objects
           return JSON.stringify(actualItem[key]) === JSON.stringify(expectedItem[key]);
         }
@@ -204,19 +200,15 @@ export const matchingOperators = {
       }
     };
 
-    if (mode === 'some') {
-      return expected.some(expectedItem =>
-        actual.some(actualItem => compareItems(actualItem, expectedItem))
-      );
+    if (mode === "some") {
+      return expected.some((expectedItem) => actual.some((actualItem) => compareItems(actualItem, expectedItem)));
     }
 
-    if (mode === 'all') {
-      return expected.every(expectedItem =>
-        actual.some(actualItem => compareItems(actualItem, expectedItem))
-      );
+    if (mode === "all") {
+      return expected.every((expectedItem) => actual.some((actualItem) => compareItems(actualItem, expectedItem)));
     }
 
-    if (mode === 'exact') {
+    if (mode === "exact") {
       if (actual.length !== expected.length) {
         return false;
       }
@@ -224,9 +216,7 @@ export const matchingOperators = {
       if (orderSensitive) {
         return actual.every((actualItem, index) => compareItems(actualItem, expected[index]));
       } else {
-        return expected.every(expectedItem =>
-          actual.some(actualItem => compareItems(actualItem, expectedItem))
-        );
+        return expected.every((expectedItem) => actual.some((actualItem) => compareItems(actualItem, expectedItem)));
       }
     }
 
@@ -239,12 +229,12 @@ export const matchingOperators = {
       return true;
     }
 
-    const { mode = 'some', matchBy = 'deep', key } = options;
+    const { mode = "some", matchBy = "deep", key } = options;
 
     // Helper function to compare items based on matchBy
     const compareItems = (actualItem, expectedItem) => {
-      if (matchBy === 'key' && key) {
-        if (typeof actualItem === 'object' && actualItem !== null) {
+      if (matchBy === "key" && key) {
+        if (typeof actualItem === "object" && actualItem !== null) {
           return JSON.stringify(actualItem[key]) === JSON.stringify(expectedItem[key]);
         }
         return false;
@@ -254,8 +244,8 @@ export const matchingOperators = {
     };
 
     // Check if any of the expected items are in the actual array
-    const containsAny = expected.some(expectedItem =>
-      actual.some(actualItem => compareItems(actualItem, expectedItem))
+    const containsAny = expected.some((expectedItem) =>
+      actual.some((actualItem) => compareItems(actualItem, expectedItem))
     );
 
     // NOT_ARRAY_CONTAINS passes if NONE of the expected items are found
@@ -263,7 +253,7 @@ export const matchingOperators = {
   },
 
   STRING_MATCH: (actual, expected, options = {}) => {
-    if (typeof actual !== 'string' || typeof expected !== 'string') {
+    if (typeof actual !== "string" || typeof expected !== "string") {
       return false;
     }
 
@@ -278,8 +268,8 @@ export const matchingOperators = {
     }
 
     if (normalizeWhitespace) {
-      actualStr = actualStr.replace(/\s+/g, ' ');
-      expectedStr = expectedStr.replace(/\s+/g, ' ');
+      actualStr = actualStr.replace(/\s+/g, " ");
+      expectedStr = expectedStr.replace(/\s+/g, " ");
     }
 
     if (caseInsensitive) {
@@ -291,7 +281,7 @@ export const matchingOperators = {
   },
 
   STRING_CONTAINS: (actual, expected, options = {}) => {
-    if (typeof actual !== 'string' || typeof expected !== 'string') {
+    if (typeof actual !== "string" || typeof expected !== "string") {
       return false;
     }
 
@@ -312,18 +302,18 @@ export const matchingOperators = {
     const { op, type } = options;
 
     if (!op || !type) {
-      throw new Error('op and type are required for COMPARE operator');
+      throw new Error("op and type are required for COMPARE operator");
     }
 
-    if (!['==', '!=', '>', '>=', '<', '<='].includes(op)) {
-      throw new Error('op must be one of: ==, !=, >, >=, <, <=');
+    if (!["==", "!=", ">", ">=", "<", "<="].includes(op)) {
+      throw new Error("op must be one of: ==, !=, >, >=, <, <=");
     }
 
-    if (!['number', 'string', 'datetime', 'boolean'].includes(type)) {
-      throw new Error('type must be one of: number, string, datetime, boolean');
+    if (!["number", "string", "datetime", "boolean"].includes(type)) {
+      throw new Error("type must be one of: number, string, datetime, boolean");
     }
 
-    if (type === 'number') {
+    if (type === "number") {
       const actualNum = Number(actual);
       const expectedNum = Number(expected);
       const { tolerance = 0 } = options;
@@ -338,105 +328,92 @@ export const matchingOperators = {
       }
 
       switch (op) {
-        case '==':
+        case "==":
           return actualNum === expectedNum;
-        case '!=':
+        case "!=":
           return actualNum !== expectedNum;
-        case '>':
+        case ">":
           return actualNum > expectedNum;
-        case '>=':
+        case ">=":
           return actualNum >= expectedNum;
-        case '<':
+        case "<":
           return actualNum < expectedNum;
-        case '<=':
+        case "<=":
           return actualNum <= expectedNum;
         default:
           return false;
       }
     }
 
-    if (type === 'string') {
+    if (type === "string") {
       const actualStr = String(actual);
       const expectedStr = String(expected);
 
       switch (op) {
-        case '==':
+        case "==":
           return actualStr === expectedStr;
-        case '!=':
+        case "!=":
           return actualStr !== expectedStr;
-        case '>':
+        case ">":
           return actualStr > expectedStr;
-        case '>=':
+        case ">=":
           return actualStr >= expectedStr;
-        case '<':
+        case "<":
           return actualStr < expectedStr;
-        case '<=':
+        case "<=":
           return actualStr <= expectedStr;
         default:
           return false;
       }
     }
 
-    if (type === 'datetime') {
-      const { tz = 'UTC', granularity = 'datetime', input = 'iso' } = options;
+    if (type === "datetime") {
+      const { tz = "UTC", granularity = "datetime", input = "iso" } = options;
 
       let actualDate, expectedDate;
 
       // Parse actual date
-      if (input === 'iso') {
+      if (input === "iso") {
         actualDate = new Date(actual);
-      } else if (input === 'epochMs') {
+      } else if (input === "epochMs") {
         actualDate = new Date(Number(actual));
-      } else if (input === 'epochSec') {
+      } else if (input === "epochSec") {
         actualDate = new Date(Number(actual) * 1000);
       }
 
       // Parse expected date (handle special values and expressions)
-      if (expected === '$NOW') {
+      if (expected === "$NOW") {
         expectedDate = new Date();
-      } else if (expected === '$TODAY') {
+      } else if (expected === "$TODAY") {
         const now = new Date();
         expectedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      } else if (typeof expected === 'string' && expected.startsWith('$NOW')) {
+      } else if (typeof expected === "string" && expected.startsWith("$NOW")) {
         // Handle expressions like "$NOW + 5 days", "$NOW - 2 hours", etc.
         expectedDate = parseDynamicDateExpression(expected);
-      } else if (typeof expected === 'string' && expected.startsWith('$TODAY')) {
+      } else if (typeof expected === "string" && expected.startsWith("$TODAY")) {
         // Handle expressions like "$TODAY + 3 days", "$TODAY - 1 week", etc.
         const baseDate = new Date();
         const todayDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
-        expectedDate = parseDynamicDateExpression(expected.replace('$TODAY', '$NOW'), todayDate);
+        expectedDate = parseDynamicDateExpression(expected.replace("$TODAY", "$NOW"), todayDate);
       } else {
-        if (input === 'iso') {
+        if (input === "iso") {
           expectedDate = new Date(expected);
-        } else if (input === 'epochMs') {
+        } else if (input === "epochMs") {
           expectedDate = new Date(Number(expected));
-        } else if (input === 'epochSec') {
+        } else if (input === "epochSec") {
           expectedDate = new Date(Number(expected) * 1000);
         }
       }
 
-      if (
-        !actualDate ||
-        !expectedDate ||
-        isNaN(actualDate.getTime()) ||
-        isNaN(expectedDate.getTime())
-      ) {
+      if (!actualDate || !expectedDate || isNaN(actualDate.getTime()) || isNaN(expectedDate.getTime())) {
         return false;
       }
 
       // Apply granularity
-      if (granularity === 'date') {
-        actualDate = new Date(
-          actualDate.getFullYear(),
-          actualDate.getMonth(),
-          actualDate.getDate()
-        );
-        expectedDate = new Date(
-          expectedDate.getFullYear(),
-          expectedDate.getMonth(),
-          expectedDate.getDate()
-        );
-      } else if (granularity === 'time') {
+      if (granularity === "date") {
+        actualDate = new Date(actualDate.getFullYear(), actualDate.getMonth(), actualDate.getDate());
+        expectedDate = new Date(expectedDate.getFullYear(), expectedDate.getMonth(), expectedDate.getDate());
+      } else if (granularity === "time") {
         actualDate = new Date(
           0,
           0,
@@ -458,31 +435,31 @@ export const matchingOperators = {
       }
 
       switch (op) {
-        case '==':
+        case "==":
           return actualDate.getTime() === expectedDate.getTime();
-        case '!=':
+        case "!=":
           return actualDate.getTime() !== expectedDate.getTime();
-        case '>':
+        case ">":
           return actualDate.getTime() > expectedDate.getTime();
-        case '>=':
+        case ">=":
           return actualDate.getTime() >= expectedDate.getTime();
-        case '<':
+        case "<":
           return actualDate.getTime() < expectedDate.getTime();
-        case '<=':
+        case "<=":
           return actualDate.getTime() <= expectedDate.getTime();
         default:
           return false;
       }
     }
 
-    if (type === 'boolean') {
+    if (type === "boolean") {
       const actualBool = Boolean(actual);
       const expectedBool = Boolean(expected);
 
       switch (op) {
-        case '==':
+        case "==":
           return actualBool === expectedBool;
-        case '!=':
+        case "!=":
           return actualBool !== expectedBool;
         default:
           return false;
@@ -493,33 +470,28 @@ export const matchingOperators = {
   },
 
   BETWEEN: (actual, expected, options = {}) => {
-    const { type = 'number', inclusive = true, tolerance = 0 } = options;
+    const { type = "number", inclusive = true, tolerance = 0 } = options;
 
     if (!type) {
-      throw new Error('type is required for BETWEEN operator');
+      throw new Error("type is required for BETWEEN operator");
     }
 
-    if (!['number', 'string', 'datetime'].includes(type)) {
-      throw new Error('type must be one of: number, string, datetime');
+    if (!["number", "string", "datetime"].includes(type)) {
+      throw new Error("type must be one of: number, string, datetime");
     }
 
-    if (
-      !expected ||
-      typeof expected !== 'object' ||
-      expected.min === undefined ||
-      expected.max === undefined
-    ) {
-      throw new Error('expected must be an object with min and max properties');
+    if (!expected || typeof expected !== "object" || expected.min === undefined || expected.max === undefined) {
+      throw new Error("expected must be an object with min and max properties");
     }
 
-    if (type === 'number') {
+    if (type === "number") {
       let actualNum = Number(actual);
       const minNum = Number(expected.min);
       const maxNum = Number(expected.max);
 
       // Handle price strings like "$59.00" by removing currency symbols
-      if (isNaN(actualNum) && typeof actual === 'string') {
-        const cleanedActual = actual.replace(/[$,]/g, '');
+      if (isNaN(actualNum) && typeof actual === "string") {
+        const cleanedActual = actual.replace(/[$,]/g, "");
         actualNum = Number(cleanedActual);
       }
 
@@ -534,7 +506,7 @@ export const matchingOperators = {
       }
     }
 
-    if (type === 'string') {
+    if (type === "string") {
       const actualStr = String(actual);
       const minStr = String(expected.min);
       const maxStr = String(expected.max);
@@ -546,22 +518,22 @@ export const matchingOperators = {
       }
     }
 
-    if (type === 'datetime') {
-      const { tz = 'UTC', granularity = 'datetime', input = 'iso' } = options;
+    if (type === "datetime") {
+      const { tz = "UTC", granularity = "datetime", input = "iso" } = options;
 
       let actualDate, minDate, maxDate;
 
       // Parse dates based on input format
       try {
-        if (input === 'iso') {
+        if (input === "iso") {
           actualDate = new Date(actual);
           minDate = new Date(expected.min);
           maxDate = new Date(expected.max);
-        } else if (input === 'epochMs') {
+        } else if (input === "epochMs") {
           actualDate = new Date(Number(actual));
           minDate = new Date(Number(expected.min));
           maxDate = new Date(Number(expected.max));
-        } else if (input === 'epochSec') {
+        } else if (input === "epochSec") {
           actualDate = new Date(Number(actual) * 1000);
           minDate = new Date(Number(expected.min) * 1000);
           maxDate = new Date(Number(expected.max) * 1000);
@@ -582,17 +554,14 @@ export const matchingOperators = {
       }
 
       // Apply granularity
-      if (granularity === 'date') {
+      if (granularity === "date") {
         actualDate.setHours(0, 0, 0, 0);
         minDate.setHours(0, 0, 0, 0);
         maxDate.setHours(0, 0, 0, 0);
-      } else if (granularity === 'time') {
-        const actualTime =
-          actualDate.getHours() * 3600 + actualDate.getMinutes() * 60 + actualDate.getSeconds();
-        const minTime =
-          minDate.getHours() * 3600 + minDate.getMinutes() * 60 + minDate.getSeconds();
-        const maxTime =
-          maxDate.getHours() * 3600 + maxDate.getMinutes() * 60 + maxDate.getSeconds();
+      } else if (granularity === "time") {
+        const actualTime = actualDate.getHours() * 3600 + actualDate.getMinutes() * 60 + actualDate.getSeconds();
+        const minTime = minDate.getHours() * 3600 + minDate.getMinutes() * 60 + minDate.getSeconds();
+        const maxTime = maxDate.getHours() * 3600 + maxDate.getMinutes() * 60 + maxDate.getSeconds();
 
         if (inclusive) {
           return actualTime >= minTime && actualTime <= maxTime;
@@ -620,7 +589,7 @@ export const matchingOperators = {
       return false;
     }
 
-    const { op = '==' } = options;
+    const { op = "==" } = options;
     const actualLength = actual.length;
     const expectedLength = Number(expected);
 
@@ -629,72 +598,68 @@ export const matchingOperators = {
     }
 
     switch (op) {
-      case '==':
+      case "==":
         return actualLength === expectedLength;
-      case '>':
+      case ">":
         return actualLength > expectedLength;
-      case '>=':
+      case ">=":
         return actualLength >= expectedLength;
-      case '<':
+      case "<":
         return actualLength < expectedLength;
-      case '<=':
+      case "<=":
         return actualLength <= expectedLength;
       default:
         return false;
     }
   },
 
-  DATETIME_IN_RANGE: (
-    actual,
-    expected,
-    options = {}
-  ) => {
-    const { tz = 'UTC', granularity = 'datetime', input = 'iso' } = options;
+  DATETIME_IN_RANGE: (actual, expected, options = {}) => {
+    const { tz = "UTC", granularity = "datetime", input = "iso" } = options;
     const { start, end, inclusive = true } = expected;
 
     if (!start || !end) {
-      throw new Error('start and end are required for DATETIME_IN_RANGE');
+      throw new Error("start and end are required for DATETIME_IN_RANGE");
     }
 
     let actualDate, startDate, endDate;
 
     // Parse actual date
-    if (input === 'iso') {
+    if (input === "iso") {
       actualDate = new Date(actual);
-    } else if (input === 'epochMs') {
+    } else if (input === "epochMs") {
       actualDate = new Date(Number(actual));
-    } else if (input === 'epochSec') {
+    } else if (input === "epochSec") {
       actualDate = new Date(Number(actual) * 1000);
     }
 
     // Parse start date
-    if (start === '$NOW') {
+    if (start === "$NOW") {
       startDate = new Date();
-    } else if (start === '$TODAY') {
+    } else if (start === "$TODAY") {
       const now = new Date();
       startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     } else {
-      if (input === 'iso') {
+      if (input === "iso") {
         startDate = new Date(start);
-      } else if (input === 'epochMs') {
+      } else if (input === "epochMs") {
         startDate = new Date(Number(start));
-      } else if (input === 'epochSec') {
+      } else if (input === "epochSec") {
         startDate = new Date(Number(start) * 1000);
       }
     }
 
     // Parse end date
-    if (end === '$NOW') {
+    if (end === "$NOW") {
       endDate = new Date();
-    } else if (end === '$TODAY') {
+    } else if (end === "$TODAY") {
       const now = new Date();
       endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     } else {
-      if (input === 'iso') {
+      if (input === "iso") {
         endDate = new Date(end);
-      } else if (input === 'epochMs') {
+      } else if (input === "epochMs") {
         endDate = new Date(Number(end));
-      } else if (input === 'epochSec') {
+      } else if (input === "epochSec") {
         endDate = new Date(Number(end) * 1000);
       }
     }
@@ -711,11 +676,11 @@ export const matchingOperators = {
     }
 
     // Apply granularity
-    if (granularity === 'date') {
+    if (granularity === "date") {
       actualDate = new Date(actualDate.getFullYear(), actualDate.getMonth(), actualDate.getDate());
       startDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
       endDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-    } else if (granularity === 'time') {
+    } else if (granularity === "time") {
       actualDate = new Date(
         0,
         0,
@@ -756,35 +721,31 @@ export const matchingOperators = {
     }
   },
 
-  DATETIME_DIFFERENCE: (
-    actual,
-    expected,
-    options = {}
-  ) => {
-    const { tz = 'UTC', input = 'iso', toleranceMs = 0 } = options;
+  DATETIME_DIFFERENCE: (actual, expected, options = {}) => {
+    const { tz = "UTC", input = "iso", toleranceMs = 0 } = options;
     const { start, end } = actual;
 
     if (!start || !end) {
-      throw new Error('start and end paths are required for DATETIME_DIFFERENCE');
+      throw new Error("start and end paths are required for DATETIME_DIFFERENCE");
     }
 
     let startDate, endDate;
 
     // Parse start date
-    if (input === 'iso') {
+    if (input === "iso") {
       startDate = new Date(start);
-    } else if (input === 'epochMs') {
+    } else if (input === "epochMs") {
       startDate = new Date(Number(start));
-    } else if (input === 'epochSec') {
+    } else if (input === "epochSec") {
       startDate = new Date(Number(start) * 1000);
     }
 
     // Parse end date
-    if (input === 'iso') {
+    if (input === "iso") {
       endDate = new Date(end);
-    } else if (input === 'epochMs') {
+    } else if (input === "epochMs") {
       endDate = new Date(Number(end));
-    } else if (input === 'epochSec') {
+    } else if (input === "epochSec") {
       endDate = new Date(Number(end) * 1000);
     }
 
@@ -796,18 +757,18 @@ export const matchingOperators = {
     let expectedDurationMs;
 
     // Parse expected duration
-    if (typeof expected === 'string') {
+    if (typeof expected === "string") {
       // ISO-8601 duration parsing (simplified)
       const match = expected.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?/);
       if (match) {
-        const hours = parseInt(match[1] || '0', 10);
-        const minutes = parseInt(match[2] || '0', 10);
-        const seconds = parseFloat(match[3] || '0');
+        const hours = parseInt(match[1] || "0", 10);
+        const minutes = parseInt(match[2] || "0", 10);
+        const seconds = parseFloat(match[3] || "0");
         expectedDurationMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
       } else {
         return false;
       }
-    } else if (typeof expected === 'number') {
+    } else if (typeof expected === "number") {
       expectedDurationMs = expected;
     } else {
       return false;
@@ -821,12 +782,12 @@ export const matchingOperators = {
     const { allowExtraKeys = true, strictComparison = true } = options;
 
     // If actual is null/undefined but expected has properties, fail
-    if (!actual || typeof actual !== 'object') {
+    if (!actual || typeof actual !== "object") {
       return Object.keys(expected || {}).length === 0;
     }
 
     // If expected is null/undefined, consider it as no fields to check (pass)
-    if (!expected || typeof expected !== 'object') {
+    if (!expected || typeof expected !== "object") {
       return true;
     }
 
@@ -853,87 +814,80 @@ export const matchingOperators = {
     return true;
   },
 
-  FACTUAL_VERIFICATION: async (
-    actual,
-    assertion
-  ) => {
-    return await handleRDTAssertion('factual_verification_judge_v1', assertion, actual);
+  FACTUAL_VERIFICATION: async (actual, assertion) => {
+    return await handleRDTAssertion("factual_verification_judge_v1", assertion, actual);
   },
 
-  REASONING_QUALITY: async (
-    actual,
-    assertion
-  ) => {
-    return await handleRDTAssertion('reasoning_quality_judge_v1', assertion, actual);
+  REASONING_QUALITY: async (actual, assertion) => {
+    return await handleRDTAssertion("reasoning_quality_judge_v1", assertion, actual);
   },
 
-  INFORMATION_PRECISION: async (
-    actual,
-    assertion
-  ) => {
-    return await handleRDTAssertion('information_precision_judge_v1', assertion, actual);
+  INFORMATION_PRECISION: async (actual, assertion) => {
+    return await handleRDTAssertion("information_precision_judge_v1", assertion, actual);
   },
 };
 
 // Helper function to parse dynamic date expressions like "$NOW + 5 days"
 function parseDynamicDateExpression(expression, baseDate) {
   const base = baseDate || new Date();
-  
+
   // Remove $NOW or $TODAY prefix and trim
-  const cleanExpression = expression.replace(/^\$(NOW|TODAY)\s*/, '').trim();
-  
+  const cleanExpression = expression.replace(/^\$(NOW|TODAY)\s*/, "").trim();
+
   // If no expression after $NOW/$TODAY, return base date
   if (!cleanExpression) {
     return base;
   }
-  
+
   // Parse expressions like "+ 5 days", "- 2 hours", "+ 1 week", etc.
-  const match = cleanExpression.match(/^([+-])\s*(\d+)\s*(day|days|hour|hours|minute|minutes|second|seconds|week|weeks|month|months|year|years)s?$/i);
-  
+  const match = cleanExpression.match(
+    /^([+-])\s*(\d+)\s*(day|days|hour|hours|minute|minutes|second|seconds|week|weeks|month|months|year|years)s?$/i
+  );
+
   if (!match) {
     return undefined; // Invalid expression format
   }
-  
+
   const [, operator, amountStr, unit] = match;
   const amount = parseInt(amountStr, 10);
-  const multiplier = operator === '+' ? 1 : -1;
+  const multiplier = operator === "+" ? 1 : -1;
   const finalAmount = amount * multiplier;
-  
+
   const result = new Date(base);
-  
+
   switch (unit.toLowerCase()) {
-    case 'second':
-    case 'seconds':
+    case "second":
+    case "seconds":
       result.setSeconds(result.getSeconds() + finalAmount);
       break;
-    case 'minute':
-    case 'minutes':
+    case "minute":
+    case "minutes":
       result.setMinutes(result.getMinutes() + finalAmount);
       break;
-    case 'hour':
-    case 'hours':
+    case "hour":
+    case "hours":
       result.setHours(result.getHours() + finalAmount);
       break;
-    case 'day':
-    case 'days':
+    case "day":
+    case "days":
       result.setDate(result.getDate() + finalAmount);
       break;
-    case 'week':
-    case 'weeks':
-      result.setDate(result.getDate() + (finalAmount * 7));
+    case "week":
+    case "weeks":
+      result.setDate(result.getDate() + finalAmount * 7);
       break;
-    case 'month':
-    case 'months':
+    case "month":
+    case "months":
       result.setMonth(result.getMonth() + finalAmount);
       break;
-    case 'year':
-    case 'years':
+    case "year":
+    case "years":
       result.setFullYear(result.getFullYear() + finalAmount);
       break;
     default:
       return undefined; // Unsupported unit
   }
-  
+
   return result;
 }
 
@@ -942,4 +896,3 @@ export const assertionOperators = {
   ...existenceOperators,
   ...matchingOperators,
 };
-

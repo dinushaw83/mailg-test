@@ -45,21 +45,21 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
   const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
 
   const availableLabels = useMemo(() => {
-    const labelsObject = (labels && typeof labels === 'object' && !Array.isArray(labels)) 
-      ? labels 
-      : {};
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
 
-    return Object.entries(labelsObject)
-      // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
-      .filter(([key, meta]) => !(meta.system && meta.is_exclusive))
-      .map(([key, meta]) => ({
-        key,
-        name: meta.name || key,
-        color: meta.color,
-        isCurrentlyApplied: currentLabels.has(key),
-      }))
-      .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return (
+      Object.entries(labelsObject)
+        // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
+        .filter(([key, meta]) => !(meta.system && meta.is_exclusive))
+        .map(([key, meta]) => ({
+          key,
+          name: meta.name || key,
+          color: meta.color,
+          isCurrentlyApplied: currentLabels.has(key),
+        }))
+        .filter((label) => label.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    );
   }, [labels, searchQuery, currentLabels]);
 
   const handleApplyLabels = useCallback(() => {

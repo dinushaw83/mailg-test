@@ -784,7 +784,7 @@ const ContactsTable = ({ contacts = [], hidePrintExport = false, currentLabel = 
         // TODO: Implement bulk print functionality
         break;
       default:
-        // Unknown bulk action
+      // Unknown bulk action
     }
   };
 

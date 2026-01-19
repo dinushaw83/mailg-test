@@ -61,7 +61,7 @@ export function registerReactQueryListeners(listenerMiddleware) {
       await queryClient.refetchQueries({ queryKey: ["emails"] });
       // Invalidate email counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
-      
+
       // Fetch the sent email to get thread_id and refetch the specific thread
       if (emailId) {
         try {
@@ -76,9 +76,9 @@ export function registerReactQueryListeners(listenerMiddleware) {
         } catch (error) {
           console.error("Failed to fetch sent email for thread refetch:", error);
           // Fallback: refetch all active thread queries
-          await queryClient.refetchQueries({ 
+          await queryClient.refetchQueries({
             queryKey: ["email"],
-            type: "active"
+            type: "active",
           });
         }
       }
@@ -89,12 +89,12 @@ export function registerReactQueryListeners(listenerMiddleware) {
     actionCreator: cancelSendEmailByIdThunk.fulfilled,
     effect: async (action, listenerApi) => {
       const emailId = action.payload?.emailId;
-      
+
       // Invalidate specific email query
       if (emailId) {
         queryClient.invalidateQueries({ queryKey: ["email", emailId] });
       }
-      
+
       // Fetch the email to get thread_id and refetch the specific thread
       if (emailId) {
         try {
@@ -109,16 +109,16 @@ export function registerReactQueryListeners(listenerMiddleware) {
         } catch (error) {
           console.error("Failed to fetch email for thread refetch:", error);
           // Fallback: refetch all active thread queries
-          await queryClient.refetchQueries({ 
+          await queryClient.refetchQueries({
             queryKey: ["email"],
-            type: "active"
+            type: "active",
           });
         }
       }
-      
+
       // Invalidate all email queries
       queryClient.invalidateQueries({ queryKey: ["emails"] });
-      
+
       // Invalidate email counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },
@@ -197,21 +197,21 @@ export function registerReactQueryListeners(listenerMiddleware) {
     effect: async (action, listenerApi) => {
       const emailId = action.payload?.emailId;
       const thread_id = action.payload?.thread_id;
-      
+
       // Invalidate specific email query
       if (emailId) {
         queryClient.invalidateQueries({ queryKey: ["email", emailId] });
       }
-      
+
       // Invalidate and refetch the specific thread if thread_id exists
       if (thread_id) {
         queryClient.invalidateQueries({ queryKey: ["email", thread_id] });
         await queryClient.refetchQueries({ queryKey: ["email", thread_id] });
       }
-      
+
       // Invalidate all email queries (drafts might appear in different folders)
       queryClient.invalidateQueries({ queryKey: ["emails"] });
-      
+
       // Invalidate email counts since deleting a draft affects counts
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
     },

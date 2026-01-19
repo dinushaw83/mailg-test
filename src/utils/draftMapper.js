@@ -64,9 +64,16 @@ export const feToBeReplyDraftPayload = (content, replyAll = false) => {
  * @param {string} category - Category name (e.g., "primary")
  * @returns {Object} Backend payload for PUT /api/v1/emails/:id
  */
-export const feToBeDraftUpdatePayload = (
-  {subject, content, is_read = true, is_starred = false, is_important = false, folder = "drafts", category = "primary", recipients}
-) => {
+export const feToBeDraftUpdatePayload = ({
+  subject,
+  content,
+  is_read = true,
+  is_starred = false,
+  is_important = false,
+  folder = "drafts",
+  category = "primary",
+  recipients,
+}) => {
   return {
     subject: subject || "",
     body: content.plainText || null,
@@ -92,7 +99,7 @@ export const beToFeDraft = (beDraft) => {
   // Use emailAPIMapper to transform the backend response
   // It handles recipients, body/html_body, labels, etc.
   const mappedEmails = emailAPIMapper([beDraft]);
-  
+
   if (mappedEmails.length === 0) {
     return null;
   }
@@ -100,15 +107,17 @@ export const beToFeDraft = (beDraft) => {
   const feDraft = mappedEmails[0];
 
   // Ensure it has the Drafts label
-  if (!feDraft.labels || !feDraft.labels.some((l) => {
-    const labelName = typeof l === "string" ? l : l?.name;
-    return labelName?.toLowerCase() === "drafts";
-  })) {
+  if (
+    !feDraft.labels ||
+    !feDraft.labels.some((l) => {
+      const labelName = typeof l === "string" ? l : l?.name;
+      return labelName?.toLowerCase() === "drafts";
+    })
+  ) {
     // Add Drafts label if not present
-    const draftsLabel = typeof feDraft.labels?.[0] === "string" 
-      ? "Drafts" 
-      : { name: "Drafts", color: "#e1e3e1", id: null };
-    
+    const draftsLabel =
+      typeof feDraft.labels?.[0] === "string" ? "Drafts" : { name: "Drafts", color: "#e1e3e1", id: null };
+
     feDraft.labels = feDraft.labels || [];
     if (Array.isArray(feDraft.labels)) {
       feDraft.labels.push(draftsLabel);

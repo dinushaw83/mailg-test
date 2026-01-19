@@ -613,8 +613,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       // Use modifyLabels with the created label's UUID to sync with backend
       // The UUID is used for backend sync, the composite key is used for local state
       modifyLabels(
-        ids, 
-        { add: createdLabelId ? [createdLabelId] : [newKey], remove: [] }, 
+        ids,
+        { add: createdLabelId ? [createdLabelId] : [newKey], remove: [] },
         ids // Pass thread IDs for backend sync
       );
 
@@ -633,11 +633,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
             onClick={() => {
               try {
                 // Remove the label from the selected emails using modifyLabels
-                modifyLabels(
-                  ids, 
-                  { add: [], remove: createdLabelId ? [createdLabelId] : [newKey] }, 
-                  ids
-                );
+                modifyLabels(ids, { add: [], remove: createdLabelId ? [createdLabelId] : [newKey] }, ids);
 
                 setSnackbar({
                   open: true,

@@ -233,7 +233,14 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
         starred: !!email.is_starred,
       }));
       const idsToUpdate = previousStates.filter((state) => state.starred !== value).map((state) => state.id);
-      const threadIdsToUpdate = [...new Set(previousStates.filter((state) => state.starred !== value).map((state) => state.thread_id).filter(Boolean))];
+      const threadIdsToUpdate = [
+        ...new Set(
+          previousStates
+            .filter((state) => state.starred !== value)
+            .map((state) => state.thread_id)
+            .filter(Boolean)
+        ),
+      ];
 
       if (idsToUpdate.length) {
         // Pass 'list' context and thread IDs for proper thread-level unstarring
@@ -261,7 +268,14 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const undo = () => {
         const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
         const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
-        const toUnstarThreadIds = [...new Set(previousStates.filter((state) => !state.starred).map((state) => state.thread_id).filter(Boolean))];
+        const toUnstarThreadIds = [
+          ...new Set(
+            previousStates
+              .filter((state) => !state.starred)
+              .map((state) => state.thread_id)
+              .filter(Boolean)
+          ),
+        ];
 
         if (toStar.length) {
           setStar(toStar, true, "list");
@@ -304,14 +318,16 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
         thread_id: email.thread_id,
         important: !!email.is_important,
       }));
-      
+
       // Get thread IDs for emails that need to change
-      const threadIdsToUpdate = [...new Set(
-        previousStates
-          .filter((state) => state.important !== value)
-          .map((state) => state.thread_id)
-          .filter(Boolean)
-      )];
+      const threadIdsToUpdate = [
+        ...new Set(
+          previousStates
+            .filter((state) => state.important !== value)
+            .map((state) => state.thread_id)
+            .filter(Boolean)
+        ),
+      ];
 
       if (threadIdsToUpdate.length) {
         setImportant(threadIdsToUpdate, value);
@@ -336,8 +352,22 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
           : "Conversation marked as not important.";
 
       const undo = () => {
-        const toImportant = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
-        const toNotImportant = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
+        const toImportant = [
+          ...new Set(
+            previousStates
+              .filter((state) => state.important)
+              .map((state) => state.thread_id)
+              .filter(Boolean)
+          ),
+        ];
+        const toNotImportant = [
+          ...new Set(
+            previousStates
+              .filter((state) => !state.important)
+              .map((state) => state.thread_id)
+              .filter(Boolean)
+          ),
+        ];
 
         if (toImportant.length) {
           setImportant(toImportant, true);
@@ -627,20 +657,10 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                       />
                     )}
                     {anyUnstarred && (
-                      <ActionMenuItem
-                        icon="star"
-                        label="Add star"
-                        filled={false}
-                        onClick={() => handleStar(true)}
-                      />
+                      <ActionMenuItem icon="star" label="Add star" filled={false} onClick={() => handleStar(true)} />
                     )}
                     {anyStarred && (
-                      <ActionMenuItem
-                        icon="star"
-                        label="Remove star"
-                        filled={true}
-                        onClick={() => handleStar(false)}
-                      />
+                      <ActionMenuItem icon="star" label="Remove star" filled={true} onClick={() => handleStar(false)} />
                     )}
                     <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
                     <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />

@@ -72,7 +72,18 @@ export default function useFolderEmails({
         baseResult = await emailService.getThreadsByLabel(labelId, currentPage, itemsPerPage);
       } else {
         const folderKey = String(activeFolder).toLowerCase();
-        const validRoutes = ["inbox", "starred", "important", "snoozed", "sent", "trash", "spam", "drafts", "scheduled", "all"];
+        const validRoutes = [
+          "inbox",
+          "starred",
+          "important",
+          "snoozed",
+          "sent",
+          "trash",
+          "spam",
+          "drafts",
+          "scheduled",
+          "all",
+        ];
         if (!validRoutes.includes(folderKey)) {
           return { results: [], pagination: null };
         }

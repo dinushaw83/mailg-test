@@ -56,4 +56,3 @@ const HighlightedText = ({ text, searchQuery }) => {
 };
 
 export default HighlightedText;
-

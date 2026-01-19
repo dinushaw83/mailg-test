@@ -177,7 +177,7 @@ export default function ComposeEmail({ composeWindow }) {
       const existingDraft = drafts.find(
         (email) => email.id.toString() === currentDraftId?.toString() && email.labels.includes("Drafts")
       );
-      
+
       if (existingDraft) {
         // Draft found in Redux - load it
         setTo(
@@ -254,7 +254,7 @@ export default function ComposeEmail({ composeWindow }) {
                 setSubject(feDraft.subject === "(no subject)" ? "" : feDraft.subject || "");
                 setContent({ html: feDraft.body || "", plainText: feDraft.preview || "" });
                 setRawInputText({ to: "", cc: "", bcc: "" });
-                
+
                 // Update Redux with fetched draft
                 const state = store.getState();
                 const currentDrafts = state.mail.drafts || [];
@@ -288,7 +288,12 @@ export default function ComposeEmail({ composeWindow }) {
         setContent({ html: composeWindow?.fields?.content, plainText: composeWindow?.fields?.content });
       }
     }
-  }, [currentDraftId?.current, composeWindow?.isMinimized, JSON.stringify(composeWindow?.fields), JSON.stringify(restructuredRecipients)]);
+  }, [
+    currentDraftId?.current,
+    composeWindow?.isMinimized,
+    JSON.stringify(composeWindow?.fields),
+    JSON.stringify(restructuredRecipients),
+  ]);
 
   // Focus the body editor if this is a reply (has replyingTo field) and autoFocus is enabled
   // For forwards (forwardingTo), the To input is auto-focused via RecipientsInput
