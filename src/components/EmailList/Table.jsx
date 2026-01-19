@@ -42,10 +42,10 @@ const SnoozedEmailIndicator = styled("span")`
 const shouldShowSnoozeBadge = (email) => {
   const snoozeUntil = email?.snooze_until || email?.snoozeUntil;
   if (!snoozeUntil) return false;
-  
+
   const snoozeDate = new Date(snoozeUntil);
   if (isNaN(snoozeDate.getTime())) return false;
-  
+
   return new Date() > snoozeDate;
 };
 
@@ -966,7 +966,10 @@ const Table = ({
                             data-hovercard-id={email.from.email}
                           >
                             {folder === "sent" && !labels.includes("Drafts") ? (
-                              <HighlightedText text={`To: ${email.label?.name || email.label}`} searchQuery={searchQuery} />
+                              <HighlightedText
+                                text={`To: ${email.label?.name || email.label}`}
+                                searchQuery={searchQuery}
+                              />
                             ) : (
                               <HighlightedText text={email.label?.name || email.label} searchQuery={searchQuery} />
                             )}
