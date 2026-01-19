@@ -154,7 +154,10 @@ export default function useFolderEmails({
       };
     },
     enabled: !!accessToken,
-    staleTime: 30 * 1000, // 30 seconds - list data is fresh for 30s
+    // Inbox and Snoozed folders should always refetch since snooze times can expire
+    // (expired snoozes return to inbox, removed from snoozed)
+    staleTime: ["inbox", "snoozed"].includes(String(activeFolder).toLowerCase()) ? 0 : 30 * 1000,
+    refetchOnMount: ["inbox", "snoozed"].includes(String(activeFolder).toLowerCase()) ? "always" : true,
   });
 
   // Sync React Query data to Redux for backward compatibility

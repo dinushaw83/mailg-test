@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Fragment } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
@@ -399,12 +399,21 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     onClose();
   };
 
-  // Check if any selected emails are snoozed (snooze_until is not null)
-  const hasSnoozedEmails = useMemo(() => {
+  // Check if any selected emails are snoozed (snooze_until is in the future)
+  // Not using useMemo so it always checks against current time
+  const hasSnoozedEmails = (() => {
     if (!selectedIds?.length) return false;
     const match = makeMatch(selectedIds);
-    return (emails || []).some((m) => match(m) && (m.snooze_until || m.snoozeUntil));
-  }, [selectedIds, emails]);
+    const now = new Date();
+    return (emails || []).some((m) => {
+      if (!match(m)) return false;
+      const snoozeTime = m.snooze_until || m.snoozeUntil;
+      if (!snoozeTime) return false;
+      // Only consider it snoozed if the snooze time is in the future
+      const snoozeDate = new Date(snoozeTime);
+      return !isNaN(snoozeDate.getTime()) && snoozeDate > now;
+    });
+  })();
 
   const handleUnsnooze = () => {
     // Capture previous snooze times per email before unsnoozing

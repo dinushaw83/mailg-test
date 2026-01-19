@@ -184,7 +184,14 @@ export const EmailContent = ({
     }
     return null;
   }, [thread, emails]);
-  const isSnoozed = !!snoozeUntil;
+
+  // Only show as snoozed if the snooze time is in the future
+  // Note: Not using useMemo so it always checks against current time on each render
+  const isSnoozed = (() => {
+    if (!snoozeUntil) return false;
+    const snoozeDate = new Date(snoozeUntil);
+    return !isNaN(snoozeDate.getTime()) && snoozeDate > new Date();
+  })();
 
   // Format snooze time for display
   const formatSnoozeTime = useCallback((snoozeDate) => {
