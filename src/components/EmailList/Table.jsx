@@ -17,6 +17,7 @@ import { useElementDimensions } from "../../hooks/useElementDimensions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import useMailActions from "../../hooks/useMailActions";
+import { shouldShowSnoozeBadge } from "../../utils/snoozeTracking";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -35,22 +36,6 @@ const SnoozedEmailIndicator = styled("span")`
   font-size: 0.75rem;
   font-weight: 500;
 `;
-
-// Helper to check if an email has recently returned from snooze
-// Shows badge for 5 minutes after snooze expires, then disappears automatically
-const hasRecentlyExpiredSnooze = (email) => {
-  const snoozeTime = email?.snooze_until || email?.snoozeUntil;
-  if (!snoozeTime) return false;
-  
-  const snoozeDate = new Date(snoozeTime);
-  if (isNaN(snoozeDate.getTime())) return false;
-  
-  const now = new Date();
-  const fiveMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
-  
-  // Show badge if snooze expired within the last 5 minutes
-  return snoozeDate <= now && snoozeDate >= fiveMinutesAgo;
-};
 
 const HoverDiv = styled.div`
   display: none;
@@ -161,7 +146,7 @@ const OneColumnData = ({
                 fontSize: "0.75rem",
               }}
             >
-              {hasRecentlyExpiredSnooze(email) && folder === "inbox" ? (
+              {shouldShowSnoozeBadge(email) && folder === "inbox" ? (
                 <SnoozedEmailIndicator>Snoozed email</SnoozedEmailIndicator>
               ) : (
                 <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
@@ -1133,7 +1118,7 @@ const Table = ({
                           id={`:pu${index}`}
                           aria-label={new Date(email.timestamp).toLocaleString()}
                         >
-                          {hasRecentlyExpiredSnooze(email) && folder === "inbox" ? (
+                          {shouldShowSnoozeBadge(email) && folder === "inbox" ? (
                             <SnoozedEmailIndicator>Snoozed email</SnoozedEmailIndicator>
                           ) : (
                             <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
