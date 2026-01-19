@@ -27,6 +27,10 @@ from app.models import (
     Thread,
     SavedSearch,
     EmailTemplate,
+    GeneralSettings,
+    DefaultTextStyle,
+    Signature,
+    AdvancedSettings,
 )
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -95,7 +99,6 @@ def migrate_users(db: Session):
             labels=user_data.get("labels", []),
             custom_fields=user_data.get("custom_fields", []),
             notes=user_data.get("notes"),
-            undo_send_delay_seconds=user_data.get("undo_send_delay_seconds", 10),
             active=user_data.get("active", True),
             created_at=parse_datetime(user_data.get("created_at")),
             updated_at=parse_datetime(user_data.get("updated_at")),
@@ -339,6 +342,140 @@ def migrate_email_templates(db: Session):
     print(f"  ✅ Migrated {len(templates_data)} email templates")
 
 
+def migrate_general_settings(db: Session):
+    """Migrate general settings from fixtures"""
+    print("Migrating general settings...")
+    fixture_file = FIXTURES_DIR / "general_settings.json"
+
+    if not fixture_file.exists():
+        print(f"  ⚠️  Fixture file not found: {fixture_file}")
+        return
+
+    with open(fixture_file) as f:
+        settings_data = json.load(f)
+
+    for data in settings_data:
+        settings = GeneralSettings(
+            id=data["id"],
+            user_id=data["user_id"],
+            language=data.get("language", "en"),
+            input_tools_enabled=data.get("input_tools_enabled", False),
+            right_to_left_editing=data.get("right_to_left_editing", False),
+            max_page_size=data.get("max_page_size", 50),
+            undo_send_delay_seconds=data.get("undo_send_delay_seconds", 5),
+            default_reply_behavior=data.get("default_reply_behavior", "reply"),
+            hover_actions_enabled=data.get("hover_actions_enabled", True),
+            send_and_archive_visible=data.get("send_and_archive_visible", False),
+            images_display=data.get("images_display", "always"),
+            dynamic_email_enabled=data.get("dynamic_email_enabled", True),
+            grammar_suggestions_enabled=data.get("grammar_suggestions_enabled", True),
+            spelling_suggestions_enabled=data.get("spelling_suggestions_enabled", True),
+            autocorrect_enabled=data.get("autocorrect_enabled", True),
+            smart_compose_enabled=data.get("smart_compose_enabled", True),
+            smart_compose_personalization_enabled=data.get("smart_compose_personalization_enabled", True),
+            conversation_view_enabled=data.get("conversation_view_enabled", True),
+            nudges_suggest_reply_enabled=data.get("nudges_suggest_reply_enabled", True),
+            nudges_suggest_followup_enabled=data.get("nudges_suggest_followup_enabled", True),
+            smart_reply_enabled=data.get("smart_reply_enabled", True),
+            smart_features_enabled=data.get("smart_features_enabled", True),
+            package_tracking_enabled=data.get("package_tracking_enabled", False),
+            desktop_notifications=data.get("desktop_notifications", "off"),
+            keyboard_shortcuts_enabled=data.get("keyboard_shortcuts_enabled", False),
+            button_labels=data.get("button_labels", "icons"),
+            auto_create_contacts_enabled=data.get("auto_create_contacts_enabled", True),
+            personal_level_indicators_enabled=data.get("personal_level_indicators_enabled", False),
+            created_at=parse_datetime(data.get("created_at")),
+            updated_at=parse_datetime(data.get("updated_at")),
+        )
+        db.merge(settings)
+    db.commit()
+    print(f"  ✅ Migrated {len(settings_data)} general settings")
+
+
+def migrate_default_text_styles(db: Session):
+    """Migrate default text styles from fixtures"""
+    print("Migrating default text styles...")
+    fixture_file = FIXTURES_DIR / "default_text_styles.json"
+
+    if not fixture_file.exists():
+        print(f"  ⚠️  Fixture file not found: {fixture_file}")
+        return
+
+    with open(fixture_file) as f:
+        styles_data = json.load(f)
+
+    for data in styles_data:
+        style = DefaultTextStyle(
+            id=data["id"],
+            general_settings_id=data["general_settings_id"],
+            font=data.get("font", "Sans Serif"),
+            size=data.get("size", "normal"),
+            color=data.get("color", "#000000"),
+            created_at=parse_datetime(data.get("created_at")),
+            updated_at=parse_datetime(data.get("updated_at")),
+        )
+        db.merge(style)
+    db.commit()
+    print(f"  ✅ Migrated {len(styles_data)} default text styles")
+
+
+def migrate_signatures(db: Session):
+    """Migrate signatures from fixtures"""
+    print("Migrating signatures...")
+    fixture_file = FIXTURES_DIR / "signatures.json"
+
+    if not fixture_file.exists():
+        print(f"  ⚠️  Fixture file not found: {fixture_file}")
+        return
+
+    with open(fixture_file) as f:
+        signatures_data = json.load(f)
+
+    for data in signatures_data:
+        signature = Signature(
+            id=data["id"],
+            general_settings_id=data["general_settings_id"],
+            name=data["name"],
+            content=data.get("content", ""),
+            is_default_for_new=data.get("is_default_for_new", False),
+            is_default_for_reply=data.get("is_default_for_reply", False),
+            insert_before_quoted=data.get("insert_before_quoted", True),
+            created_at=parse_datetime(data.get("created_at")),
+            updated_at=parse_datetime(data.get("updated_at")),
+        )
+        db.merge(signature)
+    db.commit()
+    print(f"  ✅ Migrated {len(signatures_data)} signatures")
+
+
+def migrate_advanced_settings(db: Session):
+    """Migrate advanced settings from fixtures"""
+    print("Migrating advanced settings...")
+    fixture_file = FIXTURES_DIR / "advanced_settings.json"
+
+    if not fixture_file.exists():
+        print(f"  ⚠️  Fixture file not found: {fixture_file}")
+        return
+
+    with open(fixture_file) as f:
+        settings_data = json.load(f)
+
+    for data in settings_data:
+        settings = AdvancedSettings(
+            id=data["id"],
+            user_id=data["user_id"],
+            auto_advance_enabled=data.get("auto_advance_enabled", False),
+            templates_enabled=data.get("templates_enabled", True),
+            custom_keyboard_shortcuts_enabled=data.get("custom_keyboard_shortcuts_enabled", False),
+            unread_message_icon_enabled=data.get("unread_message_icon_enabled", True),
+            created_at=parse_datetime(data.get("created_at")),
+            updated_at=parse_datetime(data.get("updated_at")),
+        )
+        db.merge(settings)
+    db.commit()
+    print(f"  ✅ Migrated {len(settings_data)} advanced settings")
+
+
 def main():
     """Main migration function"""
     print("=" * 60)
@@ -369,6 +506,12 @@ def main():
         migrate_attachments(db)
         migrate_saved_searches(db)
         migrate_email_templates(db)
+        
+        # Migrate user settings (depends on users)
+        migrate_general_settings(db)
+        migrate_default_text_styles(db)
+        migrate_signatures(db)
+        migrate_advanced_settings(db)
 
         print("-" * 60)
         print("\n✅ Migration completed successfully!")
