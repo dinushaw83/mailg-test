@@ -63,8 +63,9 @@ export const Labels = ({
   const availableLabels = useMemo(() => {
     // Ensure labels is an object (Redux initializes it as [] but fills it as {})
     const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
-
     return Object.entries(labelsObject)
+      // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
+      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
       .map(([key, meta]) => {
         const fullPath = buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey);
 

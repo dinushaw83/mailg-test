@@ -30,6 +30,8 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
   }, [shouldFocus]);
 
+  // Reset component state when submenu opens (shouldFocus becomes true)
+  // Clears any pending checkbox changes and search query to ensure a clean state
   useEffect(() => {
     if (shouldFocus) {
       setOverrides({});
@@ -43,21 +45,13 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
   const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
 
   const availableLabels = useMemo(() => {
-    const hiddenSystemLabels = new Set([
-      'Inbox', 'Sent', 'Trash', 'Spam', 'Scheduled', 'Snoozed', 'All Mail'
-    ]);
-
     const labelsObject = (labels && typeof labels === 'object' && !Array.isArray(labels)) 
       ? labels 
       : {};
 
     return Object.entries(labelsObject)
-      .filter(([key, meta]) => {
-        if (meta.system && hiddenSystemLabels.has(meta.name || key)) {
-          return false;
-        }
-        return true;
-      })
+      // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
+      .filter(([key, meta]) => !(meta.system && meta.is_exclusive))
       .map(([key, meta]) => ({
         key,
         name: meta.name || key,
