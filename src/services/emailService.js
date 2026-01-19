@@ -465,18 +465,6 @@ const emailService = {
     return mapped[0] || payload;
   },
 
-  /**
-   * Permanently delete email
-   * @param {string} emailId - Email ID
-   * @returns {Promise<void>}
-   */
-  deleteEmail: async (emailId) => {
-    const response = await apiClient.delete(`/v1/emails/${emailId}`, {
-      params: { permanent: true },
-    });
-    return response?.data?.data ?? response?.data ?? {};
-  },
-
   /* ────────────────────────────────────────────────────────────────────────────
    * BULK OPERATIONS
    * ────────────────────────────────────────────────────────────────────────── */
