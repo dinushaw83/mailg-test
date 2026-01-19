@@ -30,12 +30,12 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
   }, [shouldFocus]);
 
-  // Reset component state when submenu opens (shouldFocus becomes true)
-  // Clears any pending checkbox changes and search query to ensure a clean state
+  // Reset state when the labels menu is opened/focused
+  // This ensures a clean slate for each labeling session
   useEffect(() => {
     if (shouldFocus) {
-      setOverrides({});
-      setSearchQuery("");
+      setOverrides({}); // Clear any pending label changes (checkbox toggles)
+      setSearchQuery(""); // Clear the search/filter input
     }
   }, [shouldFocus]);
 
@@ -85,7 +85,6 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
 
     if (message) {
-
       const threadIds = selectedIds.filter(Boolean);
 
       modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
