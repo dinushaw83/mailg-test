@@ -280,8 +280,8 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
       e?.stopPropagation();
       if (onReply) {
         onReply();
-      } else if (responseViewRef?.current?.handleReply) {
-        responseViewRef.current.handleReply();
+      } else if (responseViewRef?.current?.handleReplyToEmail) {
+        responseViewRef.current.handleReplyToEmail(email);
         // Scroll to reply container
         setTimeout(() => {
           const replyContainer = document.querySelector('[data-testid="email-response-view"]');
