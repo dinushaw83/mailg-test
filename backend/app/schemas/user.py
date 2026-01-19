@@ -62,9 +62,6 @@ class UserResponse(BaseModel):
     custom_fields: Optional[List[CustomField]] = None
     notes: Optional[str] = None
     
-    # Email preferences
-    undo_send_delay_seconds: Optional[int] = 10  # Undo send buffer: 0=disabled, 5-30 seconds
-    
     # Status fields
     active: bool = True
     created_at: Optional[datetime] = None
@@ -111,9 +108,6 @@ class UserCreate(BaseModel):
     labels: Optional[List[str]] = None
     custom_fields: Optional[List[CustomField]] = None
     notes: Optional[str] = None
-    
-    # Email preferences
-    undo_send_delay_seconds: Optional[int] = 10  # Undo send buffer: 0=disabled, 5-30 seconds
 
     @field_validator('email')
     @classmethod
@@ -171,14 +165,6 @@ class UserCreate(BaseModel):
             raise ValueError("Birthday day must be between 1 and 31")
         return v
 
-    @field_validator('undo_send_delay_seconds')
-    @classmethod
-    def validate_undo_send_delay(cls, v: Optional[int]) -> Optional[int]:
-        """Validate undo send delay is 0 (disabled) or 5-30 seconds."""
-        if v is not None and v != 0 and (v < 5 or v > 30):
-            raise ValueError("Undo send delay must be 0 (disabled) or between 5 and 30 seconds")
-        return v
-
 
 class UserUpdate(BaseModel):
     """User update request schema supporting partial updates."""
@@ -211,9 +197,6 @@ class UserUpdate(BaseModel):
     labels: Optional[List[str]] = None
     custom_fields: Optional[List[CustomField]] = None
     notes: Optional[str] = None
-    
-    # Email preferences
-    undo_send_delay_seconds: Optional[int] = None  # Undo send buffer: 0=disabled, 5-30 seconds
     
     # Status
     active: Optional[bool] = None
@@ -274,12 +257,4 @@ class UserUpdate(BaseModel):
         """Validate birthday day is between 1 and 31."""
         if v is not None and (v < 1 or v > 31):
             raise ValueError("Birthday day must be between 1 and 31")
-        return v
-
-    @field_validator('undo_send_delay_seconds')
-    @classmethod
-    def validate_undo_send_delay(cls, v: Optional[int]) -> Optional[int]:
-        """Validate undo send delay is 0 (disabled) or 5-30 seconds."""
-        if v is not None and v != 0 and (v < 5 or v > 30):
-            raise ValueError("Undo send delay must be 0 (disabled) or between 5 and 30 seconds")
         return v

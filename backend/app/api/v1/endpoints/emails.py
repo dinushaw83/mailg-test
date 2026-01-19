@@ -22,6 +22,7 @@ from app.models.label import Label
 from app.models.thread_label import ThreadLabel
 from app.models.thread import Thread
 from app.models.user import User
+from app.models.general_settings import GeneralSettings
 from app.schemas.email import (
     EmailCreate, EmailUpdate, EmailResponse, EmailListResponse,
     EmailReadUpdate, EmailStarUpdate, EmailMoveRequest, EmailLabelRequest,
@@ -681,8 +682,9 @@ def send_email(
         logger.info(f"Email {email.id} scheduled for {scheduled_send_at} by user {current_user.id}")
         return format_email_response(email, current_user.id)
     
-    # No explicit scheduled time - use user's undo send delay preference
-    undo_delay = current_user.undo_send_delay_seconds or 0
+    # No explicit scheduled time - use user's undo send delay preference from settings
+    general_settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == current_user.id).first()
+    undo_delay = general_settings.undo_send_delay_seconds if general_settings else 5
     
     # Clamp to valid range (0 = disabled, 5-30 seconds)
     if undo_delay > 0:
@@ -1026,10 +1028,9 @@ def forward_email(
     if forward_data.html_body or original_email.html_body:
         html_body = (forward_data.html_body or "") + "<hr><p>---------- Forwarded message ---------</p>" + (original_email.html_body or "")
     
-    # Check user's undo send delay preference
-    undo_delay = current_user.undo_send_delay_seconds or 0
-    if undo_delay > 0:
-        undo_delay = max(5, min(30, undo_delay))  # Clamp to valid range
+    # Check user's undo send delay preference from settings
+    general_settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == current_user.id).first()
+    undo_delay = general_settings.undo_send_delay_seconds if general_settings else 5
     
     # Create a new thread for the forwarded email
     thread = Thread(
