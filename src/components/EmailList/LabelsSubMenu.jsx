@@ -30,10 +30,12 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
   }, [shouldFocus]);
 
+  // Reset state when the labels menu is opened/focused
+  // This ensures a clean slate for each labeling session
   useEffect(() => {
     if (shouldFocus) {
-      setOverrides({});
-      setSearchQuery("");
+      setOverrides({}); // Clear any pending label changes (checkbox toggles)
+      setSearchQuery(""); // Clear the search/filter input
     }
   }, [shouldFocus]);
 
@@ -43,13 +45,9 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
   const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
 
   const availableLabels = useMemo(() => {
-    const hiddenSystemLabels = new Set([
-      'Inbox', 'Sent', 'Trash', 'Spam', 'Scheduled', 'Snoozed', 'All Mail'
-    ]);
+    const hiddenSystemLabels = new Set(["Inbox", "Sent", "Trash", "Spam", "Scheduled", "Snoozed", "All Mail"]);
 
-    const labelsObject = (labels && typeof labels === 'object' && !Array.isArray(labels)) 
-      ? labels 
-      : {};
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
 
     return Object.entries(labelsObject)
       .filter(([key, meta]) => {
@@ -91,7 +89,6 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
 
     if (message) {
-
       const threadIds = selectedIds.filter(Boolean);
 
       modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
