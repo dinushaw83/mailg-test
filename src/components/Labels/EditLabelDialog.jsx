@@ -41,8 +41,8 @@ export default function EditLabelDialog({
   }, [defaultParentKey]);
 
   const parentChoices = useMemo(
-    () => flattenTreeForSelect(labelTree).filter((opt) => !labels?.[opt.key]?.system),
-    [labelTree, labels]
+    () => flattenTreeForSelect(labelTree).filter((opt) => !opt.system),
+    [labelTree]
   );
 
   const trimmed = name.trim();

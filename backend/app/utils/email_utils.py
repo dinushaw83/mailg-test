@@ -15,25 +15,62 @@ from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Session
 
+from sqlalchemy import and_, or_
+
 from app.core.constants import (
     EmailStatus, FolderType, SystemLabel
 )
 from app.utils.label_utils import (
-    add_system_label_to_thread,
+    sync_thread_labels,
 )
 
 logger = logging.getLogger(__name__)
 
+# Sender statuses - these emails belong to the sender's perspective
+SENDER_STATUSES = [
+    EmailStatus.DRAFT.value,
+    EmailStatus.QUEUED.value,
+    EmailStatus.SENT.value,
+    EmailStatus.CANCELLED.value,
+]
 
-# Mapping from folder type to system label enum
-FOLDER_TO_LABEL = {
-    FolderType.INBOX.value: SystemLabel.INBOX,
-    FolderType.SENT.value: SystemLabel.SENT,
-    FolderType.DRAFTS.value: SystemLabel.DRAFTS,
-    FolderType.TRASH.value: SystemLabel.TRASH,
-    FolderType.SPAM.value: SystemLabel.SPAM,
-    FolderType.SCHEDULED.value: SystemLabel.SCHEDULED,
-}
+
+def get_perspective_email_filter(db: Session, user_id: UUID):
+    """Get SQLAlchemy filter for user's emails from their perspective.
+    
+    This filter ensures users only see emails they "own" from their perspective:
+    - Sender's emails (draft/queued/sent/cancelled): user is the sender
+    - Recipient's emails (received): user is in EmailRecipient
+    
+    This prevents senders from seeing the "received" copies created for recipients,
+    and vice versa.
+    
+    Args:
+        db: Database session (needed for subquery)
+        user_id: User ID to filter for
+        
+    Returns:
+        SQLAlchemy filter clause to use in queries
+    """
+    from app.models.email import Email
+    from app.models.email_recipient import EmailRecipient
+    
+    return or_(
+        # Emails user SENT (draft, queued, sent, cancelled)
+        and_(
+            Email.sender_id == user_id,
+            Email.status.in_(SENDER_STATUSES)
+        ),
+        # Emails user RECEIVED
+        and_(
+            Email.status == EmailStatus.RECEIVED.value,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == user_id
+                )
+            )
+        )
+    )
 
 
 def get_snippet(body: Optional[str], max_length: int = 200) -> str:
@@ -346,8 +383,8 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                 )
                 db.add(recv_recipient)
 
-                # Add Inbox label for recipient
-                add_system_label_to_thread(db, email.thread_id, recipient_user.id, SystemLabel.INBOX)
+                # Sync thread labels for recipient (adds INBOX label based on received email)
+                sync_thread_labels(db, email.thread_id, recipient_user.id)
 
     # Update thread email count if any emails were created
     if emails_created > 0 and email.thread_id:

@@ -10,9 +10,9 @@ import Typography from "@mui/material/Typography";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
 
-export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false }) => {
+export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus = false, folder = null }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const { labels, setSnackbar, selection } = useGlobalContext();
+  const { labels, setSnackbar, selection, emails } = useGlobalContext();
   const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
@@ -30,14 +30,28 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
   }, [shouldFocus]);
 
+  // Reset state when the labels menu is opened/focused
+  // This ensures a clean slate for each labeling session
+  useEffect(() => {
+    if (shouldFocus) {
+      setOverrides({}); // Clear any pending label changes (checkbox toggles)
+      setSearchQuery(""); // Clear the search/filter input
+    }
+  }, [shouldFocus]);
+
   const hasChanges = Object.keys(overrides).length > 0;
 
-  // Get currently applied labels for selected emails
-  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds);
+  // Get currently applied labels for selected emails, passing folder if present
+  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
 
   const availableLabels = useMemo(() => {
-    return Object.entries(labels || {})
-      .filter(([key, meta]) => !meta.system)
+    const labelsObject = (labels && typeof labels === 'object' && !Array.isArray(labels)) 
+      ? labels 
+      : {};
+
+    return Object.entries(labelsObject)
+      // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
+      .filter(([key, meta]) => !(meta.system && meta.is_exclusive))
       .map(([key, meta]) => ({
         key,
         name: meta.name || key,
@@ -71,10 +85,12 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     }
 
     if (message) {
-      modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove });
+      const threadIds = selectedIds.filter(Boolean);
+
+      modifyLabels(selectedIds, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
 
       const undo = () => {
-        modifyLabels(selectedIds, { add: labelsToRemove, remove: labelsToAdd });
+        modifyLabels(selectedIds, { add: labelsToRemove, remove: labelsToAdd }, threadIds);
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -95,9 +111,8 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
       });
     }
 
-    selection.clear();
     setOverrides({}); // reset
-  }, [overrides, currentLabels, modifyLabels, setSnackbar, selection, selectedIds, labels]);
+  }, [overrides, currentLabels, modifyLabels, setSnackbar, selectedIds, labels, emails]);
 
   return (
     <Box sx={{ width: "280px", maxHeight: "400px", display: "flex", flexDirection: "column" }}>

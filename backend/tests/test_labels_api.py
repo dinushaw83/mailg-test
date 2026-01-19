@@ -7,6 +7,7 @@ from app.models.email import Email
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.core.constants import FolderType
+from tests.conftest import create_received_email_for_user
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -230,9 +231,9 @@ class TestLabelList:
 
         client, token, user = client_with_auth
 
-        # Create two labels
-        label1 = Label(name="Important", owner_id=user.id)
-        label2 = Label(name="Personal", owner_id=user.id)
+        # Create two custom labels (avoid names that conflict with system labels)
+        label1 = Label(name="MyUnreadLabel", owner_id=user.id)
+        label2 = Label(name="MyReadLabel", owner_id=user.id)
         db_session.add_all([label1, label2])
         db_session.commit()
 
@@ -246,7 +247,7 @@ class TestLabelList:
             subject="Unread email",
             body="Content",
             sender_id=user.id,
-            folder=FolderType.INBOX,
+            folder=FolderType.INBOX.value,
             is_read=False,
             sent_at=datetime.now(timezone.utc)
         )
@@ -272,7 +273,7 @@ class TestLabelList:
             subject="Read email",
             body="Content",
             sender_id=user.id,
-            folder=FolderType.INBOX,
+            folder=FolderType.INBOX.value,
             is_read=True,
             sent_at=datetime.now(timezone.utc)
         )
@@ -303,18 +304,18 @@ class TestLabelList:
         assert response.status_code == 200
         data = response.json()["data"]
 
-        # Find our labels
-        important = next((l for l in data if l["name"] == "Important"), None)
-        personal = next((l for l in data if l["name"] == "Personal"), None)
+        # Find our custom labels
+        my_unread_label = next((l for l in data if l["name"] == "MyUnreadLabel"), None)
+        my_read_label = next((l for l in data if l["name"] == "MyReadLabel"), None)
 
         # Verify counts
-        assert important is not None
-        assert important["thread_count"] == 1
-        assert important["unread_count"] == 1  # Has unread email
+        assert my_unread_label is not None
+        assert my_unread_label["thread_count"] == 1
+        assert my_unread_label["unread_count"] == 1  # Has unread email
 
-        assert personal is not None
-        assert personal["thread_count"] == 1
-        assert personal["unread_count"] == 0  # Email is read
+        assert my_read_label is not None
+        assert my_read_label["thread_count"] == 1
+        assert my_read_label["unread_count"] == 0  # Email is read
 
 
 class TestLabelFullName:
@@ -730,7 +731,7 @@ class TestHierarchicalLabelNames:
         db_session.add(family)
         db_session.commit()
         
-        # Create thread and email with nested label (labels are linked to threads)
+        # Create thread and email with nested label (perspective-aware)
         thread = Thread(
             subject="Family Reunion",
             owner_id=user.id,
@@ -739,15 +740,12 @@ class TestHierarchicalLabelNames:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Family Reunion",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         thread_label = ThreadLabel(thread_id=thread.id, label_id=family.id, user_id=user.id)

@@ -15,7 +15,8 @@ from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.models.label import Label
 from app.models.user import User
-from app.core.constants import FolderType, SystemLabel
+from app.core.constants import FolderType, SystemLabel, EmailStatus
+from tests.conftest import create_received_email_for_user, create_sent_email_for_user
 
 
 class TestInboxLabelFiltering:
@@ -25,14 +26,13 @@ class TestInboxLabelFiltering:
         """Test that inbox only shows threads that have the INBOX label."""
         client, token, user = client_with_auth
         
-        # Create INBOX system label for user
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        db_session.add(inbox_label)
-        db_session.commit()
+        # Get existing INBOX system label (created by sample_user fixture)
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.INBOX.value,
+            Label.is_system == True
+        ).first()
+        assert inbox_label is not None, "INBOX label should exist from fixture"
         
         # Create two threads
         thread1 = Thread(subject="Thread 1", owner_id=user.id, email_count=1)
@@ -40,24 +40,19 @@ class TestInboxLabelFiltering:
         db_session.add_all([thread1, thread2])
         db_session.commit()
         
-        # Create emails for both threads
-        email1 = Email(
+        # Create emails for both threads (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Email in inbox",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread1.id
+            thread=thread1
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Email not in inbox",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Add INBOX label only to thread1
@@ -85,41 +80,34 @@ class TestInboxLabelFiltering:
 
     def test_removing_inbox_label_hides_from_inbox(self, client_with_auth, db_session):
         """Test that removing INBOX label hides thread from inbox view."""
+        from app.utils.label_utils import sync_thread_labels
+        
         client, token, user = client_with_auth
         
-        # Create INBOX system label
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        db_session.add(inbox_label)
-        db_session.commit()
+        # Get existing INBOX system label (created by sample_user fixture)
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.INBOX.value,
+            Label.is_system == True
+        ).first()
+        assert inbox_label is not None, "INBOX label should exist from fixture"
         
-        # Create thread with email
+        # Create thread with email (perspective-aware)
         thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Test Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
-        # Add INBOX label
-        thread_label = ThreadLabel(
-            thread_id=thread.id,
-            label_id=inbox_label.id,
-            user_id=user.id
-        )
-        db_session.add(thread_label)
-        db_session.commit()
+        # Sync thread labels (adds INBOX based on folder, plus ALL_MAIL)
+        # This simulates real app behavior where threads are properly labeled
+        sync_thread_labels(db_session, thread.id, user.id, commit=True)
         
         # Verify email appears in inbox
         response = client.get(
@@ -148,29 +136,25 @@ class TestInboxLabelFiltering:
         """Test that thread is still visible in all mail after removing INBOX label."""
         client, token, user = client_with_auth
         
-        # Create INBOX system label
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        db_session.add(inbox_label)
-        db_session.commit()
+        # Get existing INBOX system label (created by sample_user fixture)
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.INBOX.value,
+            Label.is_system == True
+        ).first()
+        assert inbox_label is not None, "INBOX label should exist from fixture"
         
-        # Create thread with email
+        # Create thread with email (perspective-aware)
         thread = Thread(subject="Test Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="All Mail Test",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Add then remove INBOX label
@@ -208,37 +192,33 @@ class TestInboxWithCategory:
         """Test filtering inbox by promotions category via label."""
         client, token, user = client_with_auth
         
-        # Create INBOX system label
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            is_exclusive=True,  # Inbox is exclusive
-            owner_id=user.id
-        )
-        # Create Promotions category label
-        promo_label = Label(
-            name="Promotions",
-            is_system=True,
-            is_exclusive=False,  # Category labels are not exclusive
-            owner_id=user.id
-        )
-        db_session.add_all([inbox_label, promo_label])
-        db_session.commit()
+        # Get existing INBOX system label (created by sample_user fixture)
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.INBOX.value,
+            Label.is_system == True
+        ).first()
+        assert inbox_label is not None, "INBOX label should exist from fixture"
         
-        # Create thread with promo email
+        # Get existing Promotions category label
+        promo_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Promotions",
+            Label.is_system == True
+        ).first()
+        assert promo_label is not None, "Promotions label should exist from fixture"
+        
+        # Create thread with promo email (perspective-aware)
         thread = Thread(subject="Promo Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Sale Email",
             body="50% off!",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Add INBOX label
@@ -279,21 +259,23 @@ class TestSpamFolder:
         """Test that spam folder shows emails in spam folder."""
         client, token, user = client_with_auth
         
-        # Create thread with spam email
+        # Create thread with spam email (perspective-aware)
         thread = Thread(subject="Spam Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
         
-        spam_email = Email(
+        spam_email = create_received_email_for_user(
+            db_session, user,
             subject="You won a prize!",
             body="Click here",
-            status="received",
             folder=FolderType.SPAM.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(spam_email)
         db_session.commit()
+        
+        # Sync thread labels (adds SPAM label based on folder)
+        from app.utils.label_utils import sync_thread_labels
+        sync_thread_labels(db_session, thread.id, user.id, commit=True)
         
         response = client.get(
             "/api/v1/emails?folder=spam",
@@ -322,20 +304,18 @@ class TestSpamFolder:
         """Test unmarking spam moves email back to inbox."""
         client, token, user = client_with_auth
         
-        # Create thread with spam email
+        # Create thread with spam email (perspective-aware)
         thread = Thread(subject="Spam Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Spam Email",
             body="Content",
-            status="received",
             folder=FolderType.SPAM.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.post(
@@ -355,42 +335,39 @@ class TestSpamLabelRemoval:
         """Test that removing SPAM label restores all spam emails in thread to inbox."""
         client, token, user = client_with_auth
         
-        # Create SPAM and INBOX system labels
-        spam_label = Label(
-            name=SystemLabel.SPAM.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        db_session.add_all([spam_label, inbox_label])
-        db_session.commit()
+        # Get existing system labels (created by sample_user fixture)
+        spam_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.SPAM.value,
+            Label.is_system == True
+        ).first()
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.INBOX.value,
+            Label.is_system == True
+        ).first()
+        assert spam_label is not None, "SPAM label should exist from fixture"
+        assert inbox_label is not None, "INBOX label should exist from fixture"
         
-        # Create thread with multiple spam emails
+        # Create thread with multiple spam emails (perspective-aware)
         thread = Thread(subject="Spam Thread", owner_id=user.id, email_count=2)
         db_session.add(thread)
         db_session.commit()
         
-        email1 = Email(
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Spam 1",
             body="Content",
-            status="received",
             folder=FolderType.SPAM.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Spam 2",
             body="Content",
-            status="received",
             folder=FolderType.SPAM.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Add SPAM label to thread
@@ -425,42 +402,39 @@ class TestTrashLabelRemoval:
         """Test that removing TRASH label restores all trashed emails in thread to inbox."""
         client, token, user = client_with_auth
         
-        # Create TRASH and INBOX system labels
-        trash_label = Label(
-            name=SystemLabel.TRASH.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        db_session.add_all([trash_label, inbox_label])
-        db_session.commit()
+        # Get existing system labels (created by sample_user fixture)
+        trash_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.TRASH.value,
+            Label.is_system == True
+        ).first()
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.INBOX.value,
+            Label.is_system == True
+        ).first()
+        assert trash_label is not None, "TRASH label should exist from fixture"
+        assert inbox_label is not None, "INBOX label should exist from fixture"
         
-        # Create thread with multiple trashed emails
+        # Create thread with multiple trashed emails (perspective-aware)
         thread = Thread(subject="Trash Thread", owner_id=user.id, email_count=2)
         db_session.add(thread)
         db_session.commit()
         
-        email1 = Email(
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Trash 1",
             body="Content",
-            status="received",
             folder=FolderType.TRASH.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Trash 2",
             body="Content",
-            status="received",
             folder=FolderType.TRASH.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Add TRASH label to thread
@@ -491,34 +465,32 @@ class TestTrashLabelRemoval:
         """Test that removing TRASH label also adds INBOX label to thread."""
         client, token, user = client_with_auth
         
-        # Create TRASH and INBOX system labels
-        trash_label = Label(
-            name=SystemLabel.TRASH.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        inbox_label = Label(
-            name=SystemLabel.INBOX.value,
-            is_system=True,
-            owner_id=user.id
-        )
-        db_session.add_all([trash_label, inbox_label])
-        db_session.commit()
+        # Get existing system labels (created by sample_user fixture)
+        trash_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.TRASH.value,
+            Label.is_system == True
+        ).first()
+        inbox_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == SystemLabel.INBOX.value,
+            Label.is_system == True
+        ).first()
+        assert trash_label is not None, "TRASH label should exist from fixture"
+        assert inbox_label is not None, "INBOX label should exist from fixture"
         
-        # Create thread with trashed email
+        # Create thread with trashed email (perspective-aware)
         thread = Thread(subject="Trash Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Trash Email",
             body="Content",
-            status="received",
             folder=FolderType.TRASH.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Add TRASH label to thread
@@ -554,21 +526,23 @@ class TestTrashFolder:
         """Test that trash folder shows emails in trash folder."""
         client, token, user = client_with_auth
         
-        # Create thread with trashed email
+        # Create thread with trashed email (perspective-aware)
         thread = Thread(subject="Trash Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.commit()
         
-        trashed_email = Email(
+        trashed_email = create_received_email_for_user(
+            db_session, user,
             subject="Deleted email",
             body="Content",
-            status="received",
             folder=FolderType.TRASH.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(trashed_email)
         db_session.commit()
+        
+        # Sync thread labels (adds TRASH label based on folder)
+        from app.utils.label_utils import sync_thread_labels
+        sync_thread_labels(db_session, thread.id, user.id, commit=True)
         
         response = client.get(
             "/api/v1/emails?folder=trash",

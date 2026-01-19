@@ -10,11 +10,12 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_user_metadata import ThreadUserMetadata
-from app.core.constants import FolderType, EmailCategory
+from app.core.constants import FolderType, EmailCategory, EmailStatus
 from app.models.label import Label
 from app.models.thread_label import ThreadLabel
 from app.models.attachment import Attachment
 from app.models.saved_search import SavedSearch
+from tests.conftest import create_received_email_for_user, create_sent_email_for_user
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -28,36 +29,39 @@ class TestSearchBasic:
         """Test searching emails with a query string."""
         client, token, user = client_with_auth
         
-        # Create thread and emails with searchable content
+        # Create thread and emails with searchable content (perspective-aware)
         thread = Thread(subject="Project meeting notes", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        emails = [
-            Email(subject="Project meeting notes", body="Discussing timeline", 
-                  status="received", sender_id=user.id, folder=FolderType.INBOX.value,
-                  thread_id=thread.id),
-        ]
-        for email in emails:
-            db_session.add(email)
+        email1 = create_received_email_for_user(
+            db_session, user,
+            subject="Project meeting notes",
+            body="Discussing timeline",
+            thread=thread
+        )
         
         thread2 = Thread(subject="Budget report Q4", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(subject="Budget report Q4", body="Financial summary", 
-                       status="received", sender_id=user.id, folder=FolderType.INBOX.value,
-                       thread_id=thread2.id)
-        db_session.add(email2)
+        email2 = create_received_email_for_user(
+            db_session, user,
+            subject="Budget report Q4",
+            body="Financial summary",
+            thread=thread2
+        )
         
         thread3 = Thread(subject="Team meeting agenda", owner_id=user.id, email_count=1)
         db_session.add(thread3)
         db_session.flush()
         
-        email3 = Email(subject="Team meeting agenda", body="Weekly sync", 
-                       status="received", sender_id=user.id, folder=FolderType.INBOX.value,
-                       thread_id=thread3.id)
-        db_session.add(email3)
+        email3 = create_received_email_for_user(
+            db_session, user,
+            subject="Team meeting agenda",
+            body="Weekly sync",
+            thread=thread3
+        )
         db_session.commit()
         
         # Search for "meeting"
@@ -88,15 +92,17 @@ class TestSearchBasic:
         """Test search with no query returns user's emails."""
         client, token, user = client_with_auth
         
-        # Create a thread and email
+        # Create a thread and email (perspective-aware)
         thread = Thread(subject="Test Email", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(subject="Test Email", body="Test body",
-                      status="received", sender_id=user.id, folder=FolderType.INBOX.value,
-                      thread_id=thread.id)
-        db_session.add(email)
+        email = create_received_email_for_user(
+            db_session, user,
+            subject="Test Email",
+            body="Test body",
+            thread=thread
+        )
         db_session.commit()
         
         response = client.get(
@@ -120,44 +126,35 @@ class TestSearchThreadedResponse:
         """Test that search returns only the latest email from each thread."""
         client, token, user = client_with_auth
         
-        # Create a thread with multiple emails
+        # Create a thread with multiple emails (perspective-aware)
         thread = Thread(subject="Discussion Thread", owner_id=user.id, email_count=3)
         db_session.add(thread)
         db_session.flush()
         
         # Create emails with different timestamps
-        old_email = Email(
+        old_email = create_received_email_for_user(
+            db_session, user,
             subject="Discussion Thread",
             body="First message in thread",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            sent_at=datetime.utcnow() - timedelta(days=2)
+            thread=thread
         )
-        db_session.add(old_email)
+        old_email.sent_at = datetime.utcnow() - timedelta(days=2)
         
-        middle_email = Email(
+        middle_email = create_received_email_for_user(
+            db_session, user,
             subject="Re: Discussion Thread",
             body="Reply message",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            sent_at=datetime.utcnow() - timedelta(days=1)
+            thread=thread
         )
-        db_session.add(middle_email)
+        middle_email.sent_at = datetime.utcnow() - timedelta(days=1)
         
-        latest_email = Email(
+        latest_email = create_received_email_for_user(
+            db_session, user,
             subject="Re: Discussion Thread",
             body="Latest reply with keyword searchable",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            sent_at=datetime.utcnow()
+            thread=thread
         )
-        db_session.add(latest_email)
+        latest_email.sent_at = datetime.utcnow()
         db_session.commit()
         
         # Search - should only return 1 email (the latest) from this thread
@@ -178,22 +175,19 @@ class TestSearchThreadedResponse:
         """Test that search results include thread_email_count."""
         client, token, user = client_with_auth
         
-        # Create a thread with multiple emails
+        # Create a thread with multiple emails (perspective-aware)
         thread = Thread(subject="Multi-email Thread", owner_id=user.id, email_count=3)
         db_session.add(thread)
         db_session.flush()
         
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Multi-email Thread {i}",
                 body=f"Message {i}",
-                status="received",
-                sender_id=user.id,
-                folder=FolderType.INBOX.value,
-                thread_id=thread.id,
-                sent_at=datetime.utcnow() - timedelta(hours=i)
+                thread=thread
             )
-            db_session.add(email)
+            email.sent_at = datetime.utcnow() - timedelta(hours=i)
         db_session.commit()
         
         response = client.get(
@@ -221,15 +215,13 @@ class TestSearchOperators:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Quarterly Report 2024",
             body="Different content here",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -247,34 +239,29 @@ class TestSearchOperators:
         """Test is:unread search operator."""
         client, token, user = client_with_auth
         
-        # Create threads and emails
+        # Create threads and emails (perspective-aware)
         thread1 = Thread(subject="Read email", owner_id=user.id, email_count=1)
         db_session.add(thread1)
         db_session.flush()
         
-        read_email = Email(
+        read_email = create_received_email_for_user(
+            db_session, user,
             subject="Read email",
             body="Already read",
-            status="received",
             is_read=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(read_email)
         
         thread2 = Thread(subject="Unread email", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        unread_email = Email(
+        unread_email = create_received_email_for_user(
+            db_session, user,
             subject="Unread email",
             body="Not yet read",
-            status="received",
             is_read=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
         db_session.add(unread_email)
         db_session.commit()
@@ -297,16 +284,14 @@ class TestSearchOperators:
         db_session.add(thread)
         db_session.flush()
         
-        starred_email = Email(
+        # Create email (perspective-aware)
+        starred_email = create_received_email_for_user(
+            db_session, user,
             subject="Starred email",
             body="Important",
-            status="received",
             is_starred=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(starred_email)
         db_session.commit()
         
         response = client.get(
@@ -327,34 +312,28 @@ class TestSearchFilters:
         """Test filtering search by folder."""
         client, token, user = client_with_auth
         
-        # Create emails in different folders
+        # Create emails in different folders (perspective-aware)
         thread1 = Thread(subject="Inbox email", owner_id=user.id, email_count=1)
         db_session.add(thread1)
         db_session.flush()
         
-        inbox_email = Email(
+        inbox_email = create_received_email_for_user(
+            db_session, user,
             subject="Inbox email",
             body="In inbox",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(inbox_email)
         
         thread2 = Thread(subject="Sent email", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        sent_email = Email(
+        sent_email = create_sent_email_for_user(
+            db_session, user,
             subject="Sent email",
             body="In sent",
-            status="sent",
-            sender_id=user.id,
-            folder=FolderType.SENT.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(sent_email)
         db_session.commit()
         
         # Search with folder filter
@@ -376,16 +355,14 @@ class TestSearchFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Test",
             body="Test",
-            status="received",
             is_read=False,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -406,16 +383,14 @@ class TestSearchFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Starred",
             body="Important",
-            status="received",
             is_starred=True,
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -436,16 +411,13 @@ class TestSearchFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Email with attachment",
             body="Has file",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         attachment = Attachment(
             email_id=email.id,
@@ -488,30 +460,26 @@ class TestSearchImportant:
         )
         db_session.add(metadata)
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Important thread",
             body="Very important email",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         
         # Create a non-important thread
         thread2 = Thread(subject="Regular thread", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(
+        # Create email (perspective-aware)
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Regular thread",
             body="Normal email",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(email2)
         db_session.commit()
         
         # Search for important emails
@@ -542,7 +510,7 @@ class TestSearchLabelHierarchy:
         db_session.add(child)
         db_session.commit()
         
-        # Create email with nested label (labels are linked to threads)
+        # Create email with nested label (labels are linked to threads, perspective-aware)
         thread = Thread(
             subject="Project Update",
             owner_id=user.id,
@@ -551,15 +519,12 @@ class TestSearchLabelHierarchy:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Project Update",
             body="Status report",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         thread_label = ThreadLabel(thread_id=thread.id, label_id=child.id, user_id=user.id)
@@ -590,20 +555,17 @@ class TestSearchLabelHierarchy:
         db_session.add(label)
         db_session.commit()
         
-        # Create thread and email with label
+        # Create thread and email with label (perspective-aware)
         thread = Thread(subject="Labeled email", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Labeled email",
             body="Has label",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         thread_label = ThreadLabel(thread_id=thread.id, label_id=label.id, user_id=user.id)
@@ -631,16 +593,14 @@ class TestSearchDateFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Recent email",
             body="Today's email",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=datetime.utcnow()
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = datetime.utcnow()
         db_session.commit()
         
         yesterday = (datetime.utcnow() - timedelta(days=1)).strftime('%Y-%m-%d')
@@ -659,16 +619,14 @@ class TestSearchDateFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Old email",
             body="Past email",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=datetime.utcnow() - timedelta(days=5)
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = datetime.utcnow() - timedelta(days=5)
         db_session.commit()
         
         tomorrow = (datetime.utcnow() + timedelta(days=1)).strftime('%Y-%m-%d')
@@ -687,21 +645,18 @@ class TestSearchPagination:
         """Test search results pagination."""
         client, token, user = client_with_auth
         
-        # Create many threads and emails
+        # Create many threads and emails (perspective-aware)
         for i in range(25):
             thread = Thread(subject=f"Test email {i}", owner_id=user.id, email_count=1)
             db_session.add(thread)
             db_session.flush()
             
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Test email {i}",
                 body=f"Content {i}",
-                status="received",
-                sender_id=user.id,
-                folder=FolderType.INBOX.value,
-                thread_id=thread.id
+                thread=thread
             )
-            db_session.add(email)
         db_session.commit()
         
         # Get first page
@@ -725,31 +680,26 @@ class TestSearchPagination:
         db_session.add(thread1)
         db_session.flush()
         
-        old_email = Email(
+        # Create emails (perspective-aware)
+        old_email = create_received_email_for_user(
+            db_session, user,
             subject="Old email",
             body="Old",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id,
-            sent_at=datetime.utcnow() - timedelta(days=5)
+            thread=thread1
         )
-        db_session.add(old_email)
+        old_email.sent_at = datetime.utcnow() - timedelta(days=5)
         
         thread2 = Thread(subject="New email", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        new_email = Email(
+        new_email = create_received_email_for_user(
+            db_session, user,
             subject="New email",
             body="New",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id,
-            sent_at=datetime.utcnow()
+            thread=thread2
         )
-        db_session.add(new_email)
+        new_email.sent_at = datetime.utcnow()
         db_session.commit()
         
         # Test descending order (default)
@@ -868,17 +818,15 @@ class TestSearchResponseFormat:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Test Response Format",
             body="Testing response fields",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
             is_read=False,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -930,15 +878,13 @@ class TestSearchResponseFormat:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Label Test",
             body="Testing labels",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         thread_label = ThreadLabel(thread_id=thread.id, label_id=label.id, user_id=user.id)
@@ -974,20 +920,17 @@ class TestSearchTimezoneOffset:
         """Test that tz_offset parameter is accepted by the API."""
         client, token, user = client_with_auth
         
-        # Create a thread and email
+        # Create a thread and email (perspective-aware)
         thread = Thread(subject="Timezone Test", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Timezone Test",
             body="Testing tz_offset",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Test with EST offset (300 minutes = UTC-5)
@@ -1011,16 +954,14 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="After Test",
             body="Testing after filter with tz_offset",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=today + timedelta(hours=3)  # 03:00 UTC today
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = today + timedelta(hours=3)  # 03:00 UTC today
         db_session.commit()
         
         today_str = today.strftime('%Y-%m-%d')
@@ -1060,16 +1001,14 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Before Test",
             body="Testing before filter with tz_offset",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=today + timedelta(hours=3)  # 03:00 UTC today
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = today + timedelta(hours=3)  # 03:00 UTC today
         db_session.commit()
         
         tomorrow_str = (today + timedelta(days=1)).strftime('%Y-%m-%d')
@@ -1096,16 +1035,14 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Explicit Date Test",
             body="Testing explicit date params",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=today + timedelta(hours=3)  # 03:00 UTC today
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = today + timedelta(hours=3)  # 03:00 UTC today
         db_session.commit()
         
         today_str = today.strftime('%Y-%m-%d')
@@ -1130,15 +1067,13 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Negative Offset",
             body="Testing negative offset",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # IST offset is -330 (UTC+5:30)
@@ -1157,15 +1092,13 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Zero Offset",
             body="Testing zero offset",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -1183,15 +1116,13 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Invalid Offset",
             body="Testing invalid offset",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Invalid offset (way out of range)
@@ -1213,17 +1144,15 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Combined Test Report",
             body="This is a test report email",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
             is_starred=True,
-            created_at=today + timedelta(hours=12)
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = today + timedelta(hours=12)
         db_session.commit()
         
         today_str = today.strftime('%Y-%m-%d')
@@ -1244,16 +1173,14 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Relative Date Test",
             body="Testing relative dates",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=datetime.utcnow() - timedelta(days=3)  # 3 days ago
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = datetime.utcnow() - timedelta(days=3)  # 3 days ago
         db_session.commit()
         
         # newer_than:7d should find emails from last 7 days regardless of tz_offset
@@ -1275,15 +1202,13 @@ class TestSearchTimezoneOffset:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Boundary Test",
             body="Testing boundary offsets",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # UTC-12 (720 minutes) - Baker Island, westernmost timezone
@@ -1530,35 +1455,29 @@ class TestSearchHasnotFilter:
         """Test that hasnot parameter excludes emails containing the term."""
         client, token, user = client_with_auth
         
-        # Create email with "spam" in body
+        # Create email with "spam" in body (perspective-aware)
         thread1 = Thread(subject="Spam Email", owner_id=user.id, email_count=1)
         db_session.add(thread1)
         db_session.flush()
         
-        email1 = Email(
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Spam Email",
             body="This is spam content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(email1)
         
         # Create email without "spam"
         thread2 = Thread(subject="Normal Email", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Normal Email",
             body="This is regular content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(email2)
         db_session.commit()
         
         # Search excluding "spam"
@@ -1583,29 +1502,24 @@ class TestSearchHasnotFilter:
         db_session.add(thread1)
         db_session.flush()
         
-        email1 = Email(
+        # Create emails (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Newsletter Update",
             body="Weekly newsletter",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(email1)
         
         thread2 = Thread(subject="Important Update", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Important Update",
             body="Critical update",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(email2)
         db_session.commit()
         
         # Search for "Update" excluding "newsletter"
@@ -1629,21 +1543,17 @@ class TestSearchSizeFilters:
         """Test filtering emails larger than specified size (by attachment size)."""
         client, token, user = client_with_auth
         
-        # Create email with large attachment
+        # Create email with large attachment (perspective-aware)
         thread1 = Thread(subject="Large Email", owner_id=user.id, email_count=1)
         db_session.add(thread1)
         db_session.flush()
         
-        email1 = Email(
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Large Email",
             body="Has large attachment",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(email1)
-        db_session.flush()
         
         # Add large attachment
         attachment1 = Attachment(
@@ -1659,16 +1569,12 @@ class TestSearchSizeFilters:
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Small Email",
             body="Has small attachment",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(email2)
-        db_session.flush()
         
         # Add small attachment
         attachment2 = Attachment(
@@ -1697,21 +1603,17 @@ class TestSearchSizeFilters:
         """Test filtering emails smaller than specified size (by attachment size)."""
         client, token, user = client_with_auth
         
-        # Create email with large attachment
+        # Create email with large attachment (perspective-aware)
         thread1 = Thread(subject="Large Email", owner_id=user.id, email_count=1)
         db_session.add(thread1)
         db_session.flush()
         
-        email1 = Email(
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Large Email",
             body="Has large attachment",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(email1)
-        db_session.flush()
         
         attachment1 = Attachment(
             email_id=email1.id,
@@ -1726,16 +1628,12 @@ class TestSearchSizeFilters:
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Small Email",
             body="Has small attachment",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(email2)
-        db_session.flush()
         
         attachment2 = Attachment(
             email_id=email2.id,
@@ -1767,16 +1665,13 @@ class TestSearchSizeFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Size Test",
             body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         # Add large attachment (~2MB)
         attachment = Attachment(
@@ -1808,16 +1703,13 @@ class TestSearchSizeFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Exact Size",
             body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         attachment = Attachment(
             email_id=email.id,
@@ -1847,16 +1739,13 @@ class TestSearchCcBccFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="CC Test",
             body="Email with CC",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         # Add CC recipient
         cc_recipient = EmailRecipient(
@@ -1886,16 +1775,13 @@ class TestSearchCcBccFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="BCC Test",
             body="Email with BCC",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         # Add BCC recipient
         bcc_recipient = EmailRecipient(
@@ -1925,16 +1811,13 @@ class TestSearchCcBccFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="CC Q Test",
             body="Test email",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         cc_recipient = EmailRecipient(
             email_id=email.id,
@@ -1967,16 +1850,13 @@ class TestSearchFilenameFilter:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Document Email",
             body="Please find attached",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         # Add attachment
         attachment = Attachment(
@@ -2007,16 +1887,13 @@ class TestSearchFilenameFilter:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="PDF Email",
             body="PDF attached",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         attachment = Attachment(
             email_id=email.id,
@@ -2047,16 +1924,13 @@ class TestSearchFilenameFilter:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Filename Q Test",
             body="Doc attached",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         attachment = Attachment(
             email_id=email.id,
@@ -2093,16 +1967,13 @@ class TestSearchCategoryFilter:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Sale Alert",
             body="50% off everything",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         # Get promotions label for user (is_system=True, is_exclusive=False)
         promo_label = db_session.query(Label).filter(
@@ -2146,16 +2017,13 @@ class TestSearchCategoryFilter:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Social Update",
             body="New follower",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
         # Get social label for user (is_system=True, is_exclusive=False)
         social_label = db_session.query(Label).filter(
@@ -2196,20 +2064,18 @@ class TestSearchInAnywhereFilter:
         """Test that in:anywhere includes spam folder."""
         client, token, user = client_with_auth
         
-        # Create email in spam
+        # Create email in spam (perspective-aware)
         thread = Thread(subject="Spam Email", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Spam Email",
             body="This is spam",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.SPAM.value,
-            thread_id=thread.id
+            folder=FolderType.SPAM,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Normal search should NOT include spam
@@ -2240,15 +2106,14 @@ class TestSearchInAnywhereFilter:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Deleted Email",
             body="In trash",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.TRASH.value,
-            thread_id=thread.id
+            folder=FolderType.TRASH,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Normal search should NOT include trash
@@ -2292,15 +2157,13 @@ class TestSearchInArchiveFilter:
         )
         db_session.add(metadata)
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Archived Email",
             body="This is archived",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -2335,15 +2198,13 @@ class TestSearchHasUserlabelsFilter:
         thread_label = ThreadLabel(thread_id=thread.id, label_id=label.id, user_id=user.id)
         db_session.add(thread_label)
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Labeled Email",
             body="Has label",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -2361,20 +2222,17 @@ class TestSearchHasUserlabelsFilter:
         """Test filtering emails without user labels."""
         client, token, user = client_with_auth
         
-        # Create email without label
+        # Create email without label (perspective-aware)
         thread = Thread(subject="Unlabeled Email", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Unlabeled Email",
             body="No label",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -2400,18 +2258,15 @@ class TestSearchDeliveredtoFilter:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Delivered To Test",
             body="Test email",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
-        db_session.flush()
         
-        # Add to recipient
+        # Add additional recipient
         recipient = EmailRecipient(
             email_id=email.id,
             recipient_email="delivered@example.com",
@@ -2517,29 +2372,24 @@ class TestSearchQueryParsing:
         db_session.add(thread1)
         db_session.flush()
         
-        email1 = Email(
+        # Create emails (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Exact Match Test",
             body="This contains exact phrase match",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(email1)
         
         thread2 = Thread(subject="Partial Test", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Partial Test",
             body="This contains exact but not phrase",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(email2)
         db_session.commit()
         
         # Search for exact phrase
@@ -2563,43 +2413,35 @@ class TestSearchQueryParsing:
         db_session.add(thread1)
         db_session.flush()
         
-        email1 = Email(
+        # Create emails (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Apple Report",
             body="About apples",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread1.id
+            thread=thread1
         )
-        db_session.add(email1)
         
         thread2 = Thread(subject="Orange Report", owner_id=user.id, email_count=1)
         db_session.add(thread2)
         db_session.flush()
         
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Orange Report",
             body="About oranges",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add(email2)
         
         thread3 = Thread(subject="Banana Report", owner_id=user.id, email_count=1)
         db_session.add(thread3)
         db_session.flush()
         
-        email3 = Email(
+        email3 = create_received_email_for_user(
+            db_session, user,
             subject="Banana Report",
             body="About bananas",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread3.id
+            thread=thread3
         )
-        db_session.add(email3)
         db_session.commit()
         
         # Search for Apple OR Orange
@@ -2651,21 +2493,18 @@ class TestSearchRelativeDates:
         """Test newer_than:Xd filter."""
         client, token, user = client_with_auth
         
-        # Create recent email
+        # Create recent email (perspective-aware)
         thread = Thread(subject="Recent Email", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Recent Email",
             body="Created recently",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=datetime.utcnow() - timedelta(days=2)
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = datetime.utcnow() - timedelta(days=2)
         db_session.commit()
         
         # Search for emails newer than 7 days
@@ -2684,21 +2523,18 @@ class TestSearchRelativeDates:
         """Test older_than:Xd filter."""
         client, token, user = client_with_auth
         
-        # Create old email
+        # Create old email (perspective-aware)
         thread = Thread(subject="Old Email", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Old Email",
             body="Created long ago",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=datetime.utcnow() - timedelta(days=60)
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = datetime.utcnow() - timedelta(days=60)
         db_session.commit()
         
         # Search for emails older than 30 days
@@ -2721,16 +2557,14 @@ class TestSearchRelativeDates:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create email (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Weekly Email",
             body="Within a week",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=thread.id,
-            created_at=datetime.utcnow() - timedelta(days=5)
+            thread=thread
         )
-        db_session.add(email)
+        email.created_at = datetime.utcnow() - timedelta(days=5)
         db_session.commit()
         
         response = client.get(

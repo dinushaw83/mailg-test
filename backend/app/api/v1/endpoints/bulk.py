@@ -34,16 +34,15 @@ from app.auth.rbac import authorized
 from app.auth.dependencies import auth
 from app.core.constants import FolderType, SystemLabel, VALID_FOLDER_TYPES
 from app.utils.label_utils import (
-    bulk_add_system_label_to_threads,
     bulk_remove_system_label_from_threads,
-    bulk_replace_exclusive_labels,
+    bulk_sync_thread_labels,
 )
 from app.utils.bulk_utils import (
     get_user_accessible_threads,
     create_bulk_response,
     bulk_update_emails_with_threads,
 )
-from app.utils.email_utils import FOLDER_TO_LABEL
+from app.utils.email_utils import get_perspective_email_filter
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -61,17 +60,10 @@ def bulk_mark_read(
     """
     current_user = auth.user
 
-    # Get accessible email IDs (without loading full objects)
+    # Get accessible email IDs (without loading full objects) - perspective-aware
     accessible_ids = db.query(Email.id).filter(
         Email.id.in_(request.email_ids),
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
-                )
-            )
-        )
+        get_perspective_email_filter(db, current_user.id)
     ).all()
 
     success_ids = [eid[0] for eid in accessible_ids]
@@ -111,17 +103,10 @@ def bulk_star(
     """
     current_user = auth.user
 
-    # Get accessible email IDs (without loading full objects)
+    # Get accessible email IDs (without loading full objects) - perspective-aware
     accessible_ids = db.query(Email.id).filter(
         Email.id.in_(request.email_ids),
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
-                )
-            )
-        )
+        get_perspective_email_filter(db, current_user.id)
     ).all()
 
     success_ids = [eid[0] for eid in accessible_ids]
@@ -131,11 +116,22 @@ def bulk_star(
     # Bulk update with single query
     if success_ids:
         try:
+            # Get thread IDs for affected emails (for label sync)
+            email_threads = db.query(Email.thread_id).filter(
+                Email.id.in_(success_ids),
+                Email.thread_id.isnot(None)
+            ).distinct().all()
+            thread_ids = [et[0] for et in email_threads]
+
             db.query(Email).filter(
                 Email.id.in_(success_ids)
             ).update({Email.is_starred: request.is_starred}, synchronize_session=False)
 
             db.commit()
+
+            # Sync thread labels to reflect starred state
+            if thread_ids:
+                bulk_sync_thread_labels(db, thread_ids, current_user.id, commit=True)
         except Exception as e:
             db.rollback()
             logger.error(f"Bulk star operation failed: {e}")
@@ -201,6 +197,9 @@ def bulk_important(
                 db.bulk_save_objects(new_metadata)
 
             db.commit()
+
+            # Sync thread labels to reflect important state
+            bulk_sync_thread_labels(db, success_ids, current_user.id, commit=True)
         except Exception as e:
             db.rollback()
             logger.error(f"Bulk important operation failed: {e}")
@@ -233,17 +232,10 @@ def bulk_move(
             detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
         )
 
-    # Get accessible emails and their thread IDs
+    # Get accessible emails and their thread IDs (perspective-aware)
     email_threads = db.query(Email.id, Email.thread_id).filter(
         Email.id.in_(request.email_ids),
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
-                )
-            )
-        )
+        get_perspective_email_filter(db, current_user.id)
     ).all()
 
     success_ids = [et[0] for et in email_threads]
@@ -260,12 +252,11 @@ def bulk_move(
                 Email.id.in_(success_ids)
             ).update({Email.folder: request.folder}, synchronize_session=False)
 
-            # Bulk update labels for all threads
-            target_label = FOLDER_TO_LABEL.get(request.folder)
-            if thread_ids and target_label:
-                bulk_replace_exclusive_labels(db, thread_ids, current_user.id, target_label, commit=False)
-
             db.commit()
+
+            # Sync thread labels to reflect the folder changes
+            if thread_ids:
+                bulk_sync_thread_labels(db, thread_ids, current_user.id, commit=True)
         except Exception as e:
             db.rollback()
             logger.error(f"Bulk move operation failed: {e}")
@@ -283,19 +274,12 @@ def bulk_move(
 def bulk_delete(request: BulkDeleteRequest, db: Session = Depends(get_db)):
     current_user = auth.user
 
-    # 1. Fetch accessible email IDs + folder + thread_id only
+    # 1. Fetch accessible email IDs + folder + thread_id only (perspective-aware)
     rows = (
         db.query(Email.id, Email.folder, Email.thread_id)
         .filter(
             Email.id.in_(request.email_ids),
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         )
         .all()
     )
@@ -332,17 +316,11 @@ def bulk_delete(request: BulkDeleteRequest, db: Session = Depends(get_db)):
                 synchronize_session=False
             )
 
-            # 4. Replace labels for affected threads
-            if thread_ids:
-                bulk_replace_exclusive_labels(
-                    db,
-                    list(thread_ids),
-                    current_user.id,
-                    SystemLabel.TRASH,
-                    commit=False
-                )
-
         db.commit()
+
+        # 4. Sync labels for affected threads (only for non-permanent delete)
+        if thread_ids and not request.permanent:
+            bulk_sync_thread_labels(db, list(thread_ids), current_user.id, commit=True)
     except Exception as e:
         db.rollback()
         logger.error(f"Bulk delete failed: {e}")
@@ -525,10 +503,10 @@ def bulk_snooze(
             if new_metadata:
                 db.bulk_save_objects(new_metadata)
 
-            # Add Snoozed label to all threads
-            bulk_add_system_label_to_threads(db, success_ids, current_user.id, SystemLabel.SNOOZED)
-
             db.commit()
+
+            # Sync thread labels to reflect snoozed state
+            bulk_sync_thread_labels(db, success_ids, current_user.id, commit=True)
         except Exception as e:
             db.rollback()
             logger.error(f"Bulk snooze operation failed: {e}")
@@ -573,11 +551,10 @@ def bulk_unsnooze(
                 ThreadUserMetadata.user_id == current_user.id
             ).update({ThreadUserMetadata.snooze_until: None}, synchronize_session=False)
 
-            # Remove Snoozed label and add Inbox label
-            bulk_remove_system_label_from_threads(db, success_ids, current_user.id, SystemLabel.SNOOZED)
-            bulk_add_system_label_to_threads(db, success_ids, current_user.id, SystemLabel.INBOX)
-
             db.commit()
+
+            # Sync thread labels to reflect unsnoozed state
+            bulk_sync_thread_labels(db, success_ids, current_user.id, commit=True)
         except Exception as e:
             db.rollback()
             logger.error(f"Bulk unsnooze operation failed: {e}")
@@ -693,10 +670,10 @@ def bulk_unarchive(
                 ThreadUserMetadata.user_id == current_user.id
             ).update({ThreadUserMetadata.is_archived: False}, synchronize_session=False)
 
-            # Add Inbox label back
-            bulk_add_system_label_to_threads(db, success_ids, current_user.id, SystemLabel.INBOX)
-
             db.commit()
+
+            # Sync thread labels to restore appropriate labels based on email folders
+            bulk_sync_thread_labels(db, success_ids, current_user.id, commit=True)
         except Exception as e:
             db.rollback()
             logger.error(f"Bulk unarchive operation failed: {e}")
@@ -733,9 +710,7 @@ def bulk_spam(
             user_id=current_user.id,
             email_ids=request.email_ids,
             email_updates={Email.folder: FolderType.SPAM.value},
-            label_operation=lambda tids: bulk_replace_exclusive_labels(
-                db, tids, current_user.id, SystemLabel.SPAM
-            ),
+            label_operation=None,  # We'll sync labels after commit
             additional_filters=[Email.folder != FolderType.SPAM.value]
         )
 
@@ -745,6 +720,10 @@ def bulk_spam(
                 failures[eid] = "Email is already marked as spam"
 
         db.commit()
+
+        # Sync thread labels to reflect spam state
+        if thread_ids:
+            bulk_sync_thread_labels(db, thread_ids, current_user.id, commit=True)
     except Exception as e:
         db.rollback()
         logger.error(f"Bulk spam operation failed: {e}")
@@ -777,18 +756,11 @@ def bulk_unspam(
     current_user = auth.user
 
     try:
-        # Fetch accessible spam emails with their status and thread_id
+        # Fetch accessible spam emails with their status and thread_id (perspective-aware)
         spam_emails = db.query(Email.id, Email.status, Email.thread_id).filter(
             Email.id.in_(request.email_ids),
             Email.folder == FolderType.SPAM.value,
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         ).all()
 
         success_ids = [e.id for e in spam_emails]
@@ -805,15 +777,16 @@ def bulk_unspam(
             inbox = [e for e in spam_emails if e.status not in [EmailStatus.DRAFT.value, EmailStatus.QUEUED.value, EmailStatus.SENT.value]]
 
             # Bulk update each group to its appropriate folder
+            # Collect all affected thread IDs
+            all_thread_ids = set()
+
             if drafts:
                 draft_ids = [e.id for e in drafts]
                 db.query(Email).filter(Email.id.in_(draft_ids)).update(
                     {Email.folder: FolderType.DRAFTS.value},
                     synchronize_session=False
                 )
-                draft_thread_ids = [e.thread_id for e in drafts if e.thread_id]
-                if draft_thread_ids:
-                    bulk_replace_exclusive_labels(db, draft_thread_ids, current_user.id, SystemLabel.DRAFTS)
+                all_thread_ids.update(e.thread_id for e in drafts if e.thread_id)
 
             if scheduled:
                 scheduled_ids = [e.id for e in scheduled]
@@ -821,9 +794,7 @@ def bulk_unspam(
                     {Email.folder: FolderType.SCHEDULED.value},
                     synchronize_session=False
                 )
-                scheduled_thread_ids = [e.thread_id for e in scheduled if e.thread_id]
-                if scheduled_thread_ids:
-                    bulk_replace_exclusive_labels(db, scheduled_thread_ids, current_user.id, SystemLabel.SCHEDULED)
+                all_thread_ids.update(e.thread_id for e in scheduled if e.thread_id)
 
             if sent:
                 sent_ids = [e.id for e in sent]
@@ -831,9 +802,7 @@ def bulk_unspam(
                     {Email.folder: FolderType.SENT.value},
                     synchronize_session=False
                 )
-                sent_thread_ids = [e.thread_id for e in sent if e.thread_id]
-                if sent_thread_ids:
-                    bulk_replace_exclusive_labels(db, sent_thread_ids, current_user.id, SystemLabel.SENT)
+                all_thread_ids.update(e.thread_id for e in sent if e.thread_id)
 
             if inbox:
                 inbox_ids = [e.id for e in inbox]
@@ -841,11 +810,14 @@ def bulk_unspam(
                     {Email.folder: FolderType.INBOX.value},
                     synchronize_session=False
                 )
-                inbox_thread_ids = [e.thread_id for e in inbox if e.thread_id]
-                if inbox_thread_ids:
-                    bulk_replace_exclusive_labels(db, inbox_thread_ids, current_user.id, SystemLabel.INBOX)
+                all_thread_ids.update(e.thread_id for e in inbox if e.thread_id)
 
-        db.commit()
+            db.commit()
+
+            # Sync thread labels to reflect restored folders
+            if all_thread_ids:
+                bulk_sync_thread_labels(db, list(all_thread_ids), current_user.id, commit=True)
+
     except Exception as e:
         db.rollback()
         logger.error(f"Bulk unspam operation failed: {e}")
@@ -884,20 +856,16 @@ def bulk_thread_unstar(
     if success_ids:
         try:
             # Bulk update all emails in the accessible threads with single query
-            # Only update emails where user is sender or recipient
+            # Only update emails from user's perspective
             db.query(Email).filter(
                 Email.thread_id.in_(success_ids),
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
+                get_perspective_email_filter(db, current_user.id)
             ).update({Email.is_starred: False}, synchronize_session=False)
 
             db.commit()
+
+            # Sync thread labels to reflect unstarred state
+            bulk_sync_thread_labels(db, success_ids, current_user.id, commit=True)
         except Exception as e:
             db.rollback()
             logger.error(f"Bulk thread unstar operation failed: {e}")

@@ -17,6 +17,7 @@ import { useElementDimensions } from "../../hooks/useElementDimensions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import useMailActions from "../../hooks/useMailActions";
+import HighlightedText from "../common/HighlightedText";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -28,6 +29,25 @@ const TimestampBox = styled(Box)`
     display: none;
   }
 `;
+
+// Styled component for "Snoozed email" indicator (same color as star)
+const SnoozedEmailIndicator = styled("span")`
+  color: #f4b400;
+  font-size: 0.75rem;
+  font-weight: 500;
+`;
+
+// Check if email should show "Snoozed email" badge
+// Shows badge if snooze_until exists and current time has passed the snooze time
+const shouldShowSnoozeBadge = (email) => {
+  const snoozeUntil = email?.snooze_until || email?.snoozeUntil;
+  if (!snoozeUntil) return false;
+
+  const snoozeDate = new Date(snoozeUntil);
+  if (isNaN(snoozeDate.getTime())) return false;
+
+  return new Date() > snoozeDate;
+};
 
 const HoverDiv = styled.div`
   display: none;
@@ -85,8 +105,11 @@ const OneColumnData = ({
   index,
   formatDate,
   toggleStar,
+  toggleImportant,
   density,
   height = "60px",
+  folder,
+  searchQuery = null,
 }) => {
   return (
     <td className="xY" style={{ width: "90%", height }}>
@@ -136,7 +159,11 @@ const OneColumnData = ({
                 fontSize: "0.75rem",
               }}
             >
-              <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+              {shouldShowSnoozeBadge(email) && folder === "inbox" ? (
+                <SnoozedEmailIndicator>Snoozed email</SnoozedEmailIndicator>
+              ) : (
+                <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+              )}
             </span>
           </Box>
         </Box>
@@ -152,7 +179,7 @@ const OneColumnData = ({
                     data-legacy-last-message-id={email.legacyLastMessageId}
                     data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
                   >
-                    {email.subject}
+                    {searchQuery ? <HighlightedText text={email.subject} searchQuery={searchQuery} /> : email.subject}
                   </span>
                 </span>
               </div>
@@ -161,31 +188,58 @@ const OneColumnData = ({
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Box className="y2">
-            <span id={`:ps${index}`}>{email.preview}</span>
+            <span id={`:ps${index}`}>
+              {searchQuery ? <HighlightedText text={email.preview} searchQuery={searchQuery} /> : email.preview}
+            </span>
           </Box>
-          <IconButton
-            aria-label={email.is_starred ? "Unstar" : "Star"}
-            aria-pressed={email.is_starred}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleStar([email.id]);
-            }}
-            sx={{
-              color: email.is_starred ? "#FBBC04" : "rgba(0,0,0,.54)",
-              ...(density === "compact" ? { padding: "1px" } : {}),
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 18,
-                verticalAlign: "middle",
-                fontVariationSettings: `'FILL' ${email.is_starred ? 1 : 0}`,
+          <Box sx={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <IconButton
+              aria-label={email.is_important ? "Mark as not important" : "Mark as important"}
+              aria-pressed={email.is_important}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleImportant();
+              }}
+              sx={{
+                color: email.is_important ? "#FBBC04" : "rgba(0,0,0,.54)",
+                ...(density === "compact" ? { padding: "1px" } : {}),
               }}
             >
-              star
-            </span>
-          </IconButton>
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 18,
+                  verticalAlign: "middle",
+                  fontVariationSettings: `'FILL' ${email.is_important ? 1 : 0}`,
+                }}
+              >
+                label_important
+              </span>
+            </IconButton>
+            <IconButton
+              aria-label={email.is_starred ? "Unstar" : "Star"}
+              aria-pressed={email.is_starred}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleStar();
+              }}
+              sx={{
+                color: email.is_starred ? "#FBBC04" : "rgba(0,0,0,.54)",
+                ...(density === "compact" ? { padding: "1px" } : {}),
+              }}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: 18,
+                  verticalAlign: "middle",
+                  fontVariationSettings: `'FILL' ${email.is_starred ? 1 : 0}`,
+                }}
+              >
+                star
+              </span>
+            </IconButton>
+          </Box>
         </Box>
       </Box>
     </td>
@@ -256,43 +310,36 @@ const useCustomHotKeys = ({
   useHotkeys(shortcutsOn ? "e" : "", () => {
     const selectedIds = [...selection.ids];
     handleArchive(selectedIds);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "m" : "", () => {
     const selectedIds = selection.ids;
     handleMuteAction([...selectedIds]);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Shift+3" : "", () => {
     const selectedIds = selection.ids;
     handleDelete([...selectedIds]);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Shift+i" : "", () => {
     const selectedIds = [...selection.ids];
     bulkMarkRead(selectedIds, true);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Equal, Shift+Equal" : "", () => {
     const selectedIds = selection.ids;
     bulkMarkImportant([...selectedIds], true);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Minus" : "", () => {
     const selectedIds = [...selection.ids];
     bulkMarkImportant([...selectedIds], false);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "Shift+u" : "", () => {
     const selectedIds = [...selection.ids];
     bulkMarkRead(selectedIds, false);
-    selection.clear();
   });
 
   useHotkeys(shortcutsOn ? "b" : "", () => {
@@ -317,6 +364,7 @@ const Table = ({
   getLabelBadges,
   formatDate,
   setShowAdvancedMenu,
+  searchQuery = null,
 }) => {
   const uniqueMenuId = useId();
   const MENU_ID = `row-item-menu-${uniqueMenuId}`;
@@ -414,7 +462,11 @@ const Table = ({
         return;
       }
 
-      const undo = moveToTrash(thread_ids);
+      // Extract email IDs from threadIds
+      const matchingEmails = emails.filter((email) => thread_ids.includes(email.thread_id));
+      const emailIds = matchingEmails.map((email) => email.id);
+
+      const undo = moveToTrash(emailIds);
       setSnackbar({
         open: true,
         message:
@@ -428,7 +480,7 @@ const Table = ({
               if (typeof undo === "function") {
                 undo();
               } else {
-                moveToInbox(thread_ids);
+                moveToInbox(emailIds);
               }
               // Follow-up confirmation snackbar
               setSnackbar({
@@ -444,7 +496,7 @@ const Table = ({
         ),
       });
     },
-    [moveToTrash, setSnackbar, moveToInbox, showNoConversationsSelectedSnackbar]
+    [moveToTrash, setSnackbar, moveToInbox, showNoConversationsSelectedSnackbar, emails]
   );
 
   const bulkMarkRead = useCallback(
@@ -488,8 +540,9 @@ const Table = ({
   );
 
   const handleImportant = useCallback(
-    (ids, currentlyImportant) => {
-      toggleImportant(ids);
+    (ids, currentlyImportant, threadIds) => {
+      // Pass 'list' context and threadIds to indicate this is from email list
+      toggleImportant(ids, currentlyImportant, "list", threadIds);
 
       const message = currentlyImportant
         ? "Conversation marked as not important."
@@ -503,7 +556,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleImportant(ids);
+              toggleImportant(ids, !currentlyImportant, "list", threadIds); // Pass opposite state for undo
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -666,7 +719,6 @@ const Table = ({
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
       const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
-      selection.clear();
       const message = ids.size > 1 ? `${ids.size} Conversations snoozed` : "Conversation snoozed.";
       setSnackbar({
         open: true,
@@ -691,12 +743,13 @@ const Table = ({
         ),
       });
     },
-    [snooze, selection, unsnooze, setSnackbar]
+    [snooze, unsnooze, setSnackbar]
   );
 
   const handleStar = useCallback(
-    (ids, isStarred) => {
-      toggleStar(ids);
+    (ids, isStarred, threadIds) => {
+      // Pass 'list' context and threadIds to indicate this is from email list
+      toggleStar(ids, isStarred, "list", threadIds);
 
       const message = !isStarred ? "Conversation starred." : "Conversation unstarred.";
       setSnackbar({
@@ -707,7 +760,7 @@ const Table = ({
           <Button
             size="small"
             onClick={() => {
-              toggleStar(ids);
+              toggleStar(ids, !isStarred, "list", threadIds); // Undo with same context
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -785,8 +838,9 @@ const Table = ({
         <tbody>
           {emails.map((email, index) => {
             const thread_id = email.thread_id;
-            const isActive = showSnoozePopover && snoozeId === email.id;
+            const isActive = showSnoozePopover && snoozeId === email.thread_id;
             const selected = selection.isSelected(thread_id);
+            const labels = email.labels.map((label) => label?.name || label);
 
             const isFocused = focusedRowIndex === index;
 
@@ -834,8 +888,11 @@ const Table = ({
                     getSenderClassName={getSenderClassName}
                     index={index}
                     formatDate={formatDate}
-                    toggleStar={() => handleStar([email.id], email.is_starred)}
+                    toggleStar={() => handleStar([email.id], email.is_starred, [email.thread_id])}
+                    toggleImportant={() => handleImportant([email.id], email.is_important, [email.thread_id])}
                     density={density}
+                    folder={folder}
+                    searchQuery={searchQuery}
                   />
                 ) : (
                   <>
@@ -848,7 +905,7 @@ const Table = ({
                         className="T-Jo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleStar([email.id], email.is_starred);
+                          handleStar([email.id], email.is_starred, [email.thread_id]);
                         }}
                         style={{
                           background: "transparent",
@@ -884,7 +941,7 @@ const Table = ({
                         data-is-important={email.is_important.toString()}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleImportant && handleImportant([email.id], email.is_important);
+                          handleImportant && handleImportant([email.id], email.is_important, [email.thread_id]);
                         }}
                       >
                         <div className="T-ays-a45 sf-hidden">
@@ -908,10 +965,17 @@ const Table = ({
                             data-name={email.from.name}
                             data-hovercard-id={email.from.email}
                           >
-                            {folder === "sent" && !email.labels.includes("Drafts") ? `To: ${email.label}` : email.label}
-                            {email.label && email.labels.includes("Drafts") && <span>, </span>}
+                            {folder === "sent" && !labels.includes("Drafts") ? (
+                              <HighlightedText
+                                text={`To: ${email.label?.name || email.label}`}
+                                searchQuery={searchQuery}
+                              />
+                            ) : (
+                              <HighlightedText text={email.label?.name || email.label} searchQuery={searchQuery} />
+                            )}
+                            {email.label && labels.includes("Drafts") && <span>, </span>}
                             <>
-                              {email.labels.includes("Drafts") && (
+                              {labels.includes("Drafts") && (
                                 <span style={{ color: "#dd4b39", fontWeight: 400 }}> Draft</span>
                               )}
                             </>
@@ -996,13 +1060,21 @@ const Table = ({
                                   data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
                                   style={{ color: "#3f4042" }}
                                 >
-                                  {email.subject}
+                                  {searchQuery ? (
+                                    <HighlightedText text={email.subject} searchQuery={searchQuery} />
+                                  ) : (
+                                    email.subject
+                                  )}
                                 </span>
                               </span>
                             </div>
                             <span id={`:ps${index}`} className="y2">
                               <span className="Zt">&nbsp;-&nbsp;</span>
-                              {email.preview}
+                              {searchQuery ? (
+                                <HighlightedText text={email.preview} searchQuery={searchQuery} />
+                              ) : (
+                                email.preview
+                              )}
                             </span>
                           </div>
                         </Link>
@@ -1079,7 +1151,11 @@ const Table = ({
                           id={`:pu${index}`}
                           aria-label={new Date(email.timestamp).toLocaleString()}
                         >
-                          <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                          {shouldShowSnoozeBadge(email) && folder === "inbox" ? (
+                            <SnoozedEmailIndicator>Snoozed email</SnoozedEmailIndicator>
+                          ) : (
+                            <span className={email.isEmailRead ? "" : "bq3"}>{formatDate(email.timestamp)}</span>
+                          )}
                         </span>
                       </TimestampBox>
                       <HoverDiv>
@@ -1127,7 +1203,7 @@ const Table = ({
                             e.stopPropagation();
                             setState((prev) => ({
                               ...prev,
-                              snoozeId: email.id,
+                              snoozeId: email.thread_id,
                               snoozeAnchorEl: e.currentTarget,
                             }));
                           }}
@@ -1157,7 +1233,7 @@ const Table = ({
               snoozeId: null,
             }));
           }}
-          selectedIds={selection.ids}
+          selectedIds={snoozeId ? [snoozeId] : [...selection.ids]}
           snooze={handleSnooze}
         />
       )}

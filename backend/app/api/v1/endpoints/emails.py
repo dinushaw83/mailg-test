@@ -22,6 +22,7 @@ from app.models.label import Label
 from app.models.thread_label import ThreadLabel
 from app.models.thread import Thread
 from app.models.user import User
+from app.models.general_settings import GeneralSettings
 from app.schemas.email import (
     EmailCreate, EmailUpdate, EmailResponse, EmailListResponse,
     EmailReadUpdate, EmailStarUpdate, EmailMoveRequest, EmailLabelRequest,
@@ -36,15 +37,16 @@ from app.core.constants import (
     VALID_FOLDER_TYPES, EmailStatus, FolderType, EmailCategory, SystemLabel
 )
 from app.utils.label_utils import (
-    add_system_label_to_thread,
-    remove_system_label_from_thread,
-    replace_exclusive_labels,
+    get_system_label,
+    get_threads_with_system_label,
+    sync_thread_labels,
+    FOLDER_TO_LABEL,
 )
 from app.utils.email_utils import (
     format_email_response,
     format_email_list_response,
     deliver_email_to_recipients_background,
-    FOLDER_TO_LABEL,
+    get_perspective_email_filter,
 )
 from app.utils.thread_metadata_utils import get_user_important_thread_ids
 
@@ -120,9 +122,8 @@ def create_email(
         db.commit()
         db.refresh(email)
         
-        # Add Drafts label to the thread
-        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
-        db.commit()
+        # Sync thread labels to reflect the new draft
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
         
     except Exception:
         db.rollback()
@@ -165,117 +166,49 @@ def list_emails(
             .selectinload(Thread.user_metadata),
     )
     
-    # Apply folder filter with proper sender/recipient context
+    # User access filter - perspective-aware (senders see sent, recipients see received)
+    user_access_filter = get_perspective_email_filter(db, current_user.id)
+    
+    # Apply folder filter using thread labels with fallback to email.folder
     if folder:
-        if folder == FolderType.INBOX:
-            # INBOX: Show threads that have the INBOX label for this user
-            # This allows removing INBOX label to hide from inbox (like archive)
-            from app.utils.label_utils import get_system_label
-            inbox_label = get_system_label(db, current_user.id, SystemLabel.INBOX)
+        # Map folder to system label
+        folder_to_label_map = {
+            FolderType.INBOX: SystemLabel.INBOX,
+            FolderType.SENT: SystemLabel.SENT,
+            FolderType.DRAFTS: SystemLabel.DRAFTS,
+            FolderType.TRASH: SystemLabel.TRASH,
+            FolderType.SPAM: SystemLabel.SPAM,
+            FolderType.SCHEDULED: SystemLabel.SCHEDULED,
+        }
+        
+        target_label = folder_to_label_map.get(folder)
+        if target_label:
+            # Get threads with this label for the user
+            thread_ids_subquery = get_threads_with_system_label(db, current_user.id, target_label)
             
-            if inbox_label:
-                # Filter to threads with INBOX label
-                inbox_thread_ids = db.query(ThreadLabel.thread_id).filter(
-                    ThreadLabel.label_id == inbox_label.id,
-                    ThreadLabel.user_id == current_user.id
-                ).subquery()
+            if thread_ids_subquery is not None:
+                # Primary: filter by thread label
+                # Fallback: emails without threads (thread_id is None) that match the folder
+                labeled_threads_subq = db.query(thread_ids_subquery.c.thread_id)
                 
                 query = query.filter(
-                    Email.thread_id.in_(db.query(inbox_thread_ids.c.thread_id)),
                     or_(
-                        Email.sender_id == current_user.id,
-                        Email.id.in_(
-                            db.query(EmailRecipient.email_id).filter(
-                                EmailRecipient.recipient_id == current_user.id
-                            )
-                        )
-                    )
+                        # Thread has the specific label we're looking for
+                        Email.thread_id.in_(labeled_threads_subq),
+                        # OR: Email has no thread (legacy), fall back to folder
+                        and_(Email.thread_id.is_(None), Email.folder == folder.value),
+                    ),
+                    user_access_filter
                 )
             else:
-                # Fallback if no inbox label found - show all user's emails
-                query = query.filter(
-                    or_(
-                        Email.sender_id == current_user.id,
-                        Email.id.in_(
-                            db.query(EmailRecipient.email_id).filter(
-                                EmailRecipient.recipient_id == current_user.id
-                            )
-                        )
-                    )
-                )
-            # Threaded grouping applied automatically at end
-        elif folder == FolderType.SENT:
-            # SENT: Show latest email sent BY current user per thread
-            query = query.filter(
-                Email.sender_id == current_user.id,
-                Email.folder == FolderType.SENT.value
-            )
-            # Threaded grouping applied automatically at end
-        elif folder == FolderType.SCHEDULED:
-            # SCHEDULED: Show latest scheduled email per thread (user is sender)
-            query = query.filter(
-                Email.sender_id == current_user.id,
-                Email.folder == FolderType.SCHEDULED.value
-            )
-            # Threaded grouping applied automatically at end
-        elif folder == FolderType.DRAFTS:
-            # DRAFTS: Show latest draft per thread (user is sender)
-            query = query.filter(
-                Email.sender_id == current_user.id,
-                Email.folder == FolderType.DRAFTS.value
-            )
-            # Threaded grouping applied automatically at end
-        elif folder == FolderType.TRASH:
-            # TRASH: Show emails in trash folder
-            query = query.filter(
-                Email.folder == FolderType.TRASH.value,
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
-            )
-        elif folder == FolderType.SPAM:
-            # SPAM: Show emails in spam folder (similar to trash)
-            query = query.filter(
-                Email.folder == FolderType.SPAM.value,
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
-            )
+                # Label not found - fall back to folder-based filtering
+                query = query.filter(Email.folder == folder.value, user_access_filter)
         else:
-            # Other folders - show emails where user is sender or recipient
-            query = query.filter(Email.folder == folder.value)
-            query = query.filter(
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
-            )
+            # Unknown folder type - filter by folder value and user access
+            query = query.filter(Email.folder == folder.value, user_access_filter)
     else:
         # No folder filter - show all user's emails (sent or received)
-        query = query.filter(
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
-        )
+        query = query.filter(user_access_filter)
     
     if thread_id:
         query = query.filter(Email.thread_id == thread_id)
@@ -329,14 +262,7 @@ def list_emails(
             # STARRED: Find threads where ANY email is starred, then show latest email
             starred_thread_ids = db.query(Email.thread_id).filter(
                 Email.is_starred == True,
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
+                get_perspective_email_filter(db, current_user.id)
             ).distinct().subquery()
             
             query = query.filter(Email.thread_id.in_(db.query(starred_thread_ids.c.thread_id)))
@@ -457,20 +383,13 @@ def list_emails(
     thread_counts = {}
     starred_thread_ids = set()
     if thread_ids:
-        # Query count of emails per thread (accessible to this user)
+        # Query count of emails per thread (accessible to this user from their perspective)
         count_results = db.query(
             Email.thread_id,
             func.count(Email.id).label('count')
         ).filter(
             Email.thread_id.in_(thread_ids),
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         ).group_by(Email.thread_id).all()
         
         thread_counts = {tid: cnt for tid, cnt in count_results}
@@ -479,14 +398,7 @@ def list_emails(
         starred_results = db.query(Email.thread_id).filter(
             Email.thread_id.in_(thread_ids),
             Email.is_starred == True,
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         ).distinct().all()
         starred_thread_ids = {tid for (tid,) in starred_results}
     
@@ -681,15 +593,15 @@ def delete_email(
         # Move to trash folder
         email.folder = FolderType.TRASH.value
 
-        # Update thread label to trash
-        if email.thread_id:
-            replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.TRASH)
-
     try:
         db.commit()
     except Exception:
         db.rollback()
         raise
+
+    # Sync thread labels to reflect the change
+    if email.thread_id and not permanent:
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
 
     logger.info(f"Email {email.id} {'permanently ' if permanent else 'moved to trash and '}deleted by user {current_user.id}")
 
@@ -757,10 +669,6 @@ def send_email(
         email.scheduled_send_at = scheduled_send_at
         email.folder = FolderType.SCHEDULED.value
         
-        # Update labels: Remove Drafts, add Scheduled
-        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
-        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
-        
         try:
             db.commit()
             db.refresh(email)
@@ -768,11 +676,15 @@ def send_email(
             db.rollback()
             raise
         
+        # Sync thread labels to reflect scheduled state
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
+        
         logger.info(f"Email {email.id} scheduled for {scheduled_send_at} by user {current_user.id}")
         return format_email_response(email, current_user.id)
     
-    # No explicit scheduled time - use user's undo send delay preference
-    undo_delay = current_user.undo_send_delay_seconds or 0
+    # No explicit scheduled time - use user's undo send delay preference from settings
+    general_settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == current_user.id).first()
+    undo_delay = general_settings.undo_send_delay_seconds if general_settings else 5
     
     # Clamp to valid range (0 = disabled, 5-30 seconds)
     if undo_delay > 0:
@@ -785,16 +697,15 @@ def send_email(
         email.scheduled_send_at = datetime.now(UTC) + timedelta(seconds=undo_delay)
         email.folder = FolderType.SENT.value
         
-        # Update labels: Remove Drafts, add Sent (not Scheduled - no explicit schedule param)
-        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
-        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
-        
         try:
             db.commit()
             db.refresh(email)
         except Exception:
             db.rollback()
             raise
+        
+        # Sync thread labels to reflect sent state
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
         
         logger.info(f"Email {email.id} queued for send in {undo_delay}s by user {current_user.id}")
         return format_email_response(email, current_user.id)
@@ -804,16 +715,15 @@ def send_email(
     email.sent_at = datetime.now(UTC)
     email.folder = FolderType.SENT.value
 
-    # Update labels: Remove Drafts, add Sent
-    remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
-    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
-
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
+
+    # Sync thread labels to reflect sent state
+    sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
 
     # Create received copies for recipients in background
     run_id = getattr(request_obj.state, "run_id", None)
@@ -875,17 +785,16 @@ def cancel_send(
     email.scheduled_send_at = None
     email.folder = FolderType.DRAFTS.value
     
-    # Update labels: Remove Scheduled, add Drafts
-    if email.thread_id:
-        remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
-        add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.DRAFTS)
-    
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
+    
+    # Sync thread labels to reflect draft state
+    if email.thread_id:
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
     
     logger.info(f"Email {email.id} send cancelled (undo send) by user {current_user.id}")
     
@@ -934,16 +843,15 @@ def confirm_send(
     email.scheduled_send_at = None
     email.folder = FolderType.SENT.value
 
-    # Update labels: Remove Scheduled, add Sent
-    remove_system_label_from_thread(db, email.thread_id, current_user.id, SystemLabel.SCHEDULED)
-    add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.SENT)
-
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
+
+    # Sync thread labels to reflect sent state
+    sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
 
     # Deliver to recipients in background
     run_id = getattr(request.state, "run_id", None)
@@ -1060,9 +968,6 @@ def reply_to_email(
             )
             db.add(email_recipient)
 
-        # Add Drafts label for sender
-        add_system_label_to_thread(db, original_email.thread_id, current_user.id, SystemLabel.DRAFTS)
-
         # Update thread email count
         thread = db.query(Thread).filter(Thread.id == original_email.thread_id).first()
         if thread:
@@ -1070,6 +975,9 @@ def reply_to_email(
 
         db.commit()
         db.refresh(reply_email)
+
+        # Sync thread labels to reflect new draft
+        sync_thread_labels(db, original_email.thread_id, current_user.id, commit=True)
 
     except Exception:
         db.rollback()
@@ -1120,10 +1028,9 @@ def forward_email(
     if forward_data.html_body or original_email.html_body:
         html_body = (forward_data.html_body or "") + "<hr><p>---------- Forwarded message ---------</p>" + (original_email.html_body or "")
     
-    # Check user's undo send delay preference
-    undo_delay = current_user.undo_send_delay_seconds or 0
-    if undo_delay > 0:
-        undo_delay = max(5, min(30, undo_delay))  # Clamp to valid range
+    # Check user's undo send delay preference from settings
+    general_settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == current_user.id).first()
+    undo_delay = general_settings.undo_send_delay_seconds if general_settings else 5
     
     # Create a new thread for the forwarded email
     thread = Thread(
@@ -1171,11 +1078,11 @@ def forward_email(
                 )
                 db.add(email_recipient)
 
-            # Add Sent label for sender (no explicit schedule param - undo send only)
-            add_system_label_to_thread(db, thread.id, current_user.id, SystemLabel.SENT)
-
             db.commit()
             db.refresh(forward_email_obj)
+
+            # Sync thread labels to reflect sent state
+            sync_thread_labels(db, thread.id, current_user.id, commit=True)
 
             logger.info(f"Forward {forward_email_obj.id} queued for send in {undo_delay}s by user {current_user.id}")
             return format_email_response(forward_email_obj, current_user.id)
@@ -1211,11 +1118,11 @@ def forward_email(
             )
             db.add(email_recipient)
 
-        # Add Sent label for sender
-        add_system_label_to_thread(db, thread.id, current_user.id, SystemLabel.SENT)
-
         db.commit()
         db.refresh(forward_email_obj)
+
+        # Sync thread labels to reflect sent state
+        sync_thread_labels(db, thread.id, current_user.id, commit=True)
 
     except Exception:
         db.rollback()
@@ -1328,6 +1235,10 @@ def star_email(
         db.rollback()
         raise
     
+    # Sync thread labels to reflect starred state
+    if email.thread_id:
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
+    
     return format_email_response(email, current_user.id)
 
 
@@ -1376,18 +1287,16 @@ def move_email(
     
     email.folder = move_data.folder
     
-    # Update labels to match folder change
-    if email.thread_id:
-        new_label = FOLDER_TO_LABEL.get(move_data.folder)
-        if new_label:
-            replace_exclusive_labels(db, email.thread_id, current_user.id, new_label)
-    
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
+    
+    # Sync thread labels to reflect folder change
+    if email.thread_id:
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
     
     return format_email_response(email, current_user.id)
 
@@ -1505,21 +1414,11 @@ def remove_label_from_email(
             trashed_emails = db.query(Email).filter(
                 Email.thread_id == email.thread_id,
                 Email.folder == FolderType.TRASH.value,
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
+                get_perspective_email_filter(db, current_user.id)
             ).all()
 
             for trashed_email in trashed_emails:
                 trashed_email.folder = FolderType.INBOX.value
-
-            # Add inbox label
-            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
 
             logger.info(f"Restored {len(trashed_emails)} emails from trash for thread {email.thread_id} by user {current_user.id}")
 
@@ -1528,21 +1427,11 @@ def remove_label_from_email(
             spam_emails = db.query(Email).filter(
                 Email.thread_id == email.thread_id,
                 Email.folder == FolderType.SPAM.value,
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
+                get_perspective_email_filter(db, current_user.id)
             ).all()
 
             for spam_email in spam_emails:
                 spam_email.folder = FolderType.INBOX.value
-
-            # Add inbox label
-            add_system_label_to_thread(db, email.thread_id, current_user.id, SystemLabel.INBOX)
 
             logger.info(f"Restored {len(spam_emails)} emails from spam for thread {email.thread_id} by user {current_user.id}")
         
@@ -1551,6 +1440,11 @@ def remove_label_from_email(
         except Exception:
             db.rollback()
             raise
+
+        # Only sync thread labels if folder was changed (trash/spam removal)
+        # Don't sync for regular label removal - respect user's manual action
+        if is_trash_label or is_spam_label:
+            sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
 
 
 @router.post("/emails/{email_id}/spam", response_model=EmailResponse, dependencies=[Depends(authorized())])
@@ -1604,16 +1498,16 @@ def mark_email_spam(
     
     email.folder = FolderType.SPAM.value
     
-    # Update labels: Replace with Spam
-    if email.thread_id:
-        replace_exclusive_labels(db, email.thread_id, current_user.id, SystemLabel.SPAM)
-    
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
+    
+    # Sync thread labels to reflect spam state
+    if email.thread_id:
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
     
     logger.info(f"Email {email.id} marked as spam by user {current_user.id}")
     
@@ -1676,21 +1570,13 @@ def unmark_email_spam(
     # Determine the appropriate folder based on email status
     if email.status == EmailStatus.DRAFT.value:
         email.folder = FolderType.DRAFTS.value
-        target_label = SystemLabel.DRAFTS
     elif email.status == EmailStatus.QUEUED.value:
         email.folder = FolderType.SCHEDULED.value
-        target_label = SystemLabel.SCHEDULED
     elif email.status == EmailStatus.SENT.value:
         email.folder = FolderType.SENT.value
-        target_label = SystemLabel.SENT
     else:
         # For received emails or any other status, restore to inbox
         email.folder = FolderType.INBOX.value
-        target_label = SystemLabel.INBOX
-
-    # Update labels: Replace Spam with the appropriate label
-    if email.thread_id:
-        replace_exclusive_labels(db, email.thread_id, current_user.id, target_label)
 
     try:
         db.commit()
@@ -1698,6 +1584,10 @@ def unmark_email_spam(
     except Exception:
         db.rollback()
         raise
+
+    # Sync thread labels to reflect the restored folder
+    if email.thread_id:
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
 
     logger.info(f"Email {email.id} removed from spam to {email.folder} by user {current_user.id}")
 
@@ -1760,21 +1650,13 @@ def restore_email_from_trash(
     # Determine the appropriate folder based on email status
     if email.status == EmailStatus.DRAFT.value:
         email.folder = FolderType.DRAFTS.value
-        target_label = SystemLabel.DRAFTS
     elif email.status == EmailStatus.QUEUED.value:
         email.folder = FolderType.SCHEDULED.value
-        target_label = SystemLabel.SCHEDULED
     elif email.status == EmailStatus.SENT.value:
         email.folder = FolderType.SENT.value
-        target_label = SystemLabel.SENT
     else:
         # For received emails or any other status, restore to inbox
         email.folder = FolderType.INBOX.value
-        target_label = SystemLabel.INBOX
-    
-    # Update labels: Replace Trash with the appropriate label
-    if email.thread_id:
-        replace_exclusive_labels(db, email.thread_id, current_user.id, target_label)
     
     try:
         db.commit()
@@ -1782,6 +1664,10 @@ def restore_email_from_trash(
     except Exception:
         db.rollback()
         raise
+    
+    # Sync thread labels to reflect the restored folder
+    if email.thread_id:
+        sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
     
     logger.info(f"Email {email.id} restored from trash to {email.folder} by user {current_user.id}")
     

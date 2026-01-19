@@ -93,6 +93,18 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Unsnooze Thread](#unsnooze-thread)
   - [Unmark Thread Spam Endpoint](#unmark-thread-spam-endpoint)
   - [Unstar Thread](#unstar-thread)
+- [User Settings API](#user-settings-api)
+  - [Get User Settings](#get-user-settings)
+  - [Update User Settings](#update-user-settings)
+  - [Get Advanced Settings](#get-advanced-settings)
+  - [Update Advanced Settings](#update-advanced-settings)
+  - [Get General Settings](#get-general-settings)
+  - [Update General Settings](#update-general-settings)
+  - [List Signatures](#list-signatures)
+  - [Create Signature](#create-signature)
+  - [Delete Signature](#delete-signature)
+  - [Get Signature](#get-signature)
+  - [Update Signature](#update-signature)
 - [Users API](#users-api)
   - [List Users](#list-users)
   - [Create User](#create-user)
@@ -436,17 +448,15 @@ Permissions:
 
 **GET** `/api/v1/auth/me`
 
-Get current authenticated user information.
+Get current authenticated user information with settings.
 
 Uses the access token from request headers to identify the user.
 
 Args:
-    current_user: Current authenticated user (from dependency).
-    request: FastAPI request object.
     db: Database session.
     
 Returns:
-    User information with role.
+    User information with all settings.
 
 **Responses**:
 
@@ -464,7 +474,27 @@ Returns:
     "email": "string",
     "email_label": "string",
     "role": "string",
-    "name": "string"
+    "settings": {
+      "general": {
+        "language": null,
+        "input_tools_enabled": null,
+        "right_to_left_editing": null,
+        "max_page_size": null,
+        "undo_send_delay_seconds": null,
+        "default_reply_behavior": null,
+        "id": null,
+        "user_id": null
+      },
+      "advanced": {
+        "auto_advance_enabled": null,
+        "templates_enabled": null,
+        "custom_keyboard_shortcuts_enabled": null,
+        "unread_message_icon_enabled": null,
+        "id": null,
+        "user_id": null
+      },
+      "labels": []
+    }
   }
 }
 ```
@@ -533,6 +563,27 @@ Raises:
   "data": {
     "access_token": "string",
     "user": {},
+    "settings": {
+      "general": {
+        "language": null,
+        "input_tools_enabled": null,
+        "right_to_left_editing": null,
+        "max_page_size": null,
+        "undo_send_delay_seconds": null,
+        "default_reply_behavior": null,
+        "id": null,
+        "user_id": null
+      },
+      "advanced": {
+        "auto_advance_enabled": null,
+        "templates_enabled": null,
+        "custom_keyboard_shortcuts_enabled": null,
+        "unread_message_icon_enabled": null,
+        "id": null,
+        "user_id": null
+      },
+      "labels": []
+    },
     "role": "string",
     "run_id": "string",
     "expires_in": 0
@@ -1534,9 +1585,11 @@ Permissions:
 
 Remove spam mark from multiple emails.
 
-Optimized to use generic bulk update helper with single UPDATE query.
-
-Moves emails from spam folder back to inbox.
+Moves emails from spam folder back to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam
@@ -3067,7 +3120,11 @@ Permissions:
 
 Remove spam mark from an email.
 
-Moves the email from spam folder back to inbox.
+Moves the email from spam folder back to its appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam (sent or received)
@@ -5315,8 +5372,13 @@ Permissions:
 
 Unmark a thread as spam for the current user.
 
-This updates the folder of all user's emails in the thread to INBOX.
-Also removes the Spam system label accordingly.
+This updates the folder of all user's emails in the thread to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
+
+Also replaces the Spam system label with the appropriate label.
 
 **Path Parameters**:
 
@@ -5398,6 +5460,868 @@ Permissions:
   "message": "string",
   "statusCode": 0,
   "data": {}
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+## User Settings API
+
+### Get User Settings
+
+**GET** `/api/v1/users/{user_id}/settings`
+
+Get all settings for a user.
+
+Permissions:
+- user: Can only access their own settings
+- admin: Can access any user's settings
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    All user settings (general, advanced).
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "general": {
+      "language": "en",
+      "input_tools_enabled": false,
+      "right_to_left_editing": false,
+      "max_page_size": 50,
+      "undo_send_delay_seconds": 5,
+      "default_reply_behavior": "reply",
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "advanced": {
+      "auto_advance_enabled": false,
+      "templates_enabled": true,
+      "custom_keyboard_shortcuts_enabled": false,
+      "unread_message_icon_enabled": true,
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "labels": []
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update User Settings
+
+**PUT** `/api/v1/users/{user_id}/settings`
+
+Update all settings for a user.
+
+Permissions:
+- user: Can only update their own settings
+- admin: Can update any user's settings
+
+Args:
+    user_id: User ID.
+    settings_data: Settings data to update.
+    db: Database session.
+    
+Returns:
+    Updated settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "general": {
+    "language": "string",
+    "input_tools_enabled": false,
+    "right_to_left_editing": false,
+    "max_page_size": 0,
+    "undo_send_delay_seconds": 0,
+    "default_reply_behavior": "string"
+  },
+  "advanced": {
+    "auto_advance_enabled": false,
+    "templates_enabled": false,
+    "custom_keyboard_shortcuts_enabled": false,
+    "unread_message_icon_enabled": false
+  }
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "general": {
+      "language": "en",
+      "input_tools_enabled": false,
+      "right_to_left_editing": false,
+      "max_page_size": 50,
+      "undo_send_delay_seconds": 5,
+      "default_reply_behavior": "reply",
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "advanced": {
+      "auto_advance_enabled": false,
+      "templates_enabled": true,
+      "custom_keyboard_shortcuts_enabled": false,
+      "unread_message_icon_enabled": true,
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "labels": []
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Advanced Settings
+
+**GET** `/api/v1/users/{user_id}/settings/advanced`
+
+Get advanced settings for a user.
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    Advanced settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "auto_advance_enabled": false,
+    "templates_enabled": true,
+    "custom_keyboard_shortcuts_enabled": false,
+    "unread_message_icon_enabled": true,
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update Advanced Settings
+
+**PATCH** `/api/v1/users/{user_id}/settings/advanced`
+
+Update advanced settings for a user.
+
+Args:
+    user_id: User ID.
+    settings_data: Settings data to update.
+    db: Database session.
+    
+Returns:
+    Updated advanced settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "auto_advance_enabled": false,
+  "templates_enabled": false,
+  "custom_keyboard_shortcuts_enabled": false,
+  "unread_message_icon_enabled": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "auto_advance_enabled": false,
+    "templates_enabled": true,
+    "custom_keyboard_shortcuts_enabled": false,
+    "unread_message_icon_enabled": true,
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get General Settings
+
+**GET** `/api/v1/users/{user_id}/settings/general`
+
+Get general settings for a user.
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    General settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "language": "en",
+    "input_tools_enabled": false,
+    "right_to_left_editing": false,
+    "max_page_size": 50,
+    "undo_send_delay_seconds": 5,
+    "default_reply_behavior": "reply",
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update General Settings
+
+**PATCH** `/api/v1/users/{user_id}/settings/general`
+
+Update general settings for a user.
+
+Args:
+    user_id: User ID.
+    settings_data: Settings data to update.
+    db: Database session.
+    
+Returns:
+    Updated general settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "language": "string",
+  "input_tools_enabled": false,
+  "right_to_left_editing": false,
+  "max_page_size": 0,
+  "undo_send_delay_seconds": 0,
+  "default_reply_behavior": "string"
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "language": "en",
+    "input_tools_enabled": false,
+    "right_to_left_editing": false,
+    "max_page_size": 50,
+    "undo_send_delay_seconds": 5,
+    "default_reply_behavior": "reply",
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### List Signatures
+
+**GET** `/api/v1/users/{user_id}/settings/signatures`
+
+List all signatures for a user.
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    List of signatures.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": [
+    {
+      "name": "string",
+      "content": "",
+      "is_default_for_new": false,
+      "is_default_for_reply": false,
+      "insert_before_quoted": true,
+      "id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Create Signature
+
+**POST** `/api/v1/users/{user_id}/settings/signatures`
+
+Create a new signature for a user.
+
+Args:
+    user_id: User ID.
+    signature_data: Signature data.
+    db: Database session.
+    
+Returns:
+    Created signature.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "name": "string",
+  "content": "",
+  "is_default_for_new": false,
+  "is_default_for_reply": false,
+  "insert_before_quoted": true
+}
+```
+
+**Responses**:
+
+- `201`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "name": "string",
+    "content": "",
+    "is_default_for_new": false,
+    "is_default_for_reply": false,
+    "insert_before_quoted": true,
+    "id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Delete Signature
+
+**DELETE** `/api/v1/users/{user_id}/settings/signatures/{signature_id}`
+
+Delete a signature.
+
+Args:
+    user_id: User ID.
+    signature_id: Signature ID.
+    db: Database session.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+- `signature_id` (required, string)
+
+**Responses**:
+
+- `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Signature
+
+**GET** `/api/v1/users/{user_id}/settings/signatures/{signature_id}`
+
+Get a specific signature.
+
+Args:
+    user_id: User ID.
+    signature_id: Signature ID.
+    db: Database session.
+    
+Returns:
+    Signature.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+- `signature_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "name": "string",
+    "content": "",
+    "is_default_for_new": false,
+    "is_default_for_reply": false,
+    "insert_before_quoted": true,
+    "id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update Signature
+
+**PUT** `/api/v1/users/{user_id}/settings/signatures/{signature_id}`
+
+Update a signature.
+
+Args:
+    user_id: User ID.
+    signature_id: Signature ID.
+    signature_data: Signature data to update.
+    db: Database session.
+    
+Returns:
+    Updated signature.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+- `signature_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "name": "string",
+  "content": "string",
+  "is_default_for_new": false,
+  "is_default_for_reply": false,
+  "insert_before_quoted": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "name": "string",
+    "content": "",
+    "is_default_for_new": false,
+    "is_default_for_reply": false,
+    "insert_before_quoted": true,
+    "id": "00000000-0000-0000-0000-000000000000"
+  }
 }
 ```
 

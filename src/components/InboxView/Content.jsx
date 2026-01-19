@@ -222,8 +222,20 @@ const Time = ({ timestamp }) => {
 };
 
 const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, onReply, responseViewRef }) => {
-  const { recipients: contacts, loggedInUser, setComposeWindows } = useGlobalContext();
+  const { recipients: contacts, loggedInUser, setComposeWindows, emails } = useGlobalContext();
   const [moreActionsAnchor, setMoreActionsAnchor] = useState(null);
+
+  // Manage starred state locally since the email might not be in global emails array
+  const [isStarred, setIsStarred] = useState(email?.is_starred || false);
+
+  // Manage important state locally as well
+  const [isImportant, setIsImportant] = useState(email?.is_important || false);
+
+  // Sync local starred and important state when email prop changes
+  useEffect(() => {
+    setIsStarred(email?.is_starred || false);
+    setIsImportant(email?.is_important || false);
+  }, [email?.id, email?.is_starred, email?.is_important]);
 
   const senderContact = useMemo(() => {
     // Check if sender email is of logged in user
@@ -254,10 +266,13 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
     (e) => {
       e?.stopPropagation();
       if (email?.id) {
-        toggleStar([email.id]);
+        // Optimistically update local state immediately
+        setIsStarred((prev) => !prev);
+        // Then sync with backend - pass "detail" as context
+        toggleStar([email.id], isStarred, "detail");
       }
     },
-    [email, toggleStar]
+    [email, toggleStar, isStarred]
   );
 
   const handleReply = useCallback(
@@ -303,8 +318,6 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
     setMoreActionsAnchor(null);
   }, []);
 
-  const isStarred = email?.is_starred || false;
-
   return (
     <>
       <TopBarContainer>
@@ -317,10 +330,11 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
         <ActionsContainer>
           <Time timestamp={timestamp} />
           <Icon
-            name={isStarred ? "star" : "star_border"}
+            name="star"
             label={isStarred ? "Starred" : "Not starred"}
             onClick={handleStar}
             color={isStarred ? "#f4b400" : "rgb(68, 68, 68)"}
+            filled={isStarred}
           />
           <Icon name="mood" label="Add a reaction" />
           <Icon name="reply" label="Reply" onClick={handleReply} />

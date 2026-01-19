@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Icon } from "./ActionBar";
 import EmailLabelChips from "../Labels/EmailLabelChips";
 import useMailActions from "../../hooks/useMailActions";
@@ -55,16 +55,26 @@ const ImportantMarker = styled.span`
 
 export const Subject = ({ subject, message }) => {
   const { toggleImportant } = useMailActions();
-  const isImportant = message?.is_important || false;
+
+  // Manage important state locally since the email might not be in global emails array
+  const [isImportant, setIsImportant] = useState(message?.is_important || false);
+
+  // Sync local important state when message prop changes
+  useEffect(() => {
+    setIsImportant(message?.is_important || false);
+  }, [message?.id, message?.is_important]);
 
   const handleImportant = useCallback(
     (e) => {
       e?.stopPropagation();
-      if (message?.id) {
-        toggleImportant([message.id]);
+      if (message?.id && message?.thread_id) {
+        // Optimistically update local state immediately
+        setIsImportant((prev) => !prev);
+        // Then sync with backend - pass "detail" context and thread ID
+        toggleImportant([message.id], isImportant, "detail", [message.thread_id]);
       }
     },
-    [message, toggleImportant]
+    [message, toggleImportant, isImportant]
   );
 
   return (

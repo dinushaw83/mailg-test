@@ -128,64 +128,100 @@ def extract_exclusions(query: str) -> Tuple[List[str], str]:
 
 def extract_or_groups(query: str) -> Tuple[List[List[str]], str]:
     """Extract OR groups from query.
-    
+
     Handles both explicit OR syntax and brace syntax.
-    
+
+    Uses simple string operations to avoid ReDoS vulnerabilities.
+
     Args:
         query: The search query string
-        
+
     Returns:
         Tuple of (list of OR groups, remaining query)
-        
+
     Examples:
         extract_or_groups('meeting OR conference') ->
         ([['meeting', 'conference']], '')
-        
+
         extract_or_groups('{urgent important}') ->
         ([['urgent', 'important']], '')
     """
     or_groups = []
-    
-    # Handle explicit OR: term1 OR term2
-    or_matches = re.findall(r'(\S+)\s+OR\s+(\S+)', query, re.IGNORECASE)
-    for match in or_matches:
-        or_groups.append(list(match))
-    query = re.sub(r'\S+\s+OR\s+\S+', '', query, flags=re.IGNORECASE)
-    
+
     # Handle brace syntax: {term1 term2 term3}
-    brace_matches = re.findall(r'\{([^}]+)\}', query)
-    for match in brace_matches:
-        terms = match.split()
+    while '{' in query:
+        start = query.find('{')
+        end = query.find('}', start)
+        if end == -1:
+            break
+        content = query[start+1:end]
+        terms = content.split()
         if len(terms) > 1:
             or_groups.append(terms)
-    query = re.sub(r'\{[^}]+\}', '', query)
-    
-    return or_groups, query
+        # Remove the brace group from query
+        query = query[:start] + ' ' + query[end+1:]
+
+    # Handle explicit OR: term1 OR term2
+    # Use case-insensitive string search to split by OR
+    parts = []
+    query_upper = query.upper()
+    start = 0
+
+    while True:
+        # Find next occurrence of " OR " (with spaces)
+        pos = query_upper.find(' OR ', start)
+        if pos == -1:
+            # No more OR found, add remaining part
+            parts.append(query[start:])
+            break
+
+        # Add part before OR
+        parts.append(query[start:pos])
+        # Move past " OR "
+        start = pos + 4
+
+    if len(parts) > 1:
+        # Process pairs of adjacent parts
+        for i in range(len(parts) - 1):
+            left_words = parts[i].strip().split()
+            right_words = parts[i+1].strip().split()
+
+            if left_words and right_words:
+                # Take last word from left and first word from right
+                or_groups.append([left_words[-1], right_words[0]])
+                # Remove these words from the parts
+                parts[i] = ' '.join(left_words[:-1]) if len(left_words) > 1 else ''
+                parts[i+1] = ' '.join(right_words[1:]) if len(right_words) > 1 else ''
+
+    # Join remaining parts
+    remaining = ' '.join(p for p in parts if p.strip())
+    return or_groups, remaining
 
 
 def extract_grouped_terms(query: str) -> Tuple[dict, str]:
     """Extract grouped terms like subject:(term1 term2).
-    
+
     Args:
         query: The search query string
-        
+
     Returns:
         Tuple of (dict with operator as key and list of terms, remaining query)
-        
+
     Example:
         extract_grouped_terms('subject:(dinner movie)') ->
         ({'subject': ['dinner', 'movie']}, '')
     """
     grouped = {}
-    
+
     # Match operator:(term1 term2 ...)
-    matches = re.findall(r'(\w+):\(([^)]+)\)', query)
+    # Use non-greedy quantifier and limit identifier length to prevent ReDoS
+    matches = re.findall(r'([A-Za-z_]\w{0,50}):\(([\w\s\-]+?)\)', query)
     for operator, terms_str in matches:
         terms = terms_str.split()
         grouped[operator.lower()] = terms
-    
-    query = re.sub(r'\w+:\([^)]+\)', '', query)
-    
+
+    query = re.sub(r'[A-Za-z_]\w{0,50}:\([\w\s\-]+?\)', '', query)
+
     return grouped, query
 
 
@@ -298,6 +334,7 @@ def parse_search_query(query: str, tz_offset: Optional[int] = None) -> dict:
         (r'in:anywhere', ('in_anywhere', True)),
         (r'in:archive', ('in_archive', True)),
         (r'in:snoozed', ('is_snoozed', True)),
+        (r'in:starred', ('is_starred', True)),
         (r'in:(\w+)', 'folder_type'),
         
         # Label and category

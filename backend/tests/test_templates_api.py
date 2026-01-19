@@ -314,17 +314,30 @@ class TestTemplateOperations:
         """Test partial update of a template."""
         client, token, user = client_with_auth
         original_body = sample_template.body
-        
+
         response = client.put(
             f"/api/v1/templates/{sample_template.id}",
             json={"name": "Only Name Changed"},
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["name"] == "Only Name Changed"
         assert data["body"] == original_body
+
+    def test_update_template_empty_body_fails(self, client_with_auth, sample_template):
+        """Test updating a template with empty body returns 400."""
+        client, token, user = client_with_auth
+
+        response = client.put(
+            f"/api/v1/templates/{sample_template.id}",
+            json={},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 400
+        assert "At least one field must be provided" in response.json()["message"]
 
     def test_update_other_user_template_forbidden(self, client_with_auth, db_session):
         """Test updating another user's template is forbidden."""

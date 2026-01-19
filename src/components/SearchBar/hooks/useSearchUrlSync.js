@@ -12,12 +12,13 @@ export function useSearchUrlSync(location, searchQuery, isAdvancedSearch, setSea
   useEffect(() => {
     if (isAdvancedSearch) {
       // For advanced search, use the query string directly with queryToSearchBarString
-      const queryString = location.search;
-      if (queryString) {
-        setSearchValue(queryToSearchBarString(queryString));
+      const queryString = new URLSearchParams(location.search);
+      const searchValue = queryString.get("q");
+      if (searchValue) {
+        setSearchValue(searchValue);
       }
     } else if (searchQuery) {
       setSearchValue(searchQuery);
     }
-  }, [searchQuery, isAdvancedSearch, location.search, setSearchValue]);
+  }, [searchQuery, isAdvancedSearch, location, setSearchValue]);
 }

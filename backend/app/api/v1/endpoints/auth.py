@@ -16,7 +16,10 @@ from app.auth.token_manager import get_token_manager
 from app.auth.dependencies import get_current_user, auth
 from app.api.v1.endpoints.users import format_user_response
 from app.schemas.user import UserResponse
+from app.schemas.user_settings import UserSettingsResponse, UserWithSettingsResponse
+from app.api.v1.endpoints.user_settings import get_or_create_all_settings
 from app.db.run_router import ensure_run_database
+from app.db.session import get_db_session
 from app.db.registry import touch_run
 from app.core.config import JWT_ACCESS_TOKEN_TTL_SECONDS
 import app.db.session as database
@@ -39,6 +42,7 @@ class TokenResponse(BaseModel):
     """Response schema for token generation."""
     access_token: str
     user: dict
+    settings: UserSettingsResponse
     role: str
     run_id: str
     expires_in: int
@@ -146,29 +150,55 @@ def create_token(
         run_id=run_id,
     )
 
+    # Fetch or create user settings from the run database
+    run_db = get_db_session(run_id)
+    try:
+        settings = get_or_create_all_settings(uuid.UUID(user_id), run_db)
+        settings_response = UserSettingsResponse(
+            general=settings["general"],
+            advanced=settings["advanced"],
+            labels=settings["labels"],
+        )
+    finally:
+        run_db.rollback()
+        run_db.close()
+
     return TokenResponse(
         access_token=token,
         user=user_response,
+        settings=settings_response,
         role=token_role,
         run_id=run_id,
         expires_in=JWT_ACCESS_TOKEN_TTL_SECONDS,
     )
 
 
-@router.get("/auth/me", response_model=UserResponse, dependencies=[Depends(authorized())])
+@router.get("/auth/me", response_model=UserWithSettingsResponse, dependencies=[Depends(authorized())])
 def get_current_user_info(
     db: Session = Depends(get_db)
 ) -> dict:
-    """Get current authenticated user information.
+    """Get current authenticated user information with settings.
     
     Uses the access token from request headers to identify the user.
     
     Args:
-        current_user: Current authenticated user (from dependency).
-        request: FastAPI request object.
         db: Database session.
         
     Returns:
-        User information with role.
+        User information with all settings.
     """
-    return format_user_response(auth.user, db)
+    user = auth.user
+    user_data = format_user_response(user, db)
+    
+    # Get or create settings for the user
+    settings = get_or_create_all_settings(user.id, db)
+    settings_response = UserSettingsResponse(
+        general=settings["general"],
+        advanced=settings["advanced"],
+        labels=settings["labels"],
+    )
+    
+    return {
+        **user_data,
+        "settings": settings_response,
+    }

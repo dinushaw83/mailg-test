@@ -16,6 +16,7 @@ from app.core.middleware.response_wrapper import ResponseWrapperMiddleware
 from app.db.template import initialize_template_Database
 from app.tasks.cleanup import cleanup_old_databases
 from app.tasks.scheduled_sender import process_scheduled_emails
+from app.tasks.snooze_processor import process_expired_snoozes
 from app.api.v1.router import router as v1_router
 from app.api.v1.endpoints import ingestion
 from app.api.v1.endpoints import instrumentation
@@ -46,6 +47,7 @@ async def lifespan(app: FastAPI):
     # Always start background tasks regardless of initialization result
     asyncio.create_task(cleanup_old_databases())
     asyncio.create_task(process_scheduled_emails())
+    asyncio.create_task(process_expired_snoozes())
     
     yield
 
