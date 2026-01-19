@@ -46,8 +46,8 @@ export default function CreateLabelDialog({
   const inputRef = React.useRef(null);
 
   const parentChoices = useMemo(
-    () => flattenTreeForSelect(labelTree).filter((opt) => !labels?.[opt.key]?.system),
-    [labelTree, labels]
+    () => flattenTreeForSelect(labelTree).filter((opt) => !opt.system),
+    [labelTree]
   );
 
   const trimmed = name.trim();
@@ -111,7 +111,7 @@ export default function CreateLabelDialog({
     onClose?.();
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     // validate on submit
     if (missingName || isDup || missingParent) {
       setAttempted(true);
@@ -119,8 +119,8 @@ export default function CreateLabelDialog({
     }
     try {
       const pk = nest ? parentKey : ROOT;
-      createLabel(trimmed, { parentKey: pk });
-      onAfterCreate?.(trimmed, pk, isMoving);
+      const createdLabel = await createLabel(trimmed, { parentKey: pk });
+      onAfterCreate?.(trimmed, pk, isMoving, createdLabel?.id);
 
       handleClose();
     } catch (e) {

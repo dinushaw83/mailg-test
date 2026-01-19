@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Fragment } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
@@ -14,7 +14,35 @@ import { StaticDatePicker } from "@mui/x-date-pickers/StaticDatePicker";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions, { makeMatch } from "../../hooks/useMailActions";
 
-const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateTime, onConfirm }) => {
+// Helper to get a default date (tomorrow at 8 AM)
+const getDefaultDateTime = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  date.setHours(8, 0, 0, 0);
+  return date;
+};
+
+// Helper to ensure we have a valid Date object
+const ensureValidDate = (date) => {
+  if (!date) return getDefaultDateTime();
+  const d = date instanceof Date ? date : new Date(date);
+  return isNaN(d.getTime()) ? getDefaultDateTime() : d;
+};
+
+const CalendarPickerModal = ({
+  open = false,
+  onClose = () => {},
+  selectedDateTime: propDateTime,
+  setSelectedDateTime: propSetDateTime,
+  onConfirm = () => {},
+}) => {
+  // Use internal state if no external setter is provided
+  const [internalDateTime, setInternalDateTime] = useState(() => ensureValidDate(propDateTime));
+
+  // Determine which date/setter to use
+  const selectedDateTime = ensureValidDate(propDateTime ?? internalDateTime);
+  const setSelectedDateTime = propSetDateTime || setInternalDateTime;
+
   const [dateError, setDateError] = useState("");
   const [timeError, setTimeError] = useState("");
   const [dateInput, setDateInput] = useState("");
@@ -22,10 +50,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
 
   // Helper function to safely format date
   const formatDate = (date) => {
-    if (!date || typeof date.toLocaleDateString !== "function") {
-      return "";
-    }
-    return date.toLocaleDateString("en-GB", {
+    const safeDate = ensureValidDate(date);
+    return safeDate.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
       year: "numeric",
@@ -34,10 +60,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
 
   // Helper function to safely format time
   const formatTime = (date) => {
-    if (!date || typeof date.toLocaleTimeString !== "function") {
-      return "";
-    }
-    return date.toLocaleTimeString("en-GB", {
+    const safeDate = ensureValidDate(date);
+    return safeDate.toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
@@ -61,7 +85,9 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
   };
 
   // Helper function to validate time
-  const validateTime = (timeString, selectedDate) => {
+  const validateTime = (timeString, dateToValidate) => {
+    if (!timeString) return "Invalid time format";
+
     const [hours, minutes] = timeString.split(":");
 
     if (!hours || !minutes) {
@@ -76,12 +102,13 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
     }
 
     // If the selected date is today, check if time is in the future
+    const safeDate = ensureValidDate(dateToValidate);
     const today = new Date();
-    const isToday = selectedDate.toDateString() === today.toDateString();
+    const isToday = safeDate.toDateString() === today.toDateString();
 
     if (isToday) {
       const now = new Date();
-      const inputTime = new Date(selectedDate);
+      const inputTime = new Date(safeDate);
       inputTime.setHours(hour, minute, 0, 0);
 
       if (inputTime <= now) {
@@ -97,6 +124,61 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
     setDateInput(formatDate(selectedDateTime));
     setTimeInput(formatTime(selectedDateTime));
   }, [selectedDateTime]);
+
+  // Sync internal state with prop when prop changes
+  useEffect(() => {
+    if (propDateTime) {
+      setInternalDateTime(ensureValidDate(propDateTime));
+    }
+  }, [propDateTime]);
+
+  const handleConfirm = () => {
+    let candidate = new Date(ensureValidDate(selectedDateTime));
+
+    // Validate and apply date from input
+    const parsedDate = new Date(dateInput);
+    const dateValidationMessage = validateDate(dateInput);
+
+    if (dateValidationMessage || Number.isNaN(parsedDate.getTime())) {
+      setDateError(dateValidationMessage || "Invalid Date");
+      return;
+    }
+
+    candidate.setFullYear(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
+    setDateError("");
+
+    // Validate and apply time from input
+    const timeValidationMessage = validateTime(timeInput, candidate);
+
+    if (timeValidationMessage) {
+      setTimeError(timeValidationMessage);
+      return;
+    }
+
+    const timeParts = (timeInput || "").split(":");
+    const hours = parseInt(timeParts[0] || "0", 10);
+    const minutes = parseInt(timeParts[1] || "0", 10);
+    candidate.setHours(hours, minutes, 0, 0);
+
+    if (Number.isNaN(candidate.getTime())) {
+      setTimeError("Invalid time");
+      return;
+    }
+
+    const now = new Date();
+
+    if (candidate <= now) {
+      const isSameDay = candidate.toDateString() === now.toDateString();
+      setDateError(isSameDay ? "" : "Select a future date");
+      setTimeError("Select a future time");
+      return;
+    }
+
+    setDateError("");
+    setTimeError("");
+    setSelectedDateTime(candidate);
+    onConfirm(candidate);
+  };
 
   return (
     <Modal
@@ -131,7 +213,8 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
               displayStaticWrapperAs="desktop"
               value={selectedDateTime}
               onChange={(newValue) => {
-                setSelectedDateTime(newValue);
+                const safeValue = ensureValidDate(newValue);
+                setSelectedDateTime(safeValue);
                 setDateError(""); // Clear date error when using calendar
                 setTimeError(""); // Clear time error when using calendar
               }}
@@ -156,7 +239,26 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
             <TextField
               label="Date"
               value={dateInput}
-              onChange={(event) => setDateInput(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setDateInput(value);
+
+                const parsed = new Date(value);
+                if (Number.isNaN(parsed.getTime())) {
+                  return;
+                }
+
+                const validationMessage = validateDate(value);
+                if (validationMessage) {
+                  setDateError(validationMessage);
+                  return;
+                }
+
+                const updated = new Date(ensureValidDate(selectedDateTime));
+                updated.setFullYear(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+                setDateError("");
+                setSelectedDateTime(updated);
+              }}
               error={!!dateError}
               helperText={dateError}
               onKeyDown={(event) => {
@@ -165,7 +267,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
                   setDateError(error);
                   if (!error) {
                     const newDate = new Date(event.target.value);
-                    setSelectedDateTime(newDate);
+                    setSelectedDateTime(ensureValidDate(newDate));
                   }
                 }
               }}
@@ -182,11 +284,12 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
               onKeyDown={(event) => {
                 if (event.key === "Enter") {
                   const timeString = event.target.value;
-                  const error = validateTime(timeString, selectedDateTime);
+                  const safeDate = ensureValidDate(selectedDateTime);
+                  const error = validateTime(timeString, safeDate);
                   setTimeError(error);
                   if (!error) {
                     const [hours, minutes] = timeString.split(":");
-                    const newDate = new Date(selectedDateTime);
+                    const newDate = new Date(safeDate);
                     newDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
                     setSelectedDateTime(newDate);
                   }
@@ -201,7 +304,7 @@ const CalendarPickerModal = ({ open, onClose, selectedDateTime, setSelectedDateT
           <Button onClick={onClose} variant="outlined">
             Cancel
           </Button>
-          <Button onClick={onConfirm} variant="contained">
+          <Button onClick={handleConfirm} variant="contained">
             Confirm
           </Button>
         </Box>
@@ -220,17 +323,12 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
   // Later today - set to 6 PM today
   const laterToday = new Date(today);
   laterToday.setHours(18, 0, 0, 0);
+  const shouldShowLaterToday = today < laterToday;
 
   // Tomorrow - set to 8 AM tomorrow
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(8, 0, 0, 0);
-
-  // Later this week - next Friday at 8 AM
-  const laterThisWeek = new Date(today);
-  const daysUntilFriday = (5 - today.getDay() + 7) % 7;
-  laterThisWeek.setDate(today.getDate() + (daysUntilFriday === 0 ? 7 : daysUntilFriday));
-  laterThisWeek.setHours(8, 0, 0, 0);
 
   // This weekend - next Sunday at 8 AM
   const thisWeekend = new Date(today);
@@ -295,18 +393,27 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     onClose();
   };
 
-  const handleDateTimeConfirm = () => {
-    handleSnoozeWithUndo(selectedIds, selectedDateTime);
+  const handleDateTimeConfirm = (date) => {
+    handleSnoozeWithUndo(selectedIds, date);
     setCalendarModalOpen(false);
     onClose();
   };
 
-  // Check if any selected emails are snoozed
-  const hasSnoozedEmails = useMemo(() => {
+  // Check if any selected emails are snoozed (snooze_until is in the future)
+  // Not using useMemo so it always checks against current time
+  const hasSnoozedEmails = (() => {
     if (!selectedIds?.length) return false;
     const match = makeMatch(selectedIds);
-    return (emails || []).some((m) => match(m) && (m.snoozeUntil || (m.labels || []).includes("Snoozed")));
-  }, [selectedIds, emails]);
+    const now = new Date();
+    return (emails || []).some((m) => {
+      if (!match(m)) return false;
+      const snoozeTime = m.snooze_until || m.snoozeUntil;
+      if (!snoozeTime) return false;
+      // Only consider it snoozed if the snooze time is in the future
+      const snoozeDate = new Date(snoozeTime);
+      return !isNaN(snoozeDate.getTime()) && snoozeDate > now;
+    });
+  })();
 
   const handleUnsnooze = () => {
     // Capture previous snooze times per email before unsnoozing
@@ -314,8 +421,9 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
     const match = makeMatch(selectedIds);
 
     (emails || []).forEach((m) => {
-      if (match(m) && m.snoozeUntil) {
-        prevSnoozeById[String(m.id)] = m.snoozeUntil;
+      const snoozeTime = m.snooze_until || m.snoozeUntil;
+      if (match(m) && snoozeTime) {
+        prevSnoozeById[String(m.id)] = snoozeTime;
       }
     });
 
@@ -373,27 +481,21 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
 
           {/* <Divider sx={{ marginY: "6px" }} /> */}
 
-          <ActionMenuItem
-            label="Later today"
-            rightText={formatTime(laterToday)}
-            onClick={() => {
-              handleSnoozeWithUndo(selectedIds, laterToday);
-              onClose();
-            }}
-          />
+          {shouldShowLaterToday && (
+            <ActionMenuItem
+              label="Later today"
+              rightText={formatTime(laterToday)}
+              onClick={() => {
+                handleSnoozeWithUndo(selectedIds, laterToday);
+                onClose();
+              }}
+            />
+          )}
           <ActionMenuItem
             label="Tomorrow"
             rightText={formatTime(tomorrow)}
             onClick={() => {
               handleSnoozeWithUndo(selectedIds, tomorrow);
-              onClose();
-            }}
-          />
-          <ActionMenuItem
-            label="Later this week"
-            rightText={formatTime(laterThisWeek)}
-            onClick={() => {
-              handleSnoozeWithUndo(selectedIds, laterThisWeek);
               onClose();
             }}
           />
@@ -415,7 +517,12 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
           />
           <Divider sx={{ marginY: "6px" }} />
           <ActionMenuItem icon="calendar_month" label="Select date & time" onClick={handleCalendarOpen} />
-          {hasSnoozedEmails && <ActionMenuItem icon="cancel" label="Unsnooze" onClick={handleUnsnooze} />}
+          {hasSnoozedEmails && (
+            <>
+              <Divider sx={{ marginY: "6px" }} />
+              <ActionMenuItem icon="cancel" label="Unsnooze" onClick={handleUnsnooze} />
+            </>
+          )}
         </Box>
       </Popover>
 

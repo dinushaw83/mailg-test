@@ -1,4 +1,4 @@
-import { Box, Divider } from "@mui/material";
+import { Box, Button, Divider } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { getThread, getThreadRows, normalizeEmails } from "../../utils/emails";
@@ -93,6 +93,40 @@ const InnerContainer = styled.div`
   padding-right: 10px;
 `;
 
+const SnoozedBanner = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  margin: 0 -24px 0 -2px;
+  padding-left: 26px;
+`;
+
+const SnoozedText = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #3c4043;
+`;
+
+const UnsnoozeButton = styled.button`
+  color: #1a73e8;
+  font-size: 14px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: rgba(26, 115, 232, 0.04);
+  }
+`;
+
 const DetailContainer = styled.div`
   overflow: hidden;
   flex: 1;
@@ -124,7 +158,8 @@ export const EmailContent = ({
   normalizedEmails,
 }) => {
   const responseViewRef = React.useRef();
-  const { markRead } = useMailActions();
+  const { markRead, snooze, unsnooze } = useMailActions();
+  const { setSnackbar } = useGlobalContext();
 
   const { messagesById } = normalizedEmails;
 
@@ -132,6 +167,102 @@ export const EmailContent = ({
     if (!emails || emails.length === 0) return null;
     return getThread(emails, { thread_id });
   }, [emails, thread_id]);
+
+  // Check if thread is snoozed - check thread level, then check individual emails
+  const snoozeUntil = useMemo(() => {
+    // First check thread-level snooze
+    if (thread?.snooze_until || thread?.snoozeUntil) {
+      return thread.snooze_until || thread.snoozeUntil;
+    }
+    // Then check individual emails for snooze_until
+    if (emails && emails.length > 0) {
+      for (const email of emails) {
+        if (email.snooze_until || email.snoozeUntil) {
+          return email.snooze_until || email.snoozeUntil;
+        }
+      }
+    }
+    return null;
+  }, [thread, emails]);
+
+  // Only show as snoozed if the snooze time is in the future
+  // Note: Not using useMemo so it always checks against current time on each render
+  const isSnoozed = (() => {
+    if (!snoozeUntil) return false;
+    const snoozeDate = new Date(snoozeUntil);
+    return !isNaN(snoozeDate.getTime()) && snoozeDate > new Date();
+  })();
+
+  // Format snooze time for display
+  const formatSnoozeTime = useCallback((snoozeDate) => {
+    if (!snoozeDate) {
+      return "";
+    }
+
+    const date = new Date(snoozeDate);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const isTomorrow = date.toDateString() === tomorrow.toDateString();
+
+    const timeStr = date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    if (isToday) {
+      return `Today, ${timeStr}`;
+    }
+
+    if (isTomorrow) {
+      return `Tomorrow, ${timeStr}`;
+    }
+
+    const dateStr = date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+    const yearSuffix = date.getFullYear() !== now.getFullYear() ? `, ${date.getFullYear()}` : "";
+    return `${dateStr}, ${timeStr}${yearSuffix}`;
+  }, []);
+
+  const handleUnsnooze = useCallback(() => {
+    if (thread?.thread_id) {
+      // Capture the current snooze time for undo
+      const prevSnoozeTime = snoozeUntil;
+
+      unsnooze([], {}, [thread.thread_id]);
+
+      const undo = () => {
+        if (prevSnoozeTime) {
+          const when = new Date(prevSnoozeTime);
+          if (!isNaN(when.getTime())) {
+            snooze([], when, [thread.thread_id]);
+          }
+        }
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      };
+
+      setSnackbar({
+        open: true,
+        message: "Conversation unsnoozed.",
+        autoHideDuration: 8000,
+        action: (
+          <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
+            Undo
+          </Button>
+        ),
+      });
+    }
+  }, [thread?.thread_id, snoozeUntil, snooze, unsnooze, setSnackbar]);
 
   useEffect(() => {
     if (!markAsReadAfter) return undefined;
@@ -178,8 +309,19 @@ export const EmailContent = ({
 
   return (
     <InboxViewContainer isPreview={isPreview}>
-      {showActionBar && <ActionBar thread={thread} />}
+      {showActionBar && <ActionBar thread={thread} emails={emails} />}
       <ScrollableContent>
+        {isSnoozed && (
+          <SnoozedBanner>
+            <SnoozedText>
+              <span className="material-symbols-outlined" style={{ fontSize: "20px", color: "#5f6368" }}>
+                schedule
+              </span>
+              Snoozed until {formatSnoozeTime(snoozeUntil)}
+            </SnoozedText>
+            <UnsnoozeButton onClick={handleUnsnooze}>Unsnooze</UnsnoozeButton>
+          </SnoozedBanner>
+        )}
         <InnerContainer>
           <Subject subject={messages[0].subject} message={messages[0]} />
           {displayedMessages.map((message, index) => {
@@ -227,7 +369,8 @@ const InboxView = () => {
     queryKey: ["email", thread_id],
     queryFn: () => emailService.getEmail(thread_id),
     enabled: !!thread_id, // Always fetch if thread_id exists
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 0, // Always refetch to ensure fresh data after interactions
+    refetchOnMount: true, // Refetch when component mounts
   });
 
   // Use only fetched emails from API

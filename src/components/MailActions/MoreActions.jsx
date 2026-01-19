@@ -37,11 +37,13 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     () => threads.filter((thread) => selectedIds.includes(thread.thread_id)),
     [threads, selectedIds]
   );
-  const selectedEmails = useMemo(() => {
-    if (!selectedThreads.length) return [];
-    const thread_idSet = new Set(selectedThreads.map((thread) => thread.thread_id));
-    return emails.filter((email) => thread_idSet.has(email.thread_id));
-  }, [selectedThreads, emails]);
+  const selectedEmails = selectedThreads;
+
+  const selectedThreadIds = useMemo(
+    () => [...new Set(selectedEmails.map((email) => email.thread_id).filter(Boolean))],
+    [selectedEmails]
+  );
+
   const moreVertRef = useRef(null);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -94,8 +96,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       } else {
         moveToLabel(ids, newKey);
       }
-
-      selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
@@ -194,6 +194,10 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     return selectedEmails.some((email) => email.is_starred);
   }, [selectedEmails]);
 
+  const anyUnstarred = useMemo(() => {
+    return selectedEmails.some((email) => !email.is_starred);
+  }, [selectedEmails]);
+
   const allImportant = useMemo(() => {
     if (!selectedEmails.length) return false;
     return selectedEmails.every((email) => email.is_important);
@@ -225,15 +229,17 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const previousStates = selectedEmails.map((email) => ({
         id: email.id,
+        thread_id: email.thread_id,
         starred: !!email.is_starred,
       }));
       const idsToUpdate = previousStates.filter((state) => state.starred !== value).map((state) => state.id);
+      const threadIdsToUpdate = [...new Set(previousStates.filter((state) => state.starred !== value).map((state) => state.thread_id).filter(Boolean))];
 
       if (idsToUpdate.length) {
-        setStar(idsToUpdate, value);
+        // Pass 'list' context and thread IDs for proper thread-level unstarring
+        setStar(idsToUpdate, value, "list", threadIdsToUpdate);
       }
 
-      selection.clear();
       handleClose();
 
       const changedThreadCount =
@@ -255,12 +261,13 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       const undo = () => {
         const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
         const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
+        const toUnstarThreadIds = [...new Set(previousStates.filter((state) => !state.starred).map((state) => state.thread_id).filter(Boolean))];
 
         if (toStar.length) {
-          setStar(toStar, true);
+          setStar(toStar, true, "list");
         }
         if (toUnstar.length) {
-          setStar(toUnstar, false);
+          setStar(toUnstar, false, "list", toUnstarThreadIds);
         }
 
         setSnackbar({
@@ -294,15 +301,22 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
       const previousStates = selectedEmails.map((email) => ({
         id: email.id,
+        thread_id: email.thread_id,
         important: !!email.is_important,
       }));
-      const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
+      
+      // Get thread IDs for emails that need to change
+      const threadIdsToUpdate = [...new Set(
+        previousStates
+          .filter((state) => state.important !== value)
+          .map((state) => state.thread_id)
+          .filter(Boolean)
+      )];
 
-      if (idsToUpdate.length) {
-        setImportant(idsToUpdate, value);
+      if (threadIdsToUpdate.length) {
+        setImportant(threadIdsToUpdate, value);
       }
 
-      selection.clear();
       handleClose();
 
       const changedThreadCount =
@@ -322,8 +336,8 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
           : "Conversation marked as not important.";
 
       const undo = () => {
-        const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-        const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+        const toImportant = [...new Set(previousStates.filter((state) => state.important).map((state) => state.thread_id).filter(Boolean))];
+        const toNotImportant = [...new Set(previousStates.filter((state) => !state.important).map((state) => state.thread_id).filter(Boolean))];
 
         if (toImportant.length) {
           setImportant(toImportant, true);
@@ -380,7 +394,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
       setMuted(idsToUpdate, nextValue);
     }
 
-    selection.clear();
     handleClose();
 
     const undo = () => {
@@ -440,7 +453,6 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     }
 
     markRead(idsToUpdate, false);
-    selection.clear();
 
     const undo = () => {
       const idsToRestore = previousStates.filter((state) => state.read).map((state) => state.id);
@@ -545,13 +557,24 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                   <>
                     <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
                     <Divider sx={{ marginY: "6px" }} />
-                    <ActionMenuItem
-                      icon="star"
-                      label={anyStarred ? "Remove star" : "Add star"}
-                      filled={anyStarred}
-                      onClick={() => handleStar(!anyStarred)}
-                      disabled={onlyOneItemSelected}
-                    />
+                    {anyUnstarred && (
+                      <ActionMenuItem
+                        icon="star"
+                        label="Add star"
+                        filled={false}
+                        onClick={() => handleStar(true)}
+                        disabled={onlyOneItemSelected}
+                      />
+                    )}
+                    {anyStarred && (
+                      <ActionMenuItem
+                        icon="star"
+                        label="Remove star"
+                        filled={true}
+                        onClick={() => handleStar(false)}
+                        disabled={onlyOneItemSelected}
+                      />
+                    )}
                     {anyNotImportant && (
                       <ActionMenuItem
                         icon={"label_important_outline"}
@@ -603,12 +626,22 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                         fontSize={18}
                       />
                     )}
-                    <ActionMenuItem
-                      icon="star"
-                      label={anyStarred ? "Remove star" : "Add star"}
-                      filled={anyStarred}
-                      onClick={() => handleStar(!anyStarred)}
-                    />
+                    {anyUnstarred && (
+                      <ActionMenuItem
+                        icon="star"
+                        label="Add star"
+                        filled={false}
+                        onClick={() => handleStar(true)}
+                      />
+                    )}
+                    {anyStarred && (
+                      <ActionMenuItem
+                        icon="star"
+                        label="Remove star"
+                        filled={true}
+                        onClick={() => handleStar(false)}
+                      />
+                    )}
                     <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
                     <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
                     <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
@@ -648,6 +681,7 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds,
+          threadIds: selectedThreadIds,
           handleClose,
           onOpenCreateLabelDialog: () => {
             setCreateOpen(true);

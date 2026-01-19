@@ -245,7 +245,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
           );
         }
         setOpen(false);
-        selection.clear();
       } catch (e) {
         console.error("Move failed:", e);
       }
@@ -283,7 +282,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
         autoHideDuration: 3000,
         action: null,
       });
-      selection.clear();
     } catch (e) {
       console.error("Delete forever failed:", e);
     }
@@ -293,7 +291,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
     deleteForever,
     selectedConversationCount,
     setSnackbar,
-    selection,
   ]);
 
   const hasUnreadEmails = useMemo(() => {
@@ -329,7 +326,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
     }
 
     markRead(idsToUpdate, isMarkingAsRead);
-    selection.clear();
 
     const affectedConversations =
       new Set(targetStates.map((state) => state.thread_id)).size || selectedConversationCount || 1;
@@ -403,8 +399,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
       } else {
         moveToLabel(ids, newKey);
       }
-
-      selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
@@ -497,7 +491,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
             }
 
             moveToInbox(selectionMatchKeys);
-            selection.clear();
             const conversationCount = selectedConversationCount || selectionMatchKeys.length || 1;
             setSnackbar({
               open: true,
@@ -566,14 +559,38 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
           setSpamModalOpen(false);
         }}
         onReportSpam={() => {
+          if (!selectionMatchKeys.length) {
+            setSpamModalOpen(false);
+            return;
+          }
+
           moveToSpam(selectionMatchKeys);
-          selection.clear();
           setSpamModalOpen(false);
+          setSnackbar({
+            open: true,
+            message:
+              selectedConversationCount > 1
+                ? `${selectedConversationCount} conversations marked as spam.`
+                : "Conversation marked as spam.",
+            autoHideDuration: 10000,
+          });
         }}
         onUnsubscribe={() => {
+          if (!selectionMatchKeys.length) {
+            setSpamModalOpen(false);
+            return;
+          }
+
           moveToSpam(selectionMatchKeys);
-          selection.clear();
           setSpamModalOpen(false);
+          setSnackbar({
+            open: true,
+            message:
+              selectedConversationCount > 1
+                ? `${selectedConversationCount} conversations marked as spam.`
+                : "Conversation marked as spam.",
+            autoHideDuration: 10000,
+          });
         }}
       />
     </div>

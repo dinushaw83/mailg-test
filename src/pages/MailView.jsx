@@ -307,6 +307,7 @@ const Inbox = () => {
           showAdvancedMenu={showAdvancedMenu}
           setShowAdvancedMenu={setShowAdvancedMenu}
           showPagination={inboxType === INBOX_TYPE.DEFAULT}
+          activeInboxTab={activeInboxTab}
         />
 
         {showMailBanner && (
