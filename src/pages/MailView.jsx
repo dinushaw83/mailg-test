@@ -99,64 +99,9 @@ const Inbox = () => {
   // Build thread rows: one row per thread
   const filteredRows = useMemo(() => {
     let rows = getThreadRows(emails, { label, folder: activeFolder });
+    return rows;
     // Apply URL filter parameters (from SearchResultFilters)
     // Only apply if filters are present
-    if (
-      searchParams.has("from") ||
-      searchParams.has("to") ||
-      searchParams.has("attach_or_drive") ||
-      searchParams.has("is_unread") ||
-      searchParams.has("datestart") ||
-      searchParams.has("dateend")
-    ) {
-      // Apply "From" filter
-      if (searchParams.has("from")) {
-        const fromEmails = searchParams
-          .get("from")
-          .split(",")
-          .map((email) => email.trim().toLowerCase());
-        rows = rows.filter((thread) => fromEmails.some((fromEmail) => thread.from?.email?.toLowerCase() === fromEmail));
-      }
-
-      // Apply "To" filter
-      if (searchParams.has("to")) {
-        const toEmails = searchParams
-          .get("to")
-          .split(",")
-          .map((email) => email.trim().toLowerCase());
-        rows = rows.filter((thread) => {
-          const threadToList = thread.to || [];
-          return threadToList.some((recipient) => toEmails.includes(recipient.email?.toLowerCase()));
-        });
-      }
-
-      // Apply "Has attachment" filter
-      if (searchParams.get("attach_or_drive") === "true") {
-        rows = rows.filter((thread) => {
-          const hasAttachments = thread.attachments && thread.attachments.length > 0;
-          return hasAttachments;
-        });
-      }
-
-      // Apply "Is unread" filter
-      if (searchParams.get("is_unread") === "true") {
-        rows = rows.filter((thread) => thread.unreadCount > 0);
-      }
-
-      // Apply date range filters
-      if (searchParams.get("daterangetype") === "custom_range") {
-        if (searchParams.has("datestart")) {
-          const dateStart = new Date(searchParams.get("datestart"));
-          rows = rows.filter((thread) => new Date(thread.timestamp) >= dateStart);
-        }
-        if (searchParams.has("dateend")) {
-          const dateEnd = new Date(searchParams.get("dateend"));
-          rows = rows.filter((thread) => new Date(thread.timestamp) <= dateEnd);
-        }
-      }
-    }
-
-    return rows;
   }, [emails, label, activeFolder, searchParams]);
 
   // Filter again by activeInboxTab (Primary, Promotions, Social, Updates)
@@ -275,9 +220,8 @@ const Inbox = () => {
       searchParams.has("to") ||
       searchParams.has("attach_or_drive") ||
       searchParams.has("is_unread") ||
-      searchParams.has("datestart") ||
-      searchParams.has("dateend") ||
-      searchParams.has("daterangetype");
+      searchParams.has("after") ||
+      searchParams.has("before");
 
     // Show filters if there are emails OR if filters are active
     const hasEmails = filteredRows.length > 0;

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import emailService from "../../services/emailService";
+import searchService from "../../services/searchService";
 import { initialEmails } from "../../contexts/fixtures/emails";
 import { initialLabels } from "../../contexts/fixtures/labels";
 import labelService from "../../services/labelService";
@@ -148,19 +149,16 @@ export const sendEmailThunk = createAsyncThunk("mail/sendEmail", async (emailDat
  * Note: Mutations are called directly (not through React Query fetchQuery)
  * Cache invalidation is handled by RTK listener middleware.
  */
-export const sendEmailByIdThunk = createAsyncThunk(
-  "mail/sendEmailById",
-  async (emailId, { rejectWithValue }) => {
-    try {
-      // Call service directly - React Query cache invalidation is handled by listeners
-      const response = await emailService.sendEmailById(emailId);
-      return { emailId, data: response };
-    } catch (error) {
-      console.error("❌ Failed to send email by ID:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
-    }
+export const sendEmailByIdThunk = createAsyncThunk("mail/sendEmailById", async (emailId, { rejectWithValue }) => {
+  try {
+    // Call service directly - React Query cache invalidation is handled by listeners
+    const response = await emailService.sendEmailById(emailId);
+    return { emailId, data: response };
+  } catch (error) {
+    console.error("❌ Failed to send email by ID:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
   }
-);
+});
 
 /**
  * MUTATION THUNK: Cancel/unsend email by ID (undo send)
@@ -265,7 +263,7 @@ export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, 
   }
 });
 
-/**
+/*
  * MUTATION THUNK: Create a new draft
  * Note: Mutations are called directly (not through React Query fetchQuery)
  * Cache invalidation is handled by RTK listener middleware.
@@ -344,19 +342,37 @@ export const deleteEmailThunk = createAsyncThunk(
 /**
  * Fetch a single email by ID
  */
-export const fetchEmailByIdThunk = createAsyncThunk(
-  "mail/fetchEmailById",
-  async (emailId, { rejectWithValue }) => {
+export const fetchEmailByIdThunk = createAsyncThunk("mail/fetchEmailById", async (emailId, { rejectWithValue }) => {
+  try {
+    const data = await queryClient.fetchQuery({
+      queryKey: ["email", emailId],
+      queryFn: () => emailService.getEmailById(emailId),
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
+    return data;
+  } catch (error) {
+    console.error("❌ Failed to fetch email by ID:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email");
+  }
+});
+/*
+ * Fetch search results from backend API
+ */
+export const fetchSearchResults = createAsyncThunk(
+  "mail/fetchSearchResults",
+  async (searchParams, { rejectWithValue }) => {
     try {
-      const data = await queryClient.fetchQuery({
-        queryKey: ["email", emailId],
-        queryFn: () => emailService.getEmailById(emailId),
-        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-      });
-      return data;
+      const data = await searchService.searchEmails(searchParams);
+      return {
+        results: data.results,
+        pagination: data.pagination,
+        query: data.query,
+        execution_time_ms: data.execution_time_ms,
+        originalParams: searchParams.originalParams || {},
+      };
     } catch (error) {
-      console.error("❌ Failed to fetch email by ID:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email");
+      console.error("❌ Failed to fetch search results:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch search results");
     }
   }
 );
@@ -394,6 +410,13 @@ const mailSlice = createSlice({
     mutationLoading: false, // Separate loading for mutations
     labelLoading: false, // Separate loading for label operations
     error: null,
+    // Search results state
+    searchResults: [],
+    searchPagination: null,
+    searchQuery: "",
+    searchLoading: false,
+    searchError: null,
+    searchOriginalParams: {}, // Store original params for frontend post-processing
   },
   reducers: {
     setEmails: (state, action) => {
@@ -551,7 +574,7 @@ const mailSlice = createSlice({
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
-        
+
         state.labels = mergedLabels;
         state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
         state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };
@@ -632,6 +655,25 @@ const mailSlice = createSlice({
         }
       })
 
+      // Fetch Search Results
+      .addCase(fetchSearchResults.pending, (state) => {
+        state.searchLoading = true;
+        state.searchError = null;
+      })
+      .addCase(fetchSearchResults.fulfilled, (state, action) => {
+        state.searchLoading = false;
+        state.searchResults = action.payload.results || [];
+        state.searchPagination = action.payload.pagination || null;
+        state.searchQuery = action.payload.query || "";
+        state.searchOriginalParams = action.payload.originalParams || {};
+      })
+      .addCase(fetchSearchResults.rejected, (state, action) => {
+        state.searchLoading = false;
+        state.searchError = action.payload;
+        state.searchResults = [];
+        state.searchPagination = null;
+        state.searchOriginalParams = {};
+      })
       // Delete Email
       .addCase(deleteEmailThunk.fulfilled, (state, action) => {
         const emailId = action.payload?.emailId;

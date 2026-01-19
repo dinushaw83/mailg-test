@@ -679,6 +679,57 @@ export function advancedSearchWithFullData(searchCriteria, emails) {
 }
 
 /**
+ * Get all previous searches from localStorage
+ * @param {number} limit - Maximum number of searches to return
+ * @returns {string[]} Array of previous searches
+ */
+export function getAllPreviousSearches(limit = 10) {
+  const searchHistory = getSearchHistory();
+  return searchHistory.slice(0, limit);
+}
+
+/**
+ * Get previous searches from localStorage that match the current input
+ * @param {string} query - The current search input
+ * @param {number} limit - Maximum number of suggestions to return
+ * @returns {string[]} Array of matching previous searches
+ */
+export function getMatchingPreviousSearches(query, limit = 5) {
+  if (!query || !query.trim()) {
+    return [];
+  }
+
+  const trimmedQuery = query.trim().toLowerCase();
+  const searchHistory = getSearchHistory();
+
+  // Filter history items that start with or contain the query
+  const matchingSearches = searchHistory.filter((historyItem) => {
+    if (!historyItem || typeof historyItem !== "string") return false;
+    const lowerHistoryItem = historyItem.toLowerCase();
+    return lowerHistoryItem.includes(trimmedQuery);
+  });
+
+  // Sort by relevance: exact matches first, then starts with, then contains
+  const sortedSearches = matchingSearches.sort((a, b) => {
+    const aLower = a.toLowerCase();
+    const bLower = b.toLowerCase();
+
+    // Exact match gets highest priority
+    if (aLower === trimmedQuery) return -1;
+    if (bLower === trimmedQuery) return 1;
+
+    // Starts with gets second priority
+    if (aLower.startsWith(trimmedQuery) && !bLower.startsWith(trimmedQuery)) return -1;
+    if (bLower.startsWith(trimmedQuery) && !aLower.startsWith(trimmedQuery)) return 1;
+
+    // Then sort by length (shorter matches first)
+    return a.length - b.length;
+  });
+
+  return sortedSearches.slice(0, limit);
+}
+
+/**
  * Get recent search suggestions with search history priority
  */
 export function getRecentSearchSuggestions(limit = 6) {

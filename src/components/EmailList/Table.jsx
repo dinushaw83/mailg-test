@@ -17,6 +17,7 @@ import { useElementDimensions } from "../../hooks/useElementDimensions";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import useMailActions from "../../hooks/useMailActions";
+import HighlightedText from "../common/HighlightedText";
 
 // Show by default, hide when .zA is hovered
 const TimestampBox = styled(Box)`
@@ -87,6 +88,7 @@ const OneColumnData = ({
   toggleStar,
   density,
   height = "60px",
+  searchQuery = null,
 }) => {
   return (
     <td className="xY" style={{ width: "90%", height }}>
@@ -152,7 +154,7 @@ const OneColumnData = ({
                     data-legacy-last-message-id={email.legacyLastMessageId}
                     data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
                   >
-                    {email.subject}
+                    {searchQuery ? <HighlightedText text={email.subject} searchQuery={searchQuery} /> : email.subject}
                   </span>
                 </span>
               </div>
@@ -161,7 +163,9 @@ const OneColumnData = ({
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Box className="y2">
-            <span id={`:ps${index}`}>{email.preview}</span>
+            <span id={`:ps${index}`}>
+              {searchQuery ? <HighlightedText text={email.preview} searchQuery={searchQuery} /> : email.preview}
+            </span>
           </Box>
           <IconButton
             aria-label={email.is_starred ? "Unstar" : "Star"}
@@ -317,6 +321,7 @@ const Table = ({
   getLabelBadges,
   formatDate,
   setShowAdvancedMenu,
+  searchQuery = null,
 }) => {
   const uniqueMenuId = useId();
   const MENU_ID = `row-item-menu-${uniqueMenuId}`;
@@ -787,6 +792,7 @@ const Table = ({
             const thread_id = email.thread_id;
             const isActive = showSnoozePopover && snoozeId === email.id;
             const selected = selection.isSelected(thread_id);
+            const labels = email.labels.map((label) => label?.name || label);
 
             const isFocused = focusedRowIndex === index;
 
@@ -836,6 +842,7 @@ const Table = ({
                     formatDate={formatDate}
                     toggleStar={() => handleStar([email.id], email.is_starred)}
                     density={density}
+                    searchQuery={searchQuery}
                   />
                 ) : (
                   <>
@@ -908,10 +915,14 @@ const Table = ({
                             data-name={email.from.name}
                             data-hovercard-id={email.from.email}
                           >
-                            {folder === "sent" && !email.labels.includes("Drafts") ? `To: ${email.label}` : email.label}
-                            {email.label && email.labels.includes("Drafts") && <span>, </span>}
+                            {folder === "sent" && !labels.includes("Drafts") ? (
+                              <HighlightedText text={`To: ${email.label?.name || email.label}`} searchQuery={searchQuery} />
+                            ) : (
+                              <HighlightedText text={email.label?.name || email.label} searchQuery={searchQuery} />
+                            )}
+                            {email.label && labels.includes("Drafts") && <span>, </span>}
                             <>
-                              {email.labels.includes("Drafts") && (
+                              {labels.includes("Drafts") && (
                                 <span style={{ color: "#dd4b39", fontWeight: 400 }}> Draft</span>
                               )}
                             </>
@@ -996,13 +1007,21 @@ const Table = ({
                                   data-legacy-last-non-draft-message-id={email.legacyLastNonDraftMessageId}
                                   style={{ color: "#3f4042" }}
                                 >
-                                  {email.subject}
+                                  {searchQuery ? (
+                                    <HighlightedText text={email.subject} searchQuery={searchQuery} />
+                                  ) : (
+                                    email.subject
+                                  )}
                                 </span>
                               </span>
                             </div>
                             <span id={`:ps${index}`} className="y2">
                               <span className="Zt">&nbsp;-&nbsp;</span>
-                              {email.preview}
+                              {searchQuery ? (
+                                <HighlightedText text={email.preview} searchQuery={searchQuery} />
+                              ) : (
+                                email.preview
+                              )}
                             </span>
                           </div>
                         </Link>
