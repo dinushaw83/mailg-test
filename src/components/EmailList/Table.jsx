@@ -37,9 +37,15 @@ const SnoozedEmailIndicator = styled("span")`
 `;
 
 // Check if email should show "Snoozed email" badge
-// Uses backend-provided `recently_unsnoozed` field set when snooze time passes
+// Shows badge if snooze_until exists and current time has passed the snooze time
 const shouldShowSnoozeBadge = (email) => {
-  return email?.recently_unsnoozed === true;
+  const snoozeUntil = email?.snooze_until || email?.snoozeUntil;
+  if (!snoozeUntil) return false;
+  
+  const snoozeDate = new Date(snoozeUntil);
+  if (isNaN(snoozeDate.getTime())) return false;
+  
+  return new Date() > snoozeDate;
 };
 
 const HoverDiv = styled.div`
