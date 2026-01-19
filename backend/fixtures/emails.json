@@ -211,7 +211,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000007",
     "parent_email_id": null,
     "sent_at": "2025-12-30T17:53:46.517186Z",
-    "received_at": "2025-10-06T16:53:49.334010Z",
+    "received_at": null,
     "created_at": "2025-12-13T16:30:00Z",
     "updated_at": "2025-12-13T16:30:01.000000Z"
   },
@@ -247,7 +247,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000008",
     "parent_email_id": null,
     "sent_at": "2025-12-25T16:53:47.411002Z",
-    "received_at": "2025-09-30T16:53:49.404666Z",
+    "received_at": null,
     "created_at": "2025-12-12T10:15:00Z",
     "updated_at": "2025-12-12T10:15:01.000000Z"
   },
@@ -463,7 +463,7 @@
     "thread_id": "adffdd60-0a1d-4973-97f7-23a63fac3630",
     "parent_email_id": null,
     "sent_at": "2025-09-29T16:53:44.323817Z",
-    "received_at": null,
+    "received_at": "2025-09-29T16:53:59.323Z",
     "created_at": "2025-07-18T21:07:44.323835Z",
     "updated_at": "2025-07-21T08:07:44.323835Z"
   },
@@ -553,7 +553,7 @@
     "thread_id": "05f6fb39-c233-4701-9928-30ed38f94791",
     "parent_email_id": null,
     "sent_at": "2026-01-01T14:53:44.324830Z",
-    "received_at": "2025-11-28T16:53:44.324805Z",
+    "received_at": null,
     "created_at": "2025-09-09T16:11:44.324818Z",
     "updated_at": "2025-09-14T18:11:44.324818Z"
   },
@@ -679,7 +679,7 @@
     "thread_id": "8f67e599-5adf-416c-9acf-4a5e995d95eb",
     "parent_email_id": null,
     "sent_at": "2025-12-24T03:53:44.326087Z",
-    "received_at": "2025-11-22T16:53:44.326063Z",
+    "received_at": null,
     "created_at": "2025-02-18T02:05:44.326075Z",
     "updated_at": "2025-03-08T11:05:44.326075Z"
   },
@@ -715,7 +715,7 @@
     "thread_id": "61486735-30c7-4728-a64b-91852a5c84af",
     "parent_email_id": null,
     "sent_at": "2025-12-31T18:53:44.326465Z",
-    "received_at": "2025-11-09T16:53:44.326441Z",
+    "received_at": null,
     "created_at": "2025-09-04T22:39:44.326453Z",
     "updated_at": "2025-10-02T23:39:44.326453Z"
   },
@@ -805,7 +805,7 @@
     "thread_id": "b468417e-f9cb-421c-8d53-41a4918ada61",
     "parent_email_id": null,
     "sent_at": "2026-01-04T11:53:44.327461Z",
-    "received_at": "2025-09-29T16:53:45.323817Z",
+    "received_at": null,
     "created_at": "2025-03-27T20:08:44.327449Z",
     "updated_at": "2025-04-08T09:08:44.327449Z"
   },
@@ -859,7 +859,7 @@
     "thread_id": "fd05e02a-bb35-4bfe-8ec6-54189efd75f3",
     "parent_email_id": "eb6dc31a-8878-4085-8d3e-06001b8389d1",
     "sent_at": "2025-12-24T00:53:44.328050Z",
-    "received_at": "2025-09-26T16:53:44.328026Z",
+    "received_at": null,
     "created_at": "2025-10-04T10:14:44.328038Z",
     "updated_at": "2025-10-13T13:14:44.328038Z"
   },
@@ -877,7 +877,7 @@
     "thread_id": "5e50d021-85c5-4051-a83b-ccc688a415bb",
     "parent_email_id": "60000000-0000-0000-0000-000000000013",
     "sent_at": "2025-12-26T12:53:44.328286Z",
-    "received_at": "2025-11-11T16:53:44.328262Z",
+    "received_at": null,
     "created_at": "2025-11-04T08:53:44.328274Z",
     "updated_at": "2025-11-17T13:53:44.328274Z"
   },
@@ -931,7 +931,7 @@
     "thread_id": "503b842b-22e3-49ba-9375-ae8dbc3fe222",
     "parent_email_id": "60000000-0000-0000-0000-000000000007",
     "sent_at": "2026-01-08T09:53:44.328822Z",
-    "received_at": "2025-07-31T16:53:44.328798Z",
+    "received_at": null,
     "created_at": "2025-04-23T05:17:44.328811Z",
     "updated_at": "2025-05-22T23:17:44.328811Z"
   },
@@ -1075,7 +1075,7 @@
     "thread_id": "bbd9acc1-9c76-46b2-9bc6-e886cdbb2c3a",
     "parent_email_id": null,
     "sent_at": "2025-12-28T03:53:44.330293Z",
-    "received_at": "2025-11-04T16:53:44.330269Z",
+    "received_at": null,
     "created_at": "2025-05-28T22:10:44.330282Z",
     "updated_at": "2025-06-15T02:10:44.330282Z"
   },
@@ -1147,7 +1147,7 @@
     "thread_id": "c9d205bd-2b59-4932-8aa0-76345ba50d09",
     "parent_email_id": "4fd09499-8308-4011-bfbc-315e79d48de3",
     "sent_at": "2025-12-18T12:53:44.331050Z",
-    "received_at": "2025-11-13T16:53:44.331026Z",
+    "received_at": null,
     "created_at": "2025-12-15T15:51:44.331039Z",
     "updated_at": "2025-12-27T16:51:44.331039Z"
   },
@@ -1183,7 +1183,7 @@
     "thread_id": "4300d055-94ae-4451-be1c-16c34e363a6a",
     "parent_email_id": null,
     "sent_at": "2025-12-30T09:53:44.331443Z",
-    "received_at": "2025-08-08T16:53:44.331420Z",
+    "received_at": null,
     "created_at": "2025-02-14T01:30:44.331432Z",
     "updated_at": "2025-02-28T10:30:44.331432Z"
   },
@@ -1309,7 +1309,7 @@
     "thread_id": "c1d62758-dcb0-42c0-aee6-51c0f18e5d71",
     "parent_email_id": null,
     "sent_at": "2025-12-29T08:53:44.332775Z",
-    "received_at": "2025-07-20T16:53:44.332752Z",
+    "received_at": null,
     "created_at": "2025-08-28T21:28:44.332764Z",
     "updated_at": "2025-09-22T16:28:44.332764Z"
   },
@@ -1435,7 +1435,7 @@
     "thread_id": "ce79d0c6-9d97-4b49-a296-aa2d23f62e3f",
     "parent_email_id": "75307ff0-73e0-40df-9445-cbcf22cc098b",
     "sent_at": "2025-12-30T08:53:44.334034Z",
-    "received_at": "2025-10-06T16:53:44.334010Z",
+    "received_at": null,
     "created_at": "2025-01-29T20:20:44.334022Z",
     "updated_at": "2025-02-09T06:20:44.334022Z"
   },
@@ -1525,7 +1525,7 @@
     "thread_id": "d8c4f850-8caf-4e42-888b-4fb300d8098c",
     "parent_email_id": "87b3d630-6119-41ea-b3b9-73897c24494c",
     "sent_at": "2025-12-27T05:53:44.334999Z",
-    "received_at": "2025-11-29T16:53:44.334975Z",
+    "received_at": null,
     "created_at": "2025-11-06T09:22:44.334987Z",
     "updated_at": "2025-11-25T16:22:44.334987Z"
   },
@@ -1579,7 +1579,7 @@
     "thread_id": "7ad61d2a-4b49-474b-b513-0b7a68f5b657",
     "parent_email_id": null,
     "sent_at": "2025-12-27T21:53:44.335601Z",
-    "received_at": "2025-11-18T16:53:44.335577Z",
+    "received_at": null,
     "created_at": "2025-12-14T13:49:44.335590Z",
     "updated_at": "2026-01-08T07:49:44.335590Z"
   },
@@ -1687,7 +1687,7 @@
     "thread_id": "442c59fc-5eae-4ef8-b03b-b0ce90f5235d",
     "parent_email_id": null,
     "sent_at": "2025-12-14T22:53:44.336660Z",
-    "received_at": "2025-08-06T16:53:44.336635Z",
+    "received_at": null,
     "created_at": "2025-12-12T03:59:44.336648Z",
     "updated_at": "2025-12-17T15:59:44.336648Z"
   },
@@ -1831,7 +1831,7 @@
     "thread_id": "1ee509f4-76c2-4e8f-b91c-655cb3450158",
     "parent_email_id": "0781bcbf-fecc-435f-81e2-b306fb0e62f6",
     "sent_at": "2025-12-25T03:53:44.338138Z",
-    "received_at": "2025-10-27T16:53:44.338107Z",
+    "received_at": null,
     "created_at": "2025-07-21T16:21:44.338120Z",
     "updated_at": "2025-08-09T22:21:44.338120Z"
   },
@@ -1957,7 +1957,7 @@
     "thread_id": "4300d055-94ae-4451-be1c-16c34e363a6a",
     "parent_email_id": null,
     "sent_at": "2026-01-04T12:53:44.339605Z",
-    "received_at": "2026-01-01T16:53:45.325723Z",
+    "received_at": null,
     "created_at": "2025-03-22T06:35:44.339593Z",
     "updated_at": "2025-04-09T09:35:44.339593Z"
   },
@@ -1975,7 +1975,7 @@
     "thread_id": "05cad32d-9402-401f-bc4a-2662efdf4909",
     "parent_email_id": "17f4078a-d9e4-44f4-ab68-3d42a1bb4b0b",
     "sent_at": "2025-12-14T12:53:44.339768Z",
-    "received_at": "2025-12-09T16:53:44.339743Z",
+    "received_at": null,
     "created_at": "2025-10-18T14:06:44.339756Z",
     "updated_at": "2025-10-25T04:06:44.339756Z"
   },
@@ -2065,7 +2065,7 @@
     "thread_id": "7261eb0b-92b9-4d06-98b9-5ef9dd9b8eef",
     "parent_email_id": null,
     "sent_at": "2026-01-04T02:53:44.340737Z",
-    "received_at": "2025-12-28T16:53:47.333113Z",
+    "received_at": null,
     "created_at": "2025-07-07T10:12:44.340726Z",
     "updated_at": "2025-07-09T09:12:44.340726Z"
   },
@@ -2245,7 +2245,7 @@
     "thread_id": "05f6fb39-c233-4701-9928-30ed38f94791",
     "parent_email_id": null,
     "sent_at": "2025-12-15T14:53:44.342523Z",
-    "received_at": "2025-12-30T16:53:45.324588Z",
+    "received_at": null,
     "created_at": "2025-04-01T13:36:44.342512Z",
     "updated_at": "2025-04-18T19:36:44.342512Z"
   },
@@ -2281,7 +2281,7 @@
     "thread_id": "8b9c5afc-4344-4f92-81eb-5f3695f986bb",
     "parent_email_id": null,
     "sent_at": "2025-12-12T14:53:44.342859Z",
-    "received_at": "2025-07-21T16:53:45.325324Z",
+    "received_at": null,
     "created_at": "2025-05-19T09:29:44.342848Z",
     "updated_at": "2025-05-28T17:29:44.342848Z"
   },
@@ -2299,7 +2299,7 @@
     "thread_id": "a6f26473-ab70-4b2c-8f9e-5e70632067fa",
     "parent_email_id": "60000000-0000-0000-0000-000000000006",
     "sent_at": "2025-12-18T16:53:44.343031Z",
-    "received_at": "2025-09-23T16:53:44.343008Z",
+    "received_at": null,
     "created_at": "2025-08-06T07:54:44.343020Z",
     "updated_at": "2025-08-18T07:54:44.343020Z"
   },
@@ -2443,7 +2443,7 @@
     "thread_id": "3c6486bc-bfff-4d26-b556-3cb019ca6177",
     "parent_email_id": null,
     "sent_at": "2025-12-11T13:53:44.344446Z",
-    "received_at": "2025-07-25T16:53:44.344422Z",
+    "received_at": null,
     "created_at": "2025-11-29T17:45:44.344434Z",
     "updated_at": "2025-12-10T00:45:44.344434Z"
   },
@@ -2587,7 +2587,7 @@
     "thread_id": "5ac62fe6-9c27-4b4d-9015-b460047dcc4e",
     "parent_email_id": null,
     "sent_at": "2025-12-30T12:53:44.346049Z",
-    "received_at": "2025-07-25T16:53:45.344422Z",
+    "received_at": null,
     "created_at": "2026-01-06T20:22:44.346037Z",
     "updated_at": "2026-01-08T16:53:47.327861Z"
   },
@@ -2605,7 +2605,7 @@
     "thread_id": "61486735-30c7-4728-a64b-91852a5c84af",
     "parent_email_id": null,
     "sent_at": "2025-12-13T02:53:44.346245Z",
-    "received_at": "2025-09-06T16:53:44.346221Z",
+    "received_at": null,
     "created_at": "2025-09-22T21:01:44.346234Z",
     "updated_at": "2025-10-01T00:01:44.346234Z"
   },
@@ -2659,7 +2659,7 @@
     "thread_id": "26689012-3b11-4122-89a2-60d79a6ca2a9",
     "parent_email_id": null,
     "sent_at": "2025-12-12T10:53:44.347008Z",
-    "received_at": "2025-11-23T16:53:44.346984Z",
+    "received_at": null,
     "created_at": "2025-06-01T22:10:44.346997Z",
     "updated_at": "2025-06-22T13:10:44.346997Z"
   },
@@ -2731,7 +2731,7 @@
     "thread_id": "2a2c3e56-3266-454b-94e2-9e6dd8cee5bf",
     "parent_email_id": "8809818c-35e8-4120-a83a-d29b73007be5",
     "sent_at": "2025-12-11T22:53:44.347753Z",
-    "received_at": "2025-09-22T16:53:44.347729Z",
+    "received_at": null,
     "created_at": "2025-10-21T08:28:44.347741Z",
     "updated_at": "2025-11-06T16:28:44.347741Z"
   },
@@ -2803,7 +2803,7 @@
     "thread_id": "6ebae383-7a6b-4fe9-b6e2-e0df44abe582",
     "parent_email_id": null,
     "sent_at": "2026-01-04T07:53:44.348557Z",
-    "received_at": "2025-08-08T16:53:45.331420Z",
+    "received_at": null,
     "created_at": "2025-05-26T19:12:44.348546Z",
     "updated_at": "2025-06-24T13:12:44.348546Z"
   },
@@ -2893,7 +2893,7 @@
     "thread_id": "6710832c-c6b8-4828-9928-7249f4bff5e8",
     "parent_email_id": "ac0920ca-53cb-4ebe-a910-9cff647d79ee",
     "sent_at": "2025-12-13T02:53:49.346245Z",
-    "received_at": "2025-09-26T16:53:45.328026Z",
+    "received_at": null,
     "created_at": "2025-06-13T20:08:44.349371Z",
     "updated_at": "2025-06-23T07:08:44.349371Z"
   },
@@ -3073,7 +3073,7 @@
     "thread_id": "912b224a-b0bf-44eb-b201-876e176a9f75",
     "parent_email_id": null,
     "sent_at": "2026-01-07T17:53:46.336107Z",
-    "received_at": "2025-10-02T16:53:44.351315Z",
+    "received_at": null,
     "created_at": "2025-11-08T07:48:44.351327Z",
     "updated_at": "2025-11-30T10:48:44.351327Z"
   },
@@ -3127,7 +3127,7 @@
     "thread_id": "5bf96667-0df6-4ae5-abbe-d9630184d053",
     "parent_email_id": "5cd520f5-5c01-495c-a515-a58529249dbb",
     "sent_at": "2025-12-19T19:53:44.351956Z",
-    "received_at": "2025-10-04T16:53:44.351933Z",
+    "received_at": null,
     "created_at": "2025-08-09T15:51:44.351945Z",
     "updated_at": "2025-08-25T08:51:44.351945Z"
   },
@@ -3343,7 +3343,7 @@
     "thread_id": "2b47d722-1b62-43f1-b194-c6d7e71c904f",
     "parent_email_id": null,
     "sent_at": "2026-01-06T05:53:44.354116Z",
-    "received_at": "2025-11-04T16:53:45.330269Z",
+    "received_at": null,
     "created_at": "2025-11-27T14:56:44.354105Z",
     "updated_at": "2025-12-10T15:56:44.354105Z"
   },
@@ -3433,7 +3433,7 @@
     "thread_id": "8cda5312-ccef-4f5f-9e6f-0ccb4c80415d",
     "parent_email_id": "4b142a09-71af-46c9-8c9d-c2a1d2efb4e8",
     "sent_at": "2025-12-29T00:53:46.345473Z",
-    "received_at": "2025-10-02T16:53:45.351315Z",
+    "received_at": null,
     "created_at": "2025-03-25T22:17:44.355046Z",
     "updated_at": "2025-04-10T20:17:44.355046Z"
   },
@@ -3541,7 +3541,7 @@
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": null,
     "sent_at": "2025-12-29T10:53:44.356181Z",
-    "received_at": "2025-09-10T16:53:44.356158Z",
+    "received_at": null,
     "created_at": "2025-02-28T01:50:44.356170Z",
     "updated_at": "2025-03-25T09:50:44.356170Z"
   },
@@ -3613,7 +3613,7 @@
     "thread_id": "d0a779a1-6e46-4e1a-898f-886418f8077e",
     "parent_email_id": null,
     "sent_at": "2025-12-21T02:53:44.356917Z",
-    "received_at": "2025-08-03T16:53:45.353564Z",
+    "received_at": null,
     "created_at": "2025-04-02T00:09:44.356905Z",
     "updated_at": "2025-04-17T19:09:44.356905Z"
   },
@@ -3829,7 +3829,7 @@
     "thread_id": "2b47d722-1b62-43f1-b194-c6d7e71c904f",
     "parent_email_id": null,
     "sent_at": "2026-01-06T16:53:46.336272Z",
-    "received_at": "2025-08-09T16:53:44.359112Z",
+    "received_at": null,
     "created_at": "2025-12-26T22:37:44.359124Z",
     "updated_at": "2025-12-29T16:37:44.359124Z"
   },
@@ -3847,7 +3847,7 @@
     "thread_id": "e979d0f6-987b-456a-8716-0a2b0ba210d1",
     "parent_email_id": null,
     "sent_at": "2026-01-04T13:53:44.359315Z",
-    "received_at": "2025-11-26T16:53:45.333459Z",
+    "received_at": null,
     "created_at": "2025-09-20T08:57:44.359304Z",
     "updated_at": "2025-10-15T12:57:44.359304Z"
   },
@@ -3901,7 +3901,7 @@
     "thread_id": "7ad61d2a-4b49-474b-b513-0b7a68f5b657",
     "parent_email_id": null,
     "sent_at": "2025-12-30T22:53:44.359855Z",
-    "received_at": "2025-12-27T16:53:46.339941Z",
+    "received_at": null,
     "created_at": "2025-06-14T14:51:44.359845Z",
     "updated_at": "2025-07-10T05:51:44.359845Z"
   },
@@ -3973,7 +3973,7 @@
     "thread_id": "e46bfcf2-b444-4e8a-9ad2-e1d293317f79",
     "parent_email_id": null,
     "sent_at": "2025-12-12T02:53:44.360641Z",
-    "received_at": "2025-08-17T16:53:44.360618Z",
+    "received_at": null,
     "created_at": "2025-08-01T00:27:44.360630Z",
     "updated_at": "2025-08-28T07:27:44.360630Z"
   },
@@ -4081,7 +4081,7 @@
     "thread_id": "8f67e599-5adf-416c-9acf-4a5e995d95eb",
     "parent_email_id": null,
     "sent_at": "2025-12-21T02:53:47.356917Z",
-    "received_at": "2025-07-27T16:53:44.361722Z",
+    "received_at": null,
     "created_at": "2025-10-20T00:20:44.361736Z",
     "updated_at": "2025-10-25T18:20:44.361736Z"
   },
@@ -4135,7 +4135,7 @@
     "thread_id": "f9e4ae9a-f858-49d4-9c31-ed86f182cd56",
     "parent_email_id": null,
     "sent_at": "2026-01-02T15:53:44.362285Z",
-    "received_at": "2025-12-03T16:53:44.362262Z",
+    "received_at": null,
     "created_at": "2025-03-18T04:21:44.362274Z",
     "updated_at": "2025-04-09T12:21:44.362274Z"
   },
@@ -4189,7 +4189,7 @@
     "thread_id": "53af5d92-9ee7-473f-adb3-4e0f5f8cb3cb",
     "parent_email_id": null,
     "sent_at": "2026-01-03T22:53:44.362833Z",
-    "received_at": "2025-10-30T16:53:44.362810Z",
+    "received_at": null,
     "created_at": "2025-06-28T14:36:44.362822Z",
     "updated_at": "2025-07-18T20:36:44.362822Z"
   },
@@ -4261,7 +4261,7 @@
     "thread_id": "53af5d92-9ee7-473f-adb3-4e0f5f8cb3cb",
     "parent_email_id": null,
     "sent_at": "2025-12-10T06:53:44.363621Z",
-    "received_at": "2025-11-19T16:53:44.363598Z",
+    "received_at": null,
     "created_at": "2025-04-11T11:47:44.363610Z",
     "updated_at": "2025-05-03T02:47:44.363610Z"
   },
@@ -4333,7 +4333,7 @@
     "thread_id": "6c992ba9-1c85-4fed-a639-0a85b7548e17",
     "parent_email_id": null,
     "sent_at": "2025-12-25T10:53:44.364357Z",
-    "received_at": "2025-08-01T16:53:44.364335Z",
+    "received_at": null,
     "created_at": "2025-02-05T04:30:44.364346Z",
     "updated_at": "2025-03-05T15:30:44.364346Z"
   },
@@ -4423,7 +4423,7 @@
     "thread_id": "4de21050-b8ca-43a2-bfef-7e6d1273e324",
     "parent_email_id": null,
     "sent_at": "2025-12-15T05:53:44.365293Z",
-    "received_at": "2025-07-29T16:53:44.365271Z",
+    "received_at": null,
     "created_at": "2025-08-15T04:51:44.365282Z",
     "updated_at": "2025-09-09T14:51:44.365282Z"
   },
@@ -4693,7 +4693,7 @@
     "thread_id": "85e59286-8fae-48f4-8e8c-f501d449783e",
     "parent_email_id": null,
     "sent_at": "2025-12-25T12:53:44.368177Z",
-    "received_at": "2025-09-18T16:53:44.368155Z",
+    "received_at": null,
     "created_at": "2025-12-08T07:47:44.368166Z",
     "updated_at": "2025-12-19T15:47:44.368166Z"
   },
@@ -4729,7 +4729,7 @@
     "thread_id": "e264524e-763a-48ac-b0b9-391400f288fb",
     "parent_email_id": null,
     "sent_at": "2025-12-28T00:53:44.368548Z",
-    "received_at": "2025-12-16T16:53:44.368522Z",
+    "received_at": null,
     "created_at": "2025-09-23T06:37:44.368533Z",
     "updated_at": "2025-09-28T01:37:44.368533Z"
   },
@@ -4801,7 +4801,7 @@
     "thread_id": "515d92ea-db3d-42b3-895e-9c9d2294892a",
     "parent_email_id": "dd0ab861-aba6-4d69-8be0-31bf642fe2c0",
     "sent_at": "2026-01-05T03:53:44.369304Z",
-    "received_at": "2025-11-03T16:53:44.369282Z",
+    "received_at": null,
     "created_at": "2025-07-13T09:19:44.369293Z",
     "updated_at": "2025-07-18T13:19:44.369293Z"
   },
@@ -4891,7 +4891,7 @@
     "thread_id": "20a829a0-74c3-4d8f-ba2a-415f5250186f",
     "parent_email_id": null,
     "sent_at": "2026-01-02T02:53:44.370287Z",
-    "received_at": "2025-12-23T16:53:45.326863Z",
+    "received_at": null,
     "created_at": "2025-10-14T14:10:44.370275Z",
     "updated_at": "2025-10-17T18:10:44.370275Z"
   },
@@ -5071,7 +5071,7 @@
     "thread_id": "7b91ba58-3935-4731-a611-f9c703ec6752",
     "parent_email_id": null,
     "sent_at": "2025-12-14T05:53:44.372177Z",
-    "received_at": "2025-10-20T16:53:45.345441Z",
+    "received_at": null,
     "created_at": "2025-12-16T04:16:44.372165Z",
     "updated_at": "2026-01-04T05:16:44.372165Z"
   },
@@ -5305,7 +5305,7 @@
     "thread_id": "226f062c-b391-427d-9199-e02b20ccdb08",
     "parent_email_id": null,
     "sent_at": "2025-12-20T09:53:46.341440Z",
-    "received_at": "2025-10-06T16:53:45.334010Z",
+    "received_at": null,
     "created_at": "2025-12-26T03:53:44.375873Z",
     "updated_at": "2026-01-08T16:53:52.327861Z"
   },
@@ -5323,7 +5323,7 @@
     "thread_id": "b2504c29-456b-43f5-841d-cc76c25588d7",
     "parent_email_id": null,
     "sent_at": "2025-12-11T15:53:46.358340Z",
-    "received_at": "2025-10-26T16:53:44.376235Z",
+    "received_at": null,
     "created_at": "2025-12-05T10:58:44.376248Z",
     "updated_at": "2025-12-18T07:58:44.376248Z"
   },
@@ -5341,7 +5341,7 @@
     "thread_id": "c3d9d1f9-19e6-4f34-9cd6-cc5009801786",
     "parent_email_id": null,
     "sent_at": "2025-12-13T13:53:44.376550Z",
-    "received_at": "2025-08-23T16:53:44.376520Z",
+    "received_at": null,
     "created_at": "2025-10-20T19:22:44.376532Z",
     "updated_at": "2025-11-14T09:22:44.376532Z"
   },
@@ -5413,7 +5413,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000004",
     "parent_email_id": null,
     "sent_at": "2025-09-10T16:53:45.356158Z",
-    "received_at": null,
+    "received_at": "2025-09-10T16:54:00.356Z",
     "created_at": "2025-03-16T05:50:44.377322Z",
     "updated_at": "2025-04-10T03:50:44.377322Z"
   },
@@ -5467,7 +5467,7 @@
     "thread_id": "aca09e5b-58fb-42e0-89c2-b096f1cf3f7a",
     "parent_email_id": null,
     "sent_at": "2025-12-15T13:53:44.377947Z",
-    "received_at": "2025-11-16T16:53:44.377923Z",
+    "received_at": null,
     "created_at": "2025-04-08T02:27:44.377935Z",
     "updated_at": "2025-04-15T20:27:44.377935Z"
   },
@@ -5503,7 +5503,7 @@
     "thread_id": "3b399f8b-3caf-4b25-9079-089a13687942",
     "parent_email_id": null,
     "sent_at": "2025-12-22T02:53:44.378314Z",
-    "received_at": "2025-12-23T16:53:46.326863Z",
+    "received_at": null,
     "created_at": "2025-01-18T18:19:44.378302Z",
     "updated_at": "2025-01-27T20:19:44.378302Z"
   },
@@ -5719,7 +5719,7 @@
     "thread_id": "a74e748a-28d1-4ae2-ac33-00033681da55",
     "parent_email_id": null,
     "sent_at": "2026-01-05T19:53:44.380892Z",
-    "received_at": "2025-11-07T16:53:44.380867Z",
+    "received_at": null,
     "created_at": "2025-11-09T08:55:44.380880Z",
     "updated_at": "2025-12-02T01:55:44.380880Z"
   },
@@ -5809,7 +5809,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000008",
     "parent_email_id": null,
     "sent_at": "2025-12-15T05:53:51.365293Z",
-    "received_at": "2025-10-28T16:53:45.372993Z",
+    "received_at": null,
     "created_at": "2025-05-16T06:55:44.381768Z",
     "updated_at": "2025-05-28T11:55:44.381768Z"
   },
@@ -5917,7 +5917,7 @@
     "thread_id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
     "parent_email_id": null,
     "sent_at": "2026-01-06T05:53:51.354116Z",
-    "received_at": "2025-11-28T16:53:45.324805Z",
+    "received_at": null,
     "created_at": "2025-05-30T11:46:44.382890Z",
     "updated_at": "2025-05-31T10:46:44.382890Z"
   },
@@ -5989,7 +5989,7 @@
     "thread_id": "b468417e-f9cb-421c-8d53-41a4918ada61",
     "parent_email_id": null,
     "sent_at": "2025-12-13T06:53:44.383735Z",
-    "received_at": "2025-08-09T16:53:45.359112Z",
+    "received_at": null,
     "created_at": "2025-02-26T19:19:44.383723Z",
     "updated_at": "2025-03-16T03:19:44.383723Z"
   },
@@ -6007,7 +6007,7 @@
     "thread_id": "52508c14-f995-481b-87a0-6048ddc09aac",
     "parent_email_id": "268e551a-e9d0-4bd5-b91e-816649432dc3",
     "sent_at": "2025-12-26T15:53:46.351739Z",
-    "received_at": "2025-08-02T16:53:45.355227Z",
+    "received_at": null,
     "created_at": "2025-10-23T20:46:44.383964Z",
     "updated_at": "2025-11-11T10:46:44.383964Z"
   },
@@ -6133,7 +6133,7 @@
     "thread_id": "5198fe08-683b-49b1-a434-9748cc3d8674",
     "parent_email_id": null,
     "sent_at": "2026-01-07T06:53:44.385373Z",
-    "received_at": "2025-08-23T16:53:46.376520Z",
+    "received_at": null,
     "created_at": "2025-11-26T16:31:44.385361Z",
     "updated_at": "2025-11-28T12:31:44.385361Z"
   },
@@ -6205,7 +6205,7 @@
     "thread_id": "823b5eb9-ac65-4d2e-9685-71c0f9b5db7e",
     "parent_email_id": "8ab9416d-72fb-447e-b588-df3d154b6917",
     "sent_at": "2025-12-21T13:53:44.386210Z",
-    "received_at": "2025-11-20T16:53:45.334774Z",
+    "received_at": null,
     "created_at": "2025-08-15T12:50:44.386198Z",
     "updated_at": "2025-09-05T02:50:44.386198Z"
   },
@@ -6223,7 +6223,7 @@
     "thread_id": "3c6486bc-bfff-4d26-b556-3cb019ca6177",
     "parent_email_id": null,
     "sent_at": "2025-08-27T16:53:44.386401Z",
-    "received_at": null,
+    "received_at": "2025-08-27T16:53:59.386Z",
     "created_at": "2025-09-11T07:13:44.386418Z",
     "updated_at": "2025-10-03T19:13:44.386418Z"
   },
@@ -6277,7 +6277,7 @@
     "thread_id": "a2e7e170-79de-4bc7-b10c-711f117289ab",
     "parent_email_id": null,
     "sent_at": "2025-12-15T04:53:44.387017Z",
-    "received_at": "2025-10-16T16:53:45.370801Z",
+    "received_at": null,
     "created_at": "2025-03-25T08:49:44.387005Z",
     "updated_at": "2025-04-07T10:49:44.387005Z"
   },
@@ -6331,7 +6331,7 @@
     "thread_id": "6693d667-2855-48cd-b6fa-c5e95afb6460",
     "parent_email_id": null,
     "sent_at": "2025-12-16T15:53:44.387598Z",
-    "received_at": "2025-10-21T16:53:44.387575Z",
+    "received_at": null,
     "created_at": "2025-10-24T02:25:44.387587Z",
     "updated_at": "2025-11-10T21:25:44.387587Z"
   },
@@ -6385,7 +6385,7 @@
     "thread_id": "c3d9d1f9-19e6-4f34-9cd6-cc5009801786",
     "parent_email_id": null,
     "sent_at": "2025-12-13T22:53:44.388226Z",
-    "received_at": "2025-10-27T16:53:46.338107Z",
+    "received_at": null,
     "created_at": "2025-12-19T15:04:44.388214Z",
     "updated_at": "2025-12-31T14:04:44.388214Z"
   },
@@ -6403,7 +6403,7 @@
     "thread_id": "cd8f5ea9-8168-4848-b14c-fe62a2357198",
     "parent_email_id": "b9c9a326-aa91-424a-abd1-5581113fdcc2",
     "sent_at": "2025-12-20T07:53:47.338452Z",
-    "received_at": "2026-01-04T16:53:44.388418Z",
+    "received_at": null,
     "created_at": "2025-03-15T04:54:44.388430Z",
     "updated_at": "2025-03-17T04:54:44.388430Z"
   },
@@ -6421,7 +6421,7 @@
     "thread_id": "a6f26473-ab70-4b2c-8f9e-5e70632067fa",
     "parent_email_id": null,
     "sent_at": "2026-01-02T02:53:49.370287Z",
-    "received_at": "2025-08-23T16:53:47.376520Z",
+    "received_at": null,
     "created_at": "2025-09-24T02:03:44.388620Z",
     "updated_at": "2025-09-28T02:03:44.388620Z"
   },
@@ -6583,7 +6583,7 @@
     "thread_id": "51eb93bc-0f00-4785-8a3d-32e4985f2854",
     "parent_email_id": "f1764d75-c138-4b9e-9a15-d256accf2eea",
     "sent_at": "2025-12-12T08:53:44.390393Z",
-    "received_at": "2025-09-13T16:53:44.390370Z",
+    "received_at": null,
     "created_at": "2025-10-11T05:43:44.390382Z",
     "updated_at": "2025-10-17T16:43:44.390382Z"
   },
@@ -6601,7 +6601,7 @@
     "thread_id": "b58e02ff-daf8-4259-9410-9f6a69374b33",
     "parent_email_id": "87b3d630-6119-41ea-b3b9-73897c24494c",
     "sent_at": "2025-12-20T02:53:49.335947Z",
-    "received_at": "2025-09-20T16:53:45.347935Z",
+    "received_at": null,
     "created_at": "2025-04-11T22:06:44.390592Z",
     "updated_at": "2025-04-30T20:06:44.390592Z"
   },
@@ -6637,7 +6637,7 @@
     "thread_id": "594b2828-f9f3-40ad-a552-8cd1526cd5d1",
     "parent_email_id": null,
     "sent_at": "2026-01-06T17:53:47.369134Z",
-    "received_at": "2025-07-15T16:53:45.330658Z",
+    "received_at": null,
     "created_at": "2025-03-03T09:44:44.390952Z",
     "updated_at": "2025-03-11T09:44:44.390952Z"
   },
@@ -6781,7 +6781,7 @@
     "thread_id": "fbfbd584-3d9f-4ef1-9194-756243a8eecb",
     "parent_email_id": null,
     "sent_at": "2025-12-13T04:53:49.364901Z",
-    "received_at": "2025-11-20T16:53:46.334774Z",
+    "received_at": null,
     "created_at": "2025-01-27T05:30:44.392518Z",
     "updated_at": "2025-02-01T19:30:44.392518Z"
   },
@@ -7123,7 +7123,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000006",
     "parent_email_id": null,
     "sent_at": "2026-01-05T14:53:44.396404Z",
-    "received_at": "2025-08-15T16:53:46.334591Z",
+    "received_at": null,
     "created_at": "2025-12-26T21:46:44.396392Z",
     "updated_at": "2026-01-08T16:53:55.327861Z"
   },
@@ -7213,7 +7213,7 @@
     "thread_id": "a2e7e170-79de-4bc7-b10c-711f117289ab",
     "parent_email_id": "4c8140d9-c60c-4ffd-9d77-8897b0fd980d",
     "sent_at": "2025-12-09T20:53:44.397361Z",
-    "received_at": "2025-11-22T16:53:45.326063Z",
+    "received_at": null,
     "created_at": "2025-06-03T23:35:44.397351Z",
     "updated_at": "2025-06-22T23:35:44.397351Z"
   },
@@ -7231,7 +7231,7 @@
     "thread_id": "adffdd60-0a1d-4973-97f7-23a63fac3630",
     "parent_email_id": null,
     "sent_at": "2025-12-10T19:53:46.348723Z",
-    "received_at": "2025-10-24T16:53:45.389778Z",
+    "received_at": null,
     "created_at": "2025-09-06T01:58:44.397541Z",
     "updated_at": "2025-09-29T04:58:44.397541Z"
   },
@@ -7285,7 +7285,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000005",
     "parent_email_id": null,
     "sent_at": "2026-01-08T04:53:44.398132Z",
-    "received_at": "2025-10-12T16:53:44.398110Z",
+    "received_at": null,
     "created_at": "2025-04-18T17:38:44.398121Z",
     "updated_at": "2025-04-24T07:38:44.398121Z"
   },
@@ -7411,7 +7411,7 @@
     "thread_id": "31f75c1e-74f4-4d4e-8350-b9a6e0b4cc1c",
     "parent_email_id": null,
     "sent_at": "2025-12-31T02:53:44.399392Z",
-    "received_at": "2025-12-17T16:53:46.367051Z",
+    "received_at": null,
     "created_at": "2025-01-24T07:49:44.399381Z",
     "updated_at": "2025-02-11T15:49:44.399381Z"
   },
@@ -7465,7 +7465,7 @@
     "thread_id": "c3f87b87-f0a1-4aba-83d0-5f571965c133",
     "parent_email_id": null,
     "sent_at": "2025-12-20T05:53:47.366670Z",
-    "received_at": "2025-07-20T16:53:45.332752Z",
+    "received_at": null,
     "created_at": "2025-10-14T19:54:44.400041Z",
     "updated_at": "2025-11-12T20:54:44.400041Z"
   },
@@ -7483,7 +7483,7 @@
     "thread_id": "912b224a-b0bf-44eb-b201-876e176a9f75",
     "parent_email_id": null,
     "sent_at": "2025-12-27T06:53:46.384386Z",
-    "received_at": "2025-10-14T16:53:45.363954Z",
+    "received_at": null,
     "created_at": "2025-02-03T14:17:44.400422Z",
     "updated_at": "2025-02-05T20:17:44.400422Z"
   },
@@ -7501,7 +7501,7 @@
     "thread_id": "5450c12b-8b7b-4cb9-b89f-10418e3af174",
     "parent_email_id": null,
     "sent_at": "2025-12-09T08:53:44.400638Z",
-    "received_at": "2026-01-08T16:53:57.327861Z",
+    "received_at": null,
     "created_at": "2025-01-28T20:47:44.400627Z",
     "updated_at": "2025-02-22T06:47:44.400627Z"
   },
@@ -7573,7 +7573,7 @@
     "thread_id": "134b962c-f216-4987-aa71-aef662fd614c",
     "parent_email_id": null,
     "sent_at": "2025-12-16T11:53:44.401442Z",
-    "received_at": "2025-12-16T16:53:45.368522Z",
+    "received_at": null,
     "created_at": "2025-12-23T15:43:44.401431Z",
     "updated_at": "2026-01-08T16:53:58.327861Z"
   },
@@ -7627,7 +7627,7 @@
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": null,
     "sent_at": "2025-12-08T17:53:44.402021Z",
-    "received_at": "2025-12-04T16:53:45.391123Z",
+    "received_at": null,
     "created_at": "2025-08-15T06:22:44.402011Z",
     "updated_at": "2025-08-27T02:22:44.402011Z"
   },
@@ -7645,7 +7645,7 @@
     "thread_id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
     "parent_email_id": null,
     "sent_at": "2025-12-17T08:53:44.402240Z",
-    "received_at": "2025-08-05T16:53:44.402216Z",
+    "received_at": null,
     "created_at": "2025-12-21T03:33:44.402228Z",
     "updated_at": "2026-01-08T16:53:59.327861Z"
   },
@@ -7699,7 +7699,7 @@
     "thread_id": "6ca515fc-2a42-4a84-8c3f-f527e5e57b86",
     "parent_email_id": null,
     "sent_at": "2025-09-05T16:53:44.402869Z",
-    "received_at": null,
+    "received_at": "2025-09-05T16:53:59.402Z",
     "created_at": "2025-01-07T22:39:44.402888Z",
     "updated_at": "2025-01-20T10:39:44.402888Z"
   },
@@ -7717,7 +7717,7 @@
     "thread_id": "73f02fa6-b20d-447c-bd45-2775ec5da63c",
     "parent_email_id": null,
     "sent_at": "2025-12-25T19:53:44.403130Z",
-    "received_at": "2025-12-14T16:53:47.329743Z",
+    "received_at": null,
     "created_at": "2025-07-26T15:40:44.403115Z",
     "updated_at": "2025-07-30T16:40:44.403115Z"
   },
@@ -7771,7 +7771,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000001",
     "parent_email_id": "7f0a5cb0-81ae-4323-b610-eab21d273138",
     "sent_at": "2025-12-22T08:53:44.403912Z",
-    "received_at": "2025-10-19T16:53:44.403888Z",
+    "received_at": null,
     "created_at": "2025-11-30T23:53:44.403900Z",
     "updated_at": "2025-12-04T18:53:44.403900Z"
   },
@@ -7789,7 +7789,7 @@
     "thread_id": "a6f26473-ab70-4b2c-8f9e-5e70632067fa",
     "parent_email_id": null,
     "sent_at": "2025-12-21T12:53:44.404096Z",
-    "received_at": "2025-10-02T16:53:46.351315Z",
+    "received_at": null,
     "created_at": "2025-09-08T10:59:44.404084Z",
     "updated_at": "2025-09-20T23:59:44.404084Z"
   },
@@ -7843,7 +7843,7 @@
     "thread_id": "7261eb0b-92b9-4d06-98b9-5ef9dd9b8eef",
     "parent_email_id": null,
     "sent_at": "2025-12-27T07:53:46.403399Z",
-    "received_at": "2025-09-30T16:53:44.404666Z",
+    "received_at": null,
     "created_at": "2025-08-04T04:14:44.404678Z",
     "updated_at": "2025-08-09T15:14:44.404678Z"
   },
@@ -7861,7 +7861,7 @@
     "thread_id": "d0942bcc-10ce-4724-a644-08b135bc560e",
     "parent_email_id": "3cadb3d0-33c1-47be-9b12-af6dcb8447b2",
     "sent_at": "2025-12-31T19:53:44.404894Z",
-    "received_at": "2025-08-09T16:53:46.359112Z",
+    "received_at": null,
     "created_at": "2025-08-10T21:08:44.404882Z",
     "updated_at": "2025-08-12T18:08:44.404882Z"
   },
@@ -7933,7 +7933,7 @@
     "thread_id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
     "parent_email_id": null,
     "sent_at": "2025-12-11T23:53:46.348353Z",
-    "received_at": "2025-10-06T16:53:47.334010Z",
+    "received_at": null,
     "created_at": "2026-01-06T11:46:44.405684Z",
     "updated_at": "2026-01-08T16:54:00.327861Z"
   },
@@ -8149,7 +8149,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000003",
     "parent_email_id": null,
     "sent_at": "2025-12-16T17:53:44.408055Z",
-    "received_at": "2025-12-08T16:53:44.408032Z",
+    "received_at": null,
     "created_at": "2025-07-02T09:29:44.408043Z",
     "updated_at": "2025-07-31T16:29:44.408043Z"
   },
@@ -8221,7 +8221,7 @@
     "thread_id": "daa46942-46bd-46f9-8360-1971e57b4bc5",
     "parent_email_id": null,
     "sent_at": "2025-12-25T12:53:47.368177Z",
-    "received_at": "2025-12-28T16:53:48.333113Z",
+    "received_at": null,
     "created_at": "2025-12-03T14:42:44.408762Z",
     "updated_at": "2025-12-20T03:42:44.408762Z"
   },
@@ -8257,7 +8257,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000009",
     "parent_email_id": null,
     "sent_at": "2026-01-04T20:53:44.409128Z",
-    "received_at": "2025-08-15T16:53:47.334591Z",
+    "received_at": null,
     "created_at": "2025-05-19T19:28:44.409117Z",
     "updated_at": "2025-05-25T09:28:44.409117Z"
   },
@@ -8365,7 +8365,7 @@
     "thread_id": "61486735-30c7-4728-a64b-91852a5c84af",
     "parent_email_id": null,
     "sent_at": "2025-12-16T01:53:47.337024Z",
-    "received_at": "2025-11-10T16:53:45.390763Z",
+    "received_at": null,
     "created_at": "2025-04-08T09:29:44.410370Z",
     "updated_at": "2025-04-21T13:29:44.410370Z"
   },
@@ -8401,7 +8401,7 @@
     "thread_id": "cd8f5ea9-8168-4848-b14c-fe62a2357198",
     "parent_email_id": null,
     "sent_at": "2026-01-06T17:53:49.369134Z",
-    "received_at": "2025-08-29T16:53:45.341248Z",
+    "received_at": null,
     "created_at": "2025-12-01T01:49:44.410807Z",
     "updated_at": "2025-12-26T20:49:44.410807Z"
   },
@@ -8419,7 +8419,7 @@
     "thread_id": "e0964e3f-07c5-495e-afb5-ff72f0eddee6",
     "parent_email_id": null,
     "sent_at": "2025-12-16T13:53:44.411024Z",
-    "received_at": "2025-12-25T16:53:44.411002Z",
+    "received_at": null,
     "created_at": "2025-04-01T01:41:44.411013Z",
     "updated_at": "2025-04-16T20:41:44.411013Z"
   },
@@ -8455,7 +8455,7 @@
     "thread_id": "8eb37c53-fec8-493e-a7a0-459745a15201",
     "parent_email_id": null,
     "sent_at": "2026-01-03T04:53:46.384179Z",
-    "received_at": "2025-09-21T16:53:46.369643Z",
+    "received_at": null,
     "created_at": "2025-11-05T04:29:44.411426Z",
     "updated_at": "2025-12-05T02:29:44.411426Z"
   },
@@ -8581,7 +8581,7 @@
     "thread_id": "4922d34f-0b74-4371-86ec-e4d6921bc94f",
     "parent_email_id": null,
     "sent_at": "2025-10-17T16:53:47.347360Z",
-    "received_at": null,
+    "received_at": "2025-10-17T16:54:02.347Z",
     "created_at": "2025-02-03T12:38:44.412746Z",
     "updated_at": "2025-02-24T22:38:44.412746Z"
   },
@@ -8617,7 +8617,7 @@
     "thread_id": "61486735-30c7-4728-a64b-91852a5c84af",
     "parent_email_id": null,
     "sent_at": "2026-01-06T22:53:44.413149Z",
-    "received_at": "2025-11-05T16:53:44.413127Z",
+    "received_at": null,
     "created_at": "2025-06-11T13:46:44.413138Z",
     "updated_at": "2025-07-04T13:46:44.413138Z"
   },
@@ -8725,7 +8725,7 @@
     "thread_id": "a387cdd2-2d1f-46ea-9bdb-aa9cf4e7ebe7",
     "parent_email_id": null,
     "sent_at": "2025-12-11T19:53:44.414298Z",
-    "received_at": "2025-12-18T16:53:51.343031Z",
+    "received_at": null,
     "created_at": "2025-06-09T16:26:44.414287Z",
     "updated_at": "2025-06-15T13:26:44.414287Z"
   },
@@ -8779,7 +8779,7 @@
     "thread_id": "a3205d63-d6df-41b4-baa8-ed25aaf6c9f8",
     "parent_email_id": null,
     "sent_at": "2026-01-05T20:53:44.414894Z",
-    "received_at": "2025-10-28T16:53:46.372993Z",
+    "received_at": null,
     "created_at": "2025-04-26T07:27:44.414883Z",
     "updated_at": "2025-04-26T17:27:44.414883Z"
   },
@@ -8815,7 +8815,7 @@
     "thread_id": "549c9bdb-feae-4dfa-a8a1-196ddbe0fe8c",
     "parent_email_id": "64651247-67be-4577-bca3-ea664da1a807",
     "sent_at": "2025-12-08T17:53:47.402021Z",
-    "received_at": "2025-10-27T16:53:47.338107Z",
+    "received_at": null,
     "created_at": "2025-11-17T13:38:44.415213Z",
     "updated_at": "2025-11-20T08:38:44.415213Z"
   },
@@ -9013,7 +9013,7 @@
     "thread_id": "05cad32d-9402-401f-bc4a-2662efdf4909",
     "parent_email_id": null,
     "sent_at": "2025-12-09T18:53:44.417365Z",
-    "received_at": "2025-10-12T16:53:45.398110Z",
+    "received_at": null,
     "created_at": "2025-01-28T10:04:44.417354Z",
     "updated_at": "2025-02-02T20:04:44.417354Z"
   },
@@ -9121,7 +9121,7 @@
     "thread_id": "134b962c-f216-4987-aa71-aef662fd614c",
     "parent_email_id": null,
     "sent_at": "2025-12-17T11:53:44.418551Z",
-    "received_at": "2025-10-24T16:53:46.389778Z",
+    "received_at": null,
     "created_at": "2025-08-29T06:35:44.418539Z",
     "updated_at": "2025-09-10T12:35:44.418539Z"
   },
@@ -9193,7 +9193,7 @@
     "thread_id": "15d4e2f8-f0b1-4049-afb0-02a14bc29fe3",
     "parent_email_id": null,
     "sent_at": "2025-12-11T01:53:44.419271Z",
-    "received_at": "2025-07-29T16:53:45.365271Z",
+    "received_at": null,
     "created_at": "2025-12-28T23:10:44.419259Z",
     "updated_at": "2026-01-08T16:54:01.327861Z"
   },
@@ -9211,7 +9211,7 @@
     "thread_id": "4de21050-b8ca-43a2-bfef-7e6d1273e324",
     "parent_email_id": null,
     "sent_at": "2025-12-12T16:53:46.346428Z",
-    "received_at": "2025-09-18T16:53:45.368155Z",
+    "received_at": null,
     "created_at": "2025-12-19T07:55:44.419435Z",
     "updated_at": "2025-12-29T11:55:44.419435Z"
   },
@@ -9229,7 +9229,7 @@
     "thread_id": "00a6fc75-6250-4982-84a3-42809dd61efb",
     "parent_email_id": null,
     "sent_at": "2025-12-15T14:53:51.342523Z",
-    "received_at": "2025-08-06T16:53:45.336635Z",
+    "received_at": null,
     "created_at": "2025-12-23T01:03:44.419622Z",
     "updated_at": "2026-01-08T16:54:02.327861Z"
   },
@@ -9319,7 +9319,7 @@
     "thread_id": "823b5eb9-ac65-4d2e-9685-71c0f9b5db7e",
     "parent_email_id": null,
     "sent_at": "2025-12-12T13:53:44.420595Z",
-    "received_at": "2025-07-14T16:53:45.394947Z",
+    "received_at": null,
     "created_at": "2025-09-11T08:42:44.420584Z",
     "updated_at": "2025-10-02T14:42:44.420584Z"
   },
@@ -9337,7 +9337,7 @@
     "thread_id": "723a0628-7b05-4426-b2a4-026520ed7d85",
     "parent_email_id": null,
     "sent_at": "2025-12-24T04:53:44.420808Z",
-    "received_at": "2025-07-22T16:53:44.420784Z",
+    "received_at": null,
     "created_at": "2025-07-29T07:42:44.420796Z",
     "updated_at": "2025-08-09T03:42:44.420796Z"
   },
@@ -9355,7 +9355,7 @@
     "thread_id": "fccbc84b-7760-4955-8b6f-117c38e2e4cf",
     "parent_email_id": "0b5d5848-2bdb-4e03-9d5e-751a65644672",
     "sent_at": "2025-12-14T01:53:48.330118Z",
-    "received_at": "2025-07-21T16:53:47.325324Z",
+    "received_at": null,
     "created_at": "2025-10-02T09:25:44.420985Z",
     "updated_at": "2025-10-18T14:25:44.420985Z"
   },
@@ -9391,7 +9391,7 @@
     "thread_id": "bc2671d2-4a09-4210-a2e4-9a5f494a3f44",
     "parent_email_id": "9619d088-33c0-4501-9d53-ee730b8bd28e",
     "sent_at": "2025-12-17T12:53:46.389603Z",
-    "received_at": "2025-10-31T16:53:45.380461Z",
+    "received_at": null,
     "created_at": "2025-02-23T01:37:44.421367Z",
     "updated_at": "2025-03-02T03:37:44.421367Z"
   },
@@ -9985,7 +9985,7 @@
     "thread_id": "a6f26473-ab70-4b2c-8f9e-5e70632067fa",
     "parent_email_id": null,
     "sent_at": "2025-12-16T03:53:44.428161Z",
-    "received_at": "2025-11-28T16:53:46.324805Z",
+    "received_at": null,
     "created_at": "2025-10-04T20:18:44.428150Z",
     "updated_at": "2025-10-19T05:18:44.428150Z"
   },
@@ -10075,7 +10075,7 @@
     "thread_id": "0108392d-52f8-4d34-bfc9-d66de44c1e7b",
     "parent_email_id": null,
     "sent_at": "2025-12-10T11:53:49.343379Z",
-    "received_at": "2025-08-28T16:53:45.349769Z",
+    "received_at": null,
     "created_at": "2025-01-07T17:06:44.429155Z",
     "updated_at": "2025-01-15T09:06:44.429155Z"
   },
@@ -10273,7 +10273,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000001",
     "parent_email_id": null,
     "sent_at": "2025-12-20T08:53:44.431337Z",
-    "received_at": "2025-11-28T16:53:47.324805Z",
+    "received_at": null,
     "created_at": "2025-09-03T18:17:44.431326Z",
     "updated_at": "2025-10-01T22:17:44.431326Z"
   },
@@ -10399,7 +10399,7 @@
     "thread_id": "272dcd1d-d046-4c44-a1ea-e5ad253246a8",
     "parent_email_id": null,
     "sent_at": "2025-12-27T05:53:51.334999Z",
-    "received_at": "2026-01-03T16:53:47.424960Z",
+    "received_at": null,
     "created_at": "2025-06-08T02:26:44.432754Z",
     "updated_at": "2025-06-14T00:26:44.432754Z"
   },
@@ -10417,7 +10417,7 @@
     "thread_id": "594b2828-f9f3-40ad-a552-8cd1526cd5d1",
     "parent_email_id": null,
     "sent_at": "2025-12-20T11:53:44.432957Z",
-    "received_at": "2025-09-20T16:53:48.347935Z",
+    "received_at": null,
     "created_at": "2025-02-03T07:21:44.432946Z",
     "updated_at": "2025-02-04T13:21:44.432946Z"
   },
@@ -10525,7 +10525,7 @@
     "thread_id": "a6f26473-ab70-4b2c-8f9e-5e70632067fa",
     "parent_email_id": null,
     "sent_at": "2025-12-17T04:53:48.352668Z",
-    "received_at": "2025-10-21T16:53:45.387575Z",
+    "received_at": null,
     "created_at": "2025-07-01T22:55:44.434145Z",
     "updated_at": "2025-07-14T07:55:44.434145Z"
   },
@@ -10633,7 +10633,7 @@
     "thread_id": "7435469e-2c5d-4f50-bd86-8422c6b94c00",
     "parent_email_id": null,
     "sent_at": "2026-01-07T05:53:44.435357Z",
-    "received_at": "2025-07-23T16:53:44.435334Z",
+    "received_at": null,
     "created_at": "2025-12-26T00:12:44.435345Z",
     "updated_at": "2026-01-08T16:54:04.327861Z"
   },
@@ -10723,7 +10723,7 @@
     "thread_id": "0c004e83-8897-4a9f-b6a0-7667ea685045",
     "parent_email_id": null,
     "sent_at": "2025-12-25T19:53:52.403130Z",
-    "received_at": "2025-10-23T16:53:44.436257Z",
+    "received_at": null,
     "created_at": "2025-03-23T22:32:44.436268Z",
     "updated_at": "2025-04-16T01:32:44.436268Z"
   },
@@ -10741,7 +10741,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000011",
     "parent_email_id": "d0bbcc7a-2a12-410c-8a70-14e99b1f6204",
     "sent_at": "2025-12-08T18:53:52.326298Z",
-    "received_at": "2025-11-27T16:53:46.361347Z",
+    "received_at": null,
     "created_at": "2025-03-10T12:45:44.436463Z",
     "updated_at": "2025-03-21T04:45:44.436463Z"
   },
@@ -10777,7 +10777,7 @@
     "thread_id": "26689012-3b11-4122-89a2-60d79a6ca2a9",
     "parent_email_id": null,
     "sent_at": "2026-01-05T06:53:44.437031Z",
-    "received_at": "2025-11-28T16:53:48.324805Z",
+    "received_at": null,
     "created_at": "2025-08-10T15:31:44.437020Z",
     "updated_at": "2025-08-29T05:31:44.437020Z"
   },
@@ -10903,7 +10903,7 @@
     "thread_id": "5066fb72-2d41-452b-afce-0a1ba3f3ee96",
     "parent_email_id": null,
     "sent_at": "2025-12-27T08:53:44.438454Z",
-    "received_at": "2025-07-31T16:53:45.328798Z",
+    "received_at": null,
     "created_at": "2025-06-29T19:07:44.438443Z",
     "updated_at": "2025-07-11T04:07:44.438443Z"
   },
@@ -10939,7 +10939,7 @@
     "thread_id": "442c59fc-5eae-4ef8-b03b-b0ce90f5235d",
     "parent_email_id": null,
     "sent_at": "2025-12-20T18:53:47.396593Z",
-    "received_at": "2025-12-23T16:53:47.326863Z",
+    "received_at": null,
     "created_at": "2025-12-25T17:12:44.438888Z",
     "updated_at": "2025-12-30T03:12:44.438888Z"
   },
@@ -10993,7 +10993,7 @@
     "thread_id": "503b842b-22e3-49ba-9375-ae8dbc3fe222",
     "parent_email_id": null,
     "sent_at": "2025-12-20T14:53:46.391322Z",
-    "received_at": "2025-10-23T16:53:45.436257Z",
+    "received_at": null,
     "created_at": "2025-11-13T13:28:44.439491Z",
     "updated_at": "2025-12-04T15:28:44.439491Z"
   },
@@ -11353,7 +11353,7 @@
     "thread_id": "ebe9c57a-5e8c-4399-94de-e01c22318416",
     "parent_email_id": null,
     "sent_at": "2026-01-06T01:53:44.443745Z",
-    "received_at": "2025-08-29T16:53:47.341248Z",
+    "received_at": null,
     "created_at": "2025-12-04T03:51:44.443734Z",
     "updated_at": "2025-12-30T06:51:44.443734Z"
   },
@@ -11407,7 +11407,7 @@
     "thread_id": "912b224a-b0bf-44eb-b201-876e176a9f75",
     "parent_email_id": null,
     "sent_at": "2025-12-30T20:53:49.339050Z",
-    "received_at": "2026-01-03T16:53:48.424960Z",
+    "received_at": null,
     "created_at": "2025-05-31T09:23:44.444283Z",
     "updated_at": "2025-06-05T03:23:44.444283Z"
   },
@@ -11425,7 +11425,7 @@
     "thread_id": "8b69117e-4eff-4c5c-8ff3-dcb7aafaee9e",
     "parent_email_id": null,
     "sent_at": "2026-01-08T09:53:52.328822Z",
-    "received_at": "2025-08-11T16:53:45.384752Z",
+    "received_at": null,
     "created_at": "2025-11-04T05:14:44.444461Z",
     "updated_at": "2025-11-17T00:14:44.444461Z"
   },
@@ -11479,7 +11479,7 @@
     "thread_id": "8b69117e-4eff-4c5c-8ff3-dcb7aafaee9e",
     "parent_email_id": null,
     "sent_at": "2025-08-30T16:53:45.378522Z",
-    "received_at": null,
+    "received_at": "2025-08-30T16:54:00.378Z",
     "created_at": "2025-07-25T20:33:44.445110Z",
     "updated_at": "2025-08-20T18:33:44.445110Z"
   },
@@ -11515,7 +11515,7 @@
     "thread_id": "b3bc34b5-76ea-4964-809e-a95ca4433dd3",
     "parent_email_id": "b086562a-7c0d-4647-a57f-0bbb068e0838",
     "sent_at": "2026-01-04T06:53:44.445536Z",
-    "received_at": "2025-08-17T16:53:45.360618Z",
+    "received_at": null,
     "created_at": "2025-04-22T09:11:44.445522Z",
     "updated_at": "2025-05-20T15:11:44.445522Z"
   },
@@ -11677,7 +11677,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000008",
     "parent_email_id": "da1d5c22-0cf0-42e5-8f15-2f81109bee29",
     "sent_at": "2026-01-06T11:53:48.355999Z",
-    "received_at": "2025-10-18T16:53:44.447340Z",
+    "received_at": null,
     "created_at": "2025-11-14T11:54:44.447352Z",
     "updated_at": "2025-11-29T00:54:44.447352Z"
   },
@@ -11785,7 +11785,7 @@
     "thread_id": "0108392d-52f8-4d34-bfc9-d66de44c1e7b",
     "parent_email_id": null,
     "sent_at": "2025-11-30T16:53:45.336995Z",
-    "received_at": null,
+    "received_at": "2025-11-30T16:54:00.336Z",
     "created_at": "2025-12-06T01:03:44.448581Z",
     "updated_at": "2025-12-12T20:03:44.448581Z"
   },
@@ -11803,7 +11803,7 @@
     "thread_id": "ebe9c57a-5e8c-4399-94de-e01c22318416",
     "parent_email_id": null,
     "sent_at": "2026-01-08T01:53:44.448756Z",
-    "received_at": "2025-12-29T16:53:44.448732Z",
+    "received_at": null,
     "created_at": "2025-04-11T07:07:44.448745Z",
     "updated_at": "2025-05-10T07:07:44.448745Z"
   },
@@ -11839,7 +11839,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000005",
     "parent_email_id": null,
     "sent_at": "2025-12-26T02:53:44.449123Z",
-    "received_at": "2025-08-08T16:53:47.331420Z",
+    "received_at": null,
     "created_at": "2025-01-13T19:39:44.449112Z",
     "updated_at": "2025-01-24T08:39:44.449112Z"
   },
@@ -11875,7 +11875,7 @@
     "thread_id": "93448227-2527-45d2-b8e6-7be0780bc373",
     "parent_email_id": null,
     "sent_at": "2026-01-08T07:53:46.357975Z",
-    "received_at": "2025-08-17T16:53:46.360618Z",
+    "received_at": null,
     "created_at": "2025-02-19T18:47:44.449503Z",
     "updated_at": "2025-03-07T15:47:44.449503Z"
   },
@@ -12001,7 +12001,7 @@
     "thread_id": "a3205d63-d6df-41b4-baa8-ed25aaf6c9f8",
     "parent_email_id": null,
     "sent_at": "2025-12-13T17:53:47.364721Z",
-    "received_at": "2025-09-09T16:53:44.450833Z",
+    "received_at": null,
     "created_at": "2025-08-26T06:35:44.450847Z",
     "updated_at": "2025-09-15T06:35:44.450847Z"
   },
@@ -12019,7 +12019,7 @@
     "thread_id": "4b617547-9e0f-4078-a957-86e862af1b9c",
     "parent_email_id": null,
     "sent_at": "2025-12-29T19:53:44.451059Z",
-    "received_at": "2025-08-22T16:53:47.329917Z",
+    "received_at": null,
     "created_at": "2025-09-20T21:17:44.451048Z",
     "updated_at": "2025-10-02T14:17:44.451048Z"
   },
@@ -12253,7 +12253,7 @@
     "thread_id": "fccbc84b-7760-4955-8b6f-117c38e2e4cf",
     "parent_email_id": "315d7ced-5f8e-4c7b-804c-41b8104ab208",
     "sent_at": "2025-12-25T03:53:53.338138Z",
-    "received_at": "2025-08-18T16:53:44.453766Z",
+    "received_at": null,
     "created_at": "2025-07-11T15:32:44.453778Z",
     "updated_at": "2025-07-19T07:32:44.453778Z"
   },
@@ -12271,7 +12271,7 @@
     "thread_id": "9df0de0d-3d57-4a54-a06a-b01b4181f768",
     "parent_email_id": null,
     "sent_at": "2025-12-14T11:53:44.453978Z",
-    "received_at": "2025-10-13T16:53:44.453955Z",
+    "received_at": null,
     "created_at": "2025-02-22T22:33:44.453967Z",
     "updated_at": "2025-02-27T16:33:44.453967Z"
   },
@@ -12289,7 +12289,7 @@
     "thread_id": "5759bd3a-1fee-47a5-b4bb-a36088eac311",
     "parent_email_id": "73ddd0af-ccf7-40ce-940d-10d093968927",
     "sent_at": "2025-12-21T15:53:44.454181Z",
-    "received_at": "2026-01-01T16:53:47.325723Z",
+    "received_at": null,
     "created_at": "2025-05-14T18:18:44.454170Z",
     "updated_at": "2025-05-27T12:18:44.454170Z"
   },
@@ -12325,7 +12325,7 @@
     "thread_id": "a2f94977-e921-4202-837f-6d6121b2dad8",
     "parent_email_id": null,
     "sent_at": "2026-01-05T16:53:47.371039Z",
-    "received_at": "2025-12-14T16:53:49.329743Z",
+    "received_at": null,
     "created_at": "2025-05-23T18:23:44.454518Z",
     "updated_at": "2025-05-27T14:23:44.454518Z"
   },
@@ -12415,7 +12415,7 @@
     "thread_id": "fd05e02a-bb35-4bfe-8ec6-54189efd75f3",
     "parent_email_id": null,
     "sent_at": "2025-12-22T16:53:46.334422Z",
-    "received_at": null,
+    "received_at": "2025-12-22T16:54:01.334Z",
     "created_at": "2025-12-14T04:39:44.455739Z",
     "updated_at": "2025-12-17T13:39:44.455739Z"
   },
@@ -12667,7 +12667,7 @@
     "thread_id": "d7a0cef1-74c0-42c3-9c68-47bc281a8fb2",
     "parent_email_id": null,
     "sent_at": "2025-12-26T11:53:46.353789Z",
-    "received_at": "2025-09-19T16:53:44.458574Z",
+    "received_at": null,
     "created_at": "2025-06-28T05:41:44.458586Z",
     "updated_at": "2025-07-19T10:41:44.458586Z"
   },
@@ -12685,7 +12685,7 @@
     "thread_id": "8cda5312-ccef-4f5f-9e6f-0ccb4c80415d",
     "parent_email_id": null,
     "sent_at": "2025-12-13T01:53:44.458792Z",
-    "received_at": "2025-08-17T16:53:47.360618Z",
+    "received_at": null,
     "created_at": "2025-11-01T05:48:44.458780Z",
     "updated_at": "2025-11-24T04:48:44.458780Z"
   },
@@ -13135,7 +13135,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000008",
     "parent_email_id": null,
     "sent_at": "2025-11-03T16:53:46.369282Z",
-    "received_at": null,
+    "received_at": "2025-11-03T16:54:01.369Z",
     "created_at": "2025-04-28T18:37:44.463949Z",
     "updated_at": "2025-05-08T13:37:44.463949Z"
   },
@@ -13189,7 +13189,7 @@
     "thread_id": "549c9bdb-feae-4dfa-a8a1-196ddbe0fe8c",
     "parent_email_id": "9f591d6c-9c85-4664-a128-9ed65ff0e941",
     "sent_at": "2025-12-14T08:53:44.464572Z",
-    "received_at": "2025-07-17T16:53:45.400229Z",
+    "received_at": null,
     "created_at": "2025-11-13T12:46:44.464561Z",
     "updated_at": "2025-12-09T19:46:44.464561Z"
   },
@@ -13243,7 +13243,7 @@
     "thread_id": "5a9b56d6-2ee3-41e2-89d6-60bf95bd5cf3",
     "parent_email_id": null,
     "sent_at": "2025-12-13T20:53:47.380718Z",
-    "received_at": "2025-10-10T16:53:44.465160Z",
+    "received_at": null,
     "created_at": "2025-01-27T00:37:44.465172Z",
     "updated_at": "2025-02-25T09:37:44.465172Z"
   },
@@ -13369,7 +13369,7 @@
     "thread_id": "66f392d5-7f19-4853-ae9a-756990f2f4e8",
     "parent_email_id": null,
     "sent_at": "2025-12-11T19:53:48.414298Z",
-    "received_at": "2025-10-22T16:53:45.446760Z",
+    "received_at": null,
     "created_at": "2025-08-07T15:56:44.466578Z",
     "updated_at": "2025-08-30T14:56:44.466578Z"
   },
@@ -13513,7 +13513,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000010",
     "parent_email_id": null,
     "sent_at": "2025-12-11T02:53:46.394975Z",
-    "received_at": "2025-10-28T16:53:48.372993Z",
+    "received_at": null,
     "created_at": "2025-02-28T09:14:44.468222Z",
     "updated_at": "2025-03-03T23:14:44.468222Z"
   },
@@ -13549,7 +13549,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000005",
     "parent_email_id": null,
     "sent_at": "2025-10-13T16:53:45.453955Z",
-    "received_at": null,
+    "received_at": "2025-10-13T16:54:00.453Z",
     "created_at": "2025-09-20T21:27:44.468644Z",
     "updated_at": "2025-10-12T00:27:44.468644Z"
   },
@@ -13693,7 +13693,7 @@
     "thread_id": "a3205d63-d6df-41b4-baa8-ed25aaf6c9f8",
     "parent_email_id": null,
     "sent_at": "2025-12-24T10:53:44.470167Z",
-    "received_at": "2025-08-17T16:53:48.360618Z",
+    "received_at": null,
     "created_at": "2025-05-11T04:49:44.470156Z",
     "updated_at": "2025-06-03T16:49:44.470156Z"
   },
@@ -13711,7 +13711,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000011",
     "parent_email_id": null,
     "sent_at": "2025-12-25T01:53:46.398867Z",
-    "received_at": "2025-08-15T16:53:48.334591Z",
+    "received_at": null,
     "created_at": "2025-09-21T01:26:44.470393Z",
     "updated_at": "2025-10-09T03:26:44.470393Z"
   },
@@ -13909,7 +13909,7 @@
     "thread_id": "85e59286-8fae-48f4-8e8c-f501d449783e",
     "parent_email_id": null,
     "sent_at": "2026-01-06T17:53:51.369134Z",
-    "received_at": "2025-11-01T16:53:46.417899Z",
+    "received_at": null,
     "created_at": "2025-02-04T20:06:44.472594Z",
     "updated_at": "2025-02-25T04:06:44.472594Z"
   },
@@ -13927,7 +13927,7 @@
     "thread_id": "73f02fa6-b20d-447c-bd45-2775ec5da63c",
     "parent_email_id": null,
     "sent_at": "2026-01-04T17:53:47.363051Z",
-    "received_at": "2025-10-08T16:53:44.472795Z",
+    "received_at": null,
     "created_at": "2025-07-21T02:08:44.472807Z",
     "updated_at": "2025-08-08T12:08:44.472807Z"
   },
@@ -14089,7 +14089,7 @@
     "thread_id": "7b91ba58-3935-4731-a611-f9c703ec6752",
     "parent_email_id": null,
     "sent_at": "2025-12-23T01:53:46.453601Z",
-    "received_at": "2025-10-04T16:53:45.351933Z",
+    "received_at": null,
     "created_at": "2025-02-24T07:42:44.474536Z",
     "updated_at": "2025-03-15T11:42:44.474536Z"
   },
@@ -14251,7 +14251,7 @@
     "thread_id": "8b9c5afc-4344-4f92-81eb-5f3695f986bb",
     "parent_email_id": null,
     "sent_at": "2025-12-16T14:53:44.476250Z",
-    "received_at": "2025-10-20T16:53:46.345441Z",
+    "received_at": null,
     "created_at": "2025-09-07T03:14:44.476239Z",
     "updated_at": "2025-09-20T21:14:44.476239Z"
   },
@@ -14377,7 +14377,7 @@
     "thread_id": "d8c4f850-8caf-4e42-888b-4fb300d8098c",
     "parent_email_id": "dc97b004-1a7b-4ad0-8dbc-75aaaa60b729",
     "sent_at": "2025-12-28T12:53:46.467413Z",
-    "received_at": "2025-11-03T16:53:47.369282Z",
+    "received_at": null,
     "created_at": "2025-04-12T00:54:44.477660Z",
     "updated_at": "2025-04-29T07:54:44.477660Z"
   },
@@ -14395,7 +14395,7 @@
     "thread_id": "4300d055-94ae-4451-be1c-16c34e363a6a",
     "parent_email_id": null,
     "sent_at": "2025-12-18T16:53:52.343031Z",
-    "received_at": "2025-12-24T16:53:47.342174Z",
+    "received_at": null,
     "created_at": "2025-07-19T10:06:44.477847Z",
     "updated_at": "2025-08-12T16:06:44.477847Z"
   },
@@ -14467,7 +14467,7 @@
     "thread_id": "7a2a033b-0d9a-4ba2-88a5-f817fa5acdf7",
     "parent_email_id": null,
     "sent_at": "2025-12-08T20:53:44.478642Z",
-    "received_at": "2025-09-20T16:53:49.347935Z",
+    "received_at": null,
     "created_at": "2025-03-02T08:49:44.478630Z",
     "updated_at": "2025-03-07T15:49:44.478630Z"
   },
@@ -14557,7 +14557,7 @@
     "thread_id": "8f67e599-5adf-416c-9acf-4a5e995d95eb",
     "parent_email_id": "d8e4397b-e588-4519-b09d-ac5bda545a6a",
     "sent_at": "2026-01-02T15:53:48.362285Z",
-    "received_at": "2025-11-24T16:53:45.381043Z",
+    "received_at": null,
     "created_at": "2025-06-28T18:50:44.479625Z",
     "updated_at": "2025-07-22T15:50:44.479625Z"
   },
@@ -14575,7 +14575,7 @@
     "thread_id": "52308645-8134-4479-be17-2c040d283903",
     "parent_email_id": null,
     "sent_at": "2025-12-13T08:53:44.479816Z",
-    "received_at": "2025-10-22T16:53:46.446760Z",
+    "received_at": null,
     "created_at": "2025-06-13T16:05:44.479805Z",
     "updated_at": "2025-06-21T19:05:44.479805Z"
   },
@@ -14611,7 +14611,7 @@
     "thread_id": "32667a02-8c01-415b-83b8-acf79fa379b7",
     "parent_email_id": "46746fcb-00db-4196-a8f0-4b85c365f363",
     "sent_at": "2025-12-28T02:53:46.406089Z",
-    "received_at": "2025-12-06T16:53:45.357086Z",
+    "received_at": null,
     "created_at": "2025-12-19T11:32:44.480158Z",
     "updated_at": "2025-12-29T12:32:44.480158Z"
   },
@@ -14647,7 +14647,7 @@
     "thread_id": "272dcd1d-d046-4c44-a1ea-e5ad253246a8",
     "parent_email_id": null,
     "sent_at": "2025-10-22T16:53:47.446760Z",
-    "received_at": null,
+    "received_at": "2025-10-22T16:54:02.446Z",
     "created_at": "2025-08-08T20:25:44.480600Z",
     "updated_at": "2025-08-26T19:25:44.480600Z"
   },
@@ -14935,7 +14935,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000004",
     "parent_email_id": "167f961f-e9fa-4e7b-a525-6d26edd36152",
     "sent_at": "2025-12-19T06:53:47.342001Z",
-    "received_at": "2025-10-30T16:53:45.362810Z",
+    "received_at": null,
     "created_at": "2025-10-14T16:40:44.483846Z",
     "updated_at": "2025-10-23T06:40:44.483846Z"
   },
@@ -15025,7 +15025,7 @@
     "thread_id": "c9d205bd-2b59-4932-8aa0-76345ba50d09",
     "parent_email_id": "fe6aa0e6-8e2a-492d-922c-e4cd44f06374",
     "sent_at": "2025-12-21T00:53:44.484883Z",
-    "received_at": "2025-08-07T16:53:45.368359Z",
+    "received_at": null,
     "created_at": "2025-12-15T01:55:44.484872Z",
     "updated_at": "2025-12-15T14:55:44.484872Z"
   },
@@ -15043,7 +15043,7 @@
     "thread_id": "e6e0bc91-4853-41c1-a89f-ab754dd20a29",
     "parent_email_id": null,
     "sent_at": "2025-12-15T03:53:47.347388Z",
-    "received_at": "2025-08-22T16:53:48.329917Z",
+    "received_at": null,
     "created_at": "2025-02-15T03:36:44.485069Z",
     "updated_at": "2025-02-27T07:36:44.485069Z"
   },
@@ -15133,7 +15133,7 @@
     "thread_id": "3ce52386-273d-4b33-95f0-4835db00643e",
     "parent_email_id": "b33a678a-ce56-438b-bb17-cb9ff847afef",
     "sent_at": "2025-12-20T17:53:44.486090Z",
-    "received_at": "2025-12-26T16:53:49.330089Z",
+    "received_at": null,
     "created_at": "2025-07-31T06:23:44.486078Z",
     "updated_at": "2025-08-04T08:23:44.486078Z"
   },
@@ -15169,7 +15169,7 @@
     "thread_id": "2a2c3e56-3266-454b-94e2-9e6dd8cee5bf",
     "parent_email_id": "e15937ee-cdf3-4ee0-a1d0-2b08ce3f18c3",
     "sent_at": "2026-01-08T03:53:44.486472Z",
-    "received_at": "2025-09-19T16:53:45.458574Z",
+    "received_at": null,
     "created_at": "2025-04-24T14:11:44.486460Z",
     "updated_at": "2025-04-28T20:11:44.486460Z"
   },
@@ -15241,7 +15241,7 @@
     "thread_id": "05f6fb39-c233-4701-9928-30ed38f94791",
     "parent_email_id": null,
     "sent_at": "2025-12-16T23:53:46.466794Z",
-    "received_at": "2025-12-31T16:53:46.345077Z",
+    "received_at": null,
     "created_at": "2025-05-03T07:51:44.487236Z",
     "updated_at": "2025-05-29T16:51:44.487236Z"
   },
@@ -15277,7 +15277,7 @@
     "thread_id": "a74e748a-28d1-4ae2-ac33-00033681da55",
     "parent_email_id": null,
     "sent_at": "2026-01-04T12:53:51.339605Z",
-    "received_at": "2025-12-16T16:53:46.368522Z",
+    "received_at": null,
     "created_at": "2025-11-19T13:07:44.487592Z",
     "updated_at": "2025-12-12T06:07:44.487592Z"
   },
@@ -15313,7 +15313,7 @@
     "thread_id": "aca09e5b-58fb-42e0-89c2-b096f1cf3f7a",
     "parent_email_id": null,
     "sent_at": "2025-12-27T21:53:49.335601Z",
-    "received_at": "2025-10-24T16:53:47.389778Z",
+    "received_at": null,
     "created_at": "2025-11-20T05:05:44.488004Z",
     "updated_at": "2025-12-04T08:05:44.488004Z"
   },
@@ -15331,7 +15331,7 @@
     "thread_id": "ebe9c57a-5e8c-4399-94de-e01c22318416",
     "parent_email_id": null,
     "sent_at": "2026-01-07T13:53:44.488186Z",
-    "received_at": "2025-10-16T16:53:46.370801Z",
+    "received_at": null,
     "created_at": "2025-11-18T01:42:44.488175Z",
     "updated_at": "2025-11-18T16:42:44.488175Z"
   },
@@ -15403,7 +15403,7 @@
     "thread_id": "8729fe1c-9bea-475e-b984-e1625fddbcf3",
     "parent_email_id": "7f158f9d-213e-4c8d-9ef8-7147d3c687d8",
     "sent_at": "2025-12-21T16:53:44.488989Z",
-    "received_at": "2025-09-30T16:53:46.404666Z",
+    "received_at": null,
     "created_at": "2025-09-16T08:50:44.488979Z",
     "updated_at": "2025-09-29T11:50:44.488979Z"
   },
@@ -15439,7 +15439,7 @@
     "thread_id": "5e730fa9-52bc-445c-8764-f80eabe54b3e",
     "parent_email_id": "5317aa5c-2088-406a-83cd-09b56970781d",
     "sent_at": "2025-12-09T02:53:51.425527Z",
-    "received_at": "2025-09-30T16:53:47.404666Z",
+    "received_at": null,
     "created_at": "2025-03-14T11:36:44.489385Z",
     "updated_at": "2025-03-15T07:36:44.489385Z"
   },
@@ -15475,7 +15475,7 @@
     "thread_id": "3741c4e7-e666-4af3-a295-924528c24172",
     "parent_email_id": "0fbe3f05-9c55-4690-a3d8-3228bc9ea041",
     "sent_at": "2025-12-17T04:53:49.352668Z",
-    "received_at": "2025-07-29T16:53:46.365271Z",
+    "received_at": null,
     "created_at": "2025-09-08T06:00:44.489810Z",
     "updated_at": "2025-09-09T00:00:44.489810Z"
   },
@@ -15511,7 +15511,7 @@
     "thread_id": "2b47d722-1b62-43f1-b194-c6d7e71c904f",
     "parent_email_id": null,
     "sent_at": "2025-12-16T04:53:46.347966Z",
-    "received_at": "2025-11-02T16:53:44.490151Z",
+    "received_at": null,
     "created_at": "2025-10-19T13:50:44.490162Z",
     "updated_at": "2025-10-23T08:50:44.490162Z"
   },
@@ -15583,7 +15583,7 @@
     "thread_id": "34d13eed-b346-40bd-b4f7-76fa1d9581cc",
     "parent_email_id": null,
     "sent_at": "2025-12-13T19:53:46.429748Z",
-    "received_at": "2025-10-15T16:53:45.439251Z",
+    "received_at": null,
     "created_at": "2025-12-17T15:27:44.490967Z",
     "updated_at": "2025-12-28T14:27:44.490967Z"
   },
@@ -15655,7 +15655,7 @@
     "thread_id": "442c59fc-5eae-4ef8-b03b-b0ce90f5235d",
     "parent_email_id": null,
     "sent_at": "2025-12-11T04:53:47.419814Z",
-    "received_at": "2025-08-12T16:53:46.370604Z",
+    "received_at": null,
     "created_at": "2025-03-28T23:05:44.491745Z",
     "updated_at": "2025-04-20T06:05:44.491745Z"
   },
@@ -15745,7 +15745,7 @@
     "thread_id": "d7a0cef1-74c0-42c3-9c68-47bc281a8fb2",
     "parent_email_id": null,
     "sent_at": "2025-12-26T04:53:44.492800Z",
-    "received_at": "2026-01-04T16:53:48.388418Z",
+    "received_at": null,
     "created_at": "2025-02-25T17:56:44.492789Z",
     "updated_at": "2025-03-16T00:56:44.492789Z"
   },
@@ -15817,7 +15817,7 @@
     "thread_id": "505d1e10-007d-45c0-b048-c2a6a4adb1e7",
     "parent_email_id": "8706c46b-8080-44cd-bb23-094b0b51a224",
     "sent_at": "2026-01-04T08:53:44.493641Z",
-    "received_at": "2025-08-31T16:53:45.373549Z",
+    "received_at": null,
     "created_at": "2025-06-08T23:58:44.493630Z",
     "updated_at": "2025-06-10T18:58:44.493630Z"
   },
@@ -15997,7 +15997,7 @@
     "thread_id": "b695a217-6e77-4670-8117-832e47ccf2d7",
     "parent_email_id": null,
     "sent_at": "2025-12-28T09:53:44.495558Z",
-    "received_at": "2025-11-14T16:53:44.495535Z",
+    "received_at": null,
     "created_at": "2025-10-25T19:56:44.495547Z",
     "updated_at": "2025-10-26T06:56:44.495547Z"
   },
@@ -16015,7 +16015,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000011",
     "parent_email_id": null,
     "sent_at": "2025-12-25T21:53:46.355624Z",
-    "received_at": "2025-08-07T16:53:46.368359Z",
+    "received_at": null,
     "created_at": "2025-06-18T09:47:44.495755Z",
     "updated_at": "2025-06-23T06:47:44.495755Z"
   },
@@ -16087,7 +16087,7 @@
     "thread_id": "e0964e3f-07c5-495e-afb5-ff72f0eddee6",
     "parent_email_id": null,
     "sent_at": "2025-12-24T05:53:48.344280Z",
-    "received_at": "2025-09-20T16:53:51.347935Z",
+    "received_at": null,
     "created_at": "2025-05-13T12:21:44.496576Z",
     "updated_at": "2025-05-19T20:21:44.496576Z"
   },
@@ -16141,7 +16141,7 @@
     "thread_id": "503b842b-22e3-49ba-9375-ae8dbc3fe222",
     "parent_email_id": null,
     "sent_at": "2025-10-15T16:53:46.439251Z",
-    "received_at": null,
+    "received_at": "2025-10-15T16:54:01.439Z",
     "created_at": "2025-07-23T05:48:44.497108Z",
     "updated_at": "2025-07-26T17:48:44.497108Z"
   },
@@ -16177,7 +16177,7 @@
     "thread_id": "5759bd3a-1fee-47a5-b4bb-a36088eac311",
     "parent_email_id": null,
     "sent_at": "2025-12-17T00:53:44.497527Z",
-    "received_at": "2025-12-29T16:53:47.448732Z",
+    "received_at": null,
     "created_at": "2025-01-25T12:57:44.497516Z",
     "updated_at": "2025-01-26T00:57:44.497516Z"
   },
@@ -16249,7 +16249,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000010",
     "parent_email_id": null,
     "sent_at": "2025-12-09T21:53:44.498376Z",
-    "received_at": "2025-09-02T16:53:45.493003Z",
+    "received_at": null,
     "created_at": "2025-08-02T06:59:44.498365Z",
     "updated_at": "2025-08-14T23:59:44.498365Z"
   },
@@ -16339,7 +16339,7 @@
     "thread_id": "9b20e72f-8df1-46b8-9e2a-b7ab76b746a8",
     "parent_email_id": null,
     "sent_at": "2025-12-16T20:53:44.499620Z",
-    "received_at": "2025-10-17T16:53:48.347360Z",
+    "received_at": null,
     "created_at": "2025-12-05T20:46:44.499609Z",
     "updated_at": "2025-12-21T19:46:44.499609Z"
   },
@@ -16393,7 +16393,7 @@
     "thread_id": "5a78ca41-eaa4-4700-af8f-295d5a1dc911",
     "parent_email_id": null,
     "sent_at": "2026-01-01T00:53:46.456564Z",
-    "received_at": "2025-12-05T16:53:44.500192Z",
+    "received_at": null,
     "created_at": "2025-09-29T21:53:44.500204Z",
     "updated_at": "2025-10-05T05:53:44.500204Z"
   },
@@ -16573,7 +16573,7 @@
     "thread_id": "85e59286-8fae-48f4-8e8c-f501d449783e",
     "parent_email_id": "146013db-a84b-4a61-b3be-084cbffbb6aa",
     "sent_at": "2025-12-31T16:53:47.345077Z",
-    "received_at": "2025-08-05T16:53:47.402216Z",
+    "received_at": null,
     "created_at": "2025-07-04T05:09:44.502217Z",
     "updated_at": "2025-07-17T16:09:44.502217Z"
   },
@@ -16609,7 +16609,7 @@
     "thread_id": "50000000-0000-0000-0000-000000000003",
     "parent_email_id": null,
     "sent_at": "2026-01-02T02:53:50.370287Z",
-    "received_at": "2025-12-06T16:53:47.357086Z",
+    "received_at": null,
     "created_at": "2025-03-27T01:58:44.502621Z",
     "updated_at": "2025-04-04T04:58:44.502621Z"
   },
@@ -16699,7 +16699,7 @@
     "thread_id": "4de21050-b8ca-43a2-bfef-7e6d1273e324",
     "parent_email_id": null,
     "sent_at": "2025-12-11T07:53:44.503718Z",
-    "received_at": "2025-10-21T16:53:46.387575Z",
+    "received_at": null,
     "created_at": "2025-12-21T17:43:44.503707Z",
     "updated_at": "2026-01-07T18:43:44.503707Z"
   },
@@ -17023,7 +17023,7 @@
     "thread_id": "6ebae383-7a6b-4fe9-b6e2-e0df44abe582",
     "parent_email_id": null,
     "sent_at": "2025-12-29T20:53:44.507377Z",
-    "received_at": "2025-09-19T16:53:46.458574Z",
+    "received_at": null,
     "created_at": "2025-10-05T13:47:44.507362Z",
     "updated_at": "2025-10-09T09:47:44.507362Z"
   },
@@ -17203,7 +17203,7 @@
     "thread_id": "c9d205bd-2b59-4932-8aa0-76345ba50d09",
     "parent_email_id": null,
     "sent_at": "2025-12-17T18:53:44.509406Z",
-    "received_at": "2025-10-12T16:53:46.398110Z",
+    "received_at": null,
     "created_at": "2025-07-17T04:55:44.509395Z",
     "updated_at": "2025-07-27T21:55:44.509395Z"
   },
@@ -17275,7 +17275,7 @@
     "thread_id": "bc9042ab-08d2-40ca-bea8-07a68682f0c6",
     "parent_email_id": "107b4e98-8219-471e-80b2-df2cea237ae6",
     "sent_at": "2025-11-01T16:53:47.417899Z",
-    "received_at": null,
+    "received_at": "2025-11-01T16:54:02.417Z",
     "created_at": "2025-04-23T11:28:44.510097Z",
     "updated_at": "2025-04-29T01:28:44.510097Z"
   },
@@ -17293,7 +17293,7 @@
     "thread_id": "fbfbd584-3d9f-4ef1-9194-756243a8eecb",
     "parent_email_id": null,
     "sent_at": "2025-12-28T22:53:47.429923Z",
-    "received_at": "2025-12-31T16:53:48.345077Z",
+    "received_at": null,
     "created_at": "2025-04-17T00:21:44.510320Z",
     "updated_at": "2025-05-10T19:21:44.510320Z"
   },
@@ -17437,7 +17437,7 @@
     "thread_id": "9df0de0d-3d57-4a54-a06a-b01b4181f768",
     "parent_email_id": null,
     "sent_at": "2026-01-02T18:53:49.466398Z",
-    "received_at": "2025-12-25T16:53:46.411002Z",
+    "received_at": null,
     "created_at": "2025-09-22T22:18:44.511963Z",
     "updated_at": "2025-10-01T18:18:44.511963Z"
   },
@@ -17491,7 +17491,7 @@
     "thread_id": "3b399f8b-3caf-4b25-9079-089a13687942",
     "parent_email_id": "bb8f4c08-3580-485d-98e9-5c697b449968",
     "sent_at": "2025-12-14T14:53:44.512609Z",
-    "received_at": "2025-10-01T16:53:47.374159Z",
+    "received_at": null,
     "created_at": "2025-02-23T06:06:44.512598Z",
     "updated_at": "2025-03-21T21:06:44.512598Z"
   },
@@ -17527,7 +17527,7 @@
     "thread_id": "d8fbd10e-75e7-4a3e-b9e1-35ba516ee692",
     "parent_email_id": null,
     "sent_at": "2025-12-26T11:53:47.353789Z",
-    "received_at": "2025-09-15T16:53:47.345007Z",
+    "received_at": null,
     "created_at": "2025-05-05T02:56:44.513043Z",
     "updated_at": "2025-05-31T05:56:44.513043Z"
   },
@@ -17563,7 +17563,7 @@
     "thread_id": "9b20e72f-8df1-46b8-9e2a-b7ab76b746a8",
     "parent_email_id": "d24fe9d3-b4a4-4a81-afb2-eafc6fbcb4c0",
     "sent_at": "2025-12-10T12:53:46.459530Z",
-    "received_at": "2026-01-02T16:53:44.513465Z",
+    "received_at": null,
     "created_at": "2025-12-01T18:08:44.513476Z",
     "updated_at": "2025-12-12T04:08:44.513476Z"
   },
@@ -17599,7 +17599,7 @@
     "thread_id": "d7a0cef1-74c0-42c3-9c68-47bc281a8fb2",
     "parent_email_id": "29611cc2-3f18-4298-b364-d2f5a6ab2a1a",
     "sent_at": "2025-12-23T10:53:44.513899Z",
-    "received_at": "2025-07-21T16:53:48.325324Z",
+    "received_at": null,
     "created_at": "2025-09-01T23:57:44.513888Z",
     "updated_at": "2025-09-11T04:57:44.513888Z"
   },
@@ -17617,7 +17617,7 @@
     "thread_id": "d8c4f850-8caf-4e42-888b-4fb300d8098c",
     "parent_email_id": null,
     "sent_at": "2025-12-27T20:53:44.514088Z",
-    "received_at": "2025-10-15T16:53:47.439251Z",
+    "received_at": null,
     "created_at": "2025-08-01T18:50:44.514077Z",
     "updated_at": "2025-08-09T06:50:44.514077Z"
   },
@@ -17725,7 +17725,7 @@
     "thread_id": "cdb44811-d591-4d32-89f3-21ac7a5e4379",
     "parent_email_id": null,
     "sent_at": "2025-07-28T16:53:49.353758Z",
-    "received_at": null,
+    "received_at": "2025-07-28T16:54:04.353Z",
     "created_at": "2025-05-21T04:52:44.515280Z",
     "updated_at": "2025-06-06T00:52:44.515280Z"
   },
@@ -17743,7 +17743,7 @@
     "thread_id": "b2504c29-456b-43f5-841d-cc76c25588d7",
     "parent_email_id": null,
     "sent_at": "2025-12-18T10:53:46.437627Z",
-    "received_at": "2025-09-30T16:53:48.404666Z",
+    "received_at": null,
     "created_at": "2025-03-17T14:54:44.515487Z",
     "updated_at": "2025-03-30T03:54:44.515487Z"
   },
@@ -17851,7 +17851,7 @@
     "thread_id": "6ca515fc-2a42-4a84-8c3f-f527e5e57b86",
     "parent_email_id": null,
     "sent_at": "2025-12-09T23:53:44.516609Z",
-    "received_at": "2025-11-23T16:53:45.346984Z",
+    "received_at": null,
     "created_at": "2025-08-05T15:30:44.516598Z",
     "updated_at": "2025-08-21T16:30:44.516598Z"
   },
@@ -17941,7 +17941,7 @@
     "thread_id": "fd05e02a-bb35-4bfe-8ec6-54189efd75f3",
     "parent_email_id": null,
     "sent_at": "2025-12-29T20:53:47.507377Z",
-    "received_at": "2025-10-13T16:53:46.453955Z",
+    "received_at": null,
     "created_at": "2025-10-22T18:36:44.517537Z",
     "updated_at": "2025-11-18T20:36:44.517537Z"
   },
@@ -17995,7 +17995,7 @@
     "thread_id": "226f062c-b391-427d-9199-e02b20ccdb08",
     "parent_email_id": null,
     "sent_at": "2025-12-28T04:53:44.518119Z",
-    "received_at": "2025-11-26T16:53:47.333459Z",
+    "received_at": null,
     "created_at": "2025-07-26T01:48:44.518108Z",
     "updated_at": "2025-07-28T20:48:44.518108Z"
   },
