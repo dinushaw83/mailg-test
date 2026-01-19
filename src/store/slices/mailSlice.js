@@ -381,6 +381,8 @@ export const fetchSearchResults = createAsyncThunk(
       console.error("❌ Failed to fetch search results:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch search results");
     }
+  }
+);
 
 /* ────────────────────────────────────────────────────────────────────────────
  * EMAIL MUTATION THUNKS
@@ -976,9 +978,7 @@ const mailSlice = createSlice({
         const emailId = action.payload?.emailId;
         if (emailId) {
           // Remove email from drafts array
-          state.drafts = state.drafts.filter(
-            (email) => email.id?.toString() !== emailId?.toString()
-          );
+          state.drafts = state.drafts.filter((email) => email.id?.toString() !== emailId?.toString());
         }
       })
 
