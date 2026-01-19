@@ -17,7 +17,7 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 import { useSendEmail } from "../../hooks/useSendEmail";
 
-const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, onClose, onUndoDelete }, ref) => {
+const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, onClose, onUndoDelete, replyToEmail }, ref) => {
   const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
   const dispatch = useDispatch();
 
@@ -32,16 +32,19 @@ const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, on
   }));
   const firstLetter = loggedInUser.name.charAt(0);
   
+  // Use clicked email if provided, else fallback to email prop (old flow)
+  const targetEmail = replyToEmail || email;
+  
   const calculateRecipients = (type) => {
     const calculatedRecipients = {
-      to: type === "forward" ? [] : [email.from.email],
+      to: type === "forward" ? [] : [targetEmail.from.email],
       cc: [],
       bcc: [],
     };
 
     if (type === "replyAll") {
       // Combine original cc and to lists
-      const allCcRecipients = [...(email.cc || []), ...(email.to || [])];
+      const allCcRecipients = [...(targetEmail.cc || []), ...(targetEmail.to || [])];
       // Filter out the current user's email
       calculatedRecipients.cc = allCcRecipients.filter((recipient) => recipient !== loggedInUser.email);
     }
@@ -54,7 +57,7 @@ const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, on
     if (draft?.subject) {
       return draft.subject === "(no subject)" ? "" : draft.subject;
     }
-    return `${replyType === "forward" ? "Fwd: " : "Re: "}${email.subject}`;
+    return `${replyType === "forward" ? "Fwd: " : "Re: "}${targetEmail.subject}`;
   });
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
@@ -85,7 +88,7 @@ const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, on
 
   // Build forwarded header HTML when forwarding
   const buildForwardedHeader = () => {
-    const recipientsList = email.to
+    const recipientsList = targetEmail.to
       .map((recipient) => {
         if (typeof recipient === "string") {
           return recipient;
@@ -94,7 +97,7 @@ const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, on
       })
       .join(", ");
 
-    const formattedDate = new Date(email.timestamp).toLocaleString("en-US", {
+    const formattedDate = new Date(targetEmail.timestamp).toLocaleString("en-US", {
       weekday: "short",
       month: "short",
       day: "numeric",
@@ -108,13 +111,13 @@ const ReplyContainer = forwardRef(({ email, draft, replyType, currentDraftId, on
 <p>
 <br /><br />
 ---------- Forwarded message ---------<br />
-From: ${email.from.name} <${email.from.email}><br />
+From: ${targetEmail.from.name} <${targetEmail.from.email}><br />
 Date: ${formattedDate}<br />
-Subject: ${email.subject}<br />
+Subject: ${targetEmail.subject}<br />
 To: ${recipientsList}<br />
-Cc: ${(email.cc || []).join(", ")}<br />
+Cc: ${(targetEmail.cc || []).join(", ")}<br />
 <br /><br />
-${email.body}
+${targetEmail.body}
 </p>`;
   };
 
@@ -146,7 +149,7 @@ ${email.body}
     subject,
     content,
     currentDraftId,
-    parentEmail: email,
+    parentEmail: targetEmail,
     replyType: selectedReplyOption,
   });
 
@@ -215,14 +218,16 @@ ${email.body}
       setIsInitialLoad(false);
       return;
     }
+    // Update recipients when replyToEmail changes (switching to reply to different email)
+    // This ensures recipients reflect the new email being replied to
     setRecipients(calculateRecipients(selectedReplyOption));
-  }, [selectedReplyOption, currentDraftId]);
+  }, [selectedReplyOption, currentDraftId, replyToEmail]);
 
   useEffect(() => {
     if (currentDraftId && isInitialLoad) return; // do not override restored draft content
     // Only set initial content when the reply type changes
     // Update subject to match selected reply option
-    setSubject(`${selectedReplyOption === "forward" ? "Fwd: " : "Re: "}${email.subject}`);
+    setSubject(`${selectedReplyOption === "forward" ? "Fwd: " : "Re: "}${targetEmail.subject}`);
     // Add forwarded message header when forward is selected
     if (selectedReplyOption === "forward" && content.plainText.trim() === "") {
       const forwardedHeader = buildForwardedHeader();
@@ -237,7 +242,7 @@ ${email.body}
     ) {
       setContent({ html: "", plainText: "" });
     }
-  }, [selectedReplyOption, email, loggedInUser.email, content.html, content.plainText, currentDraftId]);
+  }, [selectedReplyOption, targetEmail, loggedInUser.email, content.html, content.plainText, currentDraftId]);
 
   useEffect(() => {
     if (currentDraftId) return;
@@ -287,14 +292,14 @@ ${email.body}
     handleErrorModalClose,
     handleSnackbarUndoDelete,
     lastDeletedDraftRef,
-  } = useSendEmail(selectedReplyOption, email);
+  } = useSendEmail(selectedReplyOption, targetEmail);
 
   const {
     handleSchedule: handleScheduleEmail,
     showErrorModal: showScheduleErrorModal,
     errorMessage: scheduleErrorMessage,
     handleErrorModalClose: handleScheduleErrorModalClose,
-  } = useScheduleEmail(selectedReplyOption, email);
+  } = useScheduleEmail(selectedReplyOption, targetEmail);
 
   const handleSend = ({ attachments = [], embeddedImages = [], processedHtml }) => {
     // Use processed HTML if available, otherwise use the current content
@@ -356,15 +361,15 @@ ${email.body}
       const isBackendId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(draftId.toString());
 
       if (isBackendId) {
-        // Get thread_id from email prop
-        const thread_id = email?.thread_id;
+        // Get thread_id from targetEmail prop
+        const thread_id = targetEmail?.thread_id;
 
         // Store draft data for potential restoration
         lastDeletedDraftRef.current = {
           id: draftId,
           thread_id: thread_id,
-          legacyThreadId: email.legacyThreadId,
-          legacyLastMessageId: email.legacyLastMessageId,
+          legacyThreadId: targetEmail.legacyThreadId,
+          legacyLastMessageId: targetEmail.legacyLastMessageId,
           to: recipientsForDraft.to,
           cc: recipientsForDraft.cc,
           bcc: recipientsForDraft.bcc,
@@ -540,7 +545,7 @@ ${email.body}
               onSchedule={handleSchedule}
               textEditorMinHeight="90px"
               textEditorMaxHeight="400px"
-              messageId={email.id}
+              messageId={targetEmail.id}
             />
           </div>
         </div>

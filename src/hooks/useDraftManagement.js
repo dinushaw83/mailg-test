@@ -113,23 +113,37 @@ export const useDraftManagement = ({
 
   // Initialize backend draft ID if currentDraftId is a UUID
   useEffect(() => {
-    // Reset refs when composeWindowId changes (new window)
-    if (!composeWindowId) {
-      return; // Don't initialize if no window ID
+    // For compose windows (with composeWindowId), reset refs when window changes
+    if (composeWindowId) {
+      if (currentDraftId && isUUID(currentDraftId.toString())) {
+        // Existing draft - fetch from backend
+        backendDraftIdRef.current = currentDraftId.toString();
+        isFirstSaveRef.current = false;
+        lastApiContentRef.current = null; // Reset to allow fetching fresh content
+      } else {
+        // New draft - reset everything
+        backendDraftIdRef.current = null;
+        isFirstSaveRef.current = true;
+        lastApiContentRef.current = null;
+      }
+      return;
     }
 
-    if (currentDraftId && isUUID(currentDraftId.toString())) {
-      // Existing draft - fetch from backend
-      backendDraftIdRef.current = currentDraftId.toString();
-      isFirstSaveRef.current = false;
-      lastApiContentRef.current = null; // Reset to allow fetching fresh content
-    } else {
-      // New draft - reset everything
+    // For ReplyContainer (no composeWindowId), reset refs when currentDraftId changes to null
+    // This handles the case when a draft is deleted and we're switching to reply to a different email
+    // Also reset when parentEmail changes (switching to reply to different email)
+    if (!currentDraftId) {
+      // No draft ID - reset everything to treat as new draft
       backendDraftIdRef.current = null;
       isFirstSaveRef.current = true;
       lastApiContentRef.current = null;
+    } else if (currentDraftId && isUUID(currentDraftId.toString())) {
+      // Existing draft - set refs
+      backendDraftIdRef.current = currentDraftId.toString();
+      isFirstSaveRef.current = false;
+      lastApiContentRef.current = null;
     }
-  }, [currentDraftId, composeWindowId]); // Add composeWindowId to dependencies
+  }, [currentDraftId, composeWindowId, parentEmail]); // Add parentEmail to dependencies to reset refs when switching reply target
 
   // Save draft to backend API using Redux thunks
   const saveDraftToBackend = useCallback(
