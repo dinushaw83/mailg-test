@@ -27,6 +27,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Bulk Snooze](#bulk-snooze)
   - [Bulk Spam](#bulk-spam)
   - [Bulk Star](#bulk-star)
+  - [Bulk Thread Read](#bulk-thread-read)
   - [Bulk Thread Unstar](#bulk-thread-unstar)
   - [Bulk Unarchive](#bulk-unarchive)
   - [Bulk Unsnooze](#bulk-unsnooze)
@@ -86,6 +87,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Archive Thread](#archive-thread)
   - [Get Thread Emails](#get-thread-emails)
   - [Mark Thread Important Endpoint](#mark-thread-important-endpoint)
+  - [Mark Thread Read](#mark-thread-read)
   - [Restore Thread](#restore-thread)
   - [Snooze Thread](#snooze-thread)
   - [Mark Thread Spam Endpoint](#mark-thread-spam-endpoint)
@@ -1339,6 +1341,87 @@ Permissions:
 
 ---
 
+### Bulk Thread Read
+
+**POST** `/api/v1/bulk/threads/read`
+
+Mark all emails in multiple threads as read or unread.
+
+Sets is_read for all emails in the specified threads where the user
+is either the sender or recipient.
+
+Optimized to use a single bulk UPDATE query for all emails across all threads.
+
+Permissions:
+- Users can only mark emails in threads they have access to
+
+**Request Body**:
+
+```json
+{
+  "thread_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "is_read": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Bulk Thread Unstar
 
 **POST** `/api/v1/bulk/threads/unstar`
@@ -1830,14 +1913,7 @@ Permissions:
 - `page` (optional, integer): Page number
 - `page_size` (optional, integer): Items per page
 - `folder` (optional, object): Filter by folder (case insensitive) e.g. 'Inbox', 'Starred', 'Snoozed', 'Important', 'Sent', 'Scheduled', 'Drafts', 'All Mail', 'Spam', 'Trash'
-- `thread_id` (optional, object): Filter by thread ID to get all emails in a conversation
 - `category` (optional, object): Filter by category
-- `is_read` (optional, object): Filter by read status
-- `is_starred` (optional, object): Filter by starred
-- `is_snoozed` (optional, object): Filter by snoozed status (True=snoozed, False=not snoozed)
-- `is_important` (optional, object): Filter by important
-- `include_archived` (optional, object): Include archived threads
-- `search` (optional, object): Search in subject and body
 
 **Responses**:
 
@@ -4989,6 +5065,80 @@ Other users' important status for the same thread is not affected.
     "sender_id": "00000000-0000-0000-0000-000000000000",
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Mark Thread Read
+
+**PATCH** `/api/v1/threads/{thread_id}/read`
+
+Mark all emails in a thread as read or unread for the current user.
+
+Updates the is_read flag for all emails in the thread where the user
+is either the sender or recipient.
+
+Permissions:
+- Users can only mark emails in threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "is_read": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "success": true,
+    "message": "string",
+    "thread_id": "00000000-0000-0000-0000-000000000000",
+    "emails_count": 0
   }
 }
 ```

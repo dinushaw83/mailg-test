@@ -125,50 +125,6 @@ class TestEmailList:
         
         assert response.status_code == 200
 
-    def test_list_emails_filter_by_thread_id(self, client_with_auth, db_session):
-        """Test filtering emails by thread ID to get all messages in a conversation."""
-        client, token, user = client_with_auth
-        
-        # Create a thread
-        thread = Thread(
-            subject="Test Conversation",
-            owner_id=user.id,
-            participant_count=2,
-            email_count=3,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(thread)
-        db_session.commit()
-        db_session.refresh(thread)
-        
-        # Create emails in the thread - properly perspective-aware
-        email1 = create_received_email_for_user(db_session, user, subject="Thread Email 1", 
-                                                body="First message", thread=thread)
-        email2 = create_sent_email_for_user(db_session, user, subject="Re: Thread Email 1",
-                                            body="Reply message", folder=FolderType.SENT.value, thread=thread)
-        email3 = create_received_email_for_user(db_session, user, subject="Re: Thread Email 1", 
-                                                body="Another reply", thread=thread)
-        
-        # Create an email NOT in the thread (as sent by user - perspective-aware)
-        email_other = create_sent_email_for_user(db_session, user, subject="Other Email",
-                                                  body="Not in thread")
-        
-        db_session.commit()
-        
-        # Filter by thread_id
-        response = client.get(
-            f"/api/v1/emails?thread_id={thread.id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert data["total"] == 3
-        # All returned emails should belong to the thread
-        for email in data["results"]:
-            assert email["thread_id"] == str(thread.id)
-
-
 class TestThreadEmailCount:
     """Test thread email count in list responses."""
 
@@ -1438,142 +1394,6 @@ class TestThreadSnooze:
         
         assert response.status_code == 404
 
-    def test_list_snoozed_emails_filter(self, client_with_auth, db_session):
-        """Test filtering emails by snoozed status.
-        
-        Snooze is now at thread level via ThreadUserMetadata, not email level.
-        """
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        
-        client, token, user = client_with_auth
-        
-        # Create a snoozed thread with email
-        snoozed_thread = Thread(
-            subject="Snoozed Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(snoozed_thread)
-        db_session.flush()
-        
-        # Create perspective-aware email
-        snoozed_email = create_received_email_for_user(
-            db_session, user,
-            subject="Snoozed Email",
-            body="Content",
-            thread=snoozed_thread
-        )
-        db_session.flush()
-        
-        # Set snooze at thread level via ThreadUserMetadata
-        snooze_metadata = ThreadUserMetadata(
-            thread_id=snoozed_thread.id,
-            user_id=user.id,
-            snooze_until=datetime.now(UTC) + timedelta(days=1)
-        )
-        db_session.add(snooze_metadata)
-        
-        # Create a non-snoozed thread with email
-        normal_thread = Thread(
-            subject="Normal Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(normal_thread)
-        db_session.flush()
-        
-        # Create perspective-aware email
-        normal_email = create_received_email_for_user(
-            db_session, user,
-            subject="Normal Email",
-            body="Content",
-            thread=normal_thread
-        )
-        db_session.commit()
-        
-        # Test is_snoozed=true filter
-        response = client.get(
-            "/api/v1/emails?is_snoozed=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        # All returned emails should be snoozed (from snoozed thread)
-        assert len(data["results"]) >= 1
-        for email in data["results"]:
-            assert email["snooze_until"] is not None
-
-    def test_list_non_snoozed_emails_filter(self, client_with_auth, db_session):
-        """Test filtering non-snoozed emails.
-        
-        Snooze is now at thread level via ThreadUserMetadata, not email level.
-        """
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        
-        client, token, user = client_with_auth
-        
-        # Create a snoozed thread with email
-        snoozed_thread = Thread(
-            subject="Snoozed Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(snoozed_thread)
-        db_session.flush()
-        
-        # Create perspective-aware email
-        snoozed_email = create_received_email_for_user(
-            db_session, user,
-            subject="Snoozed Email",
-            body="Content",
-            thread=snoozed_thread
-        )
-        db_session.flush()
-        
-        # Set snooze at thread level via ThreadUserMetadata
-        snooze_metadata = ThreadUserMetadata(
-            thread_id=snoozed_thread.id,
-            user_id=user.id,
-            snooze_until=datetime.now(UTC) + timedelta(days=1)
-        )
-        db_session.add(snooze_metadata)
-        
-        # Create a non-snoozed thread with email
-        normal_thread = Thread(
-            subject="Normal Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(normal_thread)
-        db_session.flush()
-        
-        # Create perspective-aware email
-        normal_email = create_received_email_for_user(
-            db_session, user,
-            subject="Normal Email",
-            body="Content",
-            thread=normal_thread
-        )
-        db_session.commit()
-        
-        # Test is_snoozed=false filter
-        response = client.get(
-            "/api/v1/emails?is_snoozed=false",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        # All returned emails should NOT be snoozed
-        assert len(data["results"]) >= 1
-        for email in data["results"]:
-            assert email["snooze_until"] is None
-
     def test_snooze_response_includes_snooze_until(self, client_with_auth, db_session, sample_email):
         """Test that email response includes snooze_until field."""
         client, token, user = client_with_auth
@@ -2691,36 +2511,6 @@ class TestEmailAPIFilters:
         # Should have more emails when including archived
         assert with_count >= without_count
 
-    def test_search_filter(self, client_with_auth, db_session):
-        """Test search filter searches subject and body."""
-        client, token, user = client_with_auth
-        
-        # Create emails (perspective-aware)
-        email1 = create_received_email_for_user(
-            db_session, user,
-            subject="Meeting Tomorrow",
-            body="Let's discuss the project"
-        )
-        email2 = create_received_email_for_user(
-            db_session, user,
-            subject="Random Email",
-            body="Nothing important"
-        )
-        db_session.commit()
-        
-        # Search for "Meeting"
-        response = client.get(
-            "/api/v1/emails?search=Meeting",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert data["total"] >= 1
-        # Results should contain "Meeting" in subject or body
-        for email in data["results"]:
-            assert "Meeting" in email["subject"] or "Meeting" in (email.get("body") or "")
-
     def test_combined_filters(self, client_with_auth, db_session):
         """Test multiple filters can be combined."""
         client, token, user = client_with_auth
@@ -3295,84 +3085,6 @@ class TestComplexConversationScenarios:
         db_session.refresh(email2)
         assert email1.folder == FolderType.INBOX.value
         assert email2.folder == FolderType.SENT.value
-
-    def test_snooze_conversation_and_receive_new_message(self, client_with_auth, db_session):
-        """Test snoozed thread behavior when new message arrives."""
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        
-        client, token, user = client_with_auth
-        
-        other_user = User(
-            first_name="Snooze",
-            last_name="Partner",
-            email="snooze_partner@example.com",
-            role="user"
-        )
-        db_session.add(other_user)
-        db_session.flush()
-        
-        thread = Thread(subject="Snooze Test", owner_id=user.id, email_count=1)
-        db_session.add(thread)
-        db_session.flush()
-        
-        email1 = Email(
-            subject="Snooze Test",
-            body="Message to snooze",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=other_user.id,
-            thread_id=thread.id
-        )
-        db_session.add(email1)
-        db_session.flush()
-        
-        recipient1 = EmailRecipient(
-            email_id=email1.id,
-            recipient_id=user.id,
-            recipient_email=user.email,
-            recipient_type="to"
-        )
-        db_session.add(recipient1)
-        db_session.commit()
-        
-        # Snooze the thread
-        snooze_time = (datetime.now(UTC) + timedelta(days=1)).isoformat()
-        snooze_response = client.post(
-            f"/api/v1/threads/{thread.id}/snooze",
-            json={"snooze_until": snooze_time},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert snooze_response.status_code == 200
-        
-        # Verify snoozed filter works
-        snoozed_response = client.get(
-            "/api/v1/emails?is_snoozed=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert snoozed_response.status_code == 200
-        snoozed_emails = [e for e in snoozed_response.json()["data"]["results"]
-                         if e.get("thread_id") == str(thread.id)]
-        assert len(snoozed_emails) >= 1
-        
-        # Unsnooze the thread
-        unsnooze_response = client.post(
-            f"/api/v1/threads/{thread.id}/unsnooze",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert unsnooze_response.status_code == 200
-        
-        # Verify no longer snoozed
-        unsnoozed_check = client.get(
-            "/api/v1/emails?is_snoozed=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        still_snoozed = [e for e in unsnoozed_check.json()["data"]["results"]
-                        if e.get("thread_id") == str(thread.id)]
-        assert len(still_snoozed) == 0
 
     def test_forward_chain_multiple_recipients(self, client_with_auth, db_session):
         """Test forwarding an email to multiple new recipients."""
@@ -4947,7 +4659,7 @@ class TestFilterSearchEdgeCases:
         assert response.status_code == 200
 
     def test_invalid_folder_filter(self, client_with_auth, db_session):
-        """Test invalid folder filter value."""
+        """Test invalid folder filter value returns 400 Bad Request."""
         client, token, user = client_with_auth
         
         response = client.get(

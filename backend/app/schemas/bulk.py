@@ -96,6 +96,11 @@ class BulkThreadUnstarRequest(BulkThreadIds):
     pass
 
 
+class BulkThreadReadRequest(BulkThreadIds):
+    """Schema for bulk mark threads as read/unread."""
+    is_read: bool = Field(..., description="Mark as read (true) or unread (false)")
+
+
 class BulkOperationResult(BaseModel):
     """Result of a single item in bulk operation."""
     id: UUID = Field(..., description="Email ID or Thread ID")

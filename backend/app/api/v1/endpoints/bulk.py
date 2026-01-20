@@ -27,7 +27,7 @@ from app.schemas.bulk import (
     BulkLabelsUpdateRequest, BulkSnoozeRequest,
     BulkUnsnoozeRequest, BulkArchiveRequest,
     BulkUnarchiveRequest, BulkSpamRequest, BulkUnspamRequest,
-    BulkThreadUnstarRequest,
+    BulkThreadUnstarRequest, BulkThreadReadRequest,
     BulkOperationResponse,
 )
 from app.auth.rbac import authorized
@@ -875,5 +875,55 @@ def bulk_thread_unstar(
             )
 
     logger.info(f"Bulk thread unstar: {len(success_ids)} threads unstarred by user {current_user.id}")
+
+    return create_bulk_response(request.thread_ids, success_ids, failures)
+
+
+@router.post("/bulk/threads/read", response_model=BulkOperationResponse, dependencies=[Depends(authorized())])
+def bulk_thread_read(
+    request: BulkThreadReadRequest,
+    db: Session = Depends(get_db),
+) -> BulkOperationResponse:
+    """Mark all emails in multiple threads as read or unread.
+
+    Sets is_read for all emails in the specified threads where the user
+    is either the sender or recipient.
+
+    Optimized to use a single bulk UPDATE query for all emails across all threads.
+
+    Permissions:
+    - Users can only mark emails in threads they have access to
+    """
+    current_user = auth.user
+
+    # Get accessible threads
+    threads, not_found = get_user_accessible_threads(db, current_user.id, request.thread_ids)
+
+    success_ids = [t.id for t in threads]
+    failures = {tid: "Thread not found or access denied" for tid in not_found}
+
+    if success_ids:
+        try:
+            # Bulk update all emails in the accessible threads with single query
+            # Only update emails from user's perspective
+            db.query(Email).filter(
+                Email.thread_id.in_(success_ids),
+                get_perspective_email_filter(db, current_user.id)
+            ).update({Email.is_read: request.is_read}, synchronize_session=False)
+
+            db.commit()
+
+            # Sync thread labels
+            bulk_sync_thread_labels(db, success_ids, current_user.id, commit=True)
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Bulk thread read operation failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Bulk operation failed"
+            )
+
+    status_text = "read" if request.is_read else "unread"
+    logger.info(f"Bulk thread read: {len(success_ids)} threads marked as {status_text} by user {current_user.id}")
 
     return create_bulk_response(request.thread_ids, success_ids, failures)

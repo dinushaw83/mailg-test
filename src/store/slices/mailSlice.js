@@ -10,73 +10,35 @@ import { transformLabelsArray } from "../../utils/labelTransform";
 import { buildEmailQueryKey } from "../../utils/emailQueryKeys";
 
 /**
+ * Fetch emails with optional folder and category filtering
+ * Backend handles all filtering logic internally
  * @param {Object} options - Options for fetching
- * @param {string} options.category - Email category filter (primary, promotions, social, updates)
- * @param {boolean} options.is_starred - Filter by starred status
- * @param {boolean} options.is_important - Filter by important status
- * @param {boolean} options.is_snoozed - Filter by snoozed status
- * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
- * @param {boolean} options.include_archived - Include archived emails (for all mail)
- * @param {boolean} options.is_starred - Filter by starred status
- * @param {boolean} options.is_important - Filter by important status
- * @param {boolean} options.is_snoozed - Filter by snoozed status
- * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
- * @param {boolean} options.include_archived - Include archived emails (for all mail)
+ * @param {number} options.page - Page number
+ * @param {number} options.pageSize - Items per page
+ * @param {string} options.folder - Filter by folder (inbox, starred, important, snoozed, sent, trash, spam, drafts, scheduled, all mail)
+ * @param {string} options.category - Filter by category (primary, promotions, social, updates)
  */
 export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue, getState }) => {
   const state = getState();
   const defaultPageSize = state?.ui?.itemsPerPage ?? 25;
 
-  const {
-    page = 1,
-    pageSize = defaultPageSize,
-    category = null,
-    is_starred = null,
-    is_important = null,
-    is_snoozed = null,
-    folder = null,
-    include_archived = null,
-  } = options;
+  const { page = 1, pageSize = defaultPageSize, folder = null, category = null } = options;
 
   try {
     // Build query key using the shared utility function
     const queryKey = buildEmailQueryKey({
       page,
       pageSize,
-      category,
-      is_starred,
-      is_important,
-      is_snoozed,
       folder,
-      include_archived,
+      category,
     });
 
     const data = await queryClient.fetchQuery({
       queryKey,
-      queryFn: () => {
-        // Use getEmailsByFilter if is_starred, is_important, is_snoozed, folder, or include_archived is provided, otherwise use getEmails
-        if (
-          is_starred !== null ||
-          is_important !== null ||
-          is_snoozed !== null ||
-          folder !== null ||
-          include_archived !== null
-        ) {
-          return emailService.getEmailsByFilter({
-            page,
-            pageSize,
-            is_starred,
-            is_important,
-            is_snoozed,
-            folder,
-            include_archived,
-          });
-        }
-        return emailService.getEmails({ page, pageSize, category });
-      },
+      queryFn: () => emailService.getEmails({ page, pageSize, folder, category }),
       staleTime: 1000 * 60 * 5,
     });
-    return { ...data, category, is_starred, is_important, is_snoozed, folder };
+    return { ...data, folder, category };
   } catch (error) {
     console.error("Failed to fetch emails:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch emails");
@@ -780,60 +742,39 @@ const mailSlice = createSlice({
       .addCase(fetchEmails.fulfilled, (state, action) => {
         state.loading = false;
         const results = action.payload?.results ?? [];
-        const category = action.payload?.category;
-        const is_starred = action.payload?.is_starred;
-        const is_important = action.payload?.is_important;
-        const is_snoozed = action.payload?.is_snoozed;
         const folder = action.payload?.folder;
-        const include_archived = action.payload?.include_archived;
+        const category = action.payload?.category;
 
-        // Store emails in the appropriate folder/category
-        const filterType =
-          is_starred === true
-            ? "is_starred"
-            : is_important === true
-              ? "is_important"
-              : is_snoozed === true
-                ? "is_snoozed"
-                : include_archived === true
-                  ? "all"
-                  : folder
-                    ? "folder"
-                    : category
-                      ? "category"
-                      : "inbox";
+        // Store emails in the appropriate folder/category based on folder parameter
+        if (folder) {
+          const folderKey = folder.toLowerCase().replace(/\s+/g, ""); // Remove spaces for "all mail"
+          // Map folder names to state properties
+          const folderStateMap = {
+            starred: "is_starred",
+            important: "is_important",
+            snoozed: "is_snoozed",
+            sent: "sent",
+            trash: "trash",
+            spam: "spam",
+            drafts: "drafts",
+            scheduled: "scheduled",
+            inbox: "inbox",
+            allmail: "all", // "all mail" becomes "allmail"
+          };
 
-        switch (filterType) {
-          case "is_starred":
-            // Store starred emails in is_starred state
-            state.is_starred = results;
-            break;
-          case "is_important":
-            // Store important emails in is_important state
-            state.is_important = results;
-            break;
-          case "is_snoozed":
-            // Store snoozed emails in is_snoozed state
-            state.is_snoozed = results;
-            break;
-          case "folder":
-            // Store folder-based emails (sent, trash, spam, drafts)
-            const folderKey = folder.toLowerCase();
-            if (state.hasOwnProperty(folderKey)) {
-              state[folderKey] = results;
-            }
-            break;
-          case "category":
-            // Map category to state property
-            const categoryKey = category.toLowerCase();
-            if (state.hasOwnProperty(categoryKey)) {
-              state[categoryKey] = results;
-            }
-            break;
-          default:
-            // If no category specified, store in inbox
-            state.inbox = results;
-            break;
+          const stateKey = folderStateMap[folderKey] || folderKey;
+          if (state.hasOwnProperty(stateKey)) {
+            state[stateKey] = results;
+          }
+        } else if (category) {
+          // Store category-based emails
+          const categoryKey = category.toLowerCase();
+          if (state.hasOwnProperty(categoryKey)) {
+            state[categoryKey] = results;
+          }
+        } else {
+          // Default to inbox if no folder or category specified
+          state.inbox = results;
         }
 
         state.activeCategory = category ?? null;

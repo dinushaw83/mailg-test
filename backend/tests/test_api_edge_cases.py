@@ -1157,68 +1157,6 @@ class TestSearchDateRanges:
         assert data["total"] >= 1, "Should find emails in date range"
 
 
-class TestAllMailExcludesArchived:
-    """Test #15: All Mail excluding archived by default."""
-
-    def test_emails_list_excludes_archived_by_default(self, client_with_auth, db_session):
-        """Test GET /api/v1/emails excludes archived threads by default."""
-        client, token, user = client_with_auth
-        
-        # Create non-archived thread with email
-        thread_visible = Thread(subject="Visible Thread", owner_id=user.id, email_count=1)
-        db_session.add(thread_visible)
-        db_session.flush()
-        
-        email_visible = Email(
-            subject="Visible Email",
-            body="Not archived",
-            status=EmailStatus.SENT.value,
-            folder=FolderType.SENT.value,
-            sender_id=user.id,
-            thread_id=thread_visible.id
-        )
-        db_session.add(email_visible)
-        
-        # Create archived thread with email
-        thread_archived = Thread(subject="Archived Thread", owner_id=user.id, email_count=1)
-        db_session.add(thread_archived)
-        db_session.flush()
-        
-        email_archived = Email(
-            subject="Archived Email",
-            body="Archived",
-            status=EmailStatus.SENT.value,
-            folder=FolderType.SENT.value,
-            sender_id=user.id,
-            thread_id=thread_archived.id
-        )
-        db_session.add(email_archived)
-        db_session.flush()
-        
-        # Mark thread as archived
-        metadata = ThreadUserMetadata(
-            thread_id=thread_archived.id,
-            user_id=user.id,
-            is_archived=True
-        )
-        db_session.add(metadata)
-        db_session.commit()
-        
-        # List emails without include_archived
-        response = client.get(
-            "/api/v1/emails",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        
-        # Archived email should not be in results
-        subjects = [e["subject"] for e in data["results"]]
-        assert "Visible Email" in subjects, "Non-archived email should be visible"
-        assert "Archived Email" not in subjects, "Archived email should be excluded by default"
-
-
 class TestEmailListReturnsLabels:
     """Test #22: GET /emails returns label information."""
 
