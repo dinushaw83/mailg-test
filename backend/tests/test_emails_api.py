@@ -2118,151 +2118,98 @@ class TestThreadRestoreFolderLogic:
 
 class TestEmailAPIFilters:
     """Tests for email API filters per EMAIL_EXTRACTION.md documentation.
-    
+
     Tests cover folder filters, category filters, boolean filters,
     and combined filters to ensure API compliance with documentation.
     """
 
-    def test_folder_filter_inbox(self, client_with_auth, db_session):
-        """Test folder=inbox filter returns only inbox emails."""
+    @pytest.mark.parametrize("folder_type,label_name,email_status,is_received", [
+        (FolderType.INBOX, "Inbox", "received", True),
+        (FolderType.SENT, "Sent", "sent", False),
+        (FolderType.DRAFTS, "Drafts", "draft", False),
+        (FolderType.TRASH, "Trash", "received", True),
+        (FolderType.SPAM, "Spam", "received", True),
+    ])
+    def test_folder_filter(self, client_with_auth, db_session, folder_type, label_name, email_status, is_received):
+        """Test folder filter returns only emails in the specified folder."""
+        from app.models.label import Label
+        from app.models.thread_label import ThreadLabel
+
         client, token, user = client_with_auth
-        
-        # Create another user as sender
-        sender = User(
-            first_name="Sender",
-            last_name="User",
-            email="inbox_sender@example.com",
-            role="user"
-        )
-        db_session.add(sender)
+        folder_value = folder_type.value
+        subject = f"{label_name} Test Email"
+
+        if is_received:
+            # Create email where user is recipient
+            email = create_received_email_for_user(
+                db_session, user,
+                subject=subject,
+                body="Content",
+                folder=folder_value
+            )
+            thread_id = email.thread_id
+        else:
+            # Create email where user is sender
+            thread = Thread(
+                subject=subject,
+                owner_id=user.id,
+                email_count=1
+            )
+            db_session.add(thread)
+            db_session.flush()
+
+            email = Email(
+                subject=subject,
+                body="Content",
+                status=email_status,
+                folder=folder_value,
+                sender_id=user.id,
+                thread_id=thread.id
+            )
+            db_session.add(email)
+            thread_id = thread.id
+
         db_session.flush()
-        
-        # Create inbox email (user is recipient)
-        inbox_email = Email(
-            subject="Inbox Test Email",
-            body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=sender.id
+
+        # Get or create the system label for the user
+        label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == label_name,
+            Label.is_system == True
+        ).first()
+        if not label:
+            label = Label(
+                name=label_name,
+                is_system=True,
+                is_exclusive=True,
+                owner_id=user.id
+            )
+            db_session.add(label)
+            db_session.flush()
+
+        # Add label to the thread for the user
+        thread_label = ThreadLabel(
+            thread_id=thread_id,
+            label_id=label.id,
+            user_id=user.id
         )
-        db_session.add(inbox_email)
-        db_session.flush()
-        
-        # Add user as recipient
-        recipient = EmailRecipient(
-            email_id=inbox_email.id,
-            recipient_id=user.id,
-            recipient_email=user.email,
-            recipient_type="to"
-        )
-        db_session.add(recipient)
+        db_session.add(thread_label)
         db_session.commit()
-        
+
         response = client.get(
-            "/api/v1/emails?folder=inbox",
+            f"/api/v1/emails?folder={folder_value}",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
-        # Verify we have at least one result and our inbox email is included
         assert data["total"] >= 1
-        inbox_subjects = [e["subject"] for e in data["results"] if e["folder"] == "inbox"]
-        assert "Inbox Test Email" in inbox_subjects
-
-    def test_folder_filter_sent(self, client_with_auth, db_session):
-        """Test folder=sent filter returns sent emails."""
-        client, token, user = client_with_auth
-        
-        sent_email = Email(
-            subject="Sent Email",
-            body="Content",
-            status="sent",
-            folder=FolderType.SENT.value,
-            sender_id=user.id
-        )
-        db_session.add(sent_email)
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=sent",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "sent"
-
-    def test_folder_filter_drafts(self, client_with_auth, db_session):
-        """Test folder=drafts filter returns draft emails."""
-        client, token, user = client_with_auth
-        
-        draft_email = Email(
-            subject="Draft Email",
-            body="Content",
-            status="draft",
-            folder=FolderType.DRAFTS.value,
-            sender_id=user.id
-        )
-        db_session.add(draft_email)
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=drafts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "drafts"
-
-    def test_folder_filter_trash(self, client_with_auth, db_session):
-        """Test folder=trash filter returns trashed emails."""
-        client, token, user = client_with_auth
-        
-        # Create perspective-aware email
-        trash_email = create_received_email_for_user(
-            db_session, user,
-            subject="Trash Email",
-            body="Content",
-            folder=FolderType.TRASH.value
-        )
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=trash",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "trash"
-
-    def test_folder_filter_spam(self, client_with_auth, db_session):
-        """Test folder=spam filter returns spam emails."""
-        client, token, user = client_with_auth
-        
-        # Create perspective-aware email
-        spam_email = create_received_email_for_user(
-            db_session, user,
-            subject="Spam Email",
-            body="Content",
-            folder=FolderType.SPAM.value
-        )
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=spam",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "spam"
+        # Verify all returned emails have the correct folder
+        for email_data in data["results"]:
+            assert email_data["folder"] == folder_value
+        # Verify our test email is included
+        subjects = [e["subject"] for e in data["results"]]
+        assert subject in subjects
 
     def test_category_filter_with_inbox(self, client_with_auth, db_session):
         """Test category filter combined with inbox (Gmail-style tabs).
@@ -4720,7 +4667,8 @@ class TestFilterSearchEdgeCases:
             headers={"Authorization": f"Bearer {token}"}
         )
         
-        assert response.status_code == 400  # Invalid folder returns Bad Request
+        assert response.status_code == 400
+        assert "invalid folder" in response.json().get("message", "").lower()
 
     def test_invalid_category_filter(self, client_with_auth, db_session):
         """Test invalid category filter value."""

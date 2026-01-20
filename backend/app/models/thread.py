@@ -15,7 +15,7 @@ class Thread(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     subject = Column(String, nullable=False)  # Original subject
     
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     participant_count = Column(Integer, default=1)
     email_count = Column(Integer, default=0)
 
