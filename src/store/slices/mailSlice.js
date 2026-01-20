@@ -616,6 +616,22 @@ export const bulkMoveToTrashThunk = createAsyncThunk(
 );
 
 /**
+ * BULK MUTATION THUNK: Move multiple emails to a folder
+ */
+export const bulkMoveToFolderThunk = createAsyncThunk(
+  "mail/bulkMoveToFolder",
+  async ({ emailIds, folder }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkMoveEmails(emailIds, folder);
+      return { emailIds, folder, response };
+    } catch (error) {
+      console.error("Failed to bulk move emails to folder:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk move to folder");
+    }
+  }
+);
+
+/**
  * BULK MUTATION THUNK: Permanently delete multiple emails
  */
 export const bulkDeleteEmailThunk = createAsyncThunk(

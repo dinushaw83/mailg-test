@@ -507,6 +507,9 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     const emailIds = threadEmails.map((email) => email.id);
     const undo = moveToTrash(emailIds);
 
+    // Navigate back to the list
+    navigate(getBasePath());
+
     setSnackbar({
       open: true,
       message: "Conversation moved to Trash.",
@@ -533,7 +536,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         </Button>
       ),
     });
-  }, [threadEmails, moveToTrash, moveToInbox, setSnackbar]);
+  }, [threadEmails, moveToTrash, moveToInbox, setSnackbar, navigate, getBasePath]);
 
   useEffect(() => {
     if (hasRunOnceRef.current) return;
@@ -615,13 +618,19 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         const snapshot = conversationLabelSnapshot();
 
         if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel(conversationMatchKeys, "Inbox");
+          // Use actual email IDs for system folder moves (same as handleDelete)
+          const emailIds = threadEmails.map((email) => email.id);
+          moveToInbox(emailIds);
           showUndoSnackbar(conversationMatchKeys, currentLabel, "Inbox", false, true, snapshot);
+          navigate(getBasePath());
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
           return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          const undo = moveToTrash(conversationMatchKeys);
+          // Use actual email IDs for system folder moves
+          const emailIds = threadEmails.map((email) => email.id);
+          const undo = moveToTrash(emailIds);
+          navigate(getBasePath());
           setSnackbar({
             open: true,
             message: "Conversation moved to Trash.",
@@ -634,7 +643,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
                   if (typeof undo === "function") {
                     undo();
                   } else {
-                    moveToInbox(conversationMatchKeys);
+                    moveToInbox(emailIds);
                   }
                   setSnackbar({
                     open: true,
