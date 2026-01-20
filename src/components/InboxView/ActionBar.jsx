@@ -360,7 +360,12 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     modifyLabels,
     setStar,
     setImportant,
+    notSpam,
+    deleteForever,
   } = useMailActions();
+  
+  // Check if viewing spam folder
+  const isSpamFolder = folder === "spam";
 
   const handleArchive = useCallback(() => {
     if (!threadEmails.length) return;
@@ -973,6 +978,10 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     const emailIds = threadEmails.map((email) => email.id);
     const undo = moveToSpam(emailIds);
     toggleSpamModal();
+    
+    // Navigate back to the list
+    navigate(getBasePath());
+    
     setSnackbar({
       open: true,
       message: "Conversation marked as spam.",
@@ -995,7 +1004,43 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         </Button>
       ),
     });
-  }, [threadEmails, moveToSpam, toggleSpamModal, setSnackbar]);
+  }, [threadEmails, moveToSpam, toggleSpamModal, setSnackbar, navigate, getBasePath]);
+
+  // Handle "Not Spam" action - moves email back to inbox
+  const handleNotSpam = useCallback(() => {
+    if (!threadEmails.length) return;
+    
+    const emailIds = threadEmails.map((email) => email.id);
+    notSpam(emailIds);
+    
+    // Navigate back to the list
+    navigate(getBasePath());
+    
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Inbox.",
+      autoHideDuration: 5000,
+      action: null,
+    });
+  }, [threadEmails, notSpam, navigate, getBasePath, setSnackbar]);
+
+  // Handle "Delete Forever" action - permanently deletes email
+  const handleDeleteForever = useCallback(() => {
+    if (!threadEmails.length) return;
+    
+    const emailIds = threadEmails.map((email) => email.id);
+    deleteForever(emailIds);
+    
+    // Navigate back to the list
+    navigate(getBasePath());
+    
+    setSnackbar({
+      open: true,
+      message: "Conversation deleted forever.",
+      autoHideDuration: 5000,
+      action: null,
+    });
+  }, [threadEmails, deleteForever, navigate, getBasePath, setSnackbar]);
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
@@ -1056,13 +1101,49 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           label="Back"
         />
 
-        <>
-          <Icon name="archive" label="Archive" onClick={handleArchive} />
-          <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
-          {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
-        </>
-
-        <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+        {isSpamFolder ? (
+          <>
+            <Button
+              variant="text"
+              onClick={handleDeleteForever}
+              sx={{
+                color: "#3c4043",
+                textTransform: "none",
+                fontSize: "14px",
+                fontWeight: 500,
+                padding: "6px 12px",
+                minWidth: "auto",
+                "&:hover": { backgroundColor: "rgba(60, 64, 67, 0.08)" },
+              }}
+            >
+              Delete forever
+            </Button>
+            <Divider orientation="vertical" style={{ marginLeft: 4, marginRight: 4, height: 24 }} />
+            <Button
+              variant="text"
+              onClick={handleNotSpam}
+              sx={{
+                color: "#3c4043",
+                textTransform: "none",
+                fontSize: "14px",
+                fontWeight: 500,
+                padding: "6px 12px",
+                minWidth: "auto",
+                "&:hover": { backgroundColor: "rgba(60, 64, 67, 0.08)" },
+              }}
+            >
+              Not spam
+            </Button>
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+          </>
+        ) : (
+          <>
+            <Icon name="archive" label="Archive" onClick={handleArchive} />
+            <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
+            {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+          </>
+        )}
 
         <>
           <Icon name="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />

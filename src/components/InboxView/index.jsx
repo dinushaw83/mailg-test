@@ -1,5 +1,5 @@
 import { Box, Button, Divider } from "@mui/material";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { getThread, getThreadRows, normalizeEmails } from "../../utils/emails";
 
@@ -127,6 +127,40 @@ const UnsnoozeButton = styled.button`
   }
 `;
 
+const SpamBanner = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  background-color: rgba(241, 243, 244, 0.87);
+  border-radius: 4px;
+  margin: 4px 0;
+  gap: 8px;
+`;
+
+const SpamBannerText = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #3c4043;
+`;
+
+const ReportNotSpamButton = styled.button`
+  color: #3c4043;
+  font-size: 14px;
+  font-weight: 500;
+  background: none;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 8px 16px;
+  width: fit-content;
+
+  &:hover {
+    background-color: #f1f3f4;
+  }
+`;
+
 const DetailContainer = styled.div`
   overflow: hidden;
   flex: 1;
@@ -158,8 +192,12 @@ export const EmailContent = ({
   normalizedEmails,
 }) => {
   const responseViewRef = React.useRef();
-  const { markRead, snooze, unsnooze } = useMailActions();
+  const { markRead, snooze, unsnooze, notSpam } = useMailActions();
   const { setSnackbar } = useGlobalContext();
+  const navigate = useNavigate();
+  
+  // Check if viewing spam folder
+  const isSpamFolder = folder === "spam";
 
   const { messagesById } = normalizedEmails;
 
@@ -264,6 +302,24 @@ export const EmailContent = ({
     }
   }, [thread?.thread_id, snoozeUntil, snooze, unsnooze, setSnackbar]);
 
+  // Handle "Report not spam" action - moves email back to inbox
+  const handleReportNotSpam = useCallback(() => {
+    if (!emails || emails.length === 0) return;
+    
+    const emailIds = emails.map((email) => email.id);
+    notSpam(emailIds);
+    
+    // Navigate back to spam folder
+    navigate("/spam");
+    
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Inbox.",
+      autoHideDuration: 5000,
+      action: null,
+    });
+  }, [emails, notSpam, navigate, setSnackbar]);
+
   useEffect(() => {
     if (!markAsReadAfter) return undefined;
 
@@ -321,6 +377,14 @@ export const EmailContent = ({
             </SnoozedText>
             <UnsnoozeButton onClick={handleUnsnooze}>Unsnooze</UnsnoozeButton>
           </SnoozedBanner>
+        )}
+        {isSpamFolder && (
+          <SpamBanner>
+            <SpamBannerText>
+              <strong>Why is this message in spam?</strong> You reported this message as spam from your inbox.
+            </SpamBannerText>
+            <ReportNotSpamButton onClick={handleReportNotSpam}>Report not spam</ReportNotSpamButton>
+          </SpamBanner>
         )}
         <InnerContainer>
           <Subject subject={messages[0].subject} message={messages[0]} />
