@@ -2,7 +2,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: mailg-postgres
+    container_name: ui-gym-mailg-postgres
     environment:
       - POSTGRES_USER=mailg
       - POSTGRES_PASSWORD=mailg
@@ -57,7 +57,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     image: mailg-backend:latest
-    container_name: mailg-backend
+    container_name: ui-gym-mailg-backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,12 +76,10 @@ services:
       - JWT_ACCESS_TOKEN_TTL_SECONDS=86400
       # OpenTelemetry configuration
       - OTEL_SDK_DISABLED=${OTEL_SDK_DISABLED:-true}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=mailg-backend
       # Prometheus URL for metrics API
       - PROMETHEUS_URL=http://prometheus:9090
-      # Data generation
-      - GENERATE_ADDITIONAL_DATA=${GENERATE_ADDITIONAL_DATA:-0}
     volumes:
       - backend_logs:/app/backend/logs
       - ./backend/fixtures:/seed/fixtures:ro
@@ -103,7 +101,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mailg-frontend
+      args:
+        VITE_ENABLE_INSTRUMENTATION: "${VITE_ENABLE_INSTRUMENTATION:-false}"
+    container_name: ui-gym-mailg-frontend
     ports:
       - "3002:3000" 
     environment:
@@ -112,7 +112,6 @@ services:
       - VITE_RUN_MODE=localstorage
       # OpenTelemetry configuration
       - VITE_ENABLE_INSTRUMENTATION=${VITE_ENABLE_INSTRUMENTATION:-false}
-      - VITE_OTEL_COLLECTOR_URL=${VITE_OTEL_COLLECTOR_URL:-http://localhost:4318}
     networks:
       - mailg-network
     restart: unless-stopped
@@ -131,7 +130,7 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     profiles: ["instrumentation"]
-    container_name: mailg-cadvisor
+    container_name: ui-gym-mailg-cadvisor
     ports:
       - "8090:8080"
     privileged: true
@@ -149,7 +148,7 @@ services:
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
     profiles: ["instrumentation"]
-    container_name: mailg-node-exporter
+    container_name: ui-gym-mailg-node-exporter
     command:
       - "--path.rootfs=/host"
       - "--path.procfs=/host/proc"
@@ -165,7 +164,7 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     profiles: ["instrumentation"]
-    container_name: mailg-otel-collector
+    container_name: ui-gym-mailg-otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./instrumentation/collector/otel-collector-config.yaml:/etc/otel-collector-config.yaml
@@ -180,7 +179,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     profiles: ["instrumentation"]
-    container_name: mailg-prometheus
+    container_name: ui-gym-mailg-prometheus
     volumes:
       - ./instrumentation/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
@@ -203,7 +202,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     profiles: ["instrumentation"]
-    container_name: mailg-grafana
+    container_name: ui-gym-mailg-grafana
     entrypoint: ["sh", "-c", "sh /etc/grafana/init.sh & exec /run.sh"]
     ports:
       - "3000:3000"

@@ -73,6 +73,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     snooze,
     unsnooze,
     addLabels,
+    modifyLabels,
     deleteForever,
   } = useMailActions();
   const [{ moveToMenuOpen, spamModalOpen, createOpen, isMovingToLabel }, setState] = useState({
@@ -90,9 +91,12 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
   const anchorRef = useRef(null);
 
-  const { emails, selection, setSnackbar, setEmails, setComposeWindows } = useGlobalContext();
+  const { selection, setSnackbar, setEmails, setComposeWindows } = useGlobalContext();
   const { ids } = selection;
   const { labels, labelTree } = useLabels();
+
+  // Use threads prop (displayed emails) instead of global emails
+  const emails = threads;
 
   const setCreateOpen = useCallback(
     (val) =>
@@ -219,8 +223,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     const undo = moveToTrash(idsToUpdate);
     const conversations = selectedConversationCount || 1;
 
-    selection.clear();
-
     setSnackbar({
       open: true,
       message: conversations > 1 ? `${conversations} conversations moved to Trash.` : "Conversation moved to Trash.",
@@ -342,7 +344,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
     try {
       archive(idsToArchive);
-      selection.clear();
       setSnackbar({
         open: true,
         message: conversations > 1 ? `${conversations} conversations archived.` : "Conversation archived.",
@@ -400,7 +401,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         autoHideDuration: 3000,
         action: null,
       });
-      selection.clear();
     } catch (e) {
       console.error("Move to Inbox failed:", e);
     }
@@ -499,7 +499,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           ...prev,
           moveToMenuOpen: false,
         }));
-        selection.clear();
       } catch (e) {
         console.error("Move failed:", e);
       }
@@ -516,18 +515,17 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       selectedConversationCount,
       showUndoSnackbarForLabelMove,
       toggleSpamModal,
-      selection,
       showNoConversationsSelectedSnackbar,
       collectLabelSnapshot,
     ]
   );
 
-  const handleOnAfterCreate = (childName, parentKey) => {
+  const handleOnAfterCreate = (childName, parentKey, isMoving, createdLabelId) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
 
     if (!isMovingToLabel) {
-      handleOnAfterLabelCreate(childName, parentKey);
+      handleOnAfterLabelCreate(childName, parentKey, createdLabelId);
       return;
     }
 
@@ -550,8 +548,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       } else {
         moveToLabel(ids, newKey);
       }
-
-      selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
@@ -607,16 +603,20 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     }
   };
 
-  const handleOnAfterLabelCreate = (childName, parentKey) => {
+  const handleOnAfterLabelCreate = (childName, parentKey, createdLabelId) => {
     const ids = [...selection.ids];
     if (!ids.length) return;
 
     try {
       const newKey = makeKey(childName, parentKey);
 
-      addLabels(ids, [newKey]);
-
-      selection.clear();
+      // Use modifyLabels with the created label's UUID to sync with backend
+      // The UUID is used for backend sync, the composite key is used for local state
+      modifyLabels(
+        ids,
+        { add: createdLabelId ? [createdLabelId] : [newKey], remove: [] },
+        ids // Pass thread IDs for backend sync
+      );
 
       // --- UNDO action ---
       setSnackbar({
@@ -632,8 +632,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
             size="small"
             onClick={() => {
               try {
-                // Remove the label from the selected emails
-                removeLabels(ids, [newKey]);
+                // Remove the label from the selected emails using modifyLabels
+                modifyLabels(ids, { add: [], remove: createdLabelId ? [createdLabelId] : [newKey] }, ids);
 
                 setSnackbar({
                   open: true,
@@ -658,7 +658,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     } catch (e) {
       setSnackbar({
         open: true,
-        message: "Could not move selected conversations.",
+        message: "Could not add label to selected conversations.",
         autoHideDuration: 4000,
       });
     }
@@ -702,7 +702,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     }
 
     markRead(idsToUpdate, isMarkingAsRead);
-    selection.clear();
 
     const affectedConversations =
       new Set(targetStates.map((state) => state.thread_id)).size || selectedConversationCount || 1;
@@ -837,9 +836,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       autoHideDuration: 2000,
       action: null,
     });
-
-    // Clear selection
-    selection.clear();
   };
 
   // Handle undo move to inbox
@@ -905,7 +901,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
     // Store the action ids
     lastActionIds.current = [...selectedIds];
-    selection.clear();
 
     // Display snackbar with undo action
     setSnackbar({
@@ -953,7 +948,6 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     (ids, snoozeUntil) => {
       const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
       handleSnoozeClose();
-      selection.clear();
 
       const message = ids.length > 1 ? `${ids.length} conversations snoozed` : "Conversation snoozed.";
 
@@ -978,7 +972,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         ),
       });
     },
-    [snooze, unsnooze, handleSnoozeClose, selection, setSnackbar]
+    [snooze, unsnooze, handleSnoozeClose, setSnackbar]
   );
 
   if (!visible) return null;
@@ -1064,9 +1058,33 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         open={spamModalOpen}
         onClose={toggleSpamModal}
         onReportSpam={() => {
-          const undo = moveToSpam(selectedIds);
+          // Collect ALL email IDs from ALL selected threads
+          const emailIds = [];
+          const seenIds = new Set();
+
+          selectedIds.forEach((threadId) => {
+            const threadIdStr = String(threadId);
+
+            const threadsEmails = emails.filter(
+              (email) => String(email.thread_id) === threadIdStr || String(email.threadId) === threadIdStr
+            );
+
+            threadsEmails.forEach((email) => {
+              if (email.id && !seenIds.has(email.id)) {
+                emailIds.push(email.id);
+                seenIds.add(email.id);
+              }
+            });
+          });
+
+          if (!emailIds.length) {
+            console.error("No email IDs found to spam!");
+            toggleSpamModal();
+            return;
+          }
+
+          const undo = moveToSpam(emailIds);
           toggleSpamModal();
-          selection.clear();
           showUndoSnackbar(
             selectedIds.length > 1
               ? `${selectedIds.length} conversations marked as spam.`
@@ -1075,9 +1093,18 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           );
         }}
         onUnsubscribe={() => {
-          moveToSpam(selectedIds);
+          // Extract email IDs from selected threadIds - use thread_id not threadId
+          const matchingEmails = emails.filter((email) => selectedIds.includes(String(email.thread_id)));
+          const emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+
+          if (!emailIds.length) {
+            console.error("No email IDs found to spam!");
+            toggleSpamModal();
+            return;
+          }
+
+          moveToSpam(emailIds);
           toggleSpamModal();
-          selection.clear();
           showUndoSnackbar("We'll try to unsubscribe you from these emails.", () => {});
         }}
       />
@@ -1101,6 +1128,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds,
+          threadIds: Array.from(selectedThreadIdSet),
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },

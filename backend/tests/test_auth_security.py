@@ -38,7 +38,7 @@ class TestUserIdZeroValidation:
     def test_user_id_zero_rejected_in_token_creation(self):
         """Test that creating token with user_id=0 is rejected"""
         manager = TokenManager()
-        with pytest.raises(ValueError, match="user_id must be a non-empty string"):
+        with pytest.raises(ValueError, match="user_id must be greater than 0"):
             manager.create_token(user_id=0, role="admin", email="test@example.com")
     
     def test_user_id_whitespace_rejected(self):

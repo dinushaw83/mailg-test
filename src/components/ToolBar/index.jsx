@@ -17,6 +17,7 @@ import styled from "@emotion/styled";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useParams } from "react-router-dom";
+import { queryClient } from "../../lib/query-client";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -373,17 +374,49 @@ const LeftItemsContainer = ({ children }) => {
   );
 };
 
-const ToolBar = ({ totalFilteredItems, threads, showAdvancedMenu, setShowAdvancedMenu, showPagination = true }) => {
-  const { folder = "inbox" } = useParams();
-  const { selection, refreshEmails, keyboardShortcuts, manualSyncCount, setManualSyncCount } = useGlobalContext();
+const ToolBar = ({
+  totalFilteredItems,
+  threads,
+  showAdvancedMenu,
+  setShowAdvancedMenu,
+  showPagination = true,
+  activeInboxTab = null,
+}) => {
+  const { folder = "inbox", label: labelParam } = useParams();
+  const label = labelParam ? decodeURIComponent(labelParam) : null;
+  const {
+    selection,
+    refreshEmails,
+    keyboardShortcuts,
+    manualSyncCount,
+    setManualSyncCount,
+    currentPage,
+    itemsPerPage,
+  } = useGlobalContext();
   const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
-  const manualEmailSync = useCallback(() => {
+  const manualEmailSync = useCallback(async () => {
     setIsManualSyncing(true);
     setManualSyncCount((prevCount) => prevCount + 1);
-    setTimeout(() => setIsManualSyncing(false), 2500);
-  }, [setManualSyncCount]);
+
+    try {
+      // Build query key using the SAME format as useFolderEmails
+      // useFolderEmails uses: ["emails", activeFolder, activeInboxTab, currentPage, itemsPerPage]
+      // or for labels: ["emails", "label", label, currentPage, itemsPerPage]
+      const queryKey = label
+        ? ["emails", "label", label, currentPage, itemsPerPage]
+        : ["emails", folder || "inbox", activeInboxTab, currentPage, itemsPerPage];
+
+      // Force refetch - invalidateQueries marks as stale AND triggers refetch for active queries
+      await queryClient.invalidateQueries({ queryKey, exact: true });
+
+      setIsManualSyncing(false);
+    } catch (error) {
+      console.error("Failed to refresh emails:", error);
+      setIsManualSyncing(false);
+    }
+  }, [folder, activeInboxTab, currentPage, itemsPerPage, label, setManualSyncCount]);
 
   const thread_ids = threads.map((email) => email.thread_id);
   const { ids } = selection;

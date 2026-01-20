@@ -16,8 +16,6 @@ def sample_template(db_session, sample_user):
     """Create a sample email template for testing."""
     template = EmailTemplate(
         name="Welcome Email",
-        description="Template for welcoming new users",
-        subject="Welcome to Our Platform!",
         body="Dear User,\n\nWelcome to our platform!\n\nBest regards",
         html_body="<p>Dear User,</p><p>Welcome to our platform!</p><p>Best regards</p>",
         is_shared=False,
@@ -34,8 +32,6 @@ def sample_shared_template(db_session, sample_user):
     """Create a shared template for testing."""
     template = EmailTemplate(
         name="Meeting Request",
-        description="Template for scheduling meetings",
-        subject="Meeting Request: [Topic]",
         body="Hi,\n\nI'd like to schedule a meeting to discuss [topic].",
         is_shared=True,
         owner_id=sample_user.id
@@ -57,8 +53,6 @@ class TestTemplateCreate:
             "/api/v1/templates",
             json={
                 "name": "New Template",
-                "description": "A test template",
-                "subject": "Test Subject",
                 "body": "Test body content"
             },
             headers={"Authorization": f"Bearer {token}"}
@@ -67,8 +61,6 @@ class TestTemplateCreate:
         assert response.status_code == 201
         data = response.json()["data"]
         assert data["name"] == "New Template"
-        assert data["description"] == "A test template"
-        assert data["subject"] == "Test Subject"
         assert data["is_shared"] == False
 
     def test_create_template_minimal(self, client_with_auth):
@@ -93,7 +85,6 @@ class TestTemplateCreate:
             "/api/v1/templates",
             json={
                 "name": "Shared Template",
-                "subject": "Shared Subject",
                 "is_shared": True
             },
             headers={"Authorization": f"Bearer {token}"}
@@ -157,8 +148,8 @@ class TestTemplateList:
         client, token, user = client_with_auth
         
         # Create templates
-        template1 = EmailTemplate(name="Welcome Email", description="For new users", owner_id=user.id)
-        template2 = EmailTemplate(name="Goodbye Email", description="For leaving users", owner_id=user.id)
+        template1 = EmailTemplate(name="Welcome Email", owner_id=user.id)
+        template2 = EmailTemplate(name="Goodbye Email", owner_id=user.id)
         db_session.add_all([template1, template2])
         db_session.commit()
         
@@ -288,7 +279,6 @@ class TestTemplateOperations:
         
         shared_template = EmailTemplate(
             name="Shared",
-            subject="Shared Subject",
             owner_id=other_user.id,
             is_shared=True
         )
@@ -311,8 +301,7 @@ class TestTemplateOperations:
         response = client.put(
             f"/api/v1/templates/{sample_template.id}",
             json={
-                "name": "Updated Name",
-                "subject": "Updated Subject"
+                "name": "Updated Name"
             },
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -320,23 +309,35 @@ class TestTemplateOperations:
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["name"] == "Updated Name"
-        assert data["subject"] == "Updated Subject"
 
     def test_update_template_partial(self, client_with_auth, sample_template):
         """Test partial update of a template."""
         client, token, user = client_with_auth
         original_body = sample_template.body
-        
+
         response = client.put(
             f"/api/v1/templates/{sample_template.id}",
             json={"name": "Only Name Changed"},
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["name"] == "Only Name Changed"
         assert data["body"] == original_body
+
+    def test_update_template_empty_body_fails(self, client_with_auth, sample_template):
+        """Test updating a template with empty body returns 400."""
+        client, token, user = client_with_auth
+
+        response = client.put(
+            f"/api/v1/templates/{sample_template.id}",
+            json={},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 400
+        assert "At least one field must be provided" in response.json()["message"]
 
     def test_update_other_user_template_forbidden(self, client_with_auth, db_session):
         """Test updating another user's template is forbidden."""
@@ -368,22 +369,6 @@ class TestTemplateOperations:
         
         assert response.status_code == 403
 
-    def test_delete_template(self, client_with_auth, sample_template, db_session):
-        """Test deleting a template (soft delete)."""
-        client, token, user = client_with_auth
-        template_id = sample_template.id
-        
-        response = client.delete(
-            f"/api/v1/templates/{template_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify soft deleted
-        db_session.refresh(sample_template)
-        assert sample_template.is_deleted == True
-
     def test_delete_template_permanent(self, client_with_auth, db_session):
         """Test permanently deleting a template removes it from database."""
         client, token, user = client_with_auth
@@ -391,7 +376,6 @@ class TestTemplateOperations:
         # Create template
         template = EmailTemplate(
             name="To Delete Permanently",
-            subject="Test",
             owner_id=user.id
         )
         db_session.add(template)
@@ -454,28 +438,8 @@ class TestTemplateApply:
         
         assert response.status_code == 201
         data = response.json()["data"]
-        assert data["subject"] == sample_template.subject
+        assert data["subject"] == sample_template.name
         assert data["body"] == sample_template.body
-
-    def test_apply_template_with_recipients(self, client_with_auth, sample_template):
-        """Test applying a template with recipients."""
-        client, token, user = client_with_auth
-        
-        response = client.post(
-            f"/api/v1/templates/{sample_template.id}/apply",
-            json={
-                "template_id": str(sample_template.id),
-                "recipients": [
-                    {"email": "recipient@example.com", "name": "Test Recipient", "type": "to"}
-                ]
-            },
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 201
-        data = response.json()["data"]
-        assert len(data["recipients"]) == 1
-        assert data["recipients"][0]["email"] == "recipient@example.com"
 
     def test_apply_template_with_additional_body(self, client_with_auth, sample_template):
         """Test applying a template with additional content."""

@@ -17,11 +17,9 @@ class EmailTemplate(Base):
     __tablename__ = "email_templates"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    name = Column(String(255), nullable=False)  # Template name for identification
-    description = Column(String(500))  # Optional description of template purpose
+    name = Column(String(255), nullable=False)  # Template name for identification (used as email subject)
     
     # Template content
-    subject = Column(String(500))  # Email subject template
     body = Column(Text)  # Plain text body template
     html_body = Column(Text)  # HTML body template
     
@@ -31,16 +29,14 @@ class EmailTemplate(Base):
     # Ownership
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     
-    # Soft delete and timestamps
-    is_deleted = Column(Boolean, default=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-    
+    # timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
     # Relationships
     owner = relationship("User", foreign_keys=[owner_id], lazy="joined")
     
     # Indexes for common queries
     __table_args__ = (
-        Index("ix_email_templates_owner_deleted", "owner_id", "is_deleted"),
         Index("ix_email_templates_shared", "is_shared"),
     )

@@ -1,14 +1,10 @@
 import { Button, Stack } from "@mui/material";
 import React, { useEffect, useMemo } from "react";
-import {
-  advancedSearchWithFullData,
-  buildSearchIndex,
-  createSearchSummary,
-  initializeSearchIndex,
-  isSearchIndexReady,
-  searchEmails,
-} from "../utils/search";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { createSearchSummary } from "../utils/search";
+import { buildSearchParams } from "../utils/searchParams";
+import { fetchSearchResults } from "../store/slices/mailSlice";
 
 import EmailList from "../components/EmailList";
 import SearchResultFilters from "../components/SearchResultFilters";
@@ -19,175 +15,49 @@ import { getThreadRows } from "../utils/emails";
 import { useGlobalContext } from "../contexts/GlobalContext";
 
 const SearchResultsView = () => {
-  const { emails, currentPage, itemsPerPage } = useGlobalContext();
+  const { currentPage, itemsPerPage } = useGlobalContext();
   const location = useLocation();
   const navigate = useNavigate();
-  const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
+  const dispatch = useDispatch();
+  const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location.search, location.pathname]);
+  const { apiParams, originalParams } = useMemo(
+    () =>
+      buildSearchParams(location, {
+        page: currentPage,
+        pageSize: itemsPerPage,
+      }),
+    [location.search, location.pathname, currentPage, itemsPerPage]
+  );
+
+  // Get search results from Redux store
+  const { searchResults, searchLoading, searchError, searchPagination, searchOriginalParams } = useSelector(
+    (state) => state.mail
+  );
 
   // Check if this is an advanced search
   const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
   const searchParams = new URLSearchParams(location.search);
 
-  // Initialize search index on component mount
+  // Fetch search results from backend when URL changes
   useEffect(() => {
-    // Try to restore from localStorage first
-    initializeSearchIndex();
-  }, []);
+    // Reroute user to /inbox if no query or params are present
+    // if (!searchQuery) {
+    //   navigate("/inbox", { replace: true });
+    //   return;
+    // }
 
-  // Build search index when emails are available
-  useEffect(() => {
-    if (emails && emails.length > 0) {
-      buildSearchIndex(emails);
-    }
-  }, [emails]);
-
-  //reroute user to /inbox if no query or params are present
-  useEffect(() => {
-    if (!searchQuery && !searchParams.size) {
-      navigate("/inbox", { replace: true });
-    }
-  }, [searchQuery, searchParams]);
-
-  // Get search results based on query type
-  const searchResults = useMemo(() => {
-    if (isAdvancedSearch) {
-      // Handle advanced search with criteria from URL params
-      const sizeOperator = searchParams.get("sizeOperator") || "less than";
-      const searchCriteria = {
-        from: searchParams.get("from") || "",
-        to: searchParams.get("to") || "",
-        subject: searchParams.get("subject") || "",
-        has: searchParams.get("has") || "",
-        hasnot: searchParams.get("hasnot") || "",
-        size: searchParams.get("size") || "",
-        sizeOperator: sizeOperator.replace(/_/g, " "), // Convert underscores to spaces
-        sizeUnit: searchParams.get("sizeUnit") || "MB",
-        within: searchParams.get("within") || "",
-        date: searchParams.get("date") || "",
-        subset: searchParams.get("subset") || "",
-        attachment: searchParams.get("attachment") === "true",
-        excludeChats: searchParams.get("excludeChats") === "true",
-      };
-
-      // Use advanced search with full email data
-      let results = advancedSearchWithFullData(searchCriteria, emails, { limit: null });
-
-      // Apply "Has attachment" filter from filter chip (attach_or_drive param)
-      // Only apply if not already filtered by attachment in advanced search
-      if (searchParams.get("attach_or_drive") === "true" && !searchCriteria.attachment) {
-        results = results.filter((email) => {
-          const hasAttachments = email.attachments && email.attachments.length > 0;
-          return hasAttachments;
-        });
-      }
-
-      // Apply "Is unread" filter from filter chip
-      if (searchParams.get("is_unread") === "true") {
-        results = results.filter((email) => !email.is_read);
-      }
-
-      // Apply date range filter from filter chips
-      if (searchParams.get("daterangetype") === "custom_range") {
-        // Filter by datestart (emails after this date)
-        if (searchParams.has("datestart")) {
-          const dateStart = new Date(searchParams.get("datestart"));
-          results = results.filter((email) => new Date(email.timestamp) >= dateStart);
-        }
-        // Filter by dateend (emails before this date)
-        if (searchParams.has("dateend")) {
-          const dateEnd = new Date(searchParams.get("dateend"));
-          results = results.filter((email) => new Date(email.timestamp) <= dateEnd);
-        }
-      }
-
-      return results;
-    } else {
-      // Handle regular text search or refinement search
-      const isRefinementSearch = searchParams.get("isrefinement") === "true";
-
-      let results = [];
-      if (searchQuery.trim() && isSearchIndexReady()) {
-        // Get search results for the query
-        results = searchEmails(searchQuery, { limit: null });
-      } else if (!searchQuery.trim() && !isRefinementSearch) {
-        // No query and not a refinement search
-        return [];
-      } else if (!searchQuery.trim() && isRefinementSearch) {
-        // No query but has filters - start with all emails
-        results = emails || [];
-      }
-
-      // Apply refinement filters if present
-      if (isRefinementSearch && results.length > 0) {
-        // Apply "From" contact filter
-        if (searchParams.get("from")) {
-          const fromEmails = searchParams
-            .get("from")
-            .split(",")
-            .map((email) => email.trim().toLowerCase());
-          results = results.filter((email) =>
-            fromEmails.some((fromEmail) => email.from?.email?.toLowerCase() === fromEmail)
-          );
-        }
-
-        // Apply "To" contact filter
-        if (searchParams.get("to")) {
-          const toEmails = searchParams
-            .get("to")
-            .split(",")
-            .map((email) => email.trim().toLowerCase());
-          results = results.filter((email) => {
-            const emailToList = email.to || [];
-            return emailToList.some((recipient) => toEmails.includes(recipient.email?.toLowerCase()));
-          });
-        }
-
-        // Apply "Has attachment" filter
-        if (searchParams.get("attach_or_drive") === "true") {
-          results = results.filter((email) => {
-            const hasAttachments = email.attachments && email.attachments.length > 0;
-            return hasAttachments;
-          });
-        }
-
-        // Apply date range filter
-        if (searchParams.get("daterangetype") === "custom_range") {
-          // Filter by datestart (emails after this date)
-          if (searchParams.has("datestart")) {
-            const dateStart = new Date(searchParams.get("datestart"));
-            results = results.filter((email) => new Date(email.timestamp) >= dateStart);
-          }
-          // Filter by dateend (emails before this date)
-          if (searchParams.has("dateend")) {
-            const dateEnd = new Date(searchParams.get("dateend"));
-            results = results.filter((email) => new Date(email.timestamp) <= dateEnd);
-          }
-        }
-
-        // Apply "Is unread" filter
-        if (searchParams.get("is_unread") === "true") {
-          results = results.filter((email) => !email.read);
-        }
-      }
-
-      return results;
-    }
-  }, [searchQuery, emails, isAdvancedSearch, searchParams]); // Add dependencies
+    // Dispatch search action
+    dispatch(fetchSearchResults({ ...apiParams, originalParams }));
+  }, [currentPage, searchQuery, apiParams, originalParams]);
 
   // Convert search results to thread rows format
-  const filteredRows = useMemo(() => {
+  const rows = useMemo(() => {
     if (!searchResults.length) {
       return [];
     }
 
-    // For advanced search, searchResults are already full email objects
-    // For regular search, they might be search index results that need to be mapped
-    const searchResultEmails = isAdvancedSearch
-      ? searchResults // Already full email objects
-      : searchResults.map((result) => emails.find((email) => email.id === result.id)).filter(Boolean);
-
     // Pass folder: null to prevent getThreadRows from filtering by folder
-    let threadRows = getThreadRows(searchResultEmails, { folder: null });
+    let threadRows = getThreadRows(searchResults, { folder: null });
 
     // If filtering by "is unread", ensure thread has unread messages
     // (thread.is_read is based on last message, but we want threads with ANY unread messages)
@@ -196,20 +66,7 @@ const SearchResultsView = () => {
     }
 
     return threadRows;
-  }, [searchResults, emails, isAdvancedSearch, searchParams]);
-
-  const rows = useMemo(() => {
-    const sortedEmails = [...filteredRows].sort((a, b) => {
-      const dateA = new Date(a.timestamp);
-      const dateB = new Date(b.timestamp);
-      return dateB - dateA;
-    });
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-
-    return sortedEmails.slice(startIndex, endIndex);
-  }, [filteredRows, currentPage, itemsPerPage]);
+  }, [searchResults, searchParams]);
 
   const showSearchFilters = useMemo(() => {
     return rows.length > 0 || searchParams.get("isrefinement") === "true";
@@ -228,7 +85,7 @@ const SearchResultsView = () => {
                     {showSearchFilters && <SearchResultFilters />}
 
                     <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
-                      <ToolBar totalFilteredItems={filteredRows.length} threads={rows} />
+                      <ToolBar totalFilteredItems={rows.length} threads={rows} />
                       <div />
                       <div className="X3" />
                       <div className="a0V">
@@ -258,105 +115,159 @@ const SearchResultsView = () => {
                         jsaction="rcuQ6b:npT2md;jo33Se:PhqmKf;Rb1Lod:ZpywWb;J0lErd:Oyw2Hb;nGJuB:OcHC8;ZvXgGe:Csi5td;fbYNtb:.CLIENT;UGzfzc:.CLIENT;njKHYb:.CLIENT"
                         gh="tl"
                       >
-                        {rows.length > 0 ? (
-                          <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100 }}>
-                            <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
-                              <div className="aDP">
-                                <div
-                                  className="ae4 aDM"
-                                  jslog="20294; u014N:xr6bB"
-                                  id=":1z"
-                                  role="tabpanel"
-                                  aria-labelledby=":23"
-                                >
-                                  <div>
-                                    <div className="Wg aAD aAz sf-hidden" />
-                                    <div className="aVj" style={{ display: "none" }} />
-                                  </div>
-                                  <div className="Cp">
-                                    <div>
-                                      <table
-                                        cellPadding={0}
-                                        id=":2x"
-                                        className="F cf zt"
-                                        role="grid"
-                                        aria-readonly="true"
-                                      >
-                                        <EmailList emails={rows} showFooter={false} />
-                                      </table>
+                        {searchLoading && (
+                          <div className="nH bkK">
+                            <div className="nH">
+                              <div className="nH ar4 z">
+                                <div>
+                                  <div id=":4" className="aeH" />
+                                  <div className="AO">
+                                    <div id=":3" className="Tm" style={{ height: 985 }}>
+                                      <div id=":1" className="aeF" style={{ minHeight: 795 }}>
+                                        <div className="nH">
+                                          <div className="bGI nH oy8Mbf aE3 S4" role="main">
+                                            <Stack
+                                              sx={{ bgcolor: "ffffffcc", width: "100%", textAlign: "center", py: 4 }}
+                                            >
+                                              <p>Searching...</p>
+                                            </Stack>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="VNyZ8c" style={{ display: "none" }} />
                                 </div>
-                                <div
-                                  className="ae4 aDM"
-                                  jslog="20290; u014N:xr6bB"
-                                  id=":20"
-                                  role="tabpanel"
-                                  aria-labelledby=":24"
-                                  style={{ display: "none" }}
-                                />
-                                <div
-                                  className="ae4 aDM"
-                                  jslog="20292; u014N:xr6bB"
-                                  id=":21"
-                                  role="tabpanel"
-                                  aria-labelledby=":25"
-                                  style={{ display: "none" }}
-                                />
-                                <div
-                                  className="ae4 aDM"
-                                  jslog="20293; u014N:xr6bB"
-                                  id=":22"
-                                  role="tabpanel"
-                                  aria-labelledby=":26"
-                                  style={{ display: "none" }}
-                                />
                               </div>
                             </div>
                           </div>
-                        ) : (
-                          <Stack
-                            sx={{ bgcolor: "ffffffcc", width: "100%", textAlign: "center", py: 2, fontSize: "14px" }}
-                          >
-                            <p>
-                              No messages matched your search. You can{" "}
+                        )}
+                        {searchError && (
+                          <div className="nH bkK">
+                            <div className="nH">
+                              <div className="nH ar4 z">
+                                <div>
+                                  <div id=":4" className="aeH" />
+                                  <div className="AO">
+                                    <div id=":3" className="Tm" style={{ height: 985 }}>
+                                      <div id=":1" className="aeF" style={{ minHeight: 795 }}>
+                                        <div className="nH">
+                                          <div className="bGI nH oy8Mbf aE3 S4" role="main">
+                                            <Stack
+                                              sx={{ bgcolor: "ffffffcc", width: "100%", textAlign: "center", py: 4 }}
+                                            >
+                                              <p>Error: {searchError}</p>
+                                            </Stack>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {!searchLoading &&
+                          !searchError &&
+                          (rows.length > 0 ? (
+                            <div className="Nu tf aZ6" jsname="xSLh2d" style={{ flexGrow: 100 }}>
+                              <div jsaction="oehdpb:.CLIENT;UXdbee:.CLIENT">
+                                <div className="aDP">
+                                  <div
+                                    className="ae4 aDM"
+                                    jslog="20294; u014N:xr6bB"
+                                    id=":1z"
+                                    role="tabpanel"
+                                    aria-labelledby=":23"
+                                  >
+                                    <div>
+                                      <div className="Wg aAD aAz sf-hidden" />
+                                      <div className="aVj" style={{ display: "none" }} />
+                                    </div>
+                                    <div className="Cp">
+                                      <div>
+                                        <table
+                                          cellPadding={0}
+                                          id=":2x"
+                                          className="F cf zt"
+                                          role="grid"
+                                          aria-readonly="true"
+                                        >
+                                          <EmailList emails={rows} showFooter={false} searchQuery={searchQuery} />
+                                        </table>
+                                      </div>
+                                    </div>
+                                    <div className="VNyZ8c" style={{ display: "none" }} />
+                                  </div>
+                                  <div
+                                    className="ae4 aDM"
+                                    jslog="20290; u014N:xr6bB"
+                                    id=":20"
+                                    role="tabpanel"
+                                    aria-labelledby=":24"
+                                    style={{ display: "none" }}
+                                  />
+                                  <div
+                                    className="ae4 aDM"
+                                    jslog="20292; u014N:xr6bB"
+                                    id=":21"
+                                    role="tabpanel"
+                                    aria-labelledby=":25"
+                                    style={{ display: "none" }}
+                                  />
+                                  <div
+                                    className="ae4 aDM"
+                                    jslog="20293; u014N:xr6bB"
+                                    id=":22"
+                                    role="tabpanel"
+                                    aria-labelledby=":26"
+                                    style={{ display: "none" }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <Stack
+                              sx={{ bgcolor: "ffffffcc", width: "100%", textAlign: "center", py: 2, fontSize: "14px" }}
+                            >
+                              <p>
+                                No messages matched your search. You can{" "}
+                                <Button
+                                  variant="text"
+                                  sx={{
+                                    height: "16px",
+                                    textDecoration: "underline",
+                                    color: "#1a73e8",
+                                    fontSize: "14px",
+                                    textTransform: "none",
+                                    fontWeight: "400",
+                                    p: 0,
+                                    "&:hover": {
+                                      textDecoration: "underline !important",
+                                    },
+                                  }}
+                                >
+                                  broaden your search
+                                </Button>{" "}
+                                to look in "Mail &amp; Spam &amp; Trash".
+                              </p>
                               <Button
                                 variant="text"
+                                href="#"
+                                aria-label="Learn more about broadening your search"
                                 sx={{
-                                  height: "16px",
-                                  textDecoration: "underline",
                                   color: "#1a73e8",
                                   fontSize: "14px",
                                   textTransform: "none",
                                   fontWeight: "400",
-                                  p: 0,
-                                  "&:hover": {
-                                    textDecoration: "underline !important",
-                                  },
+                                  width: "fit-content",
+                                  mx: "auto",
                                 }}
                               >
-                                broaden your search
-                              </Button>{" "}
-                              to look in "Mail &amp; Spam &amp; Trash".
-                            </p>
-                            <Button
-                              variant="text"
-                              href="#"
-                              aria-label="Learn more about broadening your search"
-                              sx={{
-                                color: "#1a73e8",
-                                fontSize: "14px",
-                                textTransform: "none",
-                                fontWeight: "400",
-                                width: "fit-content",
-                                mx: "auto",
-                              }}
-                            >
-                              Learn more
-                            </Button>
-                          </Stack>
-                        )}
+                                Learn more
+                              </Button>
+                            </Stack>
+                          ))}
                         <div className="Nt sf-hidden" jsname="dt0bVc" />
                         <div
                           className="Nu S3 aZ6 sf-hidden"

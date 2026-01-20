@@ -1,11 +1,13 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import emailService from "../../services/emailService";
+import searchService from "../../services/searchService";
 import { initialEmails } from "../../contexts/fixtures/emails";
 import { initialLabels } from "../../contexts/fixtures/labels";
 import labelService from "../../services/labelService";
 import { queryClient } from "../../lib/query-client";
 import { transformLabelsArray } from "../../utils/labelTransform";
+import { buildEmailQueryKey } from "../../utils/emailQueryKeys";
 
 /**
  * @param {Object} options - Options for fetching
@@ -15,11 +17,19 @@ import { transformLabelsArray } from "../../utils/labelTransform";
  * @param {boolean} options.is_snoozed - Filter by snoozed status
  * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
  * @param {boolean} options.include_archived - Include archived emails (for all mail)
+ * @param {boolean} options.is_starred - Filter by starred status
+ * @param {boolean} options.is_important - Filter by important status
+ * @param {boolean} options.is_snoozed - Filter by snoozed status
+ * @param {string} options.folder - Filter by folder (sent, trash, spam, drafts, inbox)
+ * @param {boolean} options.include_archived - Include archived emails (for all mail)
  */
-export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue }) => {
+export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options = {}, { rejectWithValue, getState }) => {
+  const state = getState();
+  const defaultPageSize = state?.ui?.itemsPerPage ?? 25;
+
   const {
     page = 1,
-    pageSize = 20,
+    pageSize = defaultPageSize,
     category = null,
     is_starred = null,
     is_important = null,
@@ -29,53 +39,17 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
   } = options;
 
   try {
-    // Structure query key for separate cache invalidation:
-    // - ["emails", "category", "primary", page, pageSize] for categories
-    // - ["emails", "is_starred", true, page, pageSize] for starred
-    // - ["emails", "is_important", true, page, pageSize] for important
-    // - ["emails", "is_snoozed", true, page, pageSize] for snoozed
-    // - ["emails", "folder", "sent", page, pageSize] for folders (sent, trash, spam, drafts)
-    // - ["emails", "all", page, pageSize] for all mail (folder=inbox&include_archived=true)
-    // - ["emails", "inbox", page, pageSize] for inbox (no filter)
-    let queryKey;
-    const filterType =
-      is_starred === true
-        ? "is_starred"
-        : is_important === true
-          ? "is_important"
-          : is_snoozed === true
-            ? "is_snoozed"
-            : include_archived === true
-              ? "all"
-              : folder
-                ? "folder"
-                : category
-                  ? "category"
-                  : "inbox";
-
-    switch (filterType) {
-      case "is_starred":
-        queryKey = ["emails", "is_starred", true, page, pageSize];
-        break;
-      case "is_important":
-        queryKey = ["emails", "is_important", true, page, pageSize];
-        break;
-      case "is_snoozed":
-        queryKey = ["emails", "is_snoozed", true, page, pageSize];
-        break;
-      case "all":
-        queryKey = ["emails", "all", page, pageSize];
-        break;
-      case "folder":
-        queryKey = ["emails", "folder", folder, page, pageSize];
-        break;
-      case "category":
-        queryKey = ["emails", "category", category, page, pageSize];
-        break;
-      default:
-        queryKey = ["emails", "inbox", page, pageSize];
-        break;
-    }
+    // Build query key using the shared utility function
+    const queryKey = buildEmailQueryKey({
+      page,
+      pageSize,
+      category,
+      is_starred,
+      is_important,
+      is_snoozed,
+      folder,
+      include_archived,
+    });
 
     const data = await queryClient.fetchQuery({
       queryKey,
@@ -102,9 +76,9 @@ export const fetchEmails = createAsyncThunk("mail/fetchEmails", async (options =
       },
       staleTime: 1000 * 60 * 5,
     });
-    return { ...data, category, is_starred, is_important, is_snoozed, folder, include_archived };
+    return { ...data, category, is_starred, is_important, is_snoozed, folder };
   } catch (error) {
-    console.error("❌ Failed to fetch emails:", error);
+    console.error("Failed to fetch emails:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch emails");
   }
 });
@@ -123,10 +97,27 @@ export const fetchEmailCounts = createAsyncThunk("mail/fetchEmailCounts", async 
     });
     return data;
   } catch (error) {
-    console.error("❌ Failed to fetch email counts:", error);
+    console.error("Failed to fetch email counts:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email counts");
   }
 });
+
+/**
+ * MUTATION THUNK: Bulk unstar threads
+ */
+export const bulkUnstarThreadsThunk = createAsyncThunk(
+  "mail/bulkUnstarThreads",
+  async ({ threadIds }, { rejectWithValue }) => {
+    try {
+      // Use bulk endpoint to unstar all threads in a single request
+      const result = await emailService.bulkUnstarThreads(threadIds);
+      return { threadIds, result };
+    } catch (error) {
+      console.error("Failed to unstar threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to unstar threads");
+    }
+  }
+);
 
 /**
  * MUTATION THUNK: Sends email and invalidates relevant caches.
@@ -138,10 +129,45 @@ export const sendEmailThunk = createAsyncThunk("mail/sendEmail", async (emailDat
     // React Query cache invalidation is handled by RTK listener middleware.
     return response;
   } catch (error) {
-    console.error("❌ Failed to send email:", error);
+    console.error("Failed to send email:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
   }
 });
+
+/**
+ * MUTATION THUNK: Send email by ID (for drafts)
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const sendEmailByIdThunk = createAsyncThunk("mail/sendEmailById", async (emailId, { rejectWithValue }) => {
+  try {
+    // Call service directly - React Query cache invalidation is handled by listeners
+    const response = await emailService.sendEmailById(emailId);
+    return { emailId, data: response };
+  } catch (error) {
+    console.error("❌ Failed to send email by ID:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to send email");
+  }
+});
+
+/**
+ * MUTATION THUNK: Cancel/unsend email by ID (undo send)
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const cancelSendEmailByIdThunk = createAsyncThunk(
+  "mail/cancelSendEmailById",
+  async (emailId, { rejectWithValue }) => {
+    try {
+      // Call service directly - React Query cache invalidation is handled by listeners
+      const response = await emailService.cancelSendEmailById(emailId);
+      return { emailId, data: response };
+    } catch (error) {
+      console.error("❌ Failed to cancel send email by ID:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to cancel send email");
+    }
+  }
+);
 
 /**
  * MUTATION THUNK: Updates labels and revalidates.
@@ -154,8 +180,25 @@ export const updateLabelsThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return response;
     } catch (error) {
-      console.error("❌ Failed to update labels:", error);
+      console.error("Failed to update labels:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to update labels");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Bulk update labels on threads (add and/or remove in single operation)
+ */
+export const bulkUpdateLabelsThunk = createAsyncThunk(
+  "mail/bulkUpdateLabels",
+  async ({ threadIds, labels }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUpdateLabels(threadIds, labels);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return response;
+    } catch (error) {
+      console.error("Failed to bulk update labels:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update labels");
     }
   }
 );
@@ -174,7 +217,7 @@ export const fetchLabels = createAsyncThunk("mail/fetchLabels", async (_, { reje
     });
     return data;
   } catch (error) {
-    console.error("❌ Failed to fetch labels:", error);
+    console.error("Failed to fetch labels:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch labels");
   }
 });
@@ -190,7 +233,7 @@ export const createLabelThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return response;
     } catch (error) {
-      console.error("❌ Failed to create label:", error);
+      console.error("Failed to create label:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to create label");
     }
   }
@@ -207,7 +250,7 @@ export const updateLabelThunk = createAsyncThunk(
       // React Query cache invalidation is handled by RTK listener middleware.
       return { id, ...response };
     } catch (error) {
-      console.error("❌ Failed to update label:", error);
+      console.error("Failed to update label:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to update label");
     }
   }
@@ -222,10 +265,419 @@ export const deleteLabelThunk = createAsyncThunk("mail/deleteLabel", async (id, 
     // React Query cache invalidation is handled by RTK listener middleware.
     return { id, ...response };
   } catch (error) {
-    console.error("❌ Failed to delete label:", error);
+    console.error("Failed to delete label:", error);
     return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete label");
   }
 });
+
+/*
+ * MUTATION THUNK: Create a new draft
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const createDraftThunk = createAsyncThunk("mail/createDraft", async (draftData, { rejectWithValue }) => {
+  try {
+    const response = await emailService.createDraft(draftData);
+    // React Query cache invalidation is handled by RTK listener middleware.
+    return response;
+  } catch (error) {
+    console.error("❌ Failed to create draft:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to create draft");
+  }
+});
+
+/**
+ * MUTATION THUNK: Create a reply draft
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const createReplyDraftThunk = createAsyncThunk(
+  "mail/createReplyDraft",
+  async ({ emailId, draftData }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.createReplyDraft(emailId, draftData);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return response;
+    } catch (error) {
+      console.error("❌ Failed to create reply draft:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to create reply draft");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Update an existing draft
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ */
+export const updateDraftThunk = createAsyncThunk(
+  "mail/updateDraft",
+  async ({ emailId, draftData }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateDraft(emailId, draftData);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return response;
+    } catch (error) {
+      console.error("❌ Failed to update draft:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update draft");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Delete an email by ID
+ * Note: Mutations are called directly (not through React Query fetchQuery)
+ * Cache invalidation is handled by RTK listener middleware.
+ * @param {Object} params - Parameters
+ * @param {string} params.emailId - Email UUID
+ * @param {string} params.thread_id - Thread ID for refetching thread after deletion
+ */
+export const deleteEmailThunk = createAsyncThunk(
+  "mail/deleteEmail",
+  async ({ emailId, thread_id }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.deleteEmail(emailId);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { emailId, thread_id, data: response };
+    } catch (error) {
+      console.error("❌ Failed to delete email:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to delete email");
+    }
+  }
+);
+
+/**
+ * Fetch a single email by ID
+ */
+export const fetchEmailByIdThunk = createAsyncThunk("mail/fetchEmailById", async (emailId, { rejectWithValue }) => {
+  try {
+    const data = await queryClient.fetchQuery({
+      queryKey: ["email", emailId],
+      queryFn: () => emailService.getEmailById(emailId),
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    });
+    return data;
+  } catch (error) {
+    console.error("❌ Failed to fetch email by ID:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch email");
+  }
+});
+/*
+ * Fetch search results from backend API
+ */
+export const fetchSearchResults = createAsyncThunk(
+  "mail/fetchSearchResults",
+  async (searchParams, { rejectWithValue }) => {
+    try {
+      const data = await searchService.searchEmails(searchParams);
+      return {
+        results: data.results,
+        pagination: data.pagination,
+        query: data.query,
+        execution_time_ms: data.execution_time_ms,
+        originalParams: searchParams.originalParams || {},
+      };
+    } catch (error) {
+      console.error("❌ Failed to fetch search results:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch search results");
+    }
+  }
+);
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * EMAIL MUTATION THUNKS
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * MUTATION THUNK: Update email important status
+ */
+export const updateEmailImportantThunk = createAsyncThunk(
+  "mail/updateEmailImportant",
+  async ({ emailId, is_important }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateEmailImportant(emailId, is_important);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { emailId, is_important, email: response };
+    } catch (error) {
+      console.error("Failed to update email important status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update important status");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Bulk update emails (starred, important, etc.)
+ */
+export const bulkUpdateEmailsThunk = createAsyncThunk(
+  "mail/bulkUpdateEmails",
+  async ({ emailIds, updates }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUpdateEmails(emailIds, updates);
+      // React Query cache invalidation is handled by RTK listener middleware.
+      return { emailIds, updates, response };
+    } catch (error) {
+      console.error("Failed to bulk update emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update emails");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Snooze thread
+ */
+export const snoozeThreadThunk = createAsyncThunk(
+  "mail/snoozeThread",
+  async ({ threadId, snooze_until }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.snoozeThread(threadId, snooze_until);
+      return { threadId, snooze_until, response };
+    } catch (error) {
+      console.error("Failed to snooze thread:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to snooze thread");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Unsnooze thread
+ */
+export const unsnoozeThreadThunk = createAsyncThunk(
+  "mail/unsnoozeThread",
+  async ({ threadId }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.unsnoozeThread(threadId);
+      return { threadId, response };
+    } catch (error) {
+      console.error("Failed to unsnooze thread:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to unsnooze thread");
+    }
+  }
+);
+
+/**
+ * MUTATION THUNK: Move email to trash
+ */
+export const moveToTrashThunk = createAsyncThunk("mail/moveToTrash", async ({ emailId }, { rejectWithValue }) => {
+  try {
+    const response = await emailService.moveToTrash(emailId);
+    return { emailId, email: response };
+  } catch (error) {
+    console.error("Failed to move email to trash:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to move to trash");
+  }
+});
+
+/**
+ * MUTATION THUNK: Move email to spam
+ */
+export const moveToSpamThunk = createAsyncThunk("mail/moveToSpam", async ({ emailId }, { rejectWithValue }) => {
+  try {
+    const response = await emailService.moveToSpam(emailId);
+    return { emailId, email: response };
+  } catch (error) {
+    console.error("Failed to move email to spam:", error);
+    return rejectWithValue(error.response?.data?.message || error.message || "Failed to move to spam");
+  }
+});
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * BULK OPERATION THUNKS
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * MUTATION THUNK: Update individual email starred status
+ * Uses individual email endpoint: PATCH /v1/emails/{email_id}/star
+ */
+export const updateEmailStarredThunk = createAsyncThunk(
+  "mail/updateEmailStarred",
+  async ({ emailId, is_starred }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateEmailStarred(emailId, is_starred);
+      return { emailId, is_starred, response };
+    } catch (error) {
+      console.error("Failed to update email starred status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update starred status");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Update multiple emails' starred status using bulk endpoint
+ */
+export const bulkUpdateEmailStarredThunk = createAsyncThunk(
+  "mail/bulkUpdateEmailStarred",
+  async ({ emailIds, is_starred }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkStarEmails(emailIds, is_starred);
+      return { emailIds, is_starred, response };
+    } catch (error) {
+      console.error("Failed to bulk update email starred status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update starred status");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Update multiple emails' important status
+ */
+export const bulkUpdateEmailImportantThunk = createAsyncThunk(
+  "mail/bulkUpdateEmailImportant",
+  async ({ threadIds, is_important }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkImportantEmails(threadIds, is_important);
+      return { threadIds, is_important, response };
+    } catch (error) {
+      console.error("Failed to bulk update email important status:", error);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to bulk update important status"
+      );
+    }
+  }
+);
+/**
+ * Update thread important status using thread-level endpoint
+ */
+export const updateThreadImportantThunk = createAsyncThunk(
+  "mail/updateThreadImportant",
+  async ({ threadId, is_important }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.updateThreadImportant(threadId, is_important);
+      return { threadId, is_important, response };
+    } catch (error) {
+      console.error("Failed to update thread important status:", error);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to update thread important status"
+      );
+    }
+  }
+);
+/**
+ * BULK MUTATION THUNK: Update multiple emails' read status
+ */
+export const bulkUpdateEmailReadThunk = createAsyncThunk(
+  "mail/bulkUpdateEmailRead",
+  async ({ emailIds, is_read }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkReadEmails(emailIds, is_read);
+      return { emailIds, is_read, response };
+    } catch (error) {
+      console.error("Failed to bulk update email read status:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk update read status");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Move multiple emails to spam
+ */
+export const bulkMoveToSpamThunk = createAsyncThunk(
+  "mail/bulkMoveToSpam",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkSpamEmails(emailIds);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk move emails to spam:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk move to spam");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Remove spam mark from multiple emails
+ */
+export const bulkMoveFromSpamThunk = createAsyncThunk(
+  "mail/bulkMoveFromSpam",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUnspamEmails(emailIds);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk remove spam from emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk remove spam");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Move multiple emails to trash
+ */
+export const bulkMoveToTrashThunk = createAsyncThunk(
+  "mail/bulkMoveToTrash",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkDeleteEmails(emailIds, false);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk move emails to trash:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk move to trash");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Permanently delete multiple emails
+ */
+export const bulkDeleteEmailThunk = createAsyncThunk(
+  "mail/bulkDeleteEmail",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkDeleteEmails(emailIds, true);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk delete emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk delete emails");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Archive multiple emails
+ */
+export const bulkArchiveEmailsThunk = createAsyncThunk(
+  "mail/bulkArchiveEmails",
+  async ({ emailIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkArchiveEmails(emailIds);
+      return { emailIds, response };
+    } catch (error) {
+      console.error("Failed to bulk archive emails:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk archive emails");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Snooze multiple threads
+ */
+export const bulkSnoozeThreadsThunk = createAsyncThunk(
+  "mail/bulkSnoozeThreads",
+  async ({ threadIds, snooze_until }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkSnoozeThreads(threadIds, snooze_until);
+      return { threadIds, snooze_until, response };
+    } catch (error) {
+      console.error("Failed to bulk snooze threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk snooze threads");
+    }
+  }
+);
+
+/**
+ * BULK MUTATION THUNK: Unsnooze multiple threads
+ */
+export const bulkUnsnoozeThreadsThunk = createAsyncThunk(
+  "mail/bulkUnsnoozeThreads",
+  async ({ threadIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUnsnoozeThreads(threadIds);
+      return { threadIds, response };
+    } catch (error) {
+      console.error("Failed to bulk unsnooze threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unsnooze threads");
+    }
+  }
+);
 
 const mailSlice = createSlice({
   name: "mail",
@@ -260,6 +712,14 @@ const mailSlice = createSlice({
     mutationLoading: false, // Separate loading for mutations
     labelLoading: false, // Separate loading for label operations
     error: null,
+    // Search results state
+    searchResults: [],
+    searchPagination: null,
+    searchQuery: "",
+    searchLoading: false,
+    searchError: null,
+    searchOriginalParams: {}, // Store original params for frontend post-processing
+    lastMutationTime: null, // Timestamp of last mutation to trigger refetch
   },
   reducers: {
     setEmails: (state, action) => {
@@ -356,10 +816,6 @@ const mailSlice = createSlice({
             // Store snoozed emails in is_snoozed state
             state.is_snoozed = results;
             break;
-          case "all":
-            // Store all mail (inbox + archived) in all state
-            state.all = results;
-            break;
           case "folder":
             // Store folder-based emails (sent, trash, spam, drafts)
             const folderKey = folder.toLowerCase();
@@ -410,7 +866,6 @@ const mailSlice = createSlice({
 
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-
         // Merge with system labels (keep system labels as-is, they use composite keys)
         const mergedLabels = { ...state.labels };
 
@@ -499,12 +954,78 @@ const mailSlice = createSlice({
         }
       })
 
+      // Fetch Search Results
+      .addCase(fetchSearchResults.pending, (state) => {
+        state.searchLoading = true;
+        state.searchError = null;
+      })
+      .addCase(fetchSearchResults.fulfilled, (state, action) => {
+        state.searchLoading = false;
+        state.searchResults = action.payload.results || [];
+        state.searchPagination = action.payload.pagination || null;
+        state.searchQuery = action.payload.query || "";
+        state.searchOriginalParams = action.payload.originalParams || {};
+      })
+      .addCase(fetchSearchResults.rejected, (state, action) => {
+        state.searchLoading = false;
+        state.searchError = action.payload;
+        state.searchResults = [];
+        state.searchPagination = null;
+        state.searchOriginalParams = {};
+      })
+      // Delete Email
+      .addCase(deleteEmailThunk.fulfilled, (state, action) => {
+        const emailId = action.payload?.emailId;
+        if (emailId) {
+          // Remove email from drafts array
+          state.drafts = state.drafts.filter((email) => email.id?.toString() !== emailId?.toString());
+        }
+      })
+
       // Mutations (Send/Update)
       .addMatcher(
         (action) => action.type.endsWith("/pending") && action.type.includes("Thunk"),
         (state) => {
           state.mutationLoading = true;
           state.error = null;
+        }
+      )
+      .addMatcher(
+        (action) => {
+          // Only update lastMutationTime for actual mutation operations, not fetches
+          const mutationActions = [
+            "mail/updateEmailStarred/fulfilled",
+            "mail/updateEmailImportant/fulfilled",
+            "mail/bulkUpdateEmails/fulfilled",
+            "mail/bulkUpdateEmailStarred/fulfilled",
+            "mail/bulkUpdateEmailImportant/fulfilled",
+            "mail/bulkUpdateEmailRead/fulfilled",
+            "mail/bulkMoveToSpam/fulfilled",
+            "mail/bulkMoveFromSpam/fulfilled",
+            "mail/bulkMoveToTrash/fulfilled",
+            "mail/bulkDeleteEmail/fulfilled",
+            "mail/bulkArchiveEmails/fulfilled",
+            "mail/bulkSnoozeThreads/fulfilled",
+            "mail/bulkUnsnoozeThreads/fulfilled",
+            "mail/snoozeThread/fulfilled",
+            "mail/unsnoozeThread/fulfilled",
+            "mail/moveToTrash/fulfilled",
+            "mail/moveToSpam/fulfilled",
+            "mail/deleteEmail/fulfilled",
+          ];
+          const isMatch = mutationActions.includes(action.type);
+          // Debug: Log all mutation actions to see what's firing
+          if (action.type.includes("mail/") && action.type.includes("/fulfilled")) {
+            console.log("🎯 Mail action fulfilled:", action.type, "- Will update lastMutationTime?", isMatch);
+          }
+          return isMatch;
+        },
+        (state, action) => {
+          state.mutationLoading = false;
+          // Update mutation timestamp to trigger refetch in components
+          const timestamp = Date.now();
+          state.lastMutationTime = timestamp;
+          console.log("🔄 Mutation completed, updating lastMutationTime:", timestamp, "Action:", action.type);
         }
       )
       .addMatcher(

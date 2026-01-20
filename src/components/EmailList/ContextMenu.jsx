@@ -650,6 +650,7 @@ ${email.body || email.preview || ""}
               openCreateLabelDialog();
             }}
             shouldFocus={hoveredSubmenu === "labelAs"}
+            folder={label ? `label:${label}` : folder}
           />
         </Submenu>
 
@@ -698,18 +699,72 @@ ${email.body || email.preview || ""}
           }));
         }}
         onReportSpam={() => {
-          moveToSpam(selectedIds);
+          if (!selectedMessageIds.length) {
+            return;
+          }
+
+          const undo = moveToSpam(selectedMessageIds);
           setState((prev) => ({
             ...prev,
             spamModalOpen: false,
           }));
+          setSnackbar({
+            open: true,
+            message: "Conversation marked as spam.",
+            autoHideDuration: 10000,
+            action: (
+              <Button
+                sx={{ textTransform: "none" }}
+                size="small"
+                onClick={() => {
+                  if (typeof undo === "function") {
+                    undo();
+                  }
+                  setSnackbar({
+                    open: true,
+                    message: "Action undone.",
+                    autoHideDuration: 3000,
+                    action: null,
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            ),
+          });
         }}
         onUnsubscribe={() => {
-          moveToSpam(selectedIds);
+          if (!selectedMessageIds.length) return;
+
+          const undo = moveToSpam(selectedMessageIds);
           setState((prev) => ({
             ...prev,
             spamModalOpen: false,
           }));
+          setSnackbar({
+            open: true,
+            message: "Conversation marked as spam.",
+            autoHideDuration: 10000,
+            action: (
+              <Button
+                sx={{ textTransform: "none" }}
+                size="small"
+                onClick={() => {
+                  if (typeof undo === "function") {
+                    undo();
+                  }
+                  setSnackbar({
+                    open: true,
+                    message: "Action undone.",
+                    autoHideDuration: 3000,
+                    action: null,
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            ),
+          });
         }}
       />
     </Box>

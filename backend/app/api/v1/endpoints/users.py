@@ -70,7 +70,6 @@ def format_user_response(user: User, db: Session) -> dict:
         "labels": user.labels,
         "custom_fields": user.custom_fields,
         "notes": user.notes,
-        "undo_send_delay_seconds": user.undo_send_delay_seconds,
         "active": user.active,
         "created_at": user.created_at,
         "updated_at": user.updated_at,
@@ -84,7 +83,6 @@ def list_users(
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     role: Optional[str] = Query(None, description="Filter by role"),
     search: Optional[str] = Query(None, description="Search in name and email"),
-    show_deleted: bool = Query(False, description="Include deleted users (admin only)"),
 ) -> dict:
     """List users with pagination and filtering.
     
@@ -98,7 +96,6 @@ def list_users(
         page_size: Number of users per page.
         role: Filter by role.
         search: Search term for name/email.
-        show_deleted: Include deleted users (admin only).
         
     Returns:
         Paginated list of users.
@@ -109,13 +106,9 @@ def list_users(
     query = db.query(User)
     
     # Permission-based filtering
-    if current_user.role == "admin":
-        # Admins can see deleted users if requested
-        if not show_deleted:
-            query = query.filter(User.is_deleted == False)
-    else:
-        # Regular users can only see active, non-deleted users
-        query = query.filter(User.is_deleted == False, User.active == True)
+    if current_user.role != "admin":
+        # Regular users can only see active users
+        query = query.filter(User.active == True)
     
     # Apply filters
     if role:
@@ -159,6 +152,10 @@ def get_user(
 ) -> dict:
     """Get a specific user by ID.
     
+    Permissions:
+    - user: Can only view active users
+    - admin: Can view all users including inactive
+    
     Args:
         user_id: User ID.
         db: Database session.
@@ -167,11 +164,20 @@ def get_user(
         User details.
         
     Raises:
-        HTTPException: 404 if user not found.
+        HTTPException: 404 if user not found or inactive (for non-admin users).
     """
-    user = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
+    current_user = auth.user
+    
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User {user_id} not found"
+        )
+    
+    # Non-admin users can only see active users
+    if current_user.role != "admin" and not user.active:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User {user_id} not found"
@@ -286,7 +292,7 @@ def update_user(
     Raises:
         HTTPException: 404 if user not found, 400 if validation fails.
     """
-    user = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -326,7 +332,6 @@ def update_user(
 def delete_user(
     user_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete a user.
     
@@ -336,12 +341,11 @@ def delete_user(
     
     Args:
         user_id: User ID.
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
         
     Raises:
         HTTPException: 404 if user not found.
     """
-    user = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
+    user = db.query(User).filter(User.id == user_id).first()
     
     if not user:
         raise HTTPException(
@@ -349,12 +353,8 @@ def delete_user(
             detail=f"User {user_id} not found"
         )
     
-    if permanent:
-        # Permanently delete from database
-        db.delete(user)
-    else:
-        # Soft delete
-        user.is_deleted = True
+    # Permanently delete from database
+    db.delete(user)
     
     try:
         db.commit()
@@ -362,6 +362,6 @@ def delete_user(
         db.rollback()
         raise
     
-    logger.info(f"User {user.id} {'permanently ' if permanent else ''}deleted by admin {auth.user.id}")
+    logger.info(f"User {user.id} permanently deleted by admin {auth.user.id}")
 
     return None

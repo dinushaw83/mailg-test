@@ -51,8 +51,39 @@ class CategoryLabel(str, Enum):
     PROMOTIONS = "Promotions"
 
 
-# Exclusive system labels - email can only be in one at a time (folder-like behavior)
+# Exclusive system labels - these are system-managed labels with special behavior
+# All system labels have is_exclusive=True to distinguish them from category labels
 EXCLUSIVE_SYSTEM_LABELS = {
+    SystemLabel.INBOX,
+    SystemLabel.SENT,
+    SystemLabel.DRAFTS,
+    SystemLabel.TRASH,
+    SystemLabel.SPAM,
+    SystemLabel.SCHEDULED,
+    SystemLabel.ALL_MAIL,
+    SystemLabel.STARRED,
+    SystemLabel.SNOOZED,
+    SystemLabel.IMPORTANT,
+}
+
+# Folder system labels - can be used for filtering/querying emails via API
+FOLDER_SYSTEM_LABELS = {
+    SystemLabel.INBOX,
+    SystemLabel.SENT,
+    SystemLabel.DRAFTS,
+    SystemLabel.TRASH,
+    SystemLabel.SPAM,
+    SystemLabel.SCHEDULED,
+    SystemLabel.ALL_MAIL,
+    SystemLabel.STARRED,
+    SystemLabel.SNOOZED,
+    SystemLabel.IMPORTANT,
+}
+
+# Mutually exclusive folder labels - used for folder switching operations
+# A thread can only have one of these folder labels at a time
+# Starred/Snoozed/Important are NOT included because they persist across folder changes
+MUTUALLY_EXCLUSIVE_FOLDER_LABELS = {
     SystemLabel.INBOX,
     SystemLabel.SENT,
     SystemLabel.DRAFTS,

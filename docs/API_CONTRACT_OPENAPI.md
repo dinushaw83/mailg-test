@@ -19,16 +19,15 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Create Token](#create-token)
 - [Bulk API](#bulk-api)
   - [Bulk Archive](#bulk-archive)
-  - [Bulk Update Category](#bulk-update-category)
   - [Bulk Delete](#bulk-delete)
   - [Bulk Important](#bulk-important)
-  - [Bulk Add Labels](#bulk-add-labels)
-  - [Bulk Remove Labels](#bulk-remove-labels)
+  - [Bulk Update Labels](#bulk-update-labels)
   - [Bulk Move](#bulk-move)
   - [Bulk Mark Read](#bulk-mark-read)
   - [Bulk Snooze](#bulk-snooze)
   - [Bulk Spam](#bulk-spam)
   - [Bulk Star](#bulk-star)
+  - [Bulk Thread Unstar](#bulk-thread-unstar)
   - [Bulk Unarchive](#bulk-unarchive)
   - [Bulk Unsnooze](#bulk-unsnooze)
   - [Bulk Unspam](#bulk-unspam)
@@ -39,17 +38,12 @@ This document describes the REST API endpoints for the Deskzen application.
 - [Emails API](#emails-api)
   - [List Emails](#list-emails)
   - [Create Email](#create-email)
-  - [Get Email Category Counts](#get-email-category-counts)
-  - [Get Emails By Thread](#get-emails-by-thread)
   - [Delete Email](#delete-email)
   - [Get Email](#get-email)
   - [Update Email](#update-email)
-  - [Archive Email](#archive-email)
   - [Cancel Send](#cancel-send)
-  - [Update Email Category](#update-email-category)
   - [Confirm Send](#confirm-send)
   - [Forward Email](#forward-email)
-  - [Important Email](#important-email)
   - [Add Label To Email](#add-label-to-email)
   - [Remove Label From Email](#remove-label-from-email)
   - [Move Email](#move-email)
@@ -57,11 +51,8 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Reply To Email](#reply-to-email)
   - [Restore Email From Trash](#restore-email-from-trash)
   - [Send Email](#send-email)
-  - [Snooze Email](#snooze-email)
   - [Mark Email Spam](#mark-email-spam)
   - [Star Email](#star-email)
-  - [Unarchive Email](#unarchive-email)
-  - [Unsnooze Email](#unsnooze-email)
   - [Unmark Email Spam](#unmark-email-spam)
 - [Labels API](#labels-api)
   - [List Labels](#list-labels)
@@ -90,6 +81,30 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Get Template](#get-template)
   - [Update Template](#update-template)
   - [Apply Template](#apply-template)
+- [Threads API](#threads-api)
+  - [Delete Thread](#delete-thread)
+  - [Archive Thread](#archive-thread)
+  - [Get Thread Emails](#get-thread-emails)
+  - [Mark Thread Important Endpoint](#mark-thread-important-endpoint)
+  - [Restore Thread](#restore-thread)
+  - [Snooze Thread](#snooze-thread)
+  - [Mark Thread Spam Endpoint](#mark-thread-spam-endpoint)
+  - [Unarchive Thread](#unarchive-thread)
+  - [Unsnooze Thread](#unsnooze-thread)
+  - [Unmark Thread Spam Endpoint](#unmark-thread-spam-endpoint)
+  - [Unstar Thread](#unstar-thread)
+- [User Settings API](#user-settings-api)
+  - [Get User Settings](#get-user-settings)
+  - [Update User Settings](#update-user-settings)
+  - [Get Advanced Settings](#get-advanced-settings)
+  - [Update Advanced Settings](#update-advanced-settings)
+  - [Get General Settings](#get-general-settings)
+  - [Update General Settings](#update-general-settings)
+  - [List Signatures](#list-signatures)
+  - [Create Signature](#create-signature)
+  - [Delete Signature](#delete-signature)
+  - [Get Signature](#get-signature)
+  - [Update Signature](#update-signature)
 - [Users API](#users-api)
   - [List Users](#list-users)
   - [Create User](#create-user)
@@ -110,7 +125,7 @@ This document describes the REST API endpoints for the Deskzen application.
 Delete an attachment.
 
 Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
+    attachment_id: ID of the attachment to delete.
 
 Permissions:
 - Users can only delete attachments on their own draft emails
@@ -118,10 +133,6 @@ Permissions:
 **Path Parameters**:
 
 - `attachment_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -437,17 +448,15 @@ Permissions:
 
 **GET** `/api/v1/auth/me`
 
-Get current authenticated user information.
+Get current authenticated user information with settings.
 
 Uses the access token from request headers to identify the user.
 
 Args:
-    current_user: Current authenticated user (from dependency).
-    request: FastAPI request object.
     db: Database session.
     
 Returns:
-    User information with role.
+    User information with all settings.
 
 **Responses**:
 
@@ -465,7 +474,27 @@ Returns:
     "email": "string",
     "email_label": "string",
     "role": "string",
-    "name": "string"
+    "settings": {
+      "general": {
+        "language": null,
+        "input_tools_enabled": null,
+        "right_to_left_editing": null,
+        "max_page_size": null,
+        "undo_send_delay_seconds": null,
+        "default_reply_behavior": null,
+        "id": null,
+        "user_id": null
+      },
+      "advanced": {
+        "auto_advance_enabled": null,
+        "templates_enabled": null,
+        "custom_keyboard_shortcuts_enabled": null,
+        "unread_message_icon_enabled": null,
+        "id": null,
+        "user_id": null
+      },
+      "labels": []
+    }
   }
 }
 ```
@@ -534,6 +563,27 @@ Raises:
   "data": {
     "access_token": "string",
     "user": {},
+    "settings": {
+      "general": {
+        "language": null,
+        "input_tools_enabled": null,
+        "right_to_left_editing": null,
+        "max_page_size": null,
+        "undo_send_delay_seconds": null,
+        "default_reply_behavior": null,
+        "id": null,
+        "user_id": null
+      },
+      "advanced": {
+        "auto_advance_enabled": null,
+        "templates_enabled": null,
+        "custom_keyboard_shortcuts_enabled": null,
+        "unread_message_icon_enabled": null,
+        "id": null,
+        "user_id": null
+      },
+      "labels": []
+    },
     "role": "string",
     "run_id": "string",
     "expires_in": 0
@@ -579,98 +629,23 @@ Raises:
 
 **POST** `/api/v1/bulk/archive`
 
-Archive multiple emails.
+Archive multiple threads.
 
-Archives emails by setting their status to 'archived'.
+Since archive is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk upsert operations.
 
 Permissions:
-- Users can only archive their own emails
+- Users can only archive their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ]
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "total_requested": 0,
-    "successful": 0,
-    "failed": 0,
-    "results": [
-      {
-        "id": null,
-        "success": null,
-        "error": null
-      }
-    ]
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Bulk Update Category
-
-**POST** `/api/v1/bulk/category`
-
-Update category for multiple emails.
-
-Categories: primary, promotions, social, updates, forums (Gmail-style tabs).
-
-Permissions:
-- Users can only update category on their own emails
-
-**Request Body**:
-
-```json
-{
-  "email_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
-  "category": "string"
 }
 ```
 
@@ -733,14 +708,6 @@ Permissions:
 ### Bulk Delete
 
 **POST** `/api/v1/bulk/delete`
-
-Delete multiple emails.
-
-If permanent=False (default), moves emails to trash.
-If permanent=True or already in trash, permanently deletes (soft delete).
-
-Permissions:
-- Users can only delete their own emails
 
 **Request Body**:
 
@@ -813,16 +780,19 @@ Permissions:
 
 **POST** `/api/v1/bulk/important`
 
-Important or un important multiple emails.
+Mark or unmark multiple threads as important.
+
+Since is_important is thread-level and user-specific, this operation
+updates ThreadUserMetadata for the provided threads.
 
 Permissions:
-- Users can only modify their own emails
+- Users can only modify their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "is_important": false
@@ -885,18 +855,27 @@ Permissions:
 
 ---
 
-### Bulk Add Labels
+### Bulk Update Labels
 
-**POST** `/api/v1/bulk/labels/add`
+**POST** `/api/v1/bulk/labels/update`
 
-Replace all labels on multiple threads with new ones.
+Update labels on multiple threads by adding and/or removing labels.
 
-This operation drops all existing labels from the threads and assigns
-the new labels provided in the request.
+This endpoint allows you to add and remove labels in a single operation.
+You can specify which labels to add and which to remove.
 
 Permissions:
 - Users can only modify their own threads
 - Labels must belong to the user
+
+Example request:
+{
+    "thread_ids": ["uuid1", "uuid2"],
+    "labels": {
+        "add": ["label_uuid1", "label_uuid2"],
+        "remove": ["label_uuid3"]
+    }
+}
 
 **Request Body**:
 
@@ -905,88 +884,14 @@ Permissions:
   "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
-  "label_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ]
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "total_requested": 0,
-    "successful": 0,
-    "failed": 0,
-    "results": [
-      {
-        "id": null,
-        "success": null,
-        "error": null
-      }
+  "labels": {
+    "add": [
+      "00000000-0000-0000-0000-000000000000"
+    ],
+    "remove": [
+      "00000000-0000-0000-0000-000000000000"
     ]
   }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Bulk Remove Labels
-
-**POST** `/api/v1/bulk/labels/remove`
-
-Remove specified labels from multiple threads.
-
-Permissions:
-- Users can only modify their own threads
-- Labels must belong to the user
-
-**Request Body**:
-
-```json
-{
-  "thread_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
-  "label_ids": [
-    "00000000-0000-0000-0000-000000000000"
-  ]
 }
 ```
 
@@ -1202,16 +1107,21 @@ Permissions:
 
 **POST** `/api/v1/bulk/snooze`
 
-Snooze multiple emails until a specific date/time.
+Snooze multiple threads until a specific date/time.
+
+Since snooze is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk upsert operations.
 
 Permissions:
-- Users can only snooze their own emails
+- Users can only snooze their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ],
   "snooze_until": "2024-01-01T00:00:00Z"
@@ -1279,6 +1189,8 @@ Permissions:
 **POST** `/api/v1/bulk/spam`
 
 Mark multiple emails as spam.
+
+Optimized to use generic bulk update helper with single UPDATE query.
 
 Moves emails to the spam folder.
 
@@ -1427,22 +1339,105 @@ Permissions:
 
 ---
 
-### Bulk Unarchive
+### Bulk Thread Unstar
 
-**POST** `/api/v1/bulk/unarchive`
+**POST** `/api/v1/bulk/threads/unstar`
 
-Unarchive multiple emails.
+Unstar all emails in multiple threads.
 
-Restores archived emails back to their original status (sent or received).
+Sets is_starred=False for all emails in the specified threads where the user
+is either the sender or recipient.
+
+Optimized to use a single bulk UPDATE query for all emails across all threads.
 
 Permissions:
-- Users can only unarchive their own emails
+- Users can only unstar emails in threads they have access to
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ]
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Bulk Unarchive
+
+**POST** `/api/v1/bulk/unarchive`
+
+Unarchive multiple threads.
+
+Since archive is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk operations.
+
+Permissions:
+- Users can only unarchive their own threads
+
+**Request Body**:
+
+```json
+{
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ]
 }
@@ -1508,16 +1503,21 @@ Permissions:
 
 **POST** `/api/v1/bulk/unsnooze`
 
-Unsnooze multiple emails.
+Unsnooze multiple threads.
+
+Since snooze is thread-level and user-specific, this operation updates
+ThreadUserMetadata for the provided threads.
+
+Optimized to use bulk operations.
 
 Permissions:
-- Users can only unsnooze their own emails
+- Users can only unsnooze their own threads
 
 **Request Body**:
 
 ```json
 {
-  "email_ids": [
+  "thread_ids": [
     "00000000-0000-0000-0000-000000000000"
   ]
 }
@@ -1585,7 +1585,11 @@ Permissions:
 
 Remove spam mark from multiple emails.
 
-Moves emails from spam folder back to inbox.
+Moves emails from spam folder back to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam
@@ -1832,9 +1836,8 @@ Permissions:
 - `is_starred` (optional, object): Filter by starred
 - `is_snoozed` (optional, object): Filter by snoozed status (True=snoozed, False=not snoozed)
 - `is_important` (optional, object): Filter by important
-- `include_archived` (optional, object): Include archived emails
+- `include_archived` (optional, object): Include archived threads
 - `search` (optional, object): Search in subject and body
-- `threaded` (optional, boolean): Group by thread and return only latest email from each thread
 
 **Responses**:
 
@@ -1852,7 +1855,6 @@ Permissions:
         "subject": null,
         "snippet": null,
         "folder": null,
-        "category": null,
         "is_read": null,
         "is_starred": null,
         "is_important": null,
@@ -1944,7 +1946,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -1987,154 +1988,21 @@ Permissions:
 
 ---
 
-### Get Email Category Counts
-
-**GET** `/api/v1/emails/stats/category-counts`
-
-Get count of emails in each category (primary, promotions, social, updates, forums).
-
-Returns the number of emails in each category for the current user.
-Optionally filter by folder, read status, or starred status.
-
-Permissions:
-- Users can only see counts for their own emails (sent or received)
-
-**Query Parameters**:
-
-- `folder` (optional, object): Filter by folder
-- `is_read` (optional, object): Filter by read status
-- `is_starred` (optional, object): Filter by starred
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Get Emails By Thread
-
-**GET** `/api/v1/emails/thread/{thread_id}`
-
-Get all emails in a thread/conversation.
-
-Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
-Emails are automatically marked as read in the background.
-
-Permissions:
-- Users can only access threads containing their own emails (sent or received)
-
-**Path Parameters**:
-
-- `thread_id` (required, string)
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": [
-    {
-      "id": "00000000-0000-0000-0000-000000000000",
-      "subject": "string",
-      "body": "string",
-      "html_body": "string",
-      "folder": "string",
-      "category": "string",
-      "is_read": false,
-      "is_starred": false,
-      "is_important": false,
-      "sender_id": "00000000-0000-0000-0000-000000000000",
-      "created_at": "2024-01-01T00:00:00Z",
-      "updated_at": "2024-01-01T00:00:00Z"
-    }
-  ]
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
 ### Delete Email
 
 **DELETE** `/api/v1/emails/{email_id}`
 
 Delete an email.
 
-Args:
-    permanent: If True, permanently removes from database. 
-               If False (default), moves to trash or soft deletes if already in trash.
+Delete behavior:
+- If permanent=False (default): Moves email to trash folder
+- If permanent=True: Permanently removes email from database
+
+To permanently delete an email from trash, call this endpoint with permanent=True.
+
+Permissions:
+- Users can only delete their own emails (sent or received)
+- Admins can delete any email
 
 **Path Parameters**:
 
@@ -2142,7 +2010,7 @@ Args:
 
 **Query Parameters**:
 
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
+- `permanent` (optional, boolean): Permanently delete from database
 
 **Responses**:
 
@@ -2208,7 +2076,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2296,80 +2163,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Archive Email
-
-**POST** `/api/v1/emails/{email_id}/archive`
-
-Archive an email.
-
-Sets the email status to 'archived'.
-
-Permissions:
-- Users can only archive their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2440,88 +2233,6 @@ The email will be moved back to draft status so it can be edited or re-sent.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Update Email Category
-
-**PATCH** `/api/v1/emails/{email_id}/category`
-
-Update an email's category (Primary, Promotions, Social, Updates, Forums).
-
-Categories help organize inbox similar to Gmail tabs.
-
-Permissions:
-- Users can only update categories on their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Request Body**:
-
-```json
-{
-  "category": "string"
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2571,6 +2282,7 @@ Permissions:
 Immediately send a queued email without waiting for the scheduled time.
 
 Use this if you want to skip the undo send waiting period.
+Email delivery to recipients is processed in the background for better performance.
 
 **Path Parameters**:
 
@@ -2591,7 +2303,6 @@ Use this if you want to skip the undo send waiting period.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2640,6 +2351,12 @@ Use this if you want to skip the undo send waiting period.
 
 Forward an email.
 
+If the user has undo_send_delay_seconds configured, the forwarded email will be
+queued with a scheduled send time. During this window, the user can cancel
+the send using the /emails/{email_id}/cancel-send endpoint.
+
+Email delivery to recipients is processed in the background for better performance.
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -2675,83 +2392,6 @@ Forward an email.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Important Email
-
-**PATCH** `/api/v1/emails/{email_id}/important`
-
-important or un important an email.
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Request Body**:
-
-```json
-{
-  "is_important": false
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2830,7 +2470,6 @@ Adding a label to an email will add it to the email's thread.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -2882,6 +2521,10 @@ Remove a label from an email's thread for the current user.
 Labels are user-specific on shared threads. Removing a label only affects
 the current user's view of the thread.
 
+Special behavior for TRASH/SPAM labels:
+- When removing the TRASH label, all trashed emails in the thread are moved back to inbox.
+- When removing the SPAM label, all spam emails in the thread are moved back to inbox.
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -2929,6 +2572,9 @@ the current user's view of the thread.
 
 Move an email to a different folder.
 
+Permissions:
+- Users can only move their own emails (sent or received)
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -2956,7 +2602,6 @@ Move an email to a different folder.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3005,6 +2650,9 @@ Move an email to a different folder.
 
 Mark an email as read or unread.
 
+Permissions:
+- Users can only mark their own emails (sent or received)
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -3032,7 +2680,6 @@ Mark an email as read or unread.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3081,6 +2728,9 @@ Mark an email as read or unread.
 
 Reply to an email.
 
+This endpoint creates a draft reply. Use POST /emails/{id}/send to send the reply
+(either immediately or scheduled for a specific time).
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -3110,7 +2760,6 @@ Reply to an email.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3187,7 +2836,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3236,7 +2884,7 @@ Permissions:
 
 Send a draft email.
 
-If scheduled_send_at is provided in the request body, the email will be 
+If scheduled_send_at is provided in the request body, the email will be
 scheduled for that specific time, overriding the user's undo_send_delay_seconds.
 
 If scheduled_send_at is not provided:
@@ -3244,6 +2892,8 @@ If scheduled_send_at is not provided:
   queued with a scheduled send time. During this window, the user can cancel
   the send using the /emails/{email_id}/cancel-send endpoint.
 - If undo_send_delay_seconds is 0 or not set, the email is sent immediately.
+
+Email delivery to recipients is processed in the background for better performance.
 
 **Path Parameters**:
 
@@ -3272,89 +2922,6 @@ If scheduled_send_at is not provided:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Snooze Email
-
-**POST** `/api/v1/emails/{email_id}/snooze`
-
-Snooze an email until a specific date and time.
-
-When snoozed, the email is temporarily hidden from the inbox and will
-reappear at the specified snooze_until time.
-
-Permissions:
-- Users can only snooze their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Request Body**:
-
-```json
-{
-  "snooze_until": "2024-01-01T00:00:00Z"
-}
-```
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3427,7 +2994,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3476,6 +3042,9 @@ Permissions:
 
 Star or unstar an email.
 
+Permissions:
+- Users can only star their own emails (sent or received)
+
 **Path Parameters**:
 
 - `email_id` (required, string)
@@ -3503,151 +3072,6 @@ Star or unstar an email.
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Unarchive Email
-
-**POST** `/api/v1/emails/{email_id}/unarchive`
-
-Unarchive an email.
-
-Restores an archived email back to its original folder (inbox for received, sent for sent emails).
-
-Permissions:
-- Users can only unarchive their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
-    "is_read": false,
-    "is_starred": false,
-    "is_important": false,
-    "sender_id": "00000000-0000-0000-0000-000000000000",
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
-  }
-}
-```
-
-- `422`: Validation Error
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "errors": [
-      {
-        "loc": null,
-        "msg": null,
-        "type": null
-      }
-    ]
-  }
-}
-```
-
-- `401`: Unauthorized
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {}
-}
-```
-
----
-
-### Unsnooze Email
-
-**POST** `/api/v1/emails/{email_id}/unsnooze`
-
-Unsnooze an email, making it immediately visible again.
-
-Permissions:
-- Users can only unsnooze their own emails (sent or received)
-
-**Path Parameters**:
-
-- `email_id` (required, string)
-
-**Responses**:
-
-- `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "id": "00000000-0000-0000-0000-000000000000",
-    "subject": "string",
-    "body": "string",
-    "html_body": "string",
-    "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3696,7 +3120,11 @@ Permissions:
 
 Remove spam mark from an email.
 
-Moves the email from spam folder back to inbox.
+Moves the email from spam folder back to its appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
 
 Permissions:
 - Users can only unmark their own emails from spam (sent or received)
@@ -3720,7 +3148,6 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
@@ -3769,10 +3196,10 @@ Permissions:
 
 **GET** `/api/v1/labels`
 
-List user's labels with thread counts.
+List user's labels with thread and unread counts.
 
 Args:
-    include_counts: Include thread counts for each label
+    include_counts: Include thread counts and unread counts for each label
     flat: If True, returns flat list. If False, returns hierarchical tree structure.
 
 Permissions:
@@ -3780,7 +3207,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include thread counts
+- `include_counts` (optional, boolean): Include thread and unread counts
 - `flat` (optional, boolean): Return flat list (True) or hierarchical tree (False)
 
 **Responses**:
@@ -3909,7 +3336,7 @@ Permissions:
 
 **Query Parameters**:
 
-- `include_counts` (optional, boolean): Include thread counts
+- `include_counts` (optional, boolean): Include thread and unread counts
 
 **Responses**:
 
@@ -3976,19 +3403,12 @@ Delete a label and all its child labels.
 When a label is deleted, all descendant labels (children, grandchildren, etc.)
 are also deleted along with their email associations.
 
-Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
-
 Permissions:
 - Users can only delete their own labels
 
 **Path Parameters**:
 
 - `label_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -4030,7 +3450,7 @@ Permissions:
 
 **GET** `/api/v1/labels/{label_id}`
 
-Get a specific label by ID.
+Get a specific label by ID with thread and unread counts.
 
 Permissions:
 - Users can only access their own labels
@@ -4211,7 +3631,6 @@ Permissions:
         "subject": null,
         "snippet": null,
         "folder": null,
-        "category": null,
         "is_read": null,
         "is_starred": null,
         "is_important": null,
@@ -4536,24 +3955,28 @@ Example:
 Search emails with comprehensive filtering.
 
 Supports Gmail-like search operators in the 'q' parameter:
-- from:sender@example.com
-- to:recipient@example.com
-- subject:meeting
-- has:attachment
-- is:starred
-- is:unread
-- in:inbox
-- label:important
-- before:2024-12-31
-- after:2024-01-01
+- from:sender@example.com (comma-separated for multiple)
+- to:recipient@example.com (comma-separated for multiple)
+- cc:user@example.com, bcc:user@example.com
+- subject:meeting, subject:(dinner movie) for grouping
+- has:attachment, has:userlabels, has:nouserlabels
+- is:starred, is:unread, is:read, is:important
+- in:inbox, in:anywhere, in:archive, in:snoozed
+- label:important, category:primary
+- before:2024-12-31, after:2024-01-01
+- size:1000000, larger:10M, smaller:5K
+- filename:report.pdf, filename:pdf
+- deliveredto:user@example.com
+- -term (exclude), +term (exact match), "exact phrase"
+- term1 OR term2, {term1 term2}
 
-These can be combined: q="from:john subject:report has:attachment"
+These can be combined: q="from:john subject:report has:attachment -spam"
 
 **Query Parameters**:
 
 - `q` (optional, object): Search query with operators
-- `from` (optional, object): Filter by sender
-- `to` (optional, object): Filter by recipient
+- `from` (optional, object): Filter by sender (comma-separated for multiple)
+- `to` (optional, object): Filter by recipient (comma-separated for multiple)
 - `subject` (optional, object): Search in subject
 - `folder` (optional, object): Filter by folder: inbox, sent, drafts, trash, spam, starred
 - `label_id` (optional, object): Filter by label
@@ -4564,10 +3987,24 @@ These can be combined: q="from:john subject:report has:attachment"
 - `has_attachment` (optional, object): Has attachments
 - `date_from` (optional, object): Emails after date (YYYY-MM-DD)
 - `date_to` (optional, object): Emails before date (YYYY-MM-DD)
+- `hasnot` (optional, object): Exclude emails containing this text
+- `size` (optional, object): Filter by exact size in bytes
+- `larger` (optional, object): Emails larger than size in bytes
+- `smaller` (optional, object): Emails smaller than size in bytes
+- `cc` (optional, object): Filter by CC recipients (comma-separated)
+- `bcc` (optional, object): Filter by BCC recipients (comma-separated)
+- `filename` (optional, object): Filter by attachment filename or extension
+- `category` (optional, object): Filter by category: primary, promotions, social, updates, forums
+- `deliveredto` (optional, object): Filter by delivered-to address
+- `is_snoozed` (optional, object): Filter snoozed emails
+- `has_userlabels` (optional, object): Filter emails with/without user labels
+- `in_anywhere` (optional, object): Search all folders including spam/trash
+- `in_archive` (optional, object): Search archived messages
 - `page` (optional, integer)
 - `page_size` (optional, integer)
 - `sort_by` (optional, string): Sort by: date, subject, sender
 - `sort_order` (optional, string): asc or desc
+- `tz_offset` (optional, object): UTC offset in minutes from browser's getTimezoneOffset() for date interpretation in q
 
 **Responses**:
 
@@ -4584,20 +4021,18 @@ These can be combined: q="from:john subject:report has:attachment"
         "id": null,
         "subject": null,
         "snippet": null,
-        "sender_email": null,
-        "sender_name": null,
-        "recipients": null,
+        "folder": null,
         "is_read": null,
         "is_starred": null,
-        "has_attachment": null,
+        "is_important": null,
+        "sender_id": null,
         "created_at": null
       }
     ],
     "total": 0,
     "page": 0,
     "page_size": 0,
-    "total_pages": 0,
-    "query": "string"
+    "total_pages": 0
   }
 }
 ```
@@ -4751,17 +4186,14 @@ Save a search query for later use.
 **DELETE** `/api/v1/search/saved/{search_id}`
 
 Delete a saved search.
-
 Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
+    search_id: ID of the saved search to delete.
+Permissions:
+- Users can only delete their own saved searches
 
 **Path Parameters**:
 
 - `search_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -4885,7 +4317,7 @@ Permissions:
 - `page` (optional, integer): Page number
 - `page_size` (optional, integer): Items per page
 - `include_shared` (optional, boolean): Include shared templates from others
-- `search` (optional, object): Search in name and description
+- `search` (optional, object): Search in name
 
 **Responses**:
 
@@ -4901,10 +4333,9 @@ Permissions:
       {
         "id": null,
         "name": null,
-        "description": null,
-        "subject": null,
         "is_shared": null,
         "owner_id": null,
+        "owner_name": null,
         "created_at": null,
         "updated_at": null
       }
@@ -4963,8 +4394,6 @@ Permissions:
 ```json
 {
   "name": "string",
-  "description": "string",
-  "subject": "string",
   "body": "string",
   "html_body": "string",
   "is_shared": false
@@ -4983,8 +4412,6 @@ Permissions:
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "string",
-    "description": "string",
-    "subject": "string",
     "body": "string",
     "html_body": "string",
     "is_shared": false,
@@ -5033,9 +4460,6 @@ Permissions:
 
 Delete an email template.
 
-Args:
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
-
 Permissions:
 - Users can only delete their own templates
 - Admins can delete any template
@@ -5043,10 +4467,6 @@ Permissions:
 **Path Parameters**:
 
 - `template_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -5109,8 +4529,6 @@ Permissions:
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "string",
-    "description": "string",
-    "subject": "string",
     "body": "string",
     "html_body": "string",
     "is_shared": false,
@@ -5172,8 +4590,6 @@ Permissions:
 ```json
 {
   "name": "string",
-  "description": "string",
-  "subject": "string",
   "body": "string",
   "html_body": "string",
   "is_shared": false
@@ -5192,8 +4608,6 @@ Permissions:
   "data": {
     "id": "00000000-0000-0000-0000-000000000000",
     "name": "string",
-    "description": "string",
-    "subject": "string",
     "body": "string",
     "html_body": "string",
     "is_shared": false,
@@ -5257,9 +4671,6 @@ Permissions:
 ```json
 {
   "template_id": "00000000-0000-0000-0000-000000000000",
-  "recipients": [
-    {}
-  ],
   "additional_body": "string",
   "save_as_draft": true
 }
@@ -5280,13 +4691,1636 @@ Permissions:
     "body": "string",
     "html_body": "string",
     "folder": "string",
-    "category": "string",
     "is_read": false,
     "is_starred": false,
     "is_important": false,
     "sender_id": "00000000-0000-0000-0000-000000000000",
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+## Threads API
+
+### Delete Thread
+
+**DELETE** `/api/v1/threads/{thread_id}`
+
+Delete an entire thread for the current user.
+
+Delete behavior:
+- If permanent=False (default): Moves all user's emails in the thread to trash folder
+- If permanent=True: Permanently deletes all user's emails in the thread
+
+Permissions:
+- Users can only delete threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Query Parameters**:
+
+- `permanent` (optional, boolean): Permanently delete all emails in thread
+
+**Responses**:
+
+- `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Archive Thread
+
+**POST** `/api/v1/threads/{thread_id}/archive`
+
+Archive a thread.
+
+Sets is_archived=True in ThreadUserMetadata for the thread.
+Removes the INBOX label so thread doesn't appear in inbox.
+
+Permissions:
+- Users can only archive threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Thread Emails
+
+**GET** `/api/v1/threads/{thread_id}/emails`
+
+Get all emails in a thread/conversation.
+
+Returns all emails belonging to the specified thread, ordered by sent_at/created_at.
+Emails are automatically marked as read in the background.
+
+Query Parameters:
+- only_trashed: If true, returns only emails in trash folder
+
+Permissions:
+- Users can only access threads containing their own emails (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Query Parameters**:
+
+- `only_trashed` (optional, boolean): Include only trashed emails
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": [
+    {
+      "id": "00000000-0000-0000-0000-000000000000",
+      "subject": "string",
+      "body": "string",
+      "html_body": "string",
+      "folder": "string",
+      "is_read": false,
+      "is_starred": false,
+      "is_important": false,
+      "sender_id": "00000000-0000-0000-0000-000000000000",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Mark Thread Important Endpoint
+
+**PATCH** `/api/v1/threads/{thread_id}/important`
+
+Mark a thread as important or unimportant for the current user.
+
+This updates the thread-level is_important flag for the current user only.
+Other users' important status for the same thread is not affected.
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "is_important": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Restore Thread
+
+**POST** `/api/v1/threads/{thread_id}/restore`
+
+Restore a deleted thread for the current user.
+
+Moves all user's emails in the thread from trash back to their appropriate folders:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
+
+Permissions:
+- Users can only restore threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Snooze Thread
+
+**POST** `/api/v1/threads/{thread_id}/snooze`
+
+Snooze a thread until a specific date and time.
+
+When snoozed, the thread is temporarily hidden from the inbox and will
+reappear at the specified snooze_until time.
+
+Permissions:
+- Users can only snooze threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "snooze_until": "2024-01-01T00:00:00Z"
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Mark Thread Spam Endpoint
+
+**PATCH** `/api/v1/threads/{thread_id}/spam`
+
+Mark a thread as spam for the current user.
+
+This updates the folder of all user's emails in the thread to SPAM.
+Also adds the Spam system label accordingly.
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "success": true,
+    "message": "string",
+    "thread_id": "00000000-0000-0000-0000-000000000000",
+    "emails_count": 0
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unarchive Thread
+
+**POST** `/api/v1/threads/{thread_id}/unarchive`
+
+Unarchive a thread.
+
+Sets is_archived=False in ThreadUserMetadata and restores Inbox/Sent label.
+
+Permissions:
+- Users can only unarchive threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unsnooze Thread
+
+**POST** `/api/v1/threads/{thread_id}/unsnooze`
+
+Unsnooze a thread, making it immediately visible again.
+
+Permissions:
+- Users can only unsnooze threads they have access to (sent or received)
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "subject": "string",
+    "body": "string",
+    "html_body": "string",
+    "folder": "string",
+    "is_read": false,
+    "is_starred": false,
+    "is_important": false,
+    "sender_id": "00000000-0000-0000-0000-000000000000",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unmark Thread Spam Endpoint
+
+**PATCH** `/api/v1/threads/{thread_id}/unspam`
+
+Unmark a thread as spam for the current user.
+
+This updates the folder of all user's emails in the thread to their appropriate folder:
+- Sent emails are restored to the 'sent' folder
+- Scheduled/queued emails are restored to the 'scheduled' folder
+- Received emails are restored to the 'inbox' folder
+- Draft emails are restored to the 'drafts' folder
+
+Also replaces the Spam system label with the appropriate label.
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "success": true,
+    "message": "string",
+    "thread_id": "00000000-0000-0000-0000-000000000000",
+    "emails_count": 0
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Unstar Thread
+
+**POST** `/api/v1/threads/{thread_id}/unstar`
+
+Unstar all emails in a thread for the current user.
+
+Removes the starred flag from all emails in the thread where the user
+is either the sender or recipient.
+
+Permissions:
+- Users can only unstar emails in threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+## User Settings API
+
+### Get User Settings
+
+**GET** `/api/v1/users/{user_id}/settings`
+
+Get all settings for a user.
+
+Permissions:
+- user: Can only access their own settings
+- admin: Can access any user's settings
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    All user settings (general, advanced).
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "general": {
+      "language": "en",
+      "input_tools_enabled": false,
+      "right_to_left_editing": false,
+      "max_page_size": 50,
+      "undo_send_delay_seconds": 5,
+      "default_reply_behavior": "reply",
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "advanced": {
+      "auto_advance_enabled": false,
+      "templates_enabled": true,
+      "custom_keyboard_shortcuts_enabled": false,
+      "unread_message_icon_enabled": true,
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "labels": []
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update User Settings
+
+**PUT** `/api/v1/users/{user_id}/settings`
+
+Update all settings for a user.
+
+Permissions:
+- user: Can only update their own settings
+- admin: Can update any user's settings
+
+Args:
+    user_id: User ID.
+    settings_data: Settings data to update.
+    db: Database session.
+    
+Returns:
+    Updated settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "general": {
+    "language": "string",
+    "input_tools_enabled": false,
+    "right_to_left_editing": false,
+    "max_page_size": 0,
+    "undo_send_delay_seconds": 0,
+    "default_reply_behavior": "string"
+  },
+  "advanced": {
+    "auto_advance_enabled": false,
+    "templates_enabled": false,
+    "custom_keyboard_shortcuts_enabled": false,
+    "unread_message_icon_enabled": false
+  }
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "general": {
+      "language": "en",
+      "input_tools_enabled": false,
+      "right_to_left_editing": false,
+      "max_page_size": 50,
+      "undo_send_delay_seconds": 5,
+      "default_reply_behavior": "reply",
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "advanced": {
+      "auto_advance_enabled": false,
+      "templates_enabled": true,
+      "custom_keyboard_shortcuts_enabled": false,
+      "unread_message_icon_enabled": true,
+      "id": "00000000-0000-0000-0000-000000000000",
+      "user_id": "00000000-0000-0000-0000-000000000000"
+    },
+    "labels": []
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Advanced Settings
+
+**GET** `/api/v1/users/{user_id}/settings/advanced`
+
+Get advanced settings for a user.
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    Advanced settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "auto_advance_enabled": false,
+    "templates_enabled": true,
+    "custom_keyboard_shortcuts_enabled": false,
+    "unread_message_icon_enabled": true,
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update Advanced Settings
+
+**PATCH** `/api/v1/users/{user_id}/settings/advanced`
+
+Update advanced settings for a user.
+
+Args:
+    user_id: User ID.
+    settings_data: Settings data to update.
+    db: Database session.
+    
+Returns:
+    Updated advanced settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "auto_advance_enabled": false,
+  "templates_enabled": false,
+  "custom_keyboard_shortcuts_enabled": false,
+  "unread_message_icon_enabled": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "auto_advance_enabled": false,
+    "templates_enabled": true,
+    "custom_keyboard_shortcuts_enabled": false,
+    "unread_message_icon_enabled": true,
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get General Settings
+
+**GET** `/api/v1/users/{user_id}/settings/general`
+
+Get general settings for a user.
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    General settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "language": "en",
+    "input_tools_enabled": false,
+    "right_to_left_editing": false,
+    "max_page_size": 50,
+    "undo_send_delay_seconds": 5,
+    "default_reply_behavior": "reply",
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update General Settings
+
+**PATCH** `/api/v1/users/{user_id}/settings/general`
+
+Update general settings for a user.
+
+Args:
+    user_id: User ID.
+    settings_data: Settings data to update.
+    db: Database session.
+    
+Returns:
+    Updated general settings.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "language": "string",
+  "input_tools_enabled": false,
+  "right_to_left_editing": false,
+  "max_page_size": 0,
+  "undo_send_delay_seconds": 0,
+  "default_reply_behavior": "string"
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "language": "en",
+    "input_tools_enabled": false,
+    "right_to_left_editing": false,
+    "max_page_size": 50,
+    "undo_send_delay_seconds": 5,
+    "default_reply_behavior": "reply",
+    "id": "00000000-0000-0000-0000-000000000000",
+    "user_id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### List Signatures
+
+**GET** `/api/v1/users/{user_id}/settings/signatures`
+
+List all signatures for a user.
+
+Args:
+    user_id: User ID.
+    db: Database session.
+    
+Returns:
+    List of signatures.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": [
+    {
+      "name": "string",
+      "content": "",
+      "is_default_for_new": false,
+      "is_default_for_reply": false,
+      "insert_before_quoted": true,
+      "id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Create Signature
+
+**POST** `/api/v1/users/{user_id}/settings/signatures`
+
+Create a new signature for a user.
+
+Args:
+    user_id: User ID.
+    signature_data: Signature data.
+    db: Database session.
+    
+Returns:
+    Created signature.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "name": "string",
+  "content": "",
+  "is_default_for_new": false,
+  "is_default_for_reply": false,
+  "insert_before_quoted": true
+}
+```
+
+**Responses**:
+
+- `201`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "name": "string",
+    "content": "",
+    "is_default_for_new": false,
+    "is_default_for_reply": false,
+    "insert_before_quoted": true,
+    "id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Delete Signature
+
+**DELETE** `/api/v1/users/{user_id}/settings/signatures/{signature_id}`
+
+Delete a signature.
+
+Args:
+    user_id: User ID.
+    signature_id: Signature ID.
+    db: Database session.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+- `signature_id` (required, string)
+
+**Responses**:
+
+- `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Signature
+
+**GET** `/api/v1/users/{user_id}/settings/signatures/{signature_id}`
+
+Get a specific signature.
+
+Args:
+    user_id: User ID.
+    signature_id: Signature ID.
+    db: Database session.
+    
+Returns:
+    Signature.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+- `signature_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "name": "string",
+    "content": "",
+    "is_default_for_new": false,
+    "is_default_for_reply": false,
+    "insert_before_quoted": true,
+    "id": "00000000-0000-0000-0000-000000000000"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update Signature
+
+**PUT** `/api/v1/users/{user_id}/settings/signatures/{signature_id}`
+
+Update a signature.
+
+Args:
+    user_id: User ID.
+    signature_id: Signature ID.
+    signature_data: Signature data to update.
+    db: Database session.
+    
+Returns:
+    Updated signature.
+
+**Path Parameters**:
+
+- `user_id` (required, string)
+- `signature_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "name": "string",
+  "content": "string",
+  "is_default_for_new": false,
+  "is_default_for_reply": false,
+  "insert_before_quoted": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "name": "string",
+    "content": "",
+    "is_default_for_new": false,
+    "is_default_for_reply": false,
+    "insert_before_quoted": true,
+    "id": "00000000-0000-0000-0000-000000000000"
   }
 }
 ```
@@ -5341,7 +6375,6 @@ Args:
     page_size: Number of users per page.
     role: Filter by role.
     search: Search term for name/email.
-    show_deleted: Include deleted users (admin only).
     
 Returns:
     Paginated list of users.
@@ -5352,7 +6385,6 @@ Returns:
 - `page_size` (optional, integer): Items per page
 - `role` (optional, object): Filter by role
 - `search` (optional, object): Search in name and email
-- `show_deleted` (optional, boolean): Include deleted users (admin only)
 
 **Responses**:
 
@@ -5513,7 +6545,6 @@ Permissions:
 
 Args:
     user_id: User ID.
-    permanent: If True, permanently removes from database. If False (default), soft deletes.
     
 Raises:
     HTTPException: 404 if user not found.
@@ -5521,10 +6552,6 @@ Raises:
 **Path Parameters**:
 
 - `user_id` (required, string)
-
-**Query Parameters**:
-
-- `permanent` (optional, boolean): Permanently delete instead of soft delete
 
 **Responses**:
 
@@ -5568,6 +6595,10 @@ Raises:
 
 Get a specific user by ID.
 
+Permissions:
+- user: Can only view active users
+- admin: Can view all users including inactive
+
 Args:
     user_id: User ID.
     db: Database session.
@@ -5576,7 +6607,7 @@ Returns:
     User details.
     
 Raises:
-    HTTPException: 404 if user not found.
+    HTTPException: 404 if user not found or inactive (for non-admin users).
 
 **Path Parameters**:
 

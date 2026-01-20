@@ -58,7 +58,6 @@ def format_attachment_response(attachment: Attachment) -> dict:
         "size_bytes": attachment.size_bytes,
         "attachment_type": attachment.attachment_type,
         "storage_path": attachment.storage_path,
-        "is_deleted": attachment.is_deleted,
         "created_at": attachment.created_at,
     }
 
@@ -79,8 +78,7 @@ def check_email_access(db: Session, email_id: UUID, user_id: UUID, user_role: st
         HTTPException: If email not found or user doesn't have access
     """
     email = db.query(Email).filter(
-        Email.id == email_id,
-        Email.is_deleted == False
+        Email.id == email_id
     ).first()
     
     if not email:

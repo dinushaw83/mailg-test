@@ -6,7 +6,7 @@ from datetime import datetime
 from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
-from app.core.constants import EmailCategory, FolderType, EmailStatus
+from app.core.constants import FolderType
 
 
 class EmailRecipientSchema(BaseModel):
@@ -85,11 +85,6 @@ class EmailSendRequest(BaseModel):
     scheduled_send_at: Optional[datetime] = Field(None, description="Schedule email to be sent at this time")
 
 
-class EmailCategoryUpdate(BaseModel):
-    """Schema for updating email category."""
-    category: str = Field(..., description="Email category: primary, promotions, social, updates, forums")
-
-
 class EmailRecipientResponse(BaseModel):
     """Schema for email recipient in response."""
     model_config = {"from_attributes": True}
@@ -121,7 +116,6 @@ class LabelBriefResponse(BaseModel):
     parent_id: Optional[UUID] = None
     is_system: bool = False
     is_exclusive: bool = False
-    is_deleted: bool = False
 
 
 class EmailResponse(BaseModel):
@@ -133,10 +127,10 @@ class EmailResponse(BaseModel):
     body: Optional[str] = None
     html_body: Optional[str] = None
     folder: Optional[str] = "inbox"  # Folder type: inbox, sent, drafts, trash, spam, scheduled
-    category: Optional[str] = "primary"
     is_read: bool
     is_starred: bool
     is_important: bool  # User-specific, derived from thread metadata
+    is_archived: bool = False  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
@@ -146,7 +140,7 @@ class EmailResponse(BaseModel):
     sent_at: Optional[datetime] = None
     received_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
-    snooze_until: Optional[datetime] = None
+    snooze_until: Optional[datetime] = None  # Thread-level, derived from thread metadata
     created_at: datetime
     updated_at: datetime
     attachment_count: int = 0
@@ -163,10 +157,11 @@ class EmailListResponse(BaseModel):
     subject: str
     snippet: Optional[str] = None  # Preview of body
     folder: Optional[FolderType] = FolderType.INBOX
-    category: Optional[EmailCategory] = EmailCategory.PRIMARY
     is_read: bool
     is_starred: bool
+    thread_is_starred: bool = False  # True if any email in thread is starred by current user
     is_important: bool  # User-specific, derived from thread metadata
+    is_archived: bool = False  # User-specific, derived from thread metadata
     sender_id: UUID
     sender_name: Optional[str] = None
     sender_email: Optional[str] = None
@@ -174,7 +169,7 @@ class EmailListResponse(BaseModel):
     thread_email_count: Optional[int] = None  # Number of emails in the thread
     sent_at: Optional[datetime] = None
     scheduled_send_at: Optional[datetime] = None  # When email will actually send (undo send)
-    snooze_until: Optional[datetime] = None
+    snooze_until: Optional[datetime] = None  # Thread-level, derived from thread metadata
     created_at: datetime
     attachment_count: int = 0
     has_attachments: bool = False
@@ -183,14 +178,3 @@ class EmailListResponse(BaseModel):
 
 
 EmailPaginatedResponse = PaginatedListResponse[EmailListResponse]
-
-
-class EmailCategoryCountsResponse(RootModel[dict[str, int]]):
-    """Dynamic email category counts response.
-
-    Returns counts for each category as key-value pairs.
-    Automatically adapts to new categories added to the system.
-
-    Example: {"primary": 15, "promotions": 8, "social": 12, "updates": 3, "forums": 0}
-    """
-    root: dict[str, int]

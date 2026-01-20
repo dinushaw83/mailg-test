@@ -7,6 +7,7 @@ from app.models.email import Email
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.core.constants import FolderType
+from tests.conftest import create_received_email_for_user
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -200,28 +201,121 @@ class TestLabelList:
     def test_list_labels_flat_param(self, client_with_auth, db_session):
         """Test flat=false parameter returns tree structure."""
         client, token, user = client_with_auth
-        
+
         parent = Label(name="Projects", owner_id=user.id)
         db_session.add(parent)
         db_session.commit()
-        
+
         child = Label(name="2025", parent_id=parent.id, owner_id=user.id)
         db_session.add(child)
         db_session.commit()
-        
+
         response = client.get(
             "/api/v1/labels?flat=false",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
-        
+
         # Tree structure should have children arrays
         projects = next((l for l in data if l["name"] == "Projects"), None)
         assert projects is not None
         assert "children" in projects
         assert any(c["name"] == "2025" for c in projects["children"])
+
+    def test_list_labels_includes_unread_counts(self, client_with_auth, db_session):
+        """Test that list_labels returns unread counts for each label."""
+        from datetime import datetime, timezone
+        from app.models.email_recipient import EmailRecipient
+
+        client, token, user = client_with_auth
+
+        # Create two custom labels (avoid names that conflict with system labels)
+        label1 = Label(name="MyUnreadLabel", owner_id=user.id)
+        label2 = Label(name="MyReadLabel", owner_id=user.id)
+        db_session.add_all([label1, label2])
+        db_session.commit()
+
+        # Create thread with unread email for label1
+        thread1 = Thread(subject="Thread 1", owner_id=user.id)
+        db_session.add(thread1)
+        db_session.commit()
+
+        email1 = Email(
+            thread_id=thread1.id,
+            subject="Unread email",
+            body="Content",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            is_read=False,
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email1)
+        db_session.commit()
+
+        recipient1 = EmailRecipient(
+            email_id=email1.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient1)
+        db_session.commit()
+
+        # Create thread with read email for label2
+        thread2 = Thread(subject="Thread 2", owner_id=user.id)
+        db_session.add(thread2)
+        db_session.commit()
+
+        email2 = Email(
+            thread_id=thread2.id,
+            subject="Read email",
+            body="Content",
+            sender_id=user.id,
+            folder=FolderType.INBOX.value,
+            is_read=True,
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email2)
+        db_session.commit()
+
+        recipient2 = EmailRecipient(
+            email_id=email2.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient2)
+        db_session.commit()
+
+        # Associate labels with threads
+        thread_label1 = ThreadLabel(thread_id=thread1.id, label_id=label1.id, user_id=user.id)
+        thread_label2 = ThreadLabel(thread_id=thread2.id, label_id=label2.id, user_id=user.id)
+        db_session.add_all([thread_label1, thread_label2])
+        db_session.commit()
+
+        # Get labels list
+        response = client.get(
+            "/api/v1/labels",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+
+        # Find our custom labels
+        my_unread_label = next((l for l in data if l["name"] == "MyUnreadLabel"), None)
+        my_read_label = next((l for l in data if l["name"] == "MyReadLabel"), None)
+
+        # Verify counts
+        assert my_unread_label is not None
+        assert my_unread_label["thread_count"] == 1
+        assert my_unread_label["unread_count"] == 1  # Has unread email
+
+        assert my_read_label is not None
+        assert my_read_label["thread_count"] == 1
+        assert my_read_label["unread_count"] == 0  # Email is read
 
 
 class TestLabelFullName:
@@ -388,15 +482,120 @@ class TestLabelOperations:
     def test_get_label_by_id(self, client_with_auth, db_session, sample_label):
         """Test getting a label by ID."""
         client, token, user = client_with_auth
-        
+
         response = client.get(
             f"/api/v1/labels/{sample_label.id}",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
         assert "parent_id" in data
+
+    def test_get_label_includes_unread_count(self, client_with_auth, db_session):
+        """Test getting a label returns unread count for threads with unread emails."""
+        from datetime import datetime, timezone
+        from app.models.email_recipient import EmailRecipient
+
+        client, token, user = client_with_auth
+
+        # Create a label
+        label = Label(name="Important", owner_id=user.id)
+        db_session.add(label)
+        db_session.commit()
+
+        # Create 3 threads with emails
+        # Thread 1: Has unread email where user is recipient
+        thread1 = Thread(subject="Thread 1", owner_id=user.id)
+        db_session.add(thread1)
+        db_session.commit()
+
+        email1 = Email(
+            thread_id=thread1.id,
+            subject="Thread 1",
+            body="Unread email",
+            sender_id=user.id,  # Different user would be sender, but for simplicity using same user
+            folder=FolderType.INBOX,
+            is_read=False,  # Unread
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email1)
+        db_session.commit()
+
+        # Add user as recipient
+        recipient1 = EmailRecipient(
+            email_id=email1.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient1)
+
+        # Thread 2: Has read email
+        thread2 = Thread(subject="Thread 2", owner_id=user.id)
+        db_session.add(thread2)
+        db_session.commit()
+
+        email2 = Email(
+            thread_id=thread2.id,
+            subject="Thread 2",
+            body="Read email",
+            sender_id=user.id,
+            folder=FolderType.INBOX,
+            is_read=True,  # Read
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email2)
+        db_session.commit()
+
+        recipient2 = EmailRecipient(
+            email_id=email2.id,
+            recipient_id=user.id,
+            recipient_email=user.email,
+            recipient_type="to"
+        )
+        db_session.add(recipient2)
+
+        # Thread 3: Has unread email where user is sender
+        thread3 = Thread(subject="Thread 3", owner_id=user.id)
+        db_session.add(thread3)
+        db_session.commit()
+
+        email3 = Email(
+            thread_id=thread3.id,
+            subject="Thread 3",
+            body="Another unread",
+            sender_id=user.id,
+            folder=FolderType.SENT,
+            is_read=False,  # Unread
+            sent_at=datetime.now(timezone.utc)
+        )
+        db_session.add(email3)
+        db_session.commit()
+
+        # Associate label with all 3 threads
+        thread_label1 = ThreadLabel(thread_id=thread1.id, label_id=label.id, user_id=user.id)
+        thread_label2 = ThreadLabel(thread_id=thread2.id, label_id=label.id, user_id=user.id)
+        thread_label3 = ThreadLabel(thread_id=thread3.id, label_id=label.id, user_id=user.id)
+        db_session.add(thread_label1)
+        db_session.add(thread_label2)
+        db_session.add(thread_label3)
+        db_session.commit()
+
+        # Get the label
+        response = client.get(
+            f"/api/v1/labels/{label.id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+
+        # Verify counts
+        assert data["thread_count"] == 3  # Total threads with this label
+        assert data["unread_count"] == 2  # Threads 1 and 3 have unread emails
+        assert data["id"] == str(label.id)
+        assert data["name"] == "Important"
 
     def test_update_label(self, client_with_auth, db_session, sample_label):
         """Test updating a label."""
@@ -532,7 +731,7 @@ class TestHierarchicalLabelNames:
         db_session.add(family)
         db_session.commit()
         
-        # Create thread and email with nested label (labels are linked to threads)
+        # Create thread and email with nested label (perspective-aware)
         thread = Thread(
             subject="Family Reunion",
             owner_id=user.id,
@@ -541,15 +740,12 @@ class TestHierarchicalLabelNames:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Family Reunion",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         thread_label = ThreadLabel(thread_id=thread.id, label_id=family.id, user_id=user.id)
@@ -678,10 +874,10 @@ class TestNestedLabelOperations:
         db_session.add(child)
         db_session.commit()
         
-        # Move to root using null UUID (00000000-0000-0000-0000-000000000000)
+        # Move to root using null (None)
         response = client.put(
             f"/api/v1/labels/{child.id}",
-            json={"parent_id": "00000000-0000-0000-0000-000000000000"},
+            json={"parent_id": None},
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -760,13 +956,13 @@ class TestNestedLabelOperations:
         # Verify parent and children are deleted
         db_session.expire_all()
         parent_check = db_session.query(Label).filter(
-            Label.id == parent_id, Label.is_deleted == False
+            Label.id == parent_id
         ).first()
         child1_check = db_session.query(Label).filter(
-            Label.id == child1_id, Label.is_deleted == False
+            Label.id == child1_id
         ).first()
         child2_check = db_session.query(Label).filter(
-            Label.id == child2_id, Label.is_deleted == False
+            Label.id == child2_id
         ).first()
         
         assert parent_check is None
@@ -804,13 +1000,13 @@ class TestNestedLabelOperations:
         # Verify all descendants are deleted
         db_session.expire_all()
         grandparent_check = db_session.query(Label).filter(
-            Label.id == grandparent_id, Label.is_deleted == False
+            Label.id == grandparent_id
         ).first()
         parent_check = db_session.query(Label).filter(
-            Label.id == parent_id, Label.is_deleted == False
+            Label.id == parent_id
         ).first()
         child_check = db_session.query(Label).filter(
-            Label.id == child_id, Label.is_deleted == False
+            Label.id == child_id
         ).first()
         
         assert grandparent_check is None
@@ -839,28 +1035,3 @@ class TestNestedLabelOperations:
         db_session.expire_all()
         label_check = db_session.query(Label).filter(Label.id == label_id).first()
         assert label_check is None
-
-    def test_delete_label_soft_delete_default(self, client_with_auth, db_session):
-        """Test default delete is soft delete (is_deleted=True)."""
-        client, token, user = client_with_auth
-        
-        # Create label
-        label = Label(name="SoftDelete", owner_id=user.id)
-        db_session.add(label)
-        db_session.commit()
-        label_id = label.id
-        
-        # Delete without permanent flag (soft delete)
-        response = client.delete(
-            f"/api/v1/labels/{label_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 204
-        
-        # Verify label still exists but is marked deleted
-        db_session.expire_all()
-        label_check = db_session.query(Label).filter(Label.id == label_id).first()
-        assert label_check is not None
-        assert label_check.is_deleted == True
-

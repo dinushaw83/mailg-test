@@ -10,6 +10,7 @@ and cache results on `request.state` for reuse within the same request.
 
 from __future__ import annotations
 
+import uuid
 from typing import Optional
 from uuid import UUID
 
@@ -50,12 +51,6 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User associated with token not found. Please login again.",
-        )
-
-    if user.is_deleted:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User account has been deleted",
         )
 
     if not user.active:

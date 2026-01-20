@@ -1,0 +1,2 @@
+# Locust Load Testing Requirements
+locust>=2.20.0

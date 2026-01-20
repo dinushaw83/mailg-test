@@ -7,9 +7,8 @@
     "owner_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "use_count": 17,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-09-13T18:18:42.765031",
-    "updated_at": "2025-09-26T20:18:42.765031"
+    "created_at": "2025-09-13T18:18:42.765031Z",
+    "updated_at": "2025-09-26T20:18:42.765031Z"
   },
   {
     "id": "9d903bb2-6509-45ad-ba5e-6a87aa9cb166",
@@ -20,10 +19,9 @@
     },
     "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "use_count": 87,
-    "last_used_at": "2025-08-22T16:53:42.765085",
-    "is_deleted": false,
-    "created_at": "2025-11-08T22:11:42.765097",
-    "updated_at": "2025-11-09T02:11:42.765097"
+    "last_used_at": "2025-08-22T16:53:42.765085Z",
+    "created_at": "2025-11-08T22:11:42.765097Z",
+    "updated_at": "2025-11-09T02:11:42.765097Z"
   },
   {
     "id": "812df4e4-0469-42ab-bf2d-e7a2eb54d2b8",
@@ -35,9 +33,8 @@
     "owner_id": "85b578fa-18b2-41b4-8026-675eceb78662",
     "use_count": 5,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-05-17T04:38:42.765158",
-    "updated_at": "2025-06-08T10:38:42.765158"
+    "created_at": "2025-05-17T04:38:42.765158Z",
+    "updated_at": "2025-06-08T10:38:42.765158Z"
   },
   {
     "id": "2f6c6fc4-cc43-4804-82e6-11228fea3c31",
@@ -49,9 +46,8 @@
     "owner_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "use_count": 17,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-12-27T00:36:42.765218",
-    "updated_at": "2026-01-08T16:53:42.765226"
+    "created_at": "2025-12-27T00:36:42.765218Z",
+    "updated_at": "2026-01-08T16:53:42.765226Z"
   },
   {
     "id": "1c47a6a1-8b72-4504-8e50-b73954e60dda",
@@ -60,10 +56,9 @@
     "filters": null,
     "owner_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "use_count": 11,
-    "last_used_at": "2025-08-08T16:53:42.765267",
-    "is_deleted": false,
-    "created_at": "2026-01-04T04:56:42.765279",
-    "updated_at": "2026-01-08T16:53:42.765287"
+    "last_used_at": "2025-08-08T16:53:42.765267Z",
+    "created_at": "2026-01-04T04:56:42.765279Z",
+    "updated_at": "2026-01-08T16:53:42.765287Z"
   },
   {
     "id": "6317fa4f-97ed-42cf-8c66-600d27b39fbd",
@@ -72,10 +67,9 @@
     "filters": null,
     "owner_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "use_count": 13,
-    "last_used_at": "2025-08-01T16:53:42.765329",
-    "is_deleted": false,
-    "created_at": "2025-07-12T20:06:42.765340",
-    "updated_at": "2025-07-14T08:06:42.765340"
+    "last_used_at": "2025-08-01T16:53:42.765329Z",
+    "created_at": "2025-07-12T20:06:42.765340Z",
+    "updated_at": "2025-07-14T08:06:42.765340Z"
   },
   {
     "id": "62d113e3-7c6a-4c31-b0d9-10b4d931e7ca",
@@ -85,23 +79,19 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "use_count": 84,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-05-23T23:11:42.765398",
-    "updated_at": "2025-06-15T04:11:42.765398"
+    "created_at": "2025-05-23T23:11:42.765398Z",
+    "updated_at": "2025-06-15T04:11:42.765398Z"
   },
   {
     "id": "729f2780-c4fe-41f6-a361-67d09401865f",
     "name": "Urgent Items",
     "query": "larger:10MB",
-    "filters": {
-      "category": "primary"
-    },
+    "filters": null,
     "owner_id": "9b133a83-f84a-41e2-a163-700dfbbfa5e9",
     "use_count": 61,
-    "last_used_at": "2025-11-27T16:53:42.765447",
-    "is_deleted": false,
-    "created_at": "2025-05-25T10:58:42.765459",
-    "updated_at": "2025-06-04T11:58:42.765459"
+    "last_used_at": "2025-11-27T16:53:42.765447Z",
+    "created_at": "2025-05-25T10:58:42.765459Z",
+    "updated_at": "2025-06-04T11:58:42.765459Z"
   },
   {
     "id": "6ad353fa-5f64-44d5-a6f1-df7153fdd30e",
@@ -113,9 +103,8 @@
     "owner_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "use_count": 16,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-01-11T18:05:42.765517",
-    "updated_at": "2025-01-29T10:05:42.765517"
+    "created_at": "2025-01-11T18:05:42.765517Z",
+    "updated_at": "2025-01-29T10:05:42.765517Z"
   },
   {
     "id": "0675dc61-8d8e-4d61-9ec1-b09394757ceb",
@@ -124,10 +113,9 @@
     "filters": null,
     "owner_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "use_count": 38,
-    "last_used_at": "2025-08-11T16:53:42.765566",
-    "is_deleted": false,
-    "created_at": "2025-09-22T18:51:42.765578",
-    "updated_at": "2025-09-26T20:51:42.765578"
+    "last_used_at": "2025-08-11T16:53:42.765566Z",
+    "created_at": "2025-09-22T18:51:42.765578Z",
+    "updated_at": "2025-09-26T20:51:42.765578Z"
   },
   {
     "id": "051f0e82-e1da-444e-bbad-e42d55608f52",
@@ -138,10 +126,9 @@
     },
     "owner_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "use_count": 71,
-    "last_used_at": "2025-11-10T16:53:42.765627",
-    "is_deleted": false,
-    "created_at": "2025-12-22T07:24:42.765639",
-    "updated_at": "2025-12-22T14:24:42.765639"
+    "last_used_at": "2025-11-10T16:53:42.765627Z",
+    "created_at": "2025-12-22T07:24:42.765639Z",
+    "updated_at": "2025-12-22T14:24:42.765639Z"
   },
   {
     "id": "8686cc7b-0a06-4c4f-ac23-869a15c1b007",
@@ -153,9 +140,8 @@
     "owner_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "use_count": 67,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-04-08T08:03:42.765697",
-    "updated_at": "2025-04-16T02:03:42.765697"
+    "created_at": "2025-04-08T08:03:42.765697Z",
+    "updated_at": "2025-04-16T02:03:42.765697Z"
   },
   {
     "id": "2c66cad9-daa9-4426-82e1-ecbc8204608c",
@@ -167,9 +153,8 @@
     "owner_id": "48a55649-6cc4-4a45-9cd4-e1b40979da7d",
     "use_count": 79,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-07-20T21:09:42.765756",
-    "updated_at": "2025-07-26T05:09:42.765756"
+    "created_at": "2025-07-20T21:09:42.765756Z",
+    "updated_at": "2025-07-26T05:09:42.765756Z"
   },
   {
     "id": "9a4360d2-fde2-4abf-8344-7687a9c7be15",
@@ -181,9 +166,8 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "use_count": 42,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-08-30T01:26:42.765814",
-    "updated_at": "2025-09-22T13:26:42.765814"
+    "created_at": "2025-08-30T01:26:42.765814Z",
+    "updated_at": "2025-09-22T13:26:42.765814Z"
   },
   {
     "id": "a2830b9f-99dc-4ab6-8cf0-50d9438214c5",
@@ -194,10 +178,9 @@
     },
     "owner_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "use_count": 92,
-    "last_used_at": "2025-11-21T16:53:42.765863",
-    "is_deleted": false,
-    "created_at": "2025-06-19T19:23:42.765875",
-    "updated_at": "2025-07-16T09:23:42.765875"
+    "last_used_at": "2025-11-21T16:53:42.765863Z",
+    "created_at": "2025-06-19T19:23:42.765875Z",
+    "updated_at": "2025-07-16T09:23:42.765875Z"
   },
   {
     "id": "498618c7-ffc5-4362-a397-9342171cbb58",
@@ -206,24 +189,20 @@
     "filters": null,
     "owner_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "use_count": 44,
-    "last_used_at": "2025-09-08T16:53:42.765931",
-    "is_deleted": false,
-    "created_at": "2025-08-17T15:01:42.765944",
-    "updated_at": "2025-08-22T20:01:42.765944"
+    "last_used_at": "2025-09-08T16:53:42.765931Z",
+    "created_at": "2025-08-17T15:01:42.765944Z",
+    "updated_at": "2025-08-22T20:01:42.765944Z"
   },
   {
     "id": "1361e4b0-729b-4c10-82ba-d5600dc55031",
     "name": "Important Emails",
     "query": "to:me",
-    "filters": {
-      "category": "primary"
-    },
+    "filters": null,
     "owner_id": "a7dbd579-f258-4c13-b2d2-39855a17c53c",
     "use_count": 40,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-04-08T16:42:42.766003",
-    "updated_at": "2025-05-03T04:42:42.766003"
+    "created_at": "2025-04-08T16:42:42.766003Z",
+    "updated_at": "2025-05-03T04:42:42.766003Z"
   },
   {
     "id": "1bf0d5a4-634f-462e-8099-6a9a48ec24dd",
@@ -235,9 +214,8 @@
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "use_count": 23,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-03-19T18:58:42.766063",
-    "updated_at": "2025-03-28T09:58:42.766063"
+    "created_at": "2025-03-19T18:58:42.766063Z",
+    "updated_at": "2025-03-28T09:58:42.766063Z"
   },
   {
     "id": "b299583d-5c97-447c-92aa-1a4533b64ae2",
@@ -248,10 +226,9 @@
     },
     "owner_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "use_count": 81,
-    "last_used_at": "2025-08-18T16:53:42.766111",
-    "is_deleted": false,
-    "created_at": "2025-11-11T02:35:42.766123",
-    "updated_at": "2025-11-20T07:35:42.766123"
+    "last_used_at": "2025-08-18T16:53:42.766111Z",
+    "created_at": "2025-11-11T02:35:42.766123Z",
+    "updated_at": "2025-11-20T07:35:42.766123Z"
   },
   {
     "id": "3886022b-a687-49e1-a915-5f924d44884b",
@@ -260,10 +237,9 @@
     "filters": null,
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "use_count": 97,
-    "last_used_at": "2025-09-20T16:53:42.766257",
-    "is_deleted": false,
-    "created_at": "2025-12-01T21:31:42.766273",
-    "updated_at": "2025-12-20T20:31:42.766273"
+    "last_used_at": "2025-09-20T16:53:42.766257Z",
+    "created_at": "2025-12-01T21:31:42.766273Z",
+    "updated_at": "2025-12-20T20:31:42.766273Z"
   },
   {
     "id": "e9a6a000-31d7-40a3-89ac-f1eb67a5c047",
@@ -274,10 +250,9 @@
     },
     "owner_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "use_count": 25,
-    "last_used_at": "2025-09-30T16:53:42.766331",
-    "is_deleted": false,
-    "created_at": "2025-03-17T08:51:42.766364",
-    "updated_at": "2025-04-05T18:51:42.766364"
+    "last_used_at": "2025-09-30T16:53:42.766331Z",
+    "created_at": "2025-03-17T08:51:42.766364Z",
+    "updated_at": "2025-04-05T18:51:42.766364Z"
   },
   {
     "id": "26e463a2-a207-4a92-bd99-6918df28fd2d",
@@ -286,10 +261,9 @@
     "filters": null,
     "owner_id": "00000000-0000-0000-0000-000000000002",
     "use_count": 1,
-    "last_used_at": "2025-08-10T16:53:42.766427",
-    "is_deleted": false,
-    "created_at": "2025-08-07T10:52:42.766441",
-    "updated_at": "2025-08-09T20:52:42.766441"
+    "last_used_at": "2025-08-10T16:53:42.766427Z",
+    "created_at": "2025-08-07T10:52:42.766441Z",
+    "updated_at": "2025-08-09T20:52:42.766441Z"
   },
   {
     "id": "98f2044f-13f5-4c4d-bad3-134ea21da5ad",
@@ -301,9 +275,8 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "use_count": 7,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-03-18T16:07:42.766505",
-    "updated_at": "2025-03-20T21:07:42.766505"
+    "created_at": "2025-03-18T16:07:42.766505Z",
+    "updated_at": "2025-03-20T21:07:42.766505Z"
   },
   {
     "id": "3f20c738-6f27-4a6f-bdf1-5fbb1d25abd0",
@@ -315,9 +288,8 @@
     "owner_id": "00000000-0000-0000-0000-000000000004",
     "use_count": 67,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-07-16T19:41:42.766566",
-    "updated_at": "2025-07-22T01:41:42.766566"
+    "created_at": "2025-07-16T19:41:42.766566Z",
+    "updated_at": "2025-07-22T01:41:42.766566Z"
   },
   {
     "id": "f8f44468-ff8a-4577-b08a-9f9078cf94b9",
@@ -326,24 +298,20 @@
     "filters": null,
     "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
     "use_count": 88,
-    "last_used_at": "2025-12-17T16:53:42.766615",
-    "is_deleted": false,
-    "created_at": "2025-08-09T14:01:42.766627",
-    "updated_at": "2025-08-09T17:01:42.766627"
+    "last_used_at": "2025-12-17T16:53:42.766615Z",
+    "created_at": "2025-08-09T14:01:42.766627Z",
+    "updated_at": "2025-08-09T17:01:42.766627Z"
   },
   {
     "id": "41067384-174e-496a-ad0e-9795b1b334cf",
     "name": "Important Emails",
     "query": "in:inbox",
-    "filters": {
-      "category": "primary"
-    },
+    "filters": null,
     "owner_id": "00000000-0000-0000-0000-000000000005",
     "use_count": 38,
-    "last_used_at": "2025-08-23T16:53:42.766676",
-    "is_deleted": false,
-    "created_at": "2025-11-27T14:43:42.766688",
-    "updated_at": "2025-12-03T18:43:42.766688"
+    "last_used_at": "2025-08-23T16:53:42.766676Z",
+    "created_at": "2025-11-27T14:43:42.766688Z",
+    "updated_at": "2025-12-03T18:43:42.766688Z"
   },
   {
     "id": "c3246762-6151-4b29-aa5a-321a159c6eb1",
@@ -354,10 +322,9 @@
     },
     "owner_id": "00000000-0000-0000-0000-000000000006",
     "use_count": 46,
-    "last_used_at": "2025-07-19T16:53:42.766738",
-    "is_deleted": false,
-    "created_at": "2025-03-13T12:32:42.766750",
-    "updated_at": "2025-04-04T01:32:42.766750"
+    "last_used_at": "2025-07-19T16:53:42.766738Z",
+    "created_at": "2025-03-13T12:32:42.766750Z",
+    "updated_at": "2025-04-04T01:32:42.766750Z"
   },
   {
     "id": "e1d59667-5904-4f33-af01-7f93f532d60c",
@@ -369,9 +336,8 @@
     "owner_id": "cc1aa778-e660-481e-98c4-6d041ea1fb09",
     "use_count": 44,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-11-12T02:12:42.766809",
-    "updated_at": "2025-11-25T07:12:42.766809"
+    "created_at": "2025-11-12T02:12:42.766809Z",
+    "updated_at": "2025-11-25T07:12:42.766809Z"
   },
   {
     "id": "3eeb56fb-2fc5-48aa-9a39-37736022192b",
@@ -383,9 +349,8 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "use_count": 38,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-09-29T08:47:42.766867",
-    "updated_at": "2025-10-24T03:47:42.766867"
+    "created_at": "2025-09-29T08:47:42.766867Z",
+    "updated_at": "2025-10-24T03:47:42.766867Z"
   },
   {
     "id": "5300c32b-b50f-43bd-9ef8-a99e8865a536",
@@ -394,10 +359,9 @@
     "filters": null,
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "use_count": 55,
-    "last_used_at": "2025-12-19T16:53:42.766915",
-    "is_deleted": false,
-    "created_at": "2025-12-15T22:27:42.766927",
-    "updated_at": "2026-01-02T11:27:42.766927"
+    "last_used_at": "2025-12-19T16:53:42.766915Z",
+    "created_at": "2025-12-15T22:27:42.766927Z",
+    "updated_at": "2026-01-02T11:27:42.766927Z"
   },
   {
     "id": "206d6577-ed45-42b7-9853-dc9be61b88dc",
@@ -409,9 +373,8 @@
     "owner_id": "995faa45-e64d-4aec-91f0-860a4d6949bc",
     "use_count": 79,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-12-26T20:23:42.766985",
-    "updated_at": "2025-12-31T14:23:42.766985"
+    "created_at": "2025-12-26T20:23:42.766985Z",
+    "updated_at": "2025-12-31T14:23:42.766985Z"
   },
   {
     "id": "3aa1eac5-9fea-4017-8510-14ef2e39d9ab",
@@ -421,9 +384,8 @@
     "owner_id": "87dc2000-0665-437d-bcdb-7a98b77c1a2a",
     "use_count": 75,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-03-07T02:08:42.767046",
-    "updated_at": "2025-03-21T02:08:42.767046"
+    "created_at": "2025-03-07T02:08:42.767046Z",
+    "updated_at": "2025-03-21T02:08:42.767046Z"
   },
   {
     "id": "a57f7b7f-e3d9-455d-b07f-ebfa11af3bb8",
@@ -435,23 +397,19 @@
     "owner_id": "a4e2b4ad-5d9c-40e4-9195-3c9ffd3dd52d",
     "use_count": 4,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-08-18T15:00:42.767106",
-    "updated_at": "2025-08-19T05:00:42.767106"
+    "created_at": "2025-08-18T15:00:42.767106Z",
+    "updated_at": "2025-08-19T05:00:42.767106Z"
   },
   {
     "id": "0071776b-2c1f-405a-8e18-eb56613dfc35",
     "name": "Starred Messages",
     "query": "larger:10MB",
-    "filters": {
-      "category": "social"
-    },
+    "filters": null,
     "owner_id": "56eb619f-251f-47c3-a358-2375ad7a0b6a",
     "use_count": 74,
-    "last_used_at": "2025-10-20T16:53:42.767156",
-    "is_deleted": false,
-    "created_at": "2025-06-06T16:29:42.767168",
-    "updated_at": "2025-06-17T14:29:42.767168"
+    "last_used_at": "2025-10-20T16:53:42.767156Z",
+    "created_at": "2025-06-06T16:29:42.767168Z",
+    "updated_at": "2025-06-17T14:29:42.767168Z"
   },
   {
     "id": "3b728f24-1454-48b4-9a78-3a9703528ed5",
@@ -462,24 +420,20 @@
     },
     "owner_id": "0396cb59-cf0f-4a6a-8eec-4446919c64e0",
     "use_count": 21,
-    "last_used_at": "2025-12-21T16:53:42.767218",
-    "is_deleted": false,
-    "created_at": "2025-04-16T08:48:42.767230",
-    "updated_at": "2025-04-22T08:48:42.767230"
+    "last_used_at": "2025-12-21T16:53:42.767218Z",
+    "created_at": "2025-04-16T08:48:42.767230Z",
+    "updated_at": "2025-04-22T08:48:42.767230Z"
   },
   {
     "id": "0869ba11-44f7-4ea0-ab72-d338b75b145f",
     "name": "Work Emails",
     "query": "is:unread",
-    "filters": {
-      "category": "promotions"
-    },
+    "filters": null,
     "owner_id": "596b0756-b0ad-47da-872d-49ebe33a50c9",
     "use_count": 7,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-06-03T00:25:42.767290",
-    "updated_at": "2025-06-09T01:25:42.767290"
+    "created_at": "2025-06-03T00:25:42.767290Z",
+    "updated_at": "2025-06-09T01:25:42.767290Z"
   },
   {
     "id": "ce681e90-a9b6-4e12-9a31-f3e9bc3ef766",
@@ -490,24 +444,20 @@
     },
     "owner_id": "01c38b9f-7bb6-421b-af57-d2989341756e",
     "use_count": 35,
-    "last_used_at": "2025-07-12T16:53:42.767340",
-    "is_deleted": true,
-    "created_at": "2025-08-03T22:32:42.767352",
-    "updated_at": "2025-08-14T01:32:42.767352"
+    "last_used_at": "2025-07-12T16:53:42.767340Z",
+    "created_at": "2025-08-03T22:32:42.767352Z",
+    "updated_at": "2025-08-14T01:32:42.767352Z"
   },
   {
     "id": "1fc7c5c3-88ac-4e8c-b07f-e4a5808212ef",
     "name": "Urgent Items",
     "query": "from:boss@company.com",
-    "filters": {
-      "category": "promotions"
-    },
+    "filters": null,
     "owner_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "use_count": 30,
-    "last_used_at": "2025-11-17T16:53:42.767404",
-    "is_deleted": false,
-    "created_at": "2025-05-10T18:52:42.767418",
-    "updated_at": "2025-05-23T22:52:42.767418"
+    "last_used_at": "2025-11-17T16:53:42.767404Z",
+    "created_at": "2025-05-10T18:52:42.767418Z",
+    "updated_at": "2025-05-23T22:52:42.767418Z"
   },
   {
     "id": "660b2382-3bd1-4ce0-af7e-b424d878982f",
@@ -516,10 +466,9 @@
     "filters": null,
     "owner_id": "550edc94-240f-4527-b278-a40eec589ed7",
     "use_count": 75,
-    "last_used_at": "2025-10-11T16:53:42.767468",
-    "is_deleted": false,
-    "created_at": "2025-07-25T12:29:42.767482",
-    "updated_at": "2025-07-31T09:29:42.767482"
+    "last_used_at": "2025-10-11T16:53:42.767468Z",
+    "created_at": "2025-07-25T12:29:42.767482Z",
+    "updated_at": "2025-07-31T09:29:42.767482Z"
   },
   {
     "id": "c8bfb213-4b1b-44e8-8331-a5583b90bef5",
@@ -528,10 +477,9 @@
     "filters": null,
     "owner_id": "4120a0df-1fd6-4fa8-9687-0a55b249298c",
     "use_count": 92,
-    "last_used_at": "2025-09-14T16:53:42.767534",
-    "is_deleted": false,
-    "created_at": "2025-09-20T03:00:42.767546",
-    "updated_at": "2025-10-19T05:00:42.767546"
+    "last_used_at": "2025-09-14T16:53:42.767534Z",
+    "created_at": "2025-09-20T03:00:42.767546Z",
+    "updated_at": "2025-10-19T05:00:42.767546Z"
   },
   {
     "id": "6d1febce-0106-4620-9bd2-5b7a5ea800b1",
@@ -542,10 +490,9 @@
     },
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "use_count": 69,
-    "last_used_at": "2025-10-12T16:53:42.767596",
-    "is_deleted": false,
-    "created_at": "2025-04-24T12:38:42.767608",
-    "updated_at": "2025-04-30T15:38:42.767608"
+    "last_used_at": "2025-10-12T16:53:42.767596Z",
+    "created_at": "2025-04-24T12:38:42.767608Z",
+    "updated_at": "2025-04-30T15:38:42.767608Z"
   },
   {
     "id": "723ebd20-0b5f-46b5-ab10-a741fd30ac2c",
@@ -557,9 +504,8 @@
     "owner_id": "53410309-0953-42bb-adfd-c7ccbef7874c",
     "use_count": 62,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-05-09T22:36:42.767668",
-    "updated_at": "2025-05-21T09:36:42.767668"
+    "created_at": "2025-05-09T22:36:42.767668Z",
+    "updated_at": "2025-05-21T09:36:42.767668Z"
   },
   {
     "id": "8159c147-ea51-4e80-a6c1-bb02c8f4caad",
@@ -571,23 +517,19 @@
     "owner_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "use_count": 44,
     "last_used_at": null,
-    "is_deleted": true,
-    "created_at": "2025-07-05T02:52:42.767734",
-    "updated_at": "2025-07-24T17:52:42.767734"
+    "created_at": "2025-07-05T02:52:42.767734Z",
+    "updated_at": "2025-07-24T17:52:42.767734Z"
   },
   {
     "id": "3f6d6867-ae27-467d-83e7-97f31bf241b3",
     "name": "Starred Messages",
     "query": "in:inbox",
-    "filters": {
-      "category": "social"
-    },
+    "filters": null,
     "owner_id": "ea43fcea-c26b-4b4a-970f-0886703d4b51",
     "use_count": 57,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-10-08T05:13:42.767794",
-    "updated_at": "2025-10-20T07:13:42.767794"
+    "created_at": "2025-10-08T05:13:42.767794Z",
+    "updated_at": "2025-10-20T07:13:42.767794Z"
   },
   {
     "id": "5c931f46-769c-46ed-9462-f0dbb8457dcb",
@@ -598,10 +540,9 @@
     },
     "owner_id": "fd4162d8-0e71-4bd6-b212-409e7a378540",
     "use_count": 57,
-    "last_used_at": "2025-10-12T16:53:42.767843",
-    "is_deleted": false,
-    "created_at": "2025-08-11T01:22:42.767855",
-    "updated_at": "2025-09-05T22:22:42.767855"
+    "last_used_at": "2025-10-12T16:53:42.767843Z",
+    "created_at": "2025-08-11T01:22:42.767855Z",
+    "updated_at": "2025-09-05T22:22:42.767855Z"
   },
   {
     "id": "86f79ed8-b797-40ba-ba3f-7c308219b7d4",
@@ -612,10 +553,9 @@
     },
     "owner_id": "4137e2f4-23e9-456f-879f-ca57c7762bbf",
     "use_count": 71,
-    "last_used_at": "2026-01-01T16:53:42.767904",
-    "is_deleted": false,
-    "created_at": "2025-03-29T13:38:42.767916",
-    "updated_at": "2025-04-04T07:38:42.767916"
+    "last_used_at": "2026-01-01T16:53:42.767904Z",
+    "created_at": "2025-03-29T13:38:42.767916Z",
+    "updated_at": "2025-04-04T07:38:42.767916Z"
   },
   {
     "id": "8bd5a391-f552-4fd8-8d5d-98f1eca5d8b4",
@@ -626,10 +566,9 @@
     },
     "owner_id": "160c668d-b4f0-4940-8f1c-5da58dfbcd2c",
     "use_count": 76,
-    "last_used_at": "2025-10-05T16:53:42.767965",
-    "is_deleted": true,
-    "created_at": "2025-12-07T11:39:42.767977",
-    "updated_at": "2025-12-13T01:39:42.767977"
+    "last_used_at": "2025-10-05T16:53:42.767965Z",
+    "created_at": "2025-12-07T11:39:42.767977Z",
+    "updated_at": "2025-12-13T01:39:42.767977Z"
   },
   {
     "id": "e94996c0-8675-44fb-8131-d8e7fd30e30a",
@@ -640,10 +579,9 @@
     },
     "owner_id": "d05f301d-9805-41de-9f40-b2b84b8190af",
     "use_count": 26,
-    "last_used_at": "2025-08-21T16:53:42.768027",
-    "is_deleted": false,
-    "created_at": "2025-06-08T16:51:42.768039",
-    "updated_at": "2025-06-25T11:51:42.768039"
+    "last_used_at": "2025-08-21T16:53:42.768027Z",
+    "created_at": "2025-06-08T16:51:42.768039Z",
+    "updated_at": "2025-06-25T11:51:42.768039Z"
   },
   {
     "id": "8151bcfe-3b60-4239-9ec1-b0ffaef4c4a5",
@@ -654,10 +592,9 @@
     },
     "owner_id": "d5b9294c-bf70-4f95-8b75-0a2c985d3dc5",
     "use_count": 26,
-    "last_used_at": "2025-08-19T16:53:42.768092",
-    "is_deleted": false,
-    "created_at": "2025-05-25T13:08:42.768107",
-    "updated_at": "2025-06-16T05:08:42.768107"
+    "last_used_at": "2025-08-19T16:53:42.768092Z",
+    "created_at": "2025-05-25T13:08:42.768107Z",
+    "updated_at": "2025-06-16T05:08:42.768107Z"
   },
   {
     "id": "19bb2642-d402-4552-bb49-13a4bf301a0a",
@@ -669,8 +606,7 @@
     "owner_id": "739ccc64-2024-43a5-af1c-af80597cf9ce",
     "use_count": 74,
     "last_used_at": null,
-    "is_deleted": false,
-    "created_at": "2025-01-24T05:31:42.768168",
-    "updated_at": "2025-01-27T09:31:42.768168"
+    "created_at": "2025-01-24T05:31:42.768168Z",
+    "updated_at": "2025-01-27T09:31:42.768168Z"
   }
 ]

@@ -72,7 +72,13 @@ const useCustomHotKeys = ({ emails }) => {
   });
 };
 
-const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
+const EmailList = ({
+  emails = [],
+  showCheckboxes = true,
+  setShowAdvancedMenu,
+  showFooter = true,
+  searchQuery = null,
+}) => {
   // Add isEmailRead property based on unreadCount
   // A thread is considered read only if unreadCount is 0
   const emailsWithReadStatus = emails.map((email) => ({
@@ -176,9 +182,17 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
     const composeParam = urlParams.get("compose");
     const pathname = location.pathname;
 
-    const isComposeDraft = email.labels.includes("Drafts") && email.messageCount === 1;
+    // Check if we're in drafts folder and email is a draft with thread_email_count === 0
+    // This means it's a new draft (not part of an existing conversation)
+    const isInDraftsFolder = folder?.toLowerCase() === "drafts";
+    // Labels can be strings or objects with name property
+    const isDraft =
+      (email.labels || []).some((label) => (typeof label === "string" ? label : label?.name) === "Drafts") ||
+      email.folder === "drafts";
+    const threadEmailCount = email.thread_email_count ?? email.messageCount ?? 1;
+    const isComposeDraft = isInDraftsFolder && isDraft && threadEmailCount === 1;
 
-    // If labels includes Drafts, then add new compose window with the draft id
+    // If it's a draft with thread_email_count === 0, open in compose window
     if (isComposeDraft) {
       // Check if already a compose window with the draft id exists
       const composeWindow = composeWindows.find((window) => window?.draftId?.toString() === email.id.toString());
@@ -191,7 +205,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
     if (pathname.startsWith("/search")) {
       const composeQuery = composeParam ? `?compose=${composeParam}` : "";
-      navigate(`/inbox/${thread_id}${composeQuery}`);
+      navigate(`/inbox/${thread_id}${composeQuery}`, { replace: false });
       return;
     }
 
@@ -243,6 +257,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
             getLabelBadges,
             formatDate,
             setShowAdvancedMenu,
+            searchQuery,
           }}
         />
       </div>

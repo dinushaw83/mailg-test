@@ -113,15 +113,7 @@ export const parseCSV = (csvContent) => {
       contact.name = contact.email.split("@")[0];
     }
 
-    // Debug log for first few contacts
-    if (contacts.length < 3) {
-      console.log("Contact Import Debug:", {
-        contactIndex: contacts.length,
-        fieldMap,
-        values,
-        contact,
-      });
-    }
+    // Debug log for first few contacts removed
 
     // If first/last are missing but we now have a name, try to derive them
     if ((!contact.firstName || !contact.lastName) && contact.name) {

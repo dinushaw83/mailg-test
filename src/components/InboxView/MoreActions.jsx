@@ -6,7 +6,7 @@ import Divider from "@mui/material/Divider";
 import useMailActions from "../../hooks/useMailActions";
 import { SnoozePopover } from "../MailActions/Snooze";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import Button from "@mui/material/Button";
@@ -29,7 +29,14 @@ const MoreActions = ({
 }) => {
   const { markRead, setStar, setImportant, snooze, unsnooze, setMuted } = useMailActions();
   const navigate = useNavigate();
+  const location = useLocation();
   const [internalAnchorEl, setInternalAnchorEl] = React.useState(null);
+
+  // Get the base path by removing the thread_id from the current path
+  const getBasePath = useCallback(() => {
+    const pathParts = location.pathname.split("/");
+    return pathParts.slice(0, -1).join("/") || "/inbox";
+  }, [location.pathname]);
   const [currentPopover, setCurrentPopover] = React.useState("main");
 
   const moreVertRef = useRef(null);
@@ -74,13 +81,19 @@ const MoreActions = ({
   const open = Boolean(anchorEl);
   const id = open ? "more-actions-popover" : undefined;
 
+  // Compute starred status from actual emails, not from thread prop (which may be stale)
   const starred = useMemo(() => {
-    return thread.is_starred;
-  }, [thread]);
+    if (!threadEmails.length) return false;
+    // A thread is starred if ALL emails in it are starred
+    return threadEmails.every((email) => email.is_starred);
+  }, [threadEmails]);
 
+  // Compute important status from actual emails, not from thread prop (which may be stale)
   const important = useMemo(() => {
-    return thread.is_important;
-  }, [thread]);
+    if (!threadEmails.length) return false;
+    // A thread is important if ALL emails in it are important
+    return threadEmails.every((email) => email.is_important);
+  }, [threadEmails]);
 
   const handleStar = useCallback(() => {
     if (!threadEmails.length) {
@@ -91,19 +104,20 @@ const MoreActions = ({
     const nextValue = !starred;
     const previousStates = threadEmails.map((email) => ({
       id: email.id,
-      starred: !!email.starred,
+      starred: !!email.is_starred,
     }));
     const idsToUpdate = previousStates.filter((state) => state.starred !== nextValue).map((state) => state.id);
 
     if (idsToUpdate.length) {
-      setStar(idsToUpdate, nextValue);
+      // Pass 'detail' context since MoreActions is used in detail view
+      setStar(idsToUpdate, nextValue, "detail");
     }
 
     const undo = () => {
       const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
       const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
-      if (toStar.length) setStar(toStar, true);
-      if (toUnstar.length) setStar(toUnstar, false);
+      if (toStar.length) setStar(toStar, true, "detail");
+      if (toUnstar.length) setStar(toUnstar, false, "detail");
       setSnackbar({
         open: true,
         message: "Action undone.",
@@ -134,18 +148,39 @@ const MoreActions = ({
       }
 
       const previousStates = threadEmails.map((email) => ({
-        id: email.id,
+        thread_id: email.thread_id,
         important: !!email.is_important,
       }));
-      const idsToUpdate = previousStates.filter((state) => state.important !== value).map((state) => state.id);
+      const threadIdsToUpdate = [
+        ...new Set(
+          previousStates
+            .filter((state) => state.important !== value)
+            .map((state) => state.thread_id)
+            .filter(Boolean)
+        ),
+      ];
 
-      if (idsToUpdate.length) {
-        setImportant(idsToUpdate, value);
+      if (threadIdsToUpdate.length) {
+        setImportant(threadIdsToUpdate, value);
       }
 
       const undo = () => {
-        const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-        const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+        const toImportant = [
+          ...new Set(
+            previousStates
+              .filter((state) => state.important)
+              .map((state) => state.thread_id)
+              .filter(Boolean)
+          ),
+        ];
+        const toNotImportant = [
+          ...new Set(
+            previousStates
+              .filter((state) => !state.important)
+              .map((state) => state.thread_id)
+              .filter(Boolean)
+          ),
+        ];
         if (toImportant.length) setImportant(toImportant, true);
         if (toNotImportant.length) setImportant(toNotImportant, false);
         setSnackbar({
@@ -275,9 +310,10 @@ const MoreActions = ({
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
-      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      // Pass thread.thread_id explicitly since we're on the detail page
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil, [thread.thread_id]) || {};
       const undo = () => {
-        unsnooze(ids, { removedInboxIds });
+        unsnooze(ids, { removedInboxIds }, [thread.thread_id]);
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -295,8 +331,10 @@ const MoreActions = ({
           </Button>
         ),
       });
+      // Navigate back to the email list after snoozing
+      navigate(getBasePath());
     },
-    [snooze, unsnooze, setSnackbar]
+    [snooze, unsnooze, setSnackbar, thread.thread_id, navigate, getBasePath]
   );
 
   return (

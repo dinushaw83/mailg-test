@@ -6,13 +6,7 @@ import { setAuth } from "../store/slices/userSlice";
 import { useDispatch } from "react-redux";
 import userService from "../services/userService";
 
-const TEST_USERS = [
-  { email: "admin@example.com", name: "Admin User", role: "admin" },
-  { email: "John.doe@example.com", name: "Test User", role: "user" },
-  { email: "jane@example.com", name: "Jane Doe", role: "user" },
-  { email: "bob@example.com", name: "Bob Wilson", role: "user" },
-  { email: "emily.davis@example.com", name: "Emily Davis", role: "user" },
-];
+const TEST_USERS = [{ email: "John.doe@example.com", name: "Test User", role: "user" }];
 
 const Login = () => {
   const dispatch = useDispatch();

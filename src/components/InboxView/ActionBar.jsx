@@ -47,6 +47,7 @@ export const Icon = ({
   width = 36,
   height = 36,
   fontSize = 20,
+  filled = false,
   _ref,
 }) => {
   return (
@@ -70,6 +71,7 @@ export const Icon = ({
           style={{
             fontSize,
             color: disabled ? "#b8b8b8" : color,
+            fontVariationSettings: filled ? "'FILL' 1" : "'FILL' 0",
           }}
         >
           {name}
@@ -190,14 +192,14 @@ const useCustomHotKeys = ({
   });
 };
 
-const MailActions = ({ thread }) => {
+const MailActions = ({ thread, emails: providedEmails }) => {
   const navigate = useNavigate();
   const thread_id = thread.thread_id;
   const [state, dispatch] = useReducer(reducer, initialState);
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { setSnackbar, emails, setEmails } = useGlobalContext();
+  const { setSnackbar, emails: globalEmails, setEmails } = useGlobalContext();
 
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
@@ -214,15 +216,53 @@ const MailActions = ({ thread }) => {
     return pathParts.slice(0, -1).join("/") || "/inbox";
   }, [location.pathname]);
 
-  const threadEmails = useMemo(
-    () => emails.filter((email) => email.thread_id === thread.thread_id),
-    [emails, thread.thread_id]
-  );
+  const threadEmails = useMemo(() => {
+    // Normalize thread_id to string for comparison
+    const normalizedThreadId = String(thread?.thread_id ?? "").trim();
+
+    if (providedEmails && Array.isArray(providedEmails) && providedEmails.length > 0) {
+      // Filter by thread_id, using string comparison for consistency
+      const filtered = providedEmails.filter((email) => {
+        const emailThreadId = String(email?.thread_id ?? "").trim();
+        return emailThreadId === normalizedThreadId;
+      });
+      if (filtered.length > 0) {
+        return filtered;
+      }
+      // If no matches, just return all provided emails (they should all be for this thread)
+      return providedEmails;
+    }
+
+    // Fallback: Try to get emails from the global context
+    const filteredGlobalEmails = globalEmails.filter((email) => {
+      const emailThreadId = String(email?.thread_id ?? "").trim();
+      return emailThreadId === normalizedThreadId;
+    });
+
+    // If not found in global context, use the thread's emails array if available
+    if (filteredGlobalEmails.length === 0 && thread.emails && Array.isArray(thread.emails)) {
+      return thread.emails;
+    }
+
+    return filteredGlobalEmails;
+  }, [providedEmails, globalEmails, thread?.thread_id, thread?.emails]);
   useEffect(() => {
     hasRunOnceRef.current = false;
   }, [thread.thread_id]);
 
   const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
+
+  // Extract thread IDs from threadEmails for label operations
+  // Include thread.thread_id as a fallback to ensure we always have at least one thread ID
+  const threadIdsForLabels = useMemo(() => {
+    const ids = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
+    // If no thread IDs found from emails, use thread.thread_id as fallback
+    if (ids.length === 0 && thread?.thread_id) {
+      return [thread.thread_id];
+    }
+    return ids;
+  }, [threadEmails, thread?.thread_id]);
+
   const conversationMatchKeys = useMemo(() => {
     const keys = new Set();
     const add = (value) => {
@@ -298,6 +338,7 @@ const MailActions = ({ thread }) => {
     unsnooze,
     addLabels,
     removeLabels,
+    modifyLabels,
     setStar,
     setImportant,
   } = useMailActions();
@@ -373,7 +414,8 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setStar(idsToUpdate, nextValue);
+    // Pass 'detail' context to indicate this is from email detail page
+    setStar(idsToUpdate, nextValue, "detail");
 
     setSnackbar({
       open: true,
@@ -386,8 +428,8 @@ const MailActions = ({ thread }) => {
           onClick={() => {
             const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
             const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
-            if (toStar.length) setStar(toStar, true);
-            if (toUnstar.length) setStar(toUnstar, false);
+            if (toStar.length) setStar(toStar, true, "detail");
+            if (toUnstar.length) setStar(toUnstar, false, "detail");
             setSnackbar({
               open: true,
               message: "Action undone.",
@@ -459,9 +501,11 @@ const MailActions = ({ thread }) => {
   );
 
   const handleDelete = useCallback(() => {
-    if (!conversationMatchKeys.length) return;
+    if (!threadEmails.length) return;
 
-    const undo = moveToTrash(conversationMatchKeys);
+    // Use actual email IDs instead of conversationMatchKeys
+    const emailIds = threadEmails.map((email) => email.id);
+    const undo = moveToTrash(emailIds);
 
     setSnackbar({
       open: true,
@@ -475,7 +519,7 @@ const MailActions = ({ thread }) => {
             if (typeof undo === "function") {
               undo();
             } else {
-              moveToInbox(conversationMatchKeys);
+              moveToInbox(emailIds);
             }
             setSnackbar({
               open: true,
@@ -489,7 +533,7 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [conversationMatchKeys, moveToTrash, moveToInbox, setSnackbar]);
+  }, [threadEmails, moveToTrash, moveToInbox, setSnackbar]);
 
   useEffect(() => {
     if (hasRunOnceRef.current) return;
@@ -682,7 +726,7 @@ const MailActions = ({ thread }) => {
     dispatch({ type: "setLabelAnchorEl", labelAnchorEl: labelAnchorElRef.current });
   }, []);
 
-  const handleOnAfterCreate = (childName, parentKey, isMoving = true) => {
+  const handleOnAfterCreate = (childName, parentKey, isMoving = true, createdLabelId = null) => {
     if (!conversationMatchKeys.length) return;
 
     try {
@@ -692,14 +736,29 @@ const MailActions = ({ thread }) => {
       const inCustomLabel = curMeta && curMeta.system === false;
 
       if (isMoving) {
+        // Update local state
         if (inCustomLabel) {
           moveToLabelFrom(conversationMatchKeys, currentLabel, newKey);
         } else {
           moveToLabel(conversationMatchKeys, newKey);
         }
+        // Sync with backend using createdLabelId
+        if (createdLabelId) {
+          const removeLabelsForBackend = inCustomLabel && currentLabel ? [currentLabel] : [];
+          modifyLabels(
+            conversationMatchKeys,
+            { add: [createdLabelId], remove: removeLabelsForBackend },
+            conversationMatchKeys
+          );
+        }
       } else {
         // Always additive when not moving
-        addLabels(conversationMatchKeys, [newKey]);
+        // Use modifyLabels with the created label's UUID to sync with backend
+        if (createdLabelId) {
+          modifyLabels(conversationMatchKeys, { add: [createdLabelId], remove: [] }, conversationMatchKeys);
+        } else {
+          addLabels(conversationMatchKeys, [newKey]);
+        }
       }
 
       showUndoSnackbar(conversationMatchKeys, currentLabel, newKey, inCustomLabel, isMoving, snapshot);
@@ -721,12 +780,19 @@ const MailActions = ({ thread }) => {
     if (!threadEmails.length) return;
 
     const previousStates = threadEmails.map((email) => ({
-      id: email.id,
+      thread_id: email.thread_id,
       important: !!email.is_important,
     }));
-    const idsToUpdate = previousStates.filter((state) => !state.important).map((state) => state.id);
+    const threadIdsToUpdate = [
+      ...new Set(
+        previousStates
+          .filter((state) => !state.important)
+          .map((state) => state.thread_id)
+          .filter(Boolean)
+      ),
+    ];
 
-    if (!idsToUpdate.length) {
+    if (!threadIdsToUpdate.length) {
       setSnackbar({
         open: true,
         message: "Conversation already marked as important.",
@@ -736,7 +802,7 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setImportant(idsToUpdate, true);
+    setImportant(threadIdsToUpdate, true);
     setSnackbar({
       open: true,
       message: "Conversation marked as important.",
@@ -746,8 +812,22 @@ const MailActions = ({ thread }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            const toImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
+            const toNotImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => !state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({
@@ -768,12 +848,19 @@ const MailActions = ({ thread }) => {
     if (!threadEmails.length) return;
 
     const previousStates = threadEmails.map((email) => ({
-      id: email.id,
-      important: !!email.important,
+      thread_id: email.thread_id,
+      important: !!email.is_important,
     }));
-    const idsToUpdate = previousStates.filter((state) => state.important).map((state) => state.id);
+    const threadIdsToUpdate = [
+      ...new Set(
+        previousStates
+          .filter((state) => state.important)
+          .map((state) => state.thread_id)
+          .filter(Boolean)
+      ),
+    ];
 
-    if (!idsToUpdate.length) {
+    if (!threadIdsToUpdate.length) {
       setSnackbar({
         open: true,
         message: "Conversation already marked as not important.",
@@ -783,7 +870,7 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setImportant(idsToUpdate, false);
+    setImportant(threadIdsToUpdate, false);
     setSnackbar({
       open: true,
       message: "Conversation marked as not important.",
@@ -793,8 +880,22 @@ const MailActions = ({ thread }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            const toImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
+            const toNotImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => !state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({
@@ -827,7 +928,13 @@ const MailActions = ({ thread }) => {
   });
 
   const handleReportSpam = useCallback(() => {
-    const undo = moveToSpam(conversationMatchKeys);
+    if (!threadEmails.length) {
+      return;
+    }
+
+    // Use actual email IDs instead of conversationMatchKeys
+    const emailIds = threadEmails.map((email) => email.id);
+    const undo = moveToSpam(emailIds);
     toggleSpamModal();
     setSnackbar({
       open: true,
@@ -851,13 +958,14 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [conversationMatchKeys, moveToSpam, toggleSpamModal, showUndoSnackbar]);
+  }, [threadEmails, moveToSpam, toggleSpamModal, setSnackbar]);
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
-      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      // Pass thread.thread_id explicitly since we're on the detail page
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil, [thread.thread_id]) || {};
       const undo = () => {
-        unsnooze(ids, { removedInboxIds });
+        unsnooze(ids, { removedInboxIds }, [thread.thread_id]);
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -875,8 +983,10 @@ const MailActions = ({ thread }) => {
           </Button>
         ),
       });
+      // Navigate back to the email list after snoozing
+      navigate(getBasePath());
     },
-    [snooze, unsnooze, setSnackbar]
+    [snooze, unsnooze, setSnackbar, thread.thread_id, navigate, getBasePath]
   );
 
   return (
@@ -899,7 +1009,15 @@ const MailActions = ({ thread }) => {
           // background: "pink",
         }}
       >
-        <Icon name="arrow_back" onClick={() => navigate(getBasePath())} style={{ marginRight: "20px" }} label="Back" />
+        <Icon
+          name="arrow_back"
+          onClick={() => {
+            // Needed to support going back to filters
+            navigate(-1);
+          }}
+          style={{ marginRight: "20px" }}
+          label="Back"
+        />
 
         <>
           <Icon name="archive" label="Archive" onClick={handleArchive} />
@@ -969,6 +1087,8 @@ const MailActions = ({ thread }) => {
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds: threadMessageIds,
+          threadIds: threadIdsForLabels,
+          threadEmails: threadEmails,
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },
@@ -1186,11 +1306,11 @@ const ActionsContainer = styled.div`
   justify-content: space-between;
 `;
 
-export default function ActionBar({ thread }) {
+export default function ActionBar({ thread, emails }) {
   return (
     <ActionBarContainer>
       <ActionsContainer>
-        <MailActions thread={thread} />
+        <MailActions thread={thread} emails={emails} />
         <NavigationActions />
       </ActionsContainer>
       {/* <Divider /> */}

@@ -55,21 +55,12 @@ class User(Base):
     custom_fields = Column(JSON, default=list)  # List of {field_name, value}
     notes = Column(Text)
     
-    # Email preferences
-    undo_send_delay_seconds = Column(Integer, default=10)  # Undo send buffer: 5-30 seconds, 0 to disable
-    
     # Status fields
     active = Column(Boolean, default=True, index=True)
-    is_deleted = Column(Boolean, default=False, index=True)
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     @property
     def name(self):
         """Full name for backwards compatibility."""
         return f"{self.first_name} {self.last_name}".strip()
-
-    __table_args__ = (
-        Index("ix_users_is_deleted_role", "is_deleted", "role"),
-        Index("ix_users_is_deleted_active", "is_deleted", "active"),
-    )

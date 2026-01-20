@@ -32,10 +32,11 @@ export const ActionMenuItem = ({
     >
       {icon && (
         <span
-          className={filled ? "material-symbols-filled" : "material-symbols-outlined"}
+          className="material-symbols-outlined"
           style={{
             fontSize,
             color: "rgb(68, 68, 68)",
+            fontVariationSettings: filled ? "'FILL' 1" : "'FILL' 0",
             ...(horizontal && {
               // rotate 90 degrees
               transform: "rotate(90deg)",

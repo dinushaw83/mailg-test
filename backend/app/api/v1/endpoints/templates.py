@@ -16,9 +16,7 @@ import logging
 from app.db.session import get_db
 from app.models.email_template import EmailTemplate
 from app.models.email import Email
-from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
-from app.models.user import User
 from app.schemas.email_template import (
     EmailTemplateCreate, EmailTemplateUpdate, EmailTemplateResponse,
     EmailTemplateListResponse, EmailTemplateApplyRequest
@@ -39,8 +37,6 @@ def format_template_response(template: EmailTemplate) -> dict:
     return {
         "id": template.id,
         "name": template.name,
-        "description": template.description,
-        "subject": template.subject,
         "body": template.body,
         "html_body": template.html_body,
         "is_shared": template.is_shared,
@@ -57,8 +53,6 @@ def format_template_list_response(template: EmailTemplate) -> dict:
     return {
         "id": template.id,
         "name": template.name,
-        "description": template.description,
-        "subject": template.subject,
         "is_shared": template.is_shared,
         "owner_id": template.owner_id,
         "owner_name": template.owner.name if template.owner else None,
@@ -81,8 +75,6 @@ def create_template(
     
     template = EmailTemplate(
         name=template_data.name,
-        description=template_data.description,
-        subject=template_data.subject,
         body=template_data.body,
         html_body=template_data.html_body,
         is_shared=template_data.is_shared,
@@ -108,7 +100,7 @@ def list_templates(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     include_shared: bool = Query(True, description="Include shared templates from others"),
-    search: Optional[str] = Query(None, description="Search in name and description"),
+    search: Optional[str] = Query(None, description="Search in name"),
 ) -> dict:
     """List email templates with pagination and filtering.
     
@@ -122,7 +114,6 @@ def list_templates(
     # Base query - user's own templates or shared templates
     if include_shared:
         query = db.query(EmailTemplate).filter(
-            EmailTemplate.is_deleted == False,
             or_(
                 EmailTemplate.owner_id == current_user.id,
                 EmailTemplate.is_shared == True
@@ -130,18 +121,13 @@ def list_templates(
         )
     else:
         query = db.query(EmailTemplate).filter(
-            EmailTemplate.owner_id == current_user.id,
-            EmailTemplate.is_deleted == False
+            EmailTemplate.owner_id == current_user.id
         )
     
     if search:
         search_term = f"%{search}%"
         query = query.filter(
-            or_(
-                EmailTemplate.name.ilike(search_term),
-                EmailTemplate.description.ilike(search_term),
-                EmailTemplate.subject.ilike(search_term)
-            )
+            EmailTemplate.name.ilike(search_term)
         )
     
     # Get total count
@@ -179,8 +165,7 @@ def get_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -218,8 +203,7 @@ def update_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -237,9 +221,17 @@ def update_template(
     
     # Apply updates
     update_data = template_data.model_dump(exclude_unset=True)
+
+    # Validate that at least one field is being updated
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one field must be provided for update"
+        )
+
     for field, value in update_data.items():
         setattr(template, field, value)
-    
+
     try:
         db.commit()
         db.refresh(template)
@@ -256,12 +248,8 @@ def update_template(
 def delete_template(
     template_id: UUID,
     db: Session = Depends(get_db),
-    permanent: bool = Query(False, description="Permanently delete instead of soft delete"),
 ) -> None:
     """Delete an email template.
-    
-    Args:
-        permanent: If True, permanently removes from database. If False (default), soft deletes.
     
     Permissions:
     - Users can only delete their own templates
@@ -270,8 +258,7 @@ def delete_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -287,20 +274,16 @@ def delete_template(
             detail="Not authorized to delete this template"
         )
     
-    if permanent:
-        # Permanently delete from database
-        db.delete(template)
-    else:
-        # Soft delete
-        template.is_deleted = True
+    # Permanently delete from database
+    db.delete(template)
     
     try:
         db.commit()
     except Exception:
         db.rollback()
         raise
-    
-    logger.info(f"Template {template.id} {'permanently ' if permanent else ''}deleted by user {current_user.id}")
+
+    logger.info(f"Template {template.id} permanently deleted by user {current_user.id}")
 
 
 @router.post("/templates/{template_id}/apply", response_model=EmailResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -320,8 +303,7 @@ def apply_template(
     current_user = auth.user
     
     template = db.query(EmailTemplate).filter(
-        EmailTemplate.id == template_id,
-        EmailTemplate.is_deleted == False
+        EmailTemplate.id == template_id
     ).first()
     
     if not template:
@@ -351,7 +333,7 @@ def apply_template(
     
     # Create draft email from template
     email = Email(
-        subject=template.subject or "",
+        subject=template.name or "",
         body=body,
         html_body=html_body,
         status=EmailStatus.DRAFT.value,
@@ -362,30 +344,6 @@ def apply_template(
     
     try:
         db.add(email)
-        db.flush()
-        
-        # Add recipients if provided
-        if apply_data.recipients:
-            for recipient in apply_data.recipients:
-                # Try to find user by email
-                recipient_email = recipient.get("email", "")
-                recipient_name = recipient.get("name")
-                recipient_type = recipient.get("type", "to")
-                
-                recipient_user = db.query(User).filter(
-                    User.email == recipient_email,
-                    User.is_deleted == False
-                ).first()
-                
-                email_recipient = EmailRecipient(
-                    email_id=email.id,
-                    recipient_id=recipient_user.id if recipient_user else None,
-                    recipient_email=recipient_email,
-                    recipient_name=recipient_name or (recipient_user.name if recipient_user else None),
-                    recipient_type=recipient_type,
-                )
-                db.add(email_recipient)
-        
         db.commit()
 
         # Reload email with all relationships for proper formatting

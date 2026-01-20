@@ -1,22 +1,35 @@
-import React, { useState, useEffect, useMemo, useContext, useLayoutEffect, useRef } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { fetchEmailByIdThunk, setEmailsForCategory } from "../../store/slices/mailSlice";
 import { useLocation, useNavigate } from "react-router-dom";
+
 import { Button } from "@mui/material";
-import RichTextEditor from "../RichTextEditor/RichTextEditor";
-import RecipientsInput from "./RecipientsInput";
 import InfoModal from "./InfoModal";
-import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useDraftManagement } from "../../hooks/useDraftManagement";
-import { useComposeModal } from "../../hooks/useComposeModal";
-import { useSendEmail } from "../../hooks/useSendEmail";
-import { useScheduleEmail } from "../../hooks/useScheduleEmail";
+import RecipientsInput from "./RecipientsInput";
+import RichTextEditor from "../RichTextEditor/RichTextEditor";
+import { beToFeDraft } from "../../utils/draftMapper";
 import { restructureRecipients } from "../../utils/helperFunctions";
+import { store } from "../../store";
 import styles from "./ComposeEmail.module.css";
+import { useComposeModal } from "../../hooks/useComposeModal";
+import { useDispatch } from "react-redux";
+import { useDraftManagement } from "../../hooks/useDraftManagement";
+import { useGlobalContext } from "../../contexts/GlobalContext";
+import { useScheduleEmail } from "../../hooks/useScheduleEmail";
+import { useSendEmail } from "../../hooks/useSendEmail";
+
+// Helper to check if a string is a UUID
+const isUUID = (str) => {
+  if (!str || typeof str !== "string") return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+};
 
 export default function ComposeEmail({ composeWindow }) {
   const navigate = useNavigate();
   const location = useLocation();
   const {
     emails,
+    mailFolders,
     setSnackbar,
     recipients,
     composeWindows,
@@ -33,6 +46,14 @@ export default function ComposeEmail({ composeWindow }) {
 
   const { removeComposeWindow, toggleMinimize, toggleMaximize, visibleWindowCount, addNewComposeWindow } =
     useComposeModal();
+  const dispatch = useDispatch();
+
+  // Calculate if this window should be visible based on visibleWindowCount
+  // This prevents unmounting and preserves component state
+  const isWindowVisible = useMemo(() => {
+    const visibleWindows = composeWindows.slice(-visibleWindowCount);
+    return visibleWindows.some((w) => w.id === composeWindow.id);
+  }, [JSON.stringify(composeWindows), visibleWindowCount, composeWindow.id]);
 
   const [to, setTo] = useState([]);
   const [cc, setCc] = useState([]);
@@ -64,6 +85,9 @@ export default function ComposeEmail({ composeWindow }) {
       : null;
   const originalEmail = forwardingEmail || replyingToEmail || null;
 
+  /**
+   * This is the draft id that is used to save the draft and fetch the draft from the backend
+   */
   const currentDraftId = composeWindow?.draftId;
 
   // Draft management hook
@@ -76,6 +100,8 @@ export default function ComposeEmail({ composeWindow }) {
     currentDraftId,
     parentEmail: originalEmail,
     replyType: composeReplyType,
+    composeWindowId: composeWindow?.id,
+    setComposeWindows,
   });
 
   // Determine which signature to use
@@ -146,11 +172,14 @@ export default function ComposeEmail({ composeWindow }) {
   // Load existing draft if draftId exists in the compose window when the component mounts before painting to ui
   useLayoutEffect(() => {
     if (currentDraftId) {
-      // Load existing draft
-      const existingDraft = emails.find(
+      // Load existing draft from mail.drafts array
+      const drafts = mailFolders?.drafts || [];
+      const existingDraft = drafts.find(
         (email) => email.id.toString() === currentDraftId?.toString() && email.labels.includes("Drafts")
       );
+
       if (existingDraft) {
+        // Draft found in Redux - load it
         setTo(
           existingDraft.to.map((email) => {
             const recipientObj = restructuredRecipients.find((r) => r.email === email);
@@ -181,6 +210,65 @@ export default function ComposeEmail({ composeWindow }) {
         setSubject(existingDraft.subject === "(no subject)" ? "" : existingDraft.subject);
         setContent({ html: existingDraft.body, plainText: existingDraft.preview });
         setRawInputText({ to: "", cc: "", bcc: "" });
+      } else if (isUUID(currentDraftId.toString())) {
+        // Draft not in Redux but has UUID - fetch from backend
+        // Only fetch if form fields are empty (to avoid overwriting user input)
+        const hasContent = to.length > 0 || cc.length > 0 || bcc.length > 0 || subject.trim() || content.html.trim();
+        if (!hasContent) {
+          dispatch(fetchEmailByIdThunk(currentDraftId))
+            .unwrap()
+            .then((fetchedDraft) => {
+              const feDraft = beToFeDraft(fetchedDraft);
+              if (feDraft) {
+                // Load form fields from fetched draft
+                setTo(
+                  (feDraft.to || []).map((email) => {
+                    const emailStr = typeof email === "string" ? email : email.email || email.name || email;
+                    const recipientObj = restructuredRecipients.find((r) => r.email === emailStr);
+                    if (recipientObj) {
+                      return recipientObj;
+                    }
+                    return createCustomRecipient(emailStr);
+                  })
+                );
+                setCc(
+                  (feDraft.cc || []).map((email) => {
+                    const emailStr = typeof email === "string" ? email : email.email || email.name || email;
+                    const recipientObj = restructuredRecipients.find((r) => r.email === emailStr);
+                    if (recipientObj) {
+                      return recipientObj;
+                    }
+                    return createCustomRecipient(emailStr);
+                  })
+                );
+                setBcc(
+                  (feDraft.bcc || []).map((email) => {
+                    const emailStr = typeof email === "string" ? email : email.email || email.name || email;
+                    const recipientObj = restructuredRecipients.find((r) => r.email === emailStr);
+                    if (recipientObj) {
+                      return recipientObj;
+                    }
+                    return createCustomRecipient(emailStr);
+                  })
+                );
+                setSubject(feDraft.subject === "(no subject)" ? "" : feDraft.subject || "");
+                setContent({ html: feDraft.body || "", plainText: feDraft.preview || "" });
+                setRawInputText({ to: "", cc: "", bcc: "" });
+
+                // Update Redux with fetched draft
+                const state = store.getState();
+                const currentDrafts = state.mail.drafts || [];
+                const filteredDrafts = currentDrafts.filter(
+                  (email) => email.id?.toString() !== currentDraftId?.toString()
+                );
+                const updatedDrafts = [feDraft, ...filteredDrafts];
+                dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
+              }
+            })
+            .catch((error) => {
+              console.error("Failed to fetch draft from backend:", error);
+            });
+        }
       }
     } else if (composeWindow?.fields && Object.keys(composeWindow?.fields).length > 0) {
       // Only add these if the states are empty
@@ -200,7 +288,12 @@ export default function ComposeEmail({ composeWindow }) {
         setContent({ html: composeWindow?.fields?.content, plainText: composeWindow?.fields?.content });
       }
     }
-  }, [emails, currentDraftId]);
+  }, [
+    currentDraftId?.current,
+    composeWindow?.isMinimized,
+    JSON.stringify(composeWindow?.fields),
+    JSON.stringify(restructuredRecipients),
+  ]);
 
   // Focus the body editor if this is a reply (has replyingTo field) and autoFocus is enabled
   // For forwards (forwardingTo), the To input is auto-focused via RecipientsInput
@@ -394,6 +487,7 @@ export default function ComposeEmail({ composeWindow }) {
         }`}
         style={{
           right: `${composeModalRightPosition}px`,
+          display: isWindowVisible ? "block" : "none", // Hide if outside visible count
         }}
         onFocus={handleWindowFocus}
         onBlur={handleWindowBlur}

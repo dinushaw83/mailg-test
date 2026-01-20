@@ -57,7 +57,6 @@ const VerificationRawModal = ({
   };
 
   useEffect(() => {
-    console.log("initialAssertions -> ", initialAssertions);
     if (isOpen && initialAssertions) {
       setAssertions(
         initialAssertions.map((assertion) => ({
@@ -180,7 +179,6 @@ const VerificationRawModal = ({
 
       // Create form data for the API call
       const formData = new FormData();
-      console.log("Prompt ID:", promptId);
       formData.append("taskId", promptId);
       formData.append("localStorageDump", localStorageFile);
       formData.append("assertion", JSON.stringify(assertion));
@@ -272,7 +270,6 @@ const VerificationRawModal = ({
   };
 
   const runAllAssertions = async () => {
-    console.log("Running all assertions");
     setIsRunning(true);
     setCompletedCount(0);
     addLogEntry(`Starting execution of ${assertions.length} assertions`);
@@ -295,7 +292,6 @@ const VerificationRawModal = ({
 
     addLogEntry(`Execution completed. All assertions have been processed.`);
     setIsRunning(false);
-    console.log("All assertions have been run -> ", assertions);
   };
 
   const clearResults = () => {

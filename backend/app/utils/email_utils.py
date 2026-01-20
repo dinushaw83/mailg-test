@@ -10,31 +10,67 @@ This module provides helper functions for:
 
 import re
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Optional, List
 from uuid import UUID
 from sqlalchemy.orm import Session
 
+from sqlalchemy import and_, or_
+
 from app.core.constants import (
-    EmailStatus, FolderType, EmailCategory, SystemLabel
+    EmailStatus, FolderType, SystemLabel
 )
 from app.utils.label_utils import (
-    add_system_label_to_thread,
-    add_category_label_to_thread,
+    sync_thread_labels,
 )
 
 logger = logging.getLogger(__name__)
 
+# Sender statuses - these emails belong to the sender's perspective
+SENDER_STATUSES = [
+    EmailStatus.DRAFT.value,
+    EmailStatus.QUEUED.value,
+    EmailStatus.SENT.value,
+    EmailStatus.CANCELLED.value,
+]
 
-# Mapping from folder type to system label enum
-FOLDER_TO_LABEL = {
-    FolderType.INBOX.value: SystemLabel.INBOX,
-    FolderType.SENT.value: SystemLabel.SENT,
-    FolderType.DRAFTS.value: SystemLabel.DRAFTS,
-    FolderType.TRASH.value: SystemLabel.TRASH,
-    FolderType.SPAM.value: SystemLabel.SPAM,
-    FolderType.SCHEDULED.value: SystemLabel.SCHEDULED,
-}
+
+def get_perspective_email_filter(db: Session, user_id: UUID):
+    """Get SQLAlchemy filter for user's emails from their perspective.
+    
+    This filter ensures users only see emails they "own" from their perspective:
+    - Sender's emails (draft/queued/sent/cancelled): user is the sender
+    - Recipient's emails (received): user is in EmailRecipient
+    
+    This prevents senders from seeing the "received" copies created for recipients,
+    and vice versa.
+    
+    Args:
+        db: Database session (needed for subquery)
+        user_id: User ID to filter for
+        
+    Returns:
+        SQLAlchemy filter clause to use in queries
+    """
+    from app.models.email import Email
+    from app.models.email_recipient import EmailRecipient
+    
+    return or_(
+        # Emails user SENT (draft, queued, sent, cancelled)
+        and_(
+            Email.sender_id == user_id,
+            Email.status.in_(SENDER_STATUSES)
+        ),
+        # Emails user RECEIVED
+        and_(
+            Email.status == EmailStatus.RECEIVED.value,
+            Email.id.in_(
+                db.query(EmailRecipient.email_id).filter(
+                    EmailRecipient.recipient_id == user_id
+                )
+            )
+        )
+    )
 
 
 def get_snippet(body: Optional[str], max_length: int = 200) -> str:
@@ -87,36 +123,39 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
 
     Args:
         email: The email model instance
-        user_id: Current user's ID - used to filter labels and get thread metadata
+        user_id: Current user's ID - used to filter labels, get thread metadata, and show "me" for current user
 
     Returns:
         Dictionary with email data formatted for API response
     """
     recipients = []
     for r in email.recipients:
+        # Show "me" if recipient is the current user
+        recipient_name = r.recipient_name
+        if user_id and r.recipient_id == user_id:
+            recipient_name = "me"
         recipients.append({
             "id": r.id,
             "email": r.recipient_email,
-            "name": r.recipient_name,
+            "name": recipient_name,
             "type": r.recipient_type,
         })
 
     attachments = []
     for a in email.attachments:
-        if not a.is_deleted:
-            attachments.append({
-                "id": a.id,
-                "filename": a.filename,
-                "content_type": a.content_type,
-                "size_bytes": a.size_bytes,
-            })
+        attachments.append({
+            "id": a.id,
+            "filename": a.filename,
+            "content_type": a.content_type,
+            "size_bytes": a.size_bytes,
+        })
 
     # Get labels from the thread - filter by user's ownership for isolation on shared threads
     labels = []
     if email.thread and email.thread.labels:
         for l in email.thread.labels:
             # Only include labels owned by the current user (user-specific label isolation)
-            if not l.is_deleted and (user_id is None or l.owner_id == user_id):
+            if (user_id is None or l.owner_id == user_id):
                 labels.append({
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
@@ -124,25 +163,32 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
                     "owner_id": l.owner_id,
                     "parent_id": l.parent_id,
                     "is_system": l.is_system,
-                    "is_exclusive": l.is_exclusive,
-                    "is_deleted": l.is_deleted
+                    "is_exclusive": l.is_exclusive
                 })
 
-    # Get is_important from thread metadata for the current user
-    # Similar to how labels work - filter from the loaded relationship
+    # Get thread-level metadata for the current user
     is_important = False
+    snooze_until = None
+    is_archived = False
     if email.thread and hasattr(email.thread, 'user_metadata') and user_id:
         for metadata in email.thread.user_metadata:
             if metadata.user_id == user_id:
                 is_important = metadata.is_important
+                snooze_until = getattr(metadata, 'snooze_until', None)
+                is_archived = getattr(metadata, 'is_archived', False)
                 break
 
     # Determine if email can be cancelled (undo send)
     can_undo = (
         email.status == EmailStatus.QUEUED.value and
         email.scheduled_send_at and
-        email.scheduled_send_at > datetime.utcnow()
+        email.scheduled_send_at > datetime.now(UTC)
     )
+
+    # Show "me" if sender is the current user
+    sender_name = email.sender.name if email.sender else None
+    if user_id and email.sender_id == user_id:
+        sender_name = "me"
 
     return {
         "id": email.id,
@@ -150,12 +196,12 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         "body": email.body,
         "html_body": email.html_body,
         "folder": email.folder or FolderType.INBOX.value,
-        "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "is_important": is_important,
+        "is_archived": is_archived,
         "sender_id": email.sender_id,
-        "sender_name": email.sender.name if email.sender else None,
+        "sender_name": sender_name,
         "sender_email": email.sender.email if email.sender else None,
         "recipients": recipients,
         "thread_id": email.thread_id,
@@ -163,7 +209,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
         "sent_at": email.sent_at,
         "received_at": email.received_at,
         "scheduled_send_at": email.scheduled_send_at,
-        "snooze_until": email.snooze_until,
+        "snooze_until": snooze_until,
         "created_at": email.created_at,
         "updated_at": email.updated_at,
         "attachment_count": len(attachments),
@@ -173,13 +219,14 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
     }
 
 
-def format_email_list_response(email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None) -> dict:
+def format_email_list_response(email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None, thread_is_starred: Optional[bool] = None) -> dict:
     """Format email model for list responses.
 
     Args:
         email: The email model instance (with thread.user_metadata eager loaded if available)
         thread_email_count: Optional count of emails in the thread
-        user_id: Current user's ID - used to filter labels and get thread metadata
+        user_id: Current user's ID - used to filter labels, get thread metadata, and show "me" for current user
+        thread_is_starred: Optional thread-level starred status (true if any email in thread is starred).
 
     Returns:
         Dictionary with email data formatted for list API response
@@ -189,7 +236,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
     if email.thread and email.thread.labels:
         for l in email.thread.labels:
             # Only include labels owned by the current user (user-specific label isolation)
-            if not l.is_deleted and (user_id is None or l.owner_id == user_id):
+            if (user_id is None or l.owner_id == user_id):
                 labels.append({
                     "id": l.id,
                     "name": get_label_hierarchy_name(l),
@@ -197,45 +244,53 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
                     "owner_id": l.owner_id,
                     "parent_id": l.parent_id,
                     "is_system": l.is_system,
-                    "is_exclusive": l.is_exclusive,
-                    "is_deleted": l.is_deleted
+                    "is_exclusive": l.is_exclusive
                 })
 
-    attachment_count = len([a for a in email.attachments if not a.is_deleted])
+    attachment_count = len([a for a in email.attachments])
 
-    # Get is_important from thread metadata for the current user
-    # Similar to how labels work - filter from the loaded relationship
+    # Get thread-level metadata for the current user
     is_important = False
+    snooze_until = None
+    is_archived = False
     if email.thread and hasattr(email.thread, 'user_metadata') and user_id:
         for metadata in email.thread.user_metadata:
             if metadata.user_id == user_id:
                 is_important = metadata.is_important
+                snooze_until = getattr(metadata, 'snooze_until', None)
+                is_archived = getattr(metadata, 'is_archived', False)
                 break
 
     # Determine if email can be cancelled (undo send)
     can_undo = (
         email.status == EmailStatus.QUEUED.value and
         email.scheduled_send_at and
-        email.scheduled_send_at > datetime.utcnow()
+        email.scheduled_send_at > datetime.now(UTC)
     )
+
+    # Show "me" if sender is the current user
+    sender_name = email.sender.name if email.sender else None
+    if user_id and email.sender_id == user_id:
+        sender_name = "me"
 
     return {
         "id": email.id,
         "subject": email.subject,
         "snippet": get_snippet(email.body),
         "folder": email.folder or FolderType.INBOX.value,
-        "category": email.category or EmailCategory.PRIMARY.value,
         "is_read": email.is_read,
         "is_starred": email.is_starred,
+        "thread_is_starred": thread_is_starred if thread_is_starred is not None else email.is_starred,
         "is_important": is_important,
+        "is_archived": is_archived,
         "sender_id": email.sender_id,
-        "sender_name": email.sender.name if email.sender else None,
+        "sender_name": sender_name,
         "sender_email": email.sender.email if email.sender else None,
         "thread_id": email.thread_id,
         "thread_email_count": thread_email_count,
         "sent_at": email.sent_at,
         "scheduled_send_at": email.scheduled_send_at,
-        "snooze_until": email.snooze_until,
+        "snooze_until": snooze_until,
         "created_at": email.created_at,
         "attachment_count": attachment_count,
         "has_attachments": attachment_count > 0,
@@ -257,6 +312,7 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
     from app.db.session import get_db_session
     from app.models.email import Email
     
+    db = None
     try:
         db = get_db_session(run_id=run_id)
         db.query(Email).filter(
@@ -268,15 +324,16 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
     except Exception as e:
         logger.warning(f"Failed to mark emails as read in background: {e}")
     finally:
-        db.close()
+        if db is not None:
+            db.close()
 
 
 def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = None) -> None:
     """Create received copies of an email for all recipients who are system users.
-    
+
     This function is used by both the send API endpoint and the background job
     that processes scheduled/queued emails.
-    
+
     Args:
         db: Database session
         email: The email being sent (must have recipients loaded)
@@ -285,15 +342,21 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
     from app.models.email import Email
     from app.models.email_recipient import EmailRecipient
     from app.models.user import User
-    
+    from app.models.thread import Thread
+
     # Use provided sender_id or fall back to email's sender_id
     actual_sender_id = sender_id if sender_id is not None else email.sender_id
-    
+
+    emails_created = 0
     for recipient in email.recipients:
         if recipient.recipient_id:
+            # Skip creating received copy for the sender themselves
+            # The sender already has the SENT copy, no need for a duplicate RECEIVED copy
+            if recipient.recipient_id == actual_sender_id:
+                continue
+            
             recipient_user = db.query(User).filter(
-                User.id == recipient.recipient_id,
-                User.is_deleted == False
+                User.id == recipient.recipient_id
             ).first()
             if recipient_user:
                 received_email = Email(
@@ -302,15 +365,15 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                     html_body=email.html_body,
                     status=EmailStatus.RECEIVED.value,
                     folder=FolderType.INBOX.value,
-                    category=email.category,
                     sender_id=actual_sender_id,
                     is_read=False,
-                    received_at=datetime.utcnow(),
+                    received_at=datetime.now(UTC),
                     thread_id=email.thread_id,
                 )
                 db.add(received_email)
                 db.flush()
-                
+                emails_created += 1
+
                 recv_recipient = EmailRecipient(
                     email_id=received_email.id,
                     recipient_id=recipient_user.id,
@@ -319,9 +382,58 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                     recipient_type=recipient.recipient_type,
                 )
                 db.add(recv_recipient)
-                
-                # Add Inbox label for recipient
-                add_system_label_to_thread(db, email.thread_id, recipient_user.id, SystemLabel.INBOX)
-                # Add category label if applicable
-                if email.category:
-                    add_category_label_to_thread(db, email.thread_id, recipient_user.id, EmailCategory(email.category))
+
+                # Sync thread labels for recipient (adds INBOX label based on received email)
+                sync_thread_labels(db, email.thread_id, recipient_user.id)
+
+    # Update thread email count if any emails were created
+    if emails_created > 0 and email.thread_id:
+        thread = db.query(Thread).filter(Thread.id == email.thread_id).first()
+        if thread:
+            thread.email_count = (thread.email_count or 0) + emails_created
+
+
+def deliver_email_to_recipients_background(email_id: UUID, sender_id: UUID, run_id: str = None) -> None:
+    """Background task to deliver email to recipients.
+
+    Creates received copies of an email for all recipients who are system users.
+    Uses a fresh database session since the original request session may be closed.
+
+    Args:
+        email_id: ID of the email being sent
+        sender_id: The sender's user ID
+        run_id: Optional run ID for database session
+    """
+    from app.db.session import get_db_session
+    from app.models.email import Email
+    from app.models.email_recipient import EmailRecipient
+    from sqlalchemy.orm import selectinload
+
+    db = None
+    try:
+        db = get_db_session(run_id=run_id)
+
+        # Load the email with recipients
+        email = db.query(Email).options(
+            selectinload(Email.recipients)
+        ).filter(Email.id == email_id).first()
+
+        if not email:
+            logger.warning(f"Email {email_id} not found for background delivery")
+            return
+
+        # Deliver to all recipients
+        deliver_email_to_recipients(db, email, sender_id)
+
+        db.commit()
+        logger.debug(f"Delivered email {email_id} to recipients in background for sender {sender_id}")
+    except Exception as e:
+        logger.warning(f"Failed to deliver email to recipients in background: {e}")
+        if db is not None:
+            try:
+                db.rollback()
+            except:
+                pass
+    finally:
+        if db is not None:
+            db.close()

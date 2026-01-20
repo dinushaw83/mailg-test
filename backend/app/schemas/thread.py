@@ -20,7 +20,6 @@ class ThreadResponse(BaseModel):
     email_count: int
     is_important: bool = False  # User-specific, from thread metadata
     last_email_at: Optional[datetime] = None
-    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
     emails: List[EmailListResponse] = []
@@ -46,3 +45,16 @@ class ThreadListResponse(BaseModel):
 
 
 ThreadPaginatedResponse = PaginatedListResponse[ThreadListResponse]
+
+
+class ThreadOperationResponse(BaseModel):
+    """Response schema for thread-level operations that affect multiple emails.
+    
+    Used by bulk thread operations like spam/unspam, delete, restore, etc.
+    """
+    model_config = {"from_attributes": True}
+    
+    success: bool = True
+    message: str
+    thread_id: UUID
+    emails_count: int = Field(..., description="Number of emails affected in the thread")

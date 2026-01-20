@@ -107,8 +107,9 @@ export function beToFeLabel(beLabel, idToKeyMap) {
     color: beLabel.color || null, // Store hex color as-is
     parent_id: beLabel.parent_id || null,
     parentKey: parentKey, // Composite key for tree building
-    system: false, // Backend labels are custom labels by default
+    system: beLabel.is_system || false, // Preserve system label flag from backend
     email_count: beLabel.email_count || 0,
+    ...beLabel,
   };
 }
 

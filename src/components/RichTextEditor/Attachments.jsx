@@ -111,7 +111,7 @@ const Attachments = ({ attachments, setAttachments }) => {
                     }}
                     onClick={(e) => {
                       e.preventDefault();
-                      console.log("Help clicked for blocked file");
+                      // TODO: Show help for blocked file
                     }}
                   >
                     Help
@@ -197,7 +197,7 @@ const Attachments = ({ attachments, setAttachments }) => {
                   }}
                   onClick={(e) => {
                     e.preventDefault();
-                    console.log("Drive link clicked:", attachment.driveLink);
+                    // TODO: Handle drive link click
                   }}
                 >
                   <Typography

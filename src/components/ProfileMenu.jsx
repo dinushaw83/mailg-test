@@ -20,8 +20,7 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
   };
 
   const handleAddAccount = () => {
-    // Handle add account logic
-    console.log("Add account");
+    // TODO: Implement add account logic
   };
 
   const handleSignOut = () => {
@@ -43,8 +42,7 @@ const ProfileMenu = ({ anchorEl, open, onClose }) => {
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
-        // Handle file upload logic here
-        console.log("Upload file:", file);
+        // TODO: Implement file upload logic
       }
     };
     input.click();
