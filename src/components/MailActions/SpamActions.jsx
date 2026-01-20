@@ -484,7 +484,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
               return;
             }
 
-            moveToInbox(selectionMatchKeys);
+            notSpam(selectionMatchKeys);
             const conversationCount = selectedConversationCount || selectionMatchKeys.length || 1;
             setSnackbar({
               open: true,

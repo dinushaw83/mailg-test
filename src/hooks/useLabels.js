@@ -1,7 +1,8 @@
-import { createLabelThunk, deleteLabelThunk, updateLabelThunk } from "../store/slices/mailSlice";
+import { createLabelThunk, deleteLabelThunk, updateLabelThunk, bulkUpdateLabelsThunk } from "../store/slices/mailSlice";
 import { getCompositeKey, getLabelId } from "../utils/labelTransform";
 import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { useGlobalContext } from "../contexts/GlobalContext";
 
@@ -104,6 +105,7 @@ export function getPathLabelFromKey(labelsMap, key) {
 
 export default function useLabels() {
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { emails, setEmails, labels, setLabels } = useGlobalContext();
 
   // Get mappings from Redux mail state
@@ -260,20 +262,63 @@ export default function useLabels() {
   const removeLabelFromThread = useCallback(
     (thread_id, labelKey) => {
       const normalizedThreadId = String(thread_id);
+      
+      // Optimistic update - remove label from local state immediately
       setEmails((prev) =>
         (prev || []).map((m) =>
-          getThreadKey(m) === normalizedThreadId ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey) } : m
+          getThreadKey(m) === normalizedThreadId ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey && l?.name !== labelKey && l?.id !== labelKey) } : m
         )
       );
+
+      // Get label UUID from labelKey
+      const labelId = keyToLabelIdMap[labelKey] || labels[labelKey]?.id || labelKey;
+
+      // Call API to remove label
+      dispatch(
+        bulkUpdateLabelsThunk({
+          threadIds: [normalizedThreadId],
+          labels: { add: [], remove: [labelId] },
+        })
+      )
+        .then(async () => {
+          // Invalidate and refetch thread-specific cache
+          queryClient.invalidateQueries({ queryKey: ["email", normalizedThreadId] });
+          await queryClient.refetchQueries({ queryKey: ["email", normalizedThreadId] });
+          
+          // Invalidate all email list queries
+          queryClient.invalidateQueries({
+            predicate: (query) => {
+              const key = query.queryKey;
+              return Array.isArray(key) && key[0] === "emails";
+            },
+          });
+          
+          // Force refetch of email lists
+          await queryClient.refetchQueries({
+            predicate: (query) => {
+              const key = query.queryKey;
+              return Array.isArray(key) && key[0] === "emails";
+            },
+          });
+          
+          // Also invalidate email counts
+          queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+        })
+        .catch((error) => {
+          console.error("Failed to remove label:", error);
+        });
     },
-    [setEmails]
+    [setEmails, dispatch, keyToLabelIdMap, labels, queryClient]
   );
 
   const addLabelToThread = useCallback(
     (thread_id, labelKey) => {
+      const normalizedThreadId = String(thread_id);
+      
+      // Optimistic update - add label to local state immediately
       setEmails((prev) =>
         (prev || []).map((m) =>
-          getThreadKey(m) === String(thread_id)
+          getThreadKey(m) === normalizedThreadId
             ? {
                 ...m,
                 labels: Array.from(new Set([...(m.labels || []), labelKey])),
@@ -281,8 +326,34 @@ export default function useLabels() {
             : m
         )
       );
+
+      // Get label UUID from labelKey
+      const labelId = keyToLabelIdMap[labelKey] || labels[labelKey]?.id || labelKey;
+
+      // Call API to add label
+      dispatch(
+        bulkUpdateLabelsThunk({
+          threadIds: [normalizedThreadId],
+          labels: { add: [labelId], remove: [] },
+        })
+      )
+        .then(() => {
+          // Invalidate thread-specific cache
+          queryClient.invalidateQueries({ queryKey: ["email", normalizedThreadId] });
+          
+          // Invalidate all email list queries so they refetch
+          queryClient.invalidateQueries({
+            predicate: (query) => {
+              const key = query.queryKey;
+              return Array.isArray(key) && key[0] === "emails";
+            },
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to add label:", error);
+        });
     },
-    [setEmails]
+    [setEmails, dispatch, keyToLabelIdMap, labels, queryClient]
   );
 
   // Counts by label key

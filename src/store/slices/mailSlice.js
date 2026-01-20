@@ -632,17 +632,17 @@ export const bulkDeleteEmailThunk = createAsyncThunk(
 );
 
 /**
- * BULK MUTATION THUNK: Archive multiple emails
+ * BULK MUTATION THUNK: Archive multiple threads
  */
 export const bulkArchiveEmailsThunk = createAsyncThunk(
   "mail/bulkArchiveEmails",
-  async ({ emailIds }, { rejectWithValue }) => {
+  async ({ threadIds }, { rejectWithValue }) => {
     try {
-      const response = await emailService.bulkArchiveEmails(emailIds);
-      return { emailIds, response };
+      const response = await emailService.bulkArchiveEmails(threadIds);
+      return { threadIds, response };
     } catch (error) {
-      console.error("Failed to bulk archive emails:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk archive emails");
+      console.error("Failed to bulk archive threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk archive threads");
     }
   }
 );

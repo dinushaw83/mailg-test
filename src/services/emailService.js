@@ -575,25 +575,25 @@ const emailService = {
   },
 
   /**
-   * Bulk archive emails
-   * @param {Array<string>} emailIds - Array of email IDs
+   * Bulk archive threads
+   * @param {Array<string>} threadIds - Array of thread IDs
    * @returns {Promise<Object>} Response data
    */
-  bulkArchiveEmails: async (emailIds) => {
+  bulkArchiveEmails: async (threadIds) => {
     const response = await apiClient.post("/v1/bulk/archive", {
-      email_ids: emailIds,
+      thread_ids: threadIds,
     });
     return response?.data?.data ?? response?.data ?? {};
   },
 
   /**
-   * Bulk unarchive emails
-   * @param {Array<string>} emailIds - Array of email IDs
+   * Bulk unarchive threads
+   * @param {Array<string>} threadIds - Array of thread IDs
    * @returns {Promise<Object>} Response data
    */
-  bulkUnarchiveEmails: async (emailIds) => {
+  bulkUnarchiveEmails: async (threadIds) => {
     const response = await apiClient.post("/v1/bulk/unarchive", {
-      email_ids: emailIds,
+      thread_ids: threadIds,
     });
     return response?.data?.data ?? response?.data ?? {};
   },

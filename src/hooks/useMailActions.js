@@ -351,14 +351,14 @@ export default function useMailActions() {
 
   const archive = useCallback(
     (ids) => {
-      // Extract email IDs for backend sync
+      // Extract thread IDs for backend sync
       const match = makeMatch(ids);
-      const emailIds = emails.filter(match).map((email) => email.id);
+      const threadIds = [...new Set(emails.filter(match).map((email) => email.thread_id).filter(Boolean))];
 
-      // Call bulk backend API
-      if (emailIds.length > 0) {
-        dispatch(bulkArchiveEmailsThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk archive emails:", error);
+      // Call bulk backend API with thread IDs
+      if (threadIds.length > 0) {
+        dispatch(bulkArchiveEmailsThunk({ threadIds })).catch((error) => {
+          console.error("Failed to bulk archive threads:", error);
         });
       }
 
@@ -386,6 +386,7 @@ export default function useMailActions() {
       const matchingEmails = emails.filter(match);
 
       emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
 
       if (emailIds.length) {
         // Successfully extracted email IDs from matching emails
@@ -417,7 +418,8 @@ export default function useMailActions() {
         dispatch(bulkMoveToSpamThunk({ emailIds }))
           .unwrap()
           .then(() => {
-            // Successfully moved emails to spam
+            // Invalidate caches after successful spam move
+            invalidateEmailCaches(threadIds);
           })
           .catch((error) => {
             console.error("Failed to bulk move emails to spam:", error);
@@ -435,21 +437,24 @@ export default function useMailActions() {
 
       return undo;
     },
-    [updateByIds, setEmails, labels, dispatch, emails, updateQueryCache]
+    [updateByIds, setEmails, labels, dispatch, emails, updateQueryCache, invalidateEmailCaches]
   );
 
   const notSpam = useCallback(
     (ids) => {
-      // Extract email IDs for backend sync
+      // Extract email IDs and thread IDs for backend sync
       const match = makeMatch(ids);
-      const emailIds = emails.filter(match).map((email) => email.id);
+      const matchingEmails = emails.filter(match);
+      const emailIds = matchingEmails.map((email) => email.id);
+      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
 
       // Call bulk backend API FIRST
       if (emailIds.length > 0) {
         dispatch(bulkMoveFromSpamThunk({ emailIds }))
           .unwrap()
           .then(() => {
-            // Successfully removed spam from emails
+            // Invalidate caches after successful unspam
+            invalidateEmailCaches(threadIds);
           })
           .catch((error) => {
             console.error("Failed to bulk remove spam from emails:", error);
@@ -481,7 +486,7 @@ export default function useMailActions() {
 
       return undo;
     },
-    [updateByIds, emails, dispatch, updateQueryCache]
+    [updateByIds, emails, dispatch, updateQueryCache, invalidateEmailCaches]
   );
 
   const moveToTrash = useCallback(
