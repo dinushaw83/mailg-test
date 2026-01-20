@@ -85,10 +85,6 @@ register_exception_handlers(app)
 # Include v1 API router
 app.include_router(v1_router, prefix=API_V1_PREFIX)
 
-app.include_router(ingestion.router, prefix=API_V1_PREFIX, tags=["ingestion"], include_in_schema=False)
-app.include_router(instrumentation.router, prefix=API_V1_PREFIX, tags=["instrumentation"], include_in_schema=False)
-
-
 @app.get("/")
 def root() -> dict:
     """Root endpoint providing API information.

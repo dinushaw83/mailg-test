@@ -31,7 +31,7 @@ _SNOOZE_PROCESSOR_STARTUP_DELAY_SECONDS = int(os.getenv("SNOOZE_PROCESSOR_STARTU
 _SNOOZE_PROCESSOR_INTERVAL_SECONDS = int(os.getenv("SNOOZE_PROCESSOR_INTERVAL_SECONDS", "30"))
 
 # Advisory lock to ensure only one worker processes at a time (different key from scheduled_sender)
-_SNOOZE_PROCESSOR_ADVISORY_LOCK_KEY = int(os.getenv("SNOOZE_PROCESSOR_ADVISORY_LOCK_KEY", "99887766"))
+_SNOOZE_PROCESSOR_ADVISORY_LOCK_KEY = int(os.getenv("SNOOZE_PROCESSOR_ADVISORY_LOCK_KEY", "99887744"))
 
 
 def _admin_engine():

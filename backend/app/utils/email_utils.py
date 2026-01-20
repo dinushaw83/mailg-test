@@ -219,7 +219,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
     }
 
 
-def format_email_list_response(email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None, thread_is_starred: Optional[bool] = None) -> dict:
+def format_email_list_response(email, thread_email_count: Optional[int] = None, user_id: Optional[UUID] = None, thread_is_starred: Optional[bool] = None, thread_is_read: Optional[bool] = None) -> dict:
     """Format email model for list responses.
 
     Args:
@@ -227,6 +227,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         thread_email_count: Optional count of emails in the thread
         user_id: Current user's ID - used to filter labels, get thread metadata, and show "me" for current user
         thread_is_starred: Optional thread-level starred status (true if any email in thread is starred).
+        thread_is_read: Optional thread-level read status (true if all emails in thread are read).
 
     Returns:
         Dictionary with email data formatted for list API response
@@ -281,6 +282,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
         "is_read": email.is_read,
         "is_starred": email.is_starred,
         "thread_is_starred": thread_is_starred if thread_is_starred is not None else email.is_starred,
+        "thread_is_read": thread_is_read if thread_is_read is not None else email.is_read,
         "is_important": is_important,
         "is_archived": is_archived,
         "sender_id": email.sender_id,

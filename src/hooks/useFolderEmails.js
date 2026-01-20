@@ -90,53 +90,33 @@ export default function useFolderEmails({
 
         switch (folderKey) {
           case "starred":
-            baseResult = await emailService.getEmailsByFilter({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              is_starred: true,
-            });
-            break;
           case "important":
-            baseResult = await emailService.getEmailsByFilter({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              is_important: true,
-            });
-            break;
           case "snoozed":
-            baseResult = await emailService.getEmailsByFilter({
-              page: currentPage,
-              pageSize: itemsPerPage,
-              is_snoozed: true,
-            });
-            break;
           case "sent":
           case "trash":
           case "spam":
           case "drafts":
           case "scheduled":
-            baseResult = await emailService.getEmailsByFilter({
+            baseResult = await emailService.getEmails({
               page: currentPage,
               pageSize: itemsPerPage,
               folder: folderKey,
             });
             break;
           case "all":
-            baseResult = await emailService.getEmailsByFilter({
+            baseResult = await emailService.getEmails({
               page: currentPage,
               pageSize: itemsPerPage,
-              folder: "inbox",
-              include_archived: true,
+              folder: "all mail",
             });
             break;
           case "inbox": {
             const categoryParam = activeInboxTab ? activeInboxTab.toLowerCase() : null;
-            baseResult = await emailService.getEmailsByFilter({
+            baseResult = await emailService.getEmails({
               page: currentPage,
               pageSize: itemsPerPage,
               folder: "inbox",
               category: categoryParam,
-              is_snoozed: false, // Exclude snoozed emails from inbox
             });
             break;
           }

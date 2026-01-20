@@ -9,21 +9,11 @@ This module provides helper functions for:
 from typing import Callable, Tuple, Dict, List
 from uuid import UUID
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
 
 from app.models.email import Email
-from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.schemas.bulk import BulkOperationResponse, BulkOperationResult
-from app.core.constants import EmailStatus
-
-# Sender statuses - these emails belong to the sender's perspective
-SENDER_STATUSES = [
-    EmailStatus.DRAFT.value,
-    EmailStatus.QUEUED.value,
-    EmailStatus.SENT.value,
-    EmailStatus.CANCELLED.value,
-]
+from app.utils.email_utils import get_perspective_email_filter
 
 
 def get_user_accessible_emails(
@@ -45,23 +35,10 @@ def get_user_accessible_emails(
         Tuple of (accessible emails list, inaccessible email ids list)
     """
     # Query emails that user can access (perspective-aware)
-    emails = db.query(Email).outerjoin(
-        EmailRecipient, Email.id == EmailRecipient.email_id
-    ).filter(
+    emails = db.query(Email).filter(
         Email.id.in_(email_ids),
-        or_(
-            # Sender's emails (draft/queued/sent/cancelled)
-            and_(
-                Email.sender_id == user_id,
-                Email.status.in_(SENDER_STATUSES)
-            ),
-            # Received emails where user is recipient
-            and_(
-                Email.status == EmailStatus.RECEIVED.value,
-                EmailRecipient.recipient_id == user_id
-            )
-        )
-    ).distinct().all()
+        get_perspective_email_filter(db, user_id)
+    ).all()
     
     found_ids = {e.id for e in emails}
     not_found = [eid for eid in email_ids if eid not in found_ids]
@@ -88,22 +65,9 @@ def get_user_accessible_threads(
         Tuple of (accessible threads list, inaccessible thread ids list)
     """
     # Find thread IDs where user has emails from their perspective
-    accessible_thread_ids = db.query(Email.thread_id).outerjoin(
-        EmailRecipient, Email.id == EmailRecipient.email_id
-    ).filter(
+    accessible_thread_ids = db.query(Email.thread_id).filter(
         Email.thread_id.in_(thread_ids),
-        or_(
-            # Sender's emails (draft/queued/sent/cancelled)
-            and_(
-                Email.sender_id == user_id,
-                Email.status.in_(SENDER_STATUSES)
-            ),
-            # Received emails where user is recipient
-            and_(
-                Email.status == EmailStatus.RECEIVED.value,
-                EmailRecipient.recipient_id == user_id
-            )
-        )
+        get_perspective_email_filter(db, user_id)
     ).distinct().all()
     
     accessible_ids = {row[0] for row in accessible_thread_ids}
@@ -177,22 +141,9 @@ def bulk_update_emails_with_threads(
         Tuple of (success_email_ids, thread_ids, failures_dict)
     """
     # Build query to get accessible emails with their thread IDs (perspective-aware)
-    query = db.query(Email.id, Email.thread_id).outerjoin(
-        EmailRecipient, Email.id == EmailRecipient.email_id
-    ).filter(
+    query = db.query(Email.id, Email.thread_id).filter(
         Email.id.in_(email_ids),
-        or_(
-            # Sender's emails (draft/queued/sent/cancelled)
-            and_(
-                Email.sender_id == user_id,
-                Email.status.in_(SENDER_STATUSES)
-            ),
-            # Received emails where user is recipient
-            and_(
-                Email.status == EmailStatus.RECEIVED.value,
-                EmailRecipient.recipient_id == user_id
-            )
-        )
+        get_perspective_email_filter(db, user_id)
     )
 
     # Apply additional filters if provided

@@ -27,14 +27,19 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Bulk Snooze](#bulk-snooze)
   - [Bulk Spam](#bulk-spam)
   - [Bulk Star](#bulk-star)
+  - [Bulk Thread Read](#bulk-thread-read)
   - [Bulk Thread Unstar](#bulk-thread-unstar)
   - [Bulk Unarchive](#bulk-unarchive)
   - [Bulk Unsnooze](#bulk-unsnooze)
   - [Bulk Unspam](#bulk-unspam)
 - [Db Snapshot API](#db-snapshot-api)
+  - [Get Db Changes](#get-db-changes)
+  - [Get Db Diff](#get-db-diff)
   - [Drop Db For Run](#drop-db-for-run)
   - [Get Db Schema](#get-db-schema)
   - [Get Db Snapshot](#get-db-snapshot)
+  - [Get Session Id](#get-session-id)
+  - [Get Session Status](#get-session-status)
 - [Emails API](#emails-api)
   - [List Emails](#list-emails)
   - [Create Email](#create-email)
@@ -68,6 +73,14 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Get Labels](#get-labels)
   - [Query Instant](#query-instant)
   - [Query Range](#query-range)
+- [Prompt Tasks API](#prompt-tasks-api)
+  - [List Prompt Tasks](#list-prompt-tasks)
+  - [Update All Prompt Tasks](#update-all-prompt-tasks)
+  - [Create Prompt Task](#create-prompt-task)
+  - [Bulk Replace Prompt Tasks](#bulk-replace-prompt-tasks)
+  - [Delete Prompt Task](#delete-prompt-task)
+  - [Get Prompt Task](#get-prompt-task)
+  - [Update Prompt Task](#update-prompt-task)
 - [Search API](#search-api)
   - [Search Emails](#search-emails)
   - [List Saved Searches](#list-saved-searches)
@@ -86,6 +99,7 @@ This document describes the REST API endpoints for the Deskzen application.
   - [Archive Thread](#archive-thread)
   - [Get Thread Emails](#get-thread-emails)
   - [Mark Thread Important Endpoint](#mark-thread-important-endpoint)
+  - [Mark Thread Read](#mark-thread-read)
   - [Restore Thread](#restore-thread)
   - [Snooze Thread](#snooze-thread)
   - [Mark Thread Spam Endpoint](#mark-thread-spam-endpoint)
@@ -1339,6 +1353,87 @@ Permissions:
 
 ---
 
+### Bulk Thread Read
+
+**POST** `/api/v1/bulk/threads/read`
+
+Mark all emails in multiple threads as read or unread.
+
+Sets is_read for all emails in the specified threads where the user
+is either the sender or recipient.
+
+Optimized to use a single bulk UPDATE query for all emails across all threads.
+
+Permissions:
+- Users can only mark emails in threads they have access to
+
+**Request Body**:
+
+```json
+{
+  "thread_ids": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "is_read": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "total_requested": 0,
+    "successful": 0,
+    "failed": 0,
+    "results": [
+      {
+        "id": null,
+        "success": null,
+        "error": null
+      }
+    ]
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Bulk Thread Unstar
 
 **POST** `/api/v1/bulk/threads/unstar`
@@ -1662,6 +1757,93 @@ Permissions:
 
 ## Db Snapshot API
 
+### Get Db Changes
+
+**GET** `/api/v1/db_changes`
+
+Compare the seed database with the current run database and return changes.
+
+Returns:
+    JSON object with:
+    - computed_at: ISO timestamp
+    - summary: Summary of changes (tables_with_changes, total_rows_added, etc.)
+    - changes_by_table: Dictionary mapping table names to their changes
+    - tables_unchanged: List of table names that didn't change
+
+**Responses**:
+
+- `200`: Successful Response
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Db Diff
+
+**GET** `/api/v1/db_diff`
+
+Get the diff between seed database and current run database.
+
+This endpoint compares the seed/template database (baseline) with the 
+current run database to show what has changed. This is used for 
+verification to compare actual changes against expected changes.
+
+Returns:
+    JSON object with:
+    - computed_at: ISO timestamp of when diff was computed
+    - summary: Statistics about changes (tables_with_changes, rows added/modified/deleted)
+    - changes_by_table: Dict mapping table names to their changes
+    - tables_unchanged: List of tables with no changes
+
+**Query Parameters**:
+
+- `session_id` (required, string): The session ID to use for the diff
+
+**Responses**:
+
+- `200`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ### Drop Db For Run
 
 **DELETE** `/api/v1/db_drop`
@@ -1675,23 +1857,6 @@ Safety:
 **Responses**:
 
 - `200`: Successful Response
-
-```json
-{
-  "success": false,
-  "message": "string",
-  "statusCode": 0,
-  "data": {
-    "success": false,
-    "run_id": "string",
-    "result": {
-      "dropped": false,
-      "database": "string",
-      "reason": "string"
-    }
-  }
-}
-```
 
 - `401`: Unauthorized
 
@@ -1710,27 +1875,16 @@ Safety:
 
 **GET** `/api/v1/db_schema`
 
-Return the database schema from the seed database.
+Return the static database schema for this gym.
 
-This endpoint inspects the seed database and returns the schema in a
-JSON schema-like format. No authentication required since this is
+This endpoint returns the pre-defined schema JSON that describes all tables,
+columns, types, and constraints. No authentication required since this is
 static metadata used for verification configuration.
 
 Returns:
-    JSON object with database schema in the format:
-    {
-        "properties": {
-            "tables": {
-                "properties": {
-                    "table_name": {
-                        "properties": {
-                            "column_name": {"type": "json_type"}
-                        }
-                    }
-                }
-            }
-        }
-    }
+    JSON object with database schema definition including:
+    - tables: Dictionary of table definitions with columns, types, constraints
+    - relationships: Foreign key relationships between tables
 
 **Responses**:
 
@@ -1779,9 +1933,15 @@ Example response:
     }
 }
 
+**Query Parameters**:
+
+- `session_id` (required, string): The session ID to use for the snapshot
+
 **Responses**:
 
 - `200`: Successful Response
+
+- `422`: Validation Error
 
 ```json
 {
@@ -1789,14 +1949,118 @@ Example response:
   "message": "string",
   "statusCode": 0,
   "data": {
-    "run_id": "string",
-    "captured_at": "string",
-    "tables": {},
-    "summary": {
-      "total_tables": 0,
-      "total_rows": 0,
-      "tables_with_errors": 0
-    }
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Session Id
+
+**GET** `/api/v1/get_session_id`
+
+Get the session ID for the current user.
+
+Returns:
+    JSON object with:
+    - session_id: The session ID for the current user
+
+**Query Parameters**:
+
+- `auth_token` (required, string): The authentication token to use for the session
+
+**Responses**:
+
+- `200`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Session Status
+
+**GET** `/api/v1/session_status`
+
+Get the status of the current session and its associated database.
+
+Returns:
+    JSON object with:
+    - session_active: boolean (token not expired)
+    - session_expires_at: ISO timestamp when session expires
+    - session_created_at: ISO timestamp when session was created
+    - db_active: boolean (last_used_at within 90 minutes)
+    - db_last_used_at: ISO timestamp of last database activity
+    - run_id: the session's run_id
+
+**Query Parameters**:
+
+- `session_id` (required, string): The session ID to use for the status
+
+**Responses**:
+
+- `200`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
   }
 }
 ```
@@ -1829,15 +2093,8 @@ Permissions:
 
 - `page` (optional, integer): Page number
 - `page_size` (optional, integer): Items per page
-- `folder` (optional, object): Filter by folder
-- `thread_id` (optional, object): Filter by thread ID to get all emails in a conversation
+- `folder` (optional, object): Filter by folder (case insensitive) e.g. 'Inbox', 'Starred', 'Snoozed', 'Important', 'Sent', 'Scheduled', 'Drafts', 'All Mail', 'Spam', 'Trash'
 - `category` (optional, object): Filter by category
-- `is_read` (optional, object): Filter by read status
-- `is_starred` (optional, object): Filter by starred
-- `is_snoozed` (optional, object): Filter by snoozed status (True=snoozed, False=not snoozed)
-- `is_important` (optional, object): Filter by important
-- `include_archived` (optional, object): Include archived threads
-- `search` (optional, object): Search in subject and body
 
 **Responses**:
 
@@ -3946,6 +4203,472 @@ Example:
 
 ---
 
+## Prompt Tasks API
+
+### List Prompt Tasks
+
+**GET** `/api/v1/prompt-tasks`
+
+List all prompt tasks with optional search.
+
+**Query Parameters**:
+
+- `q` (optional, object): Search query for ID and prompt
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "prompt_tasks": [
+      {
+        "prompt": null,
+        "db_verification_config": null,
+        "id": null,
+        "created_at": null,
+        "updated_at": null
+      }
+    ],
+    "total": 0
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update All Prompt Tasks
+
+**PATCH** `/api/v1/prompt-tasks`
+
+Update multiple prompt tasks at once.
+
+**Request Body**:
+
+```json
+[
+  {
+    "id": "string",
+    "prompt": "string",
+    "db_verification_config": {}
+  }
+]
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "prompt_tasks": [
+      {
+        "prompt": null,
+        "db_verification_config": null,
+        "id": null,
+        "created_at": null,
+        "updated_at": null
+      }
+    ],
+    "total": 0
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Create Prompt Task
+
+**POST** `/api/v1/prompt-tasks`
+
+Create a new prompt task.
+
+**Request Body**:
+
+```json
+{
+  "prompt": "string",
+  "db_verification_config": {},
+  "id": "string"
+}
+```
+
+**Responses**:
+
+- `201`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "prompt": "string",
+    "db_verification_config": {},
+    "id": "string",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Bulk Replace Prompt Tasks
+
+**POST** `/api/v1/prompt-tasks/bulk-replace`
+
+Replace all prompt tasks with the provided list.
+
+- Deletes all existing records from database
+- Writes new tasks to database
+
+**Request Body**:
+
+```json
+{
+  "prompt_tasks": [
+    {
+      "id": "string",
+      "prompt": "string",
+      "db_verification_config": {}
+    }
+  ]
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "prompt_tasks": [
+      {
+        "prompt": null,
+        "db_verification_config": null,
+        "id": null,
+        "created_at": null,
+        "updated_at": null
+      }
+    ],
+    "total": 0
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Delete Prompt Task
+
+**DELETE** `/api/v1/prompt-tasks/{prompt_task_id}`
+
+Delete a prompt task.
+
+**Path Parameters**:
+
+- `prompt_task_id` (required, string)
+
+**Responses**:
+
+- `204`: Successful Response
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Get Prompt Task
+
+**GET** `/api/v1/prompt-tasks/{prompt_task_id}`
+
+Get a single prompt task by ID.
+
+**Path Parameters**:
+
+- `prompt_task_id` (required, string)
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "prompt": "string",
+    "db_verification_config": {},
+    "id": "string",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Update Prompt Task
+
+**PATCH** `/api/v1/prompt-tasks/{prompt_task_id}`
+
+Update a prompt task.
+
+**Path Parameters**:
+
+- `prompt_task_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "new_id": "string",
+  "prompt": "string",
+  "db_verification_config": {}
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "prompt": "string",
+    "db_verification_config": {},
+    "id": "string",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
 ## Search API
 
 ### Search Emails
@@ -4989,6 +5712,80 @@ Other users' important status for the same thread is not affected.
     "sender_id": "00000000-0000-0000-0000-000000000000",
     "created_at": "2024-01-01T00:00:00Z",
     "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+- `422`: Validation Error
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "errors": [
+      {
+        "loc": null,
+        "msg": null,
+        "type": null
+      }
+    ]
+  }
+}
+```
+
+- `401`: Unauthorized
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {}
+}
+```
+
+---
+
+### Mark Thread Read
+
+**PATCH** `/api/v1/threads/{thread_id}/read`
+
+Mark all emails in a thread as read or unread for the current user.
+
+Updates the is_read flag for all emails in the thread where the user
+is either the sender or recipient.
+
+Permissions:
+- Users can only mark emails in threads they have access to
+
+**Path Parameters**:
+
+- `thread_id` (required, string)
+
+**Request Body**:
+
+```json
+{
+  "is_read": false
+}
+```
+
+**Responses**:
+
+- `200`: Successful Response
+
+```json
+{
+  "success": false,
+  "message": "string",
+  "statusCode": 0,
+  "data": {
+    "success": true,
+    "message": "string",
+    "thread_id": "00000000-0000-0000-0000-000000000000",
+    "emails_count": 0
   }
 }
 ```
@@ -6539,19 +7336,38 @@ Raises:
 
 Delete a user.
 
+Supports both soft delete and permanent delete:
+- Soft delete (permanent=False, default): Sets user's active field to False.
+  The user data is preserved but they won't appear in normal queries.
+- Permanent delete (permanent=True): Removes the user and cascades to all related data:
+  - User's labels (system and custom) - CASCADE
+  - User's email templates - CASCADE
+  - User's saved searches - CASCADE
+  - User's emails (as sender) - CASCADE
+  - User's threads (as owner) - CASCADE
+  - Thread labels and metadata - CASCADE via threads
+  - Email recipients where user is recipient - SET NULL by DB
+
+All cascade behavior for permanent delete is handled at the database level via foreign key constraints.
+
 Permissions:
 - admin: Can delete any user
 - user: Not allowed
 
 Args:
     user_id: User ID.
-    
+    permanent: If True, permanently delete. If False, soft delete (default).
+
 Raises:
     HTTPException: 404 if user not found.
 
 **Path Parameters**:
 
 - `user_id` (required, string)
+
+**Query Parameters**:
+
+- `permanent` (optional, boolean): If true, permanently delete the user. If false, soft delete by setting active=False.
 
 **Responses**:
 

@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  IconButton,
-  Box,
-  Typography,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Box, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 export const SuccessModal = ({ isOpen, onClose, details }) => {
@@ -66,7 +57,9 @@ export const SuccessModal = ({ isOpen, onClose, details }) => {
               <Typography sx={{ fontSize: "13px" }}>{formatDateTime(details.finished_at)}</Typography>
 
               <Typography sx={{ color: "#68737D", fontSize: "13px" }}>Duration:</Typography>
-              <Typography sx={{ fontSize: "13px" }}>{calculateDuration(details.started_at, details.finished_at)}</Typography>
+              <Typography sx={{ fontSize: "13px" }}>
+                {calculateDuration(details.started_at, details.finished_at)}
+              </Typography>
             </Box>
           </Box>
 
@@ -151,9 +144,7 @@ export const ErrorModal = ({ isOpen, onClose, details, onCancel, isCancelling })
               mb: 2,
             }}
           >
-            <Typography sx={{ fontSize: "13px", color: "#CC3340", fontWeight: 600, mb: 1 }}>
-              Error Message:
-            </Typography>
+            <Typography sx={{ fontSize: "13px", color: "#CC3340", fontWeight: 600, mb: 1 }}>Error Message:</Typography>
             <Typography sx={{ fontSize: "13px", color: "#2F3941", fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
               {details.message}
             </Typography>

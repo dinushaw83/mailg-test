@@ -143,7 +143,11 @@ const ImportForm = ({
                 <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#1f73b7" }}>Uploading file...</Typography>
                 <Typography sx={{ fontSize: "13px", fontWeight: 600, color: "#1f73b7" }}>{uploadProgress}%</Typography>
               </Box>
-              <LinearProgress variant="determinate" value={uploadProgress} sx={{ height: "8px", borderRadius: "4px" }} />
+              <LinearProgress
+                variant="determinate"
+                value={uploadProgress}
+                sx={{ height: "8px", borderRadius: "4px" }}
+              />
               <Typography
                 sx={{
                   fontSize: "12px",

@@ -48,7 +48,19 @@ class ResponseWrapperMiddleware(BaseHTTPMiddleware):
     """Middleware to wrap all responses in a consistent format."""
     
     # Paths to skip wrapping
-    SKIP_PATHS = ["/docs", "/redoc", "/openapi.json", "/favicon.ico"]
+    SKIP_PATHS = [
+        "/docs", "/redoc", "/openapi.json", "/favicon.ico",
+        # db_snapshot endpoints
+        "/api/v1/db_snapshot",
+        "/api/v1/db_drop",
+        "/api/v1/db_changes",
+        "/api/v1/db_schema",
+        "/api/v1/db_diff",
+        "/api/v1/session_status",
+        "/api/v1/get_session_id",
+        # prompt_tasks endpoints
+        "/api/v1/prompt-tasks",
+    ]
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         """Process the request and wrap the response."""
@@ -151,10 +163,8 @@ async def response_wrapper_middleware(request: Request, call_next: Callable) -> 
         "data": {...}
     }
     """
-    # Paths to skip wrapping
-    skip_paths = ["/docs", "/redoc", "/openapi.json", "/favicon.ico"]
-    
-    if any(request.url.path.startswith(path) for path in skip_paths):
+    # Reuse paths from the class-based middleware
+    if any(request.url.path.startswith(path) for path in ResponseWrapperMiddleware.SKIP_PATHS):
         return await call_next(request)
     
     if request.method == "OPTIONS":

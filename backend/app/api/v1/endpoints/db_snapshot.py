@@ -2,15 +2,22 @@
 
 from app.auth.rbac import authorized
 from fastapi import APIRouter, Depends, Query, Request, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import text, inspect
-from datetime import datetime
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import text, inspect, create_engine
+from sqlalchemy.engine import make_url
+from sqlalchemy.pool import NullPool
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional
+from pathlib import Path
 import logging
+import json
 
+from app.auth.token_manager import get_token_manager
 from app.db.session import get_db, get_seed_db
-from app.db.run_router import drop_run_database
-from app.schemas.db_snapshot import DbSnapshotResponse, DbDropResponse
+from app.db.run_router import drop_run_database, get_run_db_name
+from app.core.config import DATABASE_URL, POSTGRES_TEMPLATE_DB, POSTGRES_ADMIN_DB, JWT_ACCESS_TOKEN_TTL_SECONDS
+from app.db.registry import _admin_engine, ensure_registry_table
+from app.db.registry import get_last_used_at
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +28,56 @@ OPTIONAL_EXCLUDE_TABLES = {
     # Add tables here if they're too large or not needed
     # 'api_logs',  # Example: might be very large
 }
+
+
+def _run_db_exists(run_id: str) -> bool:
+    """Check if the run database already exists for the given run_id.
+    
+    Args:
+        run_id: The run/session ID to check.
+        
+    Returns:
+        True if the database exists, False otherwise.
+    """
+    db_name = get_run_db_name(run_id)
+    engine = _admin_engine()
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT 1 FROM pg_database WHERE datname = :name"),
+                {"name": db_name}
+            ).scalar()
+            return result is not None
+    except Exception as e:
+        logger.error(f"Error checking if run database exists for run_id={run_id}: {e}")
+        return False
+
+
+def _get_existing_run_engine(run_id: str):
+    """Get a SQLAlchemy engine for an existing run database WITHOUT auto-creating it.
+    
+    Unlike get_engine from db_router, this does NOT clone/create the database.
+    Use this when you want to fail if the database doesn't exist.
+    
+    Args:
+        run_id: The run/session ID.
+        
+    Returns:
+        SQLAlchemy engine for the run database.
+        
+    Raises:
+        HTTPException: If the database doesn't exist (session expired).
+    """
+    if not _run_db_exists(run_id):
+        raise HTTPException(
+            status_code=410,
+            detail="Session expired or database not found. Please start a new session."
+        )
+    
+    # Create engine directly without calling ensure_run_database
+    run_db = get_run_db_name(run_id)
+    run_url = make_url(DATABASE_URL).set(database=run_db)
+    return create_engine(run_url, pool_pre_ping=True, poolclass=NullPool)
 
 
 def serialize_value(value: Any) -> Any:
@@ -41,6 +98,43 @@ def serialize_value(value: Any) -> Any:
         return None
     # Handle other types as needed
     return value
+
+
+def get_table_primary_keys(db: Session) -> Dict[str, List[str]]:
+    """Get primary key columns for all tables in the database.
+    
+    Args:
+        db: Database session.
+        
+    Returns:
+        Dict mapping table names to list of primary key column names.
+    """
+    pk_map = {}
+    try:
+        inspector = inspect(db.get_bind())
+        try:
+            tables = inspector.get_table_names(schema="public")
+        except TypeError:
+            tables = inspector.get_table_names()
+        
+        for table_name in tables:
+            try:
+                pk_constraint = inspector.get_pk_constraint(table_name, schema="public")
+                pk_columns = pk_constraint.get("constrained_columns", [])
+                if pk_columns:
+                    pk_map[table_name] = pk_columns
+                else:
+                    # Fallback to 'id' if no PK found
+                    pk_map[table_name] = ["id"]
+            except Exception as e:
+                logger.warning(f"Could not get PK for table {table_name}: {e}")
+                pk_map[table_name] = ["id"]
+        
+        logger.debug(f"Primary keys: {pk_map}")
+    except Exception as e:
+        logger.error(f"Error getting primary keys: {e}", exc_info=True)
+    
+    return pk_map
 
 
 def get_all_tables(db: Session) -> List[str]:
@@ -92,11 +186,9 @@ def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
             logger.warning(f"Table {table_name} has no columns or doesn't exist")
             return {"rows": []}
         
-        # Query all rows using SQLAlchemy's safer identifier quoting
-        # Use quoted_name to properly escape the table identifier
-        from sqlalchemy.sql import quoted_name
-        safe_table_name = quoted_name(table_name, quote=True)
-        select_query = text(f'SELECT * FROM {safe_table_name}')
+        # Query all rows using parameterized query where possible
+        # For SELECT * we need to use the validated table name
+        select_query = text(f'SELECT * FROM "{table_name}"')
         result = db.execute(select_query)
         db_rows = result.fetchall()
         
@@ -137,6 +229,116 @@ def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
                 serialized_dict[key] = serialize_value(value)
             rows.append(serialized_dict)
         
+        # Helper function to fetch related object
+        def fetch_related_object(related_table: str, related_id: int) -> Optional[Dict[str, Any]]:
+            """Fetch a related object from another table."""
+            try:
+                query = text(f'SELECT * FROM "{related_table}" WHERE id = :id')
+                result = db.execute(query, {"id": related_id})
+                row = result.fetchone()
+                
+                if row:
+                    obj_dict = {}
+                    if hasattr(row, '_mapping'):
+                        obj_dict = dict(row._mapping)
+                    elif hasattr(row, '_asdict'):
+                        obj_dict = row._asdict()
+                    elif hasattr(row, '_fields'):
+                        obj_dict = {col: getattr(row, col) for col in row._fields}
+                    else:
+                        # Get columns for the related table
+                        related_inspector = inspect(db.get_bind())
+                        related_columns_info = related_inspector.get_columns(related_table)
+                        related_columns = [c["name"] for c in related_columns_info]
+                        for i, col in enumerate(related_columns):
+                            if i < len(row):
+                                obj_dict[col] = row[i]
+                    
+                    # Serialize values
+                    serialized_obj = {}
+                    for key, value in obj_dict.items():
+                        serialized_obj[key] = serialize_value(value)
+                    
+                    return serialized_obj
+            except Exception as e:
+                logger.warning(f"Could not fetch {related_table} with id {related_id}: {e}")
+            return None
+
+        # Special handling for tickets table: include related objects when foreign keys are present
+        if table_name == "tickets":
+            # Build a lookup map of ticket_id -> ticket for efficient parent lookup
+            ticket_lookup = {ticket["id"]: ticket for ticket in rows if "id" in ticket}
+            
+            for ticket in rows:
+                # Include parent ticket object when parent_id is present
+                parent_id = ticket.get("parent_id")
+                if parent_id is not None:
+                    # Find the parent ticket in the same result set
+                    parent_ticket = ticket_lookup.get(parent_id)
+                    if parent_ticket:
+                        # Add the parent ticket object (excluding its own parent to avoid deep nesting)
+                        parent_copy = parent_ticket.copy()
+                        # Remove the parent field from the parent to avoid circular references
+                        parent_copy.pop("parent", None)
+                        ticket["parent"] = parent_copy
+                    else:
+                        # Parent might not be in the result set, try to fetch it separately
+                        parent_obj = fetch_related_object("tickets", parent_id)
+                        if parent_obj:
+                            ticket["parent"] = parent_obj
+                
+                # Include team object when team_id is present
+                team_id = ticket.get("team_id")
+                if team_id is not None:
+                    team_obj = fetch_related_object("teams", team_id)
+                    if team_obj:
+                        ticket["team"] = team_obj
+                
+                # Include requester object when requester_id is present
+                requester_id = ticket.get("requester_id")
+                if requester_id is not None:
+                    requester_obj = fetch_related_object("users", requester_id)
+                    if requester_obj:
+                        ticket["requester"] = requester_obj
+                
+                # Include assignee object when assignee_id is present
+                assignee_id = ticket.get("assignee_id")
+                if assignee_id is not None:
+                    assignee_obj = fetch_related_object("users", assignee_id)
+                    if assignee_obj:
+                        ticket["assignee"] = assignee_obj
+                
+                # Include project object when project_id is present
+                project_id = ticket.get("project_id")
+                if project_id is not None:
+                    project_obj = fetch_related_object("projects", project_id)
+                    if project_obj:
+                        ticket["project"] = project_obj
+                
+                # Include board object when board_id is present
+                board_id = ticket.get("board_id")
+                if board_id is not None:
+                    board_obj = fetch_related_object("boards", board_id)
+                    if board_obj:
+                        ticket["board"] = board_obj
+
+        # Special handling for ticket_links table: include source and target objects
+        if table_name == "ticket_links":
+            for link in rows:
+                # Include source ticket object
+                source_id = link.get("source_ticket_id")
+                if source_id is not None:
+                    source_obj = fetch_related_object("tickets", source_id)
+                    if source_obj:
+                        link["source_ticket"] = source_obj
+                
+                # Include target ticket object
+                target_id = link.get("target_ticket_id")
+                if target_id is not None:
+                    target_obj = fetch_related_object("tickets", target_id)
+                    if target_obj:
+                        link["target_ticket"] = target_obj
+        
         logger.debug(f"Retrieved {len(rows)} rows from table {table_name}")
         return {"rows": rows}
         
@@ -145,10 +347,9 @@ def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
         return {"error": str(e), "rows": []}
 
 
-@router.get("/db_snapshot", response_model=DbSnapshotResponse, dependencies=[Depends(authorized())])
+@router.get("/db_snapshot")
 def get_db_snapshot(
-    request: Request,
-    db: Session = Depends(get_db)
+    session_id: str = Query(..., description="The session ID to use for the snapshot"),
 ):
     """
     Capture a snapshot of the current database state for a specific run_id.
@@ -177,23 +378,19 @@ def get_db_snapshot(
         }
     }
     """
-    # Get run_id from header (via middleware) or query parameter
-    effective_run_id = None
-    if hasattr(request.state, 'run_id') and request.state.run_id:
-        effective_run_id = request.state.run_id
-    
-    if not effective_run_id:
-        logger.error("db_snapshot called without run_id")
+    if not session_id:
+        logger.error("db_snapshot called without session_id")
         raise HTTPException(
             status_code=400,
-            detail="run_id required. Ensure you are authenticated and have the correct run_id in your token."
+            detail="session_id required."
         )
     
+    effective_run_id = session_id
     logger.info(f"Creating database snapshot for run_id: {effective_run_id}")
     
     # Initialize snapshot structure
     snapshot = {
-        "run_id": effective_run_id,
+        "session_id": effective_run_id,
         "captured_at": datetime.now().isoformat(),
         "tables": {},
         "summary": {
@@ -204,56 +401,63 @@ def get_db_snapshot(
     }
     
     try:
+        # Get engine for existing database (raises 410 if not found)
+        engine = _get_existing_run_engine(effective_run_id)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
         
-        # Get all tables in the database
-        tables = get_all_tables(db)
-        logger.info(f"Found {len(tables)} tables to snapshot")
-        
-        # Filter out optional exclude tables
-        tables = [t for t in tables if t not in OPTIONAL_EXCLUDE_TABLES]
-        
-        if not tables:
-            logger.warning(f"No tables found in database for run_id: {effective_run_id}")
-        
-        total_rows = 0
-        tables_with_errors = 0
-        
-        # Query each table
-        for table_name in tables:
-            logger.debug(f"Querying table: {table_name}")
-            try:
-                table_data = get_table_data(db, table_name)
-                
-                if "error" in table_data:
-                    logger.error(f"Error querying table {table_name}: {table_data['error']}")
+        try:
+            # Get all tables in the database
+            tables = get_all_tables(db)
+            logger.info(f"Found {len(tables)} tables to snapshot")
+            
+            # Filter out optional exclude tables
+            tables = [t for t in tables if t not in OPTIONAL_EXCLUDE_TABLES]
+            
+            if not tables:
+                logger.warning(f"No tables found in database for run_id: {effective_run_id}")
+            
+            total_rows = 0
+            tables_with_errors = 0
+            
+            # Query each table
+            for table_name in tables:
+                logger.debug(f"Querying table: {table_name}")
+                try:
+                    table_data = get_table_data(db, table_name)
+                    
+                    if "error" in table_data:
+                        logger.error(f"Error querying table {table_name}: {table_data['error']}")
+                        snapshot["tables"][table_name] = {
+                            "error": str(table_data["error"]),
+                            "rows": []
+                        }
+                        tables_with_errors += 1
+                    else:
+                        rows = table_data["rows"]
+                        snapshot["tables"][table_name] = rows
+                        total_rows += len(rows)
+                        logger.debug(f"Table {table_name}: {len(rows)} rows")
+                except Exception as table_error:
+                    logger.error(f"Unexpected error processing table {table_name}: {table_error}", exc_info=True)
                     snapshot["tables"][table_name] = {
-                        "error": str(table_data["error"]),
+                        "error": str(table_error),
                         "rows": []
                     }
                     tables_with_errors += 1
-                else:
-                    rows = table_data["rows"]
-                    snapshot["tables"][table_name] = rows
-                    total_rows += len(rows)
-                    logger.debug(f"Table {table_name}: {len(rows)} rows")
-            except Exception as table_error:
-                logger.error(f"Unexpected error processing table {table_name}: {table_error}", exc_info=True)
-                snapshot["tables"][table_name] = {
-                    "error": str(table_error),
-                    "rows": []
-                }
-                tables_with_errors += 1
-        
-        # Update summary
-        snapshot["summary"] = {
-            "total_tables": len(tables),
-            "total_rows": total_rows,
-            "tables_with_errors": tables_with_errors
-        }
-        
-        logger.info(f"Snapshot complete: {snapshot['summary']['total_tables']} tables, {snapshot['summary']['total_rows']} rows")
-        
-        return snapshot
+            
+            # Update summary
+            snapshot["summary"] = {
+                "total_tables": len(tables),
+                "total_rows": total_rows,
+                "tables_with_errors": tables_with_errors
+            }
+            
+            logger.info(f"Snapshot complete: {snapshot['summary']['total_tables']} tables, {snapshot['summary']['total_rows']} rows")
+            
+            return snapshot
+        finally:
+            db.close()
         
     except HTTPException:
         # Re-raise HTTP exceptions as-is
@@ -266,7 +470,7 @@ def get_db_snapshot(
         )
 
 
-@router.delete("/db_drop", response_model=DbDropResponse, dependencies=[Depends(authorized())])
+@router.delete("/db_drop",dependencies=[Depends(authorized())])
 def drop_db_for_run(
     request: Request,
 ):
@@ -287,7 +491,7 @@ def drop_db_for_run(
         )
 
     # Explicitly protect special run ids early (in addition to deeper DB checks)
-    if effective_run_id in ("seed", "deskzen_seed", "template", "default"):
+    if effective_run_id in ("seed", "mira_seed", "template", "default", "mailg_seed"):
         raise HTTPException(status_code=400, detail=f"Refusing to drop protected run_id '{effective_run_id}'")
 
     try:
@@ -306,6 +510,7 @@ def drop_db_for_run(
         "run_id": effective_run_id,
         "result": result,
     }
+
 
 
 def _sql_type_to_json_type(sql_type: str) -> str:
@@ -332,71 +537,695 @@ def _sql_type_to_json_type(sql_type: str) -> str:
     return "string"
 
 
-@router.get("/db_schema")
-def get_db_schema(db: Session = Depends(get_seed_db)):
-    """
-    Return the database schema from the seed database.
+def _compute_diff(
+    before_snapshot: Dict[str, Any],
+    after_snapshot: Dict[str, Any],
+    ignore_tables: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """Compare two database snapshots and calculate changes.
     
-    This endpoint inspects the seed database and returns the schema in a
-    JSON schema-like format. No authentication required since this is
+    Args:
+        before_snapshot: The seed/before database state
+        after_snapshot: The current/after database state  
+        ignore_tables: Tables to skip during comparison
+        
+    Returns:
+        Dictionary with computed_at, summary, changes_by_table, and tables_unchanged.
+        Format matches Deskzen structure:
+        {
+            "computed_at": "ISO timestamp",
+            "summary": {
+                "tables_with_changes": int,
+                "total_rows_added": int,
+                "total_rows_modified": int,
+                "total_rows_deleted": int
+            },
+            "changes_by_table": {
+                "table_name": {
+                    "added": [
+                        {
+                            "id": 1,
+                            "name": "xyz",
+                            ...,
+                            "_context": {
+                                "context_before": [...],
+                                "context_after": [...],
+                                "row_index": int,
+                                "total_rows": int
+                            }
+                        }
+                    ],
+                    "modified": [...],
+                    "deleted": [...]
+                }
+            },
+            "tables_unchanged": ["table1", "table2", ...]
+        }
+    """
+    ignore_tables = ignore_tables or []
+    
+    diff = {
+        "computed_at": datetime.now().isoformat(),
+        "summary": {
+            "tables_with_changes": 0,
+            "total_rows_added": 0,
+            "total_rows_modified": 0,
+            "total_rows_deleted": 0
+        },
+        "changes_by_table": {},
+        "tables_unchanged": []
+    }
+    
+    before_tables = before_snapshot.get("tables", {})
+    after_tables = after_snapshot.get("tables", {})
+    
+    # Get primary keys from snapshots (prefer after_snapshot, fallback to before)
+    primary_keys = after_snapshot.get("primary_keys", {}) or before_snapshot.get("primary_keys", {})
+    
+    # Get all table names from both snapshots
+    all_tables = set(before_tables.keys()) | set(after_tables.keys())
+    
+    for table_name in all_tables:
+        if table_name in ignore_tables:
+            continue
+            
+        before_rows = before_tables.get(table_name, [])
+        after_rows = after_tables.get(table_name, [])
+        
+        # Handle error entries
+        if isinstance(before_rows, dict) and "error" in before_rows:
+            before_rows = before_rows.get("rows", [])
+        if isinstance(after_rows, dict) and "error" in after_rows:
+            after_rows = after_rows.get("rows", [])
+        
+        # Get primary key columns for this table (default to 'id')
+        pk_columns = primary_keys.get(table_name, ["id"])
+        
+        # Create lookup by primary key for comparison
+        before_by_key = {}
+        for row in before_rows:
+            key = _make_row_key(row, pk_columns)
+            if key is not None:
+                before_by_key[key] = row
+                
+        after_by_key = {}
+        for row in after_rows:
+            key = _make_row_key(row, pk_columns)
+            if key is not None:
+                after_by_key[key] = row
+        
+        # Sort rows by primary key for context calculation
+        def _sort_key(row):
+            key = _make_row_key(row, pk_columns)
+            if key is None:
+                return (float('inf'),)  # Put rows without PK at the end
+            return key
+        
+        sorted_after_rows = sorted(after_rows, key=_sort_key)
+        sorted_before_rows = sorted(before_rows, key=_sort_key)
+        total_after_rows = len(sorted_after_rows)
+        total_before_rows = len(sorted_before_rows)
+        
+        # Find added rows with context
+        added_rows = []
+        for idx, row in enumerate(sorted_after_rows):
+            row_key = _make_row_key(row, pk_columns)
+            if row_key is not None and row_key not in before_by_key:
+                # Get context: rows before and after this one
+                # Include 1 row before and up to 2 rows after (matching Deskzen sample)
+                context_before = sorted_after_rows[max(0, idx - 1):idx] if idx > 0 else []
+                context_after = sorted_after_rows[idx + 1:min(idx + 3, total_after_rows)] if idx < total_after_rows - 1 else []
+                
+                # Create row with context
+                row_with_context = row.copy()
+                row_with_context["_context"] = {
+                    "context_before": context_before,
+                    "context_after": context_after,
+                    "row_index": idx + 1,  # 1-indexed
+                    "total_rows": total_after_rows
+                }
+                added_rows.append(row_with_context)
+        
+        # Find modified rows with before and after context
+        modified_rows = []
+        for row_key in after_by_key:
+            if row_key in before_by_key:
+                before_row = before_by_key[row_key]
+                after_row = after_by_key[row_key]
+                
+                # Find all changed fields
+                changes = {}
+                for key in set(before_row.keys()) | set(after_row.keys()):
+                    before_val = before_row.get(key)
+                    after_val = after_row.get(key)
+                    if before_val != after_val:
+                        changes[key] = {
+                            "before": before_val,
+                            "after": after_val
+                        }
+                
+                # Only add if there are actual changes
+                if changes:
+                    # Find the row index in sorted_after_rows for after context
+                    after_row_idx = next((i for i, r in enumerate(sorted_after_rows) if _make_row_key(r, pk_columns) == row_key), None)
+                    # Find the row index in sorted_before_rows for before context
+                    before_row_idx = next((i for i, r in enumerate(sorted_before_rows) if _make_row_key(r, pk_columns) == row_key), None)
+                    
+                    # Build primary key object
+                    primary_key_obj = {}
+                    for pk_col in pk_columns:
+                        primary_key_obj[pk_col] = after_row.get(pk_col)
+                    
+                    modified_entry = {
+                        "primary_key": primary_key_obj,
+                        "changes": changes,
+                        "before": before_row.copy(),
+                        "after": after_row.copy()
+                    }
+                    
+                    # Add before_context
+                    if before_row_idx is not None:
+                        before_context_before = sorted_before_rows[max(0, before_row_idx - 1):before_row_idx] if before_row_idx > 0 else []
+                        before_context_after = sorted_before_rows[before_row_idx + 1:min(before_row_idx + 3, total_before_rows)] if before_row_idx < total_before_rows - 1 else []
+                        
+                        modified_entry["before_context"] = {
+                            "context_before": before_context_before,
+                            "context_after": before_context_after,
+                            "row_index": before_row_idx + 1,  # 1-indexed
+                            "total_rows": total_before_rows
+                        }
+                    
+                    # Add after_context
+                    if after_row_idx is not None:
+                        after_context_before = sorted_after_rows[max(0, after_row_idx - 1):after_row_idx] if after_row_idx > 0 else []
+                        after_context_after = sorted_after_rows[after_row_idx + 1:min(after_row_idx + 3, total_after_rows)] if after_row_idx < total_after_rows - 1 else []
+                        
+                        modified_entry["after_context"] = {
+                            "context_before": after_context_before,
+                            "context_after": after_context_after,
+                            "row_index": after_row_idx + 1,  # 1-indexed
+                            "total_rows": total_after_rows
+                        }
+                    
+                    modified_rows.append(modified_entry)
+        
+        # Find deleted rows with context
+        deleted_rows = []
+        for idx, row in enumerate(sorted_before_rows):
+            row_key = _make_row_key(row, pk_columns)
+            if row_key is not None and row_key not in after_by_key:
+                # Get context: rows before and after this one
+                context_before = sorted_before_rows[max(0, idx - 1):idx] if idx > 0 else []
+                context_after = sorted_before_rows[idx + 1:min(idx + 3, total_before_rows)] if idx < total_before_rows - 1 else []
+                
+                # Create row with context
+                row_with_context = row.copy()
+                row_with_context["_context"] = {
+                    "context_before": context_before,
+                    "context_after": context_after,
+                    "row_index": idx + 1,  # 1-indexed
+                    "total_rows": total_before_rows
+                }
+                deleted_rows.append(row_with_context)
+        
+        # Only add to diff if there are changes
+        if len(added_rows) > 0 or len(modified_rows) > 0 or len(deleted_rows) > 0:
+            diff["changes_by_table"][table_name] = {
+                "added": added_rows,
+                "modified": modified_rows,
+                "deleted": deleted_rows,
+                "primary_key_columns": pk_columns
+            }
+            diff["summary"]["tables_with_changes"] += 1
+            diff["summary"]["total_rows_added"] += len(added_rows)
+            diff["summary"]["total_rows_modified"] += len(modified_rows)
+            diff["summary"]["total_rows_deleted"] += len(deleted_rows)
+        else:
+            diff["tables_unchanged"].append(table_name)
+    
+    return diff
+
+
+@router.get("/db_changes", dependencies=[Depends(authorized())])
+def get_db_changes(
+    request: Request,
+    db: Session = Depends(get_db),
+    seed_db: Session = Depends(get_seed_db)
+):
+    """
+    Compare the seed database with the current run database and return changes.
+    
+    Returns:
+        JSON object with:
+        - computed_at: ISO timestamp
+        - summary: Summary of changes (tables_with_changes, total_rows_added, etc.)
+        - changes_by_table: Dictionary mapping table names to their changes
+        - tables_unchanged: List of table names that didn't change
+    """
+    try:
+        # Get run_id
+        effective_run_id = None
+        if hasattr(request.state, 'run_id') and request.state.run_id:
+            effective_run_id = request.state.run_id
+        
+        if not effective_run_id:
+            raise HTTPException(
+                status_code=400,
+                detail="run_id required. Ensure you are authenticated and have the correct run_id in your token."
+            )
+        
+        logger.info(f"Comparing databases for run_id: {effective_run_id}")
+        
+        # Get snapshots for both databases with primary keys
+        # Initial snapshot (seed database)
+        initial_tables = get_all_tables(seed_db)
+        initial_snapshot = {
+            "tables": {},
+            "primary_keys": get_table_primary_keys(seed_db)
+        }
+        for table_name in initial_tables:
+            if table_name not in OPTIONAL_EXCLUDE_TABLES:
+                table_data = get_table_data(seed_db, table_name)
+                if "error" not in table_data:
+                    initial_snapshot["tables"][table_name] = table_data.get("rows", [])
+        
+        # Current snapshot (run database)
+        current_tables = get_all_tables(db)
+        current_snapshot = {
+            "tables": {},
+            "primary_keys": get_table_primary_keys(db)
+        }
+        for table_name in current_tables:
+            if table_name not in OPTIONAL_EXCLUDE_TABLES:
+                table_data = get_table_data(db, table_name)
+                if "error" not in table_data:
+                    current_snapshot["tables"][table_name] = table_data.get("rows", [])
+        
+        # Compare snapshots
+        result = _compute_diff(
+            before_snapshot=initial_snapshot,
+            after_snapshot=current_snapshot
+        )
+        
+        logger.info(f"Database comparison complete: {result['summary']['tables_with_changes']} tables changed")
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error comparing databases: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to compare databases: {str(e)}"
+        )
+
+
+@router.get("/db_schema")
+def get_db_schema():
+    """
+    Return the static database schema for this gym.
+    
+    This endpoint returns the pre-defined schema JSON that describes all tables,
+    columns, types, and constraints. No authentication required since this is
     static metadata used for verification configuration.
     
     Returns:
-        JSON object with database schema in the format:
-        {
-            "properties": {
-                "tables": {
+        JSON object with database schema definition including:
+        - tables: Dictionary of table definitions with columns, types, constraints
+        - relationships: Foreign key relationships between tables
+    """
+    try:
+        # Path to the static schema file - adjust path as needed
+        # Try multiple possible locations
+        possible_paths = [
+            Path(__file__).parent.parent.parent / "database_schema.json",
+            Path(__file__).parent.parent.parent.parent / "database_schema.json",
+            Path(__file__).parent.parent.parent / "utils" / "import_data" / "config" / "deskzen-schema.json",
+        ]
+        
+        schema_path = None
+        for path in possible_paths:
+            if path.exists():
+                schema_path = path
+                break
+        
+        if not schema_path:
+            logger.warning(f"Schema file not found in any of: {possible_paths}")
+            # Fallback to inspecting database
+            from app.db.session import get_seed_db
+            db = next(get_seed_db())
+            try:
+                inspector = inspect(db.get_bind())
+                try:
+                    tables = inspector.get_table_names(schema="public")
+                except TypeError:
+                    tables = inspector.get_table_names()
+                
+                tables_properties = {}
+                for table_name in tables:
+                    columns_info = inspector.get_columns(table_name)
+                    column_properties = {}
+                    for col in columns_info:
+                        col_name = col["name"]
+                        col_type = str(col["type"])
+                        json_type = _sql_type_to_json_type(col_type)
+                        column_properties[col_name] = {"type": json_type}
+                    tables_properties[table_name] = {"properties": column_properties}
+                
+                schema = {
                     "properties": {
-                        "table_name": {
-                            "properties": {
-                                "column_name": {"type": "json_type"}
-                            }
+                        "tables": {
+                            "properties": tables_properties
                         }
                     }
                 }
-            }
-        }
-    """
-    try:
-        inspector = inspect(db.get_bind())
+                logger.info(f"Returning database schema from inspection with {len(tables)} tables")
+                return schema
+            finally:
+                db.close()
         
-        # Get all tables
-        try:
-            tables = inspector.get_table_names(schema="public")
-        except TypeError:
-            tables = inspector.get_table_names()
+        with open(schema_path, "r", encoding="utf-8") as f:
+            schema = json.load(f)
         
-        # Build schema structure
-        tables_properties = {}
-        
-        for table_name in tables:
-            columns_info = inspector.get_columns(table_name)
-            column_properties = {}
-            
-            for col in columns_info:
-                col_name = col["name"]
-                col_type = str(col["type"])
-                json_type = _sql_type_to_json_type(col_type)
-                column_properties[col_name] = {"type": json_type}
-            
-            tables_properties[table_name] = {
-                "properties": column_properties
-            }
-        
-        schema = {
-            "properties": {
-                "tables": {
-                    "properties": tables_properties
-                }
-            }
-        }
-        
-        logger.info(f"Returning database schema with {len(tables)} tables")
+        logger.info(f"Returning database schema from {schema_path}")
         return schema
         
-    except Exception as e:
-        logger.error(f"Error reading database schema: {e}", exc_info=True)
+    except json.JSONDecodeError as e:
+        logger.error(f"Error parsing schema JSON: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to read database schema: {str(e)}"
+            detail=f"Failed to parse schema file: {str(e)}"
         )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reading schema file: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to read schema file: {str(e)}"
+        )
+
+
+def _get_seed_snapshot() -> Dict[str, Any]:
+    """
+    Capture a snapshot of the seed/template database.
+    
+    The seed database is the baseline state that each run DB is cloned from.
+    This represents the "before" state for verification.
+    """
+    logger.info("Capturing seed database snapshot...")
+    
+    # Connect directly to template/seed database
+    seed_url = make_url(DATABASE_URL).set(database=POSTGRES_TEMPLATE_DB)
+    engine = create_engine(seed_url, pool_pre_ping=True, poolclass=NullPool)
+    
+    snapshot = {
+        "run_id": "seed",
+        "captured_at": datetime.now().isoformat(),
+        "tables": {},
+        "primary_keys": {},
+        "summary": {
+            "total_tables": 0,
+            "total_rows": 0,
+            "tables_with_errors": 0
+        }
+    }
+    
+    try:
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        
+        with SessionLocal() as db:
+            # Get all tables
+            inspector = inspect(db.get_bind())
+            try:
+                tables = inspector.get_table_names(schema="public")
+            except TypeError:
+                tables = inspector.get_table_names()
+            
+            logger.info(f"Found {len(tables)} tables in seed database")
+            
+            # Get primary keys for all tables
+            snapshot["primary_keys"] = get_table_primary_keys(db)
+            
+            total_rows = 0
+            tables_with_errors = 0
+            
+            for table_name in tables:
+                try:
+                    table_data = get_table_data(db, table_name)
+                    
+                    if "error" in table_data:
+                        snapshot["tables"][table_name] = {"error": str(table_data["error"]), "rows": []}
+                        tables_with_errors += 1
+                    else:
+                        rows = table_data["rows"]
+                        snapshot["tables"][table_name] = rows
+                        total_rows += len(rows)
+                except Exception as e:
+                    logger.error(f"Error getting seed table {table_name}: {e}")
+                    snapshot["tables"][table_name] = {"error": str(e), "rows": []}
+                    tables_with_errors += 1
+            
+            snapshot["summary"] = {
+                "total_tables": len(tables),
+                "total_rows": total_rows,
+                "tables_with_errors": tables_with_errors
+            }
+            
+    finally:
+        engine.dispose()
+    
+    logger.info(f"Seed snapshot captured: {snapshot['summary']['total_tables']} tables, {snapshot['summary']['total_rows']} rows")
+    return snapshot
+
+
+def _get_run_snapshot(db: Session, run_id: str) -> Dict[str, Any]:
+    """
+    Capture a snapshot of the current run database.
+    
+    This represents the "after" state for verification.
+    """
+    logger.info(f"Capturing run database snapshot for run_id: {run_id}")
+    
+    snapshot = {
+        "run_id": run_id,
+        "captured_at": datetime.now().isoformat(),
+        "tables": {},
+        "primary_keys": {},
+        "summary": {
+            "total_tables": 0,
+            "total_rows": 0,
+            "tables_with_errors": 0
+        }
+    }
+    
+    # Get all tables
+    tables = get_all_tables(db)
+    logger.info(f"Found {len(tables)} tables in run database")
+    
+    # Get primary keys for all tables
+    snapshot["primary_keys"] = get_table_primary_keys(db)
+    
+    total_rows = 0
+    tables_with_errors = 0
+    
+    for table_name in tables:
+        try:
+            table_data = get_table_data(db, table_name)
+            
+            if "error" in table_data:
+                snapshot["tables"][table_name] = {"error": str(table_data["error"]), "rows": []}
+                tables_with_errors += 1
+            else:
+                rows = table_data["rows"]
+                snapshot["tables"][table_name] = rows
+                total_rows += len(rows)
+        except Exception as e:
+            logger.error(f"Error getting run table {table_name}: {e}")
+            snapshot["tables"][table_name] = {"error": str(e), "rows": []}
+            tables_with_errors += 1
+    
+    snapshot["summary"] = {
+        "total_tables": len(tables),
+        "total_rows": total_rows,
+        "tables_with_errors": tables_with_errors
+    }
+    
+    logger.info(f"Run snapshot captured: {snapshot['summary']['total_tables']} tables, {snapshot['summary']['total_rows']} rows")
+    return snapshot
+
+
+def _make_row_key(row: Dict[str, Any], pk_columns: List[str]) -> Optional[tuple]:
+    """Create a hashable key for a row based on primary key columns.
+    
+    Args:
+        row: The row dict
+        pk_columns: List of primary key column names
+        
+    Returns:
+        Tuple of primary key values, or None if any PK value is missing
+    """
+    key_values = []
+    for col in pk_columns:
+        val = row.get(col)
+        if val is None:
+            return None
+        key_values.append(val)
+    return tuple(key_values)
+
+
+@router.get("/db_diff")
+def get_db_diff(
+    session_id: str = Query(..., description="The session ID to use for the diff"),
+):
+    """
+    Get the diff between seed database and current run database.
+    
+    This endpoint compares the seed/template database (baseline) with the 
+    current run database to show what has changed. This is used for 
+    verification to compare actual changes against expected changes.
+    
+    Returns:
+        JSON object with:
+        - computed_at: ISO timestamp of when diff was computed
+        - summary: Statistics about changes (tables_with_changes, rows added/modified/deleted)
+        - changes_by_table: Dict mapping table names to their changes
+        - tables_unchanged: List of tables with no changes
+    """
+    logger.info(f"Computing diff for session_id: {session_id}")
+    
+    try:
+        # Get engine for existing database (raises 410 if not found)
+        engine = _get_existing_run_engine(session_id)
+        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        db = SessionLocal()
+        
+        try:
+            # Capture snapshots
+            seed_snapshot = _get_seed_snapshot()
+            run_snapshot = _get_run_snapshot(db, session_id)
+            
+            # Compute diff
+            diff = _compute_diff(
+                before_snapshot=seed_snapshot,
+                after_snapshot=run_snapshot,
+                ignore_tables=["alembic_version", "api_logs", "sessions", "audit_logs", "prompt_tasks"]
+            )
+            
+            logger.info(
+                f"Diff computed: {diff['summary']['tables_with_changes']} tables changed, "
+                f"{diff['summary']['total_rows_added']} added, "
+                f"{diff['summary']['total_rows_modified']} modified, "
+                f"{diff['summary']['total_rows_deleted']} deleted"
+            )
+            
+            return diff
+        finally:
+            db.close()
+        
+    except HTTPException as http_exc:
+        # Re-raise HTTP exceptions as-is (e.g., 410 for expired session)
+        # This preserves the original status code and detail
+        raise http_exc
+    except Exception as e:
+        logger.error(f"Failed to compute diff: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to compute diff: {str(e)}")
+
+
+# Session/DB status constants
+SESSION_TTL_SECONDS = JWT_ACCESS_TOKEN_TTL_SECONDS  # Session expires after this many seconds
+DB_INACTIVE_MINUTES = 90  # DB is considered inactive after 90 minutes
+
+
+@router.get("/session_status")
+def get_session_status(session_id: str = Query(..., description="The session ID to use for the status")):
+    """
+    Get the status of the current session and its associated database.
+    
+    Returns:
+        JSON object with:
+        - session_active: boolean (token not expired)
+        - session_expires_at: ISO timestamp when session expires
+        - session_created_at: ISO timestamp when session was created
+        - db_active: boolean (last_used_at within 90 minutes)
+        - db_last_used_at: ISO timestamp of last database activity
+        - run_id: the session's run_id
+    """
+    run_id = session_id
+    
+    # Auto-create database if it doesn't exist (makes API more user-friendly)
+    # This ensures the database exists before we try to query it
+    try:
+        from app.db.run_router import ensure_run_database
+        ensure_run_database(run_id)
+    except Exception as e:
+        logger.error(f"Failed to ensure database exists for session_id={session_id}: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Failed to initialize database for session: {str(e)}"
+        )
+    
+    # Session status
+    now = datetime.now(timezone.utc)
+    # DB status - check last_used_at from run registry
+    db_active = False
+    db_last_used_at = None
+    db_created_at = None
+    
+    try:
+        db_name = get_run_db_name(run_id)
+        engine = _admin_engine()
+        
+        with engine.connect() as conn:
+            # Ensure table exists
+            ensure_registry_table(conn)
+            
+            # Query for both created_at and last_used_at
+            row = conn.execute(
+                text("SELECT created_at, last_used_at FROM mira_run_registry WHERE db_name = :db_name"),
+                {"db_name": db_name}
+            ).mappings().first()
+            
+            if row:
+                db_created_at = row.get("created_at")
+                db_last_used_at = row.get("last_used_at")
+                
+                if db_last_used_at:
+                    # Ensure timezone aware
+                    if db_last_used_at.tzinfo is None:
+                        db_last_used_at = db_last_used_at.replace(tzinfo=timezone.utc)
+                    
+                    # DB is active if last used within 90 minutes
+                    inactive_threshold = now - timedelta(minutes=DB_INACTIVE_MINUTES)
+                    db_active = db_last_used_at > inactive_threshold
+                    
+    except Exception as e:
+        logger.warning(f"Could not get DB status for session_id {session_id}: {e}")
+    
+    return {
+        "db_active": db_active,
+        "db_last_used_at": db_last_used_at.isoformat() if db_last_used_at else None,
+        "db_created_at": db_created_at.isoformat() if db_created_at else None,
+        "run_id": run_id
+    }
+
+
+@router.get("/get_session_id")
+def get_session_id(
+    auth_token: str = Query(..., description="The authentication token to use for the session"),
+):
+    """
+    Get the session ID for the current user.
+    
+    Returns:
+        JSON object with:
+        - session_id: The session ID for the current user
+    """
+    token_manager = get_token_manager()
+    token_data = token_manager.validate_token(auth_token)
+    if not token_data:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    session_id = token_data.run_id
+    return {
+        "session_id": session_id
+    }

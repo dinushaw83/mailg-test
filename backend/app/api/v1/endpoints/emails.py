@@ -139,15 +139,8 @@ def list_emails(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    folder: Optional[FolderType] = Query(None, description="Filter by folder"),
-    thread_id: Optional[UUID] = Query(None, description="Filter by thread ID to get all emails in a conversation"),
+    folder: Optional[str] = Query(None, description="Filter by folder (case insensitive) e.g. 'Inbox', 'Starred', 'Snoozed', 'Important', 'Sent', 'Scheduled', 'Drafts', 'All Mail', 'Spam', 'Trash'"),
     category: Optional[EmailCategory] = Query(None, description="Filter by category"),
-    is_read: Optional[bool] = Query(None, description="Filter by read status"),
-    is_starred: Optional[bool] = Query(None, description="Filter by starred"),
-    is_snoozed: Optional[bool] = Query(None, description="Filter by snoozed status (True=snoozed, False=not snoozed)"),
-    is_important: Optional[bool] = Query(None, description="Filter by important"),
-    include_archived: Optional[bool] = Query(False, description="Include archived threads"),
-    search: Optional[str] = Query(None, description="Search in subject and body"),
 ) -> dict:
     """List emails with pagination and filtering.
     
@@ -171,47 +164,45 @@ def list_emails(
     
     # Apply folder filter using thread labels with fallback to email.folder
     if folder:
-        # Map folder to system label
-        folder_to_label_map = {
-            FolderType.INBOX: SystemLabel.INBOX,
-            FolderType.SENT: SystemLabel.SENT,
-            FolderType.DRAFTS: SystemLabel.DRAFTS,
-            FolderType.TRASH: SystemLabel.TRASH,
-            FolderType.SPAM: SystemLabel.SPAM,
-            FolderType.SCHEDULED: SystemLabel.SCHEDULED,
-        }
+        # Convert folder string to SystemLabel (case insensitive)
+        folder_label = None
+        for label in SystemLabel:
+            if label.value.lower() == folder.lower():
+                folder_label = label
+                break
         
-        target_label = folder_to_label_map.get(folder)
-        if target_label:
-            # Get threads with this label for the user
-            thread_ids_subquery = get_threads_with_system_label(db, current_user.id, target_label)
+        if folder_label is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid folder: {folder}. Valid values: {[label.value for label in SystemLabel]}"
+            )
+        
+        # Get threads with this system label for the user
+        thread_ids_subquery = get_threads_with_system_label(db, current_user.id, folder_label)
+        
+        # Map SystemLabel to FolderType value for fallback filtering
+        folder_value = folder_label.value.lower()  # Email.folder uses lowercase values
+        
+        if thread_ids_subquery is not None:
+            # Primary: filter by thread label
+            # Fallback: emails without threads (thread_id is None) that match the folder
+            labeled_threads_subq = db.query(thread_ids_subquery.c.thread_id)
             
-            if thread_ids_subquery is not None:
-                # Primary: filter by thread label
-                # Fallback: emails without threads (thread_id is None) that match the folder
-                labeled_threads_subq = db.query(thread_ids_subquery.c.thread_id)
-                
-                query = query.filter(
-                    or_(
-                        # Thread has the specific label we're looking for
-                        Email.thread_id.in_(labeled_threads_subq),
-                        # OR: Email has no thread (legacy), fall back to folder
-                        and_(Email.thread_id.is_(None), Email.folder == folder.value),
-                    ),
-                    user_access_filter
-                )
-            else:
-                # Label not found - fall back to folder-based filtering
-                query = query.filter(Email.folder == folder.value, user_access_filter)
+            query = query.filter(
+                or_(
+                    # Thread has the specific label we're looking for
+                    Email.thread_id.in_(labeled_threads_subq),
+                    # OR: Email has no thread (legacy), fall back to folder
+                    and_(Email.thread_id.is_(None), Email.folder == folder_value),
+                ),
+                user_access_filter
+            )
         else:
-            # Unknown folder type - filter by folder value and user access
-            query = query.filter(Email.folder == folder.value, user_access_filter)
+            # Label not found - fall back to folder-based filtering
+            query = query.filter(Email.folder == folder_value, user_access_filter)
     else:
         # No folder filter - show all user's emails (sent or received)
         query = query.filter(user_access_filter)
-    
-    if thread_id:
-        query = query.filter(Email.thread_id == thread_id)
     
     if category:
         # Filter by category label (is_system=True, is_exclusive=False)
@@ -253,89 +244,6 @@ def list_emails(
                         ThreadLabel.user_id == current_user.id
                     ).subquery()
                     query = query.filter(Email.thread_id.in_(db.query(labeled_thread_ids.c.thread_id)))
-    
-    if is_read is not None:
-        query = query.filter(Email.is_read == is_read)
-    
-    if is_starred is not None:
-        if is_starred:
-            # STARRED: Find threads where ANY email is starred, then show latest email
-            starred_thread_ids = db.query(Email.thread_id).filter(
-                Email.is_starred == True,
-                get_perspective_email_filter(db, current_user.id)
-            ).distinct().subquery()
-            
-            query = query.filter(Email.thread_id.in_(db.query(starred_thread_ids.c.thread_id)))
-            # Threaded grouping applied automatically at end - returns latest per thread
-        else:
-            # No starred emails - exclude threads with any starred
-            query = query.filter(Email.is_starred == False)
-    
-    if is_snoozed is not None:
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        if is_snoozed:
-            # SNOOZED: Filter by ThreadUserMetadata.snooze_until (thread-level per user)
-            snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
-                ThreadUserMetadata.user_id == current_user.id,
-                ThreadUserMetadata.snooze_until.isnot(None),
-                ThreadUserMetadata.snooze_until > datetime.now(UTC)
-            ).subquery()
-            
-            query = query.filter(Email.thread_id.in_(db.query(snoozed_thread_ids.c.thread_id)))
-            # Threaded grouping applied automatically at end - returns latest per thread
-        else:
-            # Non-snoozed: exclude threads with active snooze for this user
-            snoozed_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
-                ThreadUserMetadata.user_id == current_user.id,
-                ThreadUserMetadata.snooze_until.isnot(None),
-                ThreadUserMetadata.snooze_until > datetime.now(UTC)
-            ).subquery()
-            
-            query = query.filter(
-                or_(
-                    Email.thread_id.is_(None),
-                    ~Email.thread_id.in_(db.query(snoozed_thread_ids.c.thread_id))
-                )
-            )
-    
-    if is_important is not None:
-        if is_important:
-            # Filter for important threads - get thread IDs marked as important by this user
-            important_thread_ids = get_user_important_thread_ids(db, current_user.id)
-            query = query.filter(Email.thread_id.in_(important_thread_ids))
-        else:
-            # Filter for non-important threads - exclude threads marked as important
-            important_thread_ids = get_user_important_thread_ids(db, current_user.id)
-            query = query.filter(
-                or_(
-                    Email.thread_id.is_(None),
-                    ~Email.thread_id.in_(important_thread_ids)
-                )
-            )
-    
-    if include_archived is False:
-        # Exclude threads archived by this user (thread-level)
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        archived_thread_ids = db.query(ThreadUserMetadata.thread_id).filter(
-            ThreadUserMetadata.user_id == current_user.id,
-            ThreadUserMetadata.is_archived == True
-        ).subquery()
-        
-        query = query.filter(
-            or_(
-                Email.thread_id.is_(None),
-                ~Email.thread_id.in_(db.query(archived_thread_ids.c.thread_id))
-            )
-        )
-    
-    if search:
-        search_term = f"%{search}%"
-        query = query.filter(
-            or_(
-                Email.subject.ilike(search_term),
-                Email.body.ilike(search_term)
-            )
-        )
     
     # ALWAYS apply threaded grouping - return only latest email from each thread
     # Use sent_at for sorting, fallback to created_at if null
@@ -382,6 +290,7 @@ def list_emails(
     thread_ids = [email.thread_id for email in emails if email.thread_id]
     thread_counts = {}
     starred_thread_ids = set()
+    unread_thread_ids = set()
     if thread_ids:
         # Query count of emails per thread (accessible to this user from their perspective)
         count_results = db.query(
@@ -401,6 +310,14 @@ def list_emails(
             get_perspective_email_filter(db, current_user.id)
         ).distinct().all()
         starred_thread_ids = {tid for (tid,) in starred_results}
+        
+        # Query threads that have at least one unread email (for the current user)
+        unread_results = db.query(Email.thread_id).filter(
+            Email.thread_id.in_(thread_ids),
+            Email.is_read == False,
+            get_perspective_email_filter(db, current_user.id)
+        ).distinct().all()
+        unread_thread_ids = {tid for (tid,) in unread_results}
     
     # Format response with thread counts and user_id for label filtering
     emails_data = [
@@ -408,7 +325,8 @@ def list_emails(
             email, 
             thread_counts.get(email.thread_id), 
             current_user.id,
-            thread_is_starred=email.thread_id in starred_thread_ids if email.thread_id else email.is_starred
+            thread_is_starred=email.thread_id in starred_thread_ids if email.thread_id else email.is_starred,
+            thread_is_read=email.thread_id not in unread_thread_ids if email.thread_id else email.is_read
         )
         for email in emails
     ]

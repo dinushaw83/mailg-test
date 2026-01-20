@@ -27,7 +27,7 @@ class EmailTemplate(Base):
     is_shared = Column(Boolean, default=False)  # Whether template is shared with team
     
     # Ownership
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     
     # timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
