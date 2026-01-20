@@ -87,11 +87,7 @@ const Login = () => {
           fullWidth
           disabled={loading}
           error={email.trim() !== "" && !isValidEmail(email.trim())}
-          helperText={
-            email.trim() !== "" && !isValidEmail(email.trim())
-              ? "Please enter a valid email address"
-              : ""
-          }
+          helperText={email.trim() !== "" && !isValidEmail(email.trim()) ? "Please enter a valid email address" : ""}
           sx={{ mb: 2 }}
           autoFocus
         />

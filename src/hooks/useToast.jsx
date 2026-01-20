@@ -17,10 +17,7 @@ export function ToastProvider({ children }) {
 
     const content = renderFn({ close });
 
-    setToasts((prev) => [
-      ...prev,
-      { id, content, placement, autoDismiss, close },
-    ]);
+    setToasts((prev) => [...prev, { id, content, placement, autoDismiss, close }]);
 
     return close;
   }, []);
@@ -82,10 +79,7 @@ export function Notification({ type, children }) {
   };
 
   return (
-    <Alert
-      severity={severityMap[type] || "info"}
-      sx={{ minWidth: 300, alignItems: "center" }}
-    >
+    <Alert severity={severityMap[type] || "info"} sx={{ minWidth: 300, alignItems: "center" }}>
       {children}
     </Alert>
   );
@@ -94,12 +88,7 @@ export function Notification({ type, children }) {
 // Close button for notifications
 Notification.Close = function NotificationClose({ onClick, ...props }) {
   return (
-    <IconButton
-      size="small"
-      onClick={onClick}
-      sx={{ ml: 1 }}
-      {...props}
-    >
+    <IconButton size="small" onClick={onClick} sx={{ ml: 1 }} {...props}>
       <CloseIcon fontSize="small" />
     </IconButton>
   );
