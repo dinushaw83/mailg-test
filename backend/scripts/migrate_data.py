@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+from app.models.prompt_task import PromptTask
+
 # Get the script's directory and find project root
 SCRIPT_DIR = Path(__file__).parent.resolve()
 BACKEND_DIR = SCRIPT_DIR.parent
@@ -37,6 +39,7 @@ from sqlalchemy.orm import Session
 
 # Find fixtures directory
 FIXTURES_DIR = BACKEND_DIR / "fixtures"
+FIXED_TIMESTAMP = datetime(2025, 12, 1, 0, 0, 0)
 
 
 def parse_datetime(dt_str):
@@ -475,6 +478,30 @@ def migrate_advanced_settings(db: Session):
     db.commit()
     print(f"  ✅ Migrated {len(settings_data)} advanced settings")
 
+def migrate_prompt_tasks(db: Session):
+    """Migrate prompt tasks from fixture file."""
+    print("Migrating prompt tasks...")
+    fixture_file = FIXTURES_DIR / "prompt_tasks.json"
+
+    if not fixture_file.exists():
+        print(f"  ⚠️  Fixture file not found: {fixture_file}")
+        return
+
+    with open(fixture_file) as f:
+        data = json.load(f)
+
+    for task_data in data:
+        prompt_task = PromptTask(
+            id=str(task_data["id"]),  # Convert int to string
+            prompt=task_data["prompt"],
+            db_verification_config=task_data.get("db_verification_config"),
+            created_at=parse_datetime(task_data.get("created_at")) or FIXED_TIMESTAMP,
+            updated_at=parse_datetime(task_data.get("updated_at")) or FIXED_TIMESTAMP,
+        )
+        db.merge(prompt_task)
+    db.commit()
+    print(f"  ✅ Migrated {len(data)} prompt tasks")
+
 
 def main():
     """Main migration function"""
@@ -512,7 +539,7 @@ def main():
         migrate_default_text_styles(db)
         migrate_signatures(db)
         migrate_advanced_settings(db)
-
+        migrate_prompt_tasks(db)
         print("-" * 60)
         print("\n✅ Migration completed successfully!")
         print("=" * 60)

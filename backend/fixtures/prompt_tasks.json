@@ -1,0 +1,33 @@
+[
+  {
+    "prompt": "You are logged in as Test User (john.doe@example.com), an admin.Move the \"Login throws IP Banned Error\" ticket from TODO to In Progress",
+    "db_verification_config": {
+      "ignore_tables": ["ticket_links"],
+      "tables": {
+        "tickets": {
+          "expect_modified": [
+            {
+              "description": "Change status of specific ticket from TODO to In Progress",
+              "field_assertions": [
+                {
+                  "field": "summary",
+                  "operator": "STRING_CONTAINS",
+                  "expected": "Login throws IP Banned Error"
+                },
+                {
+                  "field": "status",
+                  "operator": "STRING_EQUALS",
+                  "expected": "in-progress"
+                }
+              ]
+            }
+          ],
+          "fail_on_extra_rows": false
+        }
+      }
+    },
+    "id": "MIRA:100",
+    "created_at": "2025-12-01T00:00:00",
+    "updated_at": "2025-12-01T00:00:00"
+  }
+]
