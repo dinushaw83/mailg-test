@@ -1,19 +1,11 @@
-import { Avatar, Box, Button, List, ListItem, ListItemAvatar, ListItemText, Paper, Typography } from "@mui/material";
+import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { isValidEmail } from "../utils/helperFunctions";
 import { setAuth } from "../store/slices/userSlice";
 import { useDispatch } from "react-redux";
 import userService from "../services/userService";
-
-const TEST_USERS = [
-  { email: "john.doe@example.com", name: "John Doe", role: "admin" },
-  { email: "sarah.williams@example.com", name: "Sarah Williams", role: "admin" },
-  { email: "michael.chen@example.com", name: "Michael Chen", role: "admin" },
-  { email: "jane.smith@example.com", name: "Jane Smith", role: "user" },
-  { email: "david.brown@example.com", name: "David Brown", role: "user" },
-  { email: "emily.davis@example.com", name: "Emily Davis", role: "user" },
-];
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -22,13 +14,19 @@ const Login = () => {
   const from = location.state?.from?.pathname || "/inbox";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [email, setEmail] = useState("");
 
-  const handleUserSelect = async (user) => {
+  const handleLogin = async () => {
+    if (!email.trim() || !isValidEmail(email.trim())) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      const tokenData = await userService.createToken(user.email);
+      const tokenData = await userService.createToken(email.trim());
       // tokenData shape: { access_token, user, role, run_id, expires_in }
       dispatch(setAuth(tokenData));
 
@@ -38,6 +36,12 @@ const Login = () => {
       setError(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !loading && email.trim() && isValidEmail(email.trim())) {
+      handleLogin();
     }
   };
 
@@ -65,7 +69,7 @@ const Login = () => {
           MailG Login
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-          Select a test user to continue
+          Enter your email to continue
         </Typography>
 
         {error && (
@@ -74,38 +78,43 @@ const Login = () => {
           </Typography>
         )}
 
-        <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-          {TEST_USERS.map((user) => (
-            <ListItem
-              key={user.email}
-              button
-              onClick={() => handleUserSelect(user)}
-              disabled={loading}
-              sx={{
-                mb: 1,
-                borderRadius: 1,
-                border: "1px solid #e0e0e0",
-                "&:hover": {
-                  backgroundColor: "#f8f9fa",
-                  borderColor: "#1a73e8",
-                },
-              }}
-            >
-              <ListItemAvatar>
-                <Avatar sx={{ bgcolor: "#1a73e8" }}>{user.name.charAt(0)}</Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={user.name}
-                secondary={user.email}
-                primaryTypographyProps={{ variant: "body1", fontWeight: 500 }}
-              />
-            </ListItem>
-          ))}
-        </List>
+        <TextField
+          type="email"
+          label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyPress={handleKeyPress}
+          fullWidth
+          disabled={loading}
+          error={email.trim() !== "" && !isValidEmail(email.trim())}
+          helperText={
+            email.trim() !== "" && !isValidEmail(email.trim())
+              ? "Please enter a valid email address"
+              : ""
+          }
+          sx={{ mb: 2 }}
+          autoFocus
+        />
+
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={handleLogin}
+          disabled={loading || !email.trim() || !isValidEmail(email.trim())}
+          sx={{
+            mb: 2,
+            backgroundColor: "#1a73e8",
+            "&:hover": {
+              backgroundColor: "#1557b0",
+            },
+          }}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </Button>
 
         <Box sx={{ mt: 2 }}>
           <Typography variant="caption" color="textSecondary">
-            {loading ? "Logging in..." : "This is a development login screen for testing purposes."}
+            {loading ? "Logging in..." : "Enter your email address to authenticate"}
           </Typography>
         </Box>
       </Paper>
