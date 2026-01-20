@@ -18,7 +18,7 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_user_metadata import ThreadUserMetadata
-from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate
+from app.schemas.email import EmailResponse, EmailSnoozeRequest, EmailImportantUpdate, EmailReadUpdate
 from app.schemas.thread import ThreadOperationResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
@@ -700,3 +700,57 @@ def unstar_thread(
         "thread_id": str(thread_id),
         "unstarred_count": unstarred_count
     }
+
+
+@router.patch("/{thread_id}/read", response_model=ThreadOperationResponse, dependencies=[Depends(authorized())])
+def mark_thread_read(
+    thread_id: UUID,
+    read_data: EmailReadUpdate,
+    db: Session = Depends(get_db),
+) -> ThreadOperationResponse:
+    """Mark all emails in a thread as read or unread for the current user.
+    
+    Updates the is_read flag for all emails in the thread where the user
+    is either the sender or recipient.
+    
+    Permissions:
+    - Users can only mark emails in threads they have access to
+    """
+    current_user = auth.user
+    
+    # Get all user's emails in this thread (perspective-aware)
+    user_emails = db.query(Email).filter(
+        Email.thread_id == thread_id,
+        get_perspective_email_filter(db, current_user.id)
+    ).all()
+    
+    if not user_emails:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thread {thread_id} not found"
+        )
+    
+    # Update read status for all emails in the thread
+    updated_count = 0
+    for email in user_emails:
+        if email.is_read != read_data.is_read:
+            email.is_read = read_data.is_read
+            updated_count += 1
+    
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    
+    # Sync thread labels
+    sync_thread_labels(db, thread_id, current_user.id, commit=True)
+    
+    status_text = "read" if read_data.is_read else "unread"
+    logger.info(f"Marked {updated_count} emails as {status_text} in thread {thread_id} for user {current_user.id}")
+    
+    return ThreadOperationResponse(
+        message=f"Marked {updated_count} email(s) as {status_text} in thread",
+        thread_id=thread_id,
+        emails_affected=updated_count
+    )

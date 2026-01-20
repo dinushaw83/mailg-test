@@ -160,6 +160,7 @@ class EmailListResponse(BaseModel):
     is_read: bool
     is_starred: bool
     thread_is_starred: bool = False  # True if any email in thread is starred by current user
+    thread_is_read: bool = True  # True if all emails in thread are read by current user
     is_important: bool  # User-specific, derived from thread metadata
     is_archived: bool = False  # User-specific, derived from thread metadata
     sender_id: UUID
