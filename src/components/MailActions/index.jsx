@@ -1012,17 +1012,15 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         label={hasUnreadEmails ? "Mark as read" : "Mark as unread"}
         onClick={handleReadAction}
       />
+      <Icon
+        id="snooze-toolbar-icon"
+        name="schedule"
+        label="Snooze"
+        onClick={handleSnoozeAction}
+        _ref={snoozeAnchorElRef}
+      />
       {showAdvancedMenu && (
-        <>
-          <Icon
-            id="snooze-toolbar-icon"
-            name="schedule"
-            label="Snooze"
-            onClick={handleSnoozeAction}
-            _ref={snoozeAnchorElRef}
-          />
-          <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
-        </>
+        <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
       )}
       {!["all", "drafts"].includes(folder) && (
         <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />

@@ -1029,17 +1029,15 @@ const MailActions = ({ thread, emails: providedEmails }) => {
 
         <>
           <Icon name="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />
+          <Icon
+            name="schedule"
+            label="Snooze"
+            onClick={handleSnoozeAction}
+            _ref={snoozeAnchorElRef}
+            id="snooze-toolbar-icon"
+          />
           {showAdvancedMenu && (
-            <>
-              <Icon
-                name="schedule"
-                label="Snooze"
-                onClick={handleSnoozeAction}
-                _ref={snoozeAnchorElRef}
-                id="snooze-toolbar-icon"
-              />
-              <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
-            </>
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           )}
           {/* The next icon does not exactly match */}
           <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />

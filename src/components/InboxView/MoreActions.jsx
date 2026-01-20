@@ -4,9 +4,8 @@ import Box from "@mui/material/Box";
 import Popover from "@mui/material/Popover";
 import Divider from "@mui/material/Divider";
 import useMailActions from "../../hooks/useMailActions";
-import { SnoozePopover } from "../MailActions/Snooze";
 import { ActionMenuItem } from "../MailActions/ActionMenuItem";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import Button from "@mui/material/Button";
@@ -27,17 +26,9 @@ const MoreActions = ({
   anchorEl: externalAnchorEl,
   onClose: externalOnClose,
 }) => {
-  const { markRead, setStar, setImportant, snooze, unsnooze, setMuted } = useMailActions();
+  const { markRead, setStar, setImportant, setMuted } = useMailActions();
   const navigate = useNavigate();
-  const location = useLocation();
   const [internalAnchorEl, setInternalAnchorEl] = React.useState(null);
-
-  // Get the base path by removing the thread_id from the current path
-  const getBasePath = useCallback(() => {
-    const pathParts = location.pathname.split("/");
-    return pathParts.slice(0, -1).join("/") || "/inbox";
-  }, [location.pathname]);
-  const [currentPopover, setCurrentPopover] = React.useState("main");
 
   const moreVertRef = useRef(null);
   const { setSnackbar, emails, setEmails } = useGlobalContext();
@@ -50,7 +41,6 @@ const MoreActions = ({
     () => emails.filter((email) => email.thread_id === thread.thread_id),
     [emails, thread.thread_id]
   );
-  const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
   const conversationLabelSnapshot = useCallback(
     () => new Map(threadEmails.map((email) => [String(email.id ?? ""), [...(email.labels || [])]])),
     [threadEmails]
@@ -60,7 +50,6 @@ const MoreActions = ({
     if (externalAnchorEl === undefined) {
       setAnchorEl(moreVertRef.current);
     }
-    setCurrentPopover("main");
   };
 
   useCustomHotKeys({ handlePeriodPress: handleClick });
@@ -71,11 +60,6 @@ const MoreActions = ({
     } else {
       setAnchorEl(null);
     }
-    setCurrentPopover("main");
-  };
-
-  const handleSnoozeClick = () => {
-    setCurrentPopover("snooze");
   };
 
   const open = Boolean(anchorEl);
@@ -308,35 +292,6 @@ const MoreActions = ({
     handleClose();
   }, [threadEmails, markRead, setSnackbar, navigate, handleClose]);
 
-  const handleSnooze = useCallback(
-    (ids, snoozeUntil) => {
-      // Pass thread.thread_id explicitly since we're on the detail page
-      const { removedInboxIds = [] } = snooze(ids, snoozeUntil, [thread.thread_id]) || {};
-      const undo = () => {
-        unsnooze(ids, { removedInboxIds }, [thread.thread_id]);
-        setSnackbar({
-          open: true,
-          message: "Action undone.",
-          autoHideDuration: 3000,
-          action: null,
-        });
-      };
-      setSnackbar({
-        open: true,
-        message: "Conversation snoozed.",
-        autoHideDuration: 10000,
-        action: (
-          <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
-            Undo
-          </Button>
-        ),
-      });
-      // Navigate back to the email list after snoozing
-      navigate(getBasePath());
-    },
-    [snooze, unsnooze, setSnackbar, thread.thread_id, navigate, getBasePath]
-  );
-
   return (
     <Box>
       {/* Only render the icon if no external anchorEl is provided */}
@@ -344,65 +299,47 @@ const MoreActions = ({
         <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} _ref={moreVertRef} />
       )}
 
-      {currentPopover === "main" && (
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        >
-          <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px" }}>
-            <>
-              {!showAdvancedMenu && (
-                <>
-                  <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
-                  <Divider sx={{ marginY: "6px" }} />
-                </>
-              )}
-              {showAdvancedMenu && (
-                <>
-                  <ActionMenuItem icon="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />
-                  <ActionMenuItem
-                    icon={important ? "label_important" : "label_important_outline"}
-                    label={important ? "Mark as not important" : "Mark as important"}
-                    onClick={() => toggleImportant(!important)}
-                    filled={important}
-                    fontSize={important ? 18 : 20}
-                  />
-                  <ActionMenuItem
-                    icon="star"
-                    label={starred ? "Remove star" : "Add star"}
-                    onClick={handleStar}
-                    filled={starred}
-                  />
-                </>
-              )}
-              <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
-              <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
-              <Divider sx={{ marginY: "6px" }} />
-              <ActionMenuItem
-                icon="swap_horiz"
-                label={showAdvancedMenu ? "Switch to simple toolbar" : "Switch to advanced toolbar"}
-                onClick={() => {
-                  toggleShowAdvancedMenu();
-                  handleClose();
-                }}
-              />
-            </>
-          </Box>
-        </Popover>
-      )}
-
-      {currentPopover === "snooze" && (
-        <SnoozePopover
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          selectedIds={threadMessageIds}
-          snooze={handleSnooze}
-        />
-      )}
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px" }}>
+          <>
+            {showAdvancedMenu && (
+              <>
+                <ActionMenuItem icon="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />
+                <ActionMenuItem
+                  icon={important ? "label_important" : "label_important_outline"}
+                  label={important ? "Mark as not important" : "Mark as important"}
+                  onClick={() => toggleImportant(!important)}
+                  filled={important}
+                  fontSize={important ? 18 : 20}
+                />
+                <ActionMenuItem
+                  icon="star"
+                  label={starred ? "Remove star" : "Add star"}
+                  onClick={handleStar}
+                  filled={starred}
+                />
+              </>
+            )}
+            <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+            <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
+            <Divider sx={{ marginY: "6px" }} />
+            <ActionMenuItem
+              icon="swap_horiz"
+              label={showAdvancedMenu ? "Switch to simple toolbar" : "Switch to advanced toolbar"}
+              onClick={() => {
+                toggleShowAdvancedMenu();
+                handleClose();
+              }}
+            />
+          </>
+        </Box>
+      </Popover>
     </Box>
   );
 };
