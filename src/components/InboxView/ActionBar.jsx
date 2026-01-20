@@ -15,6 +15,7 @@ import { Labels } from "../MailActions/Labels";
 import { getThreadRows } from "../../utils/emails";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import { buildLabelPath } from "../../utils/labelSync";
 import { useHotkeys } from "react-hotkeys-hook";
 
 const buildMatchKeysForEmail = (email = {}) => {
@@ -201,10 +202,10 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
   const { setSnackbar, emails: globalEmails, setEmails } = useGlobalContext();
 
-  const { label: labelParam } = useParams();
+  const { label: labelParam, folder } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
 
-  const { labels, labelTree } = useLabels();
+  const { labels, labelTree, labelIdToKeyMap } = useLabels();
   const [isMovingToLabel, setIsMovingToLabel] = useState(true);
 
   const location = useLocation();
@@ -220,31 +221,46 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     // Normalize thread_id to string for comparison
     const normalizedThreadId = String(thread?.thread_id ?? "").trim();
 
+    // Collect emails from all available sources
+    let fromProvided = [];
+    let fromGlobal = [];
+    let fromThread = [];
+
     if (providedEmails && Array.isArray(providedEmails) && providedEmails.length > 0) {
       // Filter by thread_id, using string comparison for consistency
-      const filtered = providedEmails.filter((email) => {
+      fromProvided = providedEmails.filter((email) => {
         const emailThreadId = String(email?.thread_id ?? "").trim();
         return emailThreadId === normalizedThreadId;
       });
-      if (filtered.length > 0) {
-        return filtered;
+      // If no matches, use all provided emails (they should all be for this thread)
+      if (fromProvided.length === 0) {
+        fromProvided = providedEmails;
       }
-      // If no matches, just return all provided emails (they should all be for this thread)
-      return providedEmails;
     }
 
-    // Fallback: Try to get emails from the global context
-    const filteredGlobalEmails = globalEmails.filter((email) => {
+    // Get emails from global context
+    fromGlobal = globalEmails.filter((email) => {
       const emailThreadId = String(email?.thread_id ?? "").trim();
       return emailThreadId === normalizedThreadId;
     });
 
-    // If not found in global context, use the thread's emails array if available
-    if (filteredGlobalEmails.length === 0 && thread.emails && Array.isArray(thread.emails)) {
-      return thread.emails;
+    // Get emails from thread.emails (from API when opening detail)
+    if (thread.emails && Array.isArray(thread.emails)) {
+      fromThread = thread.emails;
     }
 
-    return filteredGlobalEmails;
+    // Return the source with the most emails (thread.emails should have all)
+    if (fromThread.length >= fromProvided.length && fromThread.length >= fromGlobal.length && fromThread.length > 0) {
+      return fromThread;
+    }
+    if (fromProvided.length >= fromGlobal.length && fromProvided.length > 0) {
+      return fromProvided;
+    }
+    if (fromGlobal.length > 0) {
+      return fromGlobal;
+    }
+
+    return fromThread;
   }, [providedEmails, globalEmails, thread?.thread_id, thread?.emails]);
   useEffect(() => {
     hasRunOnceRef.current = false;
@@ -297,17 +313,20 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     return threadEmails.every((email) => (email.labels || []).includes("Trash"));
   }, [threadEmails]);
 
-  // Check if any selected emails are not in the inbox
+  // Build menu items for Move to menu (same filter as "Label as")
+  // Section 1: Labels that are NOT (is_system AND is_exclusive)
+  // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
-    const flat = flattenTreeForSelect(labelTree); // [{ key, name, depth, system }]
-    return flat
-      .filter((item) => !labels?.[item.key]?.system)
-      .map((item) => ({
-        id: item.key,
-        name: getPathLabelFromKey(labels, item.key), // "Parent / Child / ..."
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
+    return Object.entries(labelsObject)
+      // Same filter as "Label as" - hide labels that are both system AND exclusive
+      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+      .map(([key, meta]) => ({
+        id: key,
+        name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [labelTree, labels]);
+  }, [labels, labelIdToKeyMap]);
 
   const moveToMenuAnchorRef = useRef(null);
   const snoozeAnchorElRef = useRef(null);
@@ -503,8 +522,13 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   const handleDelete = useCallback(() => {
     if (!threadEmails.length) return;
 
-    // Use actual email IDs instead of conversationMatchKeys
-    const emailIds = threadEmails.map((email) => email.id);
+    // Use only the first email ID (representative in list)
+    // This ensures consistency when moving back from trash
+    const mainEmailId = threadEmails[0]?.id;
+    if (!mainEmailId) return;
+    
+    const emailIds = [mainEmailId];
+    const threadIds = [thread?.thread_id].filter(Boolean);
     const undo = moveToTrash(emailIds);
 
     // Navigate back to the list
@@ -522,7 +546,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
             if (typeof undo === "function") {
               undo();
             } else {
-              moveToInbox(emailIds);
+              moveToInbox(emailIds, { resolvedEmailIds: emailIds, resolvedThreadIds: threadIds });
             }
             setSnackbar({
               open: true,
@@ -536,7 +560,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         </Button>
       ),
     });
-  }, [threadEmails, moveToTrash, moveToInbox, setSnackbar, navigate, getBasePath]);
+  }, [threadEmails, thread?.thread_id, moveToTrash, moveToInbox, setSnackbar, navigate, getBasePath]);
 
   useEffect(() => {
     if (hasRunOnceRef.current) return;
@@ -617,18 +641,22 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       try {
         const snapshot = conversationLabelSnapshot();
 
-        if (item.id === "__inbox__" || item.id === "inbox") {
-          // Use actual email IDs for system folder moves (same as handleDelete)
+        if (item.id === "__inbox__" || item.id.toLowerCase() === "inbox") {
+          // Use ALL email IDs in the thread when moving to inbox
           const emailIds = threadEmails.map((email) => email.id);
-          moveToInbox(emailIds);
+          if (!emailIds.length) return;
+          moveToInbox(emailIds, { resolvedEmailIds: emailIds });
           showUndoSnackbar(conversationMatchKeys, currentLabel, "Inbox", false, true, snapshot);
           navigate(getBasePath());
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
           return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          // Use actual email IDs for system folder moves
-          const emailIds = threadEmails.map((email) => email.id);
+          // Use only the first email ID for consistency
+          const mainEmailId = threadEmails[0]?.id;
+          if (!mainEmailId) return;
+          const emailIds = [mainEmailId];
+          const threadIds = [thread?.thread_id].filter(Boolean);
           const undo = moveToTrash(emailIds);
           navigate(getBasePath());
           setSnackbar({
@@ -643,7 +671,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
                   if (typeof undo === "function") {
                     undo();
                   } else {
-                    moveToInbox(emailIds);
+                    moveToInbox(emailIds, { resolvedEmailIds: emailIds, resolvedThreadIds: threadIds });
                   }
                   setSnackbar({
                     open: true,
@@ -1073,9 +1101,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           labels={menuItems}
           onSelect={handleMenuItemClick}
           onClose={() => toggleMoveToMenu()}
-          showInbox={isThreadNotInInbox}
-          showSpam={true}
-          showTrash={true}
+          currentFolder={folder || "inbox"}
         />
       )}
       <SnoozePopover

@@ -322,19 +322,23 @@ export default function useMailActions() {
   );
 
   const moveToInbox = useCallback(
-    (ids) => {
-      // Get email IDs and thread IDs for API call
-      const match = makeMatch(ids);
-      const matchingEmails = emails.filter(match);
-      const emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
-      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+    (ids, { resolvedEmailIds, resolvedThreadIds } = {}) => {
+      // Use pre-resolved IDs if provided, otherwise find from emails context
+      let emailIds = resolvedEmailIds;
+      let threadIds = resolvedThreadIds || [];
+
+      if (!emailIds || emailIds.length === 0) {
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+        emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+      }
 
       // Use folder move API (same as bulk action)
       if (emailIds.length > 0) {
         dispatch(bulkMoveToFolderThunk({ emailIds, folder: "inbox" }))
           .then(() => {
-            // Invalidate caches after successful move
-            invalidateEmailCaches(threadIds);
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
           })
           .catch((error) => {
             console.error("Failed to move to inbox:", error);
@@ -566,12 +570,11 @@ export default function useMailActions() {
       const emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
       const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
 
-      // Use folder move API (same as bulk action)
+      // Use folder move API with email IDs
       if (emailIds.length > 0) {
         dispatch(bulkMoveToFolderThunk({ emailIds, folder: "inbox" }))
           .then(() => {
-            // Invalidate caches after successful restore
-            invalidateEmailCaches(threadIds);
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
           })
           .catch((error) => {
             console.error("Failed to restore from trash:", error);
@@ -795,14 +798,28 @@ export default function useMailActions() {
   );
 
   const moveToLabel = useCallback(
-    (ids, name) => {
+    (ids, name, { resolvedEmailIds, resolvedThreadIds } = {}) => {
       if (!name) return;
       
-      // Get email IDs and thread IDs for API call
-      const match = makeMatch(ids);
-      const matchingEmails = emails.filter(match);
-      const emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
-      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+      // Use pre-resolved IDs if provided, otherwise find from emails context
+      let emailIds = resolvedEmailIds;
+      let threadIds = resolvedThreadIds || [];
+      
+      if (!emailIds || emailIds.length === 0) {
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+        
+        // Get thread IDs from matched emails
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+        
+        // Find ALL emails in those threads, not just the matched ones
+        // This ensures all emails in a thread are moved together
+        const allThreadEmails = threadIds.length > 0 
+          ? emails.filter((email) => threadIds.includes(email.thread_id))
+          : matchingEmails;
+        
+        emailIds = allThreadEmails.map((email) => email.id).filter(Boolean);
+      }
       
       // Check if this is a system folder (use move endpoint) vs user label (use labels endpoint)
       // labels object is keyed by UUID, so we need to look up by ID first
@@ -810,20 +827,13 @@ export default function useMailActions() {
       const labelMeta = labelId ? labels[labelId] : labels[name];
       const isSystemFolder = labelMeta?.system || labelMeta?.is_system || labelMeta?.is_exclusive;
       
-      // For system folders (Inbox, Trash, Spam, etc.), use the move endpoint
-      // For user labels, use the labels update endpoint
-      console.log("moveToLabel - label detection:", { name, labelId, labelMeta, isSystemFolder });
-      
+
       if (isSystemFolder && emailIds.length > 0) {
         // Convert label name to folder name (lowercase)
         const folderName = name.toLowerCase();
-        console.log("moveToLabel - using folder move API:", {
-          emailIds,
-          folder: folderName,
-        });
         dispatch(bulkMoveToFolderThunk({ emailIds, folder: folderName }))
           .then(() => {
-            invalidateEmailCaches(threadIds);
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
           })
           .catch((error) => {
             console.error("Failed to move to folder:", error);
@@ -864,14 +874,28 @@ export default function useMailActions() {
   );
 
   const moveToLabelFrom = useCallback(
-    (ids, sourceLabel, dest) => {
+    (ids, sourceLabel, dest, { resolvedEmailIds, resolvedThreadIds } = {}) => {
       if (!dest) return;
       
-      // Get email IDs and thread IDs for API call
-      const match = makeMatch(ids);
-      const matchingEmails = emails.filter(match);
-      const emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
-      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+      // Use pre-resolved IDs if provided, otherwise find from emails context
+      let emailIds = resolvedEmailIds;
+      let threadIds = resolvedThreadIds || [];
+      
+      if (!emailIds || emailIds.length === 0) {
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+        
+        // Get thread IDs from matched emails
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+        
+        // Find ALL emails in those threads, not just the matched ones
+        // This ensures all emails in a thread are moved together
+        const allThreadEmails = threadIds.length > 0 
+          ? emails.filter((email) => threadIds.includes(email.thread_id))
+          : matchingEmails;
+        
+        emailIds = allThreadEmails.map((email) => email.id).filter(Boolean);
+      }
       
       // Check if this is a system folder (use move endpoint) vs user label (use labels endpoint)
       // labels object is keyed by UUID, so we need to look up by ID first
@@ -884,11 +908,6 @@ export default function useMailActions() {
       if (isSystemFolder && emailIds.length > 0) {
         // Convert label name to folder name (lowercase)
         const folderName = dest.toLowerCase();
-        console.log("moveToLabelFrom - using folder move API:", {
-          emailIds,
-          folder: folderName,
-          sourceLabel,
-        });
         dispatch(bulkMoveToFolderThunk({ emailIds, folder: folderName }))
           .then(() => {
             invalidateEmailCaches(threadIds);
@@ -909,12 +928,6 @@ export default function useMailActions() {
           labelsToRemove.push(sourceLabelId);
         }
         
-        console.log("moveToLabelFrom - using labels API:", {
-          threadIds,
-          targetLabel: dest,
-          targetLabelId,
-          labelsToRemove,
-        });
         dispatch(
           bulkUpdateLabelsThunk({
             threadIds,

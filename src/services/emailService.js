@@ -575,6 +575,20 @@ const emailService = {
   },
 
   /**
+   * Bulk move threads to a folder (moves all emails in the threads)
+   * @param {Array<string>} threadIds - Array of thread IDs
+   * @param {string} folder - Folder name (inbox, trash, spam, etc.)
+   * @returns {Promise<Object>} Response data
+   */
+  bulkMoveThreads: async (threadIds, folder) => {
+    const response = await apiClient.post("/v1/bulk/move", {
+      thread_ids: threadIds,
+      folder,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
    * Bulk archive threads
    * @param {Array<string>} threadIds - Array of thread IDs
    * @returns {Promise<Object>} Response data

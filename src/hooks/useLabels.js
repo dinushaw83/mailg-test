@@ -664,6 +664,7 @@ export default function useLabels() {
     deleteLabel,
     labelIndex,
     labelTree,
+    labelIdToKeyMap,
     flattenTreeForSelect,
     ROOT,
     makeKey,

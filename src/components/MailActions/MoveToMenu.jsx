@@ -32,10 +32,12 @@ export default function MoveToMenu({
   labels = [],
   onSelect,
   onClose,
-  showInbox = false,
-  showSpam = true,
-  showTrash = true,
+  currentFolder = null, // Current folder to hide from section 2
 }) {
+  // Determine which system folders to show based on current folder
+  const showInbox = currentFolder !== "inbox";
+  const showSpam = currentFolder !== "spam";
+  const showTrash = currentFolder !== "trash";
   const menuRef = useRef(null);
   const inputRef = useRef(null);
   const [q, setQ] = useState("");

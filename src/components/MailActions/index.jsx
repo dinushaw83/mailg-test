@@ -5,6 +5,7 @@ import useLabels, {
   makeKey,
   normalizeLabelName,
 } from "../../hooks/useLabels";
+import { buildLabelPath } from "../../utils/labelSync";
 import { useLocation, useParams } from "react-router-dom";
 
 import Box from "@mui/material/Box";
@@ -93,7 +94,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
   const { selection, setSnackbar, setEmails, setComposeWindows } = useGlobalContext();
   const { ids } = selection;
-  const { labels, labelTree } = useLabels();
+  const { labels, labelTree, labelIdToKeyMap } = useLabels();
 
   // Use threads prop (displayed emails) instead of global emails
   const emails = threads;
@@ -189,16 +190,20 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   const inDrafts = folder === "drafts";
 
   // Check if any selected emails are not in the inbox
+  // Build menu items for Move to menu (same filter as "Label as")
+  // Section 1: Labels that are NOT (is_system AND is_exclusive)
+  // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
-    const flat = flattenTreeForSelect(labelTree); // [{ key, name, depth, system }]
-    return flat
-      .filter((item) => !labels?.[item.key]?.system)
-      .map((item) => ({
-        id: item.key,
-        name: getPathLabelFromKey(labels, item.key), // "Parent / Child / ..."
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
+    return Object.entries(labelsObject)
+      // Same filter as "Label as" - hide labels that are both system AND exclusive
+      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+      .map(([key, meta]) => ({
+        id: key,
+        name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [labelTree, labels]);
+  }, [labels, labelIdToKeyMap]);
 
   const showNoConversationsSelectedSnackbar = useCallback(() => {
     setSnackbar({
@@ -1046,9 +1051,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
               moveToMenuOpen: false,
             }))
           }
-          showInbox={hasEmailsNotInInbox}
-          showSpam={true}
-          showTrash={true}
+          currentFolder={folder || "inbox"}
         />
       )}
 
