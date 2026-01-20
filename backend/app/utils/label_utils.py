@@ -782,6 +782,8 @@ def sync_thread_labels(
             labels_should_have.add(SystemLabel.IMPORTANT)
         if metadata.snooze_until and metadata.snooze_until > datetime.now(UTC):
             labels_should_have.add(SystemLabel.SNOOZED)
+            # Snoozed threads should not appear in Inbox - remove INBOX if present
+            labels_should_have.discard(SystemLabel.INBOX)
     
     # Get all user's syncable system labels
     syncable_label_names = [sl.value for sl in SYNCABLE_SYSTEM_LABELS]
