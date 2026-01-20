@@ -1829,7 +1829,7 @@ Permissions:
 
 - `page` (optional, integer): Page number
 - `page_size` (optional, integer): Items per page
-- `folder` (optional, object): Filter by folder
+- `folder` (optional, object): Filter by folder (case insensitive) e.g. 'Inbox', 'Starred', 'Snoozed', 'Important', 'Sent', 'Scheduled', 'Drafts', 'All Mail', 'Spam', 'Trash'
 - `thread_id` (optional, object): Filter by thread ID to get all emails in a conversation
 - `category` (optional, object): Filter by category
 - `is_read` (optional, object): Filter by read status

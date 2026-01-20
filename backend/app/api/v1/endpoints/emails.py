@@ -139,7 +139,7 @@ def list_emails(
     db: Session = Depends(get_db),
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    folder: Optional[FolderType] = Query(None, description="Filter by folder"),
+    folder: Optional[str] = Query(None, description="Filter by folder (case insensitive) e.g. 'Inbox', 'Starred', 'Snoozed', 'Important', 'Sent', 'Scheduled', 'Drafts', 'All Mail', 'Spam', 'Trash'"),
     thread_id: Optional[UUID] = Query(None, description="Filter by thread ID to get all emails in a conversation"),
     category: Optional[EmailCategory] = Query(None, description="Filter by category"),
     is_read: Optional[bool] = Query(None, description="Filter by read status"),
@@ -171,41 +171,39 @@ def list_emails(
     
     # Apply folder filter using thread labels with fallback to email.folder
     if folder:
-        # Map folder to system label
-        folder_to_label_map = {
-            FolderType.INBOX: SystemLabel.INBOX,
-            FolderType.SENT: SystemLabel.SENT,
-            FolderType.DRAFTS: SystemLabel.DRAFTS,
-            FolderType.TRASH: SystemLabel.TRASH,
-            FolderType.SPAM: SystemLabel.SPAM,
-            FolderType.SCHEDULED: SystemLabel.SCHEDULED,
-        }
+        # Convert folder string to SystemLabel (case insensitive)
+        folder_label = None
+        for label in SystemLabel:
+            if label.value.lower() == folder.lower():
+                folder_label = label
+                break
         
-        target_label = folder_to_label_map.get(folder)
-        if target_label:
-            # Get threads with this label for the user
-            thread_ids_subquery = get_threads_with_system_label(db, current_user.id, target_label)
+        if folder_label is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid folder: {folder}. Valid values: {[label.value for label in SystemLabel]}"
+            )
+        
+        # Get threads with this system label for the user
+        thread_ids_subquery = get_threads_with_system_label(db, current_user.id, folder_label)
+        
+        if thread_ids_subquery is not None:
+            # Primary: filter by thread label
+            # Fallback: emails without threads (thread_id is None) that match the folder
+            labeled_threads_subq = db.query(thread_ids_subquery.c.thread_id)
             
-            if thread_ids_subquery is not None:
-                # Primary: filter by thread label
-                # Fallback: emails without threads (thread_id is None) that match the folder
-                labeled_threads_subq = db.query(thread_ids_subquery.c.thread_id)
-                
-                query = query.filter(
-                    or_(
-                        # Thread has the specific label we're looking for
-                        Email.thread_id.in_(labeled_threads_subq),
-                        # OR: Email has no thread (legacy), fall back to folder
-                        and_(Email.thread_id.is_(None), Email.folder == folder.value),
-                    ),
-                    user_access_filter
-                )
-            else:
-                # Label not found - fall back to folder-based filtering
-                query = query.filter(Email.folder == folder.value, user_access_filter)
+            query = query.filter(
+                or_(
+                    # Thread has the specific label we're looking for
+                    Email.thread_id.in_(labeled_threads_subq),
+                    # OR: Email has no thread (legacy), fall back to folder
+                    and_(Email.thread_id.is_(None), Email.folder == folder_label.value),
+                ),
+                user_access_filter
+            )
         else:
-            # Unknown folder type - filter by folder value and user access
-            query = query.filter(Email.folder == folder.value, user_access_filter)
+            # Label not found - fall back to folder-based filtering
+            query = query.filter(Email.folder == folder_label.value, user_access_filter)
     else:
         # No folder filter - show all user's emails (sent or received)
         query = query.filter(user_access_filter)
