@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import useLabels, { normalizeLabelName, getPathLabelFromKey } from "../../hooks/useLabels";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 import { styled } from "@mui/material/styles";
@@ -12,12 +13,12 @@ const LabelContainer = styled("div")({
   display: "flex",
   gap: "6px",
   flexWrap: "wrap",
-  marginTop: "-20px",
+  alignItems: "center",
 });
 
 const LabelWrapper = styled("div")(({ bg = "#e1e3e1", text = "#444746" }) => ({
   display: "inline-flex",
-  marginTop: "0.6rem",
+  alignItems: "center",
 
   "--cv-colored-label-bg-color": bg,
   "--cv-colored-label-text-color": text,
@@ -81,6 +82,9 @@ export default function EmailLabelChips({ message }) {
 
   const navigate = useNavigate();
 
+  // Get mapping to convert UUID to composite key for proper routing
+  const labelIdToKeyMap = useSelector((state) => state.mail.labelIdToKeyMap || {});
+
   // Helper to get label key from label (handles both string and object formats)
   const getLabelKey = (label) => {
     if (typeof label === "string") return label;
@@ -119,27 +123,29 @@ export default function EmailLabelChips({ message }) {
 
   const handleNavigateToLabel = (label) => {
     const labelName = getLabelName(label);
-    const labelKey = getLabelKey(label);
+    let labelKey = getLabelKey(label);
 
     if (DISPLAY_SYSTEM_LABELS.includes(labelName)) {
       navigate(`/${labelName.toLowerCase()}`);
     } else {
-      navigate(`/label/${encodeURIComponent(labelKey)}`);
+      // Convert UUID to composite key if needed (for proper routing like sidebar)
+      const compositeKey = labelIdToKeyMap[labelKey] || labelKey;
+      navigate(`/label/${encodeURIComponent(compositeKey)}`);
     }
   };
 
   const handleRemoveLabel = (label) => {
     const labelKey = getLabelKey(label);
     const labelName = getLabelName(label);
-    
+
     // Use getDisplayName for a more robust display name
     const displayName = (() => {
       const pathFromKey = getPathLabelFromKey(allLabels, labelKey);
       if (pathFromKey && pathFromKey !== labelKey) return pathFromKey;
-      
+
       const pathFromName = getPathLabelFromKey(allLabels, labelName);
       if (pathFromName && pathFromName !== labelName) return pathFromName;
-      
+
       return labelName;
     })();
 
@@ -173,17 +179,23 @@ export default function EmailLabelChips({ message }) {
     const labelKey = getLabelKey(label);
     const labelName = getLabelName(label);
 
-    // Check allLabels first
-    if (allLabels[labelKey]?.color) return allLabels[labelKey].color;
-    if (allLabels[labelName]?.color) return allLabels[labelName].color;
-
-    // If label is an object with color property
+    // If label is an object with color property, use it directly first
     if (typeof label === "object" && label?.color) {
       if (typeof label.color === "string") {
         return { rgb: label.color, text: "#444746" };
       }
       return label.color;
     }
+
+    // Check allLabels by UUID (labelKey might be UUID)
+    if (allLabels[labelKey]?.color) return allLabels[labelKey].color;
+
+    // Check allLabels by composite key if we have the mapping
+    const compositeKey = labelIdToKeyMap[labelKey];
+    if (compositeKey && allLabels[compositeKey]?.color) return allLabels[compositeKey].color;
+
+    // Check by name as fallback
+    if (allLabels[labelName]?.color) return allLabels[labelName].color;
 
     return { rgb: "#e1e3e1", text: "#444746" };
   };
