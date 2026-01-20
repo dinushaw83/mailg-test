@@ -171,10 +171,6 @@ def search_emails(
     grouped_terms = parsed_filters.get('grouped_terms', {})
     
     # Build base query - user's emails (perspective-aware)
-    # Sender statuses for perspective filtering
-    from app.utils.email_utils import SENDER_STATUSES
-    from app.core.constants import EmailStatus
-    
     query = db.query(Email).options(
         joinedload(Email.sender),
         joinedload(Email.thread).selectinload(Thread.labels),  # Labels are on threads, not emails
@@ -183,18 +179,7 @@ def search_emails(
     ).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
     ).filter(
-        or_(
-            # Sender's emails (draft/queued/sent/cancelled)
-            and_(
-                Email.sender_id == current_user.id,
-                Email.status.in_(SENDER_STATUSES)
-            ),
-            # Received emails where user is recipient
-            and_(
-                Email.status == EmailStatus.RECEIVED.value,
-                EmailRecipient.recipient_id == current_user.id
-            )
-        )
+        get_perspective_email_filter(db, current_user.id)
     )
     
     # Helper to check if term is "me" keyword (refers to current user)

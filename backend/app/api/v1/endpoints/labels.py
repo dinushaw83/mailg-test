@@ -9,7 +9,7 @@ This module provides:
 from app.core.constants import ProhibitedLabels
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import func, or_
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from typing import List
 from uuid import UUID
@@ -18,7 +18,6 @@ import logging
 from app.db.session import get_db
 from app.models.label import Label
 from app.models.email import Email
-from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.thread_label import ThreadLabel
 from app.schemas.label import (
@@ -35,7 +34,7 @@ from app.utils.label_utils import (
     would_create_cycle,
     build_label_tree,
 )
-from app.utils.email_utils import get_label_hierarchy_name
+from app.utils.email_utils import get_label_hierarchy_name, get_perspective_email_filter
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -160,14 +159,7 @@ def list_labels(
             .filter(
                 ThreadLabel.user_id == current_user.id,
                 Email.is_read == False,
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
+                get_perspective_email_filter(db, current_user.id)
             )
             .group_by(ThreadLabel.label_id)
             .subquery()
@@ -263,14 +255,7 @@ def list_labels_tree(
             .filter(
                 ThreadLabel.user_id == current_user.id,
                 Email.is_read == False,
-                or_(
-                    Email.sender_id == current_user.id,
-                    Email.id.in_(
-                        db.query(EmailRecipient.email_id).filter(
-                            EmailRecipient.recipient_id == current_user.id
-                        )
-                    )
-                )
+                get_perspective_email_filter(db, current_user.id)
             )
             .group_by(ThreadLabel.label_id)
             .subquery()
@@ -341,14 +326,7 @@ def get_label(
         ThreadLabel.label_id == label_id,
         ThreadLabel.user_id == current_user.id,
         Email.is_read == False,
-        or_(
-            Email.sender_id == current_user.id,
-            Email.id.in_(
-                db.query(EmailRecipient.email_id).filter(
-                    EmailRecipient.recipient_id == current_user.id
-                )
-            )
-        )
+        get_perspective_email_filter(db, current_user.id)
     ).scalar() or 0
 
     return format_label_response(label, thread_count=thread_count, unread_count=unread_count)
@@ -588,14 +566,7 @@ def list_label_threads(
         starred_results = db.query(Email.thread_id).filter(
             Email.thread_id.in_(thread_ids),
             Email.is_starred == True,
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         ).distinct().all()
         starred_thread_ids = {tid for (tid,) in starred_results}
     
@@ -607,14 +578,7 @@ def list_label_threads(
             selectinload(Email.attachments),
         ).filter(
             Email.thread_id == thread.id,
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
         
         if latest_email:
