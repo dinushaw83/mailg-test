@@ -579,7 +579,7 @@ def list_label_threads(
         ).filter(
             Email.thread_id == thread.id,
             get_perspective_email_filter(db, current_user.id)
-        ).order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).first()
+        ).order_by(func.coalesce(Email.received_at, Email.sent_at, Email.created_at).desc()).first()
         
         if latest_email:
             emails_data.append(format_email_list_response(
