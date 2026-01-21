@@ -20,7 +20,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from app.core.config import DATABASE_URL, POSTGRES_ADMIN_DB, POSTGRES_RUN_DB_PREFIX
+from app.core.config import DATABASE_URL, POSTGRES_ADMIN_DB, POSTGRES_RUN_DB_PREFIX, POSTGRES_TEMPLATE_DB
 from app.models.thread_user_metadata import ThreadUserMetadata
 from app.utils.label_utils import sync_thread_labels
 
@@ -52,7 +52,7 @@ def _admin_engine():
 
 
 def _get_active_run_databases() -> list[str]:
-    """Get list of all active run database names."""
+    """Get list of all active run database names (excludes template database)."""
     engine = _admin_engine()
     try:
         with engine.connect() as conn:
@@ -61,10 +61,11 @@ def _get_active_run_databases() -> list[str]:
                     """
                     SELECT datname FROM pg_database
                     WHERE datname LIKE :prefix
+                    AND datname <> :template_db
                     AND datistemplate = false
                     """
                 ),
-                {"prefix": f"{POSTGRES_RUN_DB_PREFIX}%"},
+                {"prefix": f"{POSTGRES_RUN_DB_PREFIX}%", "template_db": POSTGRES_TEMPLATE_DB},
             )
             return [row[0] for row in result.fetchall()]
     finally:
