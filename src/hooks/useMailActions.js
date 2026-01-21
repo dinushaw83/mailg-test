@@ -345,6 +345,9 @@ export default function useMailActions() {
           });
       }
 
+      const undoEmailIds = emailIds ? [...emailIds] : [];
+      const undoThreadIds = threadIds.length ? [...threadIds] : [];
+
       // Optimistic update
       const undo = withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet, email) => {
@@ -364,12 +367,24 @@ export default function useMailActions() {
       });
 
       return () => {
+        // Revert optimistic update locally
         undo();
         setSoftRemovedLabels((prev) => {
           const updated = { ...prev };
           ids.forEach((id) => delete updated[id]);
           return updated;
         });
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveToTrashThunk({ emailIds: targetEmailIds }))
+            .then(() => {
+              invalidateEmailCaches(undoThreadIds.length ? undoThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to undo move to inbox:", error);
+            });
+        }
       };
     },
     [updateByIds, setEmails, labels, setSoftRemovedLabels, emails, dispatch, invalidateEmailCaches]
@@ -379,7 +394,14 @@ export default function useMailActions() {
     (ids) => {
       // Extract thread IDs for backend sync
       const match = makeMatch(ids);
-      const threadIds = [...new Set(emails.filter(match).map((email) => email.thread_id).filter(Boolean))];
+      const threadIds = [
+        ...new Set(
+          emails
+            .filter(match)
+            .map((email) => email.thread_id)
+            .filter(Boolean)
+        ),
+      ];
 
       // Call bulk backend API with thread IDs
       if (threadIds.length > 0) {
@@ -398,7 +420,7 @@ export default function useMailActions() {
   const deleteAllSpam = useCallback(() => {
     // fully delete all spam emails
     setEmails((prev) => prev.filter((m) => !m.labels.includes("Spam")));
-  }, [updateByIds]);
+  }, [setEmails]);
 
   const moveToSpam = useCallback(
     (ids) => {
@@ -528,7 +550,7 @@ export default function useMailActions() {
     (ids) => {
       // If ids are already email UUIDs (from ActionBar), use them directly
       // Otherwise, find matching emails by thread ID or other keys
-      let emailIds;
+      let emailIds = [];
       let threadIds = [];
 
       // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
@@ -537,17 +559,26 @@ export default function useMailActions() {
 
       if (isUUID) {
         // Already email IDs, use directly
-        emailIds = ids;
+        emailIds = ids.filter(Boolean);
         // Still need to find thread IDs for cache invalidation
-        const matchingEmails = emails.filter((email) => ids.includes(email.id));
+        const matchingEmails = emails.filter((email) => emailIds.includes(email.id));
         threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
       } else {
         // Find matching emails by thread/message IDs
         const match = makeMatch(ids);
         const matchingEmails = emails.filter(match);
-        emailIds = matchingEmails.map((email) => email.id);
+        emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
         threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
       }
+
+      const undoEmailIds = [...emailIds];
+      const undoThreadIds = [...threadIds];
+
+      // Optimistically update local state
+      updateByIds(ids, (labelSet) => {
+        removeSystemLabels(labelSet, labels, ["Trash"]);
+        labelSet.add("Trash");
+      });
 
       // Call bulk backend API with all email IDs at once
       if (emailIds.length > 0) {
@@ -558,17 +589,37 @@ export default function useMailActions() {
           })
           .catch((error) => {
             console.error("Failed to bulk move emails to trash:", error);
+            // Revert optimistic update on error
+            updateByIds(ids, (labelSet) => {
+              labelSet.delete("Trash");
+              labelSet.add("Inbox");
+            });
           });
       }
 
-      return withUndo(ids, setEmails, () => {
+      // Return proper undo function that calls backend API to restore from trash
+      return () => {
+        // Optimistically revert local state immediately
         updateByIds(ids, (labelSet) => {
-          removeSystemLabels(labelSet, labels, ["Trash"]);
-          labelSet.add("Trash");
+          labelSet.delete("Trash");
+          labelSet.add("Inbox");
         });
-      });
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        const targetThreadIds = undoThreadIds.length ? undoThreadIds : [];
+
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveToFolderThunk({ emailIds: targetEmailIds, folder: "inbox" }))
+            .then(() => {
+              invalidateEmailCaches(targetThreadIds.length ? targetThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to restore from trash:", error);
+            });
+        }
+      };
     },
-    [updateByIds, setEmails, labels, dispatch, emails, invalidateEmailCaches]
+    [updateByIds, labels, dispatch, emails, invalidateEmailCaches]
   );
 
   const restoreFromTrash = useCallback(
@@ -592,7 +643,7 @@ export default function useMailActions() {
 
       // Optimistic update
       return updateByIds(ids, (labelSet) => {
-        labelSet.delete("Trash");
+        let emailIds;
         labelSet.add("Inbox");
       });
     },
@@ -809,33 +860,31 @@ export default function useMailActions() {
   const moveToLabel = useCallback(
     (ids, name, { resolvedEmailIds, resolvedThreadIds } = {}) => {
       if (!name) return;
-      
+
       // Use pre-resolved IDs if provided, otherwise find from emails context
       let emailIds = resolvedEmailIds;
       let threadIds = resolvedThreadIds || [];
-      
+
       if (!emailIds || emailIds.length === 0) {
         const match = makeMatch(ids);
         const matchingEmails = emails.filter(match);
-        
+
         // Get thread IDs from matched emails
         threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
-        
+
         // Find ALL emails in those threads, not just the matched ones
         // This ensures all emails in a thread are moved together
-        const allThreadEmails = threadIds.length > 0 
-          ? emails.filter((email) => threadIds.includes(email.thread_id))
-          : matchingEmails;
-        
+        const allThreadEmails =
+          threadIds.length > 0 ? emails.filter((email) => threadIds.includes(email.thread_id)) : matchingEmails;
+
         emailIds = allThreadEmails.map((email) => email.id).filter(Boolean);
       }
-      
+
       // Check if this is a system folder (use move endpoint) vs user label (use labels endpoint)
       // labels object is keyed by UUID, so we need to look up by ID first
       const labelId = keyToLabelIdMap[name];
       const labelMeta = labelId ? labels[labelId] : labels[name];
       const isSystemFolder = labelMeta?.system || labelMeta?.is_system || labelMeta?.is_exclusive;
-      
 
       if (isSystemFolder && emailIds.length > 0) {
         // Convert label name to folder name (lowercase)
@@ -885,33 +934,32 @@ export default function useMailActions() {
   const moveToLabelFrom = useCallback(
     (ids, sourceLabel, dest, { resolvedEmailIds, resolvedThreadIds } = {}) => {
       if (!dest) return;
-      
+
       // Use pre-resolved IDs if provided, otherwise find from emails context
       let emailIds = resolvedEmailIds;
       let threadIds = resolvedThreadIds || [];
-      
+
       if (!emailIds || emailIds.length === 0) {
         const match = makeMatch(ids);
         const matchingEmails = emails.filter(match);
-        
+
         // Get thread IDs from matched emails
         threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
-        
+
         // Find ALL emails in those threads, not just the matched ones
         // This ensures all emails in a thread are moved together
-        const allThreadEmails = threadIds.length > 0 
-          ? emails.filter((email) => threadIds.includes(email.thread_id))
-          : matchingEmails;
-        
+        const allThreadEmails =
+          threadIds.length > 0 ? emails.filter((email) => threadIds.includes(email.thread_id)) : matchingEmails;
+
         emailIds = allThreadEmails.map((email) => email.id).filter(Boolean);
       }
-      
+
       // Check if this is a system folder (use move endpoint) vs user label (use labels endpoint)
       // labels object is keyed by UUID, so we need to look up by ID first
       const labelId = keyToLabelIdMap[dest];
       const labelMeta = labelId ? labels[labelId] : labels[dest];
       const isSystemFolder = labelMeta?.system || labelMeta?.is_system || labelMeta?.is_exclusive;
-      
+
       // For system folders (Inbox, Trash, Spam, etc.), use the move endpoint
       // For user labels, use the labels update endpoint
       if (isSystemFolder && emailIds.length > 0) {
@@ -927,16 +975,18 @@ export default function useMailActions() {
       } else if (threadIds.length > 0) {
         // For user labels, use labels update
         const targetLabelId = keyToLabelIdMap[dest] || labels[dest]?.id || dest;
-        const sourceLabelId = sourceLabel ? (keyToLabelIdMap[sourceLabel] || labels[sourceLabel]?.id || sourceLabel) : null;
-        
+        const sourceLabelId = sourceLabel
+          ? keyToLabelIdMap[sourceLabel] || labels[sourceLabel]?.id || sourceLabel
+          : null;
+
         const trashLabelId = keyToLabelIdMap["Trash"] || labels["Trash"]?.id || "Trash";
         const spamLabelId = keyToLabelIdMap["Spam"] || labels["Spam"]?.id || "Spam";
         const labelsToRemove = [trashLabelId, spamLabelId];
-        
+
         if (sourceLabelId && !labelsToRemove.includes(sourceLabelId)) {
           labelsToRemove.push(sourceLabelId);
         }
-        
+
         dispatch(
           bulkUpdateLabelsThunk({
             threadIds,
