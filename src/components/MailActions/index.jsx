@@ -1062,6 +1062,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           // Collect ALL email IDs from ALL selected threads
           const emailIds = [];
           const seenIds = new Set();
+          // Capture the count before clearing selection
+          const conversationCount = selectedIds.length;
 
           selectedIds.forEach((threadId) => {
             const threadIdStr = String(threadId);
@@ -1085,13 +1087,37 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           }
 
           const undo = moveToSpam(emailIds);
+          const handleUndo = () => {
+            if (typeof undo === "function") {
+              undo();
+            }
+            setSnackbar({
+              open: true,
+              message: "Action undone.",
+              autoHideDuration: 3000,
+              action: null,
+            });
+          };
           toggleSpamModal();
-          showUndoSnackbar(
-            selectedIds.length > 1
-              ? `${selectedIds.length} conversations marked as spam.`
+          // Clear selection after action
+          selection.clear();
+          setSnackbar({
+          open: true,
+          message:
+            conversationCount > 1
+              ? `${conversationCount} conversations marked as spam.`
               : "Conversation marked as spam.",
-            undo
-          );
+          autoHideDuration: 3000,
+          action: (
+            <Button size="small" onClick={handleUndo}>
+              Undo
+            </Button>
+          ),
+          style: {
+            maxWidth: "600px",
+          },
+        });
+          
         }}
         onUnsubscribe={() => {
           // Extract email IDs from selected threadIds - use thread_id not threadId
@@ -1106,6 +1132,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
           moveToSpam(emailIds);
           toggleSpamModal();
+          // Clear selection after action
+          selection.clear();
           showUndoSnackbar("We'll try to unsubscribe you from these emails.", () => {});
         }}
       />

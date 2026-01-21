@@ -331,6 +331,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   const moveToMenuAnchorRef = useRef(null);
   const snoozeAnchorElRef = useRef(null);
   const labelAnchorElRef = useRef(null);
+  const spamUndoEmailIdsRef = useRef(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
 
   const toggleSpamModal = useCallback(() => {
@@ -976,13 +977,30 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       return;
     }
 
-    // Use actual email IDs instead of conversationMatchKeys
-    const emailIds = threadEmails.map((email) => email.id);
-    const undo = moveToSpam(emailIds);
+    // Use only the main thread email ID (first email) for spam action
+    const emailIds = [threadEmails[0]?.id].filter(Boolean);
+    // Store email IDs in ref for undo action
+    spamUndoEmailIdsRef.current = [...emailIds];
+    
+    moveToSpam(emailIds);
     toggleSpamModal();
     
     // Navigate back to the list
     navigate(getBasePath());
+    
+    // Create undo handler that captures notSpam
+    const handleUndo = () => {
+      const idsToUndo = spamUndoEmailIdsRef.current;
+      if (idsToUndo && idsToUndo.length > 0) {
+        notSpam(idsToUndo);
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      }
+    };
     
     setSnackbar({
       open: true,
@@ -992,21 +1010,13 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         <Button
           sx={{ textTransform: "none" }}
           size="small"
-          onClick={() => {
-            undo();
-            setSnackbar({
-              open: true,
-              message: "Action undone.",
-              autoHideDuration: 3000,
-              action: null,
-            });
-          }}
+          onClick={handleUndo}
         >
           Undo
         </Button>
       ),
     });
-  }, [threadEmails, moveToSpam, toggleSpamModal, setSnackbar, navigate, getBasePath]);
+  }, [threadEmails, moveToSpam, notSpam, toggleSpamModal, setSnackbar, navigate, getBasePath]);
 
   // Handle "Not Spam" action - moves email back to inbox
   const handleNotSpam = useCallback(() => {
