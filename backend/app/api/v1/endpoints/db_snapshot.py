@@ -551,7 +551,7 @@ def _compute_diff(
         
     Returns:
         Dictionary with computed_at, summary, changes_by_table, and tables_unchanged.
-        Format matches Deskzen structure:
+        Format matches Mailg structure:
         {
             "computed_at": "ISO timestamp",
             "summary": {
@@ -652,7 +652,7 @@ def _compute_diff(
             row_key = _make_row_key(row, pk_columns)
             if row_key is not None and row_key not in before_by_key:
                 # Get context: rows before and after this one
-                # Include 1 row before and up to 2 rows after (matching Deskzen sample)
+                # Include 1 row before and up to 2 rows after (matching Mailg sample)
                 context_before = sorted_after_rows[max(0, idx - 1):idx] if idx > 0 else []
                 context_after = sorted_after_rows[idx + 1:min(idx + 3, total_after_rows)] if idx < total_after_rows - 1 else []
                 
@@ -860,7 +860,7 @@ def get_db_schema():
         possible_paths = [
             Path(__file__).parent.parent.parent / "database_schema.json",
             Path(__file__).parent.parent.parent.parent / "database_schema.json",
-            Path(__file__).parent.parent.parent / "utils" / "import_data" / "config" / "deskzen-schema.json",
+            Path(__file__).parent.parent.parent / "utils" / "import_data" / "config" / "mailg-schema.json",
         ]
         
         schema_path = None

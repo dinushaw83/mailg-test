@@ -20,11 +20,22 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
-from app.core.config import DATABASE_URL, POSTGRES_ADMIN_DB, POSTGRES_RUN_DB_PREFIX
+from app.core.config import DATABASE_URL, POSTGRES_ADMIN_DB, POSTGRES_RUN_DB_PREFIX, POSTGRES_TEMPLATE_DB
 from app.models.thread_user_metadata import ThreadUserMetadata
 from app.utils.label_utils import sync_thread_labels
 
 logger = logging.getLogger(__name__)
+
+
+def _is_database_not_exists_error(e: Exception) -> bool:
+    """Check if the exception is a 'database does not exist' error.
+    
+    This happens when cleanup drops a database between when we list databases
+    and when we try to connect - it's a benign race condition.
+    """
+    error_str = str(e).lower()
+    return "does not exist" in error_str and "database" in error_str
+
 
 # Configuration
 _SNOOZE_PROCESSOR_STARTUP_DELAY_SECONDS = int(os.getenv("SNOOZE_PROCESSOR_STARTUP_DELAY_SECONDS", "5"))
@@ -41,7 +52,7 @@ def _admin_engine():
 
 
 def _get_active_run_databases() -> list[str]:
-    """Get list of all active run database names."""
+    """Get list of all active run database names (excludes template database)."""
     engine = _admin_engine()
     try:
         with engine.connect() as conn:
@@ -50,10 +61,11 @@ def _get_active_run_databases() -> list[str]:
                     """
                     SELECT datname FROM pg_database
                     WHERE datname LIKE :prefix
+                    AND datname <> :template_db
                     AND datistemplate = false
                     """
                 ),
-                {"prefix": f"{POSTGRES_RUN_DB_PREFIX}%"},
+                {"prefix": f"{POSTGRES_RUN_DB_PREFIX}%", "template_db": POSTGRES_TEMPLATE_DB},
             )
             return [row[0] for row in result.fetchall()]
     finally:
@@ -107,7 +119,11 @@ def process_expired_snoozes_for_database(db_name: str) -> int:
         finally:
             db.close()
     except Exception as e:
-        logger.error(f"Failed to connect to database {db_name}: {e}")
+        if _is_database_not_exists_error(e):
+            # Database was dropped by cleanup - this is expected, not an error
+            logger.debug(f"Database {db_name} no longer exists (dropped by cleanup)")
+        else:
+            logger.error(f"Failed to connect to database {db_name}: {e}")
     finally:
         engine.dispose()
     
@@ -120,6 +136,8 @@ def process_all_expired_snoozes_sync() -> int:
     Returns:
         Total number of threads unsnoozed.
     """
+    logger.info("[SNOOZE] Starting snooze processor cycle")
+    
     admin_engine = _admin_engine()
     total_unsnoozed = 0
     
@@ -158,6 +176,7 @@ def process_all_expired_snoozes_sync() -> int:
     finally:
         admin_engine.dispose()
     
+    logger.info(f"[SNOOZE] Cycle complete. unsnoozed={total_unsnoozed}")
     return total_unsnoozed
 
 

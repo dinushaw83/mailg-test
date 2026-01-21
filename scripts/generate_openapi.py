@@ -83,13 +83,13 @@ def _strip_api_prefix(
 def _apply_contract_metadata(schema: Dict[str, Any]) -> Dict[str, Any]:
     """Align info/title/description with the existing contract tone."""
     info = schema.setdefault("info", {})
-    info["title"] = "Deskzen API Contract"
+    info["title"] = "Mailg API Contract"
     info["version"] = "2.0.0"
     info["description"] = (
-        "Comprehensive API contract for Deskzen with all request and response bodies.\n"
+        "Comprehensive API contract for Mailg with all request and response bodies.\n"
         "Generated from the FastAPI backend OpenAPI schema."
     )
-    info.setdefault("contact", {"name": "Deskzen API Support"})
+    info.setdefault("contact", {"name": "Mailg API Support"})
     return schema
 
 
@@ -487,9 +487,9 @@ def _generate_md(openapi: Dict[str, Any]) -> str:
     toc_lines.append(f"- [Error Responses](#{_slugify_heading('Error Responses')})")
 
     lines: List[str] = [
-        "# Deskzen REST API Contract",
+        "# Mailg REST API Contract",
         "",
-        "This document describes the REST API endpoints for the Deskzen application.",
+        "This document describes the REST API endpoints for the Mailg application.",
         "",
         f"**Base URL**: `{base_url}`",
         "",

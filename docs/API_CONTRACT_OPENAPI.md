@@ -1,6 +1,6 @@
-# Deskzen REST API Contract
+# Mailg REST API Contract
 
-This document describes the REST API endpoints for the Deskzen application.
+This document describes the REST API endpoints for the Mailg application.
 
 **Base URL**: `/api/v1`
 
