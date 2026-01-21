@@ -2,9 +2,19 @@
 
 import asyncio
 import logging
+import os
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+
+# Configure logging to output INFO level to stdout
+# This ensures background task logs are visible in Docker logs
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
 
 from app.core.config import API_V1_PREFIX, get_jwt_secret_warnings
 from app.core.openapi import custom_openapi

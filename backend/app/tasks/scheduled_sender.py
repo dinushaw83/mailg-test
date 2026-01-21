@@ -28,6 +28,17 @@ from app.utils.label_utils import remove_system_label_from_thread, add_system_la
 
 logger = logging.getLogger(__name__)
 
+
+def _is_database_not_exists_error(e: Exception) -> bool:
+    """Check if the exception is a 'database does not exist' error.
+    
+    This happens when cleanup drops a database between when we list databases
+    and when we try to connect - it's a benign race condition.
+    """
+    error_str = str(e).lower()
+    return "does not exist" in error_str and "database" in error_str
+
+
 # Configuration
 _SCHEDULED_SENDER_STARTUP_DELAY_SECONDS = int(os.getenv("SCHEDULED_SENDER_STARTUP_DELAY_SECONDS", "5"))
 _SCHEDULED_SENDER_INTERVAL_SECONDS = int(os.getenv("SCHEDULED_SENDER_INTERVAL_SECONDS", "5"))
@@ -121,7 +132,11 @@ def process_scheduled_emails_for_database(db_name: str) -> int:
         finally:
             db.close()
     except Exception as e:
-        logger.error(f"Failed to connect to database {db_name}: {e}")
+        if _is_database_not_exists_error(e):
+            # Database was dropped by cleanup - this is expected, not an error
+            logger.debug(f"Database {db_name} no longer exists (dropped by cleanup)")
+        else:
+            logger.error(f"Failed to connect to database {db_name}: {e}")
     finally:
         engine.dispose()
     
@@ -134,6 +149,8 @@ def process_all_scheduled_emails_sync() -> int:
     Returns:
         Total number of emails sent.
     """
+    logger.info("[SCHEDULED] Starting scheduled email sender cycle")
+    
     admin_engine = _admin_engine()
     total_sent = 0
     
@@ -172,6 +189,7 @@ def process_all_scheduled_emails_sync() -> int:
     finally:
         admin_engine.dispose()
     
+    logger.info(f"[SCHEDULED] Cycle complete. sent={total_sent}")
     return total_sent
 
 

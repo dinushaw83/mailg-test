@@ -26,6 +26,17 @@ from app.utils.label_utils import sync_thread_labels
 
 logger = logging.getLogger(__name__)
 
+
+def _is_database_not_exists_error(e: Exception) -> bool:
+    """Check if the exception is a 'database does not exist' error.
+    
+    This happens when cleanup drops a database between when we list databases
+    and when we try to connect - it's a benign race condition.
+    """
+    error_str = str(e).lower()
+    return "does not exist" in error_str and "database" in error_str
+
+
 # Configuration
 _SNOOZE_PROCESSOR_STARTUP_DELAY_SECONDS = int(os.getenv("SNOOZE_PROCESSOR_STARTUP_DELAY_SECONDS", "5"))
 _SNOOZE_PROCESSOR_INTERVAL_SECONDS = int(os.getenv("SNOOZE_PROCESSOR_INTERVAL_SECONDS", "30"))
@@ -107,7 +118,11 @@ def process_expired_snoozes_for_database(db_name: str) -> int:
         finally:
             db.close()
     except Exception as e:
-        logger.error(f"Failed to connect to database {db_name}: {e}")
+        if _is_database_not_exists_error(e):
+            # Database was dropped by cleanup - this is expected, not an error
+            logger.debug(f"Database {db_name} no longer exists (dropped by cleanup)")
+        else:
+            logger.error(f"Failed to connect to database {db_name}: {e}")
     finally:
         engine.dispose()
     
@@ -120,6 +135,8 @@ def process_all_expired_snoozes_sync() -> int:
     Returns:
         Total number of threads unsnoozed.
     """
+    logger.info("[SNOOZE] Starting snooze processor cycle")
+    
     admin_engine = _admin_engine()
     total_unsnoozed = 0
     
@@ -158,6 +175,7 @@ def process_all_expired_snoozes_sync() -> int:
     finally:
         admin_engine.dispose()
     
+    logger.info(f"[SNOOZE] Cycle complete. unsnoozed={total_unsnoozed}")
     return total_unsnoozed
 
 

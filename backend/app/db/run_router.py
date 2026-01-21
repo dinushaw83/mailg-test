@@ -216,7 +216,7 @@ def get_pg_stat_activity_counts(limit: int = 200) -> Dict[str, Any]:
 # Postgres advisory lock key to serialize template operations (cloning + ingestion).
 # Must be the same across all processes.
 _PG_TEMPLATE_LOCK_KEY = 88112233
-_PG_DB_META_PREFIX = "deskzen_meta:"
+_PG_DB_META_PREFIX = "mailg_meta:"
 
 _VALID_DB_IDENT = re.compile(r"^[a-zA-Z0-9_]+$")
 
@@ -406,7 +406,7 @@ def get_engine(run_id: str):
                 pool_recycle=_PG_RUN_POOL_RECYCLE,
                 pool_reset_on_return="rollback",
                 connect_args=(
-                    {"application_name": os.getenv("POSTGRES_APP_NAME", "deskzen-backend")}
+                    {"application_name": os.getenv("POSTGRES_APP_NAME", "mailg-backend")}
                     if "application_name" not in (getattr(run_url, "query", {}) or {})
                     else {}
                 ),

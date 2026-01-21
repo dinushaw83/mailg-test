@@ -64,7 +64,7 @@ class TokenManager:
             token_ttl_seconds: Token expiration time in seconds (default: 1 hour).
             secret_key: JWT secret key for signing tokens.
             algorithm: JWT algorithm (default: HS256).
-            issuer: JWT issuer (default: deskzen).
+            issuer: JWT issuer (default: mailg).
         """
         self._token_ttl = timedelta(seconds=token_ttl_seconds)
         self._secret_key = secret_key
