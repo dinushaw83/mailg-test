@@ -24,7 +24,7 @@
     "email_id": "863435a4-9d57-4009-9dce-206358a95c01",
     "filename": "screenshot.png",
     "content_type": "image/png",
-    "size_bytes": null,
+    "size_bytes": 3611338,
     "storage_path": "attachments/2025/01/923acadc-4024-4a79-a782-ce36ab4373ea",
     "attachment_type": "image",
     "created_at": "2025-07-22T17:10:44.520268Z"
@@ -34,7 +34,7 @@
     "email_id": "00cb315a-0115-42fd-a3ee-898c77ccafa7",
     "filename": "archive.zip",
     "content_type": "application/zip",
-    "size_bytes": null,
+    "size_bytes": 8499384,
     "storage_path": "attachments/2023/03/ff534213-6c18-458b-9dc6-0803bab34767",
     "attachment_type": "file",
     "created_at": "2025-08-15T02:17:44.520324Z"
@@ -65,7 +65,7 @@
     "filename": "document.pdf",
     "content_type": "application/pdf",
     "size_bytes": 554,
-    "storage_path": null,
+    "storage_path": "attachments/2025/06/3a774cdb-7d6b-44cd-8a82-5517cd0b046e",
     "attachment_type": "document",
     "created_at": "2025-06-12T07:03:44.520508Z"
   },
@@ -165,7 +165,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 32,
-    "storage_path": null,
+    "storage_path": "attachments/2025/06/9913d0f9-31c5-44c5-ba79-94952f867c86",
     "attachment_type": "document",
     "created_at": "2025-06-02T09:24:44.521127Z"
   },
@@ -175,7 +175,7 @@
     "filename": "invoice.pdf",
     "content_type": "application/pdf",
     "size_bytes": 286,
-    "storage_path": null,
+    "storage_path": "attachments/2025/06/f41be522-3c56-46c6-af62-5c72f0490b06",
     "attachment_type": "document",
     "created_at": "2025-06-05T16:37:44.521186Z"
   },
@@ -245,7 +245,7 @@
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "size_bytes": 167,
-    "storage_path": null,
+    "storage_path": "attachments/2025/04/73971547-6af7-4799-8909-25c9e07dc5b9",
     "attachment_type": "document",
     "created_at": "2025-04-29T22:26:44.521611Z"
   },
@@ -254,7 +254,7 @@
     "email_id": "5437730c-5916-4043-905c-2df5b1c9beb6",
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "size_bytes": null,
+    "size_bytes": 4771308,
     "storage_path": "attachments/2025/03/665e6100-8681-43f6-8feb-1d10f1a07a0e",
     "attachment_type": "document",
     "created_at": "2025-07-12T23:41:44.521674Z"
@@ -265,7 +265,7 @@
     "filename": "invoice.pdf",
     "content_type": "application/pdf",
     "size_bytes": 144,
-    "storage_path": null,
+    "storage_path": "attachments/2025/11/ee528380-a62e-45ab-b328-c94acdc4d43d",
     "attachment_type": "document",
     "created_at": "2025-11-28T14:12:44.521733Z"
   },
@@ -274,7 +274,7 @@
     "email_id": "946e6167-aba2-4fdf-a433-7f652431afa9",
     "filename": "screenshot.png",
     "content_type": "image/png",
-    "size_bytes": null,
+    "size_bytes": 5300172,
     "storage_path": "attachments/2024/01/c39e71fd-2f82-41fd-8577-c862d3c2ad57",
     "attachment_type": "image",
     "created_at": "2025-05-05T02:07:44.521796Z"
@@ -335,7 +335,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 536,
-    "storage_path": null,
+    "storage_path": "attachments/2025/12/5e13cd4f-a07b-48c8-a3f8-62e458db1cc2",
     "attachment_type": "document",
     "created_at": "2025-12-24T03:57:44.522166Z"
   },
@@ -445,7 +445,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 214,
-    "storage_path": null,
+    "storage_path": "attachments/2025/10/1060b434-b7b4-4795-86a8-11f4a0c97476",
     "attachment_type": "document",
     "created_at": "2025-10-14T03:19:44.522841Z"
   },
@@ -484,7 +484,7 @@
     "email_id": "cafdec94-e0e5-43f8-abc0-89c457464a5f",
     "filename": "photo.jpg",
     "content_type": "image/jpeg",
-    "size_bytes": null,
+    "size_bytes": 4846485,
     "storage_path": "attachments/2024/03/17ee4b79-46e3-448a-98b7-2957e5ca502e",
     "attachment_type": "image",
     "created_at": "2025-11-04T21:24:44.523095Z"
@@ -534,8 +534,8 @@
     "email_id": "60000000-0000-0000-0000-000000000009",
     "filename": "notes.txt",
     "content_type": "text/plain",
-    "size_bytes": null,
-    "storage_path": null,
+    "size_bytes": 436121,
+    "storage_path": "attachments/2025/03/743b6a6e-59ec-4132-8e99-59184cfa8ba6",
     "attachment_type": "document",
     "created_at": "2025-03-24T19:03:44.523403Z"
   },
@@ -545,7 +545,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 358,
-    "storage_path": null,
+    "storage_path": "attachments/2025/07/f3aeb768-4d63-485f-b788-0bc5483bedc0",
     "attachment_type": "document",
     "created_at": "2025-07-11T23:42:44.523464Z"
   },
@@ -555,7 +555,7 @@
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "size_bytes": 553,
-    "storage_path": null,
+    "storage_path": "attachments/2025/08/957f9455-bf5d-4fb0-9def-1256f86322ba",
     "attachment_type": "document",
     "created_at": "2025-08-15T13:53:44.523523Z"
   },
@@ -565,7 +565,7 @@
     "filename": "photo.jpg",
     "content_type": "image/jpeg",
     "size_bytes": 966,
-    "storage_path": null,
+    "storage_path": "attachments/2025/11/36775765-dea6-47a1-96b1-2ca1dc90e645",
     "attachment_type": "image",
     "created_at": "2025-11-01T17:33:44.523582Z"
   },
@@ -685,7 +685,7 @@
     "filename": "archive.zip",
     "content_type": "application/zip",
     "size_bytes": 610,
-    "storage_path": null,
+    "storage_path": "attachments/2025/09/6126e282-1956-4ee8-bf2e-da36368057bd",
     "attachment_type": "file",
     "created_at": "2025-09-11T13:27:44.524319Z"
   },
@@ -704,7 +704,7 @@
     "email_id": "8467b65d-ca65-41e9-a5ae-c6f0e343269a",
     "filename": "document.pdf",
     "content_type": "application/pdf",
-    "size_bytes": null,
+    "size_bytes": 2321069,
     "storage_path": "attachments/2023/10/2731a472-c629-4e0c-ac44-2f15e48de1f9",
     "attachment_type": "document",
     "created_at": "2025-03-04T13:57:44.524443Z"
@@ -725,7 +725,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 829,
-    "storage_path": null,
+    "storage_path": "attachments/2025/02/ce15290c-6bb2-4971-b796-c8d58e7d0cff",
     "attachment_type": "document",
     "created_at": "2025-02-18T22:50:44.524557Z"
   },
@@ -744,7 +744,7 @@
     "email_id": "229c4585-5d5c-41ed-8787-b2db3aad90b4",
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "size_bytes": null,
+    "size_bytes": 3154651,
     "storage_path": "attachments/2024/08/6336516b-fde8-45ef-bbfc-ddef578cfe3f",
     "attachment_type": "document",
     "created_at": "2025-03-22T05:27:44.524680Z"
@@ -874,8 +874,8 @@
     "email_id": "95ddddb2-ed93-4efb-877a-365bd796ca63",
     "filename": "data.csv",
     "content_type": "text/csv",
-    "size_bytes": null,
-    "storage_path": null,
+    "size_bytes": 480596,
+    "storage_path": "attachments/2025/06/1d3e8f94-626b-4700-8e86-00821302b5f1",
     "attachment_type": "document",
     "created_at": "2025-06-24T15:02:44.525458Z"
   },
@@ -964,7 +964,7 @@
     "email_id": "954639a7-bf7a-4b80-b27a-60bbba75f06e",
     "filename": "archive.zip",
     "content_type": "application/zip",
-    "size_bytes": null,
+    "size_bytes": 5244568,
     "storage_path": "attachments/2023/10/bb3fc35e-2ca0-4f56-9636-21e3dca1f646",
     "attachment_type": "file",
     "created_at": "2025-09-11T05:15:44.525994Z"
@@ -975,7 +975,7 @@
     "filename": "document.pdf",
     "content_type": "application/pdf",
     "size_bytes": 189,
-    "storage_path": null,
+    "storage_path": "attachments/2025/10/717ab5c8-64c6-4c0e-9a12-a7a587866e48",
     "attachment_type": "document",
     "created_at": "2025-10-04T09:09:44.526051Z"
   },
@@ -1015,7 +1015,7 @@
     "filename": "notes.txt",
     "content_type": "text/plain",
     "size_bytes": 318,
-    "storage_path": null,
+    "storage_path": "attachments/2025/07/834aa7eb-4f42-4d88-b84f-1c555d1b3b65",
     "attachment_type": "document",
     "created_at": "2025-07-04T14:54:44.526294Z"
   },
@@ -1045,7 +1045,7 @@
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "size_bytes": 110,
-    "storage_path": null,
+    "storage_path": "attachments/2025/12/3f64723f-24d0-4759-a0ea-42a90c39221b",
     "attachment_type": "document",
     "created_at": "2025-12-27T09:36:44.526475Z"
   },
@@ -1065,7 +1065,7 @@
     "filename": "notes.txt",
     "content_type": "text/plain",
     "size_bytes": 165,
-    "storage_path": null,
+    "storage_path": "attachments/2025/04/79a34aae-1f96-4d5b-961f-73d5671c08fd",
     "attachment_type": "document",
     "created_at": "2025-04-15T23:34:44.526591Z"
   },
@@ -1085,7 +1085,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 317,
-    "storage_path": null,
+    "storage_path": "attachments/2025/11/528cf542-201e-4279-9baf-faff153924e2",
     "attachment_type": "document",
     "created_at": "2025-11-22T22:13:44.526713Z"
   },
@@ -1125,7 +1125,7 @@
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "size_bytes": 749,
-    "storage_path": null,
+    "storage_path": "attachments/2025/09/b5aec963-cbd1-431a-bd01-d10e7b173ced",
     "attachment_type": "document",
     "created_at": "2025-09-24T14:42:44.526962Z"
   },
@@ -1144,7 +1144,7 @@
     "email_id": "eb8ef086-da35-471f-be5f-11458ef0d9c5",
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "size_bytes": null,
+    "size_bytes": 4008626,
     "storage_path": "attachments/2024/11/9cf902f0-e7ab-48db-a1ae-c2ea131453c1",
     "attachment_type": "document",
     "created_at": "2025-07-30T04:32:44.527086Z"
@@ -1155,7 +1155,7 @@
     "filename": "presentation.pptx",
     "content_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "size_bytes": 652,
-    "storage_path": null,
+    "storage_path": "attachments/2025/05/fda7c634-84a3-4b20-b3c1-5d6a0ea38aaa",
     "attachment_type": "file",
     "created_at": "2025-05-01T21:35:44.527146Z"
   },
@@ -1264,7 +1264,7 @@
     "email_id": "36059ddb-bfb5-493d-8d89-f110a84f6262",
     "filename": "data.csv",
     "content_type": "text/csv",
-    "size_bytes": null,
+    "size_bytes": 1009274,
     "storage_path": "attachments/2024/05/aa886713-0d36-44e0-8506-ab0dd929a257",
     "attachment_type": "document",
     "created_at": "2025-05-21T23:10:44.527823Z"
@@ -1285,7 +1285,7 @@
     "filename": "document.pdf",
     "content_type": "application/pdf",
     "size_bytes": 995,
-    "storage_path": null,
+    "storage_path": "attachments/2025/11/1ceba3cd-0a4e-4a75-9226-fc05ae11c908",
     "attachment_type": "document",
     "created_at": "2025-11-01T07:54:44.527942Z"
   },
@@ -1294,7 +1294,7 @@
     "email_id": "888795f1-9ecb-418a-992b-3a9dcf7d57ef",
     "filename": "document.pdf",
     "content_type": "application/pdf",
-    "size_bytes": null,
+    "size_bytes": 7260856,
     "storage_path": "attachments/2025/09/9adafae1-352c-410c-8bd2-4dc61f2ec46d",
     "attachment_type": "document",
     "created_at": "2025-03-16T07:25:44.528004Z"
@@ -1315,7 +1315,7 @@
     "filename": "archive.zip",
     "content_type": "application/zip",
     "size_bytes": 882,
-    "storage_path": null,
+    "storage_path": "attachments/2025/10/d7620a3e-79ef-412f-a6d1-067ee341084f",
     "attachment_type": "file",
     "created_at": "2025-10-06T09:23:44.528125Z"
   },
@@ -1344,8 +1344,8 @@
     "email_id": "304b1e08-6449-42f2-b928-ef06ee19ecf3",
     "filename": "notes.txt",
     "content_type": "text/plain",
-    "size_bytes": null,
-    "storage_path": null,
+    "size_bytes": 359922,
+    "storage_path": "attachments/2025/01/2b6afd2a-6cc1-4f5a-b3b7-ff4265b38ec5",
     "attachment_type": "document",
     "created_at": "2025-01-18T09:31:44.528303Z"
   },
@@ -1375,7 +1375,7 @@
     "filename": "photo.jpg",
     "content_type": "image/jpeg",
     "size_bytes": 506,
-    "storage_path": null,
+    "storage_path": "attachments/2025/11/0d302b3a-5d3a-4385-84c7-0372ebce8ca2",
     "attachment_type": "image",
     "created_at": "2025-11-05T21:47:44.528494Z"
   },
@@ -1405,7 +1405,7 @@
     "filename": "photo.jpg",
     "content_type": "image/jpeg",
     "size_bytes": 932,
-    "storage_path": null,
+    "storage_path": "attachments/2025/07/30f9b8f1-fc80-4aee-a404-ef883db66530",
     "attachment_type": "image",
     "created_at": "2025-07-18T20:19:44.528669Z"
   },
@@ -1425,7 +1425,7 @@
     "filename": "data.csv",
     "content_type": "text/csv",
     "size_bytes": 658,
-    "storage_path": null,
+    "storage_path": "attachments/2025/06/035abb28-8f5c-474a-ac3b-7394351c6a9a",
     "attachment_type": "document",
     "created_at": "2025-06-17T10:42:44.528789Z"
   },
@@ -1464,7 +1464,7 @@
     "email_id": "15aa867e-699e-4137-b0c7-4f8b32f44d42",
     "filename": "data.csv",
     "content_type": "text/csv",
-    "size_bytes": null,
+    "size_bytes": 1003414,
     "storage_path": "attachments/2023/10/cfaa2e5e-73a3-4468-8656-0d6427434a97",
     "attachment_type": "document",
     "created_at": "2025-08-18T10:21:44.529045Z"
@@ -1505,7 +1505,7 @@
     "filename": "invoice.pdf",
     "content_type": "application/pdf",
     "size_bytes": 590,
-    "storage_path": null,
+    "storage_path": "attachments/2025/01/99efd1c1-7b44-40bf-b579-9cbf62cc109e",
     "attachment_type": "document",
     "created_at": "2025-01-18T06:34:44.529279Z"
   },
@@ -1575,7 +1575,7 @@
     "filename": "invoice.pdf",
     "content_type": "application/pdf",
     "size_bytes": 901,
-    "storage_path": null,
+    "storage_path": "attachments/2025/10/c66ffcdd-becd-4493-ad76-22b12bd613e5",
     "attachment_type": "document",
     "created_at": "2025-10-11T19:54:44.529709Z"
   },
@@ -1624,8 +1624,8 @@
     "email_id": "b9c53300-bf99-47fb-8cb3-4bf51de2eb67",
     "filename": "screenshot.png",
     "content_type": "image/png",
-    "size_bytes": null,
-    "storage_path": null,
+    "size_bytes": 726687,
+    "storage_path": "attachments/2025/03/8a081bdf-0c2b-4280-95f5-7c5e4f35dde0",
     "attachment_type": "image",
     "created_at": "2025-03-08T08:23:44.530008Z"
   },
@@ -1635,7 +1635,7 @@
     "filename": "screenshot.png",
     "content_type": "image/png",
     "size_bytes": 607,
-    "storage_path": null,
+    "storage_path": "attachments/2025/11/3620764e-1e02-410d-9b91-154747dbba27",
     "attachment_type": "image",
     "created_at": "2025-11-16T03:38:44.530059Z"
   },
@@ -1644,7 +1644,7 @@
     "email_id": "dea22921-ec69-450c-852f-75f304d35917",
     "filename": "presentation.pptx",
     "content_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    "size_bytes": null,
+    "size_bytes": 6829735,
     "storage_path": "attachments/2025/09/8f0b017d-2074-416d-80d5-fdba1e297616",
     "attachment_type": "file",
     "created_at": "2025-07-04T06:25:44.530121Z"
@@ -1695,7 +1695,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 130,
-    "storage_path": null,
+    "storage_path": "attachments/2025/12/8ec761dc-4287-45f2-b380-e94095ed9aad",
     "attachment_type": "document",
     "created_at": "2025-12-22T19:47:44.530420Z"
   },
@@ -1745,7 +1745,7 @@
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "size_bytes": 210,
-    "storage_path": null,
+    "storage_path": "attachments/2025/12/5d3b26ea-e869-4207-acae-26a826d21030",
     "attachment_type": "document",
     "created_at": "2025-12-24T14:23:44.530730Z"
   },
@@ -1754,7 +1754,7 @@
     "email_id": "47dd721a-da38-4fe5-bc8b-9bd2fe1ea429",
     "filename": "archive.zip",
     "content_type": "application/zip",
-    "size_bytes": null,
+    "size_bytes": 3333782,
     "storage_path": "attachments/2023/03/f7c3dd46-7f0f-4a76-8180-3b1ca16c1e93",
     "attachment_type": "file",
     "created_at": "2025-09-25T06:31:44.530793Z"
@@ -1765,7 +1765,7 @@
     "filename": "screenshot.png",
     "content_type": "image/png",
     "size_bytes": 347,
-    "storage_path": null,
+    "storage_path": "attachments/2025/04/68f94dfe-59e1-434b-aad2-41b858dcbad2",
     "attachment_type": "image",
     "created_at": "2025-04-25T14:20:44.530851Z"
   },
@@ -1795,7 +1795,7 @@
     "filename": "data.csv",
     "content_type": "text/csv",
     "size_bytes": 73,
-    "storage_path": null,
+    "storage_path": "attachments/2025/08/b87268e6-2992-4052-89e3-f601f0ba63a1",
     "attachment_type": "document",
     "created_at": "2025-08-15T08:13:44.531037Z"
   },
@@ -1824,7 +1824,7 @@
     "email_id": "78577357-a2ba-4dab-8090-6a5ea1e62e78",
     "filename": "data.csv",
     "content_type": "text/csv",
-    "size_bytes": null,
+    "size_bytes": 1855898,
     "storage_path": "attachments/2023/03/61c10ca5-2fb9-4eee-b57f-59a9122d86d3",
     "attachment_type": "document",
     "created_at": "2025-05-23T02:00:44.531223Z"
@@ -1875,7 +1875,7 @@
     "filename": "data.csv",
     "content_type": "text/csv",
     "size_bytes": 14,
-    "storage_path": null,
+    "storage_path": "attachments/2025/10/be1966f0-a7a0-4593-b8ae-fc58764ab691",
     "attachment_type": "document",
     "created_at": "2025-10-20T10:34:44.531523Z"
   },
@@ -1944,7 +1944,7 @@
     "email_id": "7226e973-a412-4435-a78f-0b49924fec28",
     "filename": "screenshot.png",
     "content_type": "image/png",
-    "size_bytes": null,
+    "size_bytes": 5536920,
     "storage_path": "attachments/2025/10/085cd83e-aada-43b3-8350-343ecd66e6c8",
     "attachment_type": "image",
     "created_at": "2025-08-04T15:48:44.531942Z"
@@ -2055,7 +2055,7 @@
     "filename": "presentation.pptx",
     "content_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "size_bytes": 377,
-    "storage_path": null,
+    "storage_path": "attachments/2025/04/3cd13494-3090-43bf-bd9b-3b1b528fba2c",
     "attachment_type": "file",
     "created_at": "2025-04-26T15:30:44.532626Z"
   },
@@ -2125,7 +2125,7 @@
     "filename": "report.docx",
     "content_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "size_bytes": 181,
-    "storage_path": null,
+    "storage_path": "attachments/2025/12/4ae67aee-47f8-4a21-bbbd-6e26a333434d",
     "attachment_type": "document",
     "created_at": "2025-12-16T10:48:44.533054Z"
   },
@@ -2135,7 +2135,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 735,
-    "storage_path": null,
+    "storage_path": "attachments/2025/01/bf113d61-8a95-405b-9573-5620b5e42590",
     "attachment_type": "document",
     "created_at": "2025-01-29T17:56:44.533113Z"
   },
@@ -2225,7 +2225,7 @@
     "filename": "screenshot.png",
     "content_type": "image/png",
     "size_bytes": 429,
-    "storage_path": null,
+    "storage_path": "attachments/2025/02/c86a79fd-e4dc-487f-8f59-0943197bf6ef",
     "attachment_type": "image",
     "created_at": "2025-02-25T20:59:44.533672Z"
   },
@@ -2234,7 +2234,7 @@
     "email_id": "15d53d03-a0c1-4c1d-ac3f-aa53b5427ed6",
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "size_bytes": null,
+    "size_bytes": 4994413,
     "storage_path": "attachments/2023/12/45e30765-2c5f-44d0-aa43-fa00a35cf37d",
     "attachment_type": "document",
     "created_at": "2025-09-01T20:57:44.533733Z"
@@ -2265,7 +2265,7 @@
     "filename": "photo.jpg",
     "content_type": "image/jpeg",
     "size_bytes": 385,
-    "storage_path": null,
+    "storage_path": "attachments/2025/06/aeece9b3-97a6-472d-82e3-32d4f55b92e9",
     "attachment_type": "image",
     "created_at": "2025-06-18T03:22:44.533914Z"
   },
@@ -2285,7 +2285,7 @@
     "filename": "presentation.pptx",
     "content_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "size_bytes": 934,
-    "storage_path": null,
+    "storage_path": "attachments/2025/03/76ff72c6-9969-419b-9bf8-8f0b78da0ac2",
     "attachment_type": "file",
     "created_at": "2025-03-03T15:32:44.534034Z"
   },
@@ -2334,7 +2334,7 @@
     "email_id": "f92dfa2d-0b5b-44e2-bd79-8fc94d8da536",
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "size_bytes": null,
+    "size_bytes": 1994548,
     "storage_path": "attachments/2023/08/fcc96952-2af4-4e29-b574-3aae76156b96",
     "attachment_type": "document",
     "created_at": "2025-06-17T14:02:44.534326Z"
@@ -2385,7 +2385,7 @@
     "filename": "archive.zip",
     "content_type": "application/zip",
     "size_bytes": 294,
-    "storage_path": null,
+    "storage_path": "attachments/2025/01/a6d14d55-aac8-4edf-b693-b8a79580bc67",
     "attachment_type": "file",
     "created_at": "2025-01-22T16:05:44.534629Z"
   },
@@ -2395,7 +2395,7 @@
     "filename": "screenshot.png",
     "content_type": "image/png",
     "size_bytes": 38,
-    "storage_path": null,
+    "storage_path": "attachments/2025/10/faf172cd-3e8c-42c4-ab25-a48a2167b15e",
     "attachment_type": "image",
     "created_at": "2025-10-05T17:49:44.534686Z"
   },
@@ -2465,7 +2465,7 @@
     "filename": "data.csv",
     "content_type": "text/csv",
     "size_bytes": 509,
-    "storage_path": null,
+    "storage_path": "attachments/2026/01/1320e6b0-45ab-410d-bd80-59f6320c7683",
     "attachment_type": "document",
     "created_at": "2026-01-04T14:07:44.535106Z"
   },
@@ -2475,7 +2475,7 @@
     "filename": "invoice.pdf",
     "content_type": "application/pdf",
     "size_bytes": 618,
-    "storage_path": null,
+    "storage_path": "attachments/2025/07/4e9f8f3c-2dc5-449e-8319-8a109be21ba4",
     "attachment_type": "document",
     "created_at": "2025-07-19T06:45:44.535164Z"
   },
@@ -2495,7 +2495,7 @@
     "filename": "archive.zip",
     "content_type": "application/zip",
     "size_bytes": 131,
-    "storage_path": null,
+    "storage_path": "attachments/2025/03/6611ccad-58a6-4e42-a909-1f76a9b87399",
     "attachment_type": "file",
     "created_at": "2025-03-25T04:34:44.535286Z"
   },
@@ -2514,7 +2514,7 @@
     "email_id": "c756d438-5a51-471b-ab68-b8bd59afbeb8",
     "filename": "presentation.pptx",
     "content_type": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    "size_bytes": null,
+    "size_bytes": 4931559,
     "storage_path": "attachments/2023/09/4eb1d263-b8ae-41a8-8731-0484f94d6184",
     "attachment_type": "file",
     "created_at": "2025-10-29T01:34:44.535410Z"
@@ -2565,7 +2565,7 @@
     "filename": "document.pdf",
     "content_type": "application/pdf",
     "size_bytes": 100,
-    "storage_path": null,
+    "storage_path": "attachments/2025/01/6a36a090-50ee-48b6-ab55-6c8615ed8e63",
     "attachment_type": "document",
     "created_at": "2025-01-08T14:55:44.535706Z"
   },
@@ -2625,7 +2625,7 @@
     "filename": "archive.zip",
     "content_type": "application/zip",
     "size_bytes": 96,
-    "storage_path": null,
+    "storage_path": "attachments/2025/06/3878ad24-c845-4736-b8ca-06ac03b4cbff",
     "attachment_type": "file",
     "created_at": "2025-06-22T02:42:44.536065Z"
   },
@@ -2695,7 +2695,7 @@
     "filename": "archive.zip",
     "content_type": "application/zip",
     "size_bytes": 209,
-    "storage_path": null,
+    "storage_path": "attachments/2025/01/61cf4376-255f-43cd-a398-c4e01b1dc905",
     "attachment_type": "file",
     "created_at": "2025-01-15T11:54:44.536475Z"
   },
@@ -2705,7 +2705,7 @@
     "filename": "spreadsheet.xlsx",
     "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "size_bytes": 849,
-    "storage_path": null,
+    "storage_path": "attachments/2025/11/4a8be3dd-2a58-41c2-a9ca-d04a7ba358b0",
     "attachment_type": "document",
     "created_at": "2025-11-12T21:51:44.536531Z"
   },
@@ -2745,7 +2745,7 @@
     "filename": "screenshot.png",
     "content_type": "image/png",
     "size_bytes": 143,
-    "storage_path": null,
+    "storage_path": "attachments/2025/03/cd5b76c6-bae8-4e31-8f51-395878f6ef4c",
     "attachment_type": "image",
     "created_at": "2025-03-16T00:09:44.536801Z"
   },
@@ -2835,7 +2835,7 @@
     "filename": "photo.jpg",
     "content_type": "image/jpeg",
     "size_bytes": 30,
-    "storage_path": null,
+    "storage_path": "attachments/2025/09/6346d9c2-2d89-472e-a73a-e0e19e4b96be",
     "attachment_type": "image",
     "created_at": "2025-09-06T12:49:44.537369Z"
   },
@@ -2865,7 +2865,7 @@
     "filename": "document.pdf",
     "content_type": "application/pdf",
     "size_bytes": 768,
-    "storage_path": null,
+    "storage_path": "attachments/2025/12/a5e924a6-8f84-411f-9c23-81880e37ddc5",
     "attachment_type": "document",
     "created_at": "2025-12-19T23:36:44.537546Z"
   },
@@ -2904,7 +2904,7 @@
     "email_id": "328ec56a-cc9c-4eef-9f81-ebb219dac1ea",
     "filename": "notes.txt",
     "content_type": "text/plain",
-    "size_bytes": null,
+    "size_bytes": 463117,
     "storage_path": "attachments/2025/02/1617e63c-5238-414e-bbe1-56fb2bd2c254",
     "attachment_type": "document",
     "created_at": "2025-09-30T04:41:44.537785Z"
@@ -2924,7 +2924,7 @@
     "email_id": "b13f0a5a-5783-41e6-a0f1-1392c78b6009",
     "filename": "archive.zip",
     "content_type": "application/zip",
-    "size_bytes": null,
+    "size_bytes": 1052635,
     "storage_path": "attachments/2023/05/b3d80632-e8a8-4604-86fa-372ad591f270",
     "attachment_type": "file",
     "created_at": "2025-08-08T16:42:44.537905Z"
@@ -2965,7 +2965,7 @@
     "filename": "document.pdf",
     "content_type": "application/pdf",
     "size_bytes": 958,
-    "storage_path": null,
+    "storage_path": "attachments/2025/05/853b7830-2aa9-4957-a62b-0f6e8d11769d",
     "attachment_type": "document",
     "created_at": "2025-05-27T19:45:44.538143Z"
   },
@@ -2984,7 +2984,7 @@
     "email_id": "f66ac388-3889-4fe1-8f8a-b69e2b865fd5",
     "filename": "document.pdf",
     "content_type": "application/pdf",
-    "size_bytes": null,
+    "size_bytes": 1043584,
     "storage_path": "attachments/2025/11/6702c7a7-7093-4c8e-9c40-ec0c6bfcdc71",
     "attachment_type": "document",
     "created_at": "2025-05-20T09:19:44.538263Z"
