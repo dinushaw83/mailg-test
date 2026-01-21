@@ -78,7 +78,7 @@ def get_thread_emails(
     if only_trashed:
         query = query.filter(Email.folder == FolderType.TRASH.value)
     
-    emails = query.order_by(func.coalesce(Email.sent_at, Email.created_at).asc()).all()
+    emails = query.order_by(func.coalesce(Email.received_at, Email.sent_at, Email.created_at).asc()).all()
     
     if not emails:
         raise HTTPException(
