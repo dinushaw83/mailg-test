@@ -92,14 +92,16 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
   // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
     const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
-    return Object.entries(labelsObject)
-      // Same filter as "Label as" - hide labels that are both system AND exclusive
-      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
-      .map(([key, meta]) => ({
-        id: key,
-        name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return (
+      Object.entries(labelsObject)
+        // Same filter as "Label as" - hide labels that are both system AND exclusive
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+        .map(([key, meta]) => ({
+          id: key,
+          name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    );
   }, [labels, labelIdToKeyMap]);
 
   const { label: labelParam } = useParams();
@@ -131,17 +133,11 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
             size="small"
             onClick={() => {
               try {
-                if (originalLabelsSnapshot && originalLabelsSnapshot.size) {
-                  setEmails((prev) =>
-                    prev.map((email) =>
-                      originalLabelsSnapshot.has(email.id)
-                        ? { ...email, labels: originalLabelsSnapshot.get(email.id) }
-                        : email
-                    )
-                  );
-                } else if (inCustomLabel) {
+                // Always call the backend API to move back, not just local state update
+                if (inCustomLabel) {
                   moveToLabelFrom(matchKeys, toKey, fromKey);
                 } else {
+                  // Move back to the original folder/label
                   moveToLabel(matchKeys, fromKey || "Inbox");
                 }
 
@@ -166,7 +162,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
         ),
       });
     },
-    [labels, moveToLabelFrom, moveToLabel, setEmails, setSnackbar]
+    [labels, moveToLabelFrom, moveToLabel, setSnackbar]
   );
 
   const handleMenuItemClick = useCallback(
@@ -186,9 +182,11 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
 
         if (item.id === "__inbox__" || item.id === "inbox") {
           moveToLabel(selectionMatchKeys, "Inbox");
+          // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
+          const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
           showUndoSnackbarForLabelMove(
             selectionMatchKeys,
-            currentLabel,
+            sourceLocation,
             "Inbox",
             false,
             selectedConversationCount,

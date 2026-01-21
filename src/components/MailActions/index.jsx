@@ -195,14 +195,16 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
     const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
-    return Object.entries(labelsObject)
-      // Same filter as "Label as" - hide labels that are both system AND exclusive
-      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
-      .map(([key, meta]) => ({
-        id: key,
-        name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return (
+      Object.entries(labelsObject)
+        // Same filter as "Label as" - hide labels that are both system AND exclusive
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+        .map(([key, meta]) => ({
+          id: key,
+          name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    );
   }, [labels, labelIdToKeyMap]);
 
   const showNoConversationsSelectedSnackbar = useCallback(() => {
@@ -288,15 +290,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
             size="small"
             onClick={() => {
               try {
-                if (originalLabelsSnapshot && originalLabelsSnapshot.size) {
-                  setEmails((prev) =>
-                    prev.map((email) =>
-                      originalLabelsSnapshot.has(email.id)
-                        ? { ...email, labels: originalLabelsSnapshot.get(email.id) }
-                        : email
-                    )
-                  );
-                } else if (inCustomLabel) {
+                // Always call the backend API to properly undo the action
+                if (inCustomLabel) {
                   moveToLabelFrom(matchKeys, toKey, fromKey);
                 } else {
                   moveToLabel(matchKeys, fromKey || "Inbox");
@@ -322,7 +317,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         ),
       });
     },
-    [moveToLabel, moveToLabelFrom, setSnackbar, labels, isMovingToLabel, setEmails]
+    [moveToLabel, moveToLabelFrom, setSnackbar, labels, isMovingToLabel]
   );
 
   const handleArchiveEmails = useCallback(() => {
@@ -429,9 +424,11 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
         if (item.id === "__inbox__" || item.id === "inbox") {
           moveToLabel(selectionMatchKeys, "Inbox");
+          // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
+          const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
           showUndoSnackbarForLabelMove(
             selectionMatchKeys,
-            currentLabel,
+            sourceLocation,
             "Inbox",
             false,
             selectedConversationCount,
@@ -1024,9 +1021,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         onClick={handleSnoozeAction}
         _ref={snoozeAnchorElRef}
       />
-      {showAdvancedMenu && (
-        <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
-      )}
+      {showAdvancedMenu && <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />}
       {!["all", "drafts"].includes(folder) && (
         <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
       )}
@@ -1102,22 +1097,21 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           // Clear selection after action
           selection.clear();
           setSnackbar({
-          open: true,
-          message:
-            conversationCount > 1
-              ? `${conversationCount} conversations marked as spam.`
-              : "Conversation marked as spam.",
-          autoHideDuration: 3000,
-          action: (
-            <Button size="small" onClick={handleUndo}>
-              Undo
-            </Button>
-          ),
-          style: {
-            maxWidth: "600px",
-          },
-        });
-          
+            open: true,
+            message:
+              conversationCount > 1
+                ? `${conversationCount} conversations marked as spam.`
+                : "Conversation marked as spam.",
+            autoHideDuration: 3000,
+            action: (
+              <Button size="small" onClick={handleUndo}>
+                Undo
+              </Button>
+            ),
+            style: {
+              maxWidth: "600px",
+            },
+          });
         }}
         onUnsubscribe={() => {
           // Extract email IDs from selected threadIds - use thread_id not threadId

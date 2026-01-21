@@ -318,14 +318,16 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
     const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
-    return Object.entries(labelsObject)
-      // Same filter as "Label as" - hide labels that are both system AND exclusive
-      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
-      .map(([key, meta]) => ({
-        id: key,
-        name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+    return (
+      Object.entries(labelsObject)
+        // Same filter as "Label as" - hide labels that are both system AND exclusive
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+        .map(([key, meta]) => ({
+          id: key,
+          name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    );
   }, [labels, labelIdToKeyMap]);
 
   const moveToMenuAnchorRef = useRef(null);
@@ -364,7 +366,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     notSpam,
     deleteForever,
   } = useMailActions();
-  
+
   // Check if viewing spam folder
   const isSpamFolder = folder === "spam";
   // Check if viewing trash folder
@@ -483,14 +485,8 @@ const MailActions = ({ thread, emails: providedEmails }) => {
             size="small"
             onClick={() => {
               try {
-                if (snapshot && snapshot.size) {
-                  setEmails((prev) =>
-                    prev.map((email) => {
-                      const key = String(email.id ?? "");
-                      return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
-                    })
-                  );
-                } else if (isMoving) {
+                // Always call the backend API to properly undo the action
+                if (isMoving) {
                   if (inCustomLabel) {
                     moveToLabelFrom(matchKeys, toKey, fromKey);
                   } else {
@@ -524,7 +520,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         navigate(getBasePath());
       }
     },
-    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels, setEmails, navigate, getBasePath]
+    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels, navigate, getBasePath]
   );
 
   const handleDelete = useCallback(() => {
@@ -534,7 +530,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     // This ensures consistency when moving back from trash
     const mainEmailId = threadEmails[0]?.id;
     if (!mainEmailId) return;
-    
+
     const emailIds = [mainEmailId];
     const threadIds = [thread?.thread_id].filter(Boolean);
     const undo = moveToTrash(emailIds);
@@ -654,7 +650,9 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           const emailIds = threadEmails.map((email) => email.id);
           if (!emailIds.length) return;
           moveToInbox(emailIds, { resolvedEmailIds: emailIds });
-          showUndoSnackbar(conversationMatchKeys, currentLabel, "Inbox", false, true, snapshot);
+          // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
+          const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
+          showUndoSnackbar(conversationMatchKeys, sourceLocation, "Inbox", false, true, snapshot);
           navigate(getBasePath());
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
@@ -981,13 +979,13 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     const emailIds = [threadEmails[0]?.id].filter(Boolean);
     // Store email IDs in ref for undo action
     spamUndoEmailIdsRef.current = [...emailIds];
-    
+
     moveToSpam(emailIds);
     toggleSpamModal();
-    
+
     // Navigate back to the list
     navigate(getBasePath());
-    
+
     // Create undo handler that captures notSpam
     const handleUndo = () => {
       const idsToUndo = spamUndoEmailIdsRef.current;
@@ -1001,17 +999,13 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         });
       }
     };
-    
+
     setSnackbar({
       open: true,
       message: "Conversation marked as spam.",
       autoHideDuration: 10000,
       action: (
-        <Button
-          sx={{ textTransform: "none" }}
-          size="small"
-          onClick={handleUndo}
-        >
+        <Button sx={{ textTransform: "none" }} size="small" onClick={handleUndo}>
           Undo
         </Button>
       ),
@@ -1021,13 +1015,13 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   // Handle "Not Spam" action - moves email back to inbox
   const handleNotSpam = useCallback(() => {
     if (!threadEmails.length) return;
-    
+
     const emailIds = threadEmails.map((email) => email.id);
     notSpam(emailIds);
-    
+
     // Navigate back to the list
     navigate(getBasePath());
-    
+
     setSnackbar({
       open: true,
       message: "Conversation moved to Inbox.",
@@ -1039,13 +1033,13 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   // Handle "Delete Forever" action - permanently deletes email
   const handleDeleteForever = useCallback(() => {
     if (!threadEmails.length) return;
-    
+
     const emailIds = threadEmails.map((email) => email.id);
     deleteForever(emailIds);
-    
+
     // Navigate back to the list
     navigate(getBasePath());
-    
+
     setSnackbar({
       open: true,
       message: "Conversation deleted forever.",
