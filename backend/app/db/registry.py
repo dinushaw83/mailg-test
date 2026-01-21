@@ -62,7 +62,7 @@ def ensure_registry_table(conn) -> None:
     conn.execute(
         text(
             """
-            CREATE TABLE IF NOT EXISTS deskzen_run_registry (
+            CREATE TABLE IF NOT EXISTS mailg_run_registry (
               db_name      text PRIMARY KEY,
               run_id       text,
               created_at   timestamptz NOT NULL,
@@ -75,8 +75,8 @@ def ensure_registry_table(conn) -> None:
     conn.execute(
         text(
             """
-            CREATE INDEX IF NOT EXISTS deskzen_run_registry_last_used_at_idx
-            ON deskzen_run_registry (last_used_at)
+            CREATE INDEX IF NOT EXISTS mailg_run_registry_last_used_at_idx
+            ON mailg_run_registry (last_used_at)
             """
         )
     )
@@ -113,7 +113,7 @@ def touch_run(run_id: str) -> None:
             conn.execute(
                 text(
                     """
-                    INSERT INTO deskzen_run_registry (db_name, run_id, created_at, last_used_at)
+                    INSERT INTO mailg_run_registry (db_name, run_id, created_at, last_used_at)
                     VALUES (:db_name, :run_id, :now, :now)
                     ON CONFLICT (db_name)
                     DO UPDATE SET last_used_at = EXCLUDED.last_used_at,
@@ -137,7 +137,7 @@ def get_last_used_at(conn, db_name: str) -> Optional[datetime]:
     """Return last_used_at for db_name, using an existing admin connection."""
     row = (
         conn.execute(
-            text("SELECT last_used_at FROM deskzen_run_registry WHERE db_name = :db_name"),
+            text("SELECT last_used_at FROM mailg_run_registry WHERE db_name = :db_name"),
             {"db_name": db_name},
         )
         .mappings()

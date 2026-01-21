@@ -156,8 +156,11 @@ def cleanup_old_databases_sync(age_hours: Optional[float] = None) -> int:
     age = _CLEANUP_AGE_HOURS_DEFAULT if age_hours is None else float(age_hours)
     cutoff = datetime.now(timezone.utc) - timedelta(hours=age)
 
+    logger.info(f"[CLEANUP] Starting database cleanup cycle. cutoff={cutoff.isoformat()} age_hours={age}")
+
     engine = _admin_engine()
     dropped = 0
+    scanned = 0
     try:
         with engine.connect() as conn:
             ensure_registry_table(conn)
@@ -174,6 +177,7 @@ def cleanup_old_databases_sync(age_hours: Optional[float] = None) -> int:
                 got_lock = True  # Best-effort: if we can't lock, continue rather than breaking cleanup.
 
             if not got_lock:
+                logger.info("[CLEANUP] Another worker holds the cleanup lock, skipping this cycle")
                 return 0
             try:
                 rows = (
@@ -181,7 +185,7 @@ def cleanup_old_databases_sync(age_hours: Optional[float] = None) -> int:
                         text(
                             """
                             SELECT db_name, run_id, last_used_at
-                            FROM deskzen_run_registry
+                            FROM mailg_run_registry
                             ORDER BY last_used_at ASC
                             """
                         )
@@ -189,6 +193,8 @@ def cleanup_old_databases_sync(age_hours: Optional[float] = None) -> int:
                     .mappings()
                     .all()
                 )
+
+                logger.info(f"[CLEANUP] Found {len(rows)} registered run database(s) to evaluate")
 
                 for r in rows:
                     db_name = r.get("db_name")
@@ -203,17 +209,22 @@ def cleanup_old_databases_sync(age_hours: Optional[float] = None) -> int:
                         continue
                     if run_id == "default":
                         continue
+                    
+                    scanned += 1
+                    
                     if not last_used_at or last_used_at >= cutoff:
                         continue
 
                     # Dispose any cached pooled engine for this DB before dropping.
                     dispose_postgres_run_engine(db_name, reason="background_cleanup")
 
+                    logger.info(f"[CLEANUP] Dropping database: db_name={db_name} run_id={run_id} last_used_at={last_used_at}")
+
                     try:
                         _terminate_connections(conn, db_name)
                         conn.execute(text(f'DROP DATABASE "{db_name}"'))
                         conn.execute(
-                            text("DELETE FROM deskzen_run_registry WHERE db_name = :db_name"),
+                            text("DELETE FROM mailg_run_registry WHERE db_name = :db_name"),
                             {"db_name": db_name},
                         )
                         
@@ -223,10 +234,10 @@ def cleanup_old_databases_sync(age_hours: Optional[float] = None) -> int:
                         
                         dropped += 1
                         logger.info(
-                            f"Dropped stale run database db_name={db_name} run_id={run_id} last_used_at={last_used_at}"
+                            f"[CLEANUP] Successfully dropped database: db_name={db_name} run_id={run_id}"
                         )
                     except Exception as e:
-                        logger.warning(f"Failed dropping run database {db_name}: {e}")
+                        logger.warning(f"[CLEANUP] Failed dropping run database {db_name}: {e}")
             finally:
                 try:
                     conn.execute(
@@ -239,6 +250,7 @@ def cleanup_old_databases_sync(age_hours: Optional[float] = None) -> int:
     finally:
         engine.dispose()
 
+    logger.info(f"[CLEANUP] Cycle complete. scanned={scanned} dropped={dropped}")
     return dropped
 
 

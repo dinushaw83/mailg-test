@@ -1,4 +1,4 @@
-# Run DeskZen via Docker Compose (Windows-friendly)
+# Run mailg via Docker Compose (Windows-friendly)
 # Usage examples:
 #   .\run-docker.ps1                 # build + up (detached)
 #   .\run-docker.ps1 -Logs           # follow logs after starting
