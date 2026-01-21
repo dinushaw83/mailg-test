@@ -54,10 +54,16 @@ async def lifespan(app: FastAPI):
         # Log error but continue - cleanup task must always run
         logger.error(f"Failed to initialize database: {e}")
     
-    # Always start background tasks regardless of initialization result
-    asyncio.create_task(cleanup_old_databases())
-    asyncio.create_task(process_scheduled_emails())
-    asyncio.create_task(process_expired_snoozes())
+    # Only start background tasks on one worker (set by gunicorn_config.py)
+    # This prevents duplicate task execution across multiple gunicorn workers
+    # Default to "true" so uvicorn/development mode works (gunicorn sets "false" for non-leader workers)
+    if os.getenv("RUN_BACKGROUND_TASKS", "true").lower() == "true":
+        logger.info("This worker is assigned to run background tasks")
+        asyncio.create_task(cleanup_old_databases())
+        asyncio.create_task(process_scheduled_emails())
+        asyncio.create_task(process_expired_snoozes())
+    else:
+        logger.info("Background tasks disabled for this worker (another worker handles them)")
     
     yield
 
