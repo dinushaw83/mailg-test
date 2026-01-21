@@ -471,8 +471,17 @@ export default function useMailActions() {
       // Extract email IDs and thread IDs for backend sync
       const match = makeMatch(ids);
       const matchingEmails = emails.filter(match);
-      const emailIds = matchingEmails.map((email) => email.id);
+      let emailIds = matchingEmails.map((email) => email.id);
       const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+
+      // If no matching emails found, check if ids are already UUIDs (e.g., from undo action)
+      if (emailIds.length === 0) {
+        const normalizedIds = ids.map((value) => String(value || "").trim()).filter(Boolean);
+        const uuidPattern = /^[0-9a-fA-F-]{32,}$/;
+        if (normalizedIds.every((id) => uuidPattern.test(id))) {
+          emailIds = normalizedIds;
+        }
+      }
 
       // Call bulk backend API FIRST
       if (emailIds.length > 0) {
