@@ -366,6 +366,8 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   
   // Check if viewing spam folder
   const isSpamFolder = folder === "spam";
+  // Check if viewing trash folder
+  const isTrashFolder = folder === "trash";
 
   const handleArchive = useCallback(() => {
     if (!threadEmails.length) return;
@@ -1140,7 +1142,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           <>
             <Icon name="archive" label="Archive" onClick={handleArchive} />
             <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
-            {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
+            {!isThreadDeleted && !isTrashFolder && <Icon name="delete" label="Delete" onClick={handleDelete} />}
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           </>
         )}

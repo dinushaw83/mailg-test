@@ -1168,7 +1168,7 @@ const Table = ({
                             handleArchive([email.thread_id]);
                           }}
                           style={{}}
-                          disabled={false}
+                          disabled={folder === "trash"}
                           _ref={null}
                         />
                         <Icon
@@ -1180,7 +1180,7 @@ const Table = ({
                             handleDelete([email.thread_id]);
                           }}
                           style={{}}
-                          disabled={false}
+                          disabled={folder === "trash"}
                           _ref={null}
                         />
                         <Icon

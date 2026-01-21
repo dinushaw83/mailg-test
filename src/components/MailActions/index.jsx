@@ -1005,10 +1005,10 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         name="archive"
         label="Archive"
         onClick={handleArchiveEmails}
-        disabled={allAreArchived || shouldDisableArchiveButton || folder === "all" || folder === "trash"}
+        disabled={allAreArchived || shouldDisableArchiveButton || inAllMail || inTrash}
       />
-      <Icon name="report" label="Report" onClick={toggleSpamModal} />
-      <Icon name="delete" label="Delete" onClick={handleDeleteEmails} />
+      <Icon name="report" label="Report" onClick={toggleSpamModal} disabled={inTrash} />
+      <Icon name="delete" label="Delete" onClick={handleDeleteEmails} disabled={inTrash} />
 
       <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
 
