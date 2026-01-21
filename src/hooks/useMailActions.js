@@ -69,11 +69,15 @@ const withUndo = (ids, setEmails, operation) => {
 
   operation(match);
 
-  return () => {
+  const undo = () => {
     setEmails((prev) =>
       prev.map((m) => (match(m) && originalStates.has(m.id) ? { ...m, labels: originalStates.get(m.id).labels } : m))
     );
   };
+
+  undo.originalStates = originalStates;
+
+  return undo;
 };
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -444,6 +448,9 @@ export default function useMailActions() {
         console.warn("moveToSpam: could not resolve email IDs for selection", normalizedIds);
       }
 
+      const undoEmailIds = emailIds.length ? [...emailIds] : ids.filter(Boolean);
+      const undoThreadIds = threadIds.length ? [...threadIds] : [];
+
       // Optimistically update React Query cache
       updateQueryCache(ids, (email) => {
         const updatedLabels = [...(email.labels || [])];
@@ -454,12 +461,36 @@ export default function useMailActions() {
       });
 
       // Backward compatibility: update local state
-      const undo = withUndo(ids, setEmails, () => {
+      let revertLocalState = withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
           removeSystemLabels(labelSet, labels, ["Spam"]);
           labelSet.add("Spam");
         });
       });
+      const originalStates = revertLocalState.originalStates || new Map();
+      let hasRestored = false;
+      let actionFailed = false;
+
+      const restoreOriginalState = () => {
+        if (hasRestored) return;
+
+        updateQueryCache(ids, (email) => {
+          const original = originalStates.get(email.id);
+          if (original) {
+            return { ...email, labels: [...(original.labels || [])] };
+          }
+          const labelSet = new Set(email.labels || []);
+          labelSet.delete("Spam");
+          return { ...email, labels: [...labelSet] };
+        });
+
+        if (revertLocalState) {
+          revertLocalState();
+          revertLocalState = null;
+        }
+
+        hasRestored = true;
+      };
 
       // Call bulk backend API with all email IDs at once
       if (emailIds && emailIds.length > 0) {
@@ -471,19 +502,34 @@ export default function useMailActions() {
           })
           .catch((error) => {
             console.error("Failed to bulk move emails to spam:", error);
-            // Revert optimistic update on error
-            updateQueryCache(ids, (email) => {
-              const updatedLabels = [...(email.labels || [])];
-              const labelSet = new Set(updatedLabels);
-              labelSet.delete("Spam");
-              return { ...email, labels: [...labelSet] };
-            });
+            actionFailed = true;
+            restoreOriginalState();
           });
       } else {
         console.warn("moveToSpam: No email IDs to process, skipping API call");
+        actionFailed = true;
+        restoreOriginalState();
       }
 
-      return undo;
+      return () => {
+        if (actionFailed) return;
+
+        restoreOriginalState();
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        const targetThreadIds = undoThreadIds.length ? undoThreadIds : [];
+
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveFromSpamThunk({ emailIds: targetEmailIds }))
+            .unwrap()
+            .then(() => {
+              invalidateEmailCaches(targetThreadIds.length ? targetThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to restore from spam:", error);
+            });
+        }
+      };
     },
     [updateByIds, setEmails, labels, dispatch, emails, updateQueryCache, invalidateEmailCaches]
   );
@@ -505,6 +551,41 @@ export default function useMailActions() {
         }
       }
 
+      const undoEmailIds = emailIds.length ? [...emailIds] : ids.filter(Boolean);
+      const undoThreadIds = threadIds.length ? [...threadIds] : [];
+
+      let revertLocalState = withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labels) => {
+          labels.delete("Spam");
+          labels.add("Inbox");
+        });
+      });
+      const originalStates = revertLocalState.originalStates || new Map();
+      let hasRestored = false;
+      let actionFailed = false;
+
+      const restoreSpamState = () => {
+        if (hasRestored) return;
+
+        updateQueryCache(ids, (email) => {
+          const original = originalStates.get(email.id);
+          if (original) {
+            return { ...email, labels: [...(original.labels || [])] };
+          }
+          const labelSet = new Set(email.labels || []);
+          labelSet.add("Spam");
+          labelSet.delete("Inbox");
+          return { ...email, labels: [...labelSet] };
+        });
+
+        if (revertLocalState) {
+          revertLocalState();
+          revertLocalState = null;
+        }
+
+        hasRestored = true;
+      };
+
       // Call bulk backend API FIRST
       if (emailIds.length > 0) {
         dispatch(bulkMoveFromSpamThunk({ emailIds }))
@@ -515,35 +596,47 @@ export default function useMailActions() {
           })
           .catch((error) => {
             console.error("Failed to bulk remove spam from emails:", error);
-            // Revert optimistic update on error
-            updateQueryCache(ids, (email) => {
-              const updatedLabels = [...(email.labels || [])];
-              const labelSet = new Set(updatedLabels);
-              labelSet.add("Spam");
-              labelSet.delete("Inbox");
-              return { ...email, labels: [...labelSet] };
-            });
+            actionFailed = true;
+            restoreSpamState();
           });
+      } else {
+        console.warn("notSpam: No email IDs to process, skipping API call");
+        actionFailed = true;
+        restoreSpamState();
       }
 
-      // Optimistically update React Query cache
-      updateQueryCache(ids, (email) => {
-        const updatedLabels = [...(email.labels || [])];
-        const labelSet = new Set(updatedLabels);
-        labelSet.delete("Spam");
-        labelSet.add("Inbox");
-        return { ...email, labels: [...labelSet] };
-      });
+      if (!actionFailed) {
+        // Optimistically update React Query cache
+        updateQueryCache(ids, (email) => {
+          const updatedLabels = [...(email.labels || [])];
+          const labelSet = new Set(updatedLabels);
+          labelSet.delete("Spam");
+          labelSet.add("Inbox");
+          return { ...email, labels: [...labelSet] };
+        });
+      }
 
-      // Backward compatibility: update local state
-      const undo = updateByIds(ids, (labels) => {
-        labels.delete("Spam");
-        labels.add("Inbox");
-      });
+      return () => {
+        if (actionFailed) return;
 
-      return undo;
+        restoreSpamState();
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        const targetThreadIds = undoThreadIds.length ? undoThreadIds : [];
+
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveToSpamThunk({ emailIds: targetEmailIds }))
+            .unwrap()
+            .then(() => {
+              invalidateEmailCaches(targetThreadIds.length ? targetThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to undo spam removal:", error);
+            });
+        }
+      };
     },
-    [updateByIds, emails, dispatch, updateQueryCache, invalidateEmailCaches]
+    [updateByIds, emails, dispatch, updateQueryCache, invalidateEmailCaches, setEmails]
   );
 
   const moveToTrash = useCallback(
