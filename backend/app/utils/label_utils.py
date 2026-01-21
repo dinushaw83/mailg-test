@@ -805,6 +805,13 @@ def sync_thread_labels(
             # Snoozed threads should not appear in Inbox - remove INBOX if present
             labels_should_have.discard(SystemLabel.INBOX)
     
+    # SPAM and TRASH exclude emails from ALL_MAIL, INBOX, STARRED, and IMPORTANT
+    if SystemLabel.SPAM in labels_should_have or SystemLabel.TRASH in labels_should_have:
+        labels_should_have.discard(SystemLabel.ALL_MAIL)
+        labels_should_have.discard(SystemLabel.INBOX)
+        labels_should_have.discard(SystemLabel.STARRED)
+        labels_should_have.discard(SystemLabel.IMPORTANT)
+    
     # Get all user's syncable system labels
     syncable_label_names = [sl.value for sl in SYNCABLE_SYSTEM_LABELS]
     user_system_labels = db.query(Label).filter(
