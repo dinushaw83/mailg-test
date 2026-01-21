@@ -69,7 +69,7 @@ SYNCABLE_SYSTEM_LABELS = {
     SystemLabel.STARRED,
     SystemLabel.IMPORTANT,
     SystemLabel.SNOOZED,
-    SystemLabel.ALL_MAIL,  # Always added for any email in thread
+    SystemLabel.ALL_MAIL,  # Added for emails not in TRASH or SPAM
 }
 
 
@@ -783,8 +783,8 @@ def sync_thread_labels(
         if folder_label:
             labels_should_have.add(folder_label)
     
-    # All emails belong to ALL_MAIL (if user has any emails in this thread)
-    if user_emails:
+    # All emails belong to ALL_MAIL (excluding TRASH and SPAM - they don't appear in All Mail)
+    if any(email.folder not in (FolderType.TRASH.value, FolderType.SPAM.value) for email in user_emails):
         labels_should_have.add(SystemLabel.ALL_MAIL)
     
     # 2. STARRED - if any email is starred
