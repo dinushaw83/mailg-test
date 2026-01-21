@@ -1,33 +1,29 @@
 [
   {
-    "prompt": "You are logged in as Test User (john.doe@example.com), an admin.Move the \"Login throws IP Banned Error\" ticket from TODO to In Progress",
+    "id": "MAIL:001",
+    "prompt": "You are logged in as John Doe (john.doe@example.com). Star the \"Q1 Project Planning Discussion\" thread.",
     "db_verification_config": {
-      "ignore_tables": ["ticket_links"],
       "tables": {
-        "tickets": {
+        "emails": {
           "expect_modified": [
             {
-              "description": "Change status of specific ticket from TODO to In Progress",
+              "description": "Star emails in the Q1 Project Planning Discussion thread",
               "field_assertions": [
                 {
-                  "field": "summary",
+                  "field": "subject",
                   "operator": "STRING_CONTAINS",
-                  "expected": "Login throws IP Banned Error"
+                  "expected": "Q1 Project Planning Discussion"
                 },
                 {
-                  "field": "status",
-                  "operator": "STRING_EQUALS",
-                  "expected": "in-progress"
+                  "field": "is_starred",
+                  "operator": "BOOLEAN_EQUALS",
+                  "expected": true
                 }
               ]
             }
-          ],
-          "fail_on_extra_rows": false
+          ]
         }
       }
-    },
-    "id": "MIRA:100",
-    "created_at": "2025-12-01T00:00:00",
-    "updated_at": "2025-12-01T00:00:00"
+    }
   }
 ]

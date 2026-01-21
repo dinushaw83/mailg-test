@@ -31,6 +31,7 @@ from app.utils.email_utils import (
     format_email_response,
     mark_emails_as_read_background,
     get_perspective_email_filter,
+    ensure_utc_aware,
 )
 from app.utils.thread_metadata_utils import mark_thread_important
 
@@ -78,7 +79,7 @@ def get_thread_emails(
     if only_trashed:
         query = query.filter(Email.folder == FolderType.TRASH.value)
     
-    emails = query.order_by(func.coalesce(Email.sent_at, Email.created_at).asc()).all()
+    emails = query.order_by(func.coalesce(Email.received_at, Email.sent_at, Email.created_at).asc()).all()
     
     if not emails:
         raise HTTPException(
@@ -244,7 +245,7 @@ def snooze_thread(
         )
     
     # Validate snooze_until is in the future
-    if snooze_data.snooze_until <= datetime.now(UTC):
+    if ensure_utc_aware(snooze_data.snooze_until) <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Snooze time must be in the future"

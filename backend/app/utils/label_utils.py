@@ -28,6 +28,26 @@ from app.core.constants import (
 )
 
 
+def _ensure_utc_aware(dt: Optional[datetime]) -> Optional[datetime]:
+    """Ensure datetime is timezone-aware (UTC).
+    
+    If the datetime is naive (no timezone info), assumes it represents UTC time.
+    This is needed because some database operations or Pydantic parsing may
+    return naive datetimes, which cannot be compared with timezone-aware ones.
+    
+    Args:
+        dt: A datetime object (naive or aware) or None
+        
+    Returns:
+        Timezone-aware datetime (UTC) or None if input was None
+    """
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt
+
+
 # Mapping from folder type to system label enum
 FOLDER_TO_LABEL = {
     FolderType.INBOX.value: SystemLabel.INBOX,
@@ -780,7 +800,7 @@ def sync_thread_labels(
     if metadata:
         if metadata.is_important:
             labels_should_have.add(SystemLabel.IMPORTANT)
-        if metadata.snooze_until and metadata.snooze_until > datetime.now(UTC):
+        if metadata.snooze_until and _ensure_utc_aware(metadata.snooze_until) > datetime.now(UTC):
             labels_should_have.add(SystemLabel.SNOOZED)
             # Snoozed threads should not appear in Inbox - remove INBOX if present
             labels_should_have.discard(SystemLabel.INBOX)

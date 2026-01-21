@@ -641,8 +641,8 @@ def search_emails(
         )
     
     # Apply threaded grouping - return only latest email from each thread
-    # Use sent_at for sorting, fallback to created_at if null
-    sort_date = func.coalesce(Email.sent_at, Email.created_at)
+    # Use received_at > sent_at > created_at for sorting (first non-null wins)
+    sort_date = func.coalesce(Email.received_at, Email.sent_at, Email.created_at)
     
     # Step 1: Get max dates per thread for the filtered emails
     max_dates = db.query(
@@ -700,7 +700,7 @@ def search_emails(
     elif sort_by == "sender":
         order_col = Email.sender_id
     else:
-        order_col = func.coalesce(Email.sent_at, Email.created_at)
+        order_col = func.coalesce(Email.received_at, Email.sent_at, Email.created_at)
     
     if sort_order == "asc":
         final_query = final_query.order_by(order_col.asc())

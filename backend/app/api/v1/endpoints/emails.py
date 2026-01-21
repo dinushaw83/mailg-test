@@ -47,6 +47,7 @@ from app.utils.email_utils import (
     format_email_list_response,
     deliver_email_to_recipients_background,
     get_perspective_email_filter,
+    ensure_utc_aware,
 )
 from app.utils.thread_metadata_utils import get_user_important_thread_ids
 
@@ -246,8 +247,8 @@ def list_emails(
                     query = query.filter(Email.thread_id.in_(db.query(labeled_thread_ids.c.thread_id)))
     
     # ALWAYS apply threaded grouping - return only latest email from each thread
-    # Use sent_at for sorting, fallback to created_at if null
-    sort_date = func.coalesce(Email.sent_at, Email.created_at)
+    # Use received_at > sent_at > created_at for sorting (first non-null wins)
+    sort_date = func.coalesce(Email.received_at, Email.sent_at, Email.created_at)
     
     # Step 1: Get max dates per thread from the filtered query
     max_dates = query.filter(
@@ -283,8 +284,8 @@ def list_emails(
     total_pages = (total + page_size - 1) // page_size if total > 0 else 0
     offset = (page - 1) * page_size
     
-    # Get results - always sort by sent_at
-    emails = query.order_by(func.coalesce(Email.sent_at, Email.created_at).desc()).offset(offset).limit(page_size).all()
+    # Get results - sort by received_at > sent_at > created_at
+    emails = query.order_by(func.coalesce(Email.received_at, Email.sent_at, Email.created_at).desc()).offset(offset).limit(page_size).all()
     
     # Get thread email counts for all threads in the result set
     thread_ids = [email.thread_id for email in emails if email.thread_id]
@@ -577,7 +578,7 @@ def send_email(
     
     if scheduled_send_at:
         # Explicit scheduled send time provided - override user's undo delay
-        if scheduled_send_at <= datetime.now(UTC):
+        if ensure_utc_aware(scheduled_send_at) <= datetime.now(UTC):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="scheduled_send_at must be in the future"
@@ -692,7 +693,7 @@ def cancel_send(
         )
     
     # Check if still within the undo window
-    if email.scheduled_send_at and email.scheduled_send_at <= datetime.now(UTC):
+    if email.scheduled_send_at and ensure_utc_aware(email.scheduled_send_at) <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Undo window has expired. The email has been sent."
