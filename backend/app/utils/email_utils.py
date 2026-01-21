@@ -35,6 +35,26 @@ SENDER_STATUSES = [
 ]
 
 
+def ensure_utc_aware(dt: Optional[datetime]) -> Optional[datetime]:
+    """Ensure datetime is timezone-aware (UTC).
+    
+    If the datetime is naive (no timezone info), assumes it represents UTC time.
+    This is needed because some database operations or Pydantic parsing may
+    return naive datetimes, which cannot be compared with timezone-aware ones.
+    
+    Args:
+        dt: A datetime object (naive or aware) or None
+        
+    Returns:
+        Timezone-aware datetime (UTC) or None if input was None
+    """
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt
+
+
 def get_perspective_email_filter(db: Session, user_id: UUID):
     """Get SQLAlchemy filter for user's emails from their perspective.
     
@@ -182,7 +202,7 @@ def format_email_response(email, user_id: Optional[UUID] = None) -> dict:
     can_undo = (
         email.status == EmailStatus.QUEUED.value and
         email.scheduled_send_at and
-        email.scheduled_send_at > datetime.now(UTC)
+        ensure_utc_aware(email.scheduled_send_at) > datetime.now(UTC)
     )
 
     # Show "me" if sender is the current user
@@ -266,7 +286,7 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
     can_undo = (
         email.status == EmailStatus.QUEUED.value and
         email.scheduled_send_at and
-        email.scheduled_send_at > datetime.now(UTC)
+        ensure_utc_aware(email.scheduled_send_at) > datetime.now(UTC)
     )
 
     # Show "me" if sender is the current user

@@ -42,7 +42,7 @@ from app.utils.bulk_utils import (
     create_bulk_response,
     bulk_update_emails_with_threads,
 )
-from app.utils.email_utils import get_perspective_email_filter
+from app.utils.email_utils import get_perspective_email_filter, ensure_utc_aware
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -460,7 +460,7 @@ def bulk_snooze(
     current_user = auth.user
 
     # Validate snooze time is in the future
-    if request.snooze_until <= datetime.now(UTC):
+    if ensure_utc_aware(request.snooze_until) <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Snooze time must be in the future"

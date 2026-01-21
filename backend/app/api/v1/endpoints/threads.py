@@ -31,6 +31,7 @@ from app.utils.email_utils import (
     format_email_response,
     mark_emails_as_read_background,
     get_perspective_email_filter,
+    ensure_utc_aware,
 )
 from app.utils.thread_metadata_utils import mark_thread_important
 
@@ -244,7 +245,7 @@ def snooze_thread(
         )
     
     # Validate snooze_until is in the future
-    if snooze_data.snooze_until <= datetime.now(UTC):
+    if ensure_utc_aware(snooze_data.snooze_until) <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Snooze time must be in the future"

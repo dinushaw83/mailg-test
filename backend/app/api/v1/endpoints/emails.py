@@ -47,6 +47,7 @@ from app.utils.email_utils import (
     format_email_list_response,
     deliver_email_to_recipients_background,
     get_perspective_email_filter,
+    ensure_utc_aware,
 )
 from app.utils.thread_metadata_utils import get_user_important_thread_ids
 
@@ -577,7 +578,7 @@ def send_email(
     
     if scheduled_send_at:
         # Explicit scheduled send time provided - override user's undo delay
-        if scheduled_send_at <= datetime.now(UTC):
+        if ensure_utc_aware(scheduled_send_at) <= datetime.now(UTC):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="scheduled_send_at must be in the future"
@@ -692,7 +693,7 @@ def cancel_send(
         )
     
     # Check if still within the undo window
-    if email.scheduled_send_at and email.scheduled_send_at <= datetime.now(UTC):
+    if email.scheduled_send_at and ensure_utc_aware(email.scheduled_send_at) <= datetime.now(UTC):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Undo window has expired. The email has been sent."
