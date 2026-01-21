@@ -159,7 +159,7 @@ export const EmailContent = ({
 }) => {
   const responseViewRef = React.useRef();
   const { markRead, snooze, unsnooze } = useMailActions();
-  const { setSnackbar } = useGlobalContext();
+  const { setSnackbar, loggedInUser } = useGlobalContext();
 
   const { messagesById } = normalizedEmails;
 
@@ -300,7 +300,26 @@ export const EmailContent = ({
 
   const { messageIds } = thread;
   const messages = messageIds.map((id) => messagesById[id]);
-  const lastMessage = messages[messages.length - 1];
+  
+  // Get the last message whose sender_email is not equal to the logged in user's email
+  const lastMessage = useMemo(() => {
+    // If loggedInUser or email is not available, fall back to original behavior
+    if (!loggedInUser || !loggedInUser.email) {
+      return messages[messages.length - 1];
+    }
+    
+    // Filter messages to exclude those from the logged in user
+    const messagesFromOthers = messages.filter((message) => {
+      const senderEmail = message?.sender_email;
+      return senderEmail && senderEmail.toLowerCase() !== loggedInUser.email.toLowerCase();
+    });
+    
+    // If there are messages from others, return the last one; otherwise fall back to original last message
+    return messagesFromOthers.length > 0 
+      ? messagesFromOthers[messagesFromOthers.length - 1]
+      : messages[messages.length - 1];
+  }, [messages, loggedInUser]);
+  
   const isLastDraft = lastMessage?.folder === "drafts";
   const isLastScheduled = hasLabel(lastMessage?.labels, "Scheduled");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
