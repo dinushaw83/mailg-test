@@ -1,0 +1,105 @@
+/* Template Icon */
+.templateIcon {
+  font-size: 20px;
+  color: rgb(95, 99, 104);
+}
+
+/* Popper */
+.popper {
+  z-index: 1500;
+}
+
+/* Paper */
+.paper {
+  min-width: 200px;
+  max-width: 300px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  background-color: #fff;
+}
+
+/* Section Header */
+.sectionHeader {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5f6368;
+  text-transform: uppercase;
+  border-bottom: 1px solid #ebebeb;
+}
+
+/* Loading/Empty State */
+.loadingState,
+.emptyState {
+  padding: 12px 48px;
+  color: #5f6368;
+  font-size: 0.875rem;
+}
+
+/* Template List Container */
+.templateList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Template Item */
+.templateItem {
+  padding: 6px 48px;
+  cursor: pointer;
+  color: rgb(32, 33, 36);
+  font-size: 14px;
+  user-select: none;
+  opacity: 1;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.templateItem:hover {
+  background-color: #f3f4f6;
+}
+
+.templateItemLoading {
+  cursor: wait;
+  color: #9aa0a6;
+  opacity: 0.6;
+}
+
+.templateItemLoading:hover {
+  background-color: transparent;
+}
+
+/* Separator */
+.separator {
+  border-top: 1px solid #ebebeb;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/* Menu Item */
+.menuItem {
+  padding: 6px 10px 6px 48px;
+  cursor: pointer;
+  color: rgb(32, 33, 36);
+  font-size: 14px;
+  user-select: none;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.menuItem:hover {
+  background-color: #f3f4f6;
+}
+
+.menuItem.hovered {
+  background-color: #f3f4f6;
+}
+
+/* Arrow Icon */
+.arrowIcon {
+  font-size: 20px;
+  font-variation-settings: "FILL" 1;
+}
