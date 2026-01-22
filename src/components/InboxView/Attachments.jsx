@@ -296,7 +296,8 @@ export const Attachments = ({ attachments = [] }) => {
 
   const getAttachmentWithPreviewURL = useCallback(
     async (attachment) => {
-      const isRelativeURL = attachment.url.startsWith("/");
+      const isRelativeURL = attachment?.url?.startsWith("/");
+      if (!attachment?.url || !isRelativeURL) return;
       if (isRelativeURL) {
         return { ...attachment, previewURL: attachment.url };
       }
@@ -324,7 +325,8 @@ export const Attachments = ({ attachments = [] }) => {
     if (!db) return;
     Promise.all(attachments.map(async (attachment) => await getAttachmentWithPreviewURL(attachment))).then(
       (attachments) => {
-        setAttachmentsWithPreviewURLs(attachments);
+        // Filter out undefined values (attachments that couldn't be processed)
+        setAttachmentsWithPreviewURLs(attachments.filter(Boolean));
       }
     );
   }, [db, attachments, getAttachmentWithPreviewURL]);

@@ -39,22 +39,26 @@ const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
 
     // If "From" is already applied via advanced search (has 'from' param but NOT a refinement search), hide the chip
     // However, if it's a refinement search, show it because the user might have clicked the chip to filter
-    if (filter === "From" && searchParams.has("from") && !isRefinementSearch) {
+    if (filter === "From" && (searchParams.has("from") || searchValue.includes("from")) && !isRefinementSearch) {
       return false;
     }
 
     // If "To" is already applied via advanced search (has 'to' param but NOT a refinement search), hide the chip
-    if (filter === "To" && searchParams.has("to") && !isRefinementSearch) {
+    if (filter === "To" && (searchParams.has("to") || searchValue.includes("to")) && !isRefinementSearch) {
       return false;
     }
 
     // If "Has attachment" is already applied via advanced search (has 'attachment' param), hide the chip
-    if (filter === "Has attachment" && searchParams.has("attachment")) {
+    if (filter === "Has attachment" && (searchParams.has("attachment") || searchValue.includes("has:attachment"))) {
       return false;
     }
 
     // If there's a date 'within' of 1 day, hide the "Any time" chip
-    if (filter === "Any time" && searchParams.has("within") && searchParams.get("within") === "1 day") {
+    if (
+      filter === "Any time" &&
+      (searchParams.has("within") || searchValue.includes("within")) &&
+      searchParams.get("within") === "1 day"
+    ) {
       return false;
     }
 
@@ -73,10 +77,7 @@ const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
     if (filter === "Has attachment" && searchParams.get("attach_or_drive") === "true") {
       return true;
     }
-    if (
-      filter === "Any time" &&
-      (searchParams.has("datestart") || searchParams.has("dateend") || searchParams.has("daterangetype"))
-    ) {
+    if (filter === "Any time" && (searchParams.has("after") || searchParams.has("before"))) {
       return true;
     }
     return false;
@@ -139,25 +140,24 @@ const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
       currentActiveFilters.length > 0 ||
       newSearchParams.has("from") ||
       newSearchParams.has("to") ||
-      newSearchParams.has("datestart") ||
-      newSearchParams.has("dateend") ||
+      newSearchParams.has("before") ||
+      newSearchParams.has("after") ||
       newSearchParams.has("is_unread");
 
-    if (hasAnyFilter) {
-      newSearchParams.set("isrefinement", "true");
-    } else {
-      newSearchParams.delete("isrefinement");
-    }
+    // if (hasAnyFilter) {
+    //   newSearchParams.set("isrefinement", "true");
+    // } else {
+    //   newSearchParams.delete("isrefinement");
+    // }
 
     setActiveFilters(currentActiveFilters);
-
     // Update URL with new search params
     navigate(
       {
         pathname: location.pathname,
         search: newSearchParams.toString(),
       },
-      { replace: true }
+      { replace: false }
     );
   };
 
@@ -180,8 +180,8 @@ const SearchResultFilters = ({ pt = 2, pb = 2, activeFolder = null }) => {
         newSearchParams.has("to") ||
         newSearchParams.has("attach_or_drive") ||
         newSearchParams.has("is_unread") ||
-        newSearchParams.has("datestart") ||
-        newSearchParams.has("dateend");
+        newSearchParams.has("after") ||
+        newSearchParams.has("before");
 
       if (hasOtherFilters) {
         newSearchParams.set("isrefinement", "true");

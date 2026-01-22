@@ -81,6 +81,8 @@ def get_db(request: Request):
     try:
         yield db
     finally:
+        # Rollback to end the transaction before close() to prevent "idle in transaction" state
+        db.rollback()
         db.close()
         # Postgres engines are pooled and cached; do not dispose per-request.
         # Connections are returned to the pool when the session is closed.
@@ -101,6 +103,8 @@ def get_seed_db():
     try:
         yield db
     finally:
+        # Rollback to end the transaction before close() to prevent "idle in transaction" state
+        db.rollback()
         db.close()
 
 

@@ -33,7 +33,130 @@ from app.models.thread import Thread
 from app.models.email_recipient import EmailRecipient
 from app.models.attachment import Attachment
 from app.auth.token_manager import get_token_manager
-from app.core.constants import FolderType
+from app.core.constants import FolderType, SystemLabel, CategoryLabel, EmailStatus
+from app.models.thread_label import ThreadLabel
+
+
+def create_received_email_for_user(db_session, user, subject="Test Email", body="Body", 
+                                    is_read=False, is_starred=False, folder=FolderType.INBOX.value, 
+                                    sender=None, thread=None):
+    """Helper to create a properly perspective-aware received email for a user.
+    
+    Creates an email with status='received' and an EmailRecipient record
+    linking the email to the user as a recipient.
+    
+    Args:
+        db_session: Database session
+        user: The User object who will receive the email
+        subject: Email subject
+        body: Email body
+        is_read: Whether email is read
+        is_starred: Whether email is starred
+        folder: Folder type (default: inbox)
+        sender: Optional User object for sender (creates one if not provided)
+        thread: Optional Thread object (creates one if not provided)
+    
+    Returns:
+        The created Email object
+    """
+    import uuid
+    
+    if sender is None:
+        # Create a dummy sender
+        sender = User(
+            email=f"sender_{uuid.uuid4().hex[:8]}@test.com",
+            first_name="Sender",
+            last_name="User",
+            role="user"
+        )
+        db_session.add(sender)
+        db_session.flush()
+    
+    if thread is None:
+        # Create a thread for the email
+        from datetime import datetime, UTC
+        thread = Thread(
+            subject=subject,
+            owner_id=sender.id,
+            participant_count=2,
+            email_count=1,
+            last_email_at=datetime.now(UTC)
+        )
+        db_session.add(thread)
+        db_session.flush()
+    
+    email = Email(
+        subject=subject,
+        body=body,
+        status=EmailStatus.RECEIVED.value,
+        is_read=is_read,
+        is_starred=is_starred,
+        sender_id=sender.id,
+        folder=folder,
+        thread_id=thread.id
+    )
+    db_session.add(email)
+    db_session.flush()
+    
+    # Add recipient record for the user
+    recipient = EmailRecipient(
+        email_id=email.id,
+        recipient_id=user.id,
+        recipient_email=user.email,
+        recipient_name=f"{user.first_name} {user.last_name}",
+        recipient_type="to"
+    )
+    db_session.add(recipient)
+    
+    return email
+
+
+def create_sent_email_for_user(db_session, user, subject="Test Email", body="Body",
+                                is_read=True, is_starred=False, folder=FolderType.SENT.value,
+                                thread=None):
+    """Helper to create a properly perspective-aware sent email for a user.
+    
+    Creates an email with status='sent' where the user is the sender.
+    
+    Args:
+        db_session: Database session
+        user: The User object who sent the email
+        subject: Email subject
+        body: Email body
+        is_read: Whether email is read
+        is_starred: Whether email is starred
+        folder: Folder type (default: sent)
+        thread: Optional Thread object (creates one if not provided)
+    
+    Returns:
+        The created Email object
+    """
+    if thread is None:
+        # Create a thread for the email
+        from datetime import datetime, UTC
+        thread = Thread(
+            subject=subject,
+            owner_id=user.id,
+            participant_count=1,
+            email_count=1,
+            last_email_at=datetime.now(UTC)
+        )
+        db_session.add(thread)
+        db_session.flush()
+    
+    email = Email(
+        subject=subject,
+        body=body,
+        status=EmailStatus.SENT.value,
+        is_read=is_read,
+        is_starred=is_starred,
+        sender_id=user.id,
+        folder=folder,
+        thread_id=thread.id
+    )
+    db_session.add(email)
+    
+    return email
 
 
 # PostgreSQL configuration for tests
@@ -176,9 +299,53 @@ def client(db_session, base_client):
     app.dependency_overrides.clear()
 
 
+def create_system_labels_for_user(db_session, user_id):
+    """Create all system labels for a user - helper for tests.
+    
+    Idempotent - skips labels that already exist for the user.
+    """
+    # Check which labels already exist for this user
+    existing_labels = db_session.query(Label.name).filter(
+        Label.owner_id == user_id,
+        Label.is_system == True
+    ).all()
+    existing_names = {name for (name,) in existing_labels}
+    
+    # System labels to create (if not already existing)
+    all_labels = [
+        (SystemLabel.INBOX.value, True),
+        (SystemLabel.STARRED.value, True),
+        (SystemLabel.SNOOZED.value, True),
+        (SystemLabel.IMPORTANT.value, True),
+        (SystemLabel.SENT.value, True),
+        (SystemLabel.SCHEDULED.value, True),
+        (SystemLabel.DRAFTS.value, True),
+        (SystemLabel.ALL_MAIL.value, True),
+        (SystemLabel.SPAM.value, True),
+        (SystemLabel.TRASH.value, True),
+        (CategoryLabel.PURCHASES.value, False),
+        (CategoryLabel.SOCIAL.value, False),
+        (CategoryLabel.UPDATES.value, False),
+        (CategoryLabel.FORUMS.value, False),
+        (CategoryLabel.PROMOTIONS.value, False),
+    ]
+    
+    for name, is_exclusive in all_labels:
+        if name not in existing_names:
+            label = Label(
+                name=name,
+                is_system=True,
+                is_exclusive=is_exclusive,
+                owner_id=user_id
+            )
+            db_session.add(label)
+    
+    db_session.commit()
+
+
 @pytest.fixture
 def sample_user(db_session):
-    """Create a sample regular user."""
+    """Create a sample regular user with system labels."""
     user = User(
         first_name="Test",
         last_name="User",
@@ -189,12 +356,16 @@ def sample_user(db_session):
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
+    
+    # Create system labels for the user (required for thread label syncing)
+    create_system_labels_for_user(db_session, user.id)
+    
     return user
 
 
 @pytest.fixture
 def sample_admin(db_session):
-    """Create a sample admin user."""
+    """Create a sample admin user with system labels."""
     user = User(
         first_name="Test",
         last_name="Admin",
@@ -205,6 +376,10 @@ def sample_admin(db_session):
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
+    
+    # Create system labels for the user (required for thread label syncing)
+    create_system_labels_for_user(db_session, user.id)
+    
     return user
 
 
@@ -265,9 +440,36 @@ def mock_request():
 
 # Email-related fixtures
 
+def sync_thread_labels_for_test(db_session, thread_id, user_id):
+    """Sync thread labels based on email folders - helper for tests.
+    
+    This ensures threads have the appropriate system labels based on the 
+    actual folder values of emails in the thread.
+    """
+    from app.utils.label_utils import sync_thread_labels
+    sync_thread_labels(db_session, thread_id, user_id, commit=True)
+
+
+def get_system_label_for_user(db_session, user_id, label_name):
+    """Get a system label for a user - helper for tests.
+    
+    Returns the existing system label, or None if not found.
+    Use this instead of creating labels directly in tests.
+    """
+    return db_session.query(Label).filter(
+        Label.owner_id == user_id,
+        Label.name == label_name,
+        Label.is_system == True
+    ).first()
+
+
 @pytest.fixture
 def sample_email(db_session, sample_user):
-    """Create a sample email for testing (with a thread for label support)."""
+    """Create a sample email for testing (with a thread for label support).
+    
+    Uses perspective-aware creation - creates a received email with proper
+    sender and recipient records so the user can access it.
+    """
     # Create a thread first since labels are now linked to threads
     thread = Thread(
         subject="Test Email Subject",
@@ -277,19 +479,21 @@ def sample_email(db_session, sample_user):
     db_session.add(thread)
     db_session.flush()
     
-    email = Email(
+    # Create a proper received email (perspective-aware)
+    email = create_received_email_for_user(
+        db_session, sample_user,
         subject="Test Email Subject",
         body="Test email body content",
-        status="received",
-        folder=FolderType.INBOX.value,
         is_read=False,
         is_starred=False,
-        sender_id=sample_user.id,
-        thread_id=thread.id,
+        thread=thread
     )
-    db_session.add(email)
     db_session.commit()
     db_session.refresh(email)
+    
+    # Sync thread labels to reflect the folder
+    sync_thread_labels_for_test(db_session, thread.id, sample_user.id)
+    
     return email
 
 
@@ -326,6 +530,9 @@ def sample_draft_email(db_session, sample_user):
     )
     db_session.add(recipient)
     db_session.commit()
+    
+    # Sync thread labels to reflect the folder
+    sync_thread_labels_for_test(db_session, thread.id, sample_user.id)
     
     db_session.refresh(email)
     return email

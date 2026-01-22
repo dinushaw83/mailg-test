@@ -19,23 +19,31 @@ export const Labels = ({
   setSearchQuery,
   setLabelAnchorEl,
   setSelectedLabelKeys,
-  selectedLabelKeys,
   labelAnchorEl,
   selectedIds,
+  threadIds: providedThreadIds = null,
+  threadEmails: providedThreadEmails = null,
   handleClose,
   anchorOrigin = { vertical: "top", horizontal: "right" },
   transformOrigin = { vertical: "top", horizontal: "left" },
   onOpenCreateLabelDialog,
 }) => {
-  const { labels, setSnackbar, selection } = useGlobalContext();
+  const { labels, setSnackbar, selection, emails } = useGlobalContext();
   const { addLabels, removeLabels, modifyLabels } = useMailActions();
   const { getSelectionLabels } = useLabels();
   const [overrides, setOverrides] = useState({});
   const inputRef = useRef(null);
-  const { folder } = useParams();
+  const { folder, label: labelParam } = useParams();
 
   // Get labelIdToKeyMap from Redux to convert UUID keys to composite keys for display
   const labelIdToKeyMap = useSelector((state) => state.mail.labelIdToKeyMap || {});
+
+  useEffect(() => {
+    if (labelAnchorEl) {
+      // Reset the overrides state when the popup opens
+      setOverrides({});
+    }
+  }, [labelAnchorEl]);
 
   const handleLabelClose = () => {
     setLabelAnchorEl(null);
@@ -46,33 +54,40 @@ export const Labels = ({
 
   const hasChanges = Object.keys(overrides).length > 0;
 
-  // Get currently applied labels for selected emails, passing folder if present
-  const { currentLabels, labelCounts, nSel } = getSelectionLabels(selectedIds, folder);
-  
+  const idsForSearch = providedThreadIds && providedThreadIds.length > 0 ? providedThreadIds : selectedIds;
+
+  const folderOrLabel = folder || (labelParam ? `label:${labelParam}` : null);
+
+  const { currentLabels, labelCounts, nSel } = getSelectionLabels(idsForSearch, folderOrLabel, providedThreadEmails);
 
   const availableLabels = useMemo(() => {
-    return Object.entries(labels || {})
-      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
-      .map(([key, meta]) => {
-        const fullPath = buildLabelPath(key, meta, labels, labelIdToKeyMap, getPathLabelFromKey);
+    // Ensure labels is an object (Redux initializes it as [] but fills it as {})
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
+    return (
+      Object.entries(labelsObject)
+        // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+        .map(([key, meta]) => {
+          const fullPath = buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey);
 
-        return {
-          key, // Keep original key for operations (UUID or composite)
-          fullPath, // Full path for display (e.g., "Parent/child/subchild")
-          name: meta.name || key,
-          color: meta.color,
-          isCurrentlyApplied: currentLabels.has(key),
-          ...meta,
-        };
-      })
-      .filter((label) => {
-        // Use full path for search filtering
-        return label.fullPath.toLowerCase().includes(searchQuery.toLowerCase());
-      })
-      .sort((a, b) => {
-        // Sort by full path
-        return a.fullPath.localeCompare(b.fullPath);
-      });
+          return {
+            key, // Keep original key for operations (UUID or composite)
+            fullPath, // Full path for display (e.g., "Parent/child/subchild")
+            name: meta.name || key,
+            color: meta.color,
+            isCurrentlyApplied: currentLabels.has(key),
+            ...meta,
+          };
+        })
+        .filter((label) => {
+          // Use full path for search filtering
+          return label.fullPath.toLowerCase().includes(searchQuery.toLowerCase());
+        })
+        .sort((a, b) => {
+          // Sort by full path
+          return a.fullPath.localeCompare(b.fullPath);
+        })
+    );
   }, [labels, searchQuery, currentLabels, labelIdToKeyMap]);
 
   const handleApplyLabels = useCallback(() => {
@@ -84,21 +99,40 @@ export const Labels = ({
       if (finalState === "checked" && !currentLabels.has(labelKey)) {
         labelsToAdd.push(labelKey);
       }
-      if (finalState === "unchecked" 
+      if (
+        finalState === "unchecked"
         /**
          * This breaks when we select multiple meails which dont have same labels
          */
-        // && currentLabels.has(labelKey)) 
-      ){
+        // && currentLabels.has(labelKey))
+      ) {
         labelsToRemove.push(labelKey);
       }
       // "indeterminate" means leave it as-is
     }
 
-    modifyLabels(ids, { add: labelsToAdd, remove: labelsToRemove });
+    // Use provided threadIds or extract from emails
+    let threadIds;
+    if (providedThreadIds && Array.isArray(providedThreadIds) && providedThreadIds.length > 0) {
+      threadIds = providedThreadIds;
+    } else {
+      // Extract thread IDs from selected emails (fallback)
+      const emailsToSearch = providedThreadEmails && providedThreadEmails.length > 0 ? providedThreadEmails : emails;
+      threadIds = [
+        ...new Set(
+          emailsToSearch
+            .filter((email) => ids.includes(email.id))
+            .map((email) => email.thread_id)
+            .filter(Boolean)
+        ),
+      ];
+    }
+
+    const threadIdsForUndo = threadIds; // Capture for closure
+    modifyLabels(ids, { add: labelsToAdd, remove: labelsToRemove }, threadIds);
 
     const undo = () => {
-      modifyLabels(ids, { add: labelsToRemove, remove: labelsToAdd });
+      modifyLabels(ids, { add: labelsToRemove, remove: labelsToAdd }, threadIdsForUndo);
       setSnackbar({
         open: true,
         message: "Action undone.",
@@ -137,7 +171,6 @@ export const Labels = ({
       ),
     }));
 
-    selection.clear();
     setOverrides({}); // reset
 
     handleLabelClose();
@@ -147,11 +180,13 @@ export const Labels = ({
     currentLabels,
     modifyLabels,
     setSnackbar,
-    selection,
     handleLabelClose,
     handleClose,
     selectedIds,
     labels,
+    emails,
+    providedThreadIds,
+    providedThreadEmails,
   ]);
 
   return (
@@ -364,6 +399,7 @@ export const Labels = ({
                     },
                   }}
                   onClick={() => {
+                    setSearchQuery(""); // Clear search query before opening create dialog
                     handleClose();
                     onOpenCreateLabelDialog();
                   }}
@@ -387,6 +423,7 @@ export const Labels = ({
                     },
                   }}
                   onClick={() => {
+                    setSearchQuery(""); // Clear search query
                     // TODO: Implement manage labels
                   }}
                 >

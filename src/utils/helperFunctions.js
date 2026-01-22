@@ -187,9 +187,8 @@ export const buildSearchUrlWithFilters = (searchQuery, activeFilters, loggedInUs
     currentParams.has("to") ||
     currentParams.has("attach_or_drive") ||
     currentParams.has("is_unread") ||
-    currentParams.has("datestart") ||
-    currentParams.has("dateend") ||
-    currentParams.has("daterangetype");
+    currentParams.has("after") ||
+    currentParams.has("before");
 
   // If no filters and no URL filters, return regular search URL
   if ((!activeFilters || activeFilters.length === 0) && !hasUrlFilters) {
@@ -219,16 +218,15 @@ export const buildSearchUrlWithFilters = (searchQuery, activeFilters, loggedInUs
     // Calculate last 7 days including today (today - 6 days)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
     const dateString = sevenDaysAgo.toISOString().split("T")[0]; // Format: YYYY-MM-DD
 
-    params.set("datestart", dateString);
-    params.set("daterangetype", "custom_range");
-    // Remove dateend if it exists
-    params.delete("dateend");
-  } else if (!currentParams.has("datestart") && !currentParams.has("dateend") && !currentParams.has("daterangetype")) {
-    params.delete("datestart");
-    params.delete("dateend");
-    params.delete("daterangetype");
+    params.set("after", dateString);
+    params.set("before", sevenDaysFromNow.toISOString().split("T")[0]);
+  } else if (!currentParams.has("after") && !currentParams.has("before")) {
+    params.delete("after");
+    params.delete("before");
   }
 
   // Handle "From me" filter by setting "from" parameter to logged-in user's email
@@ -341,16 +339,8 @@ export const queryToSearchBarString = (queryString) => {
         .map((e) => e.trim())
         .filter(Boolean);
 
-      // Check if all values are valid emails
-      const allAreEmails = emails.every((e) => isValidEmail(e));
-
       if (emails.length >= 1) {
-        if (allAreEmails) {
-          fromParts.push(`from:(${emails.join(",")})`);
-        } else {
-          // Just a keyword, no parentheses
-          fromParts.push(`from:${emails[0]}`);
-        }
+        fromParts.push(`from:(${emails.join(",")})`);
       }
       continue;
     }
@@ -362,16 +352,8 @@ export const queryToSearchBarString = (queryString) => {
         .map((e) => e.trim())
         .filter(Boolean);
 
-      // Check if all values are valid emails
-      const allAreEmails = emails.every((e) => isValidEmail(e));
-
       if (emails.length >= 1) {
-        if (allAreEmails) {
-          toParts.push(`to:(${emails.join(",")})`);
-        } else {
-          // Just a keyword, no parentheses
-          toParts.push(`to:${emails[0]}`);
-        }
+        toParts.push(`to:(${emails.join(",")})`);
       }
       continue;
     }
@@ -523,52 +505,20 @@ function paramToToken(key, value) {
  *  - Then append tokens built from query params (excluding "advanced").
  */
 export function buildSearchBarFromUrl(urlOrLocation) {
-  // Normalize to a URL object
-  let urlObj;
-  if (typeof urlOrLocation === "string") {
-    urlObj = new URL(urlOrLocation, typeof window !== "undefined" ? window.location.origin : "http://localhost");
-  } else {
-    // Ensure search starts with "?"
-    const search = urlOrLocation.search ?? "";
-    urlObj = new URL(
-      (urlOrLocation.pathname || "") + (search || ""),
-      typeof window !== "undefined" ? window.location.origin : "http://localhost"
-    );
+  const pathname = urlOrLocation.pathname;
+  const search = urlOrLocation.search;
+  const params = new URLSearchParams(search);
+  const searchValue = params.get("q");
+  const isAdvancedSearch = pathname.includes("/search/advanced");
+  if (isAdvancedSearch) {
+    return searchValue || "";
   }
-
-  const pathSegments = urlObj.pathname.split("/").filter(Boolean); // ["search", "advanced"] or ["search", "John+Doe"]
-  const parts = [];
-
-  // Check if this is a refinement search
-  const params = new URLSearchParams(urlObj.search);
-  const isRefinementSearch = params.get("isrefinement") === "true";
-
-  // If path is /search/<term> and term is not 'advanced', decode it and add first
-  if (pathSegments.length >= 2 && pathSegments[0].toLowerCase() === "search") {
-    const maybeTerm = pathSegments[1];
-    if (maybeTerm && maybeTerm.toLowerCase() !== "advanced") {
-      const decoded = decodePathSegment(maybeTerm);
-      if (decoded) parts.push(decoded);
-    }
+  const stringAfterSearch = pathname.split("/search/")[1];
+  if (!stringAfterSearch) {
+    return "";
   }
-
-  // If it's a refinement search, only return the search query (skip filter params)
-  if (isRefinementSearch) {
-    return parts.join(" ").trim();
-  }
-
-  // Otherwise, process query params (skip "advanced")
-  for (const [k, v] of params.entries()) {
-    const token = paramToToken(k, v);
-    if (token) parts.push(token);
-  }
-
-  const ignoreTerms = ["compose:"];
-
-  return parts
-    .filter((part) => !ignoreTerms.some((term) => part.includes(term)))
-    .join(" ")
-    .trim();
+  const decodedString = decodeURIComponent(stringAfterSearch.replace(/\+/g, " "));
+  return decodedString;
 }
 // Validate email format
 export const isValidEmail = (email) => {

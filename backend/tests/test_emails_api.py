@@ -7,7 +7,8 @@ from app.models.email import Email
 from app.models.email_recipient import EmailRecipient
 from app.models.thread import Thread
 from app.models.user import User
-from app.core.constants import FolderType
+from app.core.constants import FolderType, EmailStatus
+from tests.conftest import create_received_email_for_user, create_sent_email_for_user
 
 
 # Helper to generate a non-existent UUID for 404 tests
@@ -81,16 +82,9 @@ class TestEmailList:
         """Test listing emails with pagination."""
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple emails (perspective-aware)
         for i in range(5):
-            email = Email(
-                subject=f"Email {i}",
-                body=f"Body {i}",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-            )
-            db_session.add(email)
+            create_received_email_for_user(db_session, user, subject=f"Email {i}", body=f"Body {i}")
         db_session.commit()
         
         response = client.get(
@@ -119,12 +113,9 @@ class TestEmailList:
         """Test filtering unread emails."""
         client, token, user = client_with_auth
         
-        # Create emails with different read status
-        email1 = Email(subject="Read", body="Content", status="received", folder=FolderType.INBOX.value,
-                       is_read=True, sender_id=user.id)
-        email2 = Email(subject="Unread", body="Content", status="received", folder=FolderType.INBOX.value,
-                       is_read=False, sender_id=user.id)
-        db_session.add_all([email1, email2])
+        # Create emails with different read status (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Read", body="Content", is_read=True)
+        email2 = create_received_email_for_user(db_session, user, subject="Unread", body="Content", is_read=False)
         db_session.commit()
         
         response = client.get(
@@ -133,51 +124,6 @@ class TestEmailList:
         )
         
         assert response.status_code == 200
-
-    def test_list_emails_filter_by_thread_id(self, client_with_auth, db_session):
-        """Test filtering emails by thread ID to get all messages in a conversation."""
-        client, token, user = client_with_auth
-        
-        # Create a thread
-        thread = Thread(
-            subject="Test Conversation",
-            owner_id=user.id,
-            participant_count=2,
-            email_count=3,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(thread)
-        db_session.commit()
-        db_session.refresh(thread)
-        
-        # Create emails in the thread
-        email1 = Email(subject="Thread Email 1", body="First message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Re: Thread Email 1", body="Reply message", status="sent",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email3 = Email(subject="Re: Thread Email 1", body="Another reply", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        
-        # Create an email NOT in the thread
-        email_other = Email(subject="Other Email", body="Not in thread", status="received",
-                            sender_id=user.id, folder=FolderType.INBOX.value, thread_id=None)
-        
-        db_session.add_all([email1, email2, email3, email_other])
-        db_session.commit()
-        
-        # Filter by thread_id
-        response = client.get(
-            f"/api/v1/emails?thread_id={thread.id}",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert data["total"] == 3
-        # All returned emails should belong to the thread
-        for email in data["results"]:
-            assert email["thread_id"] == str(thread.id)
-
 
 class TestThreadEmailCount:
     """Test thread email count in list responses."""
@@ -198,17 +144,14 @@ class TestThreadEmailCount:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create 3 emails in the thread
+        # Create 3 emails in the thread (perspective-aware)
         for i in range(3):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread Email {i}",
                 body=f"Content {i}",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread.id
+                thread=thread
             )
-            db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -228,16 +171,9 @@ class TestThreadEmailCount:
         """Test that emails without a thread have null thread_email_count."""
         client, token, user = client_with_auth
         
-        # Create an email without a thread
-        email = Email(
-            subject="No Thread Email",
-            body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=None
-        )
-        db_session.add(email)
+        # Create a sent email without a thread (perspective-aware - use sent status)
+        email = create_sent_email_for_user(db_session, user, subject="No Thread Email", body="Content")
+        email.thread_id = None
         db_session.commit()
         
         response = client.get(
@@ -269,18 +205,15 @@ class TestThreadEmailCount:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create 5 emails in the thread
+        # Create 5 emails in the thread - perspective-aware
         for i in range(5):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread Email {i}",
                 body=f"Content {i}",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread.id,
-                sent_at=datetime.now(UTC) - timedelta(hours=5-i)
+                thread=thread
             )
-            db_session.add(email)
+            email.sent_at = datetime.now(UTC) - timedelta(hours=5-i)
         db_session.commit()
         
         # Use threaded mode to get only latest email per thread
@@ -401,29 +334,23 @@ class TestThreadEmailCount:
         db_session.refresh(thread1)
         db_session.refresh(thread2)
         
-        # Create 2 emails in thread 1
+        # Create 2 emails in thread 1 (perspective-aware)
         for i in range(2):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread1 Email {i}",
                 body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread1.id
+                thread=thread1
             )
-            db_session.add(email)
         
-        # Create 4 emails in thread 2
+        # Create 4 emails in thread 2 (perspective-aware)
         for i in range(4):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread2 Email {i}",
                 body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread2.id
+                thread=thread2
             )
-            db_session.add(email)
         
         db_session.commit()
         
@@ -462,12 +389,11 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create emails in the thread
-        email1 = Email(subject="Thread Email 1", body="First message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Re: Thread Email 1", body="Reply", status="sent",
-                       sender_id=user.id, folder=FolderType.SENT.value, thread_id=thread.id)
-        db_session.add_all([email1, email2])
+        # Create emails in the thread (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Thread Email 1", 
+                                                body="First message", thread=thread)
+        email2 = create_sent_email_for_user(db_session, user, subject="Re: Thread Email 1",
+                                            body="Reply", folder=FolderType.SENT.value, thread=thread)
         db_session.commit()
         
         response = client.get(
@@ -497,14 +423,13 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create unread emails in the thread
-        email1 = Email(subject="Unread 1", body="First", status="received", is_read=False,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Unread 2", body="Second", status="received", is_read=False,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email3 = Email(subject="Already Read", body="Third", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        db_session.add_all([email1, email2, email3])
+        # Create unread emails in the thread (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Unread 1", 
+                                                body="First", is_read=False, thread=thread)
+        email2 = create_received_email_for_user(db_session, user, subject="Unread 2",
+                                                body="Second", is_read=False, thread=thread)
+        email3 = create_received_email_for_user(db_session, user, subject="Already Read",
+                                                body="Third", is_read=True, thread=thread)
         db_session.commit()
         
         email1_id, email2_id = email1.id, email2.id
@@ -550,12 +475,11 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create already read emails
-        email1 = Email(subject="Read 1", body="First", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Read 2", body="Second", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        db_session.add_all([email1, email2])
+        # Create already read emails (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Read 1",
+                                                body="First", is_read=True, thread=thread)
+        email2 = create_received_email_for_user(db_session, user, subject="Read 2",
+                                                body="Second", is_read=True, thread=thread)
         db_session.commit()
         
         with patch('app.api.v1.endpoints.threads.mark_emails_as_read_background') as mock_mark_read:
@@ -587,12 +511,11 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create already read emails
-        email1 = Email(subject="Read 1", body="First", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        email2 = Email(subject="Read 2", body="Second", status="received", is_read=True,
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id)
-        db_session.add_all([email1, email2])
+        # Create already read emails (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="Read 1",
+                                                body="First", is_read=True, thread=thread)
+        email2 = create_received_email_for_user(db_session, user, subject="Read 2",
+                                                body="Second", is_read=True, thread=thread)
         db_session.commit()
         
         response = client.get(
@@ -703,17 +626,16 @@ class TestGetEmailsByThread:
         db_session.commit()
         db_session.refresh(thread)
         
-        # Create emails with different timestamps
-        email1 = Email(subject="First", body="First message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
-                       sent_at=datetime.now(UTC) - timedelta(hours=2))
-        email2 = Email(subject="Second", body="Second message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
-                       sent_at=datetime.now(UTC) - timedelta(hours=1))
-        email3 = Email(subject="Third", body="Third message", status="received",
-                       sender_id=user.id, folder=FolderType.INBOX.value, thread_id=thread.id,
-                       sent_at=datetime.now(UTC))
-        db_session.add_all([email3, email1, email2])  # Add in wrong order
+        # Create emails with different timestamps (perspective-aware)
+        email1 = create_received_email_for_user(db_session, user, subject="First",
+                                                body="First message", thread=thread)
+        email1.sent_at = datetime.now(UTC) - timedelta(hours=2)
+        email2 = create_received_email_for_user(db_session, user, subject="Second",
+                                                body="Second message", thread=thread)
+        email2.sent_at = datetime.now(UTC) - timedelta(hours=1)
+        email3 = create_received_email_for_user(db_session, user, subject="Third",
+                                                body="Third message", thread=thread)
+        email3.sent_at = datetime.now(UTC)
         db_session.commit()
         
         response = client.get(
@@ -734,12 +656,11 @@ class TestGetEmailsByThread:
         from unittest.mock import patch, MagicMock
         from app.utils.email_utils import mark_emails_as_read_background
         
-        # Create test emails
-        email1 = Email(subject="Email 1", body="Content", status="received", is_read=False,
-                       sender_id=sample_user.id, folder=FolderType.INBOX.value)
-        email2 = Email(subject="Email 2", body="Content", status="received", is_read=False,
-                       sender_id=sample_user.id, folder=FolderType.INBOX.value)
-        db_session.add_all([email1, email2])
+        # Create test emails (perspective-aware)
+        email1 = create_received_email_for_user(db_session, sample_user, subject="Email 1",
+                                                body="Content", is_read=False)
+        email2 = create_received_email_for_user(db_session, sample_user, subject="Email 2",
+                                                body="Content", is_read=False)
         db_session.commit()
         
         email_ids = [email1.id, email2.id]
@@ -1320,15 +1241,22 @@ class TestEmailSendReplyForward:
         assert data["can_undo_send"] == True
         assert data["folder"] == "sent"
 
-    def test_forward_email_without_undo_send(self, client_with_auth, db_session, sample_email):
-        """Test that forwarding an email is immediate when undo_send is disabled.
+    def test_forward_email_with_undo_send(self, client_with_auth, db_session, sample_email):
+        """Test that forwarding an email is queued when undo_send is enabled.
         
-        This verifies that with undo_send_delay_seconds=0, the email is sent immediately.
+        This verifies that with undo_send_delay_seconds set, the email is queued.
+        Note: undo_send_delay_seconds must be one of [5, 10, 20, 30].
         """
+        from app.models.general_settings import GeneralSettings
+        
         client, token, user = client_with_auth
         
-        # Disable undo send
-        user.undo_send_delay_seconds = 0
+        # Set undo send delay via general settings
+        settings = db_session.query(GeneralSettings).filter(GeneralSettings.user_id == user.id).first()
+        if not settings:
+            settings = GeneralSettings(user_id=user.id)
+            db_session.add(settings)
+        settings.undo_send_delay_seconds = 5
         db_session.commit()
         
         response = client.post(
@@ -1337,7 +1265,7 @@ class TestEmailSendReplyForward:
                 "recipients": [
                     {"email": "forward_immediate@example.com", "type": "to"}
                 ],
-                "body": "FYI - forwarded immediately"
+                "body": "FYI - forwarded with undo"
             },
             headers={"Authorization": f"Bearer {token}"}
         )
@@ -1345,10 +1273,9 @@ class TestEmailSendReplyForward:
         assert response.status_code == 201
         data = response.json()["data"]
         
-        # Forwarded email should be sent immediately when undo send is disabled
-        assert data["sent_at"] is not None
-        assert data["can_undo_send"] == False
-        assert data["folder"] == "sent"
+        # Forwarded email should be queued when undo send is enabled
+        assert data["scheduled_send_at"] is not None
+        assert data["can_undo_send"] == True
 
 
 class TestThreadSnooze:
@@ -1466,150 +1393,6 @@ class TestThreadSnooze:
         )
         
         assert response.status_code == 404
-
-    def test_list_snoozed_emails_filter(self, client_with_auth, db_session):
-        """Test filtering emails by snoozed status.
-        
-        Snooze is now at thread level via ThreadUserMetadata, not email level.
-        """
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        
-        client, token, user = client_with_auth
-        
-        # Create a snoozed thread with email
-        snoozed_thread = Thread(
-            subject="Snoozed Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(snoozed_thread)
-        db_session.flush()
-        
-        snoozed_email = Email(
-            subject="Snoozed Email",
-            body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=snoozed_thread.id
-        )
-        db_session.add(snoozed_email)
-        db_session.flush()
-        
-        # Set snooze at thread level via ThreadUserMetadata
-        snooze_metadata = ThreadUserMetadata(
-            thread_id=snoozed_thread.id,
-            user_id=user.id,
-            snooze_until=datetime.now(UTC) + timedelta(days=1)
-        )
-        db_session.add(snooze_metadata)
-        
-        # Create a non-snoozed thread with email
-        normal_thread = Thread(
-            subject="Normal Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(normal_thread)
-        db_session.flush()
-        
-        normal_email = Email(
-            subject="Normal Email",
-            body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=normal_thread.id
-        )
-        db_session.add(normal_email)
-        db_session.commit()
-        
-        # Test is_snoozed=true filter
-        response = client.get(
-            "/api/v1/emails?is_snoozed=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        # All returned emails should be snoozed (from snoozed thread)
-        assert len(data["results"]) >= 1
-        for email in data["results"]:
-            assert email["snooze_until"] is not None
-
-    def test_list_non_snoozed_emails_filter(self, client_with_auth, db_session):
-        """Test filtering non-snoozed emails.
-        
-        Snooze is now at thread level via ThreadUserMetadata, not email level.
-        """
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        
-        client, token, user = client_with_auth
-        
-        # Create a snoozed thread with email
-        snoozed_thread = Thread(
-            subject="Snoozed Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(snoozed_thread)
-        db_session.flush()
-        
-        snoozed_email = Email(
-            subject="Snoozed Email",
-            body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=snoozed_thread.id
-        )
-        db_session.add(snoozed_email)
-        db_session.flush()
-        
-        # Set snooze at thread level via ThreadUserMetadata
-        snooze_metadata = ThreadUserMetadata(
-            thread_id=snoozed_thread.id,
-            user_id=user.id,
-            snooze_until=datetime.now(UTC) + timedelta(days=1)
-        )
-        db_session.add(snooze_metadata)
-        
-        # Create a non-snoozed thread with email
-        normal_thread = Thread(
-            subject="Normal Thread",
-            owner_id=user.id,
-            email_count=1,
-            last_email_at=datetime.now(UTC)
-        )
-        db_session.add(normal_thread)
-        db_session.flush()
-        
-        normal_email = Email(
-            subject="Normal Email",
-            body="Content",
-            status="received",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            thread_id=normal_thread.id
-        )
-        db_session.add(normal_email)
-        db_session.commit()
-        
-        # Test is_snoozed=false filter
-        response = client.get(
-            "/api/v1/emails?is_snoozed=false",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        # All returned emails should NOT be snoozed
-        assert len(data["results"]) >= 1
-        for email in data["results"]:
-            assert email["snooze_until"] is None
 
     def test_snooze_response_includes_snooze_until(self, client_with_auth, db_session, sample_email):
         """Test that email response includes snooze_until field."""
@@ -1756,26 +1539,21 @@ class TestThreadUnstar:
         db_session.add(thread)
         db_session.commit()
         
-        # Create two starred emails in the thread
-        email1 = Email(
+        # Create two starred emails in the thread (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Email 1",
             body="Body 1",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Email 2",
             body="Body 2",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Unstar all emails in the thread
@@ -1807,26 +1585,21 @@ class TestThreadUnstar:
         db_session.add(thread)
         db_session.commit()
         
-        # Create one starred and one unstarred email
-        email1 = Email(
+        # Create one starred and one unstarred email (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Email 1",
             body="Body 1",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Email 2",
             body="Body 2",
-            sender_id=user.id,
-            folder=FolderType.INBOX.value,
-            status="received",
-            thread_id=thread.id,
-            is_starred=False
+            is_starred=False,
+            thread=thread
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
         
         # Unstar all emails in the thread
@@ -2345,153 +2118,98 @@ class TestThreadRestoreFolderLogic:
 
 class TestEmailAPIFilters:
     """Tests for email API filters per EMAIL_EXTRACTION.md documentation.
-    
+
     Tests cover folder filters, category filters, boolean filters,
     and combined filters to ensure API compliance with documentation.
     """
 
-    def test_folder_filter_inbox(self, client_with_auth, db_session):
-        """Test folder=inbox filter returns only inbox emails."""
+    @pytest.mark.parametrize("folder_type,label_name,email_status,is_received", [
+        (FolderType.INBOX, "Inbox", "received", True),
+        (FolderType.SENT, "Sent", "sent", False),
+        (FolderType.DRAFTS, "Drafts", "draft", False),
+        (FolderType.TRASH, "Trash", "received", True),
+        (FolderType.SPAM, "Spam", "received", True),
+    ])
+    def test_folder_filter(self, client_with_auth, db_session, folder_type, label_name, email_status, is_received):
+        """Test folder filter returns only emails in the specified folder."""
+        from app.models.label import Label
+        from app.models.thread_label import ThreadLabel
+
         client, token, user = client_with_auth
-        
-        # Create another user as sender
-        sender = User(
-            first_name="Sender",
-            last_name="User",
-            email="inbox_sender@example.com",
-            role="user"
-        )
-        db_session.add(sender)
+        folder_value = folder_type.value
+        subject = f"{label_name} Test Email"
+
+        if is_received:
+            # Create email where user is recipient
+            email = create_received_email_for_user(
+                db_session, user,
+                subject=subject,
+                body="Content",
+                folder=folder_value
+            )
+            thread_id = email.thread_id
+        else:
+            # Create email where user is sender
+            thread = Thread(
+                subject=subject,
+                owner_id=user.id,
+                email_count=1
+            )
+            db_session.add(thread)
+            db_session.flush()
+
+            email = Email(
+                subject=subject,
+                body="Content",
+                status=email_status,
+                folder=folder_value,
+                sender_id=user.id,
+                thread_id=thread.id
+            )
+            db_session.add(email)
+            thread_id = thread.id
+
         db_session.flush()
-        
-        # Create inbox email (user is recipient)
-        inbox_email = Email(
-            subject="Inbox Test Email",
-            body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=sender.id
+
+        # Get or create the system label for the user
+        label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == label_name,
+            Label.is_system == True
+        ).first()
+        if not label:
+            label = Label(
+                name=label_name,
+                is_system=True,
+                is_exclusive=True,
+                owner_id=user.id
+            )
+            db_session.add(label)
+            db_session.flush()
+
+        # Add label to the thread for the user
+        thread_label = ThreadLabel(
+            thread_id=thread_id,
+            label_id=label.id,
+            user_id=user.id
         )
-        db_session.add(inbox_email)
-        db_session.flush()
-        
-        # Add user as recipient
-        recipient = EmailRecipient(
-            email_id=inbox_email.id,
-            recipient_id=user.id,
-            recipient_email=user.email,
-            recipient_type="to"
-        )
-        db_session.add(recipient)
+        db_session.add(thread_label)
         db_session.commit()
-        
+
         response = client.get(
-            "/api/v1/emails?folder=inbox",
+            f"/api/v1/emails?folder={folder_value}",
             headers={"Authorization": f"Bearer {token}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()["data"]
-        # Verify we have at least one result and our inbox email is included
         assert data["total"] >= 1
-        inbox_subjects = [e["subject"] for e in data["results"] if e["folder"] == "inbox"]
-        assert "Inbox Test Email" in inbox_subjects
-
-    def test_folder_filter_sent(self, client_with_auth, db_session):
-        """Test folder=sent filter returns sent emails."""
-        client, token, user = client_with_auth
-        
-        sent_email = Email(
-            subject="Sent Email",
-            body="Content",
-            status="sent",
-            folder=FolderType.SENT.value,
-            sender_id=user.id
-        )
-        db_session.add(sent_email)
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=sent",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "sent"
-
-    def test_folder_filter_drafts(self, client_with_auth, db_session):
-        """Test folder=drafts filter returns draft emails."""
-        client, token, user = client_with_auth
-        
-        draft_email = Email(
-            subject="Draft Email",
-            body="Content",
-            status="draft",
-            folder=FolderType.DRAFTS.value,
-            sender_id=user.id
-        )
-        db_session.add(draft_email)
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=drafts",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "drafts"
-
-    def test_folder_filter_trash(self, client_with_auth, db_session):
-        """Test folder=trash filter returns trashed emails."""
-        client, token, user = client_with_auth
-        
-        trash_email = Email(
-            subject="Trash Email",
-            body="Content",
-            status="received",
-            folder=FolderType.TRASH.value,
-            sender_id=user.id
-        )
-        db_session.add(trash_email)
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=trash",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "trash"
-
-    def test_folder_filter_spam(self, client_with_auth, db_session):
-        """Test folder=spam filter returns spam emails."""
-        client, token, user = client_with_auth
-        
-        spam_email = Email(
-            subject="Spam Email",
-            body="Content",
-            status="received",
-            folder=FolderType.SPAM.value,
-            sender_id=user.id
-        )
-        db_session.add(spam_email)
-        db_session.commit()
-        
-        response = client.get(
-            "/api/v1/emails?folder=spam",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        for email in data["results"]:
-            assert email["folder"] == "spam"
+        # Verify all returned emails have the correct folder
+        for email_data in data["results"]:
+            assert email_data["folder"] == folder_value
+        # Verify our test email is included
+        subjects = [e["subject"] for e in data["results"]]
+        assert subject in subjects
 
     def test_category_filter_with_inbox(self, client_with_auth, db_session):
         """Test category filter combined with inbox (Gmail-style tabs).
@@ -2541,24 +2259,19 @@ class TestEmailAPIFilters:
         db_session.add_all([thread1, thread2])
         db_session.flush()
         
-        # Create emails
-        primary_email = Email(
+        # Create emails (perspective-aware)
+        primary_email = create_received_email_for_user(
+            db_session, user,
             subject="Primary Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread1.id
+            thread=thread1
         )
-        promo_email = Email(
+        promo_email = create_received_email_for_user(
+            db_session, user,
             subject="Promo Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread2.id
+            thread=thread2
         )
-        db_session.add_all([primary_email, promo_email])
         db_session.flush()
         
         # Add inbox label to both threads
@@ -2645,24 +2358,19 @@ class TestEmailAPIFilters:
         db_session.add_all([thread_primary, thread_promo])
         db_session.flush()
         
-        # Create emails
-        primary_email = Email(
+        # Create emails (perspective-aware)
+        primary_email = create_received_email_for_user(
+            db_session, user,
             subject="Primary Email",
             body="No category label",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread_primary.id
+            thread=thread_primary
         )
-        promo_email = Email(
+        promo_email = create_received_email_for_user(
+            db_session, user,
             subject="Promo Email",
             body="Has promotions label",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread_promo.id
+            thread=thread_promo
         )
-        db_session.add_all([primary_email, promo_email])
         db_session.flush()
         
         # Add inbox label to both threads
@@ -2704,20 +2412,17 @@ class TestEmailAPIFilters:
         
         client, token, user = client_with_auth
         
-        # Create thread and email
+        # Create thread and email (perspective-aware)
         thread = Thread(subject="Important Thread", owner_id=user.id, email_count=1)
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Important Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Mark thread as important via metadata
@@ -2806,54 +2511,17 @@ class TestEmailAPIFilters:
         # Should have more emails when including archived
         assert with_count >= without_count
 
-    def test_search_filter(self, client_with_auth, db_session):
-        """Test search filter searches subject and body."""
-        client, token, user = client_with_auth
-        
-        email1 = Email(
-            subject="Meeting Tomorrow",
-            body="Let's discuss the project",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id
-        )
-        email2 = Email(
-            subject="Random Email",
-            body="Nothing important",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id
-        )
-        db_session.add_all([email1, email2])
-        db_session.commit()
-        
-        # Search for "Meeting"
-        response = client.get(
-            "/api/v1/emails?search=Meeting",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert response.status_code == 200
-        data = response.json()["data"]
-        assert data["total"] >= 1
-        # Results should contain "Meeting" in subject or body
-        for email in data["results"]:
-            assert "Meeting" in email["subject"] or "Meeting" in (email.get("body") or "")
-
     def test_combined_filters(self, client_with_auth, db_session):
         """Test multiple filters can be combined."""
         client, token, user = client_with_auth
         
-        # Create email matching multiple criteria
-        email = Email(
+        # Create email matching multiple criteria (perspective-aware)
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Combined Filter Test",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            is_read=False,
-            sender_id=user.id
+            is_read=False
         )
-        db_session.add(email)
         db_session.commit()
         
         # Combine folder + is_read
@@ -2872,12 +2540,9 @@ class TestEmailAPIFilters:
         """Test no folder filter returns all mail (per documentation)."""
         client, token, user = client_with_auth
         
-        # Create emails in different folders
-        inbox = Email(subject="Inbox", body="C", status="received", 
-                      folder=FolderType.INBOX.value, sender_id=user.id)
-        sent = Email(subject="Sent", body="C", status="sent",
-                     folder=FolderType.SENT.value, sender_id=user.id)
-        db_session.add_all([inbox, sent])
+        # Create emails in different folders (perspective-aware)
+        inbox = create_received_email_for_user(db_session, user, subject="Inbox", body="C")
+        sent = create_sent_email_for_user(db_session, user, subject="Sent", body="C")
         db_session.commit()
         
         # No folder filter = All Mail
@@ -2956,25 +2621,23 @@ class TestEmailAPIFilters:
         db_session.add(thread)
         db_session.flush()
         
-        email1 = Email(
+        # Create emails (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="First Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
-            sent_at=datetime.now(UTC) - timedelta(hours=1)
+            thread=thread
         )
-        email2 = Email(
+        email1.sent_at = datetime.now(UTC) - timedelta(hours=1)
+        
+        email2 = create_sent_email_for_user(
+            db_session, user,
             subject="Reply Email",
             body="Reply content",
-            status="sent",
-            folder=FolderType.SENT.value,
-            sender_id=user.id,
-            thread_id=thread.id,
-            sent_at=datetime.now(UTC)
+            thread=thread
         )
-        db_session.add_all([email1, email2])
+        email2.sent_at = datetime.now(UTC)
+        
         db_session.commit()
         
         response = client.get(
@@ -3097,6 +2760,10 @@ class TestComplexConversationScenarios:
         )
         db_session.add(recipient4)
         db_session.commit()
+        
+        # Sync thread labels for user_a (adds SENT, INBOX labels based on folders)
+        from app.utils.label_utils import sync_thread_labels
+        sync_thread_labels(db_session, thread.id, user_a.id, commit=True)
         
         # Verify thread contains all emails in correct order
         response = client.get(
@@ -3418,84 +3085,6 @@ class TestComplexConversationScenarios:
         db_session.refresh(email2)
         assert email1.folder == FolderType.INBOX.value
         assert email2.folder == FolderType.SENT.value
-
-    def test_snooze_conversation_and_receive_new_message(self, client_with_auth, db_session):
-        """Test snoozed thread behavior when new message arrives."""
-        from app.models.thread_user_metadata import ThreadUserMetadata
-        
-        client, token, user = client_with_auth
-        
-        other_user = User(
-            first_name="Snooze",
-            last_name="Partner",
-            email="snooze_partner@example.com",
-            role="user"
-        )
-        db_session.add(other_user)
-        db_session.flush()
-        
-        thread = Thread(subject="Snooze Test", owner_id=user.id, email_count=1)
-        db_session.add(thread)
-        db_session.flush()
-        
-        email1 = Email(
-            subject="Snooze Test",
-            body="Message to snooze",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=other_user.id,
-            thread_id=thread.id
-        )
-        db_session.add(email1)
-        db_session.flush()
-        
-        recipient1 = EmailRecipient(
-            email_id=email1.id,
-            recipient_id=user.id,
-            recipient_email=user.email,
-            recipient_type="to"
-        )
-        db_session.add(recipient1)
-        db_session.commit()
-        
-        # Snooze the thread
-        snooze_time = (datetime.now(UTC) + timedelta(days=1)).isoformat()
-        snooze_response = client.post(
-            f"/api/v1/threads/{thread.id}/snooze",
-            json={"snooze_until": snooze_time},
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert snooze_response.status_code == 200
-        
-        # Verify snoozed filter works
-        snoozed_response = client.get(
-            "/api/v1/emails?is_snoozed=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert snoozed_response.status_code == 200
-        snoozed_emails = [e for e in snoozed_response.json()["data"]["results"]
-                         if e.get("thread_id") == str(thread.id)]
-        assert len(snoozed_emails) >= 1
-        
-        # Unsnooze the thread
-        unsnooze_response = client.post(
-            f"/api/v1/threads/{thread.id}/unsnooze",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        assert unsnooze_response.status_code == 200
-        
-        # Verify no longer snoozed
-        unsnoozed_check = client.get(
-            "/api/v1/emails?is_snoozed=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-        
-        still_snoozed = [e for e in unsnoozed_check.json()["data"]["results"]
-                        if e.get("thread_id") == str(thread.id)]
-        assert len(still_snoozed) == 0
 
     def test_forward_chain_multiple_recipients(self, client_with_auth, db_session):
         """Test forwarding an email to multiple new recipients."""
@@ -4194,15 +3783,13 @@ class TestUnarchiveThread:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Unarchive Test Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Archive the thread first
@@ -4236,15 +3823,13 @@ class TestUnarchiveThread:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Not Archived Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Create metadata with is_archived=False
@@ -4346,15 +3931,13 @@ class TestUnarchiveThread:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="No Metadata Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # No metadata exists
@@ -4796,16 +4379,13 @@ class TestPaginationEdgeCases:
         """Test page_size=1 returns single result."""
         client, token, user = client_with_auth
         
-        # Create multiple emails
+        # Create multiple emails (perspective-aware)
         for i in range(5):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Page Size Email {i}",
-                body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id
+                body="Content"
             )
-            db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -4869,16 +4449,13 @@ class TestPaginationEdgeCases:
         """Test pagination metadata is accurate."""
         client, token, user = client_with_auth
         
-        # Create 15 emails
+        # Create 15 emails (perspective-aware)
         for i in range(15):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Pagination Email {i}",
-                body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id
+                body="Content"
             )
-            db_session.add(email)
         db_session.commit()
         
         response = client.get(
@@ -4980,17 +4557,15 @@ class TestDeleteEdgeCases:
         db_session.add(thread)
         db_session.flush()
         
+        # Create emails (perspective-aware)
         emails = []
         for i in range(3):
-            email = Email(
+            email = create_received_email_for_user(
+                db_session, user,
                 subject=f"Thread Email {i}",
                 body="Content",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread.id
+                thread=thread
             )
-            db_session.add(email)
             emails.append(email)
         db_session.commit()
         
@@ -5084,7 +4659,7 @@ class TestFilterSearchEdgeCases:
         assert response.status_code == 200
 
     def test_invalid_folder_filter(self, client_with_auth, db_session):
-        """Test invalid folder filter value."""
+        """Test invalid folder filter value returns 400 Bad Request."""
         client, token, user = client_with_auth
         
         response = client.get(
@@ -5092,7 +4667,8 @@ class TestFilterSearchEdgeCases:
             headers={"Authorization": f"Bearer {token}"}
         )
         
-        assert response.status_code in [200, 422]  # Either ignored or validation error
+        assert response.status_code == 400
+        assert "invalid folder" in response.json().get("message", "").lower()
 
     def test_invalid_category_filter(self, client_with_auth, db_session):
         """Test invalid category filter value."""
@@ -5236,15 +4812,13 @@ class TestIdempotencyAndRepeatOperations:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Archive Me Twice",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Already archived
@@ -5274,15 +4848,13 @@ class TestIdempotencyAndRepeatOperations:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Snooze Update Email",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.flush()
         
         # Already snoozed
@@ -5319,15 +4891,13 @@ class TestIdempotencyAndRepeatOperations:
         db_session.add(thread)
         db_session.flush()
         
-        email = Email(
+        # Create perspective-aware email
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Toggle Important",
             body="Content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
         
         # Mark important

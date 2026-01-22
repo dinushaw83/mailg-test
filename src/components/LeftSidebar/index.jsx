@@ -193,10 +193,12 @@ const LeftSidebar = () => {
 
   // Only show items whose ancestors are all open (not collapsed)
   const visibleCustomLabels = useMemo(() => {
-    return customLabels.filter((item) => {
-      const ancestors = getAncestors(item.key);
-      return ancestors.every((a) => !collapsed[a]); // default open if not in map
-    }).filter((item) => !item.is_system);
+    return customLabels
+      .filter((item) => {
+        const ancestors = getAncestors(item.key);
+        return ancestors.every((a) => !collapsed[a]); // default open if not in map
+      })
+      .filter((item) => !item.is_system);
   }, [customLabels, collapsed]);
 
   // Open a new compose window

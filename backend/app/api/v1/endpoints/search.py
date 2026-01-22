@@ -32,7 +32,7 @@ from app.schemas.email import EmailListResponse
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
-from app.utils.email_utils import get_label_hierarchy_name, format_email_list_response
+from app.utils.email_utils import get_label_hierarchy_name, format_email_list_response, get_perspective_email_filter
 from app.utils.search_utils import parse_search_query
 from app.utils.thread_metadata_utils import get_user_important_thread_ids
 
@@ -170,7 +170,7 @@ def search_emails(
     or_groups = parsed_filters.get('or_groups', [])
     grouped_terms = parsed_filters.get('grouped_terms', {})
     
-    # Build base query - user's emails
+    # Build base query - user's emails (perspective-aware)
     query = db.query(Email).options(
         joinedload(Email.sender),
         joinedload(Email.thread).selectinload(Thread.labels),  # Labels are on threads, not emails
@@ -179,10 +179,7 @@ def search_emails(
     ).outerjoin(
         EmailRecipient, Email.id == EmailRecipient.email_id
     ).filter(
-        or_(
-            Email.sender_id == current_user.id,
-            EmailRecipient.recipient_id == current_user.id
-        )
+        get_perspective_email_filter(db, current_user.id)
     )
     
     # Helper to check if term is "me" keyword (refers to current user)
@@ -291,7 +288,7 @@ def search_emails(
     # Folder filtering logic:
     # - in:anywhere: search ALL folders including spam/trash
     # - folder param: search specific folder
-    # - default: exclude spam/trash
+    # - default: exclude spam and trash
     if in_anywhere:
         # Search everywhere - no folder restrictions
         pass
@@ -301,9 +298,10 @@ def search_emails(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid folder. Must be one of: {', '.join(VALID_FOLDER_TYPES)}"
             )
+        # Use email.folder for search filtering (simpler and works for all cases)
         query = query.filter(Email.folder == folder)
     else:
-        # Default: exclude spam and trash
+        # Default: exclude spam and trash by folder
         query = query.filter(~Email.folder.in_(['spam', 'trash']))
     
     if label_id:
@@ -643,8 +641,8 @@ def search_emails(
         )
     
     # Apply threaded grouping - return only latest email from each thread
-    # Use sent_at for sorting, fallback to created_at if null
-    sort_date = func.coalesce(Email.sent_at, Email.created_at)
+    # Use received_at > sent_at > created_at for sorting (first non-null wins)
+    sort_date = func.coalesce(Email.received_at, Email.sent_at, Email.created_at)
     
     # Step 1: Get max dates per thread for the filtered emails
     max_dates = db.query(
@@ -702,7 +700,7 @@ def search_emails(
     elif sort_by == "sender":
         order_col = Email.sender_id
     else:
-        order_col = func.coalesce(Email.sent_at, Email.created_at)
+        order_col = func.coalesce(Email.received_at, Email.sent_at, Email.created_at)
     
     if sort_order == "asc":
         final_query = final_query.order_by(order_col.asc())
@@ -717,20 +715,13 @@ def search_emails(
     thread_counts = {}
     starred_thread_ids = set()
     if thread_ids:
-        # Query count of emails per thread (accessible to this user)
+        # Query count of emails per thread (accessible to this user from their perspective)
         count_results = db.query(
             Email.thread_id,
             func.count(Email.id).label('count')
         ).filter(
             Email.thread_id.in_(thread_ids),
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         ).group_by(Email.thread_id).all()
         
         thread_counts = {tid: cnt for tid, cnt in count_results}
@@ -739,14 +730,7 @@ def search_emails(
         starred_results = db.query(Email.thread_id).filter(
             Email.thread_id.in_(thread_ids),
             Email.is_starred == True,
-            or_(
-                Email.sender_id == current_user.id,
-                Email.id.in_(
-                    db.query(EmailRecipient.email_id).filter(
-                        EmailRecipient.recipient_id == current_user.id
-                    )
-                )
-            )
+            get_perspective_email_filter(db, current_user.id)
         ).distinct().all()
         starred_thread_ids = {tid for (tid,) in starred_results}
     

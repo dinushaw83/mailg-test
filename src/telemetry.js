@@ -31,13 +31,13 @@ function setupInstrumentation() {
     export: (metrics, resultCallback) => {
       // Check if there's any actual data to send
       const hasData = metrics.scopeMetrics?.some((sm) =>
-          sm.metrics?.some(
-              (m) =>
-                  m.dataPoints?.length > 0 ||
-                  m.histogram?.dataPoints?.length > 0 ||
-                  m.sum?.dataPoints?.length > 0 ||
-                  m.gauge?.dataPoints?.length > 0
-          )
+        sm.metrics?.some(
+          (m) =>
+            m.dataPoints?.length > 0 ||
+            m.histogram?.dataPoints?.length > 0 ||
+            m.sum?.dataPoints?.length > 0 ||
+            m.gauge?.dataPoints?.length > 0
+        )
       );
 
       if (!hasData) {

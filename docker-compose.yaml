@@ -128,7 +128,7 @@ services:
   # =============================================================================
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
     profiles: ["instrumentation"]
     container_name: ui-gym-mailg-cadvisor
     ports:

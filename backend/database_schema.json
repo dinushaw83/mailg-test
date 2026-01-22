@@ -3,22 +3,12 @@
   "title": "Database Schema",
   "description": "Auto-generated schema from PostgreSQL database with full constraint information",
   "version": "2.0",
-  "generatedAt": "2026-01-16T06:14:28.219663Z",
+  "generatedAt": "2026-01-12T03:35:26.015864Z",
   "type": "object",
   "properties": {
     "tables": {
       "type": "object",
       "properties": {
-        "_data_generator_marker": {
-          "properties": {
-            "generated_at": {
-              "type": "string",
-              "nullable": true,
-              "format": "date-time"
-            }
-          },
-          "required": []
-        },
         "attachments": {
           "properties": {
             "id": {

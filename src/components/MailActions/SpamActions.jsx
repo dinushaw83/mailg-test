@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import { buildLabelPath } from "../../utils/labelSync";
 
 import { Box } from "@mui/material";
 import Button from "@mui/material/Button";
@@ -83,19 +84,25 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
   const [spamModalOpen, setSpamModalOpen] = useState(false);
   const anchorRef = useRef(null);
 
-  const { labels, labelTree } = useLabels();
+  const { labels, labelTree, labelIdToKeyMap } = useLabels();
 
   // Check if any selected emails are not in the inbox
+  // Build menu items for Move to menu (same filter as "Label as")
+  // Section 1: Labels that are NOT (is_system AND is_exclusive)
+  // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
-    const flat = flattenTreeForSelect(labelTree); // [{ key, name, depth, system }]
-    return flat
-      .filter((item) => !labels?.[item.key]?.system)
-      .map((item) => ({
-        id: item.key,
-        name: getPathLabelFromKey(labels, item.key), // "Parent / Child / ..."
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [labelTree, labels, folder]);
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
+    return (
+      Object.entries(labelsObject)
+        // Same filter as "Label as" - hide labels that are both system AND exclusive
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+        .map(([key, meta]) => ({
+          id: key,
+          name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    );
+  }, [labels, labelIdToKeyMap]);
 
   const { label: labelParam } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
@@ -126,17 +133,11 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
             size="small"
             onClick={() => {
               try {
-                if (originalLabelsSnapshot && originalLabelsSnapshot.size) {
-                  setEmails((prev) =>
-                    prev.map((email) =>
-                      originalLabelsSnapshot.has(email.id)
-                        ? { ...email, labels: originalLabelsSnapshot.get(email.id) }
-                        : email
-                    )
-                  );
-                } else if (inCustomLabel) {
+                // Always call the backend API to move back, not just local state update
+                if (inCustomLabel) {
                   moveToLabelFrom(matchKeys, toKey, fromKey);
                 } else {
+                  // Move back to the original folder/label
                   moveToLabel(matchKeys, fromKey || "Inbox");
                 }
 
@@ -161,7 +162,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
         ),
       });
     },
-    [labels, moveToLabelFrom, moveToLabel, setEmails, setSnackbar]
+    [labels, moveToLabelFrom, moveToLabel, setSnackbar]
   );
 
   const handleMenuItemClick = useCallback(
@@ -181,9 +182,11 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
 
         if (item.id === "__inbox__" || item.id === "inbox") {
           moveToLabel(selectionMatchKeys, "Inbox");
+          // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
+          const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
           showUndoSnackbarForLabelMove(
             selectionMatchKeys,
-            currentLabel,
+            sourceLocation,
             "Inbox",
             false,
             selectedConversationCount,
@@ -245,7 +248,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
           );
         }
         setOpen(false);
-        selection.clear();
       } catch (e) {
         console.error("Move failed:", e);
       }
@@ -283,18 +285,10 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
         autoHideDuration: 3000,
         action: null,
       });
-      selection.clear();
     } catch (e) {
       console.error("Delete forever failed:", e);
     }
-  }, [
-    selectionMatchKeys,
-    showNoConversationsSelectedSnackbar,
-    deleteForever,
-    selectedConversationCount,
-    setSnackbar,
-    selection,
-  ]);
+  }, [selectionMatchKeys, showNoConversationsSelectedSnackbar, deleteForever, selectedConversationCount, setSnackbar]);
 
   const hasUnreadEmails = useMemo(() => {
     return selectedEmails.some((email) => !email.is_read);
@@ -329,7 +323,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
     }
 
     markRead(idsToUpdate, isMarkingAsRead);
-    selection.clear();
 
     const affectedConversations =
       new Set(targetStates.map((state) => state.thread_id)).size || selectedConversationCount || 1;
@@ -403,8 +396,6 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
       } else {
         moveToLabel(ids, newKey);
       }
-
-      selection.clear();
 
       // --- UNDO action ---
       setSnackbar({
@@ -496,8 +487,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
               return;
             }
 
-            moveToInbox(selectionMatchKeys);
-            selection.clear();
+            notSpam(selectionMatchKeys);
             const conversationCount = selectedConversationCount || selectionMatchKeys.length || 1;
             setSnackbar({
               open: true,
@@ -553,9 +543,7 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
           labels={menuItems}
           onSelect={handleMenuItemClick}
           onClose={() => setOpen(false)}
-          showInbox={hasEmailsNotInInbox}
-          showSpam={showSpam}
-          showTrash={showTrash}
+          currentFolder={folder || "inbox"}
         />
       )}
       <CreateLabelDialog open={createOpen} onClose={() => setCreateOpen(false)} onAfterCreate={handleOnAfterCreate} />
@@ -566,14 +554,38 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
           setSpamModalOpen(false);
         }}
         onReportSpam={() => {
+          if (!selectionMatchKeys.length) {
+            setSpamModalOpen(false);
+            return;
+          }
+
           moveToSpam(selectionMatchKeys);
-          selection.clear();
           setSpamModalOpen(false);
+          setSnackbar({
+            open: true,
+            message:
+              selectedConversationCount > 1
+                ? `${selectedConversationCount} conversations marked as spam.`
+                : "Conversation marked as spam.",
+            autoHideDuration: 10000,
+          });
         }}
         onUnsubscribe={() => {
+          if (!selectionMatchKeys.length) {
+            setSpamModalOpen(false);
+            return;
+          }
+
           moveToSpam(selectionMatchKeys);
-          selection.clear();
           setSpamModalOpen(false);
+          setSnackbar({
+            open: true,
+            message:
+              selectedConversationCount > 1
+                ? `${selectedConversationCount} conversations marked as spam.`
+                : "Conversation marked as spam.",
+            autoHideDuration: 10000,
+          });
         }}
       />
     </div>

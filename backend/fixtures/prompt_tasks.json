@@ -1,0 +1,29 @@
+[
+  {
+    "id": "MAIL:001",
+    "prompt": "You are logged in as John Doe (john.doe@example.com). Star the \"Q1 Project Planning Discussion\" thread.",
+    "db_verification_config": {
+      "tables": {
+        "emails": {
+          "expect_modified": [
+            {
+              "description": "Star emails in the Q1 Project Planning Discussion thread",
+              "field_assertions": [
+                {
+                  "field": "subject",
+                  "operator": "STRING_CONTAINS",
+                  "expected": "Q1 Project Planning Discussion"
+                },
+                {
+                  "field": "is_starred",
+                  "operator": "BOOLEAN_EQUALS",
+                  "expected": true
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+]

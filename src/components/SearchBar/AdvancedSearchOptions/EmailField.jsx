@@ -144,9 +144,7 @@ const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
           if (validEmails.length > 0) {
             const newEmailArray = [...confirmedEmails, ...validEmails];
             setConfirmedEmails(newEmailArray);
-            const confirmedValue = newEmailArray.join(", ");
-            lastEmittedValue.current = confirmedValue;
-            onChange(confirmedValue);
+            onChange(emails);
             setInputValue("");
           }
         }
@@ -252,7 +250,7 @@ const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
         onChange={handleAutocompleteChange}
         onInputChange={handleInputChange}
         filterOptions={filterOptions}
-        open={isFocused && inputValue && inputValue.trim() !== ""}
+        open={isFocused && !!inputValue && inputValue.trim() !== ""}
         renderOption={(props, option) => {
           const { key, ...otherProps } = props;
           const isCustomRecipient = option.id && typeof option.id === "string" && option.id.startsWith("custom-");

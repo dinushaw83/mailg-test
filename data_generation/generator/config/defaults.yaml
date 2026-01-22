@@ -986,6 +986,10 @@ assignment_constraints:
 
 # Content templates for text generation
 templates:
+  colors:
+    r: [180, 255]
+    g: [180, 255]
+    b: [180, 255]
   # Email subjects
   subjects:
     personal:

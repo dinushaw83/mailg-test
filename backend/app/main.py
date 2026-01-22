@@ -2,9 +2,19 @@
 
 import asyncio
 import logging
+import os
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+
+# Configure logging to output INFO level to stdout
+# This ensures background task logs are visible in Docker logs
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
 
 from app.core.config import API_V1_PREFIX, get_jwt_secret_warnings
 from app.core.openapi import custom_openapi
@@ -16,6 +26,7 @@ from app.core.middleware.response_wrapper import ResponseWrapperMiddleware
 from app.db.template import initialize_template_Database
 from app.tasks.cleanup import cleanup_old_databases
 from app.tasks.scheduled_sender import process_scheduled_emails
+from app.tasks.snooze_processor import process_expired_snoozes
 from app.api.v1.router import router as v1_router
 from app.api.v1.endpoints import ingestion
 from app.api.v1.endpoints import instrumentation
@@ -43,9 +54,16 @@ async def lifespan(app: FastAPI):
         # Log error but continue - cleanup task must always run
         logger.error(f"Failed to initialize database: {e}")
     
-    # Always start background tasks regardless of initialization result
-    asyncio.create_task(cleanup_old_databases())
-    asyncio.create_task(process_scheduled_emails())
+    # Only start background tasks on one worker (set by gunicorn_config.py)
+    # This prevents duplicate task execution across multiple gunicorn workers
+    # Default to "true" so uvicorn/development mode works (gunicorn sets "false" for non-leader workers)
+    if os.getenv("RUN_BACKGROUND_TASKS", "true").lower() == "true":
+        logger.info("This worker is assigned to run background tasks")
+        asyncio.create_task(cleanup_old_databases())
+        asyncio.create_task(process_scheduled_emails())
+        asyncio.create_task(process_expired_snoozes())
+    else:
+        logger.info("Background tasks disabled for this worker (another worker handles them)")
     
     yield
 
@@ -82,10 +100,6 @@ register_exception_handlers(app)
 
 # Include v1 API router
 app.include_router(v1_router, prefix=API_V1_PREFIX)
-
-app.include_router(ingestion.router, prefix=API_V1_PREFIX, tags=["ingestion"], include_in_schema=False)
-app.include_router(instrumentation.router, prefix=API_V1_PREFIX, tags=["instrumentation"], include_in_schema=False)
-
 
 @app.get("/")
 def root() -> dict:

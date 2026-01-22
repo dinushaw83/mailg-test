@@ -15,6 +15,7 @@ import { Labels } from "../MailActions/Labels";
 import { getThreadRows } from "../../utils/emails";
 import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import { buildLabelPath } from "../../utils/labelSync";
 import { useHotkeys } from "react-hotkeys-hook";
 
 const buildMatchKeysForEmail = (email = {}) => {
@@ -47,6 +48,7 @@ export const Icon = ({
   width = 36,
   height = 36,
   fontSize = 20,
+  filled = false,
   _ref,
 }) => {
   return (
@@ -70,6 +72,7 @@ export const Icon = ({
           style={{
             fontSize,
             color: disabled ? "#b8b8b8" : color,
+            fontVariationSettings: filled ? "'FILL' 1" : "'FILL' 0",
           }}
         >
           {name}
@@ -190,19 +193,19 @@ const useCustomHotKeys = ({
   });
 };
 
-const MailActions = ({ thread }) => {
+const MailActions = ({ thread, emails: providedEmails }) => {
   const navigate = useNavigate();
   const thread_id = thread.thread_id;
   const [state, dispatch] = useReducer(reducer, initialState);
   const { spamModalOpen, moveToMenuOpen, snoozeAnchorEl, showAdvancedMenu, labelAnchorEl, searchQuery, createOpen } =
     state;
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
-  const { setSnackbar, emails, setEmails } = useGlobalContext();
+  const { setSnackbar, emails: globalEmails, setEmails } = useGlobalContext();
 
-  const { label: labelParam } = useParams();
+  const { label: labelParam, folder } = useParams();
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
 
-  const { labels, labelTree } = useLabels();
+  const { labels, labelTree, labelIdToKeyMap } = useLabels();
   const [isMovingToLabel, setIsMovingToLabel] = useState(true);
 
   const location = useLocation();
@@ -214,15 +217,68 @@ const MailActions = ({ thread }) => {
     return pathParts.slice(0, -1).join("/") || "/inbox";
   }, [location.pathname]);
 
-  const threadEmails = useMemo(
-    () => emails.filter((email) => email.thread_id === thread.thread_id),
-    [emails, thread.thread_id]
-  );
+  const threadEmails = useMemo(() => {
+    // Normalize thread_id to string for comparison
+    const normalizedThreadId = String(thread?.thread_id ?? "").trim();
+
+    // Collect emails from all available sources
+    let fromProvided = [];
+    let fromGlobal = [];
+    let fromThread = [];
+
+    if (providedEmails && Array.isArray(providedEmails) && providedEmails.length > 0) {
+      // Filter by thread_id, using string comparison for consistency
+      fromProvided = providedEmails.filter((email) => {
+        const emailThreadId = String(email?.thread_id ?? "").trim();
+        return emailThreadId === normalizedThreadId;
+      });
+      // If no matches, use all provided emails (they should all be for this thread)
+      if (fromProvided.length === 0) {
+        fromProvided = providedEmails;
+      }
+    }
+
+    // Get emails from global context
+    fromGlobal = globalEmails.filter((email) => {
+      const emailThreadId = String(email?.thread_id ?? "").trim();
+      return emailThreadId === normalizedThreadId;
+    });
+
+    // Get emails from thread.emails (from API when opening detail)
+    if (thread.emails && Array.isArray(thread.emails)) {
+      fromThread = thread.emails;
+    }
+
+    // Return the source with the most emails (thread.emails should have all)
+    if (fromThread.length >= fromProvided.length && fromThread.length >= fromGlobal.length && fromThread.length > 0) {
+      return fromThread;
+    }
+    if (fromProvided.length >= fromGlobal.length && fromProvided.length > 0) {
+      return fromProvided;
+    }
+    if (fromGlobal.length > 0) {
+      return fromGlobal;
+    }
+
+    return fromThread;
+  }, [providedEmails, globalEmails, thread?.thread_id, thread?.emails]);
   useEffect(() => {
     hasRunOnceRef.current = false;
   }, [thread.thread_id]);
 
   const threadMessageIds = useMemo(() => threadEmails.map((email) => email.id), [threadEmails]);
+
+  // Extract thread IDs from threadEmails for label operations
+  // Include thread.thread_id as a fallback to ensure we always have at least one thread ID
+  const threadIdsForLabels = useMemo(() => {
+    const ids = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
+    // If no thread IDs found from emails, use thread.thread_id as fallback
+    if (ids.length === 0 && thread?.thread_id) {
+      return [thread.thread_id];
+    }
+    return ids;
+  }, [threadEmails, thread?.thread_id]);
+
   const conversationMatchKeys = useMemo(() => {
     const keys = new Set();
     const add = (value) => {
@@ -257,21 +313,27 @@ const MailActions = ({ thread }) => {
     return threadEmails.every((email) => (email.labels || []).includes("Trash"));
   }, [threadEmails]);
 
-  // Check if any selected emails are not in the inbox
+  // Build menu items for Move to menu (same filter as "Label as")
+  // Section 1: Labels that are NOT (is_system AND is_exclusive)
+  // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
-    const flat = flattenTreeForSelect(labelTree); // [{ key, name, depth, system }]
-    return flat
-      .filter((item) => !labels?.[item.key]?.system)
-      .map((item) => ({
-        id: item.key,
-        name: getPathLabelFromKey(labels, item.key), // "Parent / Child / ..."
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [labelTree, labels]);
+    const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
+    return (
+      Object.entries(labelsObject)
+        // Same filter as "Label as" - hide labels that are both system AND exclusive
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+        .map(([key, meta]) => ({
+          id: key,
+          name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    );
+  }, [labels, labelIdToKeyMap]);
 
   const moveToMenuAnchorRef = useRef(null);
   const snoozeAnchorElRef = useRef(null);
   const labelAnchorElRef = useRef(null);
+  const spamUndoEmailIdsRef = useRef(null);
   const showSnoozePopover = Boolean(snoozeAnchorEl);
 
   const toggleSpamModal = useCallback(() => {
@@ -298,9 +360,29 @@ const MailActions = ({ thread }) => {
     unsnooze,
     addLabels,
     removeLabels,
+    modifyLabels,
     setStar,
     setImportant,
+    notSpam,
+    deleteForever,
   } = useMailActions();
+
+  // Check if viewing spam folder
+  const isSpamFolder = folder === "spam";
+  // Check if viewing trash folder
+  const isTrashFolder = folder === "trash";
+
+  // Check if the email/thread is marked as spam (has Spam label) - for showing spam-specific UI
+  const isSpamEmail = useMemo(() => {
+    if (!threadEmails || threadEmails.length === 0) return false;
+    return threadEmails.some((email) => {
+      const labels = email.labels || [];
+      return labels.some((label) => {
+        const labelName = typeof label === "string" ? label : label?.name;
+        return labelName === "Spam";
+      });
+    });
+  }, [threadEmails]);
 
   const handleArchive = useCallback(() => {
     if (!threadEmails.length) return;
@@ -373,7 +455,8 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setStar(idsToUpdate, nextValue);
+    // Pass 'detail' context to indicate this is from email detail page
+    setStar(idsToUpdate, nextValue, "detail");
 
     setSnackbar({
       open: true,
@@ -386,8 +469,8 @@ const MailActions = ({ thread }) => {
           onClick={() => {
             const toStar = previousStates.filter((state) => state.starred).map((state) => state.id);
             const toUnstar = previousStates.filter((state) => !state.starred).map((state) => state.id);
-            if (toStar.length) setStar(toStar, true);
-            if (toUnstar.length) setStar(toUnstar, false);
+            if (toStar.length) setStar(toStar, true, "detail");
+            if (toUnstar.length) setStar(toUnstar, false, "detail");
             setSnackbar({
               open: true,
               message: "Action undone.",
@@ -414,14 +497,8 @@ const MailActions = ({ thread }) => {
             size="small"
             onClick={() => {
               try {
-                if (snapshot && snapshot.size) {
-                  setEmails((prev) =>
-                    prev.map((email) => {
-                      const key = String(email.id ?? "");
-                      return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
-                    })
-                  );
-                } else if (isMoving) {
+                // Always call the backend API to properly undo the action
+                if (isMoving) {
                   if (inCustomLabel) {
                     moveToLabelFrom(matchKeys, toKey, fromKey);
                   } else {
@@ -455,13 +532,23 @@ const MailActions = ({ thread }) => {
         navigate(getBasePath());
       }
     },
-    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels, setEmails, navigate, getBasePath]
+    [moveToLabel, moveToLabelFrom, removeLabels, setSnackbar, labels, navigate, getBasePath]
   );
 
   const handleDelete = useCallback(() => {
-    if (!conversationMatchKeys.length) return;
+    if (!threadEmails.length) return;
 
-    const undo = moveToTrash(conversationMatchKeys);
+    // Use only the first email ID (representative in list)
+    // This ensures consistency when moving back from trash
+    const mainEmailId = threadEmails[0]?.id;
+    if (!mainEmailId) return;
+
+    const emailIds = [mainEmailId];
+    const threadIds = [thread?.thread_id].filter(Boolean);
+    const undo = moveToTrash(emailIds);
+
+    // Navigate back to the list
+    navigate(getBasePath());
 
     setSnackbar({
       open: true,
@@ -475,7 +562,7 @@ const MailActions = ({ thread }) => {
             if (typeof undo === "function") {
               undo();
             } else {
-              moveToInbox(conversationMatchKeys);
+              moveToInbox(emailIds, { resolvedEmailIds: emailIds, resolvedThreadIds: threadIds });
             }
             setSnackbar({
               open: true,
@@ -489,7 +576,7 @@ const MailActions = ({ thread }) => {
         </Button>
       ),
     });
-  }, [conversationMatchKeys, moveToTrash, moveToInbox, setSnackbar]);
+  }, [threadEmails, thread?.thread_id, moveToTrash, moveToInbox, setSnackbar, navigate, getBasePath]);
 
   useEffect(() => {
     if (hasRunOnceRef.current) return;
@@ -570,14 +657,26 @@ const MailActions = ({ thread }) => {
       try {
         const snapshot = conversationLabelSnapshot();
 
-        if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel(conversationMatchKeys, "Inbox");
-          showUndoSnackbar(conversationMatchKeys, currentLabel, "Inbox", false, true, snapshot);
+        if (item.id === "__inbox__" || item.id.toLowerCase() === "inbox") {
+          // Use ALL email IDs in the thread when moving to inbox
+          const emailIds = threadEmails.map((email) => email.id);
+          if (!emailIds.length) return;
+          moveToInbox(emailIds, { resolvedEmailIds: emailIds });
+          // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
+          const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
+          showUndoSnackbar(conversationMatchKeys, sourceLocation, "Inbox", false, true, snapshot);
+          navigate(getBasePath());
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
           return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          const undo = moveToTrash(conversationMatchKeys);
+          // Use only the first email ID for consistency
+          const mainEmailId = threadEmails[0]?.id;
+          if (!mainEmailId) return;
+          const emailIds = [mainEmailId];
+          const threadIds = [thread?.thread_id].filter(Boolean);
+          const undo = moveToTrash(emailIds);
+          navigate(getBasePath());
           setSnackbar({
             open: true,
             message: "Conversation moved to Trash.",
@@ -590,7 +689,7 @@ const MailActions = ({ thread }) => {
                   if (typeof undo === "function") {
                     undo();
                   } else {
-                    moveToInbox(conversationMatchKeys);
+                    moveToInbox(emailIds, { resolvedEmailIds: emailIds, resolvedThreadIds: threadIds });
                   }
                   setSnackbar({
                     open: true,
@@ -682,7 +781,7 @@ const MailActions = ({ thread }) => {
     dispatch({ type: "setLabelAnchorEl", labelAnchorEl: labelAnchorElRef.current });
   }, []);
 
-  const handleOnAfterCreate = (childName, parentKey, isMoving = true) => {
+  const handleOnAfterCreate = (childName, parentKey, isMoving = true, createdLabelId = null) => {
     if (!conversationMatchKeys.length) return;
 
     try {
@@ -692,14 +791,29 @@ const MailActions = ({ thread }) => {
       const inCustomLabel = curMeta && curMeta.system === false;
 
       if (isMoving) {
+        // Update local state
         if (inCustomLabel) {
           moveToLabelFrom(conversationMatchKeys, currentLabel, newKey);
         } else {
           moveToLabel(conversationMatchKeys, newKey);
         }
+        // Sync with backend using createdLabelId
+        if (createdLabelId) {
+          const removeLabelsForBackend = inCustomLabel && currentLabel ? [currentLabel] : [];
+          modifyLabels(
+            conversationMatchKeys,
+            { add: [createdLabelId], remove: removeLabelsForBackend },
+            conversationMatchKeys
+          );
+        }
       } else {
         // Always additive when not moving
-        addLabels(conversationMatchKeys, [newKey]);
+        // Use modifyLabels with the created label's UUID to sync with backend
+        if (createdLabelId) {
+          modifyLabels(conversationMatchKeys, { add: [createdLabelId], remove: [] }, conversationMatchKeys);
+        } else {
+          addLabels(conversationMatchKeys, [newKey]);
+        }
       }
 
       showUndoSnackbar(conversationMatchKeys, currentLabel, newKey, inCustomLabel, isMoving, snapshot);
@@ -721,12 +835,19 @@ const MailActions = ({ thread }) => {
     if (!threadEmails.length) return;
 
     const previousStates = threadEmails.map((email) => ({
-      id: email.id,
+      thread_id: email.thread_id,
       important: !!email.is_important,
     }));
-    const idsToUpdate = previousStates.filter((state) => !state.important).map((state) => state.id);
+    const threadIdsToUpdate = [
+      ...new Set(
+        previousStates
+          .filter((state) => !state.important)
+          .map((state) => state.thread_id)
+          .filter(Boolean)
+      ),
+    ];
 
-    if (!idsToUpdate.length) {
+    if (!threadIdsToUpdate.length) {
       setSnackbar({
         open: true,
         message: "Conversation already marked as important.",
@@ -736,7 +857,7 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setImportant(idsToUpdate, true);
+    setImportant(threadIdsToUpdate, true);
     setSnackbar({
       open: true,
       message: "Conversation marked as important.",
@@ -746,8 +867,22 @@ const MailActions = ({ thread }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            const toImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
+            const toNotImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => !state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({
@@ -768,12 +903,19 @@ const MailActions = ({ thread }) => {
     if (!threadEmails.length) return;
 
     const previousStates = threadEmails.map((email) => ({
-      id: email.id,
-      important: !!email.important,
+      thread_id: email.thread_id,
+      important: !!email.is_important,
     }));
-    const idsToUpdate = previousStates.filter((state) => state.important).map((state) => state.id);
+    const threadIdsToUpdate = [
+      ...new Set(
+        previousStates
+          .filter((state) => state.important)
+          .map((state) => state.thread_id)
+          .filter(Boolean)
+      ),
+    ];
 
-    if (!idsToUpdate.length) {
+    if (!threadIdsToUpdate.length) {
       setSnackbar({
         open: true,
         message: "Conversation already marked as not important.",
@@ -783,7 +925,7 @@ const MailActions = ({ thread }) => {
       return;
     }
 
-    setImportant(idsToUpdate, false);
+    setImportant(threadIdsToUpdate, false);
     setSnackbar({
       open: true,
       message: "Conversation marked as not important.",
@@ -793,8 +935,22 @@ const MailActions = ({ thread }) => {
           sx={{ textTransform: "none" }}
           size="small"
           onClick={() => {
-            const toImportant = previousStates.filter((state) => state.important).map((state) => state.id);
-            const toNotImportant = previousStates.filter((state) => !state.important).map((state) => state.id);
+            const toImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
+            const toNotImportant = [
+              ...new Set(
+                previousStates
+                  .filter((state) => !state.important)
+                  .map((state) => state.thread_id)
+                  .filter(Boolean)
+              ),
+            ];
             if (toImportant.length) setImportant(toImportant, true);
             if (toNotImportant.length) setImportant(toNotImportant, false);
             setSnackbar({
@@ -827,37 +983,89 @@ const MailActions = ({ thread }) => {
   });
 
   const handleReportSpam = useCallback(() => {
-    const undo = moveToSpam(conversationMatchKeys);
+    if (!threadEmails.length) {
+      return;
+    }
+
+    // Use only the main thread email ID (first email) for spam action
+    const emailIds = [threadEmails[0]?.id].filter(Boolean);
+    // Store email IDs in ref for undo action
+    spamUndoEmailIdsRef.current = [...emailIds];
+
+    moveToSpam(emailIds);
     toggleSpamModal();
+
+    // Navigate back to the list
+    navigate(getBasePath());
+
+    // Create undo handler that captures notSpam
+    const handleUndo = () => {
+      const idsToUndo = spamUndoEmailIdsRef.current;
+      if (idsToUndo && idsToUndo.length > 0) {
+        notSpam(idsToUndo);
+        setSnackbar({
+          open: true,
+          message: "Action undone.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+      }
+    };
+
     setSnackbar({
       open: true,
       message: "Conversation marked as spam.",
       autoHideDuration: 10000,
       action: (
-        <Button
-          sx={{ textTransform: "none" }}
-          size="small"
-          onClick={() => {
-            undo();
-            setSnackbar({
-              open: true,
-              message: "Action undone.",
-              autoHideDuration: 3000,
-              action: null,
-            });
-          }}
-        >
+        <Button sx={{ textTransform: "none" }} size="small" onClick={handleUndo}>
           Undo
         </Button>
       ),
     });
-  }, [conversationMatchKeys, moveToSpam, toggleSpamModal, showUndoSnackbar]);
+  }, [threadEmails, moveToSpam, notSpam, toggleSpamModal, setSnackbar, navigate, getBasePath]);
+
+  // Handle "Not Spam" action - moves email back to inbox
+  const handleNotSpam = useCallback(() => {
+    if (!threadEmails.length) return;
+
+    const emailIds = threadEmails.map((email) => email.id);
+    notSpam(emailIds);
+
+    // Navigate back to the list
+    navigate(getBasePath());
+
+    setSnackbar({
+      open: true,
+      message: "Conversation moved to Inbox.",
+      autoHideDuration: 5000,
+      action: null,
+    });
+  }, [threadEmails, notSpam, navigate, getBasePath, setSnackbar]);
+
+  // Handle "Delete Forever" action - permanently deletes email
+  const handleDeleteForever = useCallback(() => {
+    if (!threadEmails.length) return;
+
+    const emailIds = threadEmails.map((email) => email.id);
+    deleteForever(emailIds);
+
+    // Navigate back to the list
+    navigate(getBasePath());
+
+    setSnackbar({
+      open: true,
+      message: "Conversation deleted forever.",
+      autoHideDuration: 5000,
+      action: null,
+    });
+  }, [threadEmails, deleteForever, navigate, getBasePath, setSnackbar]);
 
   const handleSnooze = useCallback(
     (ids, snoozeUntil) => {
-      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
+      // Pass thread.thread_id explicitly since we're on the detail page
+      const { removedInboxIds = [] } = snooze(ids, snoozeUntil, [thread.thread_id]) || {};
       const undo = () => {
-        unsnooze(ids, { removedInboxIds });
+        unsnooze(ids, { removedInboxIds }, [thread.thread_id]);
         setSnackbar({
           open: true,
           message: "Action undone.",
@@ -875,8 +1083,10 @@ const MailActions = ({ thread }) => {
           </Button>
         ),
       });
+      // Navigate back to the email list after snoozing
+      navigate(getBasePath());
     },
-    [snooze, unsnooze, setSnackbar]
+    [snooze, unsnooze, setSnackbar, thread.thread_id, navigate, getBasePath]
   );
 
   return (
@@ -899,29 +1109,71 @@ const MailActions = ({ thread }) => {
           // background: "pink",
         }}
       >
-        <Icon name="arrow_back" onClick={() => navigate(getBasePath())} style={{ marginRight: "20px" }} label="Back" />
+        <Icon
+          name="arrow_back"
+          onClick={() => {
+            // Needed to support going back to filters
+            navigate(-1);
+          }}
+          style={{ marginRight: "20px" }}
+          label="Back"
+        />
 
-        <>
-          <Icon name="archive" label="Archive" onClick={handleArchive} />
-          <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
-          {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
-        </>
-
-        <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+        {isSpamEmail ? (
+          <>
+            <Button
+              variant="text"
+              onClick={handleDeleteForever}
+              sx={{
+                color: "#3c4043",
+                textTransform: "none",
+                fontSize: "14px",
+                fontWeight: 500,
+                padding: "6px 12px",
+                minWidth: "auto",
+                "&:hover": { backgroundColor: "rgba(60, 64, 67, 0.08)" },
+              }}
+            >
+              Delete forever
+            </Button>
+            <Divider orientation="vertical" style={{ marginLeft: 4, marginRight: 4, height: 24 }} />
+            <Button
+              variant="text"
+              onClick={handleNotSpam}
+              sx={{
+                color: "#3c4043",
+                textTransform: "none",
+                fontSize: "14px",
+                fontWeight: 500,
+                padding: "6px 12px",
+                minWidth: "auto",
+                "&:hover": { backgroundColor: "rgba(60, 64, 67, 0.08)" },
+              }}
+            >
+              Not spam
+            </Button>
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+          </>
+        ) : (
+          <>
+            <Icon name="archive" label="Archive" onClick={handleArchive} />
+            <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
+            {!isThreadDeleted && !isTrashFolder && <Icon name="delete" label="Delete" onClick={handleDelete} />}
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+          </>
+        )}
 
         <>
           <Icon name="mark_email_unread" label="Mark as unread" onClick={handleMarkUnread} />
+          <Icon
+            name="schedule"
+            label="Snooze"
+            onClick={handleSnoozeAction}
+            _ref={snoozeAnchorElRef}
+            id="snooze-toolbar-icon"
+          />
           {showAdvancedMenu && (
-            <>
-              <Icon
-                name="schedule"
-                label="Snooze"
-                onClick={handleSnoozeAction}
-                _ref={snoozeAnchorElRef}
-                id="snooze-toolbar-icon"
-              />
-              <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
-            </>
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           )}
           {/* The next icon does not exactly match */}
           <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
@@ -948,9 +1200,7 @@ const MailActions = ({ thread }) => {
           labels={menuItems}
           onSelect={handleMenuItemClick}
           onClose={() => toggleMoveToMenu()}
-          showInbox={isThreadNotInInbox}
-          showSpam={true}
-          showTrash={true}
+          currentFolder={folder || "inbox"}
         />
       )}
       <SnoozePopover
@@ -969,6 +1219,8 @@ const MailActions = ({ thread }) => {
           selectedLabelKeys,
           labelAnchorEl,
           selectedIds: threadMessageIds,
+          threadIds: threadIdsForLabels,
+          threadEmails: threadEmails,
           handleClose: handleLabelClose,
           // position below the icon
           anchorOrigin: { vertical: "bottom", horizontal: "left" },
@@ -1186,11 +1438,11 @@ const ActionsContainer = styled.div`
   justify-content: space-between;
 `;
 
-export default function ActionBar({ thread }) {
+export default function ActionBar({ thread, emails }) {
   return (
     <ActionBarContainer>
       <ActionsContainer>
-        <MailActions thread={thread} />
+        <MailActions thread={thread} emails={emails} />
         <NavigationActions />
       </ActionsContainer>
       {/* <Divider /> */}

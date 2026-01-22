@@ -21,23 +21,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // CORS configuration
 // ----------------------
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow tools/postman/same-origin
-
-    const allowedOrigins = [
-      /^http:\/\/localhost:\d+$/,    // any localhost port
-      /^http:\/\/127\.0\.0\.1:\d+$/, // any 127.0.0.1 port
-      'http://lite.mailg.rlgym.turing.com',
-      'https://aws-gmail-staging.turing.com',
-    ];
-
-    const isAllowed = allowedOrigins.some((allowed) =>
-      allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
-    );
-
-    if (isAllowed) callback(null, true);
-    else callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
-  },
+  origin: true,  // Reflects request origin (allows all origins like backend)
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [

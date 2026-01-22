@@ -72,7 +72,13 @@ const useCustomHotKeys = ({ emails }) => {
   });
 };
 
-const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, showFooter = true }) => {
+const EmailList = ({
+  emails = [],
+  showCheckboxes = true,
+  setShowAdvancedMenu,
+  showFooter = true,
+  searchQuery = null,
+}) => {
   // Add isEmailRead property based on unreadCount
   // A thread is considered read only if unreadCount is 0
   const emailsWithReadStatus = emails.map((email) => ({
@@ -180,9 +186,9 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
     // This means it's a new draft (not part of an existing conversation)
     const isInDraftsFolder = folder?.toLowerCase() === "drafts";
     // Labels can be strings or objects with name property
-    const isDraft = (email.labels || []).some(
-      (label) => (typeof label === "string" ? label : label?.name) === "Drafts"
-    ) || email.folder === "drafts";
+    const isDraft =
+      (email.labels || []).some((label) => (typeof label === "string" ? label : label?.name) === "Drafts") ||
+      email.folder === "drafts";
     const threadEmailCount = email.thread_email_count ?? email.messageCount ?? 1;
     const isComposeDraft = isInDraftsFolder && isDraft && threadEmailCount === 1;
 
@@ -199,7 +205,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
 
     if (pathname.startsWith("/search")) {
       const composeQuery = composeParam ? `?compose=${composeParam}` : "";
-      navigate(`/inbox/${thread_id}${composeQuery}`);
+      navigate(`/inbox/${thread_id}${composeQuery}`, { replace: false });
       return;
     }
 
@@ -211,13 +217,34 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
   };
 
   const getLabelBadges = (email) => {
-    // Simply return the label objects with their id, name, and color
-    // Labels are already in object format: { id, name, color }
-    return (email.labels || []).map((labelObj) => ({
-      key: labelObj.id || labelObj.name,
-      displayName: labelObj.name,
-      color: labelObj.color,
-    }));
+    // No labels shown on snoozed list
+    if (folder === "snoozed") return [];
+
+    return (email.labels || [])
+      .filter((labelObj) => {
+        const labelKey = labelObj?.id || labelObj?.name || labelObj;
+        const labelName = labelObj?.name || labelObj;
+
+        // Check system status from labelObj first, then fall back to labels lookup
+        const labelMeta = labels[labelKey] || labels[labelName];
+        const isSystem = labelObj?.is_system || labelObj?.system || labelMeta?.system || labelMeta?.is_system;
+
+        // For inbox folder: only show non-system labels
+        if (folder === "inbox") {
+          return !isSystem;
+        }
+
+        // For other folders: show "Inbox" label + non-system labels
+        // Hide all other system labels
+        if (isSystem && labelName !== "Inbox") return false;
+
+        return true;
+      })
+      .map((labelObj) => ({
+        key: labelObj.id || labelObj.name || labelObj,
+        displayName: labelObj.name || labelObj,
+        color: labelObj.color,
+      }));
   };
 
   useEffect(() => {
@@ -251,6 +278,7 @@ const EmailList = ({ emails = [], showCheckboxes = true, setShowAdvancedMenu, sh
             getLabelBadges,
             formatDate,
             setShowAdvancedMenu,
+            searchQuery,
           }}
         />
       </div>

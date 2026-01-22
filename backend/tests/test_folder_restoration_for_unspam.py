@@ -7,7 +7,9 @@ from app.models.email import Email
 from app.models.thread import Thread
 from app.models.email_recipient import EmailRecipient
 from app.models.label import Label
+from app.models.user import User
 from app.core.constants import FolderType, SystemLabel, EmailStatus
+from tests.conftest import create_received_email_for_user
 
 
 class TestUnspamFolderRestoration:
@@ -211,19 +213,17 @@ class TestUnspamFolderRestoration:
         db_session.add(scheduled_email)
         emails.append(scheduled_email)
 
-        # Received email
+        # Received email (perspective-aware - user must be recipient)
         thread4 = Thread(subject="Received", owner_id=user.id, email_count=1)
         db_session.add(thread4)
         db_session.flush()
-        received_email = Email(
+        received_email = create_received_email_for_user(
+            db_session, user,
             subject="Received",
             body="Received",
-            status=EmailStatus.RECEIVED.value,
-            folder=FolderType.SPAM.value,
-            sender_id=user.id,
-            thread_id=thread4.id
+            folder=FolderType.SPAM,
+            thread=thread4
         )
-        db_session.add(received_email)
         emails.append(received_email)
 
         db_session.commit()
@@ -284,16 +284,14 @@ class TestUnspamFolderRestoration:
         )
         db_session.add(sent_email)
 
-        # Received email in spam
-        received_email = Email(
+        # Received email in spam (perspective-aware - user must be recipient)
+        received_email = create_received_email_for_user(
+            db_session, user,
             subject="Mixed Thread",
             body="Received",
-            status=EmailStatus.RECEIVED.value,
-            folder=FolderType.SPAM.value,
-            sender_id=user.id,
-            thread_id=thread.id
+            folder=FolderType.SPAM,
+            thread=thread
         )
-        db_session.add(received_email)
 
         db_session.commit()
 

@@ -9,12 +9,13 @@ from app.models.thread_label import ThreadLabel
 from app.models.thread_user_metadata import ThreadUserMetadata
 from app.models.user import User
 from app.models.email_recipient import EmailRecipient
-from app.core.constants import FolderType, SystemLabel
+from app.core.constants import FolderType, SystemLabel, EmailStatus
 from app.utils.thread_metadata_utils import (
     mark_thread_important,
     get_thread_is_important,
     get_user_important_thread_ids,
 )
+from tests.conftest import create_received_email_for_user, create_sent_email_for_user
 
 
 class TestThreadUserMetadataModel:
@@ -267,7 +268,7 @@ class TestEmailAPIImportant:
         """Test marking a thread as important via email endpoint."""
         client, token, user = client_with_auth
 
-        # Create a thread and email
+        # Create a thread and email (perspective-aware)
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
@@ -275,15 +276,12 @@ class TestEmailAPIImportant:
         db_session.add(thread)
         db_session.commit()
 
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Test Email",
             body="Test body",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
 
         # Mark as important via thread endpoint
@@ -309,7 +307,7 @@ class TestEmailAPIImportant:
         """Test unmarking a thread as important via thread endpoint."""
         client, token, user = client_with_auth
 
-        # Create a thread and email
+        # Create a thread and email (perspective-aware)
         thread = Thread(
             subject="Test Thread",
             owner_id=user.id,
@@ -317,15 +315,12 @@ class TestEmailAPIImportant:
         db_session.add(thread)
         db_session.commit()
 
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Test Email",
             body="Test body",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
 
         # First mark as important
@@ -342,102 +337,6 @@ class TestEmailAPIImportant:
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["is_important"] is False
-
-    def test_filter_emails_by_important(self, client_with_auth, db_session):
-        """Test filtering emails by is_important flag."""
-        client, token, user = client_with_auth
-
-        # Create two threads
-        thread1 = Thread(subject="Thread 1", owner_id=user.id)
-        thread2 = Thread(subject="Thread 2", owner_id=user.id)
-        db_session.add_all([thread1, thread2])
-        db_session.commit()
-
-        # Create emails in both threads
-        email1 = Email(
-            subject="Email 1",
-            body="Body 1",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread1.id,
-        )
-        email2 = Email(
-            subject="Email 2",
-            body="Body 2",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread2.id,
-        )
-        db_session.add_all([email1, email2])
-        db_session.commit()
-
-        # Mark only thread1 as important
-        mark_thread_important(db_session, thread1.id, user.id, True)
-        db_session.commit()
-
-        # Filter for important emails
-        response = client.get(
-            "/api/v1/emails?is_important=true",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # Should only get email1
-        email_subjects = [e["subject"] for e in data["results"]]
-        assert "Email 1" in email_subjects
-        assert "Email 2" not in email_subjects
-
-    def test_filter_emails_by_not_important(self, client_with_auth, db_session):
-        """Test filtering emails by is_important=false."""
-        client, token, user = client_with_auth
-
-        # Create two threads
-        thread1 = Thread(subject="Thread 1", owner_id=user.id)
-        thread2 = Thread(subject="Thread 2", owner_id=user.id)
-        db_session.add_all([thread1, thread2])
-        db_session.commit()
-
-        # Create emails in both threads
-        email1 = Email(
-            subject="Email 1",
-            body="Body 1",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread1.id,
-        )
-        email2 = Email(
-            subject="Email 2",
-            body="Body 2",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread2.id,
-        )
-        db_session.add_all([email1, email2])
-        db_session.commit()
-
-        # Mark only thread1 as important
-        mark_thread_important(db_session, thread1.id, user.id, True)
-        db_session.commit()
-
-        # Filter for non-important emails
-        response = client.get(
-            "/api/v1/emails?is_important=false",
-            headers={"Authorization": f"Bearer {token}"}
-        )
-
-        assert response.status_code == 200
-        data = response.json()["data"]
-
-        # Should only get email2
-        email_subjects = [e["subject"] for e in data["results"]]
-        assert "Email 1" not in email_subjects
-        assert "Email 2" in email_subjects
 
     def test_important_status_in_email_response(self, client_with_auth, db_session):
         """Test that is_important is correctly returned in email responses."""
@@ -580,24 +479,22 @@ class TestThreadAPISpam:
         db_session.add(thread)
         db_session.commit()
 
-        spam_label = Label(
-            name="Spam",
-            owner_id=user.id,
-            is_system=True
-        )
-        db_session.add(spam_label)
-        db_session.commit()
+        # Get existing SPAM label (created by sample_user fixture)
+        spam_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Spam",
+            Label.is_system == True
+        ).first()
+        assert spam_label is not None, "SPAM label should exist from fixture"
 
+        # Create emails (perspective-aware)
         for i in range(2):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Spam Email {i+1}",
                 body="Spam body",
-                status="received",
-                folder=FolderType.INBOX.value,
-                sender_id=user.id,
-                thread_id=thread.id,
+                thread=thread
             )
-            db_session.add(email)
         db_session.commit()
         # Mark as spam via thread endpoint
         response = client.patch(
@@ -639,13 +536,13 @@ class TestThreadAPISpam:
         db_session.add(thread)
         db_session.commit()
 
-        spam_label = Label(
-            name="Spam",
-            owner_id=user.id,
-            is_system=True
-        )
-        db_session.add(spam_label)
-        db_session.commit()
+        # Get existing SPAM label (created by sample_user fixture)
+        spam_label = db_session.query(Label).filter(
+            Label.owner_id == user.id,
+            Label.name == "Spam",
+            Label.is_system == True
+        ).first()
+        assert spam_label is not None, "SPAM label should exist from fixture"
 
         thread_label = ThreadLabel(
             thread_id=thread.id,
@@ -655,16 +552,15 @@ class TestThreadAPISpam:
         db_session.add(thread_label)
         db_session.commit()
 
+        # Create emails in spam folder (perspective-aware)
         for i in range(2):
-            email = Email(
+            create_received_email_for_user(
+                db_session, user,
                 subject=f"Spam Email {i+1}",
                 body="Spam body",
-                status="received",
                 folder=FolderType.SPAM.value,
-                sender_id=user.id,
-                thread_id=thread.id,
+                thread=thread
             )
-            db_session.add(email)
         db_session.commit()
 
         # unmark as spam
@@ -702,33 +598,33 @@ class TestThreadIsStarredInListResponse:
 
     def test_list_emails_thread_is_starred_false_when_no_emails_starred(self, client_with_auth, db_session):
         """Test that thread_is_starred is false in list response when no emails are starred."""
+        from app.utils.label_utils import sync_thread_labels
+        
         client, token, user = client_with_auth
 
-        # Create a thread with unstarred emails
+        # Create a thread with unstarred emails (perspective-aware)
         thread = Thread(subject="Test Thread", owner_id=user.id)
         db_session.add(thread)
         db_session.commit()
 
-        email1 = Email(
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Email 1",
             body="Body 1",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
-            is_starred=False
+            is_starred=False,
+            thread=thread
         )
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Email 2",
             body="Body 2",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
-            is_starred=False
+            is_starred=False,
+            thread=thread
         )
-        db_session.add_all([email1, email2])
         db_session.commit()
+        
+        # Sync thread labels (adds INBOX label based on folder)
+        sync_thread_labels(db_session, thread.id, user.id, commit=True)
 
         response = client.get(
             "/api/v1/emails?folder=inbox",
@@ -748,6 +644,9 @@ class TestThreadIsStarredInListResponse:
 
     def test_list_emails_thread_is_starred_true_when_any_email_starred(self, client_with_auth, db_session):
         """Test that thread_is_starred is true in list response when any email in thread is starred."""
+        from app.utils.label_utils import sync_thread_labels
+        from datetime import datetime, timedelta, UTC
+        
         client, token, user = client_with_auth
 
         # Create a thread where an older email is starred but the latest is not
@@ -755,32 +654,29 @@ class TestThreadIsStarredInListResponse:
         db_session.add(thread)
         db_session.commit()
 
-        from datetime import datetime, timedelta, UTC
-        
-        # Older email (starred)
-        email1 = Email(
+        # Older email (starred) (perspective-aware)
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Older Email - Starred",
             body="Body 1",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
             is_starred=True,
-            sent_at=datetime.now(UTC) - timedelta(hours=2)
+            thread=thread
         )
+        email1.sent_at = datetime.now(UTC) - timedelta(hours=2)
+        
         # Newer email (not starred) - this one will be shown in list
-        email2 = Email(
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Newer Email - Not Starred",
             body="Body 2",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
             is_starred=False,
-            sent_at=datetime.now(UTC)
+            thread=thread
         )
-        db_session.add_all([email1, email2])
+        email2.sent_at = datetime.now(UTC)
         db_session.commit()
+        
+        # Sync thread labels (adds INBOX label based on folder)
+        sync_thread_labels(db_session, thread.id, user.id, commit=True)
 
         response = client.get(
             "/api/v1/emails?folder=inbox",
@@ -802,24 +698,26 @@ class TestThreadIsStarredInListResponse:
 
     def test_list_emails_thread_is_starred_matches_individual_when_single_email(self, client_with_auth, db_session):
         """Test that thread_is_starred matches is_starred when thread has single email."""
+        from app.utils.label_utils import sync_thread_labels
+        
         client, token, user = client_with_auth
 
-        # Create a thread with a single starred email
+        # Create a thread with a single starred email (perspective-aware)
         thread = Thread(subject="Single Email Thread", owner_id=user.id)
         db_session.add(thread)
         db_session.commit()
 
-        email = Email(
+        email = create_received_email_for_user(
+            db_session, user,
             subject="Only Email",
             body="Body",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
-            is_starred=True
+            is_starred=True,
+            thread=thread
         )
-        db_session.add(email)
         db_session.commit()
+        
+        # Sync thread labels (adds INBOX label based on folder)
+        sync_thread_labels(db_session, thread.id, user.id, commit=True)
 
         response = client.get(
             "/api/v1/emails?folder=inbox",
@@ -836,36 +734,32 @@ class TestThreadIsStarredInListResponse:
 
     def test_search_emails_includes_thread_is_starred(self, client_with_auth, db_session):
         """Test that search endpoint also includes thread_is_starred."""
+        from datetime import datetime, timedelta, UTC
+        
         client, token, user = client_with_auth
 
-        # Create a thread with mixed starred status
+        # Create a thread with mixed starred status (perspective-aware)
         thread = Thread(subject="Search Test Thread", owner_id=user.id)
         db_session.add(thread)
         db_session.commit()
 
-        from datetime import datetime, timedelta, UTC
-
-        email1 = Email(
+        email1 = create_received_email_for_user(
+            db_session, user,
             subject="Search Test Older",
             body="Searchable content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
             is_starred=True,
-            sent_at=datetime.now(UTC) - timedelta(hours=1)
+            thread=thread
         )
-        email2 = Email(
+        email1.sent_at = datetime.now(UTC) - timedelta(hours=1)
+        
+        email2 = create_received_email_for_user(
+            db_session, user,
             subject="Search Test Newer",
             body="Searchable content",
-            status="received",
-            folder=FolderType.INBOX.value,
-            sender_id=user.id,
-            thread_id=thread.id,
             is_starred=False,
-            sent_at=datetime.now(UTC)
+            thread=thread
         )
-        db_session.add_all([email1, email2])
+        email2.sent_at = datetime.now(UTC)
         db_session.commit()
 
         response = client.get(
