@@ -578,15 +578,16 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     });
   }, [threadEmails, thread?.thread_id, moveToTrash, moveToInbox, setSnackbar, navigate, getBasePath]);
 
-  useEffect(() => {
-    if (hasRunOnceRef.current) return;
-
-    const unreadIds = threadEmails.filter((email) => !email.is_read).map((email) => email.id);
-    if (unreadIds.length) {
-      markRead(unreadIds, true);
-    }
-    hasRunOnceRef.current = true;
-  }, [threadEmails, markRead]);
+  // Mark as read is now handled in InboxViewInner component
+  // This useEffect was causing duplicate API calls
+  // useEffect(() => {
+  //   if (hasRunOnceRef.current) return;
+  //   const unreadIds = threadEmails.filter((email) => !email.is_read).map((email) => email.id);
+  //   if (unreadIds.length) {
+  //     markRead(unreadIds, true);
+  //   }
+  //   hasRunOnceRef.current = true;
+  // }, [threadEmails, markRead]);
 
   const handleMarkUnread = useCallback(() => {
     if (!threadEmails.length) return;

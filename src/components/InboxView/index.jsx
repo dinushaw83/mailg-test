@@ -187,7 +187,6 @@ export const EmailContent = ({
   label,
   showActionBar = true,
   isPreview = false,
-  markAsReadAfter = 3000,
   emails,
   normalizedEmails,
 }) => {
@@ -332,17 +331,18 @@ export const EmailContent = ({
     });
   }, [emails, notSpam, navigate, setSnackbar]);
 
+  // Track if we've already marked this thread as read
+  const markedAsReadRef = React.useRef(null);
+
   useEffect(() => {
-    if (!markAsReadAfter) return undefined;
-
-    const timeoutId = setTimeout(() => {
-      markRead([thread_id], true);
-    }, markAsReadAfter);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [markAsReadAfter, thread_id, markRead]);
+    // Only mark as read once per thread
+    if (markedAsReadRef.current === thread_id) return;
+    
+    // Update ref BEFORE calling markRead to prevent race conditions
+    markedAsReadRef.current = thread_id;
+    markRead([thread_id], true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [thread_id]); // Remove markRead from deps to prevent re-triggering
 
   if (!thread) {
     return (
@@ -457,7 +457,6 @@ export const EmailContent = ({
 const InboxView = () => {
   const { thread_id, folder, label } = useParams();
   const { loggedInUser } = useGlobalContext();
-  const { markRead } = useMailActions();
   const [shouldMarkUnreadEmailsAsRead, setShouldMarkUnreadEmailsAsRead] = useState(true);
 
   // Always fetch thread from API when thread_id exists
@@ -491,19 +490,7 @@ const InboxView = () => {
     return getThread(allEmails, { thread_id });
   }, [allEmails, thread_id]);
 
-  // Mark unread emails as read
-  const markUnreadEmailsAsRead = useCallback(
-    (messages) => {
-      // Get the unread emails ids
-      const unreadEmailsIds = messages.filter((email) => !email.is_read).map((email) => email.id);
-
-      // If there are unread emails, mark them as read
-      if (unreadEmailsIds.length > 0) {
-        markRead(unreadEmailsIds);
-      }
-    },
-    [markRead]
-  );
+  // Mark as read is now handled in InboxViewInner component
 
   // useEffect(() => {
   //   if (!shouldMarkUnreadEmailsAsRead) return;
@@ -570,8 +557,8 @@ const InboxView = () => {
 
         document.title = `${subject}${context} - ${loggedInUser.email} - MailG`;
 
-        // Mark unread emails in the email thread as read
-        markUnreadEmailsAsRead(messages);
+        // Mark as read is now handled in InboxView component (line 341)
+        // No need to call markUnreadEmailsAsRead here
       }
     }
 
@@ -582,7 +569,6 @@ const InboxView = () => {
     loggedInUser.email,
     folder,
     label,
-    markUnreadEmailsAsRead,
     shouldMarkUnreadEmailsAsRead,
   ]);
 
