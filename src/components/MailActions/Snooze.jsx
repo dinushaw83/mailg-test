@@ -482,14 +482,14 @@ export const SnoozePopover = ({ anchorEl, open, onClose, selectedIds, snooze }) 
           {/* <Divider sx={{ marginY: "6px" }} /> */}
 
           {shouldShowLaterToday && (
-          <ActionMenuItem
-            label="Later today"
-            rightText={formatTime(laterToday)}
-            onClick={() => {
-              handleSnoozeWithUndo(selectedIds, laterToday);
-              onClose();
-            }}
-          />
+            <ActionMenuItem
+              label="Later today"
+              rightText={formatTime(laterToday)}
+              onClick={() => {
+                handleSnoozeWithUndo(selectedIds, laterToday);
+                onClose();
+              }}
+            />
           )}
           <ActionMenuItem
             label="Tomorrow"
