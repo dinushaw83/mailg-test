@@ -714,11 +714,16 @@ def _compute_diff(
                 before_row = before_by_key[row_key]
                 after_row = after_by_key[row_key]
                 
-                # Find all changed fields
+                # Find all changed fields (exclude relation objects - they're nested dicts)
                 changes = {}
                 for key in set(before_row.keys()) | set(after_row.keys()):
                     before_val = before_row.get(key)
                     after_val = after_row.get(key)
+                    # Skip relation objects (nested dicts) and context fields
+                    if isinstance(before_val, dict) or isinstance(after_val, dict):
+                        continue
+                    if key.startswith("_"):  # Skip internal fields like _context
+                        continue
                     if before_val != after_val:
                         changes[key] = {
                             "before": before_val,
@@ -805,7 +810,6 @@ def _compute_diff(
             diff["tables_unchanged"].append(table_name)
     
     return diff
-
 
 @router.get("/db_changes", dependencies=[Depends(authorized())])
 def get_db_changes(
