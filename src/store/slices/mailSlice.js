@@ -578,6 +578,22 @@ export const bulkMoveToTrashThunk = createAsyncThunk(
 );
 
 /**
+ * BULK MUTATION THUNK: Move multiple emails to a folder
+ */
+export const bulkMoveToFolderThunk = createAsyncThunk(
+  "mail/bulkMoveToFolder",
+  async ({ emailIds, folder }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkMoveEmails(emailIds, folder);
+      return { emailIds, folder, response };
+    } catch (error) {
+      console.error("Failed to bulk move emails to folder:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk move to folder");
+    }
+  }
+);
+
+/**
  * BULK MUTATION THUNK: Permanently delete multiple emails
  */
 export const bulkDeleteEmailThunk = createAsyncThunk(
@@ -594,17 +610,17 @@ export const bulkDeleteEmailThunk = createAsyncThunk(
 );
 
 /**
- * BULK MUTATION THUNK: Archive multiple emails
+ * BULK MUTATION THUNK: Archive multiple threads
  */
 export const bulkArchiveEmailsThunk = createAsyncThunk(
   "mail/bulkArchiveEmails",
-  async ({ emailIds }, { rejectWithValue }) => {
+  async ({ threadIds }, { rejectWithValue }) => {
     try {
-      const response = await emailService.bulkArchiveEmails(emailIds);
-      return { emailIds, response };
+      const response = await emailService.bulkArchiveEmails(threadIds);
+      return { threadIds, response };
     } catch (error) {
-      console.error("Failed to bulk archive emails:", error);
-      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk archive emails");
+      console.error("Failed to bulk archive threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk archive threads");
     }
   }
 );

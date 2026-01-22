@@ -30,34 +30,49 @@ const Icon = ({
   marginRight = "10px",
   _ref,
 }) => {
+  const handleClick = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!disabled && onClick) {
+      onClick(e);
+    }
+  };
+
+  // Wrap in a span to capture clicks even when IconButton is disabled
+  // (disabled IconButton has pointer-events: none)
   return (
-    <Tooltip title={label} placement={placement}>
-      <StyledIconButton
-        size={size}
-        sx={{
-          width: 36,
-          height: 36,
-          borderRadius: "50%",
-          marginRight: marginRight,
-          ...style,
-        }}
-        ref={_ref}
-        onClick={onClick}
-        disabled={disabled}
-        shape={shape} // Custom prop used in styled()
-        style={style}
-      >
-        <span
-          className="material-symbols-outlined"
-          style={{
-            fontSize: 20,
-            color: "rgb(68, 68, 68)",
+    <span
+      onClick={handleClick}
+      style={{ display: "inline-flex", cursor: disabled ? "default" : "pointer" }}
+    >
+      <Tooltip title={disabled ? "" : label} placement={placement}>
+        <StyledIconButton
+          size={size}
+          sx={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            marginRight: marginRight,
+            pointerEvents: disabled ? "none" : "auto",
+            ...style,
           }}
+          ref={_ref}
+          disabled={disabled}
+          shape={shape} // Custom prop used in styled()
+          style={style}
         >
-          {name}
-        </span>
-      </StyledIconButton>
-    </Tooltip>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 20,
+              color: disabled ? "#b8b8b8" : "rgb(68, 68, 68)",
+            }}
+          >
+            {name}
+          </span>
+        </StyledIconButton>
+      </Tooltip>
+    </span>
   );
 };
 
