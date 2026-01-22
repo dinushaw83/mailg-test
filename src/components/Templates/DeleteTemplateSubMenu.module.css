@@ -6,7 +6,7 @@
 /* Paper */
 .paper {
   min-width: 200px;
-  max-width: 300px;
+  max-width: 400px;
   padding-top: 4px;
   padding-bottom: 4px;
   background-color: #fff;
@@ -44,6 +44,9 @@
   user-select: none;
   background-color: transparent;
   transition: background-color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .templateItem:hover {

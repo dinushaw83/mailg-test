@@ -52,6 +52,15 @@ export default function TemplateDropdown({ subject = "", content = "", onContent
     setHoveredSubmenuAnchor(null);
   };
 
+  // Helper function to check if content is blank
+  const isContentBlank = (htmlContent) => {
+    if (!htmlContent) return true;
+    // Strip HTML tags
+    const textContent = htmlContent.replace(/<[^>]*>/g, "");
+    // Remove whitespace and check if empty
+    return !textContent.trim();
+  };
+
   // Get default template name from subject or content
   const getDefaultTemplateName = () => {
     if (subject && subject.trim()) {
@@ -119,6 +128,16 @@ export default function TemplateDropdown({ subject = "", content = "", onContent
 
   // Handle save as new template
   const handleSaveAsNewTemplate = async (templateName) => {
+    // Validate that content is not blank
+    if (isContentBlank(content)) {
+      setSnackbar({
+        open: true,
+        message: "Cannot save template with empty content. Please add some content before saving.",
+        autoHideDuration: 4000,
+      });
+      return;
+    }
+
     try {
       await createTemplate({
         name: templateName,
@@ -152,6 +171,16 @@ export default function TemplateDropdown({ subject = "", content = "", onContent
   // Handle confirm overwrite
   const handleConfirmOverwrite = async () => {
     if (!selectedTemplateForOverwrite) return;
+
+    // Validate that content is not blank
+    if (isContentBlank(content)) {
+      setSnackbar({
+        open: true,
+        message: "Cannot save template with empty content. Please add some content before saving.",
+        autoHideDuration: 4000,
+      });
+      return;
+    }
 
     try {
       await updateTemplate(selectedTemplateForOverwrite.id, {
@@ -289,6 +318,8 @@ export default function TemplateDropdown({ subject = "", content = "", onContent
               <div className={styles.templateList}>
                 {templates.map((template) => {
                   const isLoading = loadingTemplateId === template.id;
+                  const displayName =
+                    template.name.length > 30 ? `${template.name.substring(0, 30)}...` : template.name;
                   return (
                     <div
                       key={template.id}
@@ -299,8 +330,9 @@ export default function TemplateDropdown({ subject = "", content = "", onContent
                         }
                       }}
                       className={`${styles.templateItem} ${isLoading ? styles.templateItemLoading : ""}`}
+                      title={template.name}
                     >
-                      {template.name}
+                      {displayName}
                     </div>
                   );
                 })}

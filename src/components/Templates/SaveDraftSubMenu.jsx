@@ -32,11 +32,19 @@ export default function SaveDraftSubMenu({
           <div className={styles.emptyState}>No templates available</div>
         ) : (
           <div className={styles.templateList}>
-            {templates.map((template) => (
-              <div key={template.id} onClick={() => onTemplateSelect(template)} className={styles.templateItem}>
-                {template.name}
-              </div>
-            ))}
+            {templates.map((template) => {
+              const displayName = template.name.length > 30 ? `${template.name.substring(0, 30)}...` : template.name;
+              return (
+                <div
+                  key={template.id}
+                  onClick={() => onTemplateSelect(template)}
+                  className={styles.templateItem}
+                  title={template.name}
+                >
+                  {displayName}
+                </div>
+              );
+            })}
           </div>
         )}
         <div className={styles.separator} />
