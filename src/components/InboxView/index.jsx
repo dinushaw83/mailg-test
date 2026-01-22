@@ -302,7 +302,7 @@ export const EmailContent = ({
   const messages = messageIds.map((id) => messagesById[id]);
   
   // Get the last message whose sender_email is not equal to the logged in user's email
-  const lastMessage = useMemo(() => {
+  const lastProperEmail = useMemo(() => {
     // If loggedInUser or email is not available, fall back to original behavior
     if (!loggedInUser || !loggedInUser.email) {
       return messages[messages.length - 1];
@@ -320,10 +320,11 @@ export const EmailContent = ({
       : messages[messages.length - 1];
   }, [messages, loggedInUser]);
   
+  const lastMessage = messages[messages.length - 1];
   const isLastDraft = lastMessage?.folder === "drafts";
   const isLastScheduled = hasLabel(lastMessage?.labels, "Scheduled");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
-  const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
+  // const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
 
   return (
