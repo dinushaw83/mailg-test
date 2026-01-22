@@ -35,7 +35,6 @@ export default function DeleteTemplateSubMenu({
               <div
                 key={template.id}
                 onClick={() => {
-                  debugger;
                   onTemplateSelect(template);
                 }}
                 className={styles.templateItem}
