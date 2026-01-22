@@ -346,7 +346,7 @@ jobs:
         run: |
           echo "VM_HOST: ${{ secrets.GCP_VM_HOST }} new"  # This will be masked if it's a secret
           mkdir -p ~/.ssh          
-          ssh-keyscan -H aws-mailg-prod >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs
         id: images
