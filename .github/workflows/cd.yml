@@ -344,6 +344,7 @@ jobs:
       - name: Configure SSH known hosts
         run: |
           mkdir -p ~/.ssh
+          echo "VM_HOST: ${{ env.VM_HOST }}"  # This will be masked if it's a secret
           ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs
