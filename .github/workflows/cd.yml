@@ -305,8 +305,8 @@ jobs:
       frontend_image: ${{ steps.images.outputs.frontend_image }}
       environment: ${{ github.event.inputs.environment || 'staging' }}
       deployed: ${{ steps.health.outputs.health_status == 'success' }}
-    environment:
-      name: ${{ github.event.inputs.environment || 'staging' }}
+    # environment:
+    #   name: ${{ github.event.inputs.environment || 'staging' }}
     
     steps:
       - name: Checkout code
