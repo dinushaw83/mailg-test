@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import React, { useState } from "react";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 
-const Attachments = ({ attachments, setAttachments }) => {
+const Attachments = ({ attachments, setAttachments, onRemoveAttachment }) => {
   const [activeAttachment, setActiveAttachment] = useState();
   const { db } = useGlobalContext();
 
@@ -22,10 +22,14 @@ const Attachments = ({ attachments, setAttachments }) => {
 
   const handleRemoveAttachment = async (e, attachment) => {
     e.stopPropagation();
-    setAttachments((prevAttachments) => prevAttachments.filter((a) => a.name !== attachment.name));
+    setAttachments((prevAttachments) => prevAttachments.filter((a) => a.id !== attachment.id));
     setActiveAttachment(null);
 
     await db.delete("attachments", attachment.id);
+
+    if (onRemoveAttachment) {
+      onRemoveAttachment(attachment);
+    }
   };
 
   return (

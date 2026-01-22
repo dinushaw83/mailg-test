@@ -27,6 +27,7 @@ import {
   moveToTrashThunk,
   moveToSpamThunk,
 } from "../slices/mailSlice";
+import { createAttachmentThunk, deleteAttachmentThunk } from "../slices/attachmentSlice";
 import { logout, setAuth } from "../slices/userSlice";
 
 import { queryClient } from "../../lib/query-client";
@@ -364,6 +365,30 @@ export function registerReactQueryListeners(listenerMiddleware) {
     effect: async () => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
+    },
+  });
+
+  // Attachment listeners
+  listenerMiddleware.startListening({
+    actionCreator: createAttachmentThunk.fulfilled,
+    effect: async (action) => {
+      const emailId = action.payload?.emailId;
+      if (emailId) {
+        queryClient.invalidateQueries({ queryKey: ["attachments", emailId] });
+      }
+    },
+  });
+
+  listenerMiddleware.startListening({
+    actionCreator: deleteAttachmentThunk.fulfilled,
+    effect: async (action) => {
+      const emailId = action.payload?.emailId;
+      if (emailId) {
+        queryClient.invalidateQueries({ queryKey: ["attachments", emailId] });
+      } else {
+        // Fallback if no emailId provided (though we try to provide it)
+        queryClient.invalidateQueries({ queryKey: ["attachments"] });
+      }
     },
   });
 

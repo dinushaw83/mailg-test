@@ -9,6 +9,7 @@ import MoreActions from "./MoreActions";
 import styled from "@emotion/styled";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import useMailActions from "../../hooks/useMailActions";
+import { useSendEmail } from "../../hooks/useSendEmail";
 
 const ProfileImageContainer = styled.div`
   width: 5rem;
@@ -357,6 +358,13 @@ const TopBar = ({ timestamp, senderName, senderEmail, recipients = [], email, on
 const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
   const { setEmails, setSnackbar } = useGlobalContext();
 
+  const { handleSnackbarUndo } = useSendEmail();
+
+  function formatTime(time) {
+    const [h, m] = time.split(":");
+    return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+  }
+
   // Format the scheduled date and time
   const formatScheduledDateTime = (dateStr, timeStr) => {
     const date = new Date(dateStr);
@@ -369,36 +377,28 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
     };
     const formattedDate = date.toLocaleDateString("en-US", dateOptions);
 
-    // Simply use the time string as-is
-    const formattedTime = timeStr;
+    date.getHours(); // 10 (in UTC)
+    date.getMinutes(); // 1
+    date.getSeconds(); // 0
 
-    return `${formattedDate}, ${formattedTime}`;
+    // Get formatted time strings
+    date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }); // "10:01 AM"
+
+    // Simply use the time string as-is
+    const formattedTime = `${date.getHours()}:${date.getMinutes()}`;
+
+    return `${formattedDate}, ${formatTime(formattedTime)}`;
   };
 
   const scheduledDateTime = formatScheduledDateTime(scheduledDate, scheduledTime);
 
   // Handle cancel send - convert scheduled email back to draft
-  const handleCancelSend = () => {
-    setEmails((prevEmails) => {
-      return prevEmails.map((email) => {
-        if (email.id.toString() === emailId) {
-          return {
-            ...email,
-            labels: ["Drafts"],
-            labelColor: "#e1e3e1",
-            timestamp: new Date().toISOString(),
-            timeDisplay: new Date().toLocaleTimeString("en-US", {
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }),
-            scheduledDate: undefined,
-            scheduledTime: undefined,
-          };
-        }
-        return email;
-      });
-    });
+  const handleCancelSend = async () => {
+    console.log("clicked");
+    await handleSnackbarUndo(emailId);
 
     // Show confirmation message
     setSnackbar({

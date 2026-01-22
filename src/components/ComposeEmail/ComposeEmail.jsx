@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { fetchEmailByIdThunk, setEmailsForCategory } from "../../store/slices/mailSlice";
+import { createAttachmentThunk } from "../../store/slices/attachmentSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@mui/material";
@@ -91,18 +92,19 @@ export default function ComposeEmail({ composeWindow }) {
   const currentDraftId = composeWindow?.draftId;
 
   // Draft management hook
-  const { saveDraftManually, deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } = useDraftManagement({
-    to,
-    cc,
-    bcc,
-    subject,
-    content,
-    currentDraftId,
-    parentEmail: originalEmail,
-    replyType: composeReplyType,
-    composeWindowId: composeWindow?.id,
-    setComposeWindows,
-  });
+  const { saveDraftManually, saveToBackendNow, deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } =
+    useDraftManagement({
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      currentDraftId,
+      parentEmail: originalEmail,
+      replyType: composeReplyType,
+      composeWindowId: composeWindow?.id,
+      setComposeWindows,
+    });
 
   // Determine which signature to use
   const defaultSignatureId = useMemo(() => {
@@ -419,8 +421,50 @@ export default function ComposeEmail({ composeWindow }) {
     handleSnackbarUndoDelete(addNewComposeWindow);
   };
 
+  // Handle adding attachments
+  const handleAddAttachment = async (file) => {
+    try {
+      let activeDraftId = draftId;
+
+      // If we don't have a draft ID, or it's a temp ID, we need to save to backend first
+      if (!draftId || !isUUID(draftId.toString())) {
+        // Force save to backend to get a real UUID
+        activeDraftId = await saveToBackendNow();
+      }
+
+      if (!activeDraftId) {
+        console.error("Failed to get draft ID for attachment");
+        setSnackbar({
+          open: true,
+          message: "Failed to save draft. Cannot attach file.",
+          severity: "error",
+        });
+        return;
+      }
+
+      // Create attachment payload
+      const attachmentData = {
+        filename: file.name,
+        content_type: file.type || "application/octet-stream",
+        size_bytes: file.size,
+      };
+
+      // Dispatch thunk
+      const newAttachment = await dispatch(createAttachmentThunk({ emailId: activeDraftId, attachmentData })).unwrap();
+      return newAttachment;
+    } catch (error) {
+      console.error("Error adding attachment:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to upload attachment.",
+        severity: "error",
+      });
+      throw error; // Propagate so caller knows it failed
+    }
+  };
+
   const handleSchedule = (scheduleData) => {
-    handleScheduleEmail({
+    handleSendEmail({
       to,
       cc,
       bcc,
@@ -432,7 +476,7 @@ export default function ComposeEmail({ composeWindow }) {
       isDraft: isDraft,
       scheduledDate: scheduleData.scheduledDate,
       scheduledTime: scheduleData.scheduledTime,
-      scheduleOption: scheduleData,
+      scheduleOption: scheduleData.scheduleOption || scheduleData,
     });
   };
 
@@ -590,6 +634,7 @@ export default function ComposeEmail({ composeWindow }) {
               onSend={handleSend}
               onDelete={handleDelete}
               onSchedule={handleSchedule}
+              onAddAttachment={handleAddAttachment}
               textEditorMinHeight={composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "420px"}
               textEditorMaxHeight={
                 composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "calc(100vh - 340px)"

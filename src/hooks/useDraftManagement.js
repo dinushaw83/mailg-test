@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { store } from "../store";
 import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { createAttachmentThunk, deleteAttachmentThunk } from "../store/slices/attachmentSlice";
 
 // Helper to check if a string is a UUID
 const isUUID = (str) => {
@@ -750,6 +751,34 @@ export const useDraftManagement = ({
     }
   }, [draftId, dispatch]);
 
+  const saveAttachment = useCallback(
+    async (attachmentData) => {
+      if (draftId) {
+        const data = await dispatch(createAttachmentThunk({ emailId: draftId, attachmentData })).unwrap();
+        return { error: null, data };
+      } else {
+        return { error: "No draft found", data: null };
+      }
+    },
+    [dispatch, createAttachmentThunk, draftId]
+  );
+
+  const removeAttachment = useCallback(
+    async ({ attachmentId }) => {
+      if (draftId && attachmentId) {
+        try {
+          await dispatch(deleteAttachmentThunk({ attachmentId, emailId: draftId })).unwrap();
+          return { error: null };
+        } catch (error) {
+          console.error("Failed to delete attachment:", error);
+          return { error: error.message || "Failed to delete attachment" };
+        }
+      }
+      return { error: "Missing draft ID or attachment ID" };
+    },
+    [dispatch, deleteAttachmentThunk, draftId]
+  );
+
   return {
     saveDraftManually,
     deleteDraft,
@@ -757,5 +786,7 @@ export const useDraftManagement = ({
     draftId,
     draftSaved,
     hasDraftContent,
+    saveAttachment,
+    removeAttachment,
   };
 };

@@ -14,8 +14,8 @@ import replyIcon from "../../icons/reply.png";
 import { useDispatch } from "react-redux";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 import { useSendEmail } from "../../hooks/useSendEmail";
+import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 
 const ReplyContainer = forwardRef(
   ({ email, draft, replyType, currentDraftId, onClose, onUndoDelete, replyToEmail }, ref) => {
@@ -35,6 +35,13 @@ const ReplyContainer = forwardRef(
 
     // Use clicked email if provided, else fallback to email prop (old flow)
     const targetEmail = replyToEmail || email;
+
+    const {
+      handleSchedule: handleScheduleEmail,
+      showErrorModal: showScheduleErrorModal,
+      errorMessage: scheduleErrorMessage,
+      handleErrorModalClose: handleScheduleErrorModalClose,
+    } = useScheduleEmail(replyType, targetEmail);
 
     const calculateRecipients = (type) => {
       const calculatedRecipients = {
@@ -155,16 +162,17 @@ ${targetEmail.body}
     }, [recipients]);
 
     // Draft management hook
-    const { deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } = useDraftManagement({
-      to: recipientsForDraft.to,
-      cc: recipientsForDraft.cc,
-      bcc: recipientsForDraft.bcc,
-      subject,
-      content,
-      currentDraftId,
-      parentEmail: targetEmail,
-      replyType: selectedReplyOption,
-    });
+    const { deleteDraft, isDraft, draftId, draftSaved, hasDraftContent, saveAttachment, removeAttachment } =
+      useDraftManagement({
+        to: recipientsForDraft.to,
+        cc: recipientsForDraft.cc,
+        bcc: recipientsForDraft.bcc,
+        subject,
+        content,
+        currentDraftId,
+        parentEmail: targetEmail,
+        replyType: selectedReplyOption,
+      });
 
     // Track if draft has been initially loaded to prevent reset on updates
     const hasLoadedDraftRef = useRef(false);
@@ -319,12 +327,7 @@ ${targetEmail.body}
       lastDeletedDraftRef,
     } = useSendEmail(selectedReplyOption, targetEmail);
 
-    const {
-      handleSchedule: handleScheduleEmail,
-      showErrorModal: showScheduleErrorModal,
-      errorMessage: scheduleErrorMessage,
-      handleErrorModalClose: handleScheduleErrorModalClose,
-    } = useScheduleEmail(selectedReplyOption, targetEmail);
+    /* Removed useScheduleEmail hook */
 
     const handleSend = ({ attachments = [], embeddedImages = [], processedHtml }) => {
       // Use processed HTML if available, otherwise use the current content
@@ -357,7 +360,7 @@ ${targetEmail.body}
     };
 
     const handleSchedule = (scheduleData) => {
-      handleScheduleEmail({
+      handleSendEmail({
         to: recipientsForDraft.to,
         cc: recipientsForDraft.cc,
         bcc: recipientsForDraft.bcc,
@@ -376,8 +379,38 @@ ${targetEmail.body}
         isDraft: isDraft,
         scheduledDate: scheduleData.scheduledDate,
         scheduledTime: scheduleData.scheduledTime,
-        scheduleOption: scheduleData,
+        scheduleOption: scheduleData.scheduleOption || scheduleData,
       });
+    };
+
+    const handleAddAttachment = async (file) => {
+      try {
+        const attachmentData = {
+          filename: file.name,
+          content_type: file.type || "application/octet-stream",
+          size_bytes: file.size,
+        };
+
+        const { error, data } = await saveAttachment(attachmentData);
+        if (error) {
+          console.error("Failed to get draft ID for attachment");
+          setSnackbar({
+            open: true,
+            message: "Failed to save draft. Cannot attach file.",
+            severity: "error",
+          });
+          return;
+        }
+        return data?.attachment;
+      } catch (error) {
+        console.error("Error adding attachment:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to upload attachment.",
+          severity: "error",
+        });
+        throw error;
+      }
     };
 
     const handleDelete = async () => {
@@ -568,9 +601,22 @@ ${targetEmail.body}
                 onSend={handleSend}
                 onDelete={handleDelete}
                 onSchedule={handleSchedule}
+                onAddAttachment={handleAddAttachment}
+                onRemoveAttachment={async (attachment) => {
+                  try {
+                    await removeAttachment({ attachmentId: attachment.id });
+                  } catch (error) {
+                    console.error("Failed to remove attachment:", error);
+                    setSnackbar({
+                      open: true,
+                      message: "Failed to remove attachment.",
+                      severity: "error",
+                    });
+                  }
+                }}
                 textEditorMinHeight="90px"
                 textEditorMaxHeight="400px"
-                messageId={targetEmail.id}
+                messageId={targetEmail?.id}
               />
             </div>
           </div>

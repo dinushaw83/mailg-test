@@ -66,6 +66,8 @@ export default function Editor({
   messageId,
   subject = "",
   onSubjectChange,
+  onAddAttachment,
+  onRemoveAttachment,
 }) {
   const extensions = useExtensions({
     placeholder: "",
@@ -592,6 +594,36 @@ export default function Editor({
 
       db.put("attachments", { id, file });
 
+      // Trigger backend upload if callback provided and file is not blocked
+      if (onAddAttachment && !isBlocked) {
+        onAddAttachment(file)
+          .then((backendAttachment) => {
+            if (backendAttachment) {
+              setAttachments((prev) => [...prev, { ...metadata, id: backendAttachment.id || id }]);
+
+              // // Update DB entry with real ID so it can be deleted later
+              // if (backendAttachment.id && backendAttachment.id !== id) {
+              //   db.delete("attachments", id);
+              //   db.put("attachments", { id: backendAttachment.id, file });
+              // }
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to upload attachment to backend:", err);
+            // Remove the temp file from DB since upload failed
+            db.delete("attachments", id);
+            // Optionally remove from valid files or show error state in UI
+            // For now, we rely on the snackbar in the parent
+            setSnackbar({
+              open: true,
+              message: "Failed to upload attachment.",
+              severity: "error",
+            });
+          });
+      } else if (!isBlocked) {
+        setAttachments((prev) => [...prev, metadata]);
+      }
+
       // Show dark snackbar when any file is blocked
       if (isBlocked) {
         setSnackbar({
@@ -601,11 +633,6 @@ export default function Editor({
           autoHideDuration: 6000,
         });
       }
-    }
-
-    // Only add regular files if there are any
-    if (newFiles.length > 0) {
-      setAttachments((prevAttachments) => [...prevAttachments, ...newFiles]);
     }
 
     // Clear the file input at the end
@@ -639,8 +666,8 @@ export default function Editor({
         // Add to attachments array
         setAttachments((prevAttachments) => [...prevAttachments, metadata]);
 
-        // Also store in IndexedDB
-        db.put("attachments", { id, file: largeFileModal.file });
+        // // Also store in IndexedDB
+        // db.put("attachments", { id, file: largeFileModal.file });
 
         setSnackbar({
           open: true,
@@ -888,7 +915,6 @@ export default function Editor({
     // Insert new signature
     editor.chain().focus().insertContentAt(insertAt, toInsert).run();
   };
-
   return (
     <>
       <RichTextEditor
@@ -919,7 +945,11 @@ export default function Editor({
               {showMenuBar && <div style={{ width: "100%", height: "35px" }}></div>}
               {/* Measure attachments height to shrink editor accordingly */}
               <div ref={attachmentsContainerRef} style={{ position: "relative" }}>
-                <Attachments attachments={attachments} setAttachments={setAttachments} />
+                <Attachments
+                  attachments={attachments}
+                  setAttachments={setAttachments}
+                  onRemoveAttachment={onRemoveAttachment}
+                />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", position: "relative", width: "100%" }}>
