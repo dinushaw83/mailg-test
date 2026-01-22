@@ -296,6 +296,7 @@ jobs:
   deploy:
     name: 🚀 Deploy to GCP
     runs-on: ubuntu-latest
+    environment: production
     timeout-minutes: 20
     needs: [build-backend, build-frontend]
     if: always() && needs.build-backend.result == 'success' && needs.build-frontend.result == 'success'
@@ -343,8 +344,8 @@ jobs:
 
       - name: Configure SSH known hosts
         run: |
-          mkdir -p ~/.ssh
-          echo "VM_HOST: ${{ env.VM_HOST }}"  # This will be masked if it's a secret
+          echo "VM_HOST: ${{ env.VM_HOST }} new"  # This will be masked if it's a secret
+          mkdir -p ~/.ssh          
           ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs

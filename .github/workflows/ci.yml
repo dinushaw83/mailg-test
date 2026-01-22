@@ -10,8 +10,6 @@ name: CI - Quality Gate
 on:
   push:
     branches:
-      - 'feature/**'
-      - 'feature/*'
       - 'bugfix/**'
       - 'bugfix/*'
       - 'hotfix/**'
