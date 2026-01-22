@@ -510,25 +510,39 @@ const emailService = {
   },
 
   /**
-   * Bulk archive emails
-   * @param {Array<string>} emailIds - Array of email IDs
+   * Bulk move threads to a folder (moves all emails in the threads)
+   * @param {Array<string>} threadIds - Array of thread IDs
+   * @param {string} folder - Folder name (inbox, trash, spam, etc.)
    * @returns {Promise<Object>} Response data
    */
-  bulkArchiveEmails: async (emailIds) => {
-    const response = await apiClient.post("/v1/bulk/archive", {
-      email_ids: emailIds,
+  bulkMoveThreads: async (threadIds, folder) => {
+    const response = await apiClient.post("/v1/bulk/move", {
+      thread_ids: threadIds,
+      folder,
     });
     return response?.data?.data ?? response?.data ?? {};
   },
 
   /**
-   * Bulk unarchive emails
-   * @param {Array<string>} emailIds - Array of email IDs
+   * Bulk archive threads
+   * @param {Array<string>} threadIds - Array of thread IDs
    * @returns {Promise<Object>} Response data
    */
-  bulkUnarchiveEmails: async (emailIds) => {
+  bulkArchiveEmails: async (threadIds) => {
+    const response = await apiClient.post("/v1/bulk/archive", {
+      thread_ids: threadIds,
+    });
+    return response?.data?.data ?? response?.data ?? {};
+  },
+
+  /**
+   * Bulk unarchive threads
+   * @param {Array<string>} threadIds - Array of thread IDs
+   * @returns {Promise<Object>} Response data
+   */
+  bulkUnarchiveEmails: async (threadIds) => {
     const response = await apiClient.post("/v1/bulk/unarchive", {
-      email_ids: emailIds,
+      thread_ids: threadIds,
     });
     return response?.data?.data ?? response?.data ?? {};
   },

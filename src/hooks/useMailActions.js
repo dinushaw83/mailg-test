@@ -18,6 +18,7 @@ import {
   bulkMoveToSpamThunk,
   bulkMoveFromSpamThunk,
   bulkMoveToTrashThunk,
+  bulkMoveToFolderThunk,
   bulkDeleteEmailThunk,
   bulkArchiveEmailsThunk,
   bulkSnoozeThreadsThunk,
@@ -68,11 +69,15 @@ const withUndo = (ids, setEmails, operation) => {
 
   operation(match);
 
-  return () => {
+  const undo = () => {
     setEmails((prev) =>
       prev.map((m) => (match(m) && originalStates.has(m.id) ? { ...m, labels: originalStates.get(m.id).labels } : m))
     );
   };
+
+  undo.originalStates = originalStates;
+
+  return undo;
 };
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -321,7 +326,33 @@ export default function useMailActions() {
   );
 
   const moveToInbox = useCallback(
-    (ids) => {
+    (ids, { resolvedEmailIds, resolvedThreadIds } = {}) => {
+      // Use pre-resolved IDs if provided, otherwise find from emails context
+      let emailIds = resolvedEmailIds;
+      let threadIds = resolvedThreadIds || [];
+
+      if (!emailIds || emailIds.length === 0) {
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+        emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+      }
+
+      // Use folder move API (same as bulk action)
+      if (emailIds.length > 0) {
+        dispatch(bulkMoveToFolderThunk({ emailIds, folder: "inbox" }))
+          .then(() => {
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
+          })
+          .catch((error) => {
+            console.error("Failed to move to inbox:", error);
+          });
+      }
+
+      const undoEmailIds = emailIds ? [...emailIds] : [];
+      const undoThreadIds = threadIds.length ? [...threadIds] : [];
+
+      // Optimistic update
       const undo = withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet, email) => {
           if (labelSet.has("Muted")) {
@@ -333,32 +364,53 @@ export default function useMailActions() {
 
           removeSystemLabels(labelSet, labels, ["Inbox"]);
           labelSet.delete("Muted");
+          labelSet.delete("Trash");
+          labelSet.delete("Spam");
           labelSet.add("Inbox");
         });
       });
 
       return () => {
+        // Revert optimistic update locally
         undo();
         setSoftRemovedLabels((prev) => {
           const updated = { ...prev };
           ids.forEach((id) => delete updated[id]);
           return updated;
         });
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveToTrashThunk({ emailIds: targetEmailIds }))
+            .then(() => {
+              invalidateEmailCaches(undoThreadIds.length ? undoThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to undo move to inbox:", error);
+            });
+        }
       };
     },
-    [updateByIds, setEmails, labels, setSoftRemovedLabels]
+    [updateByIds, setEmails, labels, setSoftRemovedLabels, emails, dispatch, invalidateEmailCaches]
   );
 
   const archive = useCallback(
     (ids) => {
-      // Extract email IDs for backend sync
+      // Extract thread IDs for backend sync
       const match = makeMatch(ids);
-      const emailIds = emails.filter(match).map((email) => email.id);
+      const threadIds = [
+        ...new Set(
+          emails
+            .filter(match)
+            .map((email) => email.thread_id)
+            .filter(Boolean)
+        ),
+      ];
 
-      // Call bulk backend API
-      if (emailIds.length > 0) {
-        dispatch(bulkArchiveEmailsThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk archive emails:", error);
+      // Call bulk backend API with thread IDs
+      if (threadIds.length > 0) {
+        dispatch(bulkArchiveEmailsThunk({ threadIds })).catch((error) => {
+          console.error("Failed to bulk archive threads:", error);
         });
       }
 
@@ -372,7 +424,7 @@ export default function useMailActions() {
   const deleteAllSpam = useCallback(() => {
     // fully delete all spam emails
     setEmails((prev) => prev.filter((m) => !m.labels.includes("Spam")));
-  }, [updateByIds]);
+  }, [setEmails]);
 
   const moveToSpam = useCallback(
     (ids) => {
@@ -386,6 +438,7 @@ export default function useMailActions() {
       const matchingEmails = emails.filter(match);
 
       emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
 
       if (emailIds.length) {
         // Successfully extracted email IDs from matching emails
@@ -394,6 +447,9 @@ export default function useMailActions() {
       } else {
         console.warn("moveToSpam: could not resolve email IDs for selection", normalizedIds);
       }
+
+      const undoEmailIds = emailIds.length ? [...emailIds] : ids.filter(Boolean);
+      const undoThreadIds = threadIds.length ? [...threadIds] : [];
 
       // Optimistically update React Query cache
       updateQueryCache(ids, (email) => {
@@ -405,90 +461,190 @@ export default function useMailActions() {
       });
 
       // Backward compatibility: update local state
-      const undo = withUndo(ids, setEmails, () => {
+      let revertLocalState = withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
           removeSystemLabels(labelSet, labels, ["Spam"]);
           labelSet.add("Spam");
         });
       });
+      const originalStates = revertLocalState.originalStates || new Map();
+      let hasRestored = false;
+      let actionFailed = false;
+
+      const restoreOriginalState = () => {
+        if (hasRestored) return;
+
+        updateQueryCache(ids, (email) => {
+          const original = originalStates.get(email.id);
+          if (original) {
+            return { ...email, labels: [...(original.labels || [])] };
+          }
+          const labelSet = new Set(email.labels || []);
+          labelSet.delete("Spam");
+          return { ...email, labels: [...labelSet] };
+        });
+
+        if (revertLocalState) {
+          revertLocalState();
+          revertLocalState = null;
+        }
+
+        hasRestored = true;
+      };
 
       // Call bulk backend API with all email IDs at once
       if (emailIds && emailIds.length > 0) {
         dispatch(bulkMoveToSpamThunk({ emailIds }))
           .unwrap()
           .then(() => {
-            // Successfully moved emails to spam
+            // Invalidate caches after successful spam move
+            invalidateEmailCaches(threadIds);
           })
           .catch((error) => {
             console.error("Failed to bulk move emails to spam:", error);
-            // Revert optimistic update on error
-            updateQueryCache(ids, (email) => {
-              const updatedLabels = [...(email.labels || [])];
-              const labelSet = new Set(updatedLabels);
-              labelSet.delete("Spam");
-              return { ...email, labels: [...labelSet] };
-            });
+            actionFailed = true;
+            restoreOriginalState();
           });
       } else {
         console.warn("moveToSpam: No email IDs to process, skipping API call");
+        actionFailed = true;
+        restoreOriginalState();
       }
 
-      return undo;
+      return () => {
+        if (actionFailed) return;
+
+        restoreOriginalState();
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        const targetThreadIds = undoThreadIds.length ? undoThreadIds : [];
+
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveFromSpamThunk({ emailIds: targetEmailIds }))
+            .unwrap()
+            .then(() => {
+              invalidateEmailCaches(targetThreadIds.length ? targetThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to restore from spam:", error);
+            });
+        }
+      };
     },
-    [updateByIds, setEmails, labels, dispatch, emails, updateQueryCache]
+    [updateByIds, setEmails, labels, dispatch, emails, updateQueryCache, invalidateEmailCaches]
   );
 
   const notSpam = useCallback(
     (ids) => {
-      // Extract email IDs for backend sync
+      // Extract email IDs and thread IDs for backend sync
       const match = makeMatch(ids);
-      const emailIds = emails.filter(match).map((email) => email.id);
+      const matchingEmails = emails.filter(match);
+      let emailIds = matchingEmails.map((email) => email.id);
+      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+
+      // If no matching emails found, check if ids are already UUIDs (e.g., from undo action)
+      if (emailIds.length === 0) {
+        const normalizedIds = ids.map((value) => String(value || "").trim()).filter(Boolean);
+        const uuidPattern = /^[0-9a-fA-F-]{32,}$/;
+        if (normalizedIds.every((id) => uuidPattern.test(id))) {
+          emailIds = normalizedIds;
+        }
+      }
+
+      const undoEmailIds = emailIds.length ? [...emailIds] : ids.filter(Boolean);
+      const undoThreadIds = threadIds.length ? [...threadIds] : [];
+
+      let revertLocalState = withUndo(ids, setEmails, () => {
+        updateByIds(ids, (labels) => {
+          labels.delete("Spam");
+          labels.add("Inbox");
+        });
+      });
+      const originalStates = revertLocalState.originalStates || new Map();
+      let hasRestored = false;
+      let actionFailed = false;
+
+      const restoreSpamState = () => {
+        if (hasRestored) return;
+
+        updateQueryCache(ids, (email) => {
+          const original = originalStates.get(email.id);
+          if (original) {
+            return { ...email, labels: [...(original.labels || [])] };
+          }
+          const labelSet = new Set(email.labels || []);
+          labelSet.add("Spam");
+          labelSet.delete("Inbox");
+          return { ...email, labels: [...labelSet] };
+        });
+
+        if (revertLocalState) {
+          revertLocalState();
+          revertLocalState = null;
+        }
+
+        hasRestored = true;
+      };
 
       // Call bulk backend API FIRST
       if (emailIds.length > 0) {
         dispatch(bulkMoveFromSpamThunk({ emailIds }))
           .unwrap()
           .then(() => {
-            // Successfully removed spam from emails
+            // Invalidate caches after successful unspam
+            invalidateEmailCaches(threadIds);
           })
           .catch((error) => {
             console.error("Failed to bulk remove spam from emails:", error);
-            // Revert optimistic update on error
-            updateQueryCache(ids, (email) => {
-              const updatedLabels = [...(email.labels || [])];
-              const labelSet = new Set(updatedLabels);
-              labelSet.add("Spam");
-              labelSet.delete("Inbox");
-              return { ...email, labels: [...labelSet] };
-            });
+            actionFailed = true;
+            restoreSpamState();
           });
+      } else {
+        console.warn("notSpam: No email IDs to process, skipping API call");
+        actionFailed = true;
+        restoreSpamState();
       }
 
-      // Optimistically update React Query cache
-      updateQueryCache(ids, (email) => {
-        const updatedLabels = [...(email.labels || [])];
-        const labelSet = new Set(updatedLabels);
-        labelSet.delete("Spam");
-        labelSet.add("Inbox");
-        return { ...email, labels: [...labelSet] };
-      });
+      if (!actionFailed) {
+        // Optimistically update React Query cache
+        updateQueryCache(ids, (email) => {
+          const updatedLabels = [...(email.labels || [])];
+          const labelSet = new Set(updatedLabels);
+          labelSet.delete("Spam");
+          labelSet.add("Inbox");
+          return { ...email, labels: [...labelSet] };
+        });
+      }
 
-      // Backward compatibility: update local state
-      const undo = updateByIds(ids, (labels) => {
-        labels.delete("Spam");
-        labels.add("Inbox");
-      });
+      return () => {
+        if (actionFailed) return;
 
-      return undo;
+        restoreSpamState();
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        const targetThreadIds = undoThreadIds.length ? undoThreadIds : [];
+
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveToSpamThunk({ emailIds: targetEmailIds }))
+            .unwrap()
+            .then(() => {
+              invalidateEmailCaches(targetThreadIds.length ? targetThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to undo spam removal:", error);
+            });
+        }
+      };
     },
-    [updateByIds, emails, dispatch, updateQueryCache]
+    [updateByIds, emails, dispatch, updateQueryCache, invalidateEmailCaches, setEmails]
   );
 
   const moveToTrash = useCallback(
     (ids) => {
       // If ids are already email UUIDs (from ActionBar), use them directly
       // Otherwise, find matching emails by thread ID or other keys
-      let emailIds;
+      let emailIds = [];
+      let threadIds = [];
 
       // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
       const firstId = String(ids[0] || "");
@@ -496,38 +652,95 @@ export default function useMailActions() {
 
       if (isUUID) {
         // Already email IDs, use directly
-        emailIds = ids;
+        emailIds = ids.filter(Boolean);
+        // Still need to find thread IDs for cache invalidation
+        const matchingEmails = emails.filter((email) => emailIds.includes(email.id));
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
       } else {
         // Find matching emails by thread/message IDs
         const match = makeMatch(ids);
         const matchingEmails = emails.filter(match);
-        emailIds = matchingEmails.map((email) => email.id);
+        emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
       }
+
+      const undoEmailIds = [...emailIds];
+      const undoThreadIds = [...threadIds];
+
+      // Optimistically update local state
+      updateByIds(ids, (labelSet) => {
+        removeSystemLabels(labelSet, labels, ["Trash"]);
+        labelSet.add("Trash");
+      });
 
       // Call bulk backend API with all email IDs at once
       if (emailIds.length > 0) {
-        dispatch(bulkMoveToTrashThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk move emails to trash:", error);
-        });
+        dispatch(bulkMoveToTrashThunk({ emailIds }))
+          .then(() => {
+            // Invalidate caches after successful trash move
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
+          })
+          .catch((error) => {
+            console.error("Failed to bulk move emails to trash:", error);
+            // Revert optimistic update on error
+            updateByIds(ids, (labelSet) => {
+              labelSet.delete("Trash");
+              labelSet.add("Inbox");
+            });
+          });
       }
 
-      return withUndo(ids, setEmails, () => {
+      // Return proper undo function that calls backend API to restore from trash
+      return () => {
+        // Optimistically revert local state immediately
         updateByIds(ids, (labelSet) => {
-          removeSystemLabels(labelSet, labels, ["Trash"]);
-          labelSet.add("Trash");
+          labelSet.delete("Trash");
+          labelSet.add("Inbox");
         });
-      });
+
+        const targetEmailIds = undoEmailIds.length ? undoEmailIds : ids.filter(Boolean);
+        const targetThreadIds = undoThreadIds.length ? undoThreadIds : [];
+
+        if (targetEmailIds.length > 0) {
+          dispatch(bulkMoveToFolderThunk({ emailIds: targetEmailIds, folder: "inbox" }))
+            .then(() => {
+              invalidateEmailCaches(targetThreadIds.length ? targetThreadIds : targetEmailIds);
+            })
+            .catch((error) => {
+              console.error("Failed to restore from trash:", error);
+            });
+        }
+      };
     },
-    [updateByIds, setEmails, labels, dispatch, emails]
+    [updateByIds, labels, dispatch, emails, invalidateEmailCaches]
   );
 
   const restoreFromTrash = useCallback(
-    (ids) =>
-      updateByIds(ids, (labels) => {
-        labels.delete("Trash");
-        labels.add("Inbox");
-      }),
-    [updateByIds]
+    (ids) => {
+      // Get email IDs and thread IDs for API call
+      const match = makeMatch(ids);
+      const matchingEmails = emails.filter(match);
+      const emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+      const threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+
+      // Use folder move API with email IDs
+      if (emailIds.length > 0) {
+        dispatch(bulkMoveToFolderThunk({ emailIds, folder: "inbox" }))
+          .then(() => {
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
+          })
+          .catch((error) => {
+            console.error("Failed to restore from trash:", error);
+          });
+      }
+
+      // Optimistic update
+      return updateByIds(ids, (labelSet) => {
+        let emailIds;
+        labelSet.add("Inbox");
+      });
+    },
+    [updateByIds, emails, dispatch, invalidateEmailCaches]
   );
 
   const toggleStar = useCallback(
@@ -738,32 +951,162 @@ export default function useMailActions() {
   );
 
   const moveToLabel = useCallback(
-    (ids, name) =>
-      withUndo(ids, setEmails, () => {
+    (ids, name, { resolvedEmailIds, resolvedThreadIds } = {}) => {
+      if (!name) return;
+
+      // Use pre-resolved IDs if provided, otherwise find from emails context
+      let emailIds = resolvedEmailIds;
+      let threadIds = resolvedThreadIds || [];
+
+      if (!emailIds || emailIds.length === 0) {
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+
+        // Get thread IDs from matched emails
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+
+        // Find ALL emails in those threads, not just the matched ones
+        // This ensures all emails in a thread are moved together
+        const allThreadEmails =
+          threadIds.length > 0 ? emails.filter((email) => threadIds.includes(email.thread_id)) : matchingEmails;
+
+        emailIds = allThreadEmails.map((email) => email.id).filter(Boolean);
+      }
+
+      // Check if this is a system folder (use move endpoint) vs user label (use labels endpoint)
+      // labels object is keyed by UUID, so we need to look up by ID first
+      const labelId = keyToLabelIdMap[name];
+      const labelMeta = labelId ? labels[labelId] : labels[name];
+      const isSystemFolder = labelMeta?.system || labelMeta?.is_system || labelMeta?.is_exclusive;
+
+      if (isSystemFolder && emailIds.length > 0) {
+        // Convert label name to folder name (lowercase)
+        const folderName = name.toLowerCase();
+        dispatch(bulkMoveToFolderThunk({ emailIds, folder: folderName }))
+          .then(() => {
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
+          })
+          .catch((error) => {
+            console.error("Failed to move to folder:", error);
+          });
+      } else if (threadIds.length > 0) {
+        // For user labels, use labels update
+        const targetLabelId = keyToLabelIdMap[name] || labels[name]?.id || name;
+        const trashLabelId = keyToLabelIdMap["Trash"] || labels["Trash"]?.id || "Trash";
+        const spamLabelId = keyToLabelIdMap["Spam"] || labels["Spam"]?.id || "Spam";
+        const labelsToRemove = [trashLabelId, spamLabelId];
+
+        dispatch(
+          bulkUpdateLabelsThunk({
+            threadIds,
+            labels: { add: [targetLabelId], remove: labelsToRemove },
+          })
+        )
+          .then(() => {
+            invalidateEmailCaches(threadIds);
+          })
+          .catch((error) => {
+            console.error("Failed to move to label:", error);
+          });
+      }
+
+      // Optimistic update
+      return withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
-          if (!name) return;
-          const isSystem = labels[name]?.system;
-          if (isSystem) removeSystemLabels(labelSet, labels, [name]);
+          labelSet.delete("Trash");
+          labelSet.delete("Spam");
+          if (isSystemFolder) removeSystemLabels(labelSet, labels, [name]);
           else removeSystemLabels(labelSet, labels);
           labelSet.add(name);
         });
-      }),
-    [updateByIds, setEmails, labels]
+      });
+    },
+    [updateByIds, setEmails, labels, emails, dispatch, keyToLabelIdMap, invalidateEmailCaches]
   );
 
   const moveToLabelFrom = useCallback(
-    (ids, sourceLabel, dest) =>
-      withUndo(ids, setEmails, () => {
+    (ids, sourceLabel, dest, { resolvedEmailIds, resolvedThreadIds } = {}) => {
+      if (!dest) return;
+
+      // Use pre-resolved IDs if provided, otherwise find from emails context
+      let emailIds = resolvedEmailIds;
+      let threadIds = resolvedThreadIds || [];
+
+      if (!emailIds || emailIds.length === 0) {
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+
+        // Get thread IDs from matched emails
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+
+        // Find ALL emails in those threads, not just the matched ones
+        // This ensures all emails in a thread are moved together
+        const allThreadEmails =
+          threadIds.length > 0 ? emails.filter((email) => threadIds.includes(email.thread_id)) : matchingEmails;
+
+        emailIds = allThreadEmails.map((email) => email.id).filter(Boolean);
+      }
+
+      // Check if this is a system folder (use move endpoint) vs user label (use labels endpoint)
+      // labels object is keyed by UUID, so we need to look up by ID first
+      const labelId = keyToLabelIdMap[dest];
+      const labelMeta = labelId ? labels[labelId] : labels[dest];
+      const isSystemFolder = labelMeta?.system || labelMeta?.is_system || labelMeta?.is_exclusive;
+
+      // For system folders (Inbox, Trash, Spam, etc.), use the move endpoint
+      // For user labels, use the labels update endpoint
+      if (isSystemFolder && emailIds.length > 0) {
+        // Convert label name to folder name (lowercase)
+        const folderName = dest.toLowerCase();
+        dispatch(bulkMoveToFolderThunk({ emailIds, folder: folderName }))
+          .then(() => {
+            invalidateEmailCaches(threadIds);
+          })
+          .catch((error) => {
+            console.error("Failed to move to folder:", error);
+          });
+      } else if (threadIds.length > 0) {
+        // For user labels, use labels update
+        const targetLabelId = keyToLabelIdMap[dest] || labels[dest]?.id || dest;
+        const sourceLabelId = sourceLabel
+          ? keyToLabelIdMap[sourceLabel] || labels[sourceLabel]?.id || sourceLabel
+          : null;
+
+        const trashLabelId = keyToLabelIdMap["Trash"] || labels["Trash"]?.id || "Trash";
+        const spamLabelId = keyToLabelIdMap["Spam"] || labels["Spam"]?.id || "Spam";
+        const labelsToRemove = [trashLabelId, spamLabelId];
+
+        if (sourceLabelId && !labelsToRemove.includes(sourceLabelId)) {
+          labelsToRemove.push(sourceLabelId);
+        }
+
+        dispatch(
+          bulkUpdateLabelsThunk({
+            threadIds,
+            labels: { add: [targetLabelId], remove: labelsToRemove },
+          })
+        )
+          .then(() => {
+            invalidateEmailCaches(threadIds);
+          })
+          .catch((error) => {
+            console.error("Failed to move to label from:", error);
+          });
+      }
+
+      // Optimistic update
+      return withUndo(ids, setEmails, () => {
         updateByIds(ids, (labelSet) => {
+          labelSet.delete("Trash");
+          labelSet.delete("Spam");
           if (sourceLabel) labelSet.delete(String(sourceLabel));
-          if (!dest) return;
-          const isSystem = labels[dest]?.system;
-          if (isSystem) removeSystemLabels(labelSet, labels, [dest]);
+          if (isSystemFolder) removeSystemLabels(labelSet, labels, [dest]);
           else removeSystemLabels(labelSet, labels);
           labelSet.add(dest);
         });
-      }),
-    [updateByIds, setEmails, labels]
+      });
+    },
+    [updateByIds, setEmails, labels, emails, dispatch, keyToLabelIdMap, invalidateEmailCaches]
   );
 
   const deleteForever = useCallback(
@@ -771,6 +1114,7 @@ export default function useMailActions() {
       // If ids are already email UUIDs (from ActionBar), use them directly
       // Otherwise, find matching emails by thread ID or other keys
       let emailIds;
+      let threadIds = [];
 
       // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
       const firstId = String(ids[0] || "");
@@ -779,25 +1123,34 @@ export default function useMailActions() {
       if (isUUID) {
         // Already email IDs, use directly
         emailIds = ids;
+        // Still need to find thread IDs for cache invalidation
+        const matchingEmails = emails.filter((email) => ids.includes(email.id));
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
       } else {
         // Find matching emails by thread/message IDs
         const match = makeMatch(ids);
         const matchingEmails = emails.filter(match);
         emailIds = matchingEmails.map((email) => email.id);
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
       }
 
       // Call bulk backend API with all email IDs at once
       if (emailIds.length > 0) {
-        dispatch(bulkDeleteEmailThunk({ emailIds })).catch((error) => {
-          console.error("Failed to bulk delete emails permanently:", error);
-        });
+        dispatch(bulkDeleteEmailThunk({ emailIds }))
+          .then(() => {
+            // Invalidate caches after successful delete
+            invalidateEmailCaches(threadIds.length ? threadIds : emailIds);
+          })
+          .catch((error) => {
+            console.error("Failed to bulk delete emails permanently:", error);
+          });
       }
 
       // Remove from local state
       const match = makeMatch(ids);
       setEmails((prev) => prev.filter((m) => !match(m)));
     },
-    [setEmails, dispatch, emails]
+    [setEmails, dispatch, emails, invalidateEmailCaches]
   );
 
   const snooze = useCallback(

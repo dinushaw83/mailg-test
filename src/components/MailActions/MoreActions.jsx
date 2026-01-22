@@ -8,7 +8,6 @@ import Divider from "@mui/material/Divider";
 import Icon from "../ui/Icon";
 import { Labels } from "./Labels";
 import Popover from "@mui/material/Popover";
-import { SnoozePopover } from "./Snooze";
 import Typography from "@mui/material/Typography";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -24,9 +23,8 @@ const useCustomHotKeys = ({ handlePeriodPress }) => {
 };
 
 const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvancedMenu }) => {
-  const { markRead, setStar, setImportant, snooze, unsnooze, setMuted } = useMailActions();
+  const { markRead, setStar, setImportant, setMuted } = useMailActions();
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [currentPopover, setCurrentPopover] = React.useState("main"); // 'main' or 'snooze'
   const [labelAnchorEl, setLabelAnchorEl] = React.useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
@@ -50,27 +48,20 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
 
   const handleClose = () => {
     setAnchorEl(null);
-    setCurrentPopover("main");
   };
 
   const handlePeriodPress = useCallback(() => {
     if (moreVertRef.current && !anchorEl) {
       setAnchorEl(moreVertRef.current);
-      setCurrentPopover("main");
     } else if (moreVertRef.current && anchorEl) {
       handleClose();
     }
-  }, [currentPopover, handleClose, moreVertRef]);
+  }, [handleClose, moreVertRef, anchorEl]);
 
   useCustomHotKeys({ handlePeriodPress });
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
-    setCurrentPopover("main");
-  };
-
-  const handleSnoozeClick = () => {
-    setCurrentPopover("snooze");
   };
 
   const handleOnAfterCreate = (childName, parentKey) => {
@@ -516,78 +507,44 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
     handleClose();
   }, [selectedEmails, markRead, selection, setSnackbar, handleClose, selectedThreads]);
 
-  const handleSnooze = useCallback(
-    (ids, snoozeUntil) => {
-      const { removedInboxIds = [] } = snooze(ids, snoozeUntil) || {};
-      handleClose();
-
-      const message = ids.length > 1 ? `${ids.length} conversations snoozed` : "Conversation snoozed.";
-
-      const undo = () => {
-        unsnooze(ids, { removedInboxIds });
-        setSnackbar({
-          open: true,
-          message: "Action undone.",
-          autoHideDuration: 3000,
-          action: null,
-        });
-      };
-
-      setSnackbar({
-        open: true,
-        message,
-        autoHideDuration: 3000,
-        action: (
-          <Button sx={{ textTransform: "none" }} size="small" onClick={undo}>
-            Undo
-          </Button>
-        ),
-      });
-    },
-    [snooze, unsnooze, handleClose, setSnackbar]
-  );
-
   return (
     <Box>
       <Icon name="more_vert" onClick={handleClick} label="" style={{}} disabled={false} _ref={moreVertRef} />
 
-      {currentPopover === "main" && (
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        >
-          <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px" }}>
-            {!hasItemsSelected && (
-              <>
-                <ActionMenuItem icon="drafts" label="Mark all as read" onClick={markAllAsRead} />
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Box sx={{ paddingY: "6px", width: "256px", minHeight: "109px" }}>
+          {!hasItemsSelected && (
+            <>
+              <ActionMenuItem icon="drafts" label="Mark all as read" onClick={markAllAsRead} />
 
-                <Divider sx={{ marginY: "6px" }} />
+              <Divider sx={{ marginY: "6px" }} />
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    paddingY: "16px",
-                    paddingX: "32px",
-                  }}
-                >
-                  <Typography sx={{ fontSize: "0.875rem", lineHeight: "20px", color: "#5f6368" }}>
-                    Select messages to see more actions
-                  </Typography>
-                </Box>
-              </>
-            )}
-            {hasItemsSelected && (
-              <>
-                {!showAdvancedMenu && (
-                  <>
-                    <ActionMenuItem icon="schedule" label="Snooze" onClick={handleSnoozeClick} />
-                    <Divider sx={{ marginY: "6px" }} />
-                    {anyUnstarred && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingY: "16px",
+                  paddingX: "32px",
+                }}
+              >
+                <Typography sx={{ fontSize: "0.875rem", lineHeight: "20px", color: "#5f6368" }}>
+                  Select messages to see more actions
+                </Typography>
+              </Box>
+            </>
+          )}
+          {hasItemsSelected && (
+            <>
+              {!showAdvancedMenu && (
+                <>
+                  {anyUnstarred && (
                       <ActionMenuItem
                         icon="star"
                         label="Add star"
@@ -676,21 +633,10 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
                     handleClose();
                   }}
                 />
-              </>
-            )}
-          </Box>
-        </Popover>
-      )}
-
-      {currentPopover === "snooze" && (
-        <SnoozePopover
-          anchorEl={anchorEl}
-          open={open}
-          onClose={handleClose}
-          selectedIds={selectedIds}
-          snooze={handleSnooze}
-        />
-      )}
+            </>
+          )}
+        </Box>
+      </Popover>
 
       <Labels
         {...{
