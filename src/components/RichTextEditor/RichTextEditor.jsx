@@ -1065,7 +1065,7 @@ export default function Editor({
                     onContentChange={(newContent) => {
                       // Update editor content
                       if (rteRef.current?.editor) {
-                        rteRef.current.editor.commands.setContent(newContent || "", false);
+                        rteRef.current.editor.commands.insertContent(newContent || "");
                         // Trigger onChange to update parent state
                         const plainText = newContent?.replace(/<[^>]*>/g, "") || "";
                         onChange?.(newContent, plainText);
