@@ -860,6 +860,7 @@ export default function useMailActions() {
     (ids, read = true) => {
       const match = makeMatch(ids);
       const normalizedIds = ids.map((value) => String(value || "").trim()).filter(Boolean);
+      const uuidPattern = /^[0-9a-fA-F-]{32,}$/;
 
       // Optimistically update React Query cache immediately
       updateQueryCache(ids, (email) => ({ ...email, is_read: read }));
@@ -869,16 +870,15 @@ export default function useMailActions() {
 
       // Extract email IDs for backend sync
       let emailIds = [];
-      const matchingEmails = emails.filter(match);
       
-      if (matchingEmails.length > 0) {
-        // Found matching emails, use their IDs
-        emailIds = matchingEmails.map((m) => m.id).filter(Boolean);
+      // If all ids are already UUIDs, use them directly (most reliable)
+      if (normalizedIds.length > 0 && normalizedIds.every((id) => uuidPattern.test(id))) {
+        emailIds = normalizedIds;
       } else {
-        // Check if ids are already UUIDs (email IDs)
-        const uuidPattern = /^[0-9a-fA-F-]{32,}$/;
-        if (normalizedIds.every((id) => uuidPattern.test(id))) {
-          emailIds = normalizedIds;
+        // Otherwise try to find matching emails in context
+        const matchingEmails = emails.filter(match);
+        if (matchingEmails.length > 0) {
+          emailIds = matchingEmails.map((m) => m.id).filter(Boolean);
         }
       }
 
