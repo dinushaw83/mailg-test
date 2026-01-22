@@ -92,19 +92,28 @@ export default function ComposeEmail({ composeWindow }) {
   const currentDraftId = composeWindow?.draftId;
 
   // Draft management hook
-  const { saveDraftManually, saveToBackendNow, deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } =
-    useDraftManagement({
-      to,
-      cc,
-      bcc,
-      subject,
-      content,
-      currentDraftId,
-      parentEmail: originalEmail,
-      replyType: composeReplyType,
-      composeWindowId: composeWindow?.id,
-      setComposeWindows,
-    });
+  const {
+    saveDraftManually,
+    saveToBackendNow,
+    deleteDraft,
+    isDraft,
+    draftId,
+    draftSaved,
+    hasDraftContent,
+    saveAttachment,
+    attachments,
+  } = useDraftManagement({
+    to,
+    cc,
+    bcc,
+    subject,
+    content,
+    currentDraftId,
+    parentEmail: originalEmail,
+    replyType: composeReplyType,
+    composeWindowId: composeWindow?.id,
+    setComposeWindows,
+  });
 
   // Determine which signature to use
   const defaultSignatureId = useMemo(() => {
@@ -424,16 +433,17 @@ export default function ComposeEmail({ composeWindow }) {
   // Handle adding attachments
   const handleAddAttachment = async (file) => {
     try {
-      let activeDraftId = draftId;
+      // Create attachment payload
+      const attachmentData = {
+        filename: file.name,
+        content_type: file.type || "application/octet-stream",
+        size_bytes: file.size,
+      };
 
-      // If we don't have a draft ID, or it's a temp ID, we need to save to backend first
-      if (!draftId || !isUUID(draftId.toString())) {
-        // Force save to backend to get a real UUID
-        activeDraftId = await saveToBackendNow();
-      }
+      const { data, error } = await saveAttachment(attachmentData);
 
-      if (!activeDraftId) {
-        console.error("Failed to get draft ID for attachment");
+      if (error) {
+        console.error("Failed to get draft ID for attachment:", error);
         setSnackbar({
           open: true,
           message: "Failed to save draft. Cannot attach file.",
@@ -442,16 +452,7 @@ export default function ComposeEmail({ composeWindow }) {
         return;
       }
 
-      // Create attachment payload
-      const attachmentData = {
-        filename: file.name,
-        content_type: file.type || "application/octet-stream",
-        size_bytes: file.size,
-      };
-
-      // Dispatch thunk
-      const newAttachment = await dispatch(createAttachmentThunk({ emailId: activeDraftId, attachmentData })).unwrap();
-      return newAttachment;
+      return data;
     } catch (error) {
       console.error("Error adding attachment:", error);
       setSnackbar({
@@ -459,7 +460,7 @@ export default function ComposeEmail({ composeWindow }) {
         message: "Failed to upload attachment.",
         severity: "error",
       });
-      throw error; // Propagate so caller knows it failed
+      throw error;
     }
   };
 
@@ -642,6 +643,7 @@ export default function ComposeEmail({ composeWindow }) {
               useCompactFormatting={true}
               subject={subject}
               onSubjectChange={setSubject}
+              apiAttachments={attachments}
             />
           </div>
         </div>

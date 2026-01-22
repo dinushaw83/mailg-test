@@ -34,7 +34,7 @@ const useCustomHotKeys = ({ handleReply, handleReplyAll, handleForward }) => {
   });
 };
 
-const ComposeReply = React.forwardRef(({ email, draft }, ref) => {
+const ComposeReply = React.forwardRef(({ email, draft, attachments }, ref) => {
   const replyContainerRef = useRef();
   const dispatch = useDispatch();
   const { mailFolders } = useGlobalContext();
@@ -199,6 +199,7 @@ const ComposeReply = React.forwardRef(({ email, draft }, ref) => {
             setCurrentDraftId(restoredId);
             setShowReplyContainer(true);
           }}
+          apiAttachments={attachments}
         />
       )}
     </div>

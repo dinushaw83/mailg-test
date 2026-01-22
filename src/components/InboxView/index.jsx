@@ -387,14 +387,13 @@ export const EmailContent = ({
       ? messagesFromOthers[messagesFromOthers.length - 1]
       : messages[messages.length - 1];
   }, [messages, loggedInUser]);
-  
+
   const lastMessage = messages[messages.length - 1];
   const isLastDraft = lastMessage?.folder === "drafts";
   const isLastScheduled = hasLabel(lastMessage?.labels, "Scheduled");
   const displayedMessages = isLastDraft ? messages.slice(0, -1) : messages;
   // const lastProperEmail = isLastDraft ? messages[messages.length - 2] : lastMessage;
   const draft = isLastDraft ? lastMessage : null;
-
   return (
     <InboxViewContainer isPreview={isPreview}>
       {showActionBar && <ActionBar thread={thread} emails={emails} />}
@@ -434,7 +433,7 @@ export const EmailContent = ({
                   recipients={recipients}
                   attachments={message.attachments}
                   embeddedImages={message.embeddedImages}
-                  isScheduled={hasLabel(message.labels, "Scheduled")}
+                  isScheduled={message.folder == "scheduled"}
                   scheduledDate={message.scheduled_send_at}
                   scheduledTime={message.scheduledTime}
                   emailId={message.id}
@@ -446,7 +445,14 @@ export const EmailContent = ({
             );
           })}
           {/* <Actions /> */}
-          {!isLastScheduled && <ComposeReply ref={responseViewRef} email={lastProperEmail} draft={draft} />}
+          {!isLastScheduled && (
+            <ComposeReply
+              ref={responseViewRef}
+              email={lastProperEmail}
+              draft={draft}
+              attachments={thread?.attachments}
+            />
+          )}
         </InnerContainer>
         {/* {isPreview && <PanelFooter />} */}
       </ScrollableContent>

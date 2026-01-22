@@ -68,6 +68,7 @@ export default function Editor({
   onSubjectChange,
   onAddAttachment,
   onRemoveAttachment,
+  apiAttachments,
 }) {
   const extensions = useExtensions({
     placeholder: "",
@@ -106,6 +107,19 @@ export default function Editor({
   }, []);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (apiAttachments?.length) {
+      const formattedAttachments = apiAttachments.map((attachment) => ({
+        id: attachment.id,
+        name: attachment.filename,
+        size: attachment.size_bytes,
+        type: attachment.attachment_type,
+        url: attachment.url,
+      }));
+      setAttachments(formattedAttachments);
+    }
+  }, [apiAttachments]);
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -357,7 +371,7 @@ export default function Editor({
 
         // Restore embedded images before setting content
         restoreEmbeddedImages(content).then((restoredContent) => {
-          rteRef.current.editor.commands.setContent(restoredContent, false);
+          rteRef?.current?.editor.commands.setContent(restoredContent, false);
 
           // Reset flag after a short delay to allow the editor to update
           setTimeout(() => {

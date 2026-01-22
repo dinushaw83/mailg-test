@@ -538,9 +538,8 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // After 1 second, show "Sending canceled"
     setTimeout(() => {
       // Push compose parameter to URL if not a reply/forward
-      if (!replyType) {
-        navigate(`?compose=${lastSentEmailRef.current?.id}`);
-      }
+      // Navigate to the drafts folder
+      navigate("/drafts");
 
       // Show "Sending canceled" snackbar
       setSnackbar({
@@ -556,7 +555,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     if (!primaryEmailId && !lastSentEmailRef.current) return;
 
     const sentEmail = lastSentEmailRef.current;
-    const emailId = primaryEmailId || sentEmail.emailId || sentEmail.id;
+    let emailId = typeof primaryEmailId === "string" ? primaryEmailId : sentEmail.emailId || sentEmail.id;
 
     // Show "Undoing..." message
     setSnackbar({
@@ -599,6 +598,9 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           action: null,
           autoHideDuration: 5000,
         });
+
+        // Navigate to the drafts folder
+        navigate("/drafts");
       } else {
         // Handle error
         console.error("Failed to undo send:", action.payload || action.error);

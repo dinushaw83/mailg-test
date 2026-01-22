@@ -18,7 +18,7 @@ import { useSendEmail } from "../../hooks/useSendEmail";
 import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 
 const ReplyContainer = forwardRef(
-  ({ email, draft, replyType, currentDraftId, onClose, onUndoDelete, replyToEmail }, ref) => {
+  ({ email, draft, replyType, currentDraftId, onClose, onUndoDelete, replyToEmail, apiAttachments }, ref) => {
     const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
     const dispatch = useDispatch();
 
@@ -360,6 +360,14 @@ ${targetEmail.body}
     };
 
     const handleSchedule = (scheduleData) => {
+      if (!draftId) {
+        setSnackbar({
+          open: true,
+          message: "Invalid email content",
+          autoHideDuration: 4000,
+        });
+        return;
+      }
       handleSendEmail({
         to: recipientsForDraft.to,
         cc: recipientsForDraft.cc,
@@ -617,6 +625,7 @@ ${targetEmail.body}
                 textEditorMinHeight="90px"
                 textEditorMaxHeight="400px"
                 messageId={targetEmail?.id}
+                apiAttachments={draft?.attachments || apiAttachments}
               />
             </div>
           </div>

@@ -399,14 +399,6 @@ const ScheduledMessage = ({ scheduledDate, scheduledTime, emailId }) => {
   const handleCancelSend = async () => {
     console.log("clicked");
     await handleSnackbarUndo(emailId);
-
-    // Show confirmation message
-    setSnackbar({
-      open: true,
-      message: "Send canceled. Message moved to drafts.",
-      action: null,
-      autoHideDuration: 3000,
-    });
   };
 
   return (
