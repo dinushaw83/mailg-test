@@ -325,12 +325,12 @@ jobs:
             exit 1
           fi
           
-          if [ -z "${{ env.VM_HOST }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
             echo "::error::GCP_VM_HOST secret is not configured"
             exit 1
           fi
           
-          if [ -z "${{ env.VM_USER }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
             echo "::error::GCP_VM_USER secret is not configured"
             exit 1
           fi
@@ -344,9 +344,9 @@ jobs:
 
       - name: Configure SSH known hosts
         run: |
-          echo "VM_HOST: ${{ env.VM_HOST }} new"  # This will be masked if it's a secret
+          echo "VM_HOST: ${{ secrets.GCP_VM_HOST }} new"  # This will be masked if it's a secret
           mkdir -p ~/.ssh          
-          ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs
         id: images
@@ -370,8 +370,8 @@ jobs:
 
       - name: Copy deployment files
         run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
-          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:~/mailg-deploy/
 
       - name: Deploy containers
         env:
@@ -390,7 +390,7 @@ jobs:
           echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
           echo "  Backend API URL: ${BACKEND_API_URL}"
           
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} bash -s << EOF
             set -e
             cd ~/mailg-deploy
             
@@ -519,12 +519,12 @@ jobs:
             exit 1
           fi
           
-          if [ -z "${{ env.VM_HOST }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
             echo "::error::GCP_VM_HOST secret is not configured"
             exit 1
           fi
           
-          if [ -z "${{ env.VM_USER }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
             echo "::error::GCP_VM_USER secret is not configured"
             exit 1
           fi
@@ -539,12 +539,12 @@ jobs:
       - name: Configure SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Copy deployment files
         run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
-          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:~/mailg-deploy/
 
       - name: Deploy containers
         env:
@@ -572,7 +572,7 @@ jobs:
           echo "  Backend API URL: ${BACKEND_API_URL}"
           echo "  System URL: ${SYSTEM_URL}"
           
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} bash -s << EOF
             set -e
             cd ~/mailg-deploy
             
