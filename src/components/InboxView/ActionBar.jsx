@@ -372,6 +372,18 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   // Check if viewing trash folder
   const isTrashFolder = folder === "trash";
 
+  // Check if the email/thread is marked as spam (has Spam label) - for showing spam-specific UI
+  const isSpamEmail = useMemo(() => {
+    if (!threadEmails || threadEmails.length === 0) return false;
+    return threadEmails.some((email) => {
+      const labels = email.labels || [];
+      return labels.some((label) => {
+        const labelName = typeof label === "string" ? label : label?.name;
+        return labelName === "Spam";
+      });
+    });
+  }, [threadEmails]);
+
   const handleArchive = useCallback(() => {
     if (!threadEmails.length) return;
 
@@ -1107,7 +1119,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           label="Back"
         />
 
-        {isSpamFolder ? (
+        {isSpamEmail ? (
           <>
             <Button
               variant="text"

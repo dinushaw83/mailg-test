@@ -199,6 +199,18 @@ export const EmailContent = ({
   // Check if viewing spam folder
   const isSpamFolder = folder === "spam";
 
+  // Check if the email/thread is marked as spam (has Spam label)
+  const isSpamEmail = useMemo(() => {
+    if (!emails || emails.length === 0) return false;
+    return emails.some((email) => {
+      const labels = email.labels || [];
+      return labels.some((label) => {
+        const labelName = typeof label === "string" ? label : label?.name;
+        return labelName === "Spam";
+      });
+    });
+  }, [emails]);
+
   const { messagesById } = normalizedEmails;
 
   const thread = useMemo(() => {
@@ -397,7 +409,7 @@ export const EmailContent = ({
             <UnsnoozeButton onClick={handleUnsnooze}>Unsnooze</UnsnoozeButton>
           </SnoozedBanner>
         )}
-        {isSpamFolder && (
+        {isSpamEmail && (
           <SpamBanner>
             <SpamBannerText>
               <strong>Why is this message in spam?</strong> You reported this message as spam from your inbox.
