@@ -8,6 +8,8 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Button } from "@mui/material";
 
 const DISPLAY_SYSTEM_LABELS = ["Inbox", "Spam", "Trash"];
+// Labels that should never be displayed as chips
+const HIDDEN_LABELS = ["Starred", "All Mail", "Important", "Sent", "Drafts", "Scheduled", "Snoozed"];
 
 const LabelContainer = styled("div")({
   display: "flex",
@@ -103,6 +105,9 @@ export default function EmailLabelChips({ message }) {
     return rawLabels.filter((label) => {
       const labelName = getLabelName(label);
       const labelKey = getLabelKey(label);
+
+      // Never show these labels (Starred, All Mail, Important, etc.)
+      if (HIDDEN_LABELS.includes(labelName)) return false;
 
       // Show Inbox, Spam, Trash
       if (DISPLAY_SYSTEM_LABELS.includes(labelName)) return true;
