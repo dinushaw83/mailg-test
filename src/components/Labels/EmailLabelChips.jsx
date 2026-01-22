@@ -8,8 +8,6 @@ import { useGlobalContext } from "../../contexts/GlobalContext";
 import { Button } from "@mui/material";
 
 const DISPLAY_SYSTEM_LABELS = ["Inbox", "Spam", "Trash"];
-// Labels that should never be displayed as chips
-const HIDDEN_LABELS = ["Starred", "All Mail", "Important", "Sent", "Drafts", "Scheduled", "Snoozed"];
 
 const LabelContainer = styled("div")({
   display: "flex",
@@ -106,18 +104,21 @@ export default function EmailLabelChips({ message }) {
       const labelName = getLabelName(label);
       const labelKey = getLabelKey(label);
 
-      // Never show these labels (Starred, All Mail, Important, etc.)
-      if (HIDDEN_LABELS.includes(labelName)) return false;
-
-      // Show Inbox, Spam, Trash
+      // Show Inbox, Spam, Trash (these are in DISPLAY_SYSTEM_LABELS)
       if (DISPLAY_SYSTEM_LABELS.includes(labelName)) return true;
 
-      // Show user-created labels (check by key or name)
-      if (allLabels[labelKey] && !allLabels[labelKey].system) return true;
-      if (allLabels[labelName] && !allLabels[labelName].system) return true;
+      // Get label metadata from allLabels
+      const labelMeta = allLabels[labelKey] || allLabels[labelName];
+
+      // Hide exclusive system labels that are not in DISPLAY_SYSTEM_LABELS (e.g., Starred, All Mail, Important, etc.)
+      if (labelMeta?.is_exclusive) return false;
+
+      // Show user-created labels (non-system labels)
+      if (labelMeta && !labelMeta.system && !labelMeta.is_system) return true;
 
       // Check if it's a non-system label by its properties (for object format)
       if (typeof label === "object" && label !== null) {
+        if (label.is_exclusive) return false;
         if (label.color && !label.is_system && !label.system) return true;
       }
 
