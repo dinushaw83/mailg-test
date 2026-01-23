@@ -354,7 +354,11 @@ jobs:
           echo "SSH_AUTH_SOCK: $SSH_AUTH_SOCK"
           ssh-add -l || echo "No SSH keys loaded"
           echo "Testing connection..."
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=~/.ssh/known_hosts "${{ env.VM_USER }}@${{ env.VM_HOST }}" 'echo "SSH connection successful" && whoami && pwd' || echo "Connection failed"
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=~/.ssh/known_hosts "${{ vars.GCP_VM_USER }}@${{ vars.GCP_VM_HOST }}" 'echo "SSH connection successful" && whoami && pwd' || echo "Connection failed"
+        env:
+          GCP_VM_USER: ${{ vars.GCP_VM_USER }}
+          GCP_VM_HOST: ${{ vars.GCP_VM_HOST }}
+
       - name: Extract image tags from build outputs
         id: images
         run: |
