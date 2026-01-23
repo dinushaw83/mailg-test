@@ -1176,7 +1176,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           )}
           {/* The next icon does not exactly match */}
-          <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
+          {/* <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} /> */}
           <Icon name="label" label="Label as" onClick={handleLabelAction} _ref={labelAnchorElRef} />
 
           <MoreActions
