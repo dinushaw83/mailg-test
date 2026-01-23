@@ -41,10 +41,7 @@ const Icon = ({
   // Wrap in a span to capture clicks even when IconButton is disabled
   // (disabled IconButton has pointer-events: none)
   return (
-    <span
-      onClick={handleClick}
-      style={{ display: "inline-flex", cursor: disabled ? "default" : "pointer" }}
-    >
+    <span onClick={handleClick} style={{ display: "inline-flex", cursor: disabled ? "default" : "pointer" }}>
       <Tooltip title={disabled ? "" : label} placement={placement}>
         <StyledIconButton
           size={size}

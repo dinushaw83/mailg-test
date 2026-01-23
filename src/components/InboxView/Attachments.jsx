@@ -14,6 +14,7 @@ const ImageContainer = styled.div`
   height: 120px;
   overflow: hidden;
   color: #222;
+  background-color: #f5f5f5;
   outline: none;
   cursor: pointer;
   font-size: 0.875rem;
@@ -253,7 +254,6 @@ export const Attachments = ({ attachments = [] }) => {
   const { db } = useGlobalContext();
   const [attachmentsWithPreviewURLs, setAttachmentsWithPreviewURLs] = useState([]);
 
-  // console.log({ db });
 
   const count = attachments.length > 1 ? `${attachments.length} attachments` : "One attachment";
 
@@ -345,21 +345,21 @@ export const Attachments = ({ attachments = [] }) => {
         <AttachmentsHeaderActions />
       </AttachmentsHeaderContainer>
       <AttachmentsContainer>
-        {attachmentsWithPreviewURLs.map((attachment) => {
+        {attachments.map((attachment) => {
           return (
             <ImageContainer key={attachment.id} onClick={() => openInNewTab(attachment)}>
-              <img loading="lazy" src={attachment.previewURL} alt={attachment.name} width={20} />
+              {/* <img loading="lazy" src={attachment.previewURL} alt={attachment.name} width={20} /> */}
               <Overlay className="overlay">
                 {getAttachmentIcon(attachment)}
                 <OverlayContent>
                   <OverlayTop>
-                    <OverlayTitleRow title={attachment.name}>
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.name}</span>
+                    <OverlayTitleRow title={attachment.filename}>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{attachment.filename}</span>
                     </OverlayTitleRow>
-                    <OverlayFilesize>{attachment.size}</OverlayFilesize>
+                    <OverlayFilesize>{attachment.size_bytes}</OverlayFilesize>
                   </OverlayTop>
                   <OverlayActions>
-                    <Icon
+                    {/* <Icon
                       label="Download"
                       placement="top"
                       name="download"
@@ -376,9 +376,9 @@ export const Attachments = ({ attachments = [] }) => {
                         e.stopPropagation();
                         handleDownload(attachment);
                       }}
-                    />
+                    /> */}
 
-                    <Icon
+                    {/* <Icon
                       label="Save to Drive"
                       placement="top"
                       name="drive_file_move"
@@ -396,7 +396,7 @@ export const Attachments = ({ attachments = [] }) => {
                         e.stopPropagation();
                         handleSaveToDrive(attachment);
                       }}
-                    />
+                    /> */}
                   </OverlayActions>
                 </OverlayContent>
               </Overlay>

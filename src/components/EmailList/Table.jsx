@@ -1,6 +1,5 @@
 import { Link, useParams } from "react-router-dom";
 import React, { useCallback, useId, useRef, useState } from "react";
-import { isDocument, isPresentation, isSpreadsheet } from "../InboxView/Attachments";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -62,32 +61,35 @@ const HoverDiv = styled.div`
 
 export const getAttachmentIcon = (attachment, size = 16) => {
   const style = { width: size, height: size };
-  const isYouTubeVideo = attachment.name.includes("youtube");
-  const isVideo = (attachment.type && attachment.type.startsWith("video/")) || isYouTubeVideo;
+  const extension = attachment.filename ? attachment.filename.split(".").pop().toLowerCase() : "";
+  const isYouTubeVideo = attachment.filename && attachment.filename.includes("youtube");
+
+  const isVideo =
+    (attachment.type && attachment.type.startsWith("video/")) ||
+    isYouTubeVideo ||
+    ["mp4", "mov", "avi", "webm", "mkv"].includes(extension);
   if (isVideo) {
     return <img src="/assets/images/icon_2_youtube_x16.png" alt="YouTube Video" style={style} />;
   }
 
-  if (isDocument(attachment)) {
+  if (["doc", "docx", "txt", "rtf", "odt"].includes(extension)) {
     return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
   }
 
-  if (isSpreadsheet(attachment)) {
-    return <img src="/assets/images/spreadsheet_icon.png" alt="DOC" style={style} />;
+  if (["xls", "xlsx", "csv", "ods"].includes(extension)) {
+    return <img src="/assets/images/spreadsheet_icon.png" alt="Spreadsheet" style={style} />;
   }
 
-  if (isPresentation(attachment)) {
-    return <img src="/assets/images/icon_1_document_x16.png" alt="DOC" style={style} />;
+  if (["ppt", "pptx", "odp"].includes(extension)) {
+    return <img src="/assets/images/icon_1_document_x16.png" alt="Presentation" style={style} />;
   }
-
-  const extension = attachment.name.split(".").pop();
 
   if (extension === "pdf") {
     return <img src="/assets/images/icon_3_pdf_x16.png" alt="PDF" style={style} />;
   }
 
   if (["jpg", "jpeg", "png", "gif", "bmp", "tiff", "ico", "webp"].includes(extension)) {
-    return <img src="/assets/images/icon_1_image_x32.png" alt="Document" style={style} />;
+    return <img src="/assets/images/icon_1_image_x32.png" alt="Image" style={style} />;
   }
 
   return <img src="/assets/images/default-file-placeholder.png" alt="Document" style={style} />;

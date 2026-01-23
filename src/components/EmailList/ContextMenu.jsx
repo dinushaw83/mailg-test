@@ -36,8 +36,17 @@ const ContextMenu = ({
   const isThreadNotInInbox = contextRow && (!contextRow.labels || !contextRow.labels.includes("Inbox"));
   const muted = contextRow?.labels?.includes("Muted");
 
-  const { moveToTrash, moveToInbox, moveToLabel, moveToLabelFrom, moveToSpam, notSpam, addLabels, removeLabels, deleteForever } =
-    useMailActions();
+  const {
+    moveToTrash,
+    moveToInbox,
+    moveToLabel,
+    moveToLabelFrom,
+    moveToSpam,
+    notSpam,
+    addLabels,
+    removeLabels,
+    deleteForever,
+  } = useMailActions();
   const { setSnackbar, recipients, loggedInUser, emails, setEmails } = useGlobalContext();
   const { addNewComposeWindow } = useComposeModal();
 

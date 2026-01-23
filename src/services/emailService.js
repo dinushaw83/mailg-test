@@ -145,11 +145,12 @@ const emailService = {
   /**
    * Send an email by ID (for drafts)
    * @param {string} emailId - Email UUID
+   * @param {Object} data - Optional data payload (e.g. { scheduled_send_at: string })
    * @returns {Promise<Object>} Sent email object
    */
-  sendEmailById: async (emailId) => {
+  sendEmailById: async (emailId, data = {}) => {
     try {
-      const response = await apiClient.post(`/v1/emails/${emailId}/send`);
+      const response = await apiClient.post(`/v1/emails/${emailId}/send`, data);
       const payload = response?.data?.data ?? response?.data;
       return payload;
     } catch (error) {

@@ -52,7 +52,7 @@ const SearchResultsView = () => {
 
   // Convert search results to thread rows format
   const rows = useMemo(() => {
-    if (!searchResults.length) {
+    if (!searchResults?.length) {
       return [];
     }
 

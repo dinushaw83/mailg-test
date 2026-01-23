@@ -101,10 +101,14 @@ export const sendEmailThunk = createAsyncThunk("mail/sendEmail", async (emailDat
  * Note: Mutations are called directly (not through React Query fetchQuery)
  * Cache invalidation is handled by RTK listener middleware.
  */
-export const sendEmailByIdThunk = createAsyncThunk("mail/sendEmailById", async (emailId, { rejectWithValue }) => {
+export const sendEmailByIdThunk = createAsyncThunk("mail/sendEmailById", async (payload, { rejectWithValue }) => {
   try {
+    // Determine if payload is just an ID (legacy) or an object
+    const emailId = typeof payload === "object" ? payload.emailId : payload;
+    const data = typeof payload === "object" ? payload.data : {};
+
     // Call service directly - React Query cache invalidation is handled by listeners
-    const response = await emailService.sendEmailById(emailId);
+    const response = await emailService.sendEmailById(emailId, data);
     return { emailId, data: response };
   } catch (error) {
     console.error("❌ Failed to send email by ID:", error);
