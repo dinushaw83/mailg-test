@@ -337,13 +337,7 @@ jobs:
           
           echo "✅ All deployment secrets configured"
     
-      - name: Debug SSH setup
-        run: |
-          echo "SSH_AUTH_SOCK: $SSH_AUTH_SOCK"
-          ssh-add -l || echo "No SSH keys loaded"
-          echo "Testing connection..."
-          ssh -v "${{ env.VM_USER }}@${{ env.VM_HOST }}" || echo "Connection failed"
-          
+
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -355,6 +349,12 @@ jobs:
           mkdir -p ~/.ssh          
           ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
+      - name: Debug SSH setup
+        run: |
+          echo "SSH_AUTH_SOCK: $SSH_AUTH_SOCK"
+          ssh-add -l || echo "No SSH keys loaded"
+          echo "Testing connection..."
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=~/.ssh/known_hosts "${{ env.VM_USER }}@${{ env.VM_HOST }}" 'echo "SSH connection successful" && whoami && pwd' || echo "Connection failed"
       - name: Extract image tags from build outputs
         id: images
         run: |
