@@ -54,6 +54,70 @@ const useCustomHotKeys = ({ focusInput, goToLabel }) => {
   });
 };
 
+/**
+ * Extract folder or label from URL pathname
+ * @param {string} pathname - Current URL pathname
+ * @returns {Object} - { folder: string | null, label: string | null }
+ */
+const extractFolderOrLabelFromPath = (pathname) => {
+  // Exclude search routes
+  if (pathname.startsWith("/search")) {
+    return { folder: null, label: null };
+  }
+
+  // Check for label route: /label/:label
+  const labelMatch = pathname.match(/^\/label\/([^/]+)/);
+  if (labelMatch) {
+    return { folder: null, label: decodeURIComponent(labelMatch[1]) };
+  }
+
+  // Check for folder route: /:folder (but not /contacts, /settings, etc.)
+  const excludedPaths = ["/contacts", "/settings", "/mailg-account", "/import-data", "/inbox"];
+  if (excludedPaths.some((path) => pathname.startsWith(path))) {
+    return { folder: null, label: null };
+  }
+
+  // Extract folder from pathname (e.g., /sent, /spam, /trash)
+  const pathParts = pathname.split("/").filter(Boolean);
+  if (pathParts.length > 0) {
+    const folder = pathParts[0];
+    // Validate it's a known folder
+    const validFolders = [
+      "starred",
+      "snoozed",
+      "sent",
+      "drafts",
+      "spam",
+      "trash",
+      "important",
+      "chats",
+      "scheduled",
+      "all",
+    ];
+    if (validFolders.includes(folder.toLowerCase())) {
+      return { folder: folder.toLowerCase(), label: null };
+    }
+  }
+
+  return { folder: null, label: null };
+};
+
+/**
+ * Generate search operator prefix based on folder or label
+ * @param {string | null} folder - Folder name
+ * @param {string | null} label - Label name
+ * @returns {string | null} - Search operator prefix (e.g., "in: sent" or "label: Work")
+ */
+const getSearchOperatorPrefix = (folder, label) => {
+  if (folder) {
+    return `in:${folder}`;
+  }
+  if (label) {
+    return `label:${label}`;
+  }
+  return null;
+};
+
 const SearchBar = () => {
   const { emails, loggedInUser } = useGlobalContext();
   const [isFocused, setIsFocused] = useState(false);
@@ -72,6 +136,18 @@ const SearchBar = () => {
   const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
 
+  // Extract current folder or label from URL
+  const { folder: currentFolder, label: currentLabel } = useMemo(
+    () => extractFolderOrLabelFromPath(location.pathname),
+    [location.pathname]
+  );
+
+  // Get the search operator prefix for current folder/label
+  const folderOperatorPrefix = useMemo(
+    () => getSearchOperatorPrefix(currentFolder, currentLabel),
+    [currentFolder, currentLabel]
+  );
+
   // Custom hooks for managing search bar state and effects
   useSearchIndex(emails);
   useSearchUrlSync(location, searchQuery, isAdvancedSearch, setSearchValue);
@@ -86,6 +162,30 @@ const SearchBar = () => {
       setRemovedSuggestionsInSession([]);
     }
   }, [isFocused]);
+
+  // Auto-populate search operator when folder/label changes
+  // Only populate if search bar is empty and we're not on a search route
+  useEffect(() => {
+    // Don't populate if we're on a search route
+    if (location.pathname.startsWith("/search")) {
+      return;
+    }
+
+    // Don't populate if we don't have a folder or label operator
+    if (!folderOperatorPrefix) {
+      return;
+    }
+
+    // Check if the operator is already in the search value
+    const operatorPattern = currentFolder
+      ? new RegExp(`in:\\s*${currentFolder}`, "i")
+      : new RegExp(`label:\\s*${currentLabel?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
+
+    // Only populate if the operator is not already present
+    if (!operatorPattern.test(searchValue)) {
+      setSearchValue(folderOperatorPrefix);
+    }
+  }, [location.pathname, folderOperatorPrefix, currentFolder, currentLabel, searchValue]);
 
   // Get search results
   const searchResults = useMemo(() => {
@@ -388,6 +488,30 @@ const SearchBar = () => {
     setShowAdvancedSearch(false);
     setIsFocused(true);
     setHighlightedIndex(-1);
+
+    // Auto-populate folder operator when search bar is focused and empty
+    // Don't populate if we're on a search route
+    if (location.pathname.startsWith("/search")) {
+      return;
+    }
+
+    // Don't populate if we don't have a folder or label operator
+    if (!folderOperatorPrefix) {
+      return;
+    }
+
+    // Only populate if search bar is empty or only contains the operator
+    if (!searchValue.trim() || searchValue.trim() === folderOperatorPrefix) {
+      // Check if the operator is already in the search value
+      const operatorPattern = currentFolder
+        ? new RegExp(`in:\\s*${currentFolder}`, "i")
+        : new RegExp(`label:\\s*${currentLabel?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
+
+      // Only populate if the operator is not already present
+      if (!operatorPattern.test(searchValue)) {
+        setSearchValue(folderOperatorPrefix);
+      }
+    }
   };
 
   const handleAdvancedSearchClick = () => {
