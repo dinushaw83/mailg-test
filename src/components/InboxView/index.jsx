@@ -450,7 +450,7 @@ export const EmailContent = ({
               ref={responseViewRef}
               email={lastProperEmail}
               draft={draft}
-              attachments={thread?.attachments}
+              attachments={lastProperEmail?.attachments}
             />
           )}
         </InnerContainer>

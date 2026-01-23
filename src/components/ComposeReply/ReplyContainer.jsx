@@ -19,6 +19,7 @@ import { useScheduleEmail } from "../../hooks/useScheduleEmail";
 
 const ReplyContainer = forwardRef(
   ({ email, draft, replyType, currentDraftId, onClose, onUndoDelete, replyToEmail, apiAttachments }, ref) => {
+    console.log({ draft });
     const { loggedInUser, setSnackbar, emails, signaturesState } = useGlobalContext();
     const dispatch = useDispatch();
 
@@ -625,7 +626,7 @@ ${targetEmail.body}
                 textEditorMinHeight="90px"
                 textEditorMaxHeight="400px"
                 messageId={targetEmail?.id}
-                apiAttachments={draft?.attachments || apiAttachments}
+                apiAttachments={draft?.attachments || (selectedReplyOption === "forward" ? apiAttachments : [])}
               />
             </div>
           </div>
