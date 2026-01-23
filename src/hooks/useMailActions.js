@@ -859,6 +859,8 @@ export default function useMailActions() {
   const markRead = useCallback(
     (ids, read = true) => {
       const match = makeMatch(ids);
+      const normalizedIds = ids.map((value) => String(value || "").trim()).filter(Boolean);
+      const uuidPattern = /^[0-9a-fA-F-]{32,}$/;
 
       // Optimistically update React Query cache immediately
       updateQueryCache(ids, (email) => ({ ...email, is_read: read }));
@@ -867,20 +869,31 @@ export default function useMailActions() {
       setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: read } : m)));
 
       // Extract email IDs for backend sync
-      const emailIds = [];
-      emails.forEach((m) => {
-        if (match(m)) {
-          emailIds.push(m.id);
+      let emailIds = [];
+      
+      // If all ids are already UUIDs, use them directly (most reliable)
+      if (normalizedIds.length > 0 && normalizedIds.every((id) => uuidPattern.test(id))) {
+        emailIds = normalizedIds;
+      } else {
+        // Otherwise try to find matching emails in context
+        const matchingEmails = emails.filter(match);
+        if (matchingEmails.length > 0) {
+          emailIds = matchingEmails.map((m) => m.id).filter(Boolean);
         }
-      });
+      }
 
       // Call bulk backend API
       if (emailIds.length > 0) {
-        dispatch(bulkUpdateEmailReadThunk({ emailIds, is_read: read })).catch((error) => {
-          console.error("Failed to bulk update read status:", error);
-          // Revert optimistic update on error
-          updateQueryCache(ids, (email) => ({ ...email, is_read: !read }));
-        });
+        dispatch(bulkUpdateEmailReadThunk({ emailIds, is_read: read }))
+          .unwrap()
+          .catch((error) => {
+            console.error("Failed to bulk update read status:", error);
+            // Revert optimistic update on error
+            updateQueryCache(ids, (email) => ({ ...email, is_read: !read }));
+            setEmails((prev) => prev.map((m) => (match(m) ? { ...m, is_read: !read } : m)));
+          });
+      } else {
+        console.warn("markRead: No email IDs to process, skipping API call", { ids, normalizedIds });
       }
     },
     [setEmails, dispatch, updateQueryCache, emails]
