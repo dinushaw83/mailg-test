@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getAutoCompleteSuggestion } from "../../../utils/search";
 
 /**
@@ -11,20 +11,38 @@ import { getAutoCompleteSuggestion } from "../../../utils/search";
 export function useAutocompleteState(searchValue, emails, isFocused) {
   const [autoCompleteSuggestion, setAutoCompleteSuggestion] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  
+  // Track previous values to prevent unnecessary updates
+  const prevSearchValueRef = useRef(searchValue);
+  const prevIsFocusedRef = useRef(isFocused);
 
   // Update auto-complete suggestion when search value changes
   useEffect(() => {
     if (searchValue.trim() && emails && emails.length > 0) {
       const suggestion = getAutoCompleteSuggestion(searchValue, emails);
-      setAutoCompleteSuggestion(suggestion);
+      setAutoCompleteSuggestion((prev) => {
+        // Only update if suggestion actually changed
+        if (prev === suggestion) return prev;
+        return suggestion;
+      });
     } else {
-      setAutoCompleteSuggestion(null);
+      setAutoCompleteSuggestion((prev) => {
+        if (prev === null) return prev;
+        return null;
+      });
     }
   }, [searchValue, emails]);
 
   // Reset highlighted index when search value changes or dropdown closes
   useEffect(() => {
-    setHighlightedIndex(-1);
+    const searchValueChanged = prevSearchValueRef.current !== searchValue;
+    const focusChanged = prevIsFocusedRef.current !== isFocused;
+    
+    if (searchValueChanged || focusChanged) {
+      setHighlightedIndex(-1);
+      prevSearchValueRef.current = searchValue;
+      prevIsFocusedRef.current = isFocused;
+    }
   }, [searchValue, isFocused]);
 
   return {

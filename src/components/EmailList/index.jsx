@@ -217,13 +217,34 @@ const EmailList = ({
   };
 
   const getLabelBadges = (email) => {
-    // Simply return the label objects with their id, name, and color
-    // Labels are already in object format: { id, name, color }
-    return (email.labels || []).map((labelObj) => ({
-      key: labelObj.id || labelObj.name,
-      displayName: labelObj.name,
-      color: labelObj.color,
-    }));
+    // No labels shown on snoozed list
+    if (folder === "snoozed") return [];
+
+    return (email.labels || [])
+      .filter((labelObj) => {
+        const labelKey = labelObj?.id || labelObj?.name || labelObj;
+        const labelName = labelObj?.name || labelObj;
+
+        // Check system status from labelObj first, then fall back to labels lookup
+        const labelMeta = labels[labelKey] || labels[labelName];
+        const isSystem = labelObj?.is_system || labelObj?.system || labelMeta?.system || labelMeta?.is_system;
+
+        // For inbox folder: only show non-system labels
+        if (folder === "inbox") {
+          return !isSystem;
+        }
+
+        // For other folders: show "Inbox" label + non-system labels
+        // Hide all other system labels
+        if (isSystem && labelName !== "Inbox") return false;
+
+        return true;
+      })
+      .map((labelObj) => ({
+        key: labelObj.id || labelObj.name || labelObj,
+        displayName: labelObj.name || labelObj,
+        color: labelObj.color,
+      }));
   };
 
   useEffect(() => {

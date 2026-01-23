@@ -63,7 +63,7 @@ class EmailLabelRequest(BaseModel):
 
 class EmailReplyRequest(BaseModel):
     """Schema for replying to an email."""
-    body: str = Field(..., min_length=1, description="Reply body")
+    body: Optional[str] = Field(None, description="Reply body")
     html_body: Optional[str] = Field(None, description="HTML reply body")
     reply_all: bool = Field(False, description="Reply to all recipients")
 

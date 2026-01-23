@@ -16,8 +16,7 @@ from app.auth.token_manager import get_token_manager
 from app.db.session import get_db, get_seed_db
 from app.db.run_router import drop_run_database, get_run_db_name
 from app.core.config import DATABASE_URL, POSTGRES_TEMPLATE_DB, POSTGRES_ADMIN_DB, JWT_ACCESS_TOKEN_TTL_SECONDS
-from app.db.registry import _admin_engine, ensure_registry_table
-from app.db.registry import get_last_used_at
+from app.db.registry import get_last_used_at, _admin_engine, ensure_registry_table
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +161,112 @@ def get_all_tables(db: Session) -> List[str]:
         raise
 
 
+def get_table_foreign_keys(db: Session, table_name: str) -> List[Dict[str, str]]:
+    """Get foreign key relationships for a table.
+    
+    Args:
+        db: Database session.
+        table_name: Name of the table to get foreign keys for.
+        
+    Returns:
+        List of dicts with: column (local FK column), referred_table, referred_column,
+        and relation_name (derived field name for the related object).
+    """
+    result = []
+    try:
+        inspector = inspect(db.get_bind())
+        try:
+            fks = inspector.get_foreign_keys(table_name, schema="public")
+        except TypeError:
+            fks = inspector.get_foreign_keys(table_name)
+        
+        for fk in fks:
+            constrained_columns = fk.get("constrained_columns", [])
+            referred_table = fk.get("referred_table")
+            referred_columns = fk.get("referred_columns", [])
+            
+            # Only handle single-column foreign keys for simplicity
+            if len(constrained_columns) == 1 and len(referred_columns) == 1 and referred_table:
+                local_col = constrained_columns[0]
+                # Derive relation name: remove _id suffix if present
+                if local_col.endswith("_id"):
+                    relation_name = local_col[:-3]  # e.g., "team_id" -> "team"
+                else:
+                    relation_name = f"{local_col}_obj"  # fallback
+                
+                result.append({
+                    "column": local_col,
+                    "referred_table": referred_table,
+                    "referred_column": referred_columns[0],
+                    "relation_name": relation_name
+                })
+        
+        logger.debug(f"Foreign keys for {table_name}: {result}")
+    except Exception as e:
+        logger.warning(f"Could not get foreign keys for table {table_name}: {e}")
+    
+    return result
+
+
+def fetch_related_object(db: Session, related_table: str, pk_column: str, pk_value: Any) -> Optional[Dict[str, Any]]:
+    """Fetch a related object from another table by primary key.
+    
+    Args:
+        db: Database session.
+        related_table: Name of the table to fetch from.
+        pk_column: Primary key column name (usually 'id').
+        pk_value: Value of the primary key to look up.
+        
+    Returns:
+        Serialized dict of the related row, or None if not found.
+    """
+    if pk_value is None:
+        return None
+    
+    try:
+        # Validate table name to prevent SQL injection
+        if not all(c.isalnum() or c in ('_', '-') for c in related_table):
+            logger.warning(f"Invalid related table name: {related_table}")
+            return None
+        if not all(c.isalnum() or c in ('_', '-') for c in pk_column):
+            logger.warning(f"Invalid pk column name: {pk_column}")
+            return None
+        
+        query = text(f'SELECT * FROM "{related_table}" WHERE "{pk_column}" = :pk_value')
+        result = db.execute(query, {"pk_value": pk_value})
+        row = result.fetchone()
+        
+        if row:
+            obj_dict = {}
+            if hasattr(row, '_mapping'):
+                obj_dict = dict(row._mapping)
+            elif hasattr(row, '_asdict'):
+                obj_dict = row._asdict()
+            elif hasattr(row, '_fields'):
+                obj_dict = {col: getattr(row, col) for col in row._fields}
+            else:
+                # Get columns for the related table
+                related_inspector = inspect(db.get_bind())
+                try:
+                    related_columns_info = related_inspector.get_columns(related_table, schema="public")
+                except TypeError:
+                    related_columns_info = related_inspector.get_columns(related_table)
+                related_columns = [c["name"] for c in related_columns_info]
+                for i, col in enumerate(related_columns):
+                    if i < len(row):
+                        obj_dict[col] = row[i]
+            
+            # Serialize values
+            serialized_obj = {}
+            for key, value in obj_dict.items():
+                serialized_obj[key] = serialize_value(value)
+            
+            return serialized_obj
+    except Exception as e:
+        logger.warning(f"Could not fetch {related_table} with {pk_column}={pk_value}: {e}")
+    return None
+
+
 def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
     """Get all data from a table.
     
@@ -229,115 +334,51 @@ def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
                 serialized_dict[key] = serialize_value(value)
             rows.append(serialized_dict)
         
-        # Helper function to fetch related object
-        def fetch_related_object(related_table: str, related_id: int) -> Optional[Dict[str, Any]]:
-            """Fetch a related object from another table."""
-            try:
-                query = text(f'SELECT * FROM "{related_table}" WHERE id = :id')
-                result = db.execute(query, {"id": related_id})
-                row = result.fetchone()
-                
-                if row:
-                    obj_dict = {}
-                    if hasattr(row, '_mapping'):
-                        obj_dict = dict(row._mapping)
-                    elif hasattr(row, '_asdict'):
-                        obj_dict = row._asdict()
-                    elif hasattr(row, '_fields'):
-                        obj_dict = {col: getattr(row, col) for col in row._fields}
-                    else:
-                        # Get columns for the related table
-                        related_inspector = inspect(db.get_bind())
-                        related_columns_info = related_inspector.get_columns(related_table)
-                        related_columns = [c["name"] for c in related_columns_info]
-                        for i, col in enumerate(related_columns):
-                            if i < len(row):
-                                obj_dict[col] = row[i]
-                    
-                    # Serialize values
-                    serialized_obj = {}
-                    for key, value in obj_dict.items():
-                        serialized_obj[key] = serialize_value(value)
-                    
-                    return serialized_obj
-            except Exception as e:
-                logger.warning(f"Could not fetch {related_table} with id {related_id}: {e}")
-            return None
-
-        # Special handling for tickets table: include related objects when foreign keys are present
-        if table_name == "tickets":
-            # Build a lookup map of ticket_id -> ticket for efficient parent lookup
-            ticket_lookup = {ticket["id"]: ticket for ticket in rows if "id" in ticket}
+        # Generic FK-based relation fetching for all tables
+        foreign_keys = get_table_foreign_keys(db, table_name)
+        
+        if foreign_keys and rows:
+            # Build self-reference lookup for tables that reference themselves (e.g., parent_id)
+            self_ref_fks = [fk for fk in foreign_keys if fk["referred_table"] == table_name]
+            self_lookup = {}
+            if self_ref_fks:
+                # Build lookup by the referred column (usually 'id')
+                pk_col = self_ref_fks[0]["referred_column"]
+                self_lookup = {row.get(pk_col): row for row in rows if row.get(pk_col) is not None}
             
-            for ticket in rows:
-                # Include parent ticket object when parent_id is present
-                parent_id = ticket.get("parent_id")
-                if parent_id is not None:
-                    # Find the parent ticket in the same result set
-                    parent_ticket = ticket_lookup.get(parent_id)
-                    if parent_ticket:
-                        # Add the parent ticket object (excluding its own parent to avoid deep nesting)
-                        parent_copy = parent_ticket.copy()
-                        # Remove the parent field from the parent to avoid circular references
-                        parent_copy.pop("parent", None)
-                        ticket["parent"] = parent_copy
+            # Process each row and add first-level relations
+            for row_data in rows:
+                for fk in foreign_keys:
+                    fk_column = fk["column"]
+                    referred_table = fk["referred_table"]
+                    referred_column = fk["referred_column"]
+                    relation_name = fk["relation_name"]
+                    
+                    fk_value = row_data.get(fk_column)
+                    if fk_value is None:
+                        continue
+                    
+                    # Handle self-referencing FK (e.g., parent_id on tickets)
+                    if referred_table == table_name:
+                        # Try to find in current result set first
+                        related_obj = self_lookup.get(fk_value)
+                        if related_obj:
+                            # Make a copy to avoid circular references
+                            related_copy = related_obj.copy()
+                            # Remove any nested relation fields to avoid deep nesting
+                            for nested_fk in foreign_keys:
+                                related_copy.pop(nested_fk["relation_name"], None)
+                            row_data[relation_name] = related_copy
+                        else:
+                            # Not in result set, fetch separately
+                            related_obj = fetch_related_object(db, referred_table, referred_column, fk_value)
+                            if related_obj:
+                                row_data[relation_name] = related_obj
                     else:
-                        # Parent might not be in the result set, try to fetch it separately
-                        parent_obj = fetch_related_object("tickets", parent_id)
-                        if parent_obj:
-                            ticket["parent"] = parent_obj
-                
-                # Include team object when team_id is present
-                team_id = ticket.get("team_id")
-                if team_id is not None:
-                    team_obj = fetch_related_object("teams", team_id)
-                    if team_obj:
-                        ticket["team"] = team_obj
-                
-                # Include requester object when requester_id is present
-                requester_id = ticket.get("requester_id")
-                if requester_id is not None:
-                    requester_obj = fetch_related_object("users", requester_id)
-                    if requester_obj:
-                        ticket["requester"] = requester_obj
-                
-                # Include assignee object when assignee_id is present
-                assignee_id = ticket.get("assignee_id")
-                if assignee_id is not None:
-                    assignee_obj = fetch_related_object("users", assignee_id)
-                    if assignee_obj:
-                        ticket["assignee"] = assignee_obj
-                
-                # Include project object when project_id is present
-                project_id = ticket.get("project_id")
-                if project_id is not None:
-                    project_obj = fetch_related_object("projects", project_id)
-                    if project_obj:
-                        ticket["project"] = project_obj
-                
-                # Include board object when board_id is present
-                board_id = ticket.get("board_id")
-                if board_id is not None:
-                    board_obj = fetch_related_object("boards", board_id)
-                    if board_obj:
-                        ticket["board"] = board_obj
-
-        # Special handling for ticket_links table: include source and target objects
-        if table_name == "ticket_links":
-            for link in rows:
-                # Include source ticket object
-                source_id = link.get("source_ticket_id")
-                if source_id is not None:
-                    source_obj = fetch_related_object("tickets", source_id)
-                    if source_obj:
-                        link["source_ticket"] = source_obj
-                
-                # Include target ticket object
-                target_id = link.get("target_ticket_id")
-                if target_id is not None:
-                    target_obj = fetch_related_object("tickets", target_id)
-                    if target_obj:
-                        link["target_ticket"] = target_obj
+                        # Regular FK to another table
+                        related_obj = fetch_related_object(db, referred_table, referred_column, fk_value)
+                        if related_obj:
+                            row_data[relation_name] = related_obj
         
         logger.debug(f"Retrieved {len(rows)} rows from table {table_name}")
         return {"rows": rows}
@@ -491,7 +532,7 @@ def drop_db_for_run(
         )
 
     # Explicitly protect special run ids early (in addition to deeper DB checks)
-    if effective_run_id in ("seed", "mira_seed", "template", "default", "mailg_seed"):
+    if effective_run_id in ("seed", "mira_seed", "template", "default", "deskzen_seed"):
         raise HTTPException(status_code=400, detail=f"Refusing to drop protected run_id '{effective_run_id}'")
 
     try:
@@ -551,7 +592,7 @@ def _compute_diff(
         
     Returns:
         Dictionary with computed_at, summary, changes_by_table, and tables_unchanged.
-        Format matches Mailg structure:
+        Format matches Deskzen structure:
         {
             "computed_at": "ISO timestamp",
             "summary": {
@@ -652,7 +693,7 @@ def _compute_diff(
             row_key = _make_row_key(row, pk_columns)
             if row_key is not None and row_key not in before_by_key:
                 # Get context: rows before and after this one
-                # Include 1 row before and up to 2 rows after (matching Mailg sample)
+                # Include 1 row before and up to 2 rows after (matching Deskzen sample)
                 context_before = sorted_after_rows[max(0, idx - 1):idx] if idx > 0 else []
                 context_after = sorted_after_rows[idx + 1:min(idx + 3, total_after_rows)] if idx < total_after_rows - 1 else []
                 
@@ -673,11 +714,16 @@ def _compute_diff(
                 before_row = before_by_key[row_key]
                 after_row = after_by_key[row_key]
                 
-                # Find all changed fields
+                # Find all changed fields (exclude relation objects - they're nested dicts)
                 changes = {}
                 for key in set(before_row.keys()) | set(after_row.keys()):
                     before_val = before_row.get(key)
                     after_val = after_row.get(key)
+                    # Skip relation objects (nested dicts) and context fields
+                    if isinstance(before_val, dict) or isinstance(after_val, dict):
+                        continue
+                    if key.startswith("_"):  # Skip internal fields like _context
+                        continue
                     if before_val != after_val:
                         changes[key] = {
                             "before": before_val,
@@ -764,7 +810,6 @@ def _compute_diff(
             diff["tables_unchanged"].append(table_name)
     
     return diff
-
 
 @router.get("/db_changes", dependencies=[Depends(authorized())])
 def get_db_changes(
@@ -860,7 +905,7 @@ def get_db_schema():
         possible_paths = [
             Path(__file__).parent.parent.parent / "database_schema.json",
             Path(__file__).parent.parent.parent.parent / "database_schema.json",
-            Path(__file__).parent.parent.parent / "utils" / "import_data" / "config" / "mailg-schema.json",
+            Path(__file__).parent.parent.parent / "utils" / "import_data" / "config" / "deskzen-schema.json",
         ]
         
         schema_path = None
@@ -872,7 +917,7 @@ def get_db_schema():
         if not schema_path:
             logger.warning(f"Schema file not found in any of: {possible_paths}")
             # Fallback to inspecting database
-            from app.db.session import get_seed_db
+            from app.database import get_seed_db
             db = next(get_seed_db())
             try:
                 inspector = inspect(db.get_bind())
@@ -1156,7 +1201,7 @@ def get_session_status(session_id: str = Query(..., description="The session ID 
     # Auto-create database if it doesn't exist (makes API more user-friendly)
     # This ensures the database exists before we try to query it
     try:
-        from app.db.run_router import ensure_run_database
+        from app.db_router import ensure_run_database
         ensure_run_database(run_id)
     except Exception as e:
         logger.error(f"Failed to ensure database exists for session_id={session_id}: {e}")

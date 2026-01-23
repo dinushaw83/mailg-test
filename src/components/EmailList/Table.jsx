@@ -881,6 +881,21 @@ const Table = ({
                     onChange={() => selection.toggle(thread_id)}
                   />
                 </td>
+                {/* Trash indicator icon for trash folder */}
+                {folder === "trash" && (
+                  <td className="xY" style={{ width: 20, padding: "0 4px" }}>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 18,
+                        color: "rgba(0,0,0,.54)",
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      delete
+                    </span>
+                  </td>
+                )}
                 {renderOneColumn ? (
                   <OneColumnData
                     email={email}
@@ -1168,7 +1183,7 @@ const Table = ({
                             handleArchive([email.thread_id]);
                           }}
                           style={{}}
-                          disabled={false}
+                          disabled={folder === "trash"}
                           _ref={null}
                         />
                         <Icon
@@ -1180,7 +1195,7 @@ const Table = ({
                             handleDelete([email.thread_id]);
                           }}
                           style={{}}
-                          disabled={false}
+                          disabled={folder === "trash"}
                           _ref={null}
                         />
                         <Icon
