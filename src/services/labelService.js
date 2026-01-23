@@ -49,16 +49,24 @@ const labelService = {
    * @param {Object} updates - Label updates
    * @param {string} [updates.name] - New label name
    * @param {string} [updates.color] - New hex color
-   * @param {string} [updates.parent_id] - New parent label UUID
+   * @param {string|null} [updates.parent_id] - New parent label UUID (null to move to root)
+   * @param {boolean} [updates.show_in_label_list] - Show in label list
+   * @param {boolean} [updates.show_in_message_list] - Show in message list
+   * @param {boolean} [updates.show_if_unread] - Show if unread
    * @returns {Promise<Object>} Updated label object
    */
-  updateLabel: async (id, { name, color, parent_id } = {}) => {
+  updateLabel: async (id, { name, color, parent_id, show_in_label_list, show_in_message_list, show_if_unread } = {}) => {
     try {
-      const response = await apiClient.patch(`/v1/labels/${id}`, {
-        name,
-        color,
-        parent_id,
-      });
+      // Build request body with only defined values
+      const body = {};
+      if (name !== undefined) body.name = name;
+      if (color !== undefined) body.color = color;
+      if (parent_id !== undefined) body.parent_id = parent_id;
+      if (show_in_label_list !== undefined) body.show_in_label_list = show_in_label_list;
+      if (show_in_message_list !== undefined) body.show_in_message_list = show_in_message_list;
+      if (show_if_unread !== undefined) body.show_if_unread = show_if_unread;
+
+      const response = await apiClient.put(`/v1/labels/${id}`, body);
 
       return response?.data?.data ?? response?.data;
     } catch (error) {
