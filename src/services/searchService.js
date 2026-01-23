@@ -62,6 +62,9 @@ const searchService = {
       if (params.has_attachment !== undefined && params.has_attachment !== null) {
         queryParams.has_attachment = params.has_attachment;
       }
+      if (params.is_snoozed !== undefined && params.is_snoozed !== null) {
+        queryParams.is_snoozed = params.is_snoozed;
+      }
       if (params.date_from !== undefined && params.date_from !== null && params.date_from !== "") {
         queryParams.date_from = params.date_from;
       }

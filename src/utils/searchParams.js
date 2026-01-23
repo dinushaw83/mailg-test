@@ -276,6 +276,10 @@ export function buildSearchParams(location, options = {}) {
     apiParams.is_starred = true;
   }
 
+  if (searchQuery.includes("in:important")) {
+    apiParams.is_important = true;
+  }
+
   // Map has_userlabels filter
   const hasUserLabels = searchParams.get("has_userlabels");
   if (hasUserLabels === "true") {
@@ -475,6 +479,8 @@ export function buildSearchParams(location, options = {}) {
     // Remove is:unread, is:read
     cleanedQuery = cleanedQuery.replace(/is:unread\b/g, "");
     cleanedQuery = cleanedQuery.replace(/is:read\b/g, "");
+    cleanedQuery = cleanedQuery.replace(/in:important\b/g, "");
+    cleanedQuery = cleanedQuery.replace(/in:all\b/g, "");
 
     // Remove larger: and smaller: patterns
     cleanedQuery = cleanedQuery.replace(/larger:\d+[KMG]B?\b/gi, "");
