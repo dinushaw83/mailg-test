@@ -1,0 +1,66 @@
+/* Dialog Paper */
+.dialogPaper {
+  border-radius: 28px;
+  font-family: "Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+}
+
+/* Dialog Title */
+.dialogTitle {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 200;
+  letter-spacing: 0.01em;
+  padding: 28px 28px 0;
+}
+
+/* Dialog Content */
+.dialogContent {
+  padding: 16px 28px 0;
+}
+
+/* Typography */
+.description {
+  font-size: 16px;
+  line-height: 24px;
+  color: #3c4043;
+  margin-bottom: 16px;
+}
+
+/* TextField */
+.textField :global(.MuiOutlinedInput-root) {
+  border-radius: 8px;
+}
+
+/* Dialog Actions */
+.dialogActions {
+  padding: 20px;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Cancel Button */
+.cancelButton {
+  text-transform: none;
+  font-weight: 600;
+  color: #1a73e8;
+  border-radius: 9999px;
+  padding: 10px 16px;
+}
+
+/* Save Button */
+.saveButton {
+  text-transform: none;
+  font-weight: 600;
+  background-color: #1a73e8;
+  border-radius: 9999px;
+  padding: 10px 24px;
+}
+
+.saveButton:hover {
+  background-color: #1557b0;
+}
+
+.saveButton:disabled {
+  background-color: #dadce0;
+  color: #80868b;
+}

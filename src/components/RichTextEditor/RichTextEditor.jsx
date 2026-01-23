@@ -34,6 +34,7 @@ import {
   processHtmlForDisplay,
 } from "../../utils/embeddedImages";
 import { useNavigate } from "react-router-dom";
+import TemplateDropdown from "../Templates/TemplateDropdown";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -63,6 +64,8 @@ export default function Editor({
   textEditorMaxHeight,
   useCompactFormatting = false,
   messageId,
+  subject = "",
+  onSubjectChange,
 }) {
   const extensions = useExtensions({
     placeholder: "",
@@ -1016,7 +1019,6 @@ export default function Editor({
                       <span className="material-symbols-outlined">arrow_drop_down</span>
                     </div>
                   </div>
-
                   {/* Hidden input for native file picker */}
                   <input
                     type="file"
@@ -1025,7 +1027,6 @@ export default function Editor({
                     multiple
                     onChange={handleNativeFilePickerChange}
                   />
-
                   {showMenuBar && (
                     <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={useCompactFormatting} />
                   )}
@@ -1037,32 +1038,42 @@ export default function Editor({
                     selected={showMenuBar}
                     IconComponent={FormatColorText}
                   />
-
                   <MenuButton
                     tooltipLabel="Attach files"
                     size="small"
                     onClick={openNativeFilePicker}
                     IconComponent={AttachmentIcon}
                   />
-
                   <MenuButton
                     tooltipLabel="Insert link"
                     size="small"
                     onClick={openLinkPopover}
                     IconComponent={InsertLink}
                   />
-
                   <MenuButton
                     tooltipLabel="Insert photo"
                     size="small"
                     onClick={openPhotoModal}
                     IconComponent={InsertPhoto}
                   />
-
                   <IconButton onClick={openSignaturePopover}>
                     <img src="/assets/images/ink_pen.png" alt="Insert Signature" style={{ width: 20, height: 20 }} />
                   </IconButton>
-
+                  <TemplateDropdown
+                    subject={subject}
+                    content={content}
+                    onContentChange={(newContent) => {
+                      // Update editor content
+                      if (rteRef.current?.editor) {
+                        rteRef.current.editor.commands.insertContent(newContent || "");
+                        const currentContent = rteRef.current?.editor?.getHTML() || "";
+                        // Trigger onChange to update parent state
+                        const plainText = currentContent?.replace(/<[^>]*>/g, "") || "";
+                        onChange?.(currentContent, plainText);
+                      }
+                    }}
+                    onSubjectChange={onSubjectChange}
+                  />
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                     <ClickAwayListener
                       onClickAway={closeLinkPopover}
@@ -1187,7 +1198,6 @@ export default function Editor({
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
-
                   {/* Send Options Dropdown */}
                   <Popper
                     open={Boolean(sendOptionsAnchorEl)}
@@ -1236,7 +1246,6 @@ export default function Editor({
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
-
                   <Menu
                     anchorEl={signatureAnchorEl}
                     open={signaturePopoverOpen}
