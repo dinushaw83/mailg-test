@@ -1,22 +1,23 @@
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+
+import Button from "@mui/material/Button";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { Labels } from "../MailActions/Labels";
+import MoreActions from "./MoreActions";
+import MoveToMenu from "../MailActions/MoveToMenu";
+import { SnoozePopover } from "../MailActions/Snooze";
+import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
+import Tooltip from "@mui/material/Tooltip";
+import { buildLabelPath } from "../../utils/labelSync";
+import { getThreadRows } from "../../utils/emails";
 import styled from "@emotion/styled";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import Tooltip from "@mui/material/Tooltip";
-import useMailActions from "../../hooks/useMailActions";
-import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
-import MoveToMenu from "../MailActions/MoveToMenu";
-import Button from "@mui/material/Button";
-import { SnoozePopover } from "../MailActions/Snooze";
-import MoreActions from "./MoreActions";
-import { Labels } from "../MailActions/Labels";
-import { getThreadRows } from "../../utils/emails";
-import CreateLabelDialog from "../Labels/CreateLabelDialog";
-import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
-import { buildLabelPath } from "../../utils/labelSync";
 import { useHotkeys } from "react-hotkeys-hook";
+import useMailActions from "../../hooks/useMailActions";
 
 const buildMatchKeysForEmail = (email = {}) => {
   const keys = [];
@@ -1176,7 +1177,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           )}
           {/* The next icon does not exactly match */}
-          <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
+          {/* <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} /> */}
           <Icon name="label" label="Label as" onClick={handleLabelAction} _ref={labelAnchorElRef} />
 
           <MoreActions
@@ -1194,7 +1195,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         onReportSpam={handleReportSpam}
         onUnsubscribe={handleReportSpam}
       />
-      {moveToMenuOpen && (
+      {/* {moveToMenuOpen && (
         <MoveToMenu
           anchorRef={moveToMenuAnchorRef}
           labels={menuItems}
@@ -1202,7 +1203,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           onClose={() => toggleMoveToMenu()}
           currentFolder={folder || "inbox"}
         />
-      )}
+      )} */}
       <SnoozePopover
         anchorEl={snoozeAnchorEl}
         open={showSnoozePopover}
