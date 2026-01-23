@@ -1066,9 +1066,10 @@ export default function Editor({
                       // Update editor content
                       if (rteRef.current?.editor) {
                         rteRef.current.editor.commands.insertContent(newContent || "");
+                        const currentContent = rteRef.current?.editor?.getHTML() || "";
                         // Trigger onChange to update parent state
-                        const plainText = newContent?.replace(/<[^>]*>/g, "") || "";
-                        onChange?.(newContent, plainText);
+                        const plainText = currentContent?.replace(/<[^>]*>/g, "") || "";
+                        onChange?.(currentContent, plainText);
                       }
                     }}
                     onSubjectChange={onSubjectChange}
