@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { fetchEmailByIdThunk, setEmailsForCategory } from "../../store/slices/mailSlice";
+import { deleteEmailThunk, fetchEmailByIdThunk, setEmailsForCategory } from "../../store/slices/mailSlice";
 import { createAttachmentThunk } from "../../store/slices/attachmentSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -482,37 +482,62 @@ export default function ComposeEmail({ composeWindow }) {
   };
 
   // Remove the email from draft
-  const handleDelete = () => {
-    if (isDraft) {
-      // Store the draft data for potential restoration
-      lastDeletedDraftRef.current = {
-        id: draftId,
-        to,
-        cc,
-        bcc,
-        subject,
-        content,
-        rawInputText,
-        composeWindowId: composeWindow.id,
-        replyType: composeReplyType,
-      };
+  const handleDelete = async () => {
+    if (isDraft && draftId) {
+      // Check if draftId is a UUID (backend ID)
+      const isBackendId = isUUID(draftId.toString());
 
-      deleteDraft();
+      if (isBackendId) {
+        // Get thread_id from originalEmail prop
+        const thread_id = originalEmail?.thread_id;
 
-      // Close the compose window
-      handleClose(false);
+        // Store draft data for potential restoration
+        lastDeletedDraftRef.current = {
+          id: draftId,
+          thread_id: thread_id,
+          legacyThreadId: originalEmail?.legacyThreadId,
+          legacyLastMessageId: originalEmail?.legacyLastMessageId,
+          to,
+          cc,
+          bcc,
+          subject,
+          content,
+          rawInputText,
+          composeWindowId: composeWindow.id,
+          replyType: composeReplyType,
+        };
 
-      // Show "Draft discarded" snackbar with undo button
-      setSnackbar({
-        open: true,
-        message: "Draft discarded.",
-        action: (
-          <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
-            Undo
-          </Button>
-        ),
-        autoHideDuration: 4000,
-      });
+        try {
+          // Delete email via API, passing thread_id for refetch
+          await dispatch(deleteEmailThunk({ emailId: draftId, thread_id })).unwrap();
+
+          // Close the compose window
+          handleClose(false);
+        } catch (error) {
+          console.error("Failed to delete draft:", error);
+          // Silently handle errors - no snackbar
+          handleClose(false);
+        }
+      } else {
+        // Local draft - existing local delete logic
+        // Store the draft data for potential restoration
+        lastDeletedDraftRef.current = {
+          id: draftId,
+          to,
+          cc,
+          bcc,
+          subject,
+          content,
+          rawInputText,
+          composeWindowId: composeWindow.id,
+          replyType: composeReplyType,
+        };
+
+        deleteDraft();
+
+        // Close the compose window
+        handleClose(false);
+      }
     } else {
       // If not a draft, just close the window
       handleClose(false);

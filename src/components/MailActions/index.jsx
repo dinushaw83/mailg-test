@@ -5,7 +5,6 @@ import useLabels, {
   makeKey,
   normalizeLabelName,
 } from "../../hooks/useLabels";
-import { buildLabelPath } from "../../utils/labelSync";
 import { useLocation, useParams } from "react-router-dom";
 
 import Box from "@mui/material/Box";
@@ -17,6 +16,7 @@ import { Labels } from "./Labels";
 import MoveToMenu from "./MoveToMenu";
 import { SnoozePopover } from "./Snooze";
 import SpamOrUnsubModal from "./SpamOrUnsubModal";
+import { buildLabelPath } from "../../utils/labelSync";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
 import useMailActions from "../../hooks/useMailActions";
@@ -1022,7 +1022,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         _ref={snoozeAnchorElRef}
       />
       {showAdvancedMenu && <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />}
-      {!["all", "drafts"].includes(folder) && (
+      {/* {!["all", "drafts"].includes(folder) && (
         <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
       )}
       {["all", "drafts"].includes(folder) && (
@@ -1031,7 +1031,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           label="Move to Inbox"
           onClick={folder === "all" ? onMoveArchivedMailToInbox : handleMoveDraftsToInbox}
         />
-      )}
+      )} */}
 
       <Icon name="label" label="Label as" onClick={handleLabelAction} _ref={labelAnchorElRef} />
 
