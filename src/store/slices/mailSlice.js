@@ -630,6 +630,22 @@ export const bulkArchiveEmailsThunk = createAsyncThunk(
 );
 
 /**
+ * BULK MUTATION THUNK: Unarchive multiple threads
+ */
+export const bulkUnarchiveEmailsThunk = createAsyncThunk(
+  "mail/bulkUnarchiveEmails",
+  async ({ threadIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUnarchiveEmails(threadIds);
+      return { threadIds, response };
+    } catch (error) {
+      console.error("Failed to bulk unarchive threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unarchive threads");
+    }
+  }
+);
+
+/**
  * BULK MUTATION THUNK: Snooze multiple threads
  */
 export const bulkSnoozeThreadsThunk = createAsyncThunk(

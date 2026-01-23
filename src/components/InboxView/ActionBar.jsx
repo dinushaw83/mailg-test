@@ -309,6 +309,16 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     return threadEmails.every((email) => !(email.labels || []).includes("Inbox"));
   }, [threadEmails]);
 
+  // Check if the thread is already archived
+  const isThreadArchived = useMemo(() => {
+    // Check thread-level is_archived first, then fall back to email-level
+    if (thread.is_archived !== undefined) {
+      return thread.is_archived === true;
+    }
+    // If any email in the thread is archived, consider the thread archived
+    return threadEmails.some((email) => email.is_archived === true);
+  }, [thread, threadEmails]);
+
   // Check if the current thread is already deleted (in trash)
   const isThreadDeleted = useMemo(() => {
     return threadEmails.every((email) => (email.labels || []).includes("Trash"));
@@ -399,26 +409,22 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       return;
     }
 
-    const snapshot = conversationLabelSnapshot();
     const idsToArchive = threadEmails.map((email) => email.id);
 
     try {
-      archive(idsToArchive);
+      const undo = archive(idsToArchive);
       setSnackbar({
         open: true,
         message: "Conversation archived.",
-        autoHideDuration: 3000,
+        autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              setEmails((prev) =>
-                prev.map((email) => {
-                  const key = String(email.id ?? "");
-                  return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
-                })
-              );
+              if (typeof undo === "function") {
+                undo();
+              }
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -434,7 +440,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [threadEmails, archive, setSnackbar, conversationLabelSnapshot, setEmails]);
+  }, [threadEmails, archive, setSnackbar]);
 
   const handleStar = useCallback(() => {
     if (!threadEmails.length) return;
@@ -1147,7 +1153,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           </>
         ) : (
           <>
-            <Icon name="archive" label="Archive" onClick={handleArchive} />
+            <Icon name="archive" label="Archive" onClick={handleArchive} disabled={isThreadArchived} />
             <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
             {!isThreadDeleted && !isTrashFolder && <Icon name="delete" label="Delete" onClick={handleDelete} />}
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
@@ -1357,26 +1363,22 @@ const NavigationActions = () => {
     const hasInbox = threadEmails.some((email) => (email.labels || []).includes("Inbox"));
     if (!hasInbox) return;
 
-    const snapshot = conversationLabelSnapshot();
     const idsToArchive = threadEmails.map((email) => email.id);
 
     try {
-      archive(idsToArchive);
+      const undo = archive(idsToArchive);
       setSnackbar({
         open: true,
         message: "Conversation archived.",
-        autoHideDuration: 3000,
+        autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              setEmails((prev) =>
-                prev.map((email) => {
-                  const key = String(email.id ?? "");
-                  return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
-                })
-              );
+              if (typeof undo === "function") {
+                undo();
+              }
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -1392,7 +1394,7 @@ const NavigationActions = () => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [threadEmails, archive, setSnackbar, conversationLabelSnapshot, setEmails]);
+  }, [threadEmails, archive, setSnackbar]);
 
   useNavigationHotKeys({ goBack, goForward, handleArchive });
 

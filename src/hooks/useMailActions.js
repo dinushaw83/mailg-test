@@ -21,6 +21,7 @@ import {
   bulkMoveToFolderThunk,
   bulkDeleteEmailThunk,
   bulkArchiveEmailsThunk,
+  bulkUnarchiveEmailsThunk,
   bulkSnoozeThreadsThunk,
   bulkUnsnoozeThreadsThunk,
   bulkUnstarThreadsThunk,
@@ -396,29 +397,133 @@ export default function useMailActions() {
 
   const archive = useCallback(
     (ids) => {
-      // Extract thread IDs for backend sync
+      // IDs can be email IDs or thread IDs
+      // First try to match against emails to get thread IDs
       const match = makeMatch(ids);
-      const threadIds = [
-        ...new Set(
-          emails
-            .filter(match)
-            .map((email) => email.thread_id)
-            .filter(Boolean)
-        ),
-      ];
+      const matchingEmails = emails.filter(match);
 
-      // Call bulk backend API with thread IDs
-      if (threadIds.length > 0) {
-        dispatch(bulkArchiveEmailsThunk({ threadIds })).catch((error) => {
-          console.error("Failed to bulk archive threads:", error);
-        });
+      let threadIds;
+      if (matchingEmails.length > 0) {
+        // Found matching emails, extract thread IDs
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+      } else {
+        // No matching emails found - assume ids are already thread IDs
+        // This handles cases where emails come from React Query cache
+        // or other folders not in the global context
+        threadIds = Array.isArray(ids) ? ids.filter(Boolean) : [ids].filter(Boolean);
       }
 
-      return updateByIds(ids, (labels) => {
+      if (threadIds.length === 0) {
+        console.warn("Archive: No thread IDs to archive");
+        return () => {};
+      }
+
+      // Capture thread IDs for undo (must capture before async operations)
+      const undoThreadIds = [...threadIds];
+
+      // Optimistic local update using both original IDs and thread IDs
+      const allIds = [...new Set([...ids, ...threadIds])];
+      updateByIds(allIds, (labels) => {
         labels.delete("Inbox");
       });
+
+      // Also update React Query cache optimistically
+      updateQueryCache(allIds, (email) => {
+        const updatedLabels = (email.labels || []).filter((l) => l !== "Inbox");
+        return { ...email, labels: updatedLabels };
+      });
+
+      // Call bulk backend API with thread IDs
+      dispatch(bulkArchiveEmailsThunk({ threadIds }))
+        .then(() => {
+          invalidateEmailCaches(threadIds);
+        })
+        .catch((error) => {
+          console.error("Failed to bulk archive threads:", error);
+        });
+
+      // Return undo function that calls unarchive API
+      return () => {
+        // Call unarchive API first - this is the authoritative action
+        if (undoThreadIds.length > 0) {
+          dispatch(bulkUnarchiveEmailsThunk({ threadIds: undoThreadIds }))
+            .then(() => {
+              // Force refetch to get fresh data from server
+              invalidateEmailCaches(undoThreadIds);
+            })
+            .catch((error) => {
+              console.error("Failed to unarchive threads:", error);
+            });
+        }
+      };
     },
-    [updateByIds, emails, dispatch]
+    [updateByIds, updateQueryCache, emails, dispatch, invalidateEmailCaches]
+  );
+
+  const unarchive = useCallback(
+    (ids) => {
+      // IDs can be email IDs or thread IDs
+      // First try to match against emails to get thread IDs
+      const match = makeMatch(ids);
+      const matchingEmails = emails.filter(match);
+
+      let threadIds;
+      if (matchingEmails.length > 0) {
+        // Found matching emails, extract thread IDs
+        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+      } else {
+        // No matching emails found - assume ids are already thread IDs
+        threadIds = Array.isArray(ids) ? ids.filter(Boolean) : [ids].filter(Boolean);
+      }
+
+      if (threadIds.length === 0) {
+        console.warn("Unarchive: No thread IDs to unarchive");
+        return () => {};
+      }
+
+      // Capture thread IDs for undo (must capture before async operations)
+      const undoThreadIds = [...threadIds];
+
+      // Optimistic local update - add Inbox label back
+      const allIds = [...new Set([...ids, ...threadIds])];
+      updateByIds(allIds, (labels) => {
+        labels.add("Inbox");
+      });
+
+      // Also update React Query cache optimistically
+      updateQueryCache(allIds, (email) => {
+        const updatedLabels = [...(email.labels || [])];
+        if (!updatedLabels.includes("Inbox")) {
+          updatedLabels.push("Inbox");
+        }
+        return { ...email, labels: updatedLabels };
+      });
+
+      // Call bulk backend API with thread IDs
+      dispatch(bulkUnarchiveEmailsThunk({ threadIds }))
+        .then(() => {
+          invalidateEmailCaches(threadIds);
+        })
+        .catch((error) => {
+          console.error("Failed to bulk unarchive threads:", error);
+        });
+
+      // Return undo function that calls archive API
+      return () => {
+        // Call archive API first - this is the authoritative action
+        if (undoThreadIds.length > 0) {
+          dispatch(bulkArchiveEmailsThunk({ threadIds: undoThreadIds }))
+            .then(() => {
+              // Force refetch to get fresh data from server
+              invalidateEmailCaches(undoThreadIds);
+            })
+            .catch((error) => {
+              console.error("Failed to archive threads:", error);
+            });
+        }
+      };
+    },
+    [updateByIds, updateQueryCache, emails, dispatch, invalidateEmailCaches]
   );
 
   const deleteAllSpam = useCallback(() => {
@@ -1415,6 +1520,7 @@ export default function useMailActions() {
       modifyLabels,
       moveToInbox,
       archive,
+      unarchive,
       moveToSpam,
       notSpam,
       moveToTrash,
@@ -1439,6 +1545,7 @@ export default function useMailActions() {
       modifyLabels,
       moveToInbox,
       archive,
+      unarchive,
       moveToSpam,
       notSpam,
       moveToTrash,

@@ -656,6 +656,9 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
 
       // Snooze info
       snooze_until: last.snooze_until || first.snooze_until,
+
+      // Archive status
+      is_archived: last.is_archived || first.is_archived || false,
     };
   });
 

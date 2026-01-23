@@ -268,7 +268,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
   const shouldDisableArchiveButton = useMemo(() => {
     if (!selectedEmails.length) return true;
-    return !selectedEmails.some((email) => (email.labels || []).includes("Inbox"));
+    // Disable if ANY selected email is already archived (is_archived === true)
+    return selectedEmails.some((email) => email.is_archived === true);
   }, [selectedEmails]);
 
   const showUndoSnackbarForLabelMove = useCallback(
@@ -326,8 +327,9 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       return;
     }
 
-    const emailsWithInbox = selectedEmails.filter((email) => (email.labels || []).includes("Inbox"));
-    if (!emailsWithInbox.length) {
+    // Filter emails that are not already archived (is_archived === false or undefined)
+    const emailsToArchive = selectedEmails.filter((email) => !email.is_archived);
+    if (!emailsToArchive.length) {
       setSnackbar({
         open: true,
         message: "Everything is already archived.",
@@ -337,27 +339,23 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       return;
     }
 
-    const originalLabels = new Map(emailsWithInbox.map((email) => [email.id, [...(email.labels || [])]]));
-    const idsToArchive = [...originalLabels.keys()];
-
-    const conversations = new Set(emailsWithInbox.map((email) => email.thread_id)).size || 1;
+    const idsToArchive = emailsToArchive.map((email) => email.id);
+    const conversations = new Set(emailsToArchive.map((email) => email.thread_id)).size || 1;
 
     try {
-      archive(idsToArchive);
+      const undo = archive(idsToArchive);
       setSnackbar({
         open: true,
         message: conversations > 1 ? `${conversations} conversations archived.` : "Conversation archived.",
-        autoHideDuration: 3000,
+        autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              setEmails((prev) =>
-                prev.map((email) =>
-                  originalLabels.has(email.id) ? { ...email, labels: originalLabels.get(email.id) } : email
-                )
-              );
+              if (typeof undo === "function") {
+                undo();
+              }
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -373,7 +371,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [selectedEmails, archive, selection, setSnackbar, setEmails, showNoConversationsSelectedSnackbar]);
+  }, [selectedEmails, archive, setSnackbar, showNoConversationsSelectedSnackbar]);
 
   const toggleSpamModal = useCallback(() => {
     setState((prev) => ({
@@ -668,7 +666,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
   const allAreArchived = useMemo(() => {
     if (!selectedEmails.length) return false;
-    return selectedEmails.every((email) => !(email.labels || []).includes("Inbox"));
+    // All emails are archived if every email has is_archived === true
+    return selectedEmails.every((email) => email.is_archived === true);
   }, [selectedEmails]);
 
   const hasUnreadEmails = useMemo(() => {
