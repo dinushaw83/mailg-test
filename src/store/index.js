@@ -11,6 +11,7 @@ import settingsReducer from "./slices/settingsSlice";
 import storage from "redux-persist/lib/storage";
 import uiReducer from "./slices/uiSlice";
 import userReducer from "./slices/userSlice";
+import attachmentReducer from "./slices/attachmentSlice";
 
 const rootReducer = combineReducers({
   user: userReducer,
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   notification: notificationReducer,
   mailGAccount: mailGAccountReducer,
   compose: composeReducer,
+  attachments: attachmentReducer,
 });
 
 const persistConfig = {

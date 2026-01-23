@@ -67,6 +67,9 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     isDraft,
     attachments,
     embeddedImages,
+    scheduledDate,
+    scheduledTime,
+    scheduleOption,
   }) => {
     // 1. Check if all recipient fields are empty
     const hasNoRecipients = (!to || to.length === 0) && (!cc || cc.length === 0) && (!bcc || bcc.length === 0);
@@ -107,8 +110,6 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
         return;
       }
     }
-
-    // Duplicate detection removed: allows duplicates across To/Cc/Bcc
 
     if (invalidRecipient) {
       // Get the actual invalid text (could be email, name, or the recipient itself)
@@ -152,6 +153,9 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
       isDraft,
       attachments: sanitizedAttachments,
       embeddedImages,
+      scheduledDate,
+      scheduledTime,
+      scheduleOption,
     });
   };
 
@@ -166,14 +170,19 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     isDraft,
     attachments,
     embeddedImages,
+    scheduledDate,
+    scheduledTime,
+    scheduleOption,
   }) => {
     // If we have a draft ID (UUID from backend), use the send by ID API
     if (currentDraftId && isUUID(currentDraftId.toString())) {
       try {
-        // Show "Sending..." snackbar
+        const isScheduled = !!scheduledDate;
+
+        // Show "Sending..." or "Scheduling..." snackbar
         setSnackbar({
           open: true,
-          message: "Sending...",
+          message: isScheduled ? "Scheduling..." : "Sending...",
           action: null,
           autoHideDuration: null,
         });
@@ -196,6 +205,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
             type: "bcc",
           })),
         ];
+
         const updatePayload = feToBeDraftUpdatePayload({
           subject,
           content,
@@ -215,8 +225,26 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           console.warn("Failed to update draft before sending:", updateAction.payload || updateAction.error);
         }
 
-        // Then send email by ID
-        const action = await dispatch(sendEmailByIdThunk(currentDraftId));
+        // Calculate ISO string for scheduled_send_at
+        let scheduledSendAt = undefined;
+        if (isScheduled) {
+          if (scheduleOption?.date) {
+            scheduledSendAt = scheduleOption.date.toISOString();
+          } else if (scheduledDate) {
+            // Fallback: construct date from date/time strings
+            const [day, month, year] = scheduledDate.split("/");
+            const date = new Date(`${year}-${month}-${day} ${scheduledTime}`);
+            scheduledSendAt = date.toISOString();
+          }
+        }
+
+        // Then send email by ID (optionally with data)
+        const payload = { emailId: currentDraftId };
+        if (scheduledSendAt) {
+          payload.data = { scheduled_send_at: scheduledSendAt };
+        }
+
+        const action = await dispatch(sendEmailByIdThunk(payload));
 
         if (sendEmailByIdThunk.fulfilled.match(action)) {
           // Fetch the sent email to get complete data
@@ -224,12 +252,19 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           const feSentEmail = beToFeDraft(sentEmailData);
 
           if (feSentEmail) {
-            // Add to Redux sent emails
+            // Add to Redux sent/scheduled emails if needed
             const state = store.getState();
-            const currentSent = state.mail.sent || [];
-            const filteredSent = currentSent.filter((email) => email.id?.toString() !== feSentEmail.id?.toString());
-            const updatedSent = [feSentEmail, ...filteredSent];
-            dispatch(setEmailsForCategory({ category: "sent", emails: updatedSent }));
+
+            // Note: For scheduled emails, we might want to put them in 'scheduled' category
+            // but usually a refetch or navigation handles that.
+            // We definitely want to remove it from drafts if it was there.
+
+            if (!isScheduled) {
+              const currentSent = state.mail.sent || [];
+              const filteredSent = currentSent.filter((email) => email.id?.toString() !== feSentEmail.id?.toString());
+              const updatedSent = [feSentEmail, ...filteredSent];
+              dispatch(setEmailsForCategory({ category: "sent", emails: updatedSent }));
+            }
 
             // Remove from drafts if it was a draft
             if (isDraft) {
@@ -250,23 +285,65 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           // Close compose window
           onClose();
 
+          // Prepare success message
+          let successMessage = "Message sent";
+          if (isScheduled) {
+            // Format time logic
+            function formatTime(time) {
+              const [h, m] = time.split(":");
+              return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
+            }
+
+            // Format the scheduled date and time
+            const formatScheduledDateTime = (dateStr, timeStr) => {
+              const date = new Date(dateStr);
+
+              // Format date as "Mon, Sep 29"
+              const dateOptions = {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              };
+              const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+
+              date.getHours(); // 10 (in UTC)
+              date.getMinutes(); // 1
+              date.getSeconds(); // 0
+
+              // Get formatted time strings
+              date.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              }); // "10:01 AM"
+
+              // Simply use the time string as-is
+              const formattedTime = `${date.getHours()}:${date.getMinutes()}`;
+
+              return `${formattedDate}, ${formatTime(formattedTime)}`;
+            };
+            const timeStr = formatScheduledDateTime(scheduledSendAt);
+            successMessage = `Send scheduled for ${timeStr}`;
+          }
+
           // Show success snackbar with Undo button
           setSnackbar({
             open: true,
-            message: "Message sent",
+            message: successMessage,
             action: (
               <React.Fragment>
                 <Button variant="text" size="medium" onClick={handleSnackbarUndo} sx={{ textTransform: "capitalize" }}>
                   Undo
                 </Button>
-                <Button
-                  variant="text"
-                  size="medium"
-                  onClick={handleSnackbarViewMessage}
-                  sx={{ textTransform: "capitalize" }}
-                >
-                  View message
-                </Button>
+                {!isScheduled && (
+                  <Button
+                    variant="text"
+                    size="medium"
+                    onClick={handleSnackbarViewMessage}
+                    sx={{ textTransform: "capitalize" }}
+                  >
+                    View message
+                  </Button>
+                )}
               </React.Fragment>
             ),
             autoHideDuration: 4000,
@@ -275,16 +352,16 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           // Handle error
           setSnackbar({
             open: true,
-            message: action.payload || "Failed to send email",
+            message: action.payload || (isScheduled ? "Failed to schedule email" : "Failed to send email"),
             action: null,
             autoHideDuration: 5000,
           });
         }
       } catch (error) {
-        console.error("Error sending email:", error);
+        console.error("Error sending/scheduling email:", { error });
         setSnackbar({
           open: true,
-          message: "Failed to send email",
+          message: "Failed to send email", // Generic error
           action: null,
           autoHideDuration: 5000,
         });
@@ -461,9 +538,8 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     // After 1 second, show "Sending canceled"
     setTimeout(() => {
       // Push compose parameter to URL if not a reply/forward
-      if (!replyType) {
-        navigate(`?compose=${lastSentEmailRef.current?.id}`);
-      }
+      // Navigate to the drafts folder
+      navigate("/drafts");
 
       // Show "Sending canceled" snackbar
       setSnackbar({
@@ -475,11 +551,11 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     }, 1000);
   };
 
-  const handleSnackbarUndo = async () => {
-    if (!lastSentEmailRef.current) return;
+  const handleSnackbarUndo = async (primaryEmailId) => {
+    if (!primaryEmailId && !lastSentEmailRef.current) return;
 
     const sentEmail = lastSentEmailRef.current;
-    const emailId = sentEmail.emailId || sentEmail.id;
+    let emailId = typeof primaryEmailId === "string" ? primaryEmailId : sentEmail.emailId || sentEmail.id;
 
     // Show "Undoing..." message
     setSnackbar({
@@ -491,7 +567,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
 
     try {
       // Call un-send API endpoint
-      const action = await dispatch(cancelSendEmailByIdThunk(emailId));
+      const action = await handleUnsendEmail(emailId);
 
       if (cancelSendEmailByIdThunk.fulfilled.match(action)) {
         // Fetch the updated email (now back to draft) to get complete data
@@ -522,6 +598,9 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           action: null,
           autoHideDuration: 5000,
         });
+
+        // Navigate to the drafts folder
+        navigate("/drafts");
       } else {
         // Handle error
         console.error("Failed to undo send:", action.payload || action.error);
@@ -541,6 +620,10 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
         autoHideDuration: 5000,
       });
     }
+  };
+
+  const handleUnsendEmail = async (emailId) => {
+    return await dispatch(cancelSendEmailByIdThunk(emailId));
   };
 
   const handleSnackbarViewMessage = () => {
@@ -617,5 +700,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     handleSnackbarUndoDelete,
     lastDeletedDraftRef,
     lastSentEmailRef,
+    handleUnsendEmail,
+    handleSnackbarUndo,
   };
 };

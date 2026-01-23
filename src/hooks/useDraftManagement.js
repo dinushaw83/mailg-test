@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { store } from "../store";
 import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext";
+import { createAttachmentThunk, deleteAttachmentThunk } from "../store/slices/attachmentSlice";
 
 // Helper to check if a string is a UUID
 const isUUID = (str) => {
@@ -43,7 +44,7 @@ export const useDraftManagement = ({
   setComposeWindows,
   isReply = false,
   replyAll = false,
-}) => {
+} = {}) => {
   const { mailFolders, loggedInUser } = useGlobalContext();
   const emails = mailFolders.drafts || [];
   const dispatch = useDispatch();
@@ -172,11 +173,11 @@ export const useDraftManagement = ({
           if (isReplyMode && parentEmail?.id) {
             // Use reply endpoint for replies - payload only needs body, html_body, reply_all
             const payload = feToBeReplyDraftPayload(content, isReplyAllMode);
-            action = await dispatch(createReplyDraftThunk({ emailId: parentEmail.id, draftData: payload }));
+            action = await dispatch(createReplyDraftThunk({ emailId: parentEmail.id, draftData: payload })).unwrap();
           } else {
             // Use regular draft endpoint for compose emails
             const payload = feToBeDraftPayload(to, cc, bcc, subject, content, null);
-            action = await dispatch(createDraftThunk(payload));
+            action = await dispatch(createDraftThunk(payload)).unwrap();
           }
         } else {
           // PUT to update existing draft
@@ -215,99 +216,23 @@ export const useDraftManagement = ({
             category: "primary",
             recipients,
           });
-          action = await dispatch(updateDraftThunk({ emailId: backendId, draftData: payload }));
+          action = await dispatch(updateDraftThunk({ emailId: backendId, draftData: payload })).unwrap();
         }
 
-        // Check if thunk was fulfilled
-        if (createDraftThunk.fulfilled.match(action) || createReplyDraftThunk.fulfilled.match(action)) {
-          const backendDraft = action.payload;
-          const newBackendId = backendDraft.id;
+        const backendDraft = action;
+        const newBackendId = backendDraft.id;
 
-          try {
-            // Fetch the created draft using unwrap() - throws if rejected
-            const fetchedDraft = await dispatch(fetchEmailByIdThunk(newBackendId)).unwrap();
+        try {
+          // Fetch the created draft using unwrap() - throws if rejected
+          const fetchedDraft = await dispatch(fetchEmailByIdThunk(newBackendId)).unwrap();
 
-            // Transform fetched draft data
-            const feDraft = beToFeDraft(fetchedDraft);
-            if (!feDraft) {
-              console.warn("Failed to transform fetched draft response");
-              // Fallback to POST response
-              const feDraftFallback = beToFeDraft(backendDraft);
-              if (feDraftFallback) {
-                // Update Redux drafts array with POST response
-                const state = store.getState();
-                const currentDrafts = state.mail.drafts || [];
-                const filteredDrafts = currentDrafts.filter(
-                  (email) =>
-                    email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
-                );
-                const updatedDrafts = [feDraftFallback, ...filteredDrafts];
-                dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
-
-                // Update draft ID to backend UUID
-                setDraftId(newBackendId);
-                backendDraftIdRef.current = newBackendId;
-                isFirstSaveRef.current = false;
-
-                // Update last API content reference
-                lastApiContentRef.current = {
-                  to: to.map((r) => r.email || r.name || r).sort(),
-                  cc: cc.map((r) => r.email || r.name || r).sort(),
-                  bcc: bcc.map((r) => r.email || r.name || r).sort(),
-                  subject: subject.trim(),
-                  html: content.html.trim(),
-                  plainText: content.plainText.trim(),
-                };
-
-                // Update compose window draft ID
-                if (composeWindowId && setComposeWindows) {
-                  setComposeWindows((prev) =>
-                    prev.map((window) =>
-                      window.id === composeWindowId ? { ...window, draftId: newBackendId } : window
-                    )
-                  );
-                }
-              }
-              return;
-            }
-
-            // Update Redux drafts array with fetched draft
-            const state = store.getState();
-            const currentDrafts = state.mail.drafts || [];
-            const filteredDrafts = currentDrafts.filter(
-              (email) =>
-                email.id?.toString() !== draftId?.toString() && email.id?.toString() !== fetchedDraft.id?.toString()
-            );
-            const updatedDrafts = [feDraft, ...filteredDrafts];
-            dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
-
-            // Update draft ID to backend UUID
-            setDraftId(newBackendId);
-            backendDraftIdRef.current = newBackendId;
-            isFirstSaveRef.current = false;
-
-            // Update lastApiContentRef with CURRENT form values (what we sent in POST)
-            // This prevents unnecessary PUT calls when form fields match what we sent
-            lastApiContentRef.current = {
-              to: to.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
-              cc: cc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
-              bcc: bcc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
-              subject: subject.trim(),
-              html: content.html.trim(),
-              plainText: content.plainText.trim(),
-            };
-
-            // Update compose window draft ID
-            if (composeWindowId && setComposeWindows) {
-              setComposeWindows((prev) =>
-                prev.map((window) => (window.id === composeWindowId ? { ...window, draftId: newBackendId } : window))
-              );
-            }
-          } catch (error) {
-            console.error("Failed to fetch draft details:", error);
-            // Fallback: use POST response data
-            const feDraft = beToFeDraft(backendDraft);
-            if (feDraft) {
+          // Transform fetched draft data
+          const feDraft = beToFeDraft(fetchedDraft);
+          if (!feDraft) {
+            console.warn("Failed to transform fetched draft response");
+            // Fallback to POST response
+            const feDraftFallback = beToFeDraft(backendDraft);
+            if (feDraftFallback) {
               // Update Redux drafts array with POST response
               const state = store.getState();
               const currentDrafts = state.mail.drafts || [];
@@ -315,7 +240,7 @@ export const useDraftManagement = ({
                 (email) =>
                   email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
               );
-              const updatedDrafts = [feDraft, ...filteredDrafts];
+              const updatedDrafts = [feDraftFallback, ...filteredDrafts];
               dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
 
               // Update draft ID to backend UUID
@@ -325,9 +250,9 @@ export const useDraftManagement = ({
 
               // Update last API content reference
               lastApiContentRef.current = {
-                to: to.map((r) => r.email || r.name || r).sort(),
-                cc: cc.map((r) => r.email || r.name || r).sort(),
-                bcc: bcc.map((r) => r.email || r.name || r).sort(),
+                to: to.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
+                cc: cc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
+                bcc: bcc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
                 subject: subject.trim(),
                 html: content.html.trim(),
                 plainText: content.plainText.trim(),
@@ -340,48 +265,33 @@ export const useDraftManagement = ({
                 );
               }
             }
-          }
-
-          // Note: React Query cache invalidation is handled by listeners in reactQueryListeners.js
-        } else if (updateDraftThunk.fulfilled.match(action)) {
-          const backendDraft = action.payload;
-
-          // Transform backend response to frontend format
-          const feDraft = beToFeDraft(backendDraft);
-          if (!feDraft) {
-            console.warn("Failed to transform backend draft response");
             return;
           }
-
-          // Update Redux drafts array
-          // Get current drafts from Redux state
+          // Update Redux drafts array with fetched draft
           const state = store.getState();
           const currentDrafts = state.mail.drafts || [];
-
-          // Remove existing draft (by both local ID and backend ID)
           const filteredDrafts = currentDrafts.filter(
             (email) =>
-              email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
+              email.id?.toString() !== draftId?.toString() && email.id?.toString() !== fetchedDraft.id?.toString()
           );
-
-          // Add backend draft at the beginning
           const updatedDrafts = [feDraft, ...filteredDrafts];
           dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
 
           // Update draft ID to backend UUID
-          const newBackendId = backendDraft.id;
           setDraftId(newBackendId);
           backendDraftIdRef.current = newBackendId;
           isFirstSaveRef.current = false;
 
-          // Update last API content reference to track what was sent
+          // Update lastApiContentRef with CURRENT form values (what we sent in POST)
+          // This prevents unnecessary PUT calls when form fields match what we sent
           lastApiContentRef.current = {
-            to: to.map((r) => r.email || r.name || r).sort(),
-            cc: cc.map((r) => r.email || r.name || r).sort(),
-            bcc: bcc.map((r) => r.email || r.name || r).sort(),
+            to: to.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
+            cc: cc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
+            bcc: bcc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
             subject: subject.trim(),
             html: content.html.trim(),
             plainText: content.plainText.trim(),
+            attachments: feDraft.attachments,
           };
 
           // Update compose window draft ID
@@ -390,19 +300,48 @@ export const useDraftManagement = ({
               prev.map((window) => (window.id === composeWindowId ? { ...window, draftId: newBackendId } : window))
             );
           }
+        } catch (error) {
+          console.error("Failed to fetch draft details:", error);
+          // Fallback: use POST response data
+          const feDraft = beToFeDraft(backendDraft);
+          if (feDraft) {
+            // Update Redux drafts array with POST response
+            const state = store.getState();
+            const currentDrafts = state.mail.drafts || [];
+            const filteredDrafts = currentDrafts.filter(
+              (email) =>
+                email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
+            );
+            const updatedDrafts = [feDraft, ...filteredDrafts];
+            dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
 
-          // Note: React Query cache invalidation is handled by listeners in reactQueryListeners.js
-        } else if (
-          createDraftThunk.rejected.match(action) ||
-          createReplyDraftThunk.rejected.match(action) ||
-          updateDraftThunk.rejected.match(action)
-        ) {
-          console.error("Error saving draft to backend:", action.payload || action.error);
-          // Don't break local save flow - just log the error
+            // Update draft ID to backend UUID
+            setDraftId(newBackendId);
+            backendDraftIdRef.current = newBackendId;
+            isFirstSaveRef.current = false;
+
+            // Update last API content reference
+            lastApiContentRef.current = {
+              to: to.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
+              cc: cc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
+              bcc: bcc.map((r) => (typeof r === "string" ? r : r.email || r.name || r)).sort(),
+              subject: subject.trim(),
+              html: content.html.trim(),
+              plainText: content.plainText.trim(),
+              attachments: feDraft.attachments,
+            };
+
+            // Update compose window draft ID
+            if (composeWindowId && setComposeWindows) {
+              setComposeWindows((prev) =>
+                prev.map((window) => (window.id === composeWindowId ? { ...window, draftId: newBackendId } : window))
+              );
+            }
+          }
         }
       } catch (error) {
         console.error("Error saving draft to backend:", error);
-        // Don't break local save flow - just log the error
+        throw error;
       }
     },
     [
@@ -421,6 +360,27 @@ export const useDraftManagement = ({
       replyType,
     ]
   );
+
+  // Force actual save to backend NOW (used for attachments)
+  const saveToBackendNow = useCallback(async () => {
+    // Determine if this is first save
+    const hasBackendDraft = backendDraftIdRef.current !== null;
+    const hasCurrentDraftId = currentDraftId && isUUID(currentDraftId.toString());
+    const isFirstSave = !hasBackendDraft && !hasCurrentDraftId && isFirstSaveRef.current;
+
+    // Clear existing API call timeout
+    if (apiCallTimeoutRef.current) {
+      clearTimeout(apiCallTimeoutRef.current);
+    }
+
+    try {
+      await saveDraftToBackend(isFirstSave);
+      return backendDraftIdRef.current;
+    } catch (error) {
+      console.error("Manual save to backend failed:", error);
+      return null;
+    }
+  }, [currentDraftId, saveDraftToBackend]);
 
   // Create draft email object
   const createDraftEmail = useCallback(
@@ -750,12 +710,51 @@ export const useDraftManagement = ({
     }
   }, [draftId, dispatch]);
 
+  const saveAttachment = useCallback(
+    async (attachmentData) => {
+      let activeDraftId = draftId;
+
+      // If we don't have a backend draft ID, force-save now to get one
+      if (!activeDraftId || !isUUID(activeDraftId.toString())) {
+        activeDraftId = await saveToBackendNow();
+      }
+
+      if (activeDraftId && isUUID(activeDraftId.toString())) {
+        const data = await dispatch(createAttachmentThunk({ emailId: activeDraftId, attachmentData })).unwrap();
+        return { error: null, data };
+      } else {
+        return { error: "No draft found", data: null };
+      }
+    },
+    [dispatch, createAttachmentThunk, draftId, saveToBackendNow]
+  );
+
+  const removeAttachment = useCallback(
+    async ({ attachmentId }) => {
+      if (draftId && attachmentId) {
+        try {
+          await dispatch(deleteAttachmentThunk({ attachmentId, emailId: draftId })).unwrap();
+          return { error: null };
+        } catch (error) {
+          console.error("Failed to delete attachment:", error);
+          return { error: error.message || "Failed to delete attachment" };
+        }
+      }
+      return { error: "Missing draft ID or attachment ID" };
+    },
+    [dispatch, deleteAttachmentThunk, draftId]
+  );
+
   return {
     saveDraftManually,
+    saveToBackendNow,
     deleteDraft,
     isDraft,
     draftId,
     draftSaved,
     hasDraftContent,
+    saveAttachment,
+    removeAttachment,
+    attachments: lastApiContentRef.current?.attachments || [],
   };
 };

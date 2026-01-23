@@ -366,10 +366,8 @@ export const useScheduleEmail = (replyType = null, originalEmail = null) => {
           });
         });
 
-        // Navigate to the draft
-        if (!replyType) {
-          navigate(`?compose=${emailToRestore.id}`);
-        }
+        // Navigate to the drafts folder
+        navigate("/drafts");
 
         // Clear the ref after successful state update
         lastScheduledEmailRef.current = null;
