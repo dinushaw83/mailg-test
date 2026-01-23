@@ -105,15 +105,21 @@ const extractFolderOrLabelFromPath = (pathname) => {
 /**
  * Generate search operator prefix based on folder or label
  * @param {string | null} folder - Folder name
- * @param {string | null} label - Label name
- * @returns {string | null} - Search operator prefix (e.g., "in: sent" or "label: Work")
+ * @param {string | null} label - Label name (may be nested with :: or / separators)
+ * @returns {string | null} - Search operator prefix (e.g., "in:sent" or "label:Work")
  */
 const getSearchOperatorPrefix = (folder, label) => {
   if (folder) {
     return `in:${folder}`;
   }
   if (label) {
-    return `label:${label}`;
+    // Extract just the final label name from nested path (e.g., "Parent::Child" -> "Child")
+    const labelName = label.includes("::") 
+      ? label.split("::").pop() 
+      : label.includes("/") 
+        ? label.split("/").pop() 
+        : label;
+    return `label:${labelName}`;
   }
   return null;
 };
@@ -171,8 +177,12 @@ const SearchBar = () => {
       return;
     }
 
-    // Don't populate if we don't have a folder or label operator
+    // Clear search value when navigating to inbox or a route without folder operator
     if (!folderOperatorPrefix) {
+      // Only clear if the current value is a folder/label operator (not user-typed search)
+      if (searchValue.match(/^(in:|label:)\S*$/i)) {
+        setSearchValue("");
+      }
       return;
     }
 
@@ -488,30 +498,8 @@ const SearchBar = () => {
     setShowAdvancedSearch(false);
     setIsFocused(true);
     setHighlightedIndex(-1);
-
-    // Auto-populate folder operator when search bar is focused and empty
-    // Don't populate if we're on a search route
-    if (location.pathname.startsWith("/search")) {
-      return;
-    }
-
-    // Don't populate if we don't have a folder or label operator
-    if (!folderOperatorPrefix) {
-      return;
-    }
-
-    // Only populate if search bar is empty or only contains the operator
-    if (!searchValue.trim() || searchValue.trim() === folderOperatorPrefix) {
-      // Check if the operator is already in the search value
-      const operatorPattern = currentFolder
-        ? new RegExp(`in:\\s*${currentFolder}`, "i")
-        : new RegExp(`label:\\s*${currentLabel?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
-
-      // Only populate if the operator is not already present
-      if (!operatorPattern.test(searchValue)) {
-        setSearchValue(folderOperatorPrefix);
-      }
-    }
+    // Don't auto-populate on focus - let the useEffect handle initial population
+    // This allows users to clear the operator and type a different search
   };
 
   const handleAdvancedSearchClick = () => {

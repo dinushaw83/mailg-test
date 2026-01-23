@@ -907,25 +907,36 @@ const mailSlice = createSlice({
       .addCase(deleteLabelThunk.fulfilled, (state, action) => {
         const deletedId = action.payload.id;
         if (deletedId) {
-          // Remove label from state
-          delete state.labels[deletedId];
+          // Recursive function to collect all descendant label IDs
+          const collectDescendants = (parentId, collected = new Set()) => {
+            Object.entries(state.labels).forEach(([id, label]) => {
+              if (label.parent_id === parentId && !collected.has(id)) {
+                collected.add(id);
+                // Recursively collect children of this child
+                collectDescendants(id, collected);
+              }
+            });
+            return collected;
+          };
 
-          // Remove from mappings
+          // Collect all descendants (deeply nested children)
+          const descendantIds = collectDescendants(deletedId);
+
+          // Remove the deleted label itself
+          delete state.labels[deletedId];
           const compositeKey = state.labelIdToKeyMap[deletedId];
           if (compositeKey) {
             delete state.labelIdToKeyMap[deletedId];
             delete state.keyToLabelIdMap[compositeKey];
           }
 
-          // Also remove children (cascade delete)
-          Object.entries(state.labels).forEach(([id, label]) => {
-            if (label.parent_id === deletedId) {
-              delete state.labels[id];
-              const childKey = state.labelIdToKeyMap[id];
-              if (childKey) {
-                delete state.labelIdToKeyMap[id];
-                delete state.keyToLabelIdMap[childKey];
-              }
+          // Remove all descendants (cascade delete)
+          descendantIds.forEach((id) => {
+            delete state.labels[id];
+            const childKey = state.labelIdToKeyMap[id];
+            if (childKey) {
+              delete state.labelIdToKeyMap[id];
+              delete state.keyToLabelIdMap[childKey];
             }
           });
         }
