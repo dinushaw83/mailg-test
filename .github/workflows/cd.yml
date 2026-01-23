@@ -336,7 +336,14 @@ jobs:
           fi
           
           echo "✅ All deployment secrets configured"
-
+    
+      - name: Debug SSH setup
+        run: |
+          echo "SSH_AUTH_SOCK: $SSH_AUTH_SOCK"
+          ssh-add -l || echo "No SSH keys loaded"
+          echo "Testing connection..."
+          ssh -v "${{ env.VM_USER }}@${{ env.VM_HOST }}" || echo "Connection failed"
+          
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
