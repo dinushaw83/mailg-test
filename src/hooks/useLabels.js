@@ -262,11 +262,16 @@ export default function useLabels() {
   const removeLabelFromThread = useCallback(
     (thread_id, labelKey) => {
       const normalizedThreadId = String(thread_id);
-      
+
       // Optimistic update - remove label from local state immediately
       setEmails((prev) =>
         (prev || []).map((m) =>
-          getThreadKey(m) === normalizedThreadId ? { ...m, labels: (m.labels || []).filter((l) => l !== labelKey && l?.name !== labelKey && l?.id !== labelKey) } : m
+          getThreadKey(m) === normalizedThreadId
+            ? {
+                ...m,
+                labels: (m.labels || []).filter((l) => l !== labelKey && l?.name !== labelKey && l?.id !== labelKey),
+              }
+            : m
         )
       );
 
@@ -284,7 +289,7 @@ export default function useLabels() {
           // Invalidate and refetch thread-specific cache
           queryClient.invalidateQueries({ queryKey: ["email", normalizedThreadId] });
           await queryClient.refetchQueries({ queryKey: ["email", normalizedThreadId] });
-          
+
           // Invalidate all email list queries
           queryClient.invalidateQueries({
             predicate: (query) => {
@@ -292,7 +297,7 @@ export default function useLabels() {
               return Array.isArray(key) && key[0] === "emails";
             },
           });
-          
+
           // Force refetch of email lists
           await queryClient.refetchQueries({
             predicate: (query) => {
@@ -300,7 +305,7 @@ export default function useLabels() {
               return Array.isArray(key) && key[0] === "emails";
             },
           });
-          
+
           // Also invalidate email counts
           queryClient.invalidateQueries({ queryKey: ["emailCounts"] });
         })
@@ -314,7 +319,7 @@ export default function useLabels() {
   const addLabelToThread = useCallback(
     (thread_id, labelKey) => {
       const normalizedThreadId = String(thread_id);
-      
+
       // Optimistic update - add label to local state immediately
       setEmails((prev) =>
         (prev || []).map((m) =>
@@ -340,7 +345,7 @@ export default function useLabels() {
         .then(() => {
           // Invalidate thread-specific cache
           queryClient.invalidateQueries({ queryKey: ["email", normalizedThreadId] });
-          
+
           // Invalidate all email list queries so they refetch
           queryClient.invalidateQueries({
             predicate: (query) => {

@@ -55,7 +55,10 @@ const labelService = {
    * @param {boolean} [updates.show_if_unread] - Show if unread
    * @returns {Promise<Object>} Updated label object
    */
-  updateLabel: async (id, { name, color, parent_id, show_in_label_list, show_in_message_list, show_if_unread } = {}) => {
+  updateLabel: async (
+    id,
+    { name, color, parent_id, show_in_label_list, show_in_message_list, show_if_unread } = {}
+  ) => {
     try {
       // Build request body with only defined values
       const body = {};

@@ -11,7 +11,7 @@ import { getAutoCompleteSuggestion } from "../../../utils/search";
 export function useAutocompleteState(searchValue, emails, isFocused) {
   const [autoCompleteSuggestion, setAutoCompleteSuggestion] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  
+
   // Track previous values to prevent unnecessary updates
   const prevSearchValueRef = useRef(searchValue);
   const prevIsFocusedRef = useRef(isFocused);
@@ -37,7 +37,7 @@ export function useAutocompleteState(searchValue, emails, isFocused) {
   useEffect(() => {
     const searchValueChanged = prevSearchValueRef.current !== searchValue;
     const focusChanged = prevIsFocusedRef.current !== isFocused;
-    
+
     if (searchValueChanged || focusChanged) {
       setHighlightedIndex(-1);
       prevSearchValueRef.current = searchValue;

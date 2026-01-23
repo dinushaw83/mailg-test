@@ -387,7 +387,7 @@ export const EmailContent = ({
       ? messagesFromOthers[messagesFromOthers.length - 1]
       : messages[messages.length - 1];
   }, [messages, loggedInUser]);
-  
+
   const lastMessage = messages[messages.length - 1];
   const isLastDraft = lastMessage?.folder === "drafts";
   const isLastScheduled = hasLabel(lastMessage?.labels, "Scheduled");

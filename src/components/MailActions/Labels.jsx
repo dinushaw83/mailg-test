@@ -283,7 +283,7 @@ export const Labels = ({
               let count = 0;
               for (const [keyObj, val] of labelCounts.entries()) {
                 // Handle both object labels (with .id) and string labels
-                const labelId = typeof keyObj === 'string' ? keyObj : keyObj?.id;
+                const labelId = typeof keyObj === "string" ? keyObj : keyObj?.id;
                 if (labelId === label.key) {
                   count = val;
                   break; // Stop once we found the match

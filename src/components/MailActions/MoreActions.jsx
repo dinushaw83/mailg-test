@@ -545,94 +545,94 @@ const MoreActions = ({ hasItemsSelected, threads, showAdvancedMenu, setShowAdvan
               {!showAdvancedMenu && (
                 <>
                   {anyUnstarred && (
-                      <ActionMenuItem
-                        icon="star"
-                        label="Add star"
-                        filled={false}
-                        onClick={() => handleStar(true)}
-                        disabled={onlyOneItemSelected}
-                      />
-                    )}
-                    {anyStarred && (
-                      <ActionMenuItem
-                        icon="star"
-                        label="Remove star"
-                        filled={true}
-                        onClick={() => handleStar(false)}
-                        disabled={onlyOneItemSelected}
-                      />
-                    )}
-                    {anyNotImportant && (
-                      <ActionMenuItem
-                        icon={"label_important_outline"}
-                        label={"Mark as important"}
-                        onClick={() => handleImportant(true)}
-                        filled={false}
-                        fontSize={20}
-                        disabled={onlyOneItemSelected}
-                      />
-                    )}
+                    <ActionMenuItem
+                      icon="star"
+                      label="Add star"
+                      filled={false}
+                      onClick={() => handleStar(true)}
+                      disabled={onlyOneItemSelected}
+                    />
+                  )}
+                  {anyStarred && (
+                    <ActionMenuItem
+                      icon="star"
+                      label="Remove star"
+                      filled={true}
+                      onClick={() => handleStar(false)}
+                      disabled={onlyOneItemSelected}
+                    />
+                  )}
+                  {anyNotImportant && (
+                    <ActionMenuItem
+                      icon={"label_important_outline"}
+                      label={"Mark as important"}
+                      onClick={() => handleImportant(true)}
+                      filled={false}
+                      fontSize={20}
+                      disabled={onlyOneItemSelected}
+                    />
+                  )}
 
-                    {anyImportant && (
-                      <ActionMenuItem
-                        icon="label_important"
-                        label={"Mark as not important"}
-                        onClick={() => handleImportant(false)}
-                        filled={true}
-                        fontSize={18}
-                        disabled={onlyOneItemSelected}
-                      />
-                    )}
+                  {anyImportant && (
+                    <ActionMenuItem
+                      icon="label_important"
+                      label={"Mark as not important"}
+                      onClick={() => handleImportant(false)}
+                      filled={true}
+                      fontSize={18}
+                      disabled={onlyOneItemSelected}
+                    />
+                  )}
 
-                    <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
-                    <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
-                    <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
-                  </>
-                )}
-                {showAdvancedMenu && (
-                  <>
-                    {anyReadEmails && (
-                      <ActionMenuItem icon={"mark_email_unread"} label={"Mark as unread"} onClick={markAsUnread} />
-                    )}
-                    {anyNotImportant && (
-                      <ActionMenuItem
-                        icon={"label_important_outline"}
-                        label={"Mark as important"}
-                        onClick={() => handleImportant(true)}
-                        filled={false}
-                        fontSize={20}
-                      />
-                    )}
+                  <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
+                  <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+                  <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
+                </>
+              )}
+              {showAdvancedMenu && (
+                <>
+                  {anyReadEmails && (
+                    <ActionMenuItem icon={"mark_email_unread"} label={"Mark as unread"} onClick={markAsUnread} />
+                  )}
+                  {anyNotImportant && (
+                    <ActionMenuItem
+                      icon={"label_important_outline"}
+                      label={"Mark as important"}
+                      onClick={() => handleImportant(true)}
+                      filled={false}
+                      fontSize={20}
+                    />
+                  )}
 
-                    {anyImportant && (
-                      <ActionMenuItem
-                        icon="label_important"
-                        label={"Mark as not important"}
-                        onClick={() => handleImportant(false)}
-                        filled={true}
-                        fontSize={18}
-                      />
-                    )}
-                    {anyUnstarred && (
-                      <ActionMenuItem icon="star" label="Add star" filled={false} onClick={() => handleStar(true)} />
-                    )}
-                    {anyStarred && (
-                      <ActionMenuItem icon="star" label="Remove star" filled={true} onClick={() => handleStar(false)} />
-                    )}
-                    <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
-                    <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
-                    <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
-                  </>
-                )}
-                <Divider sx={{ marginY: "6px" }} />
-                <ActionMenuItem
-                  icon="swap_horiz"
-                  label={showAdvancedMenu ? "Switch to simple toolbar" : "Switch to advanced toolbar"}
-                  onClick={() => {
-                    setShowAdvancedMenu((prev) => !prev);
-                    handleClose();
-                  }}
-                />
+                  {anyImportant && (
+                    <ActionMenuItem
+                      icon="label_important"
+                      label={"Mark as not important"}
+                      onClick={() => handleImportant(false)}
+                      filled={true}
+                      fontSize={18}
+                    />
+                  )}
+                  {anyUnstarred && (
+                    <ActionMenuItem icon="star" label="Add star" filled={false} onClick={() => handleStar(true)} />
+                  )}
+                  {anyStarred && (
+                    <ActionMenuItem icon="star" label="Remove star" filled={true} onClick={() => handleStar(false)} />
+                  )}
+                  <ActionMenuItem icon="filter_list" label="Filter messages like these" onClick={() => {}} />
+                  <ActionMenuItem icon="volume_off" label="Mute" onClick={handleMute} />
+                  <ActionMenuItem icon="attach_file" label="Forward as attachment" horizontal onClick={() => {}} />
+                </>
+              )}
+              <Divider sx={{ marginY: "6px" }} />
+              <ActionMenuItem
+                icon="swap_horiz"
+                label={showAdvancedMenu ? "Switch to simple toolbar" : "Switch to advanced toolbar"}
+                onClick={() => {
+                  setShowAdvancedMenu((prev) => !prev);
+                  handleClose();
+                }}
+              />
             </>
           )}
         </Box>
