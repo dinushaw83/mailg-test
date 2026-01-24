@@ -975,7 +975,7 @@ export default function useMailActions() {
 
       // Extract email IDs for backend sync
       let emailIds = [];
-      
+
       // If all ids are already UUIDs, use them directly (most reliable)
       if (normalizedIds.length > 0 && normalizedIds.every((id) => uuidPattern.test(id))) {
         emailIds = normalizedIds;
@@ -1048,26 +1048,14 @@ export default function useMailActions() {
 
       // Optimistic updates - update both query cache and local state synchronously
       updateQueryCache(resolvedThreadIds, (email) => ({ ...email, is_important: newValue }));
-      
+
       // Force immediate state update with new object references to trigger re-render
-      setEmails((prev) =>
-        prev.map((m) => 
-          threadIdSet.has(m.thread_id) 
-            ? { ...m, is_important: newValue } 
-            : m
-        )
-      );
+      setEmails((prev) => prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: newValue } : m)));
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(resolvedThreadIds, (email) => ({ ...email, is_important: !newValue }));
-        setEmails((prev) =>
-          prev.map((m) => 
-            threadIdSet.has(m.thread_id) 
-              ? { ...m, is_important: !newValue } 
-              : m
-          )
-        );
+        setEmails((prev) => prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: !newValue } : m)));
       };
 
       // Use bulk endpoint for all threads at once
@@ -1248,7 +1236,7 @@ export default function useMailActions() {
       // If ids are already email UUIDs (from ActionBar), use them directly
       // Otherwise, find matching emails by thread ID or other keys
       const idsToDelete = [...ids]; // Copy to avoid mutation issues
-      
+
       // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
       const firstId = String(idsToDelete[0] || "");
       const isUUID = firstId.includes("-") && firstId.length >= 32;
@@ -1256,20 +1244,20 @@ export default function useMailActions() {
       // Use the IDs directly for the API call
       // For UUIDs, use them as email IDs; otherwise treat as thread IDs
       const emailIds = isUUID ? idsToDelete : [];
-      
+
       // If not UUIDs, we need to resolve them - but do it via functional update
       // to avoid stale closure issues with the emails array
       if (!isUUID) {
         // For thread IDs, we still use them directly for deletion
         // The backend handles thread_id to email_id resolution
         const match = makeMatch(idsToDelete);
-        
+
         // Remove from local state first (optimistic update)
         setEmails((prev) => {
           const matchingEmails = prev.filter(match);
           const resolvedEmailIds = matchingEmails.map((email) => email.id);
           const resolvedThreadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
-          
+
           // Call bulk backend API with resolved email IDs
           if (resolvedEmailIds.length > 0) {
             dispatch(bulkDeleteEmailThunk({ emailIds: resolvedEmailIds }))
@@ -1280,7 +1268,7 @@ export default function useMailActions() {
                 console.error("Failed to bulk delete emails permanently:", error);
               });
           }
-          
+
           return prev.filter((m) => !match(m));
         });
         return;

@@ -114,10 +114,10 @@ const getSearchOperatorPrefix = (folder, label) => {
   }
   if (label) {
     // Extract just the final label name from nested path (e.g., "Parent::Child" -> "Child")
-    const labelName = label.includes("::") 
-      ? label.split("::").pop() 
-      : label.includes("/") 
-        ? label.split("/").pop() 
+    const labelName = label.includes("::")
+      ? label.split("::").pop()
+      : label.includes("/")
+        ? label.split("/").pop()
         : label;
     return `label:${labelName}`;
   }
