@@ -114,6 +114,39 @@ const searchService = {
       throw error;
     }
   },
+  /**
+   * Get search suggestions from the backend API
+   * @param {Object} params - Search suggestion parameters
+   * @param {string} params.q - Partial query for suggestions (required, can be empty string)
+   * @param {number} params.limit - Maximum number of suggestions per category (default: 10, max: 20)
+   * @returns {Promise<Object>} Search suggestions with contacts, labels, folders, recent_searches, operators
+   */
+  getSearchSuggestions: async (params = {}) => {
+    try {
+      const { q = "", limit = 10 } = params;
+
+      const queryParams = {
+        q: q || "", // Backend requires q parameter, can be empty string
+        limit: Math.min(Math.max(limit, 1), 20), // Clamp between 1 and 20
+      };
+
+      const response = await apiClient.get("/v1/search/suggestions", { params: queryParams });
+
+      const payload = response?.data?.data ?? response?.data ?? {};
+      
+      return {
+        contacts: payload.contacts || [],
+        labels: payload.labels || [],
+        folders: payload.folders || [],
+        categories: payload.categories || [],
+        recent_searches: payload.recent_searches || [],
+        operators: payload.operators || [],
+      };
+    } catch (error) {
+      console.error("Error fetching search suggestions:", error);
+      throw error;
+    }
+  },
 };
 
 export default searchService;

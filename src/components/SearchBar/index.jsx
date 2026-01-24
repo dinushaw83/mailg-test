@@ -3,18 +3,14 @@ import { Chip, List, ListItem, ListItemIcon, ListItemText, ClickAwayListener } f
 import styles from "./SearchBar.module.css";
 import { Icon } from "../InboxView/ActionBar";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useSearchIndex, useSearchUrlSync, useSearchNavigation, useAutocompleteState } from "./hooks";
 import {
-  searchEmails,
-  getRecentSearchSuggestions,
-  isSearchIndexReady,
-  addToSearchHistory,
-  searchContacts,
-  addBasicSearchQuery,
-  removeFromSearchHistory,
-  getMatchingPreviousSearches,
-  getAllPreviousSearches,
-} from "../../utils/search";
+  useSearchUrlSync,
+  useSearchNavigation,
+  useAutocompleteState,
+  useThrottledSearch,
+  useSearchSuggestions,
+} from "./hooks";
+import { addToSearchHistory, addBasicSearchQuery, removeFromSearchHistory } from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
@@ -149,12 +145,17 @@ const SearchBar = () => {
   );
 
   // Custom hooks for managing search bar state and effects
-  useSearchIndex(emails);
   useSearchUrlSync(location, searchQuery, isAdvancedSearch, setSearchValue);
   useSearchNavigation(location, searchValue, setSearchValue, activeFilters, setActiveFilters);
   useActiveFiltersSync(location, setActiveFilters, loggedInUser?.email);
   const { autoCompleteSuggestion, setAutoCompleteSuggestion, highlightedIndex, setHighlightedIndex } =
     useAutocompleteState(searchValue, emails, isFocused);
+
+  // Throttle search value for API calls
+  const throttledSearchValue = useThrottledSearch(searchValue, 300);
+
+  // Fetch suggestions from API
+  const { suggestions: apiSuggestions } = useSearchSuggestions(throttledSearchValue, isFocused);
 
   // Reset removed suggestions when the dropdown closes
   useEffect(() => {
@@ -187,14 +188,6 @@ const SearchBar = () => {
     }
   }, [location.pathname, folderOperatorPrefix, currentFolder, currentLabel, searchValue]);
 
-  // Get search results
-  const searchResults = useMemo(() => {
-    if (!isSearchIndexReady() || !searchValue.trim()) {
-      return [];
-    }
-    return searchEmails(searchValue, { limit: 5 });
-  }, [searchValue]);
-
   // Get filtered emails based on active filters
   const filteredEmails = useMemo(() => {
     if (!emails || emails.length === 0) return [];
@@ -222,47 +215,94 @@ const SearchBar = () => {
     return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
   }, [emails, activeFilters]);
 
-  // Get previous searches that match current input (when typing)
-  const matchingPreviousSearches = useMemo(() => {
-    if (!searchValue.trim()) {
-      return [];
-    }
-    const matches = getMatchingPreviousSearches(searchValue, 5);
-    // Filter out suggestions that were removed in this session
-    return matches.filter((suggestion) => !removedSuggestionsInSession.includes(suggestion));
-  }, [searchValue, removedSuggestionsInSession]);
+  const searchResults = [];
+  const recentSuggestions = [];
+  const matchingPreviousSearches = [];
+  const allPreviousSearches = [];
 
-  // Get all previous searches (when input is empty)
-  const allPreviousSearches = useMemo(() => {
-    if (searchValue.trim()) {
-      return [];
-    }
-    const previousSearches = getAllPreviousSearches(6);
-    // Filter out suggestions that were removed in this session
-    return previousSearches.filter((suggestion) => !removedSuggestionsInSession.includes(suggestion));
-  }, [searchValue, removedSuggestionsInSession]);
-
-  // Get recent suggestions (when input is empty) - includes email subjects/names
-  const recentSuggestions = useMemo(() => {
-    if (searchValue.trim() || !isSearchIndexReady()) {
-      return [];
-    }
-    const allSuggestions = getRecentSearchSuggestions(5);
-    // Filter out suggestions that were removed in this session
-    const filteredSuggestions = allSuggestions.filter(
-      (suggestion) => !removedSuggestionsInSession.includes(suggestion)
-    );
-    // Return only up to 6 suggestions
-    return filteredSuggestions.slice(0, 6);
-  }, [searchValue, isFocused, removedSuggestionsInSession]);
-
-  // Get matching contacts
+  // Map API suggestions to matching contacts
   const matchingContacts = useMemo(() => {
-    if (!searchValue.trim() || !emails || emails.length === 0) {
+    if (!apiSuggestions.contacts || apiSuggestions.contacts.length === 0) {
       return [];
     }
-    return searchContacts(searchValue, emails, 1); // Get top 1 contact
-  }, [searchValue, emails]);
+
+    return apiSuggestions.contacts.map((contact) => ({
+      email: contact.value || contact.email,
+      name: contact.description || contact.name || contact.value || contact.email,
+      type: contact.type || "contact",
+    }));
+  }, [apiSuggestions.contacts]);
+
+  // Map other API suggestions (labels, folders, operators, recent_searches)
+  const apiOtherSuggestions = useMemo(() => {
+    const allSuggestions = [];
+
+    // Add labels
+    if (apiSuggestions.labels && apiSuggestions.labels.length > 0) {
+      apiSuggestions.labels.forEach((label) => {
+        allSuggestions.push({
+          value: label.value || label,
+          type: label.type || "label",
+          description: label.description,
+        });
+      });
+    }
+
+    // Add folders
+    if (apiSuggestions.folders && apiSuggestions.folders.length > 0) {
+      apiSuggestions.folders.forEach((folder) => {
+        allSuggestions.push({
+          value: folder.value || folder,
+          type: folder.type || "folder",
+          description: folder.description,
+        });
+      });
+    }
+
+    // Add categories
+    if (apiSuggestions.categories && apiSuggestions.categories.length > 0) {
+      apiSuggestions.categories.forEach((category) => {
+        allSuggestions.push({
+          value: category.value || category,
+          type: category.type || "category",
+          description: category.description,
+        });
+      });
+    }
+
+    // Add operators
+    if (apiSuggestions.operators && apiSuggestions.operators.length > 0) {
+      apiSuggestions.operators.forEach((operator) => {
+        allSuggestions.push({
+          value: operator.value || operator,
+          type: operator.type || "operator",
+          description: operator.description,
+        });
+      });
+    }
+
+    // Add recent searches (can be strings or objects)
+    if (apiSuggestions.recent_searches && apiSuggestions.recent_searches.length > 0) {
+      apiSuggestions.recent_searches.forEach((search) => {
+        // Handle both string and object formats
+        if (typeof search === "string") {
+          allSuggestions.push({
+            value: search,
+            type: "recent_search",
+            description: null,
+          });
+        } else {
+          allSuggestions.push({
+            value: search.value || search,
+            type: search.type || "recent_search",
+            description: search.description || null,
+          });
+        }
+      });
+    }
+
+    return allSuggestions;
+  }, [apiSuggestions.labels, apiSuggestions.folders, apiSuggestions.categories, apiSuggestions.operators, apiSuggestions.recent_searches]);
 
   const expandedContent = useMemo(() => {
     if (searchValue.trim() && activeFilters.length > 0) {
@@ -281,20 +321,29 @@ const SearchBar = () => {
         return true;
       });
 
-      // Show matching previous searches first, then filtered results
-      const combined = [...matchingPreviousSearches, ...filtered];
+      // Show API suggestions first, then matching previous searches, then filtered results
+      const combined = [...apiOtherSuggestions, ...matchingPreviousSearches, ...filtered];
 
       return combined;
     } else if (searchValue.trim()) {
-      // Show matching previous searches first, then search results
-      return [...matchingPreviousSearches, ...searchResults];
+      // Show API suggestions first, then matching previous searches, then search results
+      return [...apiOtherSuggestions, ...matchingPreviousSearches, ...searchResults];
     } else if (isFocused) {
-      // When input is empty and focused, show previous searches first, then recent suggestions
-      // Combine previous searches with recent suggestions, avoiding duplicates
+      // When input is empty and focused, show API suggestions first, then previous searches, then recent suggestions
+      // Combine API suggestions with previous searches and recent suggestions, avoiding duplicates
       const combined = [];
       const seen = new Set();
 
-      // Add previous searches first
+      // Add API suggestions first
+      apiOtherSuggestions.forEach((suggestion) => {
+        const key = suggestion.value || suggestion;
+        if (!seen.has(key)) {
+          combined.push(suggestion);
+          seen.add(key);
+        }
+      });
+
+      // Add previous searches
       allPreviousSearches.forEach((search) => {
         if (!seen.has(search)) {
           combined.push(search);
@@ -322,17 +371,13 @@ const SearchBar = () => {
     filteredEmails,
     matchingPreviousSearches,
     allPreviousSearches,
+    apiOtherSuggestions,
   ]);
 
-  // Combined list of all navigable items (contacts + expanded content)
+  // Calculate all navigable items for keyboard navigation
   const allNavigableItems = useMemo(() => {
-    const items = [];
-    if (matchingContacts.length > 0 && searchValue.trim()) {
-      items.push(...matchingContacts.map((contact) => ({ type: "contact", data: contact.email })));
-    }
-    items.push(...expandedContent.map((item) => ({ type: "content", data: item })));
-    return items;
-  }, [matchingContacts, expandedContent, searchValue]);
+    return [...matchingContacts, ...expandedContent];
+  }, [matchingContacts, expandedContent]);
 
   const focusInput = (delay = 0) => {
     setTimeout(() => {
@@ -408,6 +453,13 @@ const SearchBar = () => {
       }
     } else if (e.key === "Enter") {
       // If an item is highlighted, select it
+      if (highlightedIndex >= 0 && allNavigableItems.length > 0) {
+        e.preventDefault();
+        const selectedItem = allNavigableItems[highlightedIndex];
+        handleResultClick(selectedItem);
+        return;
+      }
+
       // When searching from input bar, ignore all other advanced filters
       // and just parse what's in the input
       if (!searchValue.trim() && activeFilters.length === 0) {
@@ -455,20 +507,67 @@ const SearchBar = () => {
   };
 
   const handleResultClick = (item) => {
+    // Handle contact clicks - format as from:<email> or to:<email>
+    if (typeof item === "object" && item.email && item.type === "contact") {
+      // Determine if we're in from: or to: context based on current search value
+      const searchLower = searchValue.toLowerCase().trim();
+      const prefix = searchLower.startsWith("to:") ? "to:" : "from:";
+      const formattedValue = `${prefix}${item.email}`;
+      setSearchValue(formattedValue);
+      // Keep focus so user can continue typing
+      focusInput();
+      return;
+    }
+
+    // Handle search result objects (emails with id)
     if (typeof item === "object" && item.id) {
       // Extract thread_id from the search result
       const thread_id = item.thread_id || item.id;
       navigate(`/inbox/${thread_id}`);
-    } else {
+      setIsFocused(false);
+      setShowAdvancedSearch(false);
+      return;
+    }
+
+    // Handle API suggestions (labels, folders, categories, operators, recent_searches)
+    if (typeof item === "object" && item.value && item.type) {
+      let formattedValue = item.value;
+
+      // Format based on type
+      if (item.type === "category") {
+        // Format as category:<name>
+        formattedValue = `category:${item.value}`;
+      } else if (item.type === "label") {
+        // Format as label:<label>
+        formattedValue = `label:${item.value}`;
+      } else if (item.type === "folder") {
+        // Format as in:<folder>
+        formattedValue = `in:${item.value}`;
+      } else if (item.type === "recent_search") {
+        // For recent searches, just use the value as-is
+        formattedValue = item.value;
+      } else if (item.type === "operator") {
+        // Operators already have the : so just use the value
+        formattedValue = item.value;
+      }
+
+      setSearchValue(formattedValue);
+      // Keep focus so user can continue typing
+      focusInput();
+      return;
+    }
+
+    // Handle string suggestions (legacy behavior)
+    if (typeof item === "string") {
       // Add search query to history when clicked from suggestions
-      if (item && item.trim() && typeof item === "string") {
+      if (item && item.trim()) {
         addToSearchHistory(item);
         addBasicSearchQuery(item, getFilterObject());
       }
       navigate(`/search/${encodeForPath(item)}`);
+      setIsFocused(false);
+      setShowAdvancedSearch(false);
     }
-    setIsFocused(false);
-    setShowAdvancedSearch(false);
   };
 
   const handleClickAway = () => {
@@ -639,7 +738,7 @@ const SearchBar = () => {
                       <ListItem
                         key={contact.email}
                         className={styles.searchSuggestion}
-                        onClick={() => handleResultClick(contact.email)}
+                        onClick={() => handleResultClick(contact)}
                         onMouseEnter={() => setHighlightedIndex(-1)}
                         sx={{
                           borderBottom: "1px solid #e8eaed",
@@ -688,9 +787,9 @@ const SearchBar = () => {
                   const actualIndex = matchingContacts.length + contentIndex;
                   const isHighlighted = highlightedIndex === actualIndex;
 
-                  // Check if it's a search result (has id) or a suggestion (string)
+                  // Check if it's a search result (has id) or a suggestion
                   if (typeof item === "object" && item.id) {
-                    // Search result
+                    // Search result (email with id)
                     return (
                       <ListItem
                         key={item.id}
@@ -740,8 +839,86 @@ const SearchBar = () => {
                         </div>
                       </ListItem>
                     );
+                  } else if (typeof item === "object" && item.value && item.type) {
+                    // API suggestion (label, folder, category, operator, recent_search)
+                    const isHovered = hoveredItemIndex === actualIndex;
+                    const displayValue = item.value;
+                    const displayText = item.description ? `${displayValue} - ${item.description}` : displayValue;
+
+                    // Choose icon based on type
+                    let iconName = "schedule"; // default
+                    if (item.type === "label") iconName = "label";
+                    else if (item.type === "folder") iconName = "folder";
+                    else if (item.type === "category") iconName = "category";
+                    else if (item.type === "operator") iconName = "tune";
+                    else if (item.type === "recent_search") iconName = "schedule";
+
+                    return (
+                      <ListItem
+                        key={`${item.type}-${contentIndex}`}
+                        className={styles.searchSuggestion}
+                        onClick={() => handleResultClick(item)}
+                        onMouseEnter={() => {
+                          setHighlightedIndex(-1);
+                          setHoveredItemIndex(actualIndex);
+                        }}
+                        onMouseLeave={() => setHoveredItemIndex(-1)}
+                        sx={{
+                          backgroundColor: isHighlighted ? "rgba(0, 0, 0, 0.04)" : "transparent",
+                          borderBottom:
+                            activeFilters.length > 0 && expandedContent.length > 1 ? "1px solid #e0e0e0" : "none",
+                        }}
+                      >
+                        <ListItemIcon className={styles.clockIcon}>
+                          <span
+                            className="material-symbols-outlined"
+                            style={{
+                              fontSize: 20,
+                              color: "rgb(68, 68, 68)",
+                            }}
+                          >
+                            {iconName}
+                          </span>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={highlightSearchTerm(displayText, searchValue)}
+                          className={styles.suggestionText}
+                          slotProps={{
+                            primary: {
+                              style: {
+                                maxWidth: "500px",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              },
+                            },
+                          }}
+                        />
+                        {isHovered && item.type === "recent_search" && (
+                          <ListItemIcon
+                            style={{
+                              display: "flex",
+                              justifyContent: "end",
+                              minWidth: "auto",
+                              cursor: "pointer",
+                            }}
+                            onClick={(e) => handleRemoveSuggestion(displayValue, e)}
+                          >
+                            <span
+                              className="material-symbols-outlined"
+                              style={{
+                                fontSize: 20,
+                                color: "rgb(68, 68, 68)",
+                              }}
+                            >
+                              close_small
+                            </span>
+                          </ListItemIcon>
+                        )}
+                      </ListItem>
+                    );
                   } else {
-                    // Suggestions
+                    // Legacy string suggestions
                     const isHovered = hoveredItemIndex === actualIndex;
                     return (
                       <ListItem
