@@ -774,6 +774,7 @@ def get_search_suggestions(
         "contacts": [],
         "labels": [],
         "folders": [],
+        "categories": [],
         "recent_searches": [],
         "operators": []
     }
@@ -808,7 +809,8 @@ def get_search_suggestions(
         ]
     
     elif q.startswith("in:"):
-        suggestions["folders"] = [
+        partial = q.split(":", 1)[1].lower() if ":" in q else ""
+        all_folders = [
             {"value": "inbox", "type": "folder", "description": "Inbox folder"},
             {"value": "sent", "type": "folder", "description": "Sent folder"},
             {"value": "drafts", "type": "folder", "description": "Drafts folder"},
@@ -819,19 +821,27 @@ def get_search_suggestions(
             {"value": "archive", "type": "folder", "description": "Archived messages"},
             {"value": "snoozed", "type": "folder", "description": "Snoozed messages"},
         ]
+        suggestions["folders"] = [
+            f for f in all_folders if partial == "" or f["value"].startswith(partial)
+        ][:limit]
     
     elif q.startswith("category:"):
-        suggestions["categories"] = [
+        partial = q.split(":", 1)[1].lower() if ":" in q else ""
+        all_categories = [
             {"value": "primary", "type": "category", "description": "Primary category"},
             {"value": "social", "type": "category", "description": "Social category"},
             {"value": "promotions", "type": "category", "description": "Promotions category"},
             {"value": "updates", "type": "category", "description": "Updates category"},
             {"value": "forums", "type": "category", "description": "Forums category"},
         ]
+        suggestions["categories"] = [
+            c for c in all_categories if partial == "" or c["value"].startswith(partial)
+        ][:limit]
     
     else:
-        # General suggestions - show operators
-        suggestions["operators"] = [
+        # General suggestions - show operators filtered by query
+        q_lower = q.lower()
+        all_operators = [
             {"value": "from:", "type": "operator", "description": "Search by sender"},
             {"value": "to:", "type": "operator", "description": "Search by recipient"},
             {"value": "cc:", "type": "operator", "description": "Search by CC recipient"},
@@ -851,11 +861,18 @@ def get_search_suggestions(
             {"value": "smaller:", "type": "operator", "description": "Smaller than size"},
             {"value": "deliveredto:", "type": "operator", "description": "Delivered to address"},
         ]
+        # Filter operators that start with user input
+        suggestions["operators"] = [
+            op for op in all_operators if q_lower == "" or op["value"].startswith(q_lower)
+        ][:limit]
         
-        # Get recent searches
-        recent = db.query(SavedSearch).filter(
+        # Get recent searches filtered by query
+        recent_query = db.query(SavedSearch).filter(
             SavedSearch.owner_id == current_user.id
-        ).order_by(SavedSearch.last_used_at.desc().nulls_last()).limit(5).all()
+        )
+        if q:
+            recent_query = recent_query.filter(SavedSearch.query.ilike(f"%{q}%"))
+        recent = recent_query.order_by(SavedSearch.last_used_at.desc().nulls_last()).limit(5).all()
         
         suggestions["recent_searches"] = [s.query for s in recent]
     

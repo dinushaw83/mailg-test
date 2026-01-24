@@ -724,8 +724,10 @@ class TestSearchPagination:
 class TestSearchSuggestions:
     """Test search suggestions/autocomplete."""
 
-    def test_get_operator_suggestions(self, client_with_auth):
-        """Test getting available search operators."""
+    # === General/Operator Suggestions ===
+
+    def test_get_operator_suggestions_empty_query(self, client_with_auth):
+        """Test getting all operators with empty query."""
         client, token, user = client_with_auth
         
         response = client.get(
@@ -736,9 +738,82 @@ class TestSearchSuggestions:
         assert response.status_code == 200
         data = response.json()["data"]
         assert "operators" in data
+        # Should return all operators when query is empty
+        operator_values = [op["value"] for op in data["operators"]]
+        assert "from:" in operator_values
+        assert "to:" in operator_values
+        assert "is:unread" in operator_values
 
-    def test_get_folder_suggestions(self, client_with_auth):
-        """Test getting folder suggestions for in: operator."""
+    def test_operator_suggestions_filtered_by_query(self, client_with_auth):
+        """Test operators are filtered by query prefix."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=fr",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Only operators starting with "fr" should be returned
+        operator_values = [op["value"] for op in data["operators"]]
+        assert "from:" in operator_values
+        # Should NOT include operators that don't start with "fr"
+        assert "to:" not in operator_values
+        assert "is:unread" not in operator_values
+
+    def test_operator_suggestions_is_prefix(self, client_with_auth):
+        """Test filtering operators with 'is' prefix."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=is",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        operator_values = [op["value"] for op in data["operators"]]
+        # Should include all is: operators
+        assert "is:unread" in operator_values
+        assert "is:starred" in operator_values
+        assert "is:important" in operator_values
+        # Should NOT include other operators
+        assert "from:" not in operator_values
+
+    def test_operator_suggestions_has_prefix(self, client_with_auth):
+        """Test filtering operators with 'has' prefix."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=has",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        operator_values = [op["value"] for op in data["operators"]]
+        assert "has:attachment" in operator_values
+        assert "has:userlabels" in operator_values
+        assert "from:" not in operator_values
+
+    def test_operator_suggestions_no_match(self, client_with_auth):
+        """Test operators filter returns empty when no match."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=xyz",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["operators"] == []
+
+    # === Folder (in:) Suggestions ===
+
+    def test_get_folder_suggestions_all(self, client_with_auth):
+        """Test getting all folder suggestions with in: prefix."""
         client, token, user = client_with_auth
         
         response = client.get(
@@ -749,7 +824,503 @@ class TestSearchSuggestions:
         assert response.status_code == 200
         data = response.json()["data"]
         assert "folders" in data
+        folder_values = [f["value"] for f in data["folders"]]
+        # Should include all folders
+        assert "inbox" in folder_values
+        assert "sent" in folder_values
+        assert "drafts" in folder_values
+        assert "trash" in folder_values
+        assert "spam" in folder_values
+        assert "starred" in folder_values
+        assert "anywhere" in folder_values
+        assert "archive" in folder_values
+        assert "snoozed" in folder_values
+
+    def test_folder_suggestions_filtered_by_partial(self, client_with_auth):
+        """Test folders are filtered by partial after in:."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=in:s",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        folder_values = [f["value"] for f in data["folders"]]
+        # Should include folders starting with 's'
+        assert "sent" in folder_values
+        assert "spam" in folder_values
+        assert "starred" in folder_values
+        assert "snoozed" in folder_values
+        # Should NOT include folders not starting with 's'
+        assert "inbox" not in folder_values
+        assert "drafts" not in folder_values
+        assert "trash" not in folder_values
+
+    def test_folder_suggestions_specific_match(self, client_with_auth):
+        """Test folder suggestions with more specific partial."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=in:sp",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        folder_values = [f["value"] for f in data["folders"]]
+        assert "spam" in folder_values
+        assert len(folder_values) == 1  # Only spam starts with "sp"
+
+    def test_folder_suggestions_no_match(self, client_with_auth):
+        """Test folder suggestions with non-matching partial."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=in:xyz",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["folders"] == []
+
+    # === Category (category:) Suggestions ===
+
+    def test_get_category_suggestions_all(self, client_with_auth):
+        """Test getting all category suggestions with category: prefix."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=category:",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "categories" in data
+        category_values = [c["value"] for c in data["categories"]]
+        # Should include all categories
+        assert "primary" in category_values
+        assert "social" in category_values
+        assert "promotions" in category_values
+        assert "updates" in category_values
+        assert "forums" in category_values
+
+    def test_category_suggestions_filtered_by_partial(self, client_with_auth):
+        """Test categories are filtered by partial after category:."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=category:p",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        category_values = [c["value"] for c in data["categories"]]
+        # Should include categories starting with 'p'
+        assert "primary" in category_values
+        assert "promotions" in category_values
+        # Should NOT include categories not starting with 'p'
+        assert "social" not in category_values
+        assert "updates" not in category_values
+        assert "forums" not in category_values
+
+    def test_category_suggestions_specific_match(self, client_with_auth):
+        """Test category suggestions with specific partial."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=category:so",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        category_values = [c["value"] for c in data["categories"]]
+        assert "social" in category_values
+        assert len(category_values) == 1
+
+    def test_category_suggestions_no_match(self, client_with_auth):
+        """Test category suggestions with non-matching partial."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=category:xyz",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["categories"] == []
+
+    # === Contact (from:/to:) Suggestions ===
+
+    def test_contact_suggestions_from_prefix(self, client_with_auth, db_session):
+        """Test contact suggestions with from: prefix."""
+        client, token, user = client_with_auth
+        
+        # Create some users to find as contacts
+        from app.models.user import User
+        contact1 = User(
+            email="alice@example.com",
+            first_name="Alice",
+            last_name="Smith",
+            role="user"
+        )
+        contact2 = User(
+            email="bob@example.com",
+            first_name="Bob",
+            last_name="Jones",
+            role="user"
+        )
+        db_session.add_all([contact1, contact2])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=from:alice",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "contacts" in data
+        contact_emails = [c["value"] for c in data["contacts"]]
+        assert "alice@example.com" in contact_emails
+        # Bob should not be in results
+        assert "bob@example.com" not in contact_emails
+
+    def test_contact_suggestions_to_prefix(self, client_with_auth, db_session):
+        """Test contact suggestions with to: prefix."""
+        client, token, user = client_with_auth
+        
+        from app.models.user import User
+        contact = User(
+            email="charlie@example.com",
+            first_name="Charlie",
+            last_name="Brown",
+            role="user"
+        )
+        db_session.add(contact)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=to:charlie",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        contact_emails = [c["value"] for c in data["contacts"]]
+        assert "charlie@example.com" in contact_emails
+
+    def test_contact_suggestions_by_name(self, client_with_auth, db_session):
+        """Test contact suggestions match by first/last name."""
+        client, token, user = client_with_auth
+        
+        from app.models.user import User
+        contact = User(
+            email="dave@example.com",
+            first_name="David",
+            last_name="Wilson",
+            role="user"
+        )
+        db_session.add(contact)
+        db_session.commit()
+        
+        # Search by first name
+        response = client.get(
+            "/api/v1/search/suggestions?q=from:David",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        contact_emails = [c["value"] for c in data["contacts"]]
+        assert "dave@example.com" in contact_emails
+
+    def test_contact_suggestions_empty_partial(self, client_with_auth, db_session):
+        """Test contact suggestions with empty partial returns contacts."""
+        client, token, user = client_with_auth
+        
+        from app.models.user import User
+        contact = User(
+            email="eve@example.com",
+            first_name="Eve",
+            last_name="Johnson",
+            role="user"
+        )
+        db_session.add(contact)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=from:",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Should return contacts (empty partial matches all)
+        assert "contacts" in data
+
+    # === Label (label:) Suggestions ===
+
+    def test_label_suggestions_filtered(self, client_with_auth, db_session):
+        """Test label suggestions filtered by partial."""
+        client, token, user = client_with_auth
+        
+        # Create some labels for the user
+        from app.models.label import Label
+        label1 = Label(name="Work", owner_id=user.id, color="#ff0000")
+        label2 = Label(name="Personal", owner_id=user.id, color="#00ff00")
+        label3 = Label(name="Waiting", owner_id=user.id, color="#0000ff")
+        db_session.add_all([label1, label2, label3])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=label:Wo",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "labels" in data
+        label_values = [l["value"] for l in data["labels"]]
+        assert "Work" in label_values
+        assert "Personal" not in label_values
+
+    def test_label_suggestions_all_with_empty_partial(self, client_with_auth, db_session):
+        """Test label suggestions with empty partial returns user's labels."""
+        client, token, user = client_with_auth
+        
+        from app.models.label import Label
+        label = Label(name="Important", owner_id=user.id, color="#ff0000")
+        db_session.add(label)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=label:",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "labels" in data
+        # Should return the user's labels
+        label_values = [l["value"] for l in data["labels"]]
+        assert "Important" in label_values
+
+    def test_label_suggestions_only_user_labels(self, client_with_auth, db_session):
+        """Test label suggestions only return current user's labels."""
+        client, token, user = client_with_auth
+        
+        from app.models.label import Label
+        from app.models.user import User
+        
+        # Create another user with a label
+        other_user = User(
+            email="other@example.com",
+            first_name="Other",
+            last_name="User",
+            role="user"
+        )
+        db_session.add(other_user)
+        db_session.flush()
+        
+        # Use unique prefixes to avoid collision with system labels
+        other_label = Label(name="ZZOtherLabel", owner_id=other_user.id, color="#ff0000")
+        user_label = Label(name="ZZMyLabel", owner_id=user.id, color="#00ff00")
+        db_session.add_all([other_label, user_label])
+        db_session.commit()
+        
+        # Search with specific partial to find our custom labels
+        response = client.get(
+            "/api/v1/search/suggestions?q=label:ZZ",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        label_values = [l["value"] for l in data["labels"]]
+        assert "ZZMyLabel" in label_values
+        assert "ZZOtherLabel" not in label_values
+
+    # === Recent Searches ===
+
+    def test_recent_searches_returned(self, client_with_auth, db_session):
+        """Test recent searches are returned in general suggestions."""
+        client, token, user = client_with_auth
+        
+        # Create saved searches for the user
+        saved1 = SavedSearch(
+            name="My Search",
+            query="is:unread from:team",
+            owner_id=user.id
+        )
+        db_session.add(saved1)
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "recent_searches" in data
+        assert "is:unread from:team" in data["recent_searches"]
+
+    def test_recent_searches_filtered_by_query(self, client_with_auth, db_session):
+        """Test recent searches are filtered by query substring."""
+        client, token, user = client_with_auth
+        
+        # Create saved searches
+        saved1 = SavedSearch(name="Search1", query="is:unread", owner_id=user.id)
+        saved2 = SavedSearch(name="Search2", query="from:boss", owner_id=user.id)
+        saved3 = SavedSearch(name="Search3", query="is:starred", owner_id=user.id)
+        db_session.add_all([saved1, saved2, saved3])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=unread",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Should only include searches containing "unread"
+        assert "is:unread" in data["recent_searches"]
+        assert "from:boss" not in data["recent_searches"]
+        assert "is:starred" not in data["recent_searches"]
+
+    def test_recent_searches_only_user_searches(self, client_with_auth, db_session):
+        """Test recent searches only return current user's saved searches."""
+        client, token, user = client_with_auth
+        
+        from app.models.user import User
+        
+        # Create another user with saved search
+        other_user = User(
+            email="other2@example.com",
+            first_name="Other",
+            last_name="User",
+            role="user"
+        )
+        db_session.add(other_user)
+        db_session.flush()
+        
+        other_search = SavedSearch(name="Other", query="other:search", owner_id=other_user.id)
+        user_search = SavedSearch(name="Mine", query="my:search", owner_id=user.id)
+        db_session.add_all([other_search, user_search])
+        db_session.commit()
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert "my:search" in data["recent_searches"]
+        assert "other:search" not in data["recent_searches"]
+
+    # === Limit Parameter ===
+
+    def test_suggestions_respects_limit(self, client_with_auth):
+        """Test that suggestions respect the limit parameter."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=&limit=3",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Operators should be limited to 3
+        assert len(data["operators"]) <= 3
+
+    def test_folder_suggestions_respects_limit(self, client_with_auth):
+        """Test folder suggestions respect limit parameter."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=in:&limit=3",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert len(data["folders"]) <= 3
+
+    def test_category_suggestions_respects_limit(self, client_with_auth):
+        """Test category suggestions respect limit parameter."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=category:&limit=2",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert len(data["categories"]) <= 2
+
+    # === Authentication ===
+
+    def test_suggestions_unauthenticated(self, client):
+        """Test suggestions without authentication fails."""
+        response = client.get("/api/v1/search/suggestions?q=")
+        assert response.status_code == 401
+
+    # === Response Structure ===
+
+    def test_suggestions_response_structure(self, client_with_auth):
+        """Test suggestions response has correct structure."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Check all expected fields are present
+        assert "contacts" in data
+        assert "labels" in data
+        assert "folders" in data
+        assert "categories" in data
+        assert "recent_searches" in data
+        assert "operators" in data
+        # Check they are all lists
+        assert isinstance(data["contacts"], list)
+        assert isinstance(data["labels"], list)
+        assert isinstance(data["folders"], list)
+        assert isinstance(data["categories"], list)
+        assert isinstance(data["recent_searches"], list)
+        assert isinstance(data["operators"], list)
+
+    def test_suggestion_item_structure(self, client_with_auth):
+        """Test individual suggestion items have correct structure."""
+        client, token, user = client_with_auth
+        
+        response = client.get(
+            "/api/v1/search/suggestions?q=in:",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        assert response.status_code == 200
+        data = response.json()["data"]
+        # Check folder suggestion structure
         assert len(data["folders"]) > 0
+        folder = data["folders"][0]
+        assert "value" in folder
+        assert "type" in folder
+        assert "description" in folder
+        assert folder["type"] == "folder"
 
 
 class TestSavedSearches:

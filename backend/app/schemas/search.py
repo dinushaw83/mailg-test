@@ -92,6 +92,7 @@ class SearchSuggestionsResponse(BaseModel):
     contacts: List[SearchSuggestion] = []
     labels: List[SearchSuggestion] = []
     folders: List[SearchSuggestion] = []
+    categories: List[SearchSuggestion] = []
     recent_searches: List[str] = []
     operators: List[SearchSuggestion] = []
 
