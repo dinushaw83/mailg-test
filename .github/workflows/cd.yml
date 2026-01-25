@@ -12,7 +12,6 @@ on:
     branches:
       - staging
       - develop
-      - feature/prod-deployment-cd
   workflow_dispatch:
     inputs:
       environment:

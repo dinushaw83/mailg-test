@@ -1,0 +1,257 @@
+# =============================================================================
+# VM SSH Verification & File Copy Workflow
+# =============================================================================
+# Purpose: Verify SSH access to VM and copy files to/from the VM
+# Triggers: Manual (workflow_dispatch) or on push to specific branches
+# =============================================================================
+
+name: Verify VM SSH & Copy Files
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_path:
+        description: 'Source file/directory path (local or remote)'
+        required: false
+        default: 'deploy/gcp'
+      destination_path:
+        description: 'Destination path on VM'
+        required: false
+        default: '~/mailg-deploy'
+      copy_direction:
+        description: 'Copy direction'
+        required: true
+        default: 'to_vm'
+        type: choice
+        options:
+          - to_vm
+          - from_vm
+      verify_only:
+        description: 'Only verify SSH access (skip file copy)'
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches:
+      - feature/prod-deployment-cd
+    paths:
+      - '.github/workflows/verify-vm-ssh.yml'
+      - 'deploy/**'
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: verify-vm-ssh-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  VM_HOST: ${{ secrets.GCP_VM_HOST }}
+  VM_USER: ${{ secrets.GCP_VM_USER }}
+
+jobs:
+  verify-and-copy:
+    name: 🔐 Verify SSH & Copy Files
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate SSH secrets
+        run: |
+          echo "🔐 Validating SSH configuration..."
+          
+          if [ -z "${{ secrets.GCP_SSH_PRIVATE_KEY }}" ]; then
+            echo "::error::GCP_SSH_PRIVATE_KEY secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
+            echo "::error::GCP_VM_HOST secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
+            echo "::error::GCP_VM_USER secret is not configured"
+            exit 1
+          fi
+          
+          echo "✅ All SSH secrets configured"
+          echo "VM Host: ${{ secrets.GCP_VM_HOST }}"
+          echo "VM User: ${{ secrets.GCP_VM_USER }}"
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
+      - name: Configure SSH known hosts
+        run: |
+          echo "🔧 Configuring SSH known hosts..."
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          echo "✅ SSH known hosts configured"
+
+      - name: Verify SSH connection
+        id: verify_ssh
+        run: |
+          echo "🔍 Testing SSH connection..."
+          
+          # Test basic SSH connectivity
+          if ssh -o StrictHostKeyChecking=no \
+               -o UserKnownHostsFile=~/.ssh/known_hosts \
+               -o ConnectTimeout=10 \
+               "${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}" \
+               'echo "SSH connection successful" && whoami && hostname && pwd && uname -a'; then
+            echo "✅ SSH connection verified successfully"
+            echo "ssh_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "::error::SSH connection failed"
+            echo "ssh_status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Get VM system information
+        if: steps.verify_ssh.outputs.ssh_status == 'success'
+        run: |
+          echo "📊 Gathering VM system information..."
+          ssh -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              "${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}" << 'EOF'
+            echo "=== System Information ==="
+            echo "User: $(whoami)"
+            echo "Hostname: $(hostname)"
+            echo "OS: $(uname -s)"
+            echo "Kernel: $(uname -r)"
+            echo "Architecture: $(uname -m)"
+            echo "Uptime: $(uptime -p 2>/dev/null || uptime)"
+            echo "Disk Usage:"
+            df -h / | tail -1
+            echo "Memory Usage:"
+            free -h 2>/dev/null || vm_stat | head -5
+            echo "Docker Status:"
+            docker --version 2>/dev/null || echo "Docker not installed"
+            echo "=========================="
+          EOF
+
+      - name: Copy files to VM
+        if: |
+          steps.verify_ssh.outputs.ssh_status == 'success' &&
+          (github.event.inputs.verify_only != 'true' && github.event.inputs.copy_direction == 'to_vm') ||
+          (github.event_name == 'push' && github.event.inputs.verify_only != 'true')
+        run: |
+          SOURCE_PATH="${{ github.event.inputs.source_path || 'deploy/gcp' }}"
+          DEST_PATH="${{ github.event.inputs.destination_path || '~/mailg-deploy' }}"
+          
+          echo "📤 Copying files to VM..."
+          echo "Source: ${SOURCE_PATH}"
+          echo "Destination: ${DEST_PATH}"
+          
+          # Check if source exists
+          if [ ! -e "${SOURCE_PATH}" ]; then
+            echo "::error::Source path does not exist: ${SOURCE_PATH}"
+            exit 1
+          fi
+          
+          # Create destination directory on VM
+          ssh -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              "${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}" \
+              "mkdir -p ${DEST_PATH}"
+          
+          # Copy files
+          scp -r -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              "${SOURCE_PATH}"/* \
+              "${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:${DEST_PATH}/"
+          
+          echo "✅ Files copied successfully"
+          
+          # Verify copied files
+          echo "📋 Verifying copied files..."
+          ssh -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              "${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}" \
+              "ls -lah ${DEST_PATH}/"
+
+      - name: Copy files from VM
+        if: |
+          steps.verify_ssh.outputs.ssh_status == 'success' &&
+          github.event.inputs.verify_only != 'true' &&
+          github.event.inputs.copy_direction == 'from_vm'
+        run: |
+          SOURCE_PATH="${{ github.event.inputs.source_path || '~/mailg-deploy' }}"
+          DEST_PATH="${{ github.event.inputs.destination_path || './vm-backup' }}"
+          
+          echo "📥 Copying files from VM..."
+          echo "Source (VM): ${SOURCE_PATH}"
+          echo "Destination (local): ${DEST_PATH}"
+          
+          # Create local destination directory
+          mkdir -p "${DEST_PATH}"
+          
+          # Copy files from VM
+          scp -r -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              "${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:${SOURCE_PATH}/"* \
+              "${DEST_PATH}/"
+          
+          echo "✅ Files copied successfully"
+          
+          # Verify copied files
+          echo "📋 Verifying copied files..."
+          ls -lah "${DEST_PATH}/"
+
+      - name: Test file operations on VM
+        if: steps.verify_ssh.outputs.ssh_status == 'success'
+        run: |
+          echo "🧪 Testing file operations on VM..."
+          
+          TEST_DIR="~/ssh-test-$$"
+          
+          ssh -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=~/.ssh/known_hosts \
+              "${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}" << EOF
+            set -e
+            mkdir -p ${TEST_DIR}
+            echo "Test file created at $(date)" > ${TEST_DIR}/test.txt
+            cat ${TEST_DIR}/test.txt
+            rm -rf ${TEST_DIR}
+            echo "✅ File operations test passed"
+          EOF
+
+      - name: Summary
+        if: always()
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🔐 VM SSH Verification Summary
+          
+          | Property | Value |
+          |----------|-------|
+          | **Status** | ${{ steps.verify_ssh.outputs.ssh_status == 'success' && '✅ Success' || '❌ Failed' }} |
+          | **VM Host** | \`${{ secrets.GCP_VM_HOST }}\` |
+          | **VM User** | \`${{ secrets.GCP_VM_USER }}\` |
+          | **Triggered by** | @${{ github.actor }} |
+          | **Branch** | \`${{ github.ref_name }}\` |
+          | **Commit** | \`${{ github.sha }}\` |
+          
+          ### Operations Performed
+          - ✅ SSH connection verified
+          - ✅ System information gathered
+          ${{ steps.verify_ssh.outputs.ssh_status == 'success' && github.event.inputs.verify_only != 'true' && '- ✅ Files copied' || '- ℹ️  Verification only (no file copy)' }}
+          - ✅ File operations tested
+          
+          ### Next Steps
+          - SSH access is working correctly
+          - You can now use this connection for deployments
+          - Files can be copied using \`scp\` or \`rsync\`
+          EOF
+          
+          if [ "${{ steps.verify_ssh.outputs.ssh_status }}" != "success" ]; then
+            echo "::error::SSH verification failed. Please check:"
+            echo "1. GCP_SSH_PRIVATE_KEY secret is correct"
+            echo "2. GCP_VM_HOST is reachable"
+            echo "3. GCP_VM_USER has SSH access"
+            echo "4. Firewall rules allow SSH (port 22)"
+            exit 1
+          fi
