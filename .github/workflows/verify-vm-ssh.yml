@@ -34,9 +34,7 @@ on:
   push:
     branches:
       - feature/prod-deployment-cd
-    paths:
-      - '.github/workflows/verify-vm-ssh.yml'
-      - 'deploy/**'
+
 
 # Cancel in-progress runs for the same branch
 concurrency:
