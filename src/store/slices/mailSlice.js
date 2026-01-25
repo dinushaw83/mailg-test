@@ -843,17 +843,27 @@ const mailSlice = createSlice({
 
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-        // Merge with system labels (keep system labels as-is, they use composite keys)
-        const mergedLabels = { ...state.labels };
+        
+        // Only keep system labels (which use composite keys like "Inbox", "Sent", etc.)
+        // Remove all backend labels (which use UUIDs) and replace with fresh data
+        const systemLabelsOnly = {};
+        Object.entries(state.labels).forEach(([key, label]) => {
+          // System labels don't have UUIDs and use composite keys
+          if (label.is_system || label.system) {
+            systemLabelsOnly[key] = label;
+          }
+        });
 
-        // Add/update backend labels (UUID-based)
+        // Merge system labels with fresh backend labels
+        const mergedLabels = { ...systemLabelsOnly };
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
 
         state.labels = mergedLabels;
-        state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
-        state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };
+        // Replace ID mappings entirely with fresh data from API
+        state.labelIdToKeyMap = { ...idToKeyMap };
+        state.keyToLabelIdMap = { ...keyToIdMap };
       })
       .addCase(fetchLabels.rejected, (state, action) => {
         state.labelLoading = false;

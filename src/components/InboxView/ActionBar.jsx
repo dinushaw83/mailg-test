@@ -1151,11 +1151,33 @@ const MailActions = ({ thread, emails: providedEmails }) => {
             </Button>
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           </>
+        ) : isTrashFolder ? (
+          <>
+            <Button
+              variant="text"
+              onClick={handleDeleteForever}
+              sx={{
+                color: "#3c4043",
+                textTransform: "none",
+                fontSize: "14px",
+                fontWeight: 500,
+                padding: "6px 12px",
+                minWidth: "auto",
+                "&:hover": { backgroundColor: "rgba(60, 64, 67, 0.08)" },
+              }}
+            >
+              Delete forever
+            </Button>
+            <Divider orientation="vertical" style={{ marginLeft: 4, marginRight: 4, height: 24 }} />
+            <Icon name="move_to_inbox" label="Move to inbox" onClick={() => handleMenuItemClick({ id: "__inbox__" })} />
+            <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+          </>
         ) : (
           <>
             <Icon name="archive" label="Archive" onClick={handleArchive} disabled={isThreadArchived} />
             <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
-            {!isThreadDeleted && !isTrashFolder && <Icon name="delete" label="Delete" onClick={handleDelete} />}
+            {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           </>
         )}
