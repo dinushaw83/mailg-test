@@ -666,16 +666,6 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
               />
               <span className={styles.checkboxText}>Has attachment</span>
             </label>
-
-            <label htmlFor="excludeChats" className={styles.checkboxLabel}>
-              <Checkbox
-                id="excludeChats"
-                size="small"
-                checked={formData.excludeChats}
-                onChange={(e) => handleInputChange("excludeChats", e.target.checked)}
-              />
-              <span className={styles.checkboxText}>Don't include chats</span>
-            </label>
           </div>
         </div>
 
