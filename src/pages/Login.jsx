@@ -30,7 +30,7 @@ const Login = () => {
       // tokenData shape: { access_token, user, role, run_id, expires_in }
       dispatch(setAuth(tokenData));
 
-      navigate(from, { replace: true });
+      navigate("/sessionid", { replace: true });
     } catch (e) {
       const msg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || "Login failed";
       setError(msg);
