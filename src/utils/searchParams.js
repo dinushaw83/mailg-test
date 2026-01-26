@@ -22,6 +22,11 @@ function extractAndMergeCommaSeparated(searchQuery, operator, urlValue) {
 
   // Extract from searchQuery
   if (searchQuery.includes(operator)) {
+    const indexOfOperator = searchQuery.indexOf(operator);
+
+    if (indexOfOperator > 0 && searchQuery[indexOfOperator - 1] !== " ") {
+      return Array.from(values).join(",");
+    }
     const afterOperator = searchQuery.split(operator)[1].trim();
     // Match parentheses group or extract until next operator/space boundary
     // Pattern: (value) or value (stopping at space before next operator like " to:", " cc:", etc.)

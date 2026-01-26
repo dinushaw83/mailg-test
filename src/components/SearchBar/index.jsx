@@ -578,7 +578,9 @@ const SearchBar = () => {
       } else if (item.type === "operator") {
         // Operators already have the : so just use the value
         formattedValue = item.value;
-        shouldNavigate = false;
+        if (item.value.endsWith(":")) {
+          shouldNavigate = false;
+        }
       }
 
       setSearchValue(formattedValue);

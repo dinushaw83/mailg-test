@@ -88,6 +88,16 @@ const searchService = {
       if (params.hasnot !== undefined && params.hasnot !== null && params.hasnot !== "") {
         queryParams.hasnot = params.hasnot;
       }
+      if (params.cc !== undefined && params.cc !== null && params.cc !== "") {
+        queryParams.cc = params.cc;
+      }
+      if (params.bcc !== undefined && params.bcc !== null && params.bcc !== "") {
+        queryParams.bcc = params.bcc;
+      }
+
+      if (params.has_userlabels !== undefined && params.has_userlabels !== null) {
+        queryParams.has_userlabels = params.has_userlabels;
+      }
 
       // Pagination
       queryParams.page = params.page || 1;
