@@ -396,21 +396,25 @@ export default function useMailActions() {
   );
 
   const archive = useCallback(
-    (ids) => {
-      // IDs can be email IDs or thread IDs
-      // First try to match against emails to get thread IDs
-      const match = makeMatch(ids);
-      const matchingEmails = emails.filter(match);
+    (ids, { resolvedThreadIds } = {}) => {
+      // Use pre-resolved thread IDs if provided, otherwise find from emails context
+      let threadIds = resolvedThreadIds || [];
 
-      let threadIds;
-      if (matchingEmails.length > 0) {
-        // Found matching emails, extract thread IDs
-        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
-      } else {
-        // No matching emails found - assume ids are already thread IDs
-        // This handles cases where emails come from React Query cache
-        // or other folders not in the global context
-        threadIds = Array.isArray(ids) ? ids.filter(Boolean) : [ids].filter(Boolean);
+      if (!threadIds.length) {
+        // IDs can be email IDs or thread IDs
+        // First try to match against emails to get thread IDs
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+
+        if (matchingEmails.length > 0) {
+          // Found matching emails, extract thread IDs
+          threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+        } else {
+          // No matching emails found - assume ids are already thread IDs
+          // This handles cases where emails come from React Query cache
+          // or other folders not in the global context
+          threadIds = Array.isArray(ids) ? ids.filter(Boolean) : [ids].filter(Boolean);
+        }
       }
 
       if (threadIds.length === 0) {
@@ -461,19 +465,23 @@ export default function useMailActions() {
   );
 
   const unarchive = useCallback(
-    (ids) => {
-      // IDs can be email IDs or thread IDs
-      // First try to match against emails to get thread IDs
-      const match = makeMatch(ids);
-      const matchingEmails = emails.filter(match);
+    (ids, { resolvedThreadIds } = {}) => {
+      // Use pre-resolved thread IDs if provided, otherwise find from emails context
+      let threadIds = resolvedThreadIds || [];
 
-      let threadIds;
-      if (matchingEmails.length > 0) {
-        // Found matching emails, extract thread IDs
-        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
-      } else {
-        // No matching emails found - assume ids are already thread IDs
-        threadIds = Array.isArray(ids) ? ids.filter(Boolean) : [ids].filter(Boolean);
+      if (!threadIds.length) {
+        // IDs can be email IDs or thread IDs
+        // First try to match against emails to get thread IDs
+        const match = makeMatch(ids);
+        const matchingEmails = emails.filter(match);
+
+        if (matchingEmails.length > 0) {
+          // Found matching emails, extract thread IDs
+          threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+        } else {
+          // No matching emails found - assume ids are already thread IDs
+          threadIds = Array.isArray(ids) ? ids.filter(Boolean) : [ids].filter(Boolean);
+        }
       }
 
       if (threadIds.length === 0) {
@@ -745,28 +753,31 @@ export default function useMailActions() {
   );
 
   const moveToTrash = useCallback(
-    (ids) => {
-      // If ids are already email UUIDs (from ActionBar), use them directly
-      // Otherwise, find matching emails by thread ID or other keys
-      let emailIds = [];
-      let threadIds = [];
+    (ids, { resolvedEmailIds, resolvedThreadIds } = {}) => {
+      // Use pre-resolved IDs if provided, otherwise find from emails context
+      let emailIds = resolvedEmailIds || [];
+      let threadIds = resolvedThreadIds || [];
 
-      // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
-      const firstId = String(ids[0] || "");
-      const isUUID = firstId.includes("-") && firstId.length >= 32;
+      if (!emailIds.length) {
+        // If ids are already email UUIDs (from ActionBar), use them directly
+        // Otherwise, find matching emails by thread ID or other keys
+        // Check if first ID looks like a UUID (contains hyphens, 32+ chars)
+        const firstId = String(ids[0] || "");
+        const isUUID = firstId.includes("-") && firstId.length >= 32;
 
-      if (isUUID) {
-        // Already email IDs, use directly
-        emailIds = ids.filter(Boolean);
-        // Still need to find thread IDs for cache invalidation
-        const matchingEmails = emails.filter((email) => emailIds.includes(email.id));
-        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
-      } else {
-        // Find matching emails by thread/message IDs
-        const match = makeMatch(ids);
-        const matchingEmails = emails.filter(match);
-        emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
-        threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+        if (isUUID) {
+          // Already email IDs, use directly
+          emailIds = ids.filter(Boolean);
+          // Still need to find thread IDs for cache invalidation
+          const matchingEmails = emails.filter((email) => emailIds.includes(email.id));
+          threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+        } else {
+          // Find matching emails by thread/message IDs
+          const match = makeMatch(ids);
+          const matchingEmails = emails.filter(match);
+          emailIds = matchingEmails.map((email) => email.id).filter(Boolean);
+          threadIds = [...new Set(matchingEmails.map((email) => email.thread_id).filter(Boolean))];
+        }
       }
 
       const undoEmailIds = [...emailIds];

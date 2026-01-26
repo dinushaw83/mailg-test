@@ -62,7 +62,7 @@ const useCustomHotKeys = ({ handleLabelAction, openMoveToMenu, handleReportSpam 
   });
 };
 
-const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
+const MailActions = ({ threads = [], showAdvancedMenu, visible, folder: folderProp = null }) => {
   const {
     moveToSpam,
     moveToTrash,
@@ -70,6 +70,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     moveToLabelFrom,
     moveToInbox,
     archive,
+    unarchive,
     markRead,
     snooze,
     unsnooze,
@@ -132,6 +133,17 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     const count = selectedThreadIdSet.size;
     return count || selectedIds.length;
   }, [selectedThreadIdSet, selectedIds]);
+  
+  // Pre-resolve email IDs and thread IDs for API calls
+  // This is needed because useMailActions uses global context emails,
+  // which may not contain search results
+  const resolvedEmailIds = useMemo(() => {
+    return selectedEmails.map((email) => email.id).filter(Boolean);
+  }, [selectedEmails]);
+  const resolvedThreadIds = useMemo(() => {
+    return [...new Set(selectedEmails.map((email) => email.thread_id).filter(Boolean))];
+  }, [selectedEmails]);
+  
   const selectionMatchKeys = useMemo(() => {
     const keys = new Set();
     selectedIds.forEach((id) => {
@@ -178,7 +190,9 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   const labelAnchorElRef = useRef(null);
   const [labelAnchorEl, setLabelAnchorEl] = useState(null);
 
-  const { label: labelParam, folder } = useParams();
+  const { label: labelParam, folder: folderFromUrl } = useParams();
+  // Use prop folder if provided (e.g., from search params), otherwise use URL folder
+  const folder = folderProp || folderFromUrl;
   const currentLabel = labelParam ? decodeURIComponent(labelParam) : null;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLabelKeys, setSelectedLabelKeys] = useState(new Set());
@@ -195,16 +209,25 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
   // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
     const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
-    return (
-      Object.entries(labelsObject)
-        // Same filter as "Label as" - hide labels that are both system AND exclusive
-        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
-        .map(([key, meta]) => ({
-          id: key,
-          name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    );
+    const items = Object.entries(labelsObject)
+      // Same filter as "Label as" - hide labels that are both system AND exclusive
+      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+      .map(([key, meta]) => ({
+        id: key,
+        name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    
+    // Deduplicate by name (in case system labels and backend labels overlap)
+    const seen = new Set();
+    return items.filter((item) => {
+      const normalizedName = item.name.toLowerCase();
+      if (seen.has(normalizedName)) {
+        return false;
+      }
+      seen.add(normalizedName);
+      return true;
+    });
   }, [labels, labelIdToKeyMap]);
 
   const showNoConversationsSelectedSnackbar = useCallback(() => {
@@ -339,11 +362,12 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
       return;
     }
 
-    const idsToArchive = emailsToArchive.map((email) => email.id);
-    const conversations = new Set(emailsToArchive.map((email) => email.thread_id)).size || 1;
+    // Use thread IDs for archive operation - backend expects thread_ids, not email IDs
+    const threadIdsToArchive = [...new Set(emailsToArchive.map((email) => email.thread_id).filter(Boolean))];
+    const conversations = threadIdsToArchive.length || 1;
 
     try {
-      const undo = archive(idsToArchive);
+      const undo = archive(threadIdsToArchive);
       setSnackbar({
         open: true,
         message: conversations > 1 ? `${conversations} conversations archived.` : "Conversation archived.",
@@ -390,14 +414,40 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
 
   const onMoveArchivedMailToInbox = () => {
     const ids = [...selection.ids];
-    if (!ids.length) return;
+    if (!ids.length) {
+      showNoConversationsSelectedSnackbar();
+      return;
+    }
     try {
-      moveToInbox(ids);
+      const undo = moveToInbox(ids);
+      const conversationCount = ids.length;
+      
+      // Clear selection after action
+      selection.clear();
+      
       setSnackbar({
         open: true,
-        message: ids.length > 1 ? `${ids.length} conversations moved to Inbox.` : "Conversation moved to Inbox.",
-        autoHideDuration: 3000,
-        action: null,
+        message: conversationCount > 1 ? `${conversationCount} conversations moved to Inbox.` : "Conversation moved to Inbox.",
+        autoHideDuration: 10000,
+        action: (
+          <Button
+            sx={{ textTransform: "none" }}
+            size="small"
+            onClick={() => {
+              if (typeof undo === "function") {
+                undo();
+              }
+              setSnackbar({
+                open: true,
+                message: "Action undone.",
+                autoHideDuration: 3000,
+                action: null,
+              });
+            }}
+          >
+            Undo
+          </Button>
+        ),
       });
     } catch (e) {
       console.error("Move to Inbox failed:", e);
@@ -421,22 +471,63 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         const labelSnapshot = collectLabelSnapshot(selectionMatchKeys);
 
         if (item.id === "__inbox__" || item.id === "inbox") {
-          moveToLabel(selectionMatchKeys, "Inbox");
-          // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
-          const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
-          showUndoSnackbarForLabelMove(
-            selectionMatchKeys,
-            sourceLocation,
-            "Inbox",
-            false,
-            selectedConversationCount,
-            labelSnapshot
-          );
+          // If we're in archive context (folder === "all"), use unarchive endpoint
+          // Otherwise use moveToLabel
+          if (folder === "all") {
+            // Use unarchive for archived emails - this properly sets is_archived = false
+            const undo = unarchive(selectionMatchKeys, { resolvedThreadIds });
+            setSnackbar({
+              open: true,
+              message:
+                selectedConversationCount > 1
+                  ? `${selectedConversationCount} conversations moved to Inbox.`
+                  : "Conversation moved to Inbox.",
+              autoHideDuration: 10000,
+              action: (
+                <Button
+                  sx={{ textTransform: "none" }}
+                  size="small"
+                  onClick={() => {
+                    if (typeof undo === "function") {
+                      undo();
+                    }
+                    setSnackbar({
+                      open: true,
+                      message: "Action undone.",
+                      autoHideDuration: 3000,
+                      action: null,
+                    });
+                  }}
+                >
+                  Undo
+                </Button>
+              ),
+            });
+          } else {
+            // Pass resolved IDs to ensure API call works even for search results
+            // (which may not be in the global emails context)
+            moveToLabel(selectionMatchKeys, "Inbox", { resolvedEmailIds, resolvedThreadIds });
+            // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
+            const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
+            showUndoSnackbarForLabelMove(
+              selectionMatchKeys,
+              sourceLocation,
+              "Inbox",
+              false,
+              selectedConversationCount,
+              labelSnapshot
+            );
+          }
+          // Clear selection after action
+          selection.clear();
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
           return;
         } else if (item.id === "__trash__" || item.id === "trash") {
-          const undo = moveToTrash(selectionMatchKeys);
+          // Pass resolved IDs to ensure API call works even for search results
+          const undo = moveToTrash(selectionMatchKeys, { resolvedEmailIds, resolvedThreadIds });
+          // Clear selection after action
+          selection.clear();
           // Show global snackbar with Undo action
           setSnackbar({
             open: true,
@@ -453,7 +544,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
                   if (typeof undo === "function") {
                     undo();
                   } else {
-                    moveToInbox(selectionMatchKeys);
+                    moveToInbox(selectionMatchKeys, { resolvedEmailIds, resolvedThreadIds });
                   }
                   // Follow-up confirmation snackbar
                   setSnackbar({
@@ -474,7 +565,7 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
           const curMeta = currentLabel ? labels?.[currentLabel] : null;
           const inCustomLabel = curMeta && curMeta.system === false;
           if (inCustomLabel) {
-            moveToLabelFrom(selectionMatchKeys, currentLabel, targetKey);
+            moveToLabelFrom(selectionMatchKeys, currentLabel, targetKey, { resolvedEmailIds, resolvedThreadIds });
             showUndoSnackbarForLabelMove(
               selectionMatchKeys,
               currentLabel,
@@ -484,7 +575,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
               labelSnapshot
             );
           } else {
-            moveToLabel(selectionMatchKeys, targetKey); // pass key
+            // Pass resolved IDs for custom labels too
+            moveToLabel(selectionMatchKeys, targetKey, { resolvedEmailIds, resolvedThreadIds });
             showUndoSnackbarForLabelMove(
               selectionMatchKeys,
               currentLabel,
@@ -494,6 +586,8 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
               labelSnapshot
             );
           }
+          // Clear selection after action
+          selection.clear();
         }
         setState((prev) => ({
           ...prev,
@@ -505,12 +599,17 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
     },
     [
       selectionMatchKeys,
+      resolvedEmailIds,
+      resolvedThreadIds,
       moveToLabel,
       moveToLabelFrom,
       moveToTrash,
       moveToInbox,
+      unarchive,
+      folder,
       setSnackbar,
       currentLabel,
+      selection,
       labels,
       selectedConversationCount,
       showUndoSnackbarForLabelMove,
@@ -1021,16 +1120,20 @@ const MailActions = ({ threads = [], showAdvancedMenu, visible }) => {
         _ref={snoozeAnchorElRef}
       />
       {showAdvancedMenu && <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />}
-      {/* {!["all", "drafts"].includes(folder) && (
+      
+      {/* Move to menu for regular folders and archive (all mail) folder */}
+      {folder !== "drafts" && (
         <Icon name="drive_file_move" label="Move to" _ref={anchorRef} onClick={toggleMoveToMenu} />
       )}
-      {["all", "drafts"].includes(folder) && (
+      
+      {/* Move to Inbox for drafts folder */}
+      {folder === "drafts" && (
         <Icon
           name="move_to_inbox"
           label="Move to Inbox"
-          onClick={folder === "all" ? onMoveArchivedMailToInbox : handleMoveDraftsToInbox}
+          onClick={handleMoveDraftsToInbox}
         />
-      )} */}
+      )}
 
       <Icon name="label" label="Label as" onClick={handleLabelAction} _ref={labelAnchorElRef} />
 

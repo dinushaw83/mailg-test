@@ -563,7 +563,7 @@ export const getLabel = (participants, { includePersonal = true } = {}) => {
 // - Read/star/important, preview, timestamp come from last message
 // - Subject comes from the first message in the thread
 // - Labels are the union of all labels within the thread
-export function getThreadRows(messages, { label = null, folder = "inbox" } = {}) {
+export function getThreadRows(messages, { label = null, folder = "inbox", isSearchContext = false } = {}) {
   const { messagesById, threadsById, thread_ids } = normalizeEmails(messages);
 
   // Build a label for the Sent folder that lists only recipient first names
@@ -692,8 +692,11 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
   } else if (folder) {
     switch (folder) {
       case "inbox":
-        // Skip filtering for inbox since API already returns category-specific emails
-        // The emails are already filtered by category (primary, promotions, social, updates)
+        // When in search context (user searched "in:inbox"), filter by Inbox label
+        // In normal folder view, skip filtering since API already returns category-specific emails
+        if (isSearchContext) {
+          filtered = filtered.filter((r) => has(r, "Inbox") && !has(r, "Spam") && !has(r, "Trash"));
+        }
         break;
       case "starred":
         filtered = filtered.filter((r) => r.is_starred && !has(r, "Spam") && !has(r, "Trash"));
@@ -702,12 +705,18 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
         filtered = filtered.filter((r) => has(r, "Snoozed") && !has(r, "Spam") && !has(r, "Trash"));
         break;
       case "sent":
-        // Backend already filters by folder=sent, so skip client-side label filtering
-        // filtered = filtered.filter((r) => has(r, "Sent"));
+        // When in search context, filter by Sent label
+        // In normal folder view, backend already filters by folder=sent
+        if (isSearchContext) {
+          filtered = filtered.filter((r) => has(r, "Sent") && !has(r, "Spam") && !has(r, "Trash"));
+        }
         break;
       case "drafts":
-        // Backend already filters by folder=drafts, so skip client-side label filtering
-        // filtered = filtered.filter((r) => has(r, "Drafts"));
+        // When in search context, filter by Drafts label
+        // In normal folder view, backend already filters by folder=drafts
+        if (isSearchContext) {
+          filtered = filtered.filter((r) => has(r, "Drafts"));
+        }
         break;
       case "important":
         filtered = filtered.filter((r) => r.is_important && !has(r, "Spam") && !has(r, "Trash"));
@@ -719,12 +728,18 @@ export function getThreadRows(messages, { label = null, folder = "inbox" } = {})
         filtered = filtered.filter((r) => has(r, "Scheduled"));
         break;
       case "spam":
-        // Backend already filters by folder=spam, so skip client-side label filtering
-        // filtered = filtered.filter((r) => has(r, "Spam"));
+        // When in search context, filter by Spam label
+        // In normal folder view, backend already filters by folder=spam
+        if (isSearchContext) {
+          filtered = filtered.filter((r) => has(r, "Spam"));
+        }
         break;
       case "trash":
-        // Backend already filters by folder=trash, so skip client-side label filtering
-        // filtered = filtered.filter((r) => has(r, "Trash"));
+        // When in search context, filter by Trash label
+        // In normal folder view, backend already filters by folder=trash
+        if (isSearchContext) {
+          filtered = filtered.filter((r) => has(r, "Trash"));
+        }
         break;
       case "categories":
         filtered = filtered.filter((r) => has(r, "Categories"));
