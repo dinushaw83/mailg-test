@@ -6,7 +6,7 @@ This module provides:
 - Saved searches
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_, cast, String
 from typing import Optional, List
@@ -32,8 +32,9 @@ from app.schemas.email import EmailListResponse
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
+from app.auth.token_dependency import require_token_data
 from app.utils.email_utils import get_label_hierarchy_name, format_email_list_response, get_perspective_email_filter
-from app.utils.search_utils import parse_search_query
+from app.utils.search_utils import parse_search_query, save_search_query_background
 from app.utils.thread_metadata_utils import get_user_important_thread_ids
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,8 @@ router = APIRouter()
 
 @router.get("/search", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
 def search_emails(
+    request: Request,
+    background_tasks: BackgroundTasks,
     q: Optional[str] = Query(None, description="Search query with operators"),
     from_email: Optional[str] = Query(None, alias="from", description="Filter by sender (comma-separated for multiple)"),
     to_email: Optional[str] = Query(None, alias="to", description="Filter by recipient (comma-separated for multiple)"),
@@ -744,6 +747,16 @@ def search_emails(
         )
         for email in emails
     ]
+    
+    # Save search query in background (only if q parameter was provided)
+    if q:
+        token_data = require_token_data(request)
+        background_tasks.add_task(
+            save_search_query_background,
+            user_id=current_user.id,
+            query=q,
+            run_id=token_data.run_id
+        )
     
     return PaginatedListResponse[EmailListResponse](
         results=emails_data,
