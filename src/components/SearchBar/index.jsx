@@ -98,6 +98,10 @@ const extractFolderOrLabelFromPath = (pathname) => {
   return { folder: null, label: null };
 };
 
+const getIsInInbox = (pathname) => {
+  return pathname.startsWith("/inbox");
+};
+
 /**
  * Generate search operator prefix based on folder or label
  * @param {string | null} folder - Folder name
@@ -131,6 +135,7 @@ const SearchBar = () => {
 
   const isAdvancedSearch = location.pathname.startsWith("/search/advanced");
   const searchQuery = useMemo(() => buildSearchBarFromUrl(location), [location]);
+  const isInInbox = useMemo(() => getIsInInbox(location.pathname), [location.pathname]);
 
   // Extract current folder or label from URL
   const { folder: currentFolder, label: currentLabel } = useMemo(
@@ -173,10 +178,9 @@ const SearchBar = () => {
     }
 
     // Don't populate if we don't have a folder or label operator
-    if (!folderOperatorPrefix && currentFolder !== "inbox") {
+    if (!folderOperatorPrefix && !isInInbox) {
       return;
     }
-
     // Check if the operator is already in the search value
     const operatorPattern = currentFolder
       ? new RegExp(`in:\\s*${currentFolder}`, "i")
@@ -184,9 +188,9 @@ const SearchBar = () => {
 
     // Only populate if the operator is not already present
     if (!operatorPattern.test(searchValue)) {
-      setSearchValue(folderOperatorPrefix);
+      setSearchValue(folderOperatorPrefix || "");
     }
-  }, [location.pathname, folderOperatorPrefix, currentFolder, currentLabel]);
+  }, [location.pathname, folderOperatorPrefix, currentFolder, currentLabel, isInInbox]);
 
   // Get filtered emails based on active filters
   const filteredEmails = useMemo(() => {
