@@ -468,6 +468,7 @@ const SearchBar = () => {
 
     // Build simple search URL with only the input value (ignore all filters)
     const searchUrl = `/search/${encodeForPath(finalsEachValue)}?${queryParams.toString()}`;
+    handleClickAway();
     navigate(searchUrl);
   };
 
