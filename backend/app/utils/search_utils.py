@@ -345,7 +345,9 @@ def parse_search_query(query: str, tz_offset: Optional[int] = None) -> dict:
         (r'in:(\w+)', 'folder_type'),
         
         # Label and category
-        (r'label:(\S+)', 'label_name'),
+        # label: captures everything until the next operator or end of string
+        # This allows multi-word labels like "label:projects client b"
+        (r'label:(.+?)(?=\s+(?:from|to|subject|cc|bcc|has|is|in|label|category|before|after|newer_than|older_than|size|larger|smaller|filename|deliveredto):|$)', 'label_name'),
         (r'category:(\w+)', 'category'),
         
         # Date filters
@@ -365,7 +367,7 @@ def parse_search_query(query: str, tz_offset: Optional[int] = None) -> dict:
             # Value pattern (with capture group)
             match = re.search(pattern, query_copy, re.IGNORECASE)
             if match:
-                value = match.group(1)
+                value = match.group(1).strip()
                 # Remove quotes if present
                 if value.startswith('"') or value.startswith("'"):
                     value = value[1:-1]

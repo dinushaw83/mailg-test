@@ -318,16 +318,59 @@ def search_emails(
     
     if label_name:
         # Handle hierarchical label names (e.g., "Projects::Client" or "Projects/Client")
-        # Also support hyphens as spaces for URL-friendly names (e.g., "Client-B" matches both "Client-B" and "Client B")
+        # Also support spaces and hyphens as hierarchy separators
+        # e.g., "projects client b" or "projects-client-b" matches "Projects > Client B"
         # Split by common separators and find the matching label
         label_parts = None
-        original_label_name = label_name  # Keep original for matching labels with actual hyphens
-        
+
         if "::" in label_name:
             label_parts = [p.strip() for p in label_name.split("::") if p.strip()]
         elif "/" in label_name:
             label_parts = [p.strip() for p in label_name.split("/") if p.strip()]
-        
+        else:
+            # Try to interpret spaces/hyphens as hierarchy separators
+            # Normalize: replace hyphens with spaces, then split by spaces
+            normalized = label_name.replace("-", " ")
+            tokens = [t.strip() for t in normalized.split() if t.strip()]
+
+            if len(tokens) > 1:
+                # Use a greedy approach: find the longest matching parent label from the left
+                for i in range(1, len(tokens)):
+                    # Try parent as first i tokens joined with space or hyphen
+                    potential_parent_space = " ".join(tokens[:i])
+                    potential_parent_hyphen = "-".join(tokens[:i])
+
+                    # Check if this parent exists
+                    parent_label = db.query(Label).filter(
+                        Label.owner_id == current_user.id,
+                        Label.parent_id.is_(None),  # Must be a root label
+                        or_(
+                            Label.name.ilike(potential_parent_space),
+                            Label.name.ilike(potential_parent_hyphen)
+                        )
+                    ).first()
+
+                    if parent_label:
+                        # Found a matching parent, remaining tokens form the child
+                        child_tokens = tokens[i:]
+                        potential_child_space = " ".join(child_tokens)
+                        potential_child_hyphen = "-".join(child_tokens)
+
+                        # Check if this child exists under the parent
+                        child_label = db.query(Label).filter(
+                            Label.owner_id == current_user.id,
+                            Label.parent_id == parent_label.id,
+                            or_(
+                                Label.name.ilike(potential_child_space),
+                                Label.name.ilike(potential_child_hyphen)
+                            )
+                        ).first()
+
+                        if child_label:
+                            # Found a match! Set label_parts to trigger hierarchical matching
+                            label_parts = [parent_label.name, child_label.name]
+                            break
+
         logger.debug(f"Label search: label_name={label_name}, label_parts={label_parts}")
         
         if label_parts and len(label_parts) > 1:
