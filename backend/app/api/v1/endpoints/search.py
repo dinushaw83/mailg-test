@@ -10,7 +10,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_, cast, String
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 import logging
 
@@ -449,12 +449,14 @@ def search_emails(
     
     if _date_to_dt:
         # Datetime from q parsing (with tz_offset applied)
-        query = query.filter(Email.created_at <= _date_to_dt)
+        # Add 1 day to include the full end date
+        query = query.filter(Email.created_at < _date_to_dt + timedelta(days=1))
     elif date_to:
         # Explicit string param (treated as UTC)
+        # Add 1 day to include the full end date (e.g., 2026-03-26 includes all of March 26)
         try:
-            dt = datetime.strptime(date_to, '%Y-%m-%d')
-            query = query.filter(Email.created_at <= dt)
+            dt = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(Email.created_at < dt)
         except ValueError:
             pass
     
