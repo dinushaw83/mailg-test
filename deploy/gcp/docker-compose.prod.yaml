@@ -5,7 +5,7 @@ services:
     container_name: ui-gym-mailg-postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-mailg}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mailg}
       - POSTGRES_DB=${POSTGRES_DB:-postgres}
       - POSTGRES_MAX_CONNECTIONS=${POSTGRES_MAX_CONNECTIONS:-1000}
     # Postgres tuning - adjust based on VM resources
@@ -62,7 +62,7 @@ services:
     environment:
       - DEVELOPMENT_MODE=${DEVELOPMENT_MODE:-false}
       - DB_BACKEND=postgres
-      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-mailg}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-postgres}
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-mailg}:${POSTGRES_PASSWORD:-mailg}@postgres:5432/${POSTGRES_DB:-postgres}
       - POSTGRES_ADMIN_DB=${POSTGRES_ADMIN_DB:-postgres}
       - POSTGRES_TEMPLATE_DB=${POSTGRES_TEMPLATE_DB:-mailg_seed}
       - POSTGRES_RUN_DB_PREFIX=${POSTGRES_RUN_DB_PREFIX:-mailg_}
