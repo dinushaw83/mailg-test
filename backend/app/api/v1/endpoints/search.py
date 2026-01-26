@@ -318,48 +318,50 @@ def search_emails(
     
     if label_name:
         # Handle hierarchical label names (e.g., "Projects::Client" or "Projects/Client")
-        # Also support hyphens as hierarchy separators (e.g., "projects-client-b" matches "Projects > Client B")
+        # Also support spaces and hyphens as hierarchy separators
+        # e.g., "projects client b" or "projects-client-b" matches "Projects > Client B"
         # Split by common separators and find the matching label
         label_parts = None
-        original_label_name = label_name  # Keep original for matching labels with actual hyphens
 
         if "::" in label_name:
             label_parts = [p.strip() for p in label_name.split("::") if p.strip()]
         elif "/" in label_name:
             label_parts = [p.strip() for p in label_name.split("/") if p.strip()]
-        elif "-" in label_name:
-            # Try to interpret hyphens as hierarchy separators
-            # Use a greedy approach: find the longest matching parent label from the left
-            hyphen_parts = [p.strip() for p in label_name.split("-") if p.strip()]
-            if len(hyphen_parts) > 1:
-                # Try to find a matching parent label by combining parts from the left
-                for i in range(1, len(hyphen_parts)):
-                    # Try parent as first i parts joined with space or hyphen
-                    potential_parent = " ".join(hyphen_parts[:i])
-                    potential_parent_hyphen = "-".join(hyphen_parts[:i])
+        else:
+            # Try to interpret spaces/hyphens as hierarchy separators
+            # Normalize: replace hyphens with spaces, then split by spaces
+            normalized = label_name.replace("-", " ")
+            tokens = [t.strip() for t in normalized.split() if t.strip()]
+
+            if len(tokens) > 1:
+                # Use a greedy approach: find the longest matching parent label from the left
+                for i in range(1, len(tokens)):
+                    # Try parent as first i tokens joined with space or hyphen
+                    potential_parent_space = " ".join(tokens[:i])
+                    potential_parent_hyphen = "-".join(tokens[:i])
 
                     # Check if this parent exists
                     parent_label = db.query(Label).filter(
                         Label.owner_id == current_user.id,
                         Label.parent_id.is_(None),  # Must be a root label
                         or_(
-                            Label.name.ilike(potential_parent),
+                            Label.name.ilike(potential_parent_space),
                             Label.name.ilike(potential_parent_hyphen)
                         )
                     ).first()
 
                     if parent_label:
-                        # Found a matching parent, remaining parts form the child
-                        child_parts = hyphen_parts[i:]
-                        potential_child = " ".join(child_parts)
-                        potential_child_hyphen = "-".join(child_parts)
+                        # Found a matching parent, remaining tokens form the child
+                        child_tokens = tokens[i:]
+                        potential_child_space = " ".join(child_tokens)
+                        potential_child_hyphen = "-".join(child_tokens)
 
                         # Check if this child exists under the parent
                         child_label = db.query(Label).filter(
                             Label.owner_id == current_user.id,
                             Label.parent_id == parent_label.id,
                             or_(
-                                Label.name.ilike(potential_child),
+                                Label.name.ilike(potential_child_space),
                                 Label.name.ilike(potential_child_hyphen)
                             )
                         ).first()
