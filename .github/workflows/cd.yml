@@ -12,6 +12,7 @@ on:
     branches:
       - staging
       - develop
+      - deploy-test1
   workflow_dispatch:
     inputs:
       environment:
