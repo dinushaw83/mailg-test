@@ -269,26 +269,29 @@ export default function SpamActions({ threads: _threads = [], folder, visible })
   );
 
   const onDeleteForever = useCallback(() => {
-    if (!selectionMatchKeys.length) {
+    if (!selectedEmails.length) {
       showNoConversationsSelectedSnackbar();
       return;
     }
 
+    // Use email.id values (not thread_id) as deleteForever expects email IDs
+    const emailIdsToDelete = selectedEmails.map((email) => email.id);
+    const count = selectedConversationCount;
+
     try {
-      deleteForever(selectionMatchKeys);
+      deleteForever(emailIdsToDelete);
+      // Clear the selection after delete to prevent accumulation
+      selection.clear();
       setSnackbar({
         open: true,
-        message:
-          selectedConversationCount > 1
-            ? `${selectedConversationCount} conversations deleted forever.`
-            : "Conversation deleted forever.",
+        message: count > 1 ? `${count} conversations deleted forever.` : "Conversation deleted forever.",
         autoHideDuration: 3000,
         action: null,
       });
     } catch (e) {
       console.error("Delete forever failed:", e);
     }
-  }, [selectionMatchKeys, showNoConversationsSelectedSnackbar, deleteForever, selectedConversationCount, setSnackbar]);
+  }, [selectedEmails, showNoConversationsSelectedSnackbar, deleteForever, selectedConversationCount, setSnackbar, selection]);
 
   const hasUnreadEmails = useMemo(() => {
     return selectedEmails.some((email) => !email.is_read);

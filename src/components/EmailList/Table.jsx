@@ -425,19 +425,21 @@ const Table = ({
         return;
       }
       try {
-        archive(thread_ids);
+        const undo = archive(thread_ids);
         const message =
           thread_ids.length > 1 ? `${thread_ids.length} Conversations archived` : "Conversation archived.";
         setSnackbar({
           open: true,
           message,
-          autoHideDuration: 3000,
+          autoHideDuration: 10000,
           action: (
             <Button
               sx={{ textTransform: "none" }}
               size="small"
               onClick={() => {
-                moveToInbox(thread_ids);
+                if (typeof undo === "function") {
+                  undo();
+                }
                 setSnackbar({
                   open: true,
                   message: "Action undone.",
@@ -454,7 +456,7 @@ const Table = ({
         console.error("Archive failed:", e);
       }
     },
-    [archive, setSnackbar]
+    [archive, setSnackbar, showNoConversationsSelectedSnackbar]
   );
 
   const handleDelete = useCallback(
@@ -1185,7 +1187,7 @@ const Table = ({
                             handleArchive([email.thread_id]);
                           }}
                           style={{}}
-                          disabled={folder === "trash"}
+                          disabled={folder === "trash" || email.is_archived === true}
                           _ref={null}
                         />
                         <Icon

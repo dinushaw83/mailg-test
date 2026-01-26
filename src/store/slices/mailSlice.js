@@ -630,6 +630,22 @@ export const bulkArchiveEmailsThunk = createAsyncThunk(
 );
 
 /**
+ * BULK MUTATION THUNK: Unarchive multiple threads
+ */
+export const bulkUnarchiveEmailsThunk = createAsyncThunk(
+  "mail/bulkUnarchiveEmails",
+  async ({ threadIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUnarchiveEmails(threadIds);
+      return { threadIds, response };
+    } catch (error) {
+      console.error("Failed to bulk unarchive threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unarchive threads");
+    }
+  }
+);
+
+/**
  * BULK MUTATION THUNK: Snooze multiple threads
  */
 export const bulkSnoozeThreadsThunk = createAsyncThunk(
@@ -827,17 +843,27 @@ const mailSlice = createSlice({
 
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-        // Merge with system labels (keep system labels as-is, they use composite keys)
-        const mergedLabels = { ...state.labels };
+        
+        // Only keep system labels (which use composite keys like "Inbox", "Sent", etc.)
+        // Remove all backend labels (which use UUIDs) and replace with fresh data
+        const systemLabelsOnly = {};
+        Object.entries(state.labels).forEach(([key, label]) => {
+          // System labels don't have UUIDs and use composite keys
+          if (label.is_system || label.system) {
+            systemLabelsOnly[key] = label;
+          }
+        });
 
-        // Add/update backend labels (UUID-based)
+        // Merge system labels with fresh backend labels
+        const mergedLabels = { ...systemLabelsOnly };
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
 
         state.labels = mergedLabels;
-        state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
-        state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };
+        // Replace ID mappings entirely with fresh data from API
+        state.labelIdToKeyMap = { ...idToKeyMap };
+        state.keyToLabelIdMap = { ...keyToIdMap };
       })
       .addCase(fetchLabels.rejected, (state, action) => {
         state.labelLoading = false;
@@ -891,25 +917,36 @@ const mailSlice = createSlice({
       .addCase(deleteLabelThunk.fulfilled, (state, action) => {
         const deletedId = action.payload.id;
         if (deletedId) {
-          // Remove label from state
-          delete state.labels[deletedId];
+          // Recursive function to collect all descendant label IDs
+          const collectDescendants = (parentId, collected = new Set()) => {
+            Object.entries(state.labels).forEach(([id, label]) => {
+              if (label.parent_id === parentId && !collected.has(id)) {
+                collected.add(id);
+                // Recursively collect children of this child
+                collectDescendants(id, collected);
+              }
+            });
+            return collected;
+          };
 
-          // Remove from mappings
+          // Collect all descendants (deeply nested children)
+          const descendantIds = collectDescendants(deletedId);
+
+          // Remove the deleted label itself
+          delete state.labels[deletedId];
           const compositeKey = state.labelIdToKeyMap[deletedId];
           if (compositeKey) {
             delete state.labelIdToKeyMap[deletedId];
             delete state.keyToLabelIdMap[compositeKey];
           }
 
-          // Also remove children (cascade delete)
-          Object.entries(state.labels).forEach(([id, label]) => {
-            if (label.parent_id === deletedId) {
-              delete state.labels[id];
-              const childKey = state.labelIdToKeyMap[id];
-              if (childKey) {
-                delete state.labelIdToKeyMap[id];
-                delete state.keyToLabelIdMap[childKey];
-              }
+          // Remove all descendants (cascade delete)
+          descendantIds.forEach((id) => {
+            delete state.labels[id];
+            const childKey = state.labelIdToKeyMap[id];
+            if (childKey) {
+              delete state.labelIdToKeyMap[id];
+              delete state.keyToLabelIdMap[childKey];
             }
           });
         }
@@ -964,8 +1001,11 @@ const mailSlice = createSlice({
             "mail/bulkMoveToSpam/fulfilled",
             "mail/bulkMoveFromSpam/fulfilled",
             "mail/bulkMoveToTrash/fulfilled",
+            "mail/bulkMoveToFolder/fulfilled",
+            "mail/bulkUpdateLabels/fulfilled",
             "mail/bulkDeleteEmail/fulfilled",
             "mail/bulkArchiveEmails/fulfilled",
+            "mail/bulkUnarchiveEmails/fulfilled",
             "mail/bulkSnoozeThreads/fulfilled",
             "mail/bulkUnsnoozeThreads/fulfilled",
             "mail/snoozeThread/fulfilled",
