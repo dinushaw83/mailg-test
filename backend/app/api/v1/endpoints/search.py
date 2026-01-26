@@ -10,7 +10,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_, cast, String
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 import logging
 
@@ -449,12 +449,14 @@ def search_emails(
     
     if _date_to_dt:
         # Datetime from q parsing (with tz_offset applied)
-        query = query.filter(Email.created_at <= _date_to_dt)
+        # Add 1 day to include the full end date
+        query = query.filter(Email.created_at < _date_to_dt + timedelta(days=1))
     elif date_to:
         # Explicit string param (treated as UTC)
+        # Add 1 day to include the full end date (e.g., 2026-03-26 includes all of March 26)
         try:
-            dt = datetime.strptime(date_to, '%Y-%m-%d')
-            query = query.filter(Email.created_at <= dt)
+            dt = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1)
+            query = query.filter(Email.created_at < dt)
         except ValueError:
             pass
     
@@ -721,6 +723,16 @@ def search_emails(
     filtered_email_ids = [eid[0] for eid in query.with_entities(Email.id).distinct().all()]
     
     if not filtered_email_ids:
+        # Save search query in background even for empty results
+        if q:
+            token_data = require_token_data(request)
+            background_tasks.add_task(
+                save_search_query_background,
+                user_id=current_user.id,
+                query=q,
+                run_id=token_data.run_id
+            )
+        
         # No matching emails - return empty result
         return PaginatedListResponse[EmailListResponse](
             results=[],
