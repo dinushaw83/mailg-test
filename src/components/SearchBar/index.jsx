@@ -173,7 +173,7 @@ const SearchBar = () => {
     }
 
     // Don't populate if we don't have a folder or label operator
-    if (!folderOperatorPrefix) {
+    if (!folderOperatorPrefix && currentFolder !== "inbox") {
       return;
     }
 
@@ -186,7 +186,7 @@ const SearchBar = () => {
     if (!operatorPattern.test(searchValue)) {
       setSearchValue(folderOperatorPrefix);
     }
-  }, [location.pathname, folderOperatorPrefix, currentFolder, currentLabel, searchValue]);
+  }, [location.pathname, folderOperatorPrefix, currentFolder, currentLabel]);
 
   // Get filtered emails based on active filters
   const filteredEmails = useMemo(() => {
@@ -302,7 +302,13 @@ const SearchBar = () => {
     }
 
     return allSuggestions;
-  }, [apiSuggestions.labels, apiSuggestions.folders, apiSuggestions.categories, apiSuggestions.operators, apiSuggestions.recent_searches]);
+  }, [
+    apiSuggestions.labels,
+    apiSuggestions.folders,
+    apiSuggestions.categories,
+    apiSuggestions.operators,
+    apiSuggestions.recent_searches,
+  ]);
 
   const expandedContent = useMemo(() => {
     if (searchValue.trim() && activeFilters.length > 0) {
@@ -433,6 +439,34 @@ const SearchBar = () => {
     return parts.map((part, index) => (testRegex.test(part) ? <strong key={index}>{part}</strong> : part));
   };
 
+  const handleSearchValue = (formattedValue) => {
+    const queryParams = new URLSearchParams();
+
+    let finalsEachValue = formattedValue || searchValue;
+    if (activeFilters.includes(ACTIVE_FILTERS.HAS_ATTACHMENT)) {
+      queryParams.set("attachment", "true");
+    }
+    if (activeFilters.includes(ACTIVE_FILTERS.FROM_ME)) {
+      queryParams.set("from", loggedInUser?.email);
+    }
+    if (activeFilters.includes(ACTIVE_FILTERS.LAST_WEEK)) {
+      finalsEachValue = finalsEachValue
+        .replace(/after:(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/g, "")
+        .replace(/before:(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/g, "");
+      const todayDate = new Date().toISOString().split("T")[0];
+      const targetDate = new Date(todayDate);
+      targetDate.setDate(targetDate.getDate() - 7);
+      const startDate = targetDate.toISOString().split("T")[0];
+      const endDate = todayDate;
+      queryParams.set("after", startDate);
+      queryParams.set("before", endDate);
+    }
+
+    // Build simple search URL with only the input value (ignore all filters)
+    const searchUrl = `/search/${encodeForPath(finalsEachValue)}?${queryParams.toString()}`;
+    navigate(searchUrl);
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Tab" && autoCompleteSuggestion) {
       // Auto-complete with Tab key
@@ -470,31 +504,7 @@ const SearchBar = () => {
       // Add search query to history when submitted
       addToSearchHistory(searchValue);
       addBasicSearchQuery(searchValue, {});
-      const queryParams = new URLSearchParams();
-
-      let finalsEachValue = searchValue;
-      if (activeFilters.includes(ACTIVE_FILTERS.HAS_ATTACHMENT)) {
-        queryParams.set("attachment", "true");
-      }
-      if (activeFilters.includes(ACTIVE_FILTERS.FROM_ME)) {
-        queryParams.set("from", loggedInUser?.email);
-      }
-      if (activeFilters.includes(ACTIVE_FILTERS.LAST_WEEK)) {
-        finalsEachValue = finalsEachValue
-          .replace(/after:(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/g, "")
-          .replace(/before:(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/g, "");
-        const todayDate = new Date().toISOString().split("T")[0];
-        const targetDate = new Date(todayDate);
-        targetDate.setDate(targetDate.getDate() - 7);
-        const startDate = targetDate.toISOString().split("T")[0];
-        const endDate = todayDate;
-        queryParams.set("after", startDate);
-        queryParams.set("before", endDate);
-      }
-
-      // Build simple search URL with only the input value (ignore all filters)
-      const searchUrl = `/search/${encodeForPath(finalsEachValue)}?${queryParams.toString()}`;
-      navigate(searchUrl);
+      handleSearchValue();
       setIsFocused(false);
 
       e.target.blur();
@@ -514,6 +524,9 @@ const SearchBar = () => {
       const prefix = searchLower.startsWith("to:") ? "to:" : "from:";
       const formattedValue = `${prefix}${item.email}`;
       setSearchValue(formattedValue);
+      setTimeout(() => {
+        handleSearchValue(formattedValue);
+      }, 100);
       // Keep focus so user can continue typing
       focusInput();
       return;
@@ -532,7 +545,7 @@ const SearchBar = () => {
     // Handle API suggestions (labels, folders, categories, operators, recent_searches)
     if (typeof item === "object" && item.value && item.type) {
       let formattedValue = item.value;
-
+      let shouldNavigate = true;
       // Format based on type
       if (item.type === "category") {
         // Format as category:<name>
@@ -549,9 +562,15 @@ const SearchBar = () => {
       } else if (item.type === "operator") {
         // Operators already have the : so just use the value
         formattedValue = item.value;
+        shouldNavigate = false;
       }
 
       setSearchValue(formattedValue);
+      if (shouldNavigate) {
+        setTimeout(() => {
+          handleSearchValue(formattedValue);
+        }, 100);
+      }
       // Keep focus so user can continue typing
       focusInput();
       return;

@@ -224,6 +224,10 @@ export function buildSearchParams(location, options = {}) {
       }
     }
   }
+  // Check searchQuery for -{Some text here}
+  if (searchQuery.includes("-\{[^}]*\}")) {
+    apiParams.hasnot = searchQuery.match(/-\{[^}]*\}/g)[0].replace(/-\{|}/g, "");
+  }
 
   // Map CC filter
   const cc = searchParams.get("cc");
@@ -481,6 +485,9 @@ export function buildSearchParams(location, options = {}) {
     cleanedQuery = cleanedQuery.replace(/is:read\b/g, "");
     cleanedQuery = cleanedQuery.replace(/in:important\b/g, "");
     cleanedQuery = cleanedQuery.replace(/in:all\b/g, "");
+
+    // Remove -{Some text here}
+    cleanedQuery = cleanedQuery.replace(/-\{[^}]*\}/g, "");
 
     // Remove larger: and smaller: patterns
     cleanedQuery = cleanedQuery.replace(/larger:\d+[KMG]B?\b/gi, "");

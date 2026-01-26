@@ -82,6 +82,10 @@ const searchService = {
         queryParams.category = params.category;
       }
 
+      if (params.hasnot !== undefined && params.hasnot !== null && params.hasnot !== "") {
+        queryParams.hasnot = params.hasnot;
+      }
+
       // Pagination
       queryParams.page = params.page || 1;
       queryParams.page_size = params.page_size || 20;
@@ -133,7 +137,7 @@ const searchService = {
       const response = await apiClient.get("/v1/search/suggestions", { params: queryParams });
 
       const payload = response?.data?.data ?? response?.data ?? {};
-      
+
       return {
         contacts: payload.contacts || [],
         labels: payload.labels || [],

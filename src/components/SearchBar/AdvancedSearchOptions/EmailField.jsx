@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
+import React, { useState, useRef, useContext, useEffect, useMemo } from "react";
 import { Autocomplete, Stack, TextField, Box, Avatar, Typography } from "@mui/material";
 import { useGlobalContext } from "../../../contexts/GlobalContext";
 import { generateAvatarColor } from "../../../utils/helperFunctions";
@@ -22,12 +22,16 @@ const InputStyle = {
 };
 
 const EmailField = React.forwardRef(({ label, value = "", onChange }, ref) => {
-  const { recipients: globalRecipients } = useGlobalContext();
+  const { recipients: contactRecipients, loggedInUser } = useGlobalContext();
   const [inputValue, setInputValue] = useState("");
   const [confirmedEmails, setConfirmedEmails] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = ref || useRef(null);
   const lastEmittedValue = useRef("");
+
+  const globalRecipients = useMemo(() => {
+    return [...contactRecipients, loggedInUser];
+  }, [contactRecipients]);
 
   // Sync internal state with external value prop (only when changed externally, not during typing)
   useEffect(() => {

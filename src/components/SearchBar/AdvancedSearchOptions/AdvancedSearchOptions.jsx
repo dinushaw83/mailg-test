@@ -112,7 +112,7 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
     }
 
     if (searchCriteria.hasnot) {
-      searchQuery.push(`-${searchCriteria.hasnot}`);
+      searchQuery.push(`-{${searchCriteria.hasnot}}`);
       queryParams.append("hasnot", searchCriteria.hasnot);
     }
     if (searchCriteria.size) {
@@ -147,19 +147,19 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
           break;
         case "1 month":
           endDate.setMonth(endDate.getMonth() + 1);
-          startDate.setMonth(startDate.getDate() - 1);
+          startDate.setMonth(startDate.getMonth() - 1);
           break;
         case "2 months":
           endDate.setMonth(endDate.getMonth() + 2);
-          startDate.setMonth(startDate.getDate() - 2);
+          startDate.setMonth(startDate.getMonth() - 2);
           break;
         case "3 months":
           endDate.setMonth(endDate.getMonth() + 3);
-          startDate.setMonth(startDate.getDate() - 3);
+          startDate.setMonth(startDate.getMonth() - 3);
           break;
         case "6 months":
           endDate.setMonth(endDate.getMonth() + 6);
-          startDate.setMonth(startDate.getDate() - 6);
+          startDate.setMonth(startDate.getMonth() - 6);
           break;
         case "1 year":
           endDate.setFullYear(endDate.getFullYear() + 1);
@@ -592,6 +592,12 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
                 id="within"
                 variant="standard"
                 value={formData.within}
+                onClick={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    date: prev.date || new Date().toISOString().split("T")[0],
+                  }));
+                }}
                 onChange={(e) => handleInputChange("within", e.target.value)}
                 MenuProps={{
                   disablePortal: true,
