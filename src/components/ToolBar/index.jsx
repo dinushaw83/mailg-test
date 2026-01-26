@@ -16,8 +16,11 @@ import { createPortal } from "react-dom";
 import styled from "@emotion/styled";
 import { useGlobalContext } from "../../contexts/GlobalContext";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { queryClient } from "../../lib/query-client";
+import { fetchSearchResults } from "../../store/slices/mailSlice";
+import { buildSearchParams } from "../../utils/searchParams";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -381,8 +384,13 @@ const ToolBar = ({
   setShowAdvancedMenu,
   showPagination = true,
   activeInboxTab = null,
+  folder: folderProp = null, // Optional folder override for search context
 }) => {
-  const { folder = "inbox", label: labelParam } = useParams();
+  const { folder: folderFromUrl = "inbox", label: labelParam } = useParams();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  // Use prop folder if provided (e.g., from search params), otherwise use URL folder
+  const folder = folderProp || folderFromUrl;
   const label = labelParam ? decodeURIComponent(labelParam) : null;
   const {
     selection,
@@ -396,27 +404,39 @@ const ToolBar = ({
   const shortcutsOn = keyboardShortcuts === "shortcuts-on";
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
+  // Check if we're on a search page
+  const isSearchPage = location.pathname.startsWith("/search");
+
   const manualEmailSync = useCallback(async () => {
     setIsManualSyncing(true);
     setManualSyncCount((prevCount) => prevCount + 1);
 
     try {
-      // Build query key using the SAME format as useFolderEmails
-      // useFolderEmails uses: ["emails", activeFolder, activeInboxTab, currentPage, itemsPerPage]
-      // or for labels: ["emails", "label", label, currentPage, itemsPerPage]
-      const queryKey = label
-        ? ["emails", "label", label, currentPage, itemsPerPage]
-        : ["emails", folder || "inbox", activeInboxTab, currentPage, itemsPerPage];
+      if (isSearchPage) {
+        // For search pages, dispatch fetchSearchResults to refresh
+        const { apiParams, originalParams } = buildSearchParams(location, {
+          page: currentPage,
+          pageSize: itemsPerPage,
+        });
+        await dispatch(fetchSearchResults({ ...apiParams, originalParams }));
+      } else {
+        // Build query key using the SAME format as useFolderEmails
+        // useFolderEmails uses: ["emails", activeFolder, activeInboxTab, currentPage, itemsPerPage]
+        // or for labels: ["emails", "label", label, currentPage, itemsPerPage]
+        const queryKey = label
+          ? ["emails", "label", label, currentPage, itemsPerPage]
+          : ["emails", folder || "inbox", activeInboxTab, currentPage, itemsPerPage];
 
-      // Force refetch - invalidateQueries marks as stale AND triggers refetch for active queries
-      await queryClient.invalidateQueries({ queryKey, exact: true });
+        // Force refetch - invalidateQueries marks as stale AND triggers refetch for active queries
+        await queryClient.invalidateQueries({ queryKey, exact: true });
+      }
 
       setIsManualSyncing(false);
     } catch (error) {
       console.error("Failed to refresh emails:", error);
       setIsManualSyncing(false);
     }
-  }, [folder, activeInboxTab, currentPage, itemsPerPage, label, setManualSyncCount]);
+  }, [folder, activeInboxTab, currentPage, itemsPerPage, label, setManualSyncCount, isSearchPage, location, dispatch]);
 
   const thread_ids = threads.map((email) => email.thread_id);
   const { ids } = selection;
@@ -473,7 +493,7 @@ const ToolBar = ({
         />
 
         <SpamActions threads={threads} folder={folder} visible={showSpamActions} />
-        <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} visible={showMailActions} />
+        <MailActions threads={threads} showAdvancedMenu={showAdvancedMenu} visible={showMailActions} folder={folder} />
 
         {!hasItemsSelected && (
           <>

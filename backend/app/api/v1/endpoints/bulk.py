@@ -252,6 +252,14 @@ def bulk_move(
                 Email.id.in_(success_ids)
             ).update({Email.folder: request.folder}, synchronize_session=False)
 
+            # When moving to inbox, clear the archived status in ThreadUserMetadata
+            if request.folder == FolderType.INBOX.value and thread_ids:
+                db.query(ThreadUserMetadata).filter(
+                    ThreadUserMetadata.thread_id.in_(thread_ids),
+                    ThreadUserMetadata.user_id == current_user.id,
+                    ThreadUserMetadata.is_archived == True
+                ).update({ThreadUserMetadata.is_archived: False}, synchronize_session=False)
+
             db.commit()
 
             # Sync thread labels to reflect the folder changes

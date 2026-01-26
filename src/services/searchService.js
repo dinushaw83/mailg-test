@@ -65,6 +65,9 @@ const searchService = {
       if (params.is_snoozed !== undefined && params.is_snoozed !== null) {
         queryParams.is_snoozed = params.is_snoozed;
       }
+      if (params.in_archive !== undefined && params.in_archive !== null) {
+        queryParams.in_archive = params.in_archive;
+      }
       if (params.date_from !== undefined && params.date_from !== null && params.date_from !== "") {
         queryParams.date_from = params.date_from;
       }

@@ -315,8 +315,8 @@ export function buildSearchParams(location, options = {}) {
   } else if (inArchive === "false") {
     apiParams.in_archive = false;
   }
-  // Check searchQuery for in:archive
-  if (searchQuery.includes("in:archive")) {
+  // Check searchQuery for in:archive or is:archived
+  if (searchQuery.includes("in:archive") || searchQuery.includes("is:archived")) {
     apiParams.in_archive = true;
   }
 
@@ -480,9 +480,10 @@ export function buildSearchParams(location, options = {}) {
     cleanedQuery = cleanedQuery.replace(/has:userlabels\b/g, "");
     cleanedQuery = cleanedQuery.replace(/has:nouserlabels\b/g, "");
 
-    // Remove is:unread, is:read
+    // Remove is:unread, is:read, is:archived
     cleanedQuery = cleanedQuery.replace(/is:unread\b/g, "");
     cleanedQuery = cleanedQuery.replace(/is:read\b/g, "");
+    cleanedQuery = cleanedQuery.replace(/is:archived\b/g, "");
     cleanedQuery = cleanedQuery.replace(/in:important\b/g, "");
     cleanedQuery = cleanedQuery.replace(/in:all\b/g, "");
 

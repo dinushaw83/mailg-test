@@ -10,7 +10,12 @@ import {
   useThrottledSearch,
   useSearchSuggestions,
 } from "./hooks";
-import { addToSearchHistory, addBasicSearchQuery, removeFromSearchHistory } from "../../utils/search";
+import {
+  addToSearchHistory,
+  addBasicSearchQuery,
+  removeFromSearchHistory,
+  isSearchIndexReady,
+} from "../../utils/search";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useHotkeys } from "react-hotkeys-hook";
 import AdvancedSearchOptions from "./AdvancedSearchOptions/AdvancedSearchOptions";
@@ -105,15 +110,17 @@ const getIsInInbox = (pathname) => {
 /**
  * Generate search operator prefix based on folder or label
  * @param {string | null} folder - Folder name
- * @param {string | null} label - Label name
- * @returns {string | null} - Search operator prefix (e.g., "in: sent" or "label: Work")
+ * @param {string | null} label - Label name (may be nested with :: or / in URL, converted to - for search)
+ * @returns {string | null} - Search operator prefix (e.g., "in:sent" or "label:Parent-Child")
  */
 const getSearchOperatorPrefix = (folder, label) => {
   if (folder) {
     return `in:${folder}`;
   }
   if (label) {
-    return `label:${label}`;
+    // Convert :: or / separators to - and lowercase for the search operator (e.g., "Parent::Child" -> "parent-child")
+    const normalizedLabel = label.replace(/::/g, "-").replace(/\//g, "-").toLowerCase();
+    return `label:${normalizedLabel}`;
   }
   return null;
 };
@@ -169,8 +176,8 @@ const SearchBar = () => {
     }
   }, [isFocused]);
 
-  // Auto-populate search operator when folder/label changes
-  // Only populate if search bar is empty and we're not on a search route
+  // Auto-populate search operator when folder/label changes (navigation only)
+  // User can freely clear or modify the search value after navigation
   useEffect(() => {
     // Don't populate if we're on a search route
     if (location.pathname.startsWith("/search")) {
@@ -191,6 +198,11 @@ const SearchBar = () => {
       setSearchValue(folderOperatorPrefix || "");
     }
   }, [location.pathname, folderOperatorPrefix, currentFolder, currentLabel, isInInbox]);
+
+  // Get search results
+  const searchResults = useMemo(() => {
+    return [];
+  }, []);
 
   // Get filtered emails based on active filters
   const filteredEmails = useMemo(() => {
@@ -219,7 +231,6 @@ const SearchBar = () => {
     return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
   }, [emails, activeFilters]);
 
-  const searchResults = [];
   const recentSuggestions = [];
   const matchingPreviousSearches = [];
   const allPreviousSearches = [];
@@ -611,30 +622,8 @@ const SearchBar = () => {
     setShowAdvancedSearch(false);
     setIsFocused(true);
     setHighlightedIndex(-1);
-
-    // Auto-populate folder operator when search bar is focused and empty
-    // Don't populate if we're on a search route
-    if (location.pathname.startsWith("/search")) {
-      return;
-    }
-
-    // Don't populate if we don't have a folder or label operator
-    if (!folderOperatorPrefix) {
-      return;
-    }
-
-    // Only populate if search bar is empty or only contains the operator
-    if (!searchValue.trim() || searchValue.trim() === folderOperatorPrefix) {
-      // Check if the operator is already in the search value
-      const operatorPattern = currentFolder
-        ? new RegExp(`in:\\s*${currentFolder}`, "i")
-        : new RegExp(`label:\\s*${currentLabel?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
-
-      // Only populate if the operator is not already present
-      if (!operatorPattern.test(searchValue)) {
-        setSearchValue(folderOperatorPrefix);
-      }
-    }
+    // Don't auto-populate on focus - let the useEffect handle initial population
+    // This allows users to clear the operator and type a different search
   };
 
   const handleAdvancedSearchClick = () => {
