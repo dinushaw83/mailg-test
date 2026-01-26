@@ -721,6 +721,16 @@ def search_emails(
     filtered_email_ids = [eid[0] for eid in query.with_entities(Email.id).distinct().all()]
     
     if not filtered_email_ids:
+        # Save search query in background even for empty results
+        if q:
+            token_data = require_token_data(request)
+            background_tasks.add_task(
+                save_search_query_background,
+                user_id=current_user.id,
+                query=q,
+                run_id=token_data.run_id
+            )
+        
         # No matching emails - return empty result
         return PaginatedListResponse[EmailListResponse](
             results=[],
