@@ -6,7 +6,7 @@ This module provides:
 - Saved searches
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import func, or_, and_, cast, String
 from typing import Optional, List
@@ -32,8 +32,9 @@ from app.schemas.email import EmailListResponse
 from app.schemas.pagination import PaginatedListResponse
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
+from app.auth.token_dependency import require_token_data
 from app.utils.email_utils import get_label_hierarchy_name, format_email_list_response, get_perspective_email_filter
-from app.utils.search_utils import parse_search_query
+from app.utils.search_utils import parse_search_query, save_search_query_background
 from app.utils.thread_metadata_utils import get_user_important_thread_ids
 
 logger = logging.getLogger(__name__)
@@ -42,6 +43,8 @@ router = APIRouter()
 
 @router.get("/search", response_model=PaginatedListResponse[EmailListResponse], dependencies=[Depends(authorized())])
 def search_emails(
+    request: Request,
+    background_tasks: BackgroundTasks,
     q: Optional[str] = Query(None, description="Search query with operators"),
     from_email: Optional[str] = Query(None, alias="from", description="Filter by sender (comma-separated for multiple)"),
     to_email: Optional[str] = Query(None, alias="to", description="Filter by recipient (comma-separated for multiple)"),
@@ -57,8 +60,8 @@ def search_emails(
     date_to: Optional[str] = Query(None, description="Emails before date (YYYY-MM-DD)"),
     hasnot: Optional[str] = Query(None, description="Exclude emails containing this text"),
     size: Optional[int] = Query(None, description="Filter by exact size in bytes"),
-    size_larger: Optional[int] = Query(None, alias="larger", description="Emails larger than size in bytes"),
-    size_smaller: Optional[int] = Query(None, alias="smaller", description="Emails smaller than size in bytes"),
+    size_larger: Optional[int] = Query(None, description="Emails larger than size in bytes"),
+    size_smaller: Optional[int] = Query(None, description="Emails smaller than size in bytes"),
     cc: Optional[str] = Query(None, description="Filter by CC recipients (comma-separated)"),
     bcc: Optional[str] = Query(None, description="Filter by BCC recipients (comma-separated)"),
     filename: Optional[str] = Query(None, description="Filter by attachment filename or extension"),
@@ -314,17 +317,98 @@ def search_emails(
         )
     
     if label_name:
-        label_subq = db.query(Label.id).filter(
-            Label.owner_id == current_user.id,
-            Label.name.ilike(f"%{label_name}%")
-        ).scalar_subquery()
-        # Labels are user-specific on shared threads - filter by user_id
-        query = query.join(Thread, Email.thread_id == Thread.id).join(
-            ThreadLabel, Thread.id == ThreadLabel.thread_id
-        ).filter(
-            ThreadLabel.label_id.in_(label_subq),
-            ThreadLabel.user_id == current_user.id  # Only this user's label associations
-        )
+        # Handle hierarchical label names (e.g., "Projects::Client" or "Projects/Client")
+        # Also support hyphens as spaces for URL-friendly names (e.g., "Client-B" matches both "Client-B" and "Client B")
+        # Split by common separators and find the matching label
+        label_parts = None
+        original_label_name = label_name  # Keep original for matching labels with actual hyphens
+        
+        if "::" in label_name:
+            label_parts = [p.strip() for p in label_name.split("::") if p.strip()]
+        elif "/" in label_name:
+            label_parts = [p.strip() for p in label_name.split("/") if p.strip()]
+        
+        logger.debug(f"Label search: label_name={label_name}, label_parts={label_parts}")
+        
+        if label_parts and len(label_parts) > 1:
+            # Hierarchical label - find by traversing the hierarchy
+            # Try both original parts and parts with hyphens converted to spaces
+            leaf_name = label_parts[-1]
+            leaf_name_alt = leaf_name.replace("-", " ") if "-" in leaf_name else None
+            matching_label_ids = []
+            
+            # Find all labels with the leaf name owned by current user
+            # Search for both original and hyphen-to-space variant
+            if leaf_name_alt and leaf_name_alt != leaf_name:
+                candidate_labels = db.query(Label).filter(
+                    Label.owner_id == current_user.id,
+                    or_(Label.name.ilike(leaf_name), Label.name.ilike(leaf_name_alt))
+                ).all()
+            else:
+                candidate_labels = db.query(Label).filter(
+                    Label.owner_id == current_user.id,
+                    Label.name.ilike(leaf_name)
+                ).all()
+            
+            logger.debug(f"Label search: leaf_name={leaf_name}, leaf_name_alt={leaf_name_alt}, candidates={[(l.id, l.name, l.parent_id) for l in candidate_labels]}")
+            
+            for label in candidate_labels:
+                # Verify the parent chain matches by re-querying each parent
+                # (lazy="joined" only loads one level)
+                current_id = label.id
+                parts_to_check = list(reversed(label_parts))  # Start from leaf
+                match = True
+                
+                for i, part in enumerate(parts_to_check):
+                    current_label = db.query(Label).filter(Label.id == current_id).first() if current_id else None
+                    if current_label is None:
+                        match = False
+                        break
+                    # Check both original part and hyphen-to-space variant
+                    part_alt = part.replace("-", " ")
+                    if current_label.name.lower() != part.lower() and current_label.name.lower() != part_alt.lower():
+                        match = False
+                        break
+                    current_id = current_label.parent_id
+                
+                # All parts matched and we've consumed the whole path (no more parents)
+                if match and current_id is None:
+                    matching_label_ids.append(label.id)
+            
+            logger.debug(f"Label search: matching_label_ids={matching_label_ids}")
+            
+            if matching_label_ids:
+                # Labels are user-specific on shared threads - filter by user_id
+                query = query.join(Thread, Email.thread_id == Thread.id).join(
+                    ThreadLabel, Thread.id == ThreadLabel.thread_id
+                ).filter(
+                    ThreadLabel.label_id.in_(matching_label_ids),
+                    ThreadLabel.user_id == current_user.id
+                )
+            else:
+                # No matching hierarchical label found - return empty
+                query = query.filter(False)
+        else:
+            # Simple label name - use partial match
+            # Try both original and hyphen-to-space variant
+            label_name_alt = label_name.replace("-", " ") if "-" in label_name else None
+            if label_name_alt and label_name_alt != label_name:
+                label_subq = db.query(Label.id).filter(
+                    Label.owner_id == current_user.id,
+                    or_(Label.name.ilike(f"%{label_name}%"), Label.name.ilike(f"%{label_name_alt}%"))
+                ).scalar_subquery()
+            else:
+                label_subq = db.query(Label.id).filter(
+                    Label.owner_id == current_user.id,
+                    Label.name.ilike(f"%{label_name}%")
+                ).scalar_subquery()
+            # Labels are user-specific on shared threads - filter by user_id
+            query = query.join(Thread, Email.thread_id == Thread.id).join(
+                ThreadLabel, Thread.id == ThreadLabel.thread_id
+            ).filter(
+                ThreadLabel.label_id.in_(label_subq),
+                ThreadLabel.user_id == current_user.id  # Only this user's label associations
+            )
     
     if is_read is not None:
         query = query.filter(Email.is_read == is_read)
@@ -510,9 +594,11 @@ def search_emails(
         if size is not None:
             query = query.filter(func.coalesce(size_subq.c.total_size, 0) == size)
         if size_larger is not None:
-            query = query.filter(func.coalesce(size_subq.c.total_size, 0) >= size_larger)
+            # Strictly greater than (Gmail-style "larger:" operator)
+            query = query.filter(func.coalesce(size_subq.c.total_size, 0) > size_larger)
         if size_smaller is not None:
-            query = query.filter(func.coalesce(size_subq.c.total_size, 0) <= size_smaller)
+            # Strictly less than (Gmail-style "smaller:" operator)
+            query = query.filter(func.coalesce(size_subq.c.total_size, 0) < size_smaller)
     
     # Filename filter - filter by attachment filename
     if filename:
@@ -596,8 +682,12 @@ def search_emails(
     
     # Has userlabels filter - filter by presence/absence of user labels
     if has_userlabels is not None:
-        labeled_thread_subq = db.query(ThreadLabel.thread_id).filter(
-            ThreadLabel.user_id == current_user.id
+        # Filter by user labels only (exclude system labels where is_system=True)
+        labeled_thread_subq = db.query(ThreadLabel.thread_id).join(
+            Label, ThreadLabel.label_id == Label.id
+        ).filter(
+            ThreadLabel.user_id == current_user.id,
+            Label.is_system == False  # Only user-created labels
         ).distinct().scalar_subquery()
         
         if has_userlabels:
@@ -744,6 +834,16 @@ def search_emails(
         )
         for email in emails
     ]
+    
+    # Save search query in background (only if q parameter was provided)
+    if q:
+        token_data = require_token_data(request)
+        background_tasks.add_task(
+            save_search_query_background,
+            user_id=current_user.id,
+            query=q,
+            run_id=token_data.run_id
+        )
     
     return PaginatedListResponse[EmailListResponse](
         results=emails_data,

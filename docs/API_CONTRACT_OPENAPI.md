@@ -4712,8 +4712,8 @@ These can be combined: q="from:john subject:report has:attachment -spam"
 - `date_to` (optional, object): Emails before date (YYYY-MM-DD)
 - `hasnot` (optional, object): Exclude emails containing this text
 - `size` (optional, object): Filter by exact size in bytes
-- `larger` (optional, object): Emails larger than size in bytes
-- `smaller` (optional, object): Emails smaller than size in bytes
+- `size_larger` (optional, object): Emails larger than size in bytes
+- `size_smaller` (optional, object): Emails smaller than size in bytes
 - `cc` (optional, object): Filter by CC recipients (comma-separated)
 - `bcc` (optional, object): Filter by BCC recipients (comma-separated)
 - `filename` (optional, object): Filter by attachment filename or extension
@@ -4984,6 +4984,7 @@ Returns:
     "contacts": [],
     "labels": [],
     "folders": [],
+    "categories": [],
     "recent_searches": [],
     "operators": []
   }
