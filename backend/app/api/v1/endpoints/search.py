@@ -682,8 +682,12 @@ def search_emails(
     
     # Has userlabels filter - filter by presence/absence of user labels
     if has_userlabels is not None:
-        labeled_thread_subq = db.query(ThreadLabel.thread_id).filter(
-            ThreadLabel.user_id == current_user.id
+        # Filter by user labels only (exclude system labels where is_system=True)
+        labeled_thread_subq = db.query(ThreadLabel.thread_id).join(
+            Label, ThreadLabel.label_id == Label.id
+        ).filter(
+            ThreadLabel.user_id == current_user.id,
+            Label.is_system == False  # Only user-created labels
         ).distinct().scalar_subquery()
         
         if has_userlabels:
