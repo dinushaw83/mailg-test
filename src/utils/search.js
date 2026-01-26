@@ -315,66 +315,6 @@ export function buildSearchIndex(emails) {
 /**
  * Advanced search function with multiple criteria
  */
-export function searchEmails(query, options = {}) {
-  if (!searchIndex || !query || !query.trim()) {
-    return [];
-  }
-
-  try {
-    const trimmedQuery = query.trim().toLowerCase();
-
-    // Try exact search first
-    let results = searchIndex.search(trimmedQuery);
-
-    // If no results, try with wildcards (including single character searches)
-    if (results.length === 0) {
-      const wildcardQuery = trimmedQuery + "*";
-      try {
-        results = searchIndex.search(wildcardQuery);
-      } catch (error) {
-        // Wildcard search might fail for very short queries, fallback to simple contains search
-        results = [];
-      }
-    }
-
-    // If still no results and query is short, do a simple substring match
-    if (results.length === 0 && trimmedQuery.length >= 1) {
-      const matchingDocs = emailDocuments.filter((doc) => {
-        return (
-          doc.subject?.toLowerCase().includes(trimmedQuery) ||
-          doc.body?.toLowerCase().includes(trimmedQuery) ||
-          doc.preview?.toLowerCase().includes(trimmedQuery) ||
-          doc.fromName?.toLowerCase().includes(trimmedQuery) ||
-          doc.fromEmail?.toLowerCase().includes(trimmedQuery) ||
-          doc.searchableText?.includes(trimmedQuery) ||
-          doc.attachments?.some((attachment) => attachment.name?.toLowerCase().includes(trimmedQuery))
-        );
-      });
-
-      // Convert to results format with scoring
-      results = matchingDocs.map((doc, index) => ({
-        ref: doc.id,
-        score: 1 / (index + 1), // Simple scoring based on order
-      }));
-    }
-
-    // Map results back to email documents
-    let emailResults = results.map((result) => emailDocuments.find((doc) => doc.id == result.ref)).filter(Boolean);
-
-    // Apply limit only if specified
-    if (options.limit !== null && options.limit !== undefined) {
-      emailResults = emailResults.slice(0, options.limit || 5);
-    }
-
-    return emailResults;
-  } catch (error) {
-    return [];
-  }
-}
-
-/**
- * Advanced search function with multiple criteria
- */
 export function advancedSearchEmails(searchCriteria, options = {}) {
   if (!emailDocuments || emailDocuments.length === 0) {
     return [];
@@ -727,54 +667,6 @@ export function getMatchingPreviousSearches(query, limit = 5) {
   });
 
   return sortedSearches.slice(0, limit);
-}
-
-/**
- * Get recent search suggestions with search history priority
- */
-export function getRecentSearchSuggestions(limit = 6) {
-  if (!emailDocuments || emailDocuments.length === 0) {
-    return [];
-  }
-
-  // Get search history first
-  const searchHistory = getSearchHistory();
-
-  // Get recent emails and extract subjects
-  const recentEmails = emailDocuments.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
-
-  const suggestions = [];
-  recentEmails.forEach((email) => {
-    if (email.subject && email.subject.length < 50) {
-      suggestions.push(email.subject);
-    }
-    if (email.fromName && email.fromName.length < 30) {
-      suggestions.push(email.fromName);
-    }
-  });
-
-  // Remove duplicates from recent suggestions
-  const recentSuggestions = [...new Set(suggestions)];
-
-  // Combine search history with recent suggestions
-  // Search history items come first, then fill remaining slots with recent suggestions
-  const combinedSuggestions = [];
-
-  // Add search history items first (up to the limit)
-  searchHistory.forEach((historyItem) => {
-    if (combinedSuggestions.length < limit) {
-      combinedSuggestions.push(historyItem);
-    }
-  });
-
-  // Fill remaining slots with recent suggestions (excluding those already in history)
-  recentSuggestions.forEach((suggestion) => {
-    if (combinedSuggestions.length < limit && !searchHistory.includes(suggestion)) {
-      combinedSuggestions.push(suggestion);
-    }
-  });
-
-  return combinedSuggestions;
 }
 
 /**

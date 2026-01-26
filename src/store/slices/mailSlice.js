@@ -676,6 +676,42 @@ export const bulkUnsnoozeThreadsThunk = createAsyncThunk(
     }
   }
 );
+/**
+ * Fetch search suggestions from backend API
+ * @param {Object} params - Search suggestion parameters
+ * @param {string} params.q - Partial query for suggestions (can be empty string)
+ * @param {number} params.limit - Maximum number of suggestions per category (default: 10)
+ * @param {AbortSignal} params.signal - Optional abort signal for request cancellation
+ */
+export const fetchSearchSuggestions = createAsyncThunk(
+  "mail/fetchSearchSuggestions",
+  async ({ q = "", limit = 10, signal }, { rejectWithValue }) => {
+    try {
+      const queryKey = ["searchSuggestions", q, limit];
+
+      const data = await queryClient.fetchQuery({
+        queryKey,
+        queryFn: async () => {
+          return await searchService.getSearchSuggestions({ q, limit });
+        },
+        staleTime: 1000 * 30, // Cache for 30 seconds
+        signal, // Support request cancellation
+      });
+
+      return {
+        suggestions: data,
+        query: q,
+      };
+    } catch (error) {
+      // Ignore cancellation errors
+      if (error?.name === "AbortError" || error?.message?.includes("cancelled")) {
+        throw error; // Re-throw to prevent state update
+      }
+      console.error("❌ Failed to fetch search suggestions:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch search suggestions");
+    }
+  }
+);
 
 const mailSlice = createSlice({
   name: "mail",
@@ -718,6 +754,17 @@ const mailSlice = createSlice({
     searchError: null,
     searchOriginalParams: {}, // Store original params for frontend post-processing
     lastMutationTime: null, // Timestamp of last mutation to trigger refetch
+    // Search suggestions state
+    searchSuggestions: {
+      contacts: [],
+      labels: [],
+      folders: [],
+      recent_searches: [],
+      operators: [],
+    },
+    searchSuggestionsLoading: false,
+    searchSuggestionsError: null,
+    searchSuggestionsQuery: "",
   },
   reducers: {
     setEmails: (state, action) => {
@@ -971,6 +1018,31 @@ const mailSlice = createSlice({
         state.searchPagination = null;
         state.searchOriginalParams = {};
       })
+
+      // Fetch Search Suggestions
+      .addCase(fetchSearchSuggestions.pending, (state) => {
+        state.searchSuggestionsLoading = true;
+        state.searchSuggestionsError = null;
+      })
+      .addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
+        state.searchSuggestionsLoading = false;
+        state.searchSuggestions = action.payload.suggestions || {
+          contacts: [],
+          labels: [],
+          folders: [],
+          recent_searches: [],
+          operators: [],
+        };
+        state.searchSuggestionsQuery = action.payload.query || "";
+      })
+      .addCase(fetchSearchSuggestions.rejected, (state, action) => {
+        // Only update state if it's not a cancellation error
+        if (action.error?.name !== "AbortError" && !action.error?.message?.includes("cancelled")) {
+          state.searchSuggestionsLoading = false;
+          state.searchSuggestionsError = action.payload;
+        }
+      })
+
       // Delete Email
       .addCase(deleteEmailThunk.fulfilled, (state, action) => {
         const emailId = action.payload?.emailId;
@@ -1057,5 +1129,30 @@ export const {
   refreshEmails,
   clearError,
 } = mailSlice.actions;
+
+// Selectors for search suggestions
+export const selectSearchSuggestions = (state) => state.mail.searchSuggestions;
+export const selectSearchSuggestionsLoading = (state) => state.mail.searchSuggestionsLoading;
+export const selectSearchSuggestionsError = (state) => state.mail.searchSuggestionsError;
+export const selectSearchSuggestionsQuery = (state) => state.mail.searchSuggestionsQuery;
+
+// Selector to get suggestions by type
+export const selectSearchSuggestionsByType = (type) => (state) => {
+  const suggestions = state.mail.searchSuggestions;
+  switch (type) {
+    case "contacts":
+      return suggestions.contacts || [];
+    case "labels":
+      return suggestions.labels || [];
+    case "folders":
+      return suggestions.folders || [];
+    case "recent_searches":
+      return suggestions.recent_searches || [];
+    case "operators":
+      return suggestions.operators || [];
+    default:
+      return [];
+  }
+};
 
 export default mailSlice.reducer;
