@@ -436,27 +436,30 @@ def search_emails(
         query = query.filter(Email.id.in_(att_subq))
     
     # Apply date filters - prefer datetime objects from q parsing (with tz_offset), fall back to string params
+    # Use received_at > sent_at > created_at fallback for date filtering
+    date_field = func.coalesce(Email.received_at, Email.sent_at, Email.created_at)
+
     if _date_from_dt:
         # Datetime from q parsing (with tz_offset applied)
-        query = query.filter(Email.sent_at >= _date_from_dt)
+        query = query.filter(date_field >= _date_from_dt)
     elif date_from:
         # Explicit string param (treated as UTC)
         try:
             dt = datetime.strptime(date_from, '%Y-%m-%d')
-            query = query.filter(Email.sent_at >= dt)
+            query = query.filter(date_field >= dt)
         except ValueError:
             pass
-    
+
     if _date_to_dt:
         # Datetime from q parsing (with tz_offset applied)
         # Add 1 day to include the full end date
-        query = query.filter(Email.sent_at < _date_to_dt + timedelta(days=1))
+        query = query.filter(date_field < _date_to_dt + timedelta(days=1))
     elif date_to:
         # Explicit string param (treated as UTC)
         # Add 1 day to include the full end date (e.g., 2026-03-26 includes all of March 26)
         try:
             dt = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1)
-            query = query.filter(Email.sent_at < dt)
+            query = query.filter(date_field < dt)
         except ValueError:
             pass
     
