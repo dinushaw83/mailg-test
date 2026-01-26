@@ -681,9 +681,6 @@ const AdvancedSearchOptions = forwardRef(({ isOpen, onClose, searchValue, trigge
 
         {/* Modal Footer */}
         <div className={styles.modalFooter}>
-          <button className={styles.createFilterButton} onClick={handleCreateFilter}>
-            Create filter
-          </button>
           <button className={styles.searchButton} onClick={handleSearch}>
             Search
           </button>
