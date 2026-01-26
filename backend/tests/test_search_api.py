@@ -2159,7 +2159,7 @@ class TestSearchSizeFilters:
         
         # Search for emails larger than 5000 bytes
         response = client.get(
-            "/api/v1/search?larger=5000",
+            "/api/v1/search?size_larger=5000",
             headers={"Authorization": f"Bearer {token}"}
         )
         
@@ -2217,7 +2217,7 @@ class TestSearchSizeFilters:
         
         # Search for emails smaller than 1000 bytes
         response = client.get(
-            "/api/v1/search?smaller=1000",
+            "/api/v1/search?size_smaller=1000",
             headers={"Authorization": f"Bearer {token}"}
         )
         
