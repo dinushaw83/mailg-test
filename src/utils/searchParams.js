@@ -417,16 +417,16 @@ export function buildSearchParams(location, options = {}) {
     }
   }
 
-  if (searchQuery.includes("label:")) {
-    const labelMatch = searchQuery.match(/label:(\S+)/);
-    if (labelMatch) {
-      const labelName = labelMatch[1].trim();
-      // Only set if not already set or if it's a different label
-      if (!apiParams.label_name || apiParams.label_name !== labelName) {
-        apiParams.label_name = labelName;
-      }
-    }
-  }
+  // if (searchQuery.includes("label:")) {
+  //   const labelMatch = searchQuery.match(/label:(\S+)/);
+  //   if (labelMatch) {
+  //     const labelName = labelMatch[1].trim();
+  //     // Only set if not already set or if it's a different label
+  //     if (!apiParams.label_name || apiParams.label_name !== labelName) {
+  //       apiParams.label_name = labelName;
+  //     }
+  //   }
+  // }
 
   // Note: The following filters are now implemented and mapped to backend API:
   // - hasnot (mapped to apiParams.hasnot)
@@ -497,7 +497,7 @@ export function buildSearchParams(location, options = {}) {
     cleanedQuery = cleanedQuery.replace(/in:(inbox|sent|drafts|trash|spam|starred|snoozed|archive|anywhere)\b/gi, "");
 
     // Remove label: patterns
-    cleanedQuery = cleanedQuery.replace(/label:\S+/g, "");
+    // cleanedQuery = cleanedQuery.replace(/label:\S+/g, "");
 
     // Remove after: and before: date patterns
     // Remove after: and before: patterns with no spaces after ':' (e.g., after:somedate)
@@ -505,9 +505,6 @@ export function buildSearchParams(location, options = {}) {
     cleanedQuery = cleanedQuery.replace(/before:[^\s]+\b/g, "");
     cleanedQuery = cleanedQuery.replace(/after:\d{4}-\d{2}-\d{2}\b/g, "");
     cleanedQuery = cleanedQuery.replace(/before:\d{4}-\d{2}-\d{2}\b/g, "");
-
-    // Remove -NegativeWord patterns (negated words like -foo, -bar etc)
-    cleanedQuery = cleanedQuery.replace(/-\w+\b/g, "");
 
     // Clean up extra whitespace (multiple spaces, leading/trailing spaces)
     cleanedQuery = cleanedQuery.replace(/\s+/g, " ").trim();

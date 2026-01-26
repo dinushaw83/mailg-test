@@ -557,7 +557,7 @@ const SearchBar = () => {
         formattedValue = `category:${item.value}`;
       } else if (item.type === "label") {
         // Format as label:<label>
-        formattedValue = `label:${item.value}`;
+        formattedValue = `label:${item.value.replaceAll(" ", "-")}`;
       } else if (item.type === "folder") {
         // Format as in:<folder>
         formattedValue = `in:${item.value}`;
