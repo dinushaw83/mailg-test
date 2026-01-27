@@ -323,9 +323,10 @@ def format_email_list_response(email, thread_email_count: Optional[int] = None, 
 
 def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id: str = None) -> None:
     """Background task to mark emails as read.
-    
+
     Uses a fresh database session since the original request session may be closed.
-    
+    Also clears expired snooze_until for the affected threads.
+
     Args:
         email_ids: List of email IDs to mark as read
         user_id: User ID for logging purposes
@@ -333,7 +334,8 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
     """
     from app.db.session import get_db_session
     from app.models.email import Email
-    
+    from app.models.thread_user_metadata import ThreadUserMetadata
+
     db = None
     try:
         db = get_db_session(run_id=run_id)
@@ -341,6 +343,23 @@ def mark_emails_as_read_background(email_ids: List[UUID], user_id: UUID, run_id:
             Email.id.in_(email_ids),
             Email.is_read == False
         ).update({Email.is_read: True}, synchronize_session=False)
+
+        # Clear expired snooze_until for the affected threads
+        thread_ids = db.query(Email.thread_id).filter(
+            Email.id.in_(email_ids),
+            Email.thread_id.isnot(None)
+        ).distinct().all()
+        thread_ids = [tid[0] for tid in thread_ids]
+
+        if thread_ids:
+            now = datetime.now(UTC)
+            db.query(ThreadUserMetadata).filter(
+                ThreadUserMetadata.thread_id.in_(thread_ids),
+                ThreadUserMetadata.user_id == user_id,
+                ThreadUserMetadata.snooze_until.isnot(None),
+                ThreadUserMetadata.snooze_until <= now
+            ).update({ThreadUserMetadata.snooze_until: None}, synchronize_session=False)
+
         db.commit()
         logger.debug(f"Marked {len(email_ids)} emails as read for user {user_id}")
     except Exception as e:
