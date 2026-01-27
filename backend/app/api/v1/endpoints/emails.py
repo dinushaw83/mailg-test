@@ -1099,14 +1099,27 @@ def mark_email_read(
         )
     
     email.is_read = read_data.is_read
-    
+
+    # When marking as read, check if snooze has expired and clear it
+    if read_data.is_read and email.thread_id:
+        metadata = db.query(ThreadUserMetadata).filter(
+            ThreadUserMetadata.thread_id == email.thread_id,
+            ThreadUserMetadata.user_id == current_user.id
+        ).first()
+
+        if metadata and metadata.snooze_until:
+            # If snooze time has passed, clear the snooze
+            now = datetime.now(UTC)
+            if metadata.snooze_until <= now:
+                metadata.snooze_until = None
+
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
-    
+
     return format_email_response(email, current_user.id)
 
 
