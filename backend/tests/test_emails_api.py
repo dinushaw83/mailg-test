@@ -678,7 +678,7 @@ class TestGetEmailsByThread:
             mark_emails_as_read_background(email_ids, sample_user.id, "test-run-id")
             
             # Verify the session was used correctly
-            mock_session.query.assert_called_once()
+            assert mock_session.query.call_count == 2
             mock_session.commit.assert_called_once()
             mock_session.close.assert_called_once()
 
