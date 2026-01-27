@@ -917,7 +917,7 @@ def get_db_schema():
         if not schema_path:
             logger.warning(f"Schema file not found in any of: {possible_paths}")
             # Fallback to inspecting database
-            from app.database import get_seed_db
+            from app.db.session import get_seed_db
             db = next(get_seed_db())
             try:
                 inspector = inspect(db.get_bind())
