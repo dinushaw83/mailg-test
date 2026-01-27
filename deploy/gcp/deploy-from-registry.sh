@@ -195,9 +195,12 @@ docker pull "$FRONTEND_IMAGE_TAG" || {
 
 # Stop existing containers gracefully
 log "Stopping existing containers..."
-docker compose -f docker-compose.prod.yaml down --timeout 30 || {
+docker compose -f docker-compose.prod.yaml down -v --timeout 30 || {
     warn "Some containers may not have stopped gracefully"
 }
+
+log "Removing container resources..."
+docker system prune -a --volumes || true
 
 # Remove old images (optional cleanup)
 if [ "${CLEANUP_OLD_IMAGES:-false}" = "true" ]; then
@@ -299,4 +302,3 @@ if [ "${SHOW_LOGS:-false}" = "true" ]; then
 fi
 
 log "Deployment completed successfully!"
-
