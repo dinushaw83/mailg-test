@@ -27,6 +27,7 @@ import ReduxInitialization from "./components/ReduxInitialization";
 import SearchResultsView from "./pages/SearchResultsView";
 import SessionId from "./pages/SessionId";
 import Settings from "./pages/Settings";
+import TaskVerifier from "../task_verifier/TaskVerifier";
 import VerificationDashboard from "./pages/VerificationDashboard";
 import VerificationLocalStorage from "./pages/VerificationLocalStorage";
 import VerifyRawPage from "./pages/VerifyRawPage";
@@ -55,6 +56,7 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />
+              <Route path="/task_verifier" element={<TaskVerifier />} />
 
               {/* Standalone verification pages (Protected) */}
               <Route
