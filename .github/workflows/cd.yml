@@ -40,9 +40,6 @@ env:
   NODE_VERSION: '20'
   BACKEND_PORT: 8766
   FRONTEND_PORT: 3002
-  # Secrets referenced
-  VM_HOST: ${{ secrets.GCP_VM_HOST }}
-  VM_USER: ${{ secrets.GCP_VM_USER }}
 
 jobs:
   # ===========================================================================
@@ -319,12 +316,12 @@ jobs:
             exit 1
           fi
           
-          if [ -z "${{ env.VM_HOST }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
             echo "::error::GCP_VM_HOST secret is not configured"
             exit 1
           fi
           
-          if [ -z "${{ env.VM_USER }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
             echo "::error::GCP_VM_USER secret is not configured"
             exit 1
           fi
@@ -339,7 +336,7 @@ jobs:
       - name: Configure SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs
         id: images
@@ -363,8 +360,8 @@ jobs:
 
       - name: Copy deployment files
         run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
-          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:~/mailg-deploy/
 
       - name: Deploy containers
         env:
@@ -383,7 +380,7 @@ jobs:
           echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
           echo "  Backend API URL: ${BACKEND_API_URL}"
           
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} bash -s << EOF
             set -e
             cd ~/mailg-deploy
             
@@ -525,7 +522,6 @@ jobs:
         run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Validate deployment secrets
-        id: validate
         run: |
           echo "🔐 Validating production deployment configuration..."
           
@@ -534,23 +530,16 @@ jobs:
             exit 1
           fi
           
-          PROD_VM_HOST="${{ secrets.GCP_VM_HOST_PROD || secrets.GCP_VM_HOST }}"
-          PROD_VM_USER="${{ secrets.GCP_VM_USER_PROD || secrets.GCP_VM_USER }}"
-          
-          if [ -z "$PROD_VM_HOST" ]; then
-            echo "::error::GCP_VM_HOST or GCP_VM_HOST_PROD secret is not configured"
+          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
+            echo "::error::GCP_VM_HOST secret is not configured"
             exit 1
           fi
           
-          if [ -z "$PROD_VM_USER" ]; then
-            echo "::error::GCP_VM_USER or GCP_VM_USER_PROD secret is not configured"
+          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
+            echo "::error::GCP_VM_USER secret is not configured"
             exit 1
           fi
           
-          echo "PROD_VM_HOST=$PROD_VM_HOST" >> $GITHUB_ENV
-          echo "PROD_VM_USER=$PROD_VM_USER" >> $GITHUB_ENV
-          echo "vm_host=$PROD_VM_HOST" >> $GITHUB_OUTPUT
-          echo "vm_user=$PROD_VM_USER" >> $GITHUB_OUTPUT
           echo "✅ All production deployment secrets configured"
 
       - name: Set up SSH
@@ -561,7 +550,7 @@ jobs:
       - name: Configure SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ steps.validate.outputs.vm_host }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs
         id: images
@@ -585,15 +574,15 @@ jobs:
 
       - name: Copy deployment files
         run: |
-          ssh ${{ steps.validate.outputs.vm_user }}@${{ steps.validate.outputs.vm_host }} 'mkdir -p ~/mailg-deploy'
-          scp -r deploy/gcp/* ${{ steps.validate.outputs.vm_user }}@${{ steps.validate.outputs.vm_host }}:~/mailg-deploy/
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:~/mailg-deploy/
 
       - name: Deploy containers to production
         env:
-          SYSTEM_URL: ${{ vars.SYSTEM_URL_PROD || vars.SYSTEM_URL }}
+          SYSTEM_URL: ${{ vars.SYSTEM_URL }}
         run: |
           if [ -z "$SYSTEM_URL" ]; then
-            echo "::error::SYSTEM_URL or SYSTEM_URL_PROD variable is not configured"
+            echo "::error::SYSTEM_URL variable is not configured"
             exit 1
           fi
           
@@ -605,7 +594,7 @@ jobs:
           echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
           echo "  Backend API URL: ${BACKEND_API_URL}"
           
-          ssh ${{ steps.validate.outputs.vm_user }}@${{ steps.validate.outputs.vm_host }} bash -s << EOF
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} bash -s << EOF
             set -e
             cd ~/mailg-deploy
             
@@ -632,10 +621,10 @@ jobs:
       - name: Production health check
         id: health
         run: |
-          SYSTEM_URL="${{ vars.SYSTEM_URL_PROD || vars.SYSTEM_URL }}"
+          SYSTEM_URL="${{ vars.SYSTEM_URL }}"
           
           if [ -z "$SYSTEM_URL" ]; then
-            echo "::error::SYSTEM_URL or SYSTEM_URL_PROD variable is not configured"
+            echo "::error::SYSTEM_URL variable is not configured"
             exit 1
           fi
           
@@ -680,7 +669,7 @@ jobs:
           STATUS="✅ Success"
           [ "${{ steps.health.outputs.health_status }}" != "success" ] && STATUS="❌ Failed"
           
-          SYSTEM_URL="${{ vars.SYSTEM_URL_PROD || vars.SYSTEM_URL }}"
+          SYSTEM_URL="${{ vars.SYSTEM_URL }}"
           
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚀 Production Deployment Summary
