@@ -119,7 +119,7 @@ const getSearchOperatorPrefix = (folder, label) => {
   }
   if (label) {
     // Convert :: or / separators to - and lowercase for the search operator (e.g., "Parent::Child" -> "parent-child")
-    const normalizedLabel = label.replace(/::/g, "-").replace(/\//g, "-").toLowerCase();
+    const normalizedLabel = label.replace(/::/g, "/").toLowerCase();
     return `label:${normalizedLabel}`;
   }
   return null;
