@@ -1,11 +1,17 @@
 """Pydantic schemas for Label resource - request/response validation."""
 
 from pydantic import BaseModel, Field
-from typing import Optional, List, ForwardRef
+from typing import Optional, List, ForwardRef, Union, Any
 from datetime import datetime
 from uuid import UUID
 
 from app.schemas.pagination import PaginatedListResponse
+
+
+class LabelColorSchema(BaseModel):
+    """Color object with background (rgb) and text color."""
+    rgb: str = Field(..., description="Background color as rgb string, e.g., 'rgb(22, 167, 101)'")
+    text: str = Field(..., description="Text color as rgb string, e.g., 'rgb(255, 255, 255)'")
 
 
 class LabelCreate(BaseModel):
@@ -20,6 +26,7 @@ class LabelCreate(BaseModel):
 class LabelUpdate(BaseModel):
     """Schema for updating a label."""
     name: Optional[str] = Field(None, min_length=1, max_length=100)
+    color: Optional[Union[LabelColorSchema, str]] = Field(None, description="Label color")
     parent_id: Optional[UUID] = Field(None, description="Parent label ID (use null to move to root)")
     show_in_label_list: Optional[bool] = Field(None, description="Show in sidebar label list")
     show_in_message_list: Optional[bool] = Field(None, description="Show as chip on email messages")
@@ -32,7 +39,7 @@ class LabelResponse(BaseModel):
 
     id: UUID
     name: str
-    color: Optional[str] = None
+    color: Optional[Union[LabelColorSchema, dict, str]] = None
     owner_id: UUID
     parent_id: Optional[UUID] = None
     is_system: bool = False
@@ -53,7 +60,7 @@ class LabelListResponse(BaseModel):
     id: UUID
     name: str
     full_name: Optional[str] = None  # Hierarchical name (e.g., "parent/child/grandchild")
-    color: Optional[str] = None
+    color: Optional[Union[LabelColorSchema, dict, str]] = None
     owner_id: UUID
     parent_id: Optional[UUID] = None
     is_system: bool = False
@@ -73,7 +80,7 @@ class LabelTreeResponse(BaseModel):
 
     id: UUID
     name: str
-    color: Optional[str] = None
+    color: Optional[Union[LabelColorSchema, dict, str]] = None
     owner_id: UUID
     parent_id: Optional[UUID] = None
     is_system: bool = False

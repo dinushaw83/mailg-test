@@ -338,17 +338,29 @@ def sync_category_labels(
         db.commit()
 
 
-def generate_random_light_color() -> str:
-    """Generate a random light/pastel hex color.
+def generate_random_light_color() -> dict:
+    """Generate a random light/pastel color object.
     
     Returns:
-        Hex color string like '#aabbcc'
+        Color dict with rgb and text properties:
+        {"rgb": "rgb(R, G, B)", "text": "rgb(R, G, B)"}
     """
     # Generate RGB values in the lighter range (180-255)
     r = random.randint(180, 255)
     g = random.randint(180, 255)
     b = random.randint(180, 255)
-    return f"#{r:02x}{g:02x}{b:02x}"
+    
+    # Calculate luminance to determine contrasting text color
+    # Using the standard luminance formula
+    luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    
+    # Use white text for dark backgrounds, dark gray for light backgrounds
+    text_color = "rgb(255, 255, 255)" if luminance < 0.5 else "rgb(68, 71, 70)"
+    
+    return {
+        "rgb": f"rgb({r}, {g}, {b})",
+        "text": text_color
+    }
 
 
 def format_label_response(label: Label, thread_count: int = 0, unread_count: int = 0) -> dict:
