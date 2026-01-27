@@ -21,6 +21,7 @@ COPY vite.config.js ./
 COPY index.html ./
 COPY public ./public
 COPY src ./src
+COPY task_verifier ./task_verifier
 
 # Build the frontend
 RUN npm run build
