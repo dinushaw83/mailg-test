@@ -39,7 +39,13 @@ const userSlice = createSlice({
 
       if (updatedPayload.user) state.loggedInUser = updatedPayload.user;
       if (payload.role !== undefined) state.role = payload.role;
-      if (payload.run_id !== undefined) state.runId = payload.run_id;
+      if (payload.run_id !== undefined) {
+        state.runId = payload.run_id;
+        // Store run_id in localStorage as current_run_id
+        if (typeof window !== "undefined" && payload.run_id) {
+          localStorage.setItem("current_run_id", payload.run_id);
+        }
+      }
       if (payload.expires_in !== undefined) state.expiresIn = payload.expires_in;
     },
     logout: (state) => {
@@ -49,6 +55,10 @@ const userSlice = createSlice({
       state.role = null;
       state.runId = null;
       state.expiresIn = null;
+      // Remove current_run_id from localStorage on logout
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("current_run_id");
+      }
     },
   },
 });
