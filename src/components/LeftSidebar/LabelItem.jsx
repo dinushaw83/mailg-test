@@ -347,7 +347,7 @@ export default function LabelItem({
         }}
       >
         {/* Opens the color submenu – keep the main menu open */}
-        <MenuItem
+        {/* <MenuItem
           onMouseEnter={(e) => openColorMenu(e.currentTarget)}
           onClick={(e) => {
             e.stopPropagation();
@@ -362,17 +362,12 @@ export default function LabelItem({
             }),
           }}
         >
-          <ListItemIcon>
-            <ColorSwatch rgb={selectedColor?.rgb} text={selectedColor?.text} check={selectedColor?.check} />
-          </ListItemIcon>
           <ListItemText primary={<Typography fontSize={14}>Label color</Typography>} />
           <ListItemIcon sx={{ justifyContent: "flex-end", minWidth: "auto" }}>
             <Icon name="arrow_right" style={{ width: 20, height: 20 }} />
           </ListItemIcon>
-        </MenuItem>
-
-        <Divider />
-
+        </MenuItem> */}
+{/* 
         {isParent && [
           <Typography key="label-list-title" sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>
             In label list
@@ -408,9 +403,9 @@ export default function LabelItem({
           }),
 
           <Divider key="label-list-divider" />,
-        ]}
+        ]} */}
 
-        <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>In message list</Typography>
+        {/* <Typography sx={{ px: 2, pt: 1, pb: 0.5, fontSize: 14, color: "text.secondary" }}>In message list</Typography>
         {IN_MESSAGE_LIST.map((opt) => {
           const selected = inMessageList === opt.key;
           return (
@@ -440,7 +435,7 @@ export default function LabelItem({
           );
         })}
 
-        <Divider />
+        <Divider /> */}
 
         <MenuItem>
           <ListItemText
@@ -476,7 +471,7 @@ export default function LabelItem({
       </Menu>
 
       {/* Color submenu */}
-      <Menu
+      {/* <Menu
         id={`label-color-${labelKey}`}
         anchorEl={colorAnchorEl}
         open={colorOpen}
@@ -522,9 +517,9 @@ export default function LabelItem({
         <Box sx={{ py: 1 }}></Box>
         <MenuItem sx={{ fontSize: 14, pl: 6 }}>Add custom color</MenuItem>
         <MenuItem sx={{ fontSize: 14, pl: 6 }}>Remove color</MenuItem>
-      </Menu>
+      </Menu> */}
 
-      <ChangeLabelColorModal
+      {/* <ChangeLabelColorModal
         open={colorModalOpen}
         onClose={() => setColorModalOpen(false)}
         labelName={display}
@@ -538,7 +533,7 @@ export default function LabelItem({
           }
           setPendingColor(null);
         }}
-      />
+      /> */}
 
       <RemoveLabelModal
         open={removeModalOpen}
