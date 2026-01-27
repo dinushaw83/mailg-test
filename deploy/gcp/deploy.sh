@@ -79,7 +79,11 @@ docker compose -f docker-compose.prod.yaml build
 
 # Stop existing containers
 echo -e "${GREEN}Stopping existing containers...${NC}"
-docker compose -f docker-compose.prod.yaml down || true
+docker compose -f docker-compose.prod.yaml down -v || true
+
+# Remove container resources
+echo -e "${GREEN}Removing container resources...${NC}"
+docker system prune -a --volumes || true
 
 # Start services
 echo -e "${GREEN}Starting services...${NC}"
@@ -145,4 +149,3 @@ else
     echo "Check logs with: docker compose -f docker-compose.prod.yaml logs"
     exit 1
 fi
-

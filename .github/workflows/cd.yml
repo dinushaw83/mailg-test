@@ -363,7 +363,11 @@ jobs:
       - name: Copy deployment files
         run: |
           ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          # Copy deployment scripts and configs (always override)
           scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
+          # Copy backend fixtures (always override)
+          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy/backend'
+          scp -r backend/fixtures ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/backend/
 
       - name: Deploy containers
         env:
@@ -503,4 +507,3 @@ jobs:
             #   --data '{"text":"❌ Deployment to ${{ github.event.inputs.environment || 'staging' }} failed!"}' \
             #   ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
-
