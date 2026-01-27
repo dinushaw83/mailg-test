@@ -21,6 +21,7 @@ from app.models.email_recipient import EmailRecipient
 from app.models.label import Label
 from app.models.thread_label import ThreadLabel
 from app.models.thread import Thread
+from app.models.thread_user_metadata import ThreadUserMetadata
 from app.models.user import User
 from app.models.general_settings import GeneralSettings
 from app.schemas.email import (
@@ -1098,14 +1099,27 @@ def mark_email_read(
         )
     
     email.is_read = read_data.is_read
-    
+
+    # When marking as read, check if snooze has expired and clear it
+    if read_data.is_read and email.thread_id:
+        metadata = db.query(ThreadUserMetadata).filter(
+            ThreadUserMetadata.thread_id == email.thread_id,
+            ThreadUserMetadata.user_id == current_user.id
+        ).first()
+
+        if metadata and metadata.snooze_until:
+            # If snooze time has passed, clear the snooze
+            now = datetime.now(UTC)
+            if metadata.snooze_until <= now:
+                metadata.snooze_until = None
+
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
-    
+
     return format_email_response(email, current_user.id)
 
 
@@ -1205,18 +1219,27 @@ def move_email(
         )
     
     email.folder = move_data.folder
-    
+
+    # When moving to inbox, clear the archived status in ThreadUserMetadata
+    if move_data.folder == FolderType.INBOX.value and email.thread_id:
+        metadata = db.query(ThreadUserMetadata).filter(
+            ThreadUserMetadata.thread_id == email.thread_id,
+            ThreadUserMetadata.user_id == current_user.id
+        ).first()
+        if metadata and metadata.is_archived:
+            metadata.is_archived = False
+
     try:
         db.commit()
         db.refresh(email)
     except Exception:
         db.rollback()
         raise
-    
+
     # Sync thread labels to reflect folder change
     if email.thread_id:
         sync_thread_labels(db, email.thread_id, current_user.id, commit=True)
-    
+
     return format_email_response(email, current_user.id)
 
 

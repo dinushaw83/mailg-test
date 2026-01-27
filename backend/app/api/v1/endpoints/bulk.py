@@ -77,6 +77,24 @@ def bulk_mark_read(
                 Email.id.in_(success_ids)
             ).update({Email.is_read: request.is_read}, synchronize_session=False)
 
+            # When marking as read, clear expired snooze_until for affected threads
+            if request.is_read:
+                # Get thread IDs for the emails being marked as read
+                thread_ids = db.query(Email.thread_id).filter(
+                    Email.id.in_(success_ids),
+                    Email.thread_id.isnot(None)
+                ).distinct().all()
+                thread_ids = [tid[0] for tid in thread_ids]
+
+                if thread_ids:
+                    now = datetime.now(UTC)
+                    db.query(ThreadUserMetadata).filter(
+                        ThreadUserMetadata.thread_id.in_(thread_ids),
+                        ThreadUserMetadata.user_id == current_user.id,
+                        ThreadUserMetadata.snooze_until.isnot(None),
+                        ThreadUserMetadata.snooze_until <= now
+                    ).update({ThreadUserMetadata.snooze_until: None}, synchronize_session=False)
+
             db.commit()
         except Exception as e:
             db.rollback()
@@ -251,6 +269,14 @@ def bulk_move(
             db.query(Email).filter(
                 Email.id.in_(success_ids)
             ).update({Email.folder: request.folder}, synchronize_session=False)
+
+            # When moving to inbox, clear the archived status in ThreadUserMetadata
+            if request.folder == FolderType.INBOX.value and thread_ids:
+                db.query(ThreadUserMetadata).filter(
+                    ThreadUserMetadata.thread_id.in_(thread_ids),
+                    ThreadUserMetadata.user_id == current_user.id,
+                    ThreadUserMetadata.is_archived == True
+                ).update({ThreadUserMetadata.is_archived: False}, synchronize_session=False)
 
             db.commit()
 
@@ -910,6 +936,16 @@ def bulk_thread_read(
                 Email.thread_id.in_(success_ids),
                 get_perspective_email_filter(db, current_user.id)
             ).update({Email.is_read: request.is_read}, synchronize_session=False)
+
+            # When marking as read, clear expired snooze_until for the threads
+            if request.is_read:
+                now = datetime.now(UTC)
+                db.query(ThreadUserMetadata).filter(
+                    ThreadUserMetadata.thread_id.in_(success_ids),
+                    ThreadUserMetadata.user_id == current_user.id,
+                    ThreadUserMetadata.snooze_until.isnot(None),
+                    ThreadUserMetadata.snooze_until <= now
+                ).update({ThreadUserMetadata.snooze_until: None}, synchronize_session=False)
 
             db.commit()
 

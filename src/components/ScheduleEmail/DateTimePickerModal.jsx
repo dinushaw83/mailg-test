@@ -157,12 +157,17 @@ const DateTimePickerModal = ({ open, onClose, onSchedule }) => {
       hour24 = 0;
     }
 
-    const scheduledDateTime = parsedDate.hour(hour24).minute(parseInt(minutes)).second(0).millisecond(0).toDate();
+    const scheduledDateTime = parsedDate.hour(hour24).minute(parseInt(minutes)).second(0).millisecond(0);
+
+    if (scheduledDateTime.isBefore(dayjs())) {
+      setTimeError("Please select a future date and time");
+      return;
+    }
 
     onSchedule({
       id: "custom-date-time",
       label: "Custom date & time",
-      date: scheduledDateTime,
+      date: scheduledDateTime.toDate(),
       isCustom: true,
     });
   };

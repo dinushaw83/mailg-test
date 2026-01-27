@@ -62,6 +62,12 @@ const searchService = {
       if (params.has_attachment !== undefined && params.has_attachment !== null) {
         queryParams.has_attachment = params.has_attachment;
       }
+      if (params.is_snoozed !== undefined && params.is_snoozed !== null) {
+        queryParams.is_snoozed = params.is_snoozed;
+      }
+      if (params.in_archive !== undefined && params.in_archive !== null) {
+        queryParams.in_archive = params.in_archive;
+      }
       if (params.date_from !== undefined && params.date_from !== null && params.date_from !== "") {
         queryParams.date_from = params.date_from;
       }
@@ -77,6 +83,20 @@ const searchService = {
 
       if (params.category !== undefined && params.category !== null && params.category !== "") {
         queryParams.category = params.category;
+      }
+
+      if (params.hasnot !== undefined && params.hasnot !== null && params.hasnot !== "") {
+        queryParams.hasnot = params.hasnot;
+      }
+      if (params.cc !== undefined && params.cc !== null && params.cc !== "") {
+        queryParams.cc = params.cc;
+      }
+      if (params.bcc !== undefined && params.bcc !== null && params.bcc !== "") {
+        queryParams.bcc = params.bcc;
+      }
+
+      if (params.has_userlabels !== undefined && params.has_userlabels !== null) {
+        queryParams.has_userlabels = params.has_userlabels;
       }
 
       // Pagination
@@ -108,6 +128,39 @@ const searchService = {
       };
     } catch (error) {
       console.error("Error searching emails:", error);
+      throw error;
+    }
+  },
+  /**
+   * Get search suggestions from the backend API
+   * @param {Object} params - Search suggestion parameters
+   * @param {string} params.q - Partial query for suggestions (required, can be empty string)
+   * @param {number} params.limit - Maximum number of suggestions per category (default: 10, max: 20)
+   * @returns {Promise<Object>} Search suggestions with contacts, labels, folders, recent_searches, operators
+   */
+  getSearchSuggestions: async (params = {}) => {
+    try {
+      const { q = "", limit = 10 } = params;
+
+      const queryParams = {
+        q: q || "", // Backend requires q parameter, can be empty string
+        limit: Math.min(Math.max(limit, 1), 20), // Clamp between 1 and 20
+      };
+
+      const response = await apiClient.get("/v1/search/suggestions", { params: queryParams });
+
+      const payload = response?.data?.data ?? response?.data ?? {};
+
+      return {
+        contacts: payload.contacts || [],
+        labels: payload.labels || [],
+        folders: payload.folders || [],
+        categories: payload.categories || [],
+        recent_searches: payload.recent_searches || [],
+        operators: payload.operators || [],
+      };
+    } catch (error) {
+      console.error("Error fetching search suggestions:", error);
       throw error;
     }
   },

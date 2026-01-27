@@ -22,6 +22,11 @@ function extractAndMergeCommaSeparated(searchQuery, operator, urlValue) {
 
   // Extract from searchQuery
   if (searchQuery.includes(operator)) {
+    const indexOfOperator = searchQuery.indexOf(operator);
+
+    if (indexOfOperator > 0 && searchQuery[indexOfOperator - 1] !== " ") {
+      return Array.from(values).join(",");
+    }
     const afterOperator = searchQuery.split(operator)[1].trim();
     // Match parentheses group or extract until next operator/space boundary
     // Pattern: (value) or value (stopping at space before next operator like " to:", " cc:", etc.)
@@ -224,6 +229,10 @@ export function buildSearchParams(location, options = {}) {
       }
     }
   }
+  // Check searchQuery for -{Some text here}
+  if (searchQuery.includes("-\{[^}]*\}")) {
+    apiParams.hasnot = searchQuery.match(/-\{[^}]*\}/g)[0].replace(/-\{|}/g, "");
+  }
 
   // Map CC filter
   const cc = searchParams.get("cc");
@@ -276,6 +285,10 @@ export function buildSearchParams(location, options = {}) {
     apiParams.is_starred = true;
   }
 
+  if (searchQuery.includes("in:important")) {
+    apiParams.is_important = true;
+  }
+
   // Map has_userlabels filter
   const hasUserLabels = searchParams.get("has_userlabels");
   if (hasUserLabels === "true") {
@@ -307,8 +320,8 @@ export function buildSearchParams(location, options = {}) {
   } else if (inArchive === "false") {
     apiParams.in_archive = false;
   }
-  // Check searchQuery for in:archive
-  if (searchQuery.includes("in:archive")) {
+  // Check searchQuery for in:archive or is:archived
+  if (searchQuery.includes("in:archive") || searchQuery.includes("is:archived")) {
     apiParams.in_archive = true;
   }
 
@@ -409,16 +422,16 @@ export function buildSearchParams(location, options = {}) {
     }
   }
 
-  if (searchQuery.includes("label:")) {
-    const labelMatch = searchQuery.match(/label:(\S+)/);
-    if (labelMatch) {
-      const labelName = labelMatch[1].trim();
-      // Only set if not already set or if it's a different label
-      if (!apiParams.label_name || apiParams.label_name !== labelName) {
-        apiParams.label_name = labelName;
-      }
-    }
-  }
+  // if (searchQuery.includes("label:")) {
+  //   const labelMatch = searchQuery.match(/label:(\S+)/);
+  //   if (labelMatch) {
+  //     const labelName = labelMatch[1].trim();
+  //     // Only set if not already set or if it's a different label
+  //     if (!apiParams.label_name || apiParams.label_name !== labelName) {
+  //       apiParams.label_name = labelName;
+  //     }
+  //   }
+  // }
 
   // Note: The following filters are now implemented and mapped to backend API:
   // - hasnot (mapped to apiParams.hasnot)
@@ -472,9 +485,15 @@ export function buildSearchParams(location, options = {}) {
     cleanedQuery = cleanedQuery.replace(/has:userlabels\b/g, "");
     cleanedQuery = cleanedQuery.replace(/has:nouserlabels\b/g, "");
 
-    // Remove is:unread, is:read
+    // Remove is:unread, is:read, is:archived
     cleanedQuery = cleanedQuery.replace(/is:unread\b/g, "");
     cleanedQuery = cleanedQuery.replace(/is:read\b/g, "");
+    cleanedQuery = cleanedQuery.replace(/is:archived\b/g, "");
+    cleanedQuery = cleanedQuery.replace(/in:important\b/g, "");
+    cleanedQuery = cleanedQuery.replace(/in:all\b/g, "");
+
+    // Remove -{Some text here}
+    cleanedQuery = cleanedQuery.replace(/-\{[^}]*\}/g, "");
 
     // Remove larger: and smaller: patterns
     cleanedQuery = cleanedQuery.replace(/larger:\d+[KMG]B?\b/gi, "");
@@ -484,7 +503,7 @@ export function buildSearchParams(location, options = {}) {
     cleanedQuery = cleanedQuery.replace(/in:(inbox|sent|drafts|trash|spam|starred|snoozed|archive|anywhere)\b/gi, "");
 
     // Remove label: patterns
-    cleanedQuery = cleanedQuery.replace(/label:\S+/g, "");
+    // cleanedQuery = cleanedQuery.replace(/label:\S+/g, "");
 
     // Remove after: and before: date patterns
     // Remove after: and before: patterns with no spaces after ':' (e.g., after:somedate)
@@ -492,9 +511,6 @@ export function buildSearchParams(location, options = {}) {
     cleanedQuery = cleanedQuery.replace(/before:[^\s]+\b/g, "");
     cleanedQuery = cleanedQuery.replace(/after:\d{4}-\d{2}-\d{2}\b/g, "");
     cleanedQuery = cleanedQuery.replace(/before:\d{4}-\d{2}-\d{2}\b/g, "");
-
-    // Remove -NegativeWord patterns (negated words like -foo, -bar etc)
-    cleanedQuery = cleanedQuery.replace(/-\w+\b/g, "");
 
     // Clean up extra whitespace (multiple spaces, leading/trailing spaces)
     cleanedQuery = cleanedQuery.replace(/\s+/g, " ").trim();

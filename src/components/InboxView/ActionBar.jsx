@@ -1,22 +1,23 @@
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+
+import Button from "@mui/material/Button";
+import CreateLabelDialog from "../Labels/CreateLabelDialog";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { Labels } from "../MailActions/Labels";
+import MoreActions from "./MoreActions";
+import MoveToMenu from "../MailActions/MoveToMenu";
+import { SnoozePopover } from "../MailActions/Snooze";
+import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
+import Tooltip from "@mui/material/Tooltip";
+import { buildLabelPath } from "../../utils/labelSync";
+import { getThreadRows } from "../../utils/emails";
 import styled from "@emotion/styled";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import Tooltip from "@mui/material/Tooltip";
-import useMailActions from "../../hooks/useMailActions";
-import SpamOrUnsubModal from "../MailActions/SpamOrUnsubModal";
-import MoveToMenu from "../MailActions/MoveToMenu";
-import Button from "@mui/material/Button";
-import { SnoozePopover } from "../MailActions/Snooze";
-import MoreActions from "./MoreActions";
-import { Labels } from "../MailActions/Labels";
-import { getThreadRows } from "../../utils/emails";
-import CreateLabelDialog from "../Labels/CreateLabelDialog";
-import useLabels, { flattenTreeForSelect, getPathLabelFromKey, makeKey } from "../../hooks/useLabels";
-import { buildLabelPath } from "../../utils/labelSync";
 import { useHotkeys } from "react-hotkeys-hook";
+import useMailActions from "../../hooks/useMailActions";
 
 const buildMatchKeysForEmail = (email = {}) => {
   const keys = [];
@@ -308,6 +309,32 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     return threadEmails.every((email) => !(email.labels || []).includes("Inbox"));
   }, [threadEmails]);
 
+  // Check if the thread is already archived (no Inbox label)
+  const isThreadArchived = useMemo(() => {
+    // Check thread-level is_archived first
+    if (thread.is_archived !== undefined) {
+      return thread.is_archived === true;
+    }
+    
+    // Check if any email has the Inbox label - if none do, it's archived
+    // Handle both string and object label formats
+    const hasInboxLabel = threadEmails.some((email) => {
+      const labels = email.labels || [];
+      return labels.some((label) => {
+        const labelName = typeof label === "string" ? label : label?.name;
+        return labelName === "Inbox";
+      });
+    });
+    
+    // If no emails have Inbox label and there are emails, it's archived
+    // Also check if any email explicitly has is_archived flag
+    if (threadEmails.length > 0 && !hasInboxLabel) {
+      return true;
+    }
+    
+    return threadEmails.some((email) => email.is_archived === true);
+  }, [thread, threadEmails]);
+
   // Check if the current thread is already deleted (in trash)
   const isThreadDeleted = useMemo(() => {
     return threadEmails.every((email) => (email.labels || []).includes("Trash"));
@@ -318,16 +345,21 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   // Section 2 (in MoveToMenu): Inbox, Spam, Trash
   const menuItems = useMemo(() => {
     const labelsObject = labels && typeof labels === "object" && !Array.isArray(labels) ? labels : {};
-    return (
-      Object.entries(labelsObject)
-        // Same filter as "Label as" - hide labels that are both system AND exclusive
-        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
-        .map(([key, meta]) => ({
-          id: key,
-          name: buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey),
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name))
-    );
+    const uniqueLabels = new Map(); // Use a Map to store unique labels by normalized name
+
+    Object.entries(labelsObject)
+      // Same filter as "Label as" - hide labels that are both system AND exclusive
+      .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
+      .forEach(([key, meta]) => {
+        const name = buildLabelPath(key, meta, labelsObject, labelIdToKeyMap, getPathLabelFromKey);
+        const normalizedName = name.toLowerCase();
+        // Only add if we haven't seen this label name before (deduplication)
+        if (!uniqueLabels.has(normalizedName)) {
+          uniqueLabels.set(normalizedName, { id: key, name });
+        }
+      });
+
+    return Array.from(uniqueLabels.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [labels, labelIdToKeyMap]);
 
   const moveToMenuAnchorRef = useRef(null);
@@ -355,6 +387,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     moveToLabelFrom,
     moveToInbox,
     archive,
+    unarchive,
     markRead,
     snooze,
     unsnooze,
@@ -385,39 +418,59 @@ const MailActions = ({ thread, emails: providedEmails }) => {
   }, [threadEmails]);
 
   const handleArchive = useCallback(() => {
-    if (!threadEmails.length) return;
+    // Use thread IDs for archive operation - backend expects thread_ids, not email IDs
+    let threadIdsToArchive = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
 
-    const hasInboxLabel = threadEmails.some((email) => (email.labels || []).includes("Inbox"));
-    if (!hasInboxLabel) {
-      setSnackbar({
-        open: true,
-        message: "Conversation already archived.",
-        autoHideDuration: 3000,
-        action: null,
-      });
+    // If no thread IDs found from emails, use thread.thread_id as fallback
+    if (threadIdsToArchive.length === 0 && thread?.thread_id) {
+      threadIdsToArchive = [thread.thread_id];
+    }
+
+    // If still no thread IDs, we can't archive
+    if (threadIdsToArchive.length === 0) {
       return;
     }
 
-    const snapshot = conversationLabelSnapshot();
-    const idsToArchive = threadEmails.map((email) => email.id);
+    // Check if already archived (only if we have threadEmails to check)
+    if (threadEmails.length > 0) {
+      // Check for Inbox label - handle both string and object formats
+      const hasInboxLabel = threadEmails.some((email) => {
+        const labels = email.labels || [];
+        return labels.some((label) => {
+          const labelName = typeof label === "string" ? label : label?.name;
+          return labelName === "Inbox";
+        });
+      });
+      if (!hasInboxLabel) {
+        setSnackbar({
+          open: true,
+          message: "Conversation already archived.",
+          autoHideDuration: 3000,
+          action: null,
+        });
+        return;
+      }
+    }
 
     try {
-      archive(idsToArchive);
+      // Pass resolved thread IDs directly to ensure API is called correctly
+      const undo = archive(threadIdsToArchive, { resolvedThreadIds: threadIdsToArchive });
+      
+      // Navigate back to the list view
+      navigate(getBasePath());
+      
       setSnackbar({
         open: true,
         message: "Conversation archived.",
-        autoHideDuration: 3000,
+        autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              setEmails((prev) =>
-                prev.map((email) => {
-                  const key = String(email.id ?? "");
-                  return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
-                })
-              );
+              if (typeof undo === "function") {
+                undo();
+              }
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -433,7 +486,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [threadEmails, archive, setSnackbar, conversationLabelSnapshot, setEmails]);
+  }, [threadEmails, archive, setSnackbar, thread?.thread_id, navigate, getBasePath]);
 
   const handleStar = useCallback(() => {
     if (!threadEmails.length) return;
@@ -578,16 +631,6 @@ const MailActions = ({ thread, emails: providedEmails }) => {
     });
   }, [threadEmails, thread?.thread_id, moveToTrash, moveToInbox, setSnackbar, navigate, getBasePath]);
 
-  useEffect(() => {
-    if (hasRunOnceRef.current) return;
-
-    const unreadIds = threadEmails.filter((email) => !email.is_read).map((email) => email.id);
-    if (unreadIds.length) {
-      markRead(unreadIds, true);
-    }
-    hasRunOnceRef.current = true;
-  }, [threadEmails, markRead]);
-
   const handleMarkUnread = useCallback(() => {
     if (!threadEmails.length) return;
 
@@ -658,14 +701,32 @@ const MailActions = ({ thread, emails: providedEmails }) => {
         const snapshot = conversationLabelSnapshot();
 
         if (item.id === "__inbox__" || item.id.toLowerCase() === "inbox") {
-          // Use ALL email IDs in the thread when moving to inbox
-          const emailIds = threadEmails.map((email) => email.id);
-          if (!emailIds.length) return;
-          moveToInbox(emailIds, { resolvedEmailIds: emailIds });
+          // Get thread IDs for the operation
+          const threadIds = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
+          
+          if (isThreadArchived) {
+            // Use unarchive endpoint when moving from archive to inbox
+            if (!threadIds.length && thread?.thread_id) {
+              threadIds.push(thread.thread_id);
+            }
+            if (!threadIds.length) return;
+            unarchive(threadIds, { resolvedThreadIds: threadIds });
+          } else {
+            // Use moveToInbox for non-archived emails
+            const emailIds = threadEmails.map((email) => email.id);
+            if (!emailIds.length) return;
+            moveToInbox(emailIds, { resolvedEmailIds: emailIds });
+          }
+          
           // Use folder name (capitalized) when in a folder context, otherwise use currentLabel
           const sourceLocation = folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : currentLabel;
           showUndoSnackbar(conversationMatchKeys, sourceLocation, "Inbox", false, true, snapshot);
-          navigate(getBasePath());
+          // Navigate back to the list - if archived, go to in:archive search, otherwise use base path
+          if (isThreadArchived) {
+            navigate("/search/in%3Aarchive");
+          } else {
+            navigate(getBasePath());
+          }
         } else if (item.id === "__spam__" || item.id === "spam") {
           toggleSpamModal();
           return;
@@ -734,6 +795,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       toggleSpamModal,
       moveToTrash,
       moveToInbox,
+      unarchive,
       labels,
       moveToLabelFrom,
       isMovingToLabel,
@@ -742,6 +804,9 @@ const MailActions = ({ thread, emails: providedEmails }) => {
       getBasePath,
       toggleCreateOpen,
       addLabels,
+      isThreadArchived,
+      thread?.thread_id,
+      threadEmails,
     ]
   );
 
@@ -1154,11 +1219,39 @@ const MailActions = ({ thread, emails: providedEmails }) => {
             </Button>
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           </>
+        ) : isTrashFolder ? (
+          <>
+            <Button
+              variant="text"
+              onClick={handleDeleteForever}
+              sx={{
+                color: "#3c4043",
+                textTransform: "none",
+                fontSize: "14px",
+                fontWeight: 500,
+                padding: "6px 12px",
+                minWidth: "auto",
+                "&:hover": { backgroundColor: "rgba(60, 64, 67, 0.08)" },
+              }}
+            >
+              Delete forever
+            </Button>
+            <Divider orientation="vertical" style={{ marginLeft: 4, marginRight: 4, height: 24 }} />
+            <Icon name="move_to_inbox" label="Move to inbox" onClick={() => handleMenuItemClick({ id: "__inbox__" })} />
+            <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+          </>
+        ) : isThreadArchived ? (
+          <>
+            <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
+            {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
+            <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
+          </>
         ) : (
           <>
             <Icon name="archive" label="Archive" onClick={handleArchive} />
             <Icon name="report" label="Report spam" onClick={toggleSpamModal} />
-            {!isThreadDeleted && !isTrashFolder && <Icon name="delete" label="Delete" onClick={handleDelete} />}
+            {!isThreadDeleted && <Icon name="delete" label="Delete" onClick={handleDelete} />}
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           </>
         )}
@@ -1175,8 +1268,9 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           {showAdvancedMenu && (
             <Divider orientation="vertical" style={{ marginLeft: 10, marginRight: 10, height: 24 }} />
           )}
-          {/* The next icon does not exactly match */}
-          <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
+          {isThreadArchived && (
+            <Icon name="drive_file_move" label="Move to" onClick={toggleMoveToMenu} _ref={moveToMenuAnchorRef} />
+          )}
           <Icon name="label" label="Label as" onClick={handleLabelAction} _ref={labelAnchorElRef} />
 
           <MoreActions
@@ -1200,7 +1294,7 @@ const MailActions = ({ thread, emails: providedEmails }) => {
           labels={menuItems}
           onSelect={handleMenuItemClick}
           onClose={() => toggleMoveToMenu()}
-          currentFolder={folder || "inbox"}
+          currentFolder={isThreadArchived ? "all" : (folder || "inbox")}
         />
       )}
       <SnoozePopover
@@ -1361,31 +1455,47 @@ const NavigationActions = () => {
   }, [navigate, getBasePath, nextThread]);
 
   const handleArchive = useCallback(() => {
-    if (!threadEmails.length) return;
+    // Use thread IDs for archive operation - backend expects thread_ids, not email IDs
+    let threadIdsToArchive = [...new Set(threadEmails.map((email) => email.thread_id).filter(Boolean))];
 
-    const hasInbox = threadEmails.some((email) => (email.labels || []).includes("Inbox"));
-    if (!hasInbox) return;
+    // If no thread IDs found from emails, use thread_id from URL params as fallback
+    if (threadIdsToArchive.length === 0 && thread_id) {
+      threadIdsToArchive = [thread_id];
+    }
 
-    const snapshot = conversationLabelSnapshot();
-    const idsToArchive = threadEmails.map((email) => email.id);
+    // If still no thread IDs, we can't archive
+    if (threadIdsToArchive.length === 0) {
+      return;
+    }
+
+    // Check if already archived (only if we have threadEmails to check)
+    if (threadEmails.length > 0) {
+      // Check for Inbox label - handle both string and object formats
+      const hasInbox = threadEmails.some((email) => {
+        const labels = email.labels || [];
+        return labels.some((label) => {
+          const labelName = typeof label === "string" ? label : label?.name;
+          return labelName === "Inbox";
+        });
+      });
+      if (!hasInbox) return;
+    }
 
     try {
-      archive(idsToArchive);
+      // Pass resolved thread IDs directly to ensure API is called correctly
+      const undo = archive(threadIdsToArchive, { resolvedThreadIds: threadIdsToArchive });
       setSnackbar({
         open: true,
         message: "Conversation archived.",
-        autoHideDuration: 3000,
+        autoHideDuration: 10000,
         action: (
           <Button
             sx={{ textTransform: "none" }}
             size="small"
             onClick={() => {
-              setEmails((prev) =>
-                prev.map((email) => {
-                  const key = String(email.id ?? "");
-                  return snapshot.has(key) ? { ...email, labels: snapshot.get(key) } : email;
-                })
-              );
+              if (typeof undo === "function") {
+                undo();
+              }
               setSnackbar({
                 open: true,
                 message: "Action undone.",
@@ -1401,7 +1511,7 @@ const NavigationActions = () => {
     } catch (e) {
       console.error("Archive failed:", e);
     }
-  }, [threadEmails, archive, setSnackbar, conversationLabelSnapshot, setEmails]);
+  }, [threadEmails, archive, setSnackbar, thread_id]);
 
   useNavigationHotKeys({ goBack, goForward, handleArchive });
 

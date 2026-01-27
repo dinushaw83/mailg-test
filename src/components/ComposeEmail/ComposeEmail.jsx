@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { fetchEmailByIdThunk, setEmailsForCategory } from "../../store/slices/mailSlice";
+import { deleteEmailThunk, fetchEmailByIdThunk, setEmailsForCategory } from "../../store/slices/mailSlice";
+import { createAttachmentThunk } from "../../store/slices/attachmentSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@mui/material";
@@ -91,7 +92,17 @@ export default function ComposeEmail({ composeWindow }) {
   const currentDraftId = composeWindow?.draftId;
 
   // Draft management hook
-  const { saveDraftManually, deleteDraft, isDraft, draftId, draftSaved, hasDraftContent } = useDraftManagement({
+  const {
+    saveDraftManually,
+    saveToBackendNow,
+    deleteDraft,
+    isDraft,
+    draftId,
+    draftSaved,
+    hasDraftContent,
+    saveAttachment,
+    attachments,
+  } = useDraftManagement({
     to,
     cc,
     bcc,
@@ -419,8 +430,42 @@ export default function ComposeEmail({ composeWindow }) {
     handleSnackbarUndoDelete(addNewComposeWindow);
   };
 
+  // Handle adding attachments
+  const handleAddAttachment = async (file) => {
+    try {
+      // Create attachment payload
+      const attachmentData = {
+        filename: file.name,
+        content_type: file.type || "application/octet-stream",
+        size_bytes: file.size,
+      };
+
+      const { data, error } = await saveAttachment(attachmentData);
+
+      if (error) {
+        console.error("Failed to get draft ID for attachment:", error);
+        setSnackbar({
+          open: true,
+          message: "Failed to save draft. Cannot attach file.",
+          severity: "error",
+        });
+        return;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Error adding attachment:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to upload attachment.",
+        severity: "error",
+      });
+      throw error;
+    }
+  };
+
   const handleSchedule = (scheduleData) => {
-    handleScheduleEmail({
+    handleSendEmail({
       to,
       cc,
       bcc,
@@ -432,42 +477,67 @@ export default function ComposeEmail({ composeWindow }) {
       isDraft: isDraft,
       scheduledDate: scheduleData.scheduledDate,
       scheduledTime: scheduleData.scheduledTime,
-      scheduleOption: scheduleData,
+      scheduleOption: scheduleData.scheduleOption || scheduleData,
     });
   };
 
   // Remove the email from draft
-  const handleDelete = () => {
-    if (isDraft) {
-      // Store the draft data for potential restoration
-      lastDeletedDraftRef.current = {
-        id: draftId,
-        to,
-        cc,
-        bcc,
-        subject,
-        content,
-        rawInputText,
-        composeWindowId: composeWindow.id,
-        replyType: composeReplyType,
-      };
+  const handleDelete = async () => {
+    if (isDraft && draftId) {
+      // Check if draftId is a UUID (backend ID)
+      const isBackendId = isUUID(draftId.toString());
 
-      deleteDraft();
+      if (isBackendId) {
+        // Get thread_id from originalEmail prop
+        const thread_id = originalEmail?.thread_id;
 
-      // Close the compose window
-      handleClose(false);
+        // Store draft data for potential restoration
+        lastDeletedDraftRef.current = {
+          id: draftId,
+          thread_id: thread_id,
+          legacyThreadId: originalEmail?.legacyThreadId,
+          legacyLastMessageId: originalEmail?.legacyLastMessageId,
+          to,
+          cc,
+          bcc,
+          subject,
+          content,
+          rawInputText,
+          composeWindowId: composeWindow.id,
+          replyType: composeReplyType,
+        };
 
-      // Show "Draft discarded" snackbar with undo button
-      setSnackbar({
-        open: true,
-        message: "Draft discarded.",
-        action: (
-          <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
-            Undo
-          </Button>
-        ),
-        autoHideDuration: 4000,
-      });
+        try {
+          // Delete email via API, passing thread_id for refetch
+          await dispatch(deleteEmailThunk({ emailId: draftId, thread_id })).unwrap();
+
+          // Close the compose window
+          handleClose(false);
+        } catch (error) {
+          console.error("Failed to delete draft:", error);
+          // Silently handle errors - no snackbar
+          handleClose(false);
+        }
+      } else {
+        // Local draft - existing local delete logic
+        // Store the draft data for potential restoration
+        lastDeletedDraftRef.current = {
+          id: draftId,
+          to,
+          cc,
+          bcc,
+          subject,
+          content,
+          rawInputText,
+          composeWindowId: composeWindow.id,
+          replyType: composeReplyType,
+        };
+
+        deleteDraft();
+
+        // Close the compose window
+        handleClose(false);
+      }
     } else {
       // If not a draft, just close the window
       handleClose(false);
@@ -590,11 +660,15 @@ export default function ComposeEmail({ composeWindow }) {
               onSend={handleSend}
               onDelete={handleDelete}
               onSchedule={handleSchedule}
+              onAddAttachment={handleAddAttachment}
               textEditorMinHeight={composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "420px"}
               textEditorMaxHeight={
                 composeWindow?.isMaximized && !composeWindow?.isMinimized ? "530px" : "calc(100vh - 340px)"
               }
               useCompactFormatting={true}
+              subject={subject}
+              onSubjectChange={setSubject}
+              apiAttachments={attachments}
             />
           </div>
         </div>

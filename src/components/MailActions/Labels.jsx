@@ -278,10 +278,13 @@ export const Labels = ({
               // baselineChecked: true if the label is on all selected emails
               // baselineSome: true if the label is on some of the selected emails
               // baselineState: "checked" if the label is on all selected emails, "indeterminate" if the label is on some of the selected emails, "unchecked" if the label is on none of the selected emails
-              // NEW: Iterate through the Map entries to find the matching object ID
+              // Iterate through the Map entries to find the matching label
+              // Labels can be strings or objects with .id property
               let count = 0;
               for (const [keyObj, val] of labelCounts.entries()) {
-                if (keyObj.id === label.key) {
+                // Handle both object labels (with .id) and string labels
+                const labelId = typeof keyObj === "string" ? keyObj : keyObj?.id;
+                if (labelId === label.key) {
                   count = val;
                   break; // Stop once we found the match
                 }

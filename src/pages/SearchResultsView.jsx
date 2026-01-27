@@ -30,7 +30,7 @@ const SearchResultsView = () => {
   );
 
   // Get search results from Redux store
-  const { searchResults, searchLoading, searchError, searchPagination, searchOriginalParams } = useSelector(
+  const { searchResults, searchLoading, searchError, searchPagination, searchOriginalParams, lastMutationTime } = useSelector(
     (state) => state.mail
   );
 
@@ -50,14 +50,27 @@ const SearchResultsView = () => {
     dispatch(fetchSearchResults({ ...apiParams, originalParams }));
   }, [currentPage, searchQuery, apiParams, originalParams]);
 
+  // Refetch search results when a mutation occurs (e.g., move to inbox, archive, etc.)
+  useEffect(() => {
+    if (lastMutationTime) {
+      // Refetch search results to reflect the changes
+      dispatch(fetchSearchResults({ ...apiParams, originalParams }));
+    }
+  }, [lastMutationTime]);
+
   // Convert search results to thread rows format
   const rows = useMemo(() => {
-    if (!searchResults.length) {
+    if (!searchResults?.length) {
       return [];
     }
 
-    // Pass folder: null to prevent getThreadRows from filtering by folder
-    let threadRows = getThreadRows(searchResults, { folder: null });
+    // Pass folder from apiParams to enable client-side filtering for search results
+    // When searching with "in:inbox", "in:sent", etc., we need to filter by folder/label
+    // Use isSearchContext flag to enable proper label-based filtering for search results
+    let threadRows = getThreadRows(searchResults, { 
+      folder: apiParams.folder || null,
+      isSearchContext: true 
+    });
 
     // If filtering by "is unread", ensure thread has unread messages
     // (thread.is_read is based on last message, but we want threads with ANY unread messages)
@@ -66,7 +79,7 @@ const SearchResultsView = () => {
     }
 
     return threadRows;
-  }, [searchResults, searchParams]);
+  }, [searchResults, searchParams, apiParams.folder]);
 
   const showSearchFilters = useMemo(() => {
     return rows.length > 0 || searchParams.get("isrefinement") === "true";
@@ -85,7 +98,11 @@ const SearchResultsView = () => {
                     {showSearchFilters && <SearchResultFilters />}
 
                     <div className="bGI nH oy8Mbf aE3 S4" role="main" jslog="82433; u014N:xr6bB; 31:Wy0xLDEsNTBd">
-                      <ToolBar totalFilteredItems={rows.length} threads={rows} />
+                      <ToolBar 
+                        totalFilteredItems={rows.length} 
+                        threads={rows} 
+                        folder={apiParams.folder || (apiParams.in_archive ? "all" : null)} 
+                      />
                       <div />
                       <div className="X3" />
                       <div className="a0V">

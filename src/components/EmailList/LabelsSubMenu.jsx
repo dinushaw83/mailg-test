@@ -50,7 +50,7 @@ export const LabelsSubMenu = ({ selectedIds, openCreateLabelDialog, shouldFocus 
     return (
       Object.entries(labelsObject)
         // Hide labels that are both system AND exclusive (e.g., Inbox, Sent, Trash, Spam, Drafts)
-        .filter(([key, meta]) => !(meta.system && meta.is_exclusive))
+        .filter(([key, meta]) => !(meta.is_system && meta.is_exclusive))
         .map(([key, meta]) => ({
           key,
           name: meta.name || key,

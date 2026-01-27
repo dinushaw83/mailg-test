@@ -1,0 +1,54 @@
+/* Popper */
+.popper {
+  z-index: 1600;
+}
+
+/* Paper */
+.paper {
+  min-width: 200px;
+  max-width: 400px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  background-color: #fff;
+}
+
+/* Header */
+.header {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5f6368;
+  text-transform: uppercase;
+  border-bottom: 1px solid #ebebeb;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 12px 48px;
+  color: #5f6368;
+  font-size: 0.875rem;
+}
+
+/* Template List Container */
+.templateList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Template Item */
+.templateItem {
+  padding: 6px 48px;
+  cursor: pointer;
+  color: rgb(32, 33, 36);
+  font-size: 14px;
+  user-select: none;
+  background-color: transparent;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.templateItem:hover {
+  background-color: #f3f4f6;
+}

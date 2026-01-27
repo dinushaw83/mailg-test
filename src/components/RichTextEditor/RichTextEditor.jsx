@@ -34,6 +34,7 @@ import {
   processHtmlForDisplay,
 } from "../../utils/embeddedImages";
 import { useNavigate } from "react-router-dom";
+import TemplateDropdown from "../Templates/TemplateDropdown";
 
 function fileListToImageFiles(fileList) {
   return Array.from(fileList).filter((file) => {
@@ -63,6 +64,11 @@ export default function Editor({
   textEditorMaxHeight,
   useCompactFormatting = false,
   messageId,
+  subject = "",
+  onSubjectChange,
+  onAddAttachment,
+  onRemoveAttachment,
+  apiAttachments,
 }) {
   const extensions = useExtensions({
     placeholder: "",
@@ -101,6 +107,19 @@ export default function Editor({
   }, []);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (apiAttachments?.length) {
+      const formattedAttachments = apiAttachments.map((attachment) => ({
+        id: attachment.id,
+        name: attachment.filename,
+        size: attachment.size_bytes,
+        type: attachment.attachment_type,
+        url: attachment.url,
+      }));
+      setAttachments(formattedAttachments);
+    }
+  }, [apiAttachments]);
 
   // Derive editor height so total space stays fixed when toolbars/attachments appear
   const parsePx = (value) => {
@@ -352,7 +371,7 @@ export default function Editor({
 
         // Restore embedded images before setting content
         restoreEmbeddedImages(content).then((restoredContent) => {
-          rteRef.current.editor.commands.setContent(restoredContent, false);
+          rteRef?.current?.editor.commands.setContent(restoredContent, false);
 
           // Reset flag after a short delay to allow the editor to update
           setTimeout(() => {
@@ -589,6 +608,36 @@ export default function Editor({
 
       db.put("attachments", { id, file });
 
+      // Trigger backend upload if callback provided and file is not blocked
+      if (onAddAttachment && !isBlocked) {
+        onAddAttachment(file)
+          .then((backendAttachment) => {
+            if (backendAttachment) {
+              setAttachments((prev) => [...prev, { ...metadata, id: backendAttachment.id || id }]);
+
+              // // Update DB entry with real ID so it can be deleted later
+              // if (backendAttachment.id && backendAttachment.id !== id) {
+              //   db.delete("attachments", id);
+              //   db.put("attachments", { id: backendAttachment.id, file });
+              // }
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to upload attachment to backend:", err);
+            // Remove the temp file from DB since upload failed
+            db.delete("attachments", id);
+            // Optionally remove from valid files or show error state in UI
+            // For now, we rely on the snackbar in the parent
+            setSnackbar({
+              open: true,
+              message: "Failed to upload attachment.",
+              severity: "error",
+            });
+          });
+      } else if (!isBlocked) {
+        setAttachments((prev) => [...prev, metadata]);
+      }
+
       // Show dark snackbar when any file is blocked
       if (isBlocked) {
         setSnackbar({
@@ -598,11 +647,6 @@ export default function Editor({
           autoHideDuration: 6000,
         });
       }
-    }
-
-    // Only add regular files if there are any
-    if (newFiles.length > 0) {
-      setAttachments((prevAttachments) => [...prevAttachments, ...newFiles]);
     }
 
     // Clear the file input at the end
@@ -636,8 +680,8 @@ export default function Editor({
         // Add to attachments array
         setAttachments((prevAttachments) => [...prevAttachments, metadata]);
 
-        // Also store in IndexedDB
-        db.put("attachments", { id, file: largeFileModal.file });
+        // // Also store in IndexedDB
+        // db.put("attachments", { id, file: largeFileModal.file });
 
         setSnackbar({
           open: true,
@@ -885,7 +929,6 @@ export default function Editor({
     // Insert new signature
     editor.chain().focus().insertContentAt(insertAt, toInsert).run();
   };
-
   return (
     <>
       <RichTextEditor
@@ -916,7 +959,11 @@ export default function Editor({
               {showMenuBar && <div style={{ width: "100%", height: "35px" }}></div>}
               {/* Measure attachments height to shrink editor accordingly */}
               <div ref={attachmentsContainerRef} style={{ position: "relative" }}>
-                <Attachments attachments={attachments} setAttachments={setAttachments} />
+                <Attachments
+                  attachments={attachments}
+                  setAttachments={setAttachments}
+                  onRemoveAttachment={onRemoveAttachment}
+                />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", position: "relative", width: "100%" }}>
@@ -1016,7 +1063,6 @@ export default function Editor({
                       <span className="material-symbols-outlined">arrow_drop_down</span>
                     </div>
                   </div>
-
                   {/* Hidden input for native file picker */}
                   <input
                     type="file"
@@ -1025,7 +1071,6 @@ export default function Editor({
                     multiple
                     onChange={handleNativeFilePickerChange}
                   />
-
                   {showMenuBar && (
                     <EditorMenuControls editor={rteRef.current?.editor} useCompactFormatting={useCompactFormatting} />
                   )}
@@ -1037,32 +1082,42 @@ export default function Editor({
                     selected={showMenuBar}
                     IconComponent={FormatColorText}
                   />
-
                   <MenuButton
                     tooltipLabel="Attach files"
                     size="small"
                     onClick={openNativeFilePicker}
                     IconComponent={AttachmentIcon}
                   />
-
                   <MenuButton
                     tooltipLabel="Insert link"
                     size="small"
                     onClick={openLinkPopover}
                     IconComponent={InsertLink}
                   />
-
                   <MenuButton
                     tooltipLabel="Insert photo"
                     size="small"
                     onClick={openPhotoModal}
                     IconComponent={InsertPhoto}
                   />
-
                   <IconButton onClick={openSignaturePopover}>
                     <img src="/assets/images/ink_pen.png" alt="Insert Signature" style={{ width: 20, height: 20 }} />
                   </IconButton>
-
+                  <TemplateDropdown
+                    subject={subject}
+                    content={content}
+                    onContentChange={(newContent) => {
+                      // Update editor content
+                      if (rteRef.current?.editor) {
+                        rteRef.current.editor.commands.insertContent(newContent || "");
+                        const currentContent = rteRef.current?.editor?.getHTML() || "";
+                        // Trigger onChange to update parent state
+                        const plainText = currentContent?.replace(/<[^>]*>/g, "") || "";
+                        onChange?.(currentContent, plainText);
+                      }
+                    }}
+                    onSubjectChange={onSubjectChange}
+                  />
                   <Popper open={Boolean(linkAnchorEl)} anchorEl={linkAnchorEl} placement="top" style={{ zIndex: 1500 }}>
                     <ClickAwayListener
                       onClickAway={closeLinkPopover}
@@ -1187,7 +1242,6 @@ export default function Editor({
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
-
                   {/* Send Options Dropdown */}
                   <Popper
                     open={Boolean(sendOptionsAnchorEl)}
@@ -1236,7 +1290,6 @@ export default function Editor({
                       </Paper>
                     </ClickAwayListener>
                   </Popper>
-
                   <Menu
                     anchorEl={signatureAnchorEl}
                     open={signaturePopoverOpen}

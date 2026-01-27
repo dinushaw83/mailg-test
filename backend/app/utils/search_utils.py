@@ -5,11 +5,16 @@ This module provides helper functions for:
 - Handling relative date filters
 - Size value parsing with K/M/G units
 - Advanced query parsing (OR, grouping, exact phrases, exclusions)
+- Background task for saving search queries
 """
 
+import logging
 import re
 from datetime import UTC, datetime, timedelta
 from typing import Optional, List, Tuple
+from uuid import UUID
+
+logger = logging.getLogger(__name__)
 
 
 def parse_size_value(size_str: str) -> int:
@@ -333,12 +338,16 @@ def parse_search_query(query: str, tz_offset: Optional[int] = None) -> dict:
         # Location filters
         (r'in:anywhere', ('in_anywhere', True)),
         (r'in:archive', ('in_archive', True)),
+        (r'in:archived', ('in_archive', True)),
+        (r'is:archived', ('in_archive', True)),
         (r'in:snoozed', ('is_snoozed', True)),
         (r'in:starred', ('is_starred', True)),
         (r'in:(\w+)', 'folder_type'),
         
         # Label and category
-        (r'label:(\S+)', 'label_name'),
+        # label: captures everything until the next operator or end of string
+        # This allows multi-word labels like "label:projects client b"
+        (r'label:(.+?)(?=\s+(?:from|to|subject|cc|bcc|has|is|in|label|category|before|after|newer_than|older_than|size|larger|smaller|filename|deliveredto):|$)', 'label_name'),
         (r'category:(\w+)', 'category'),
         
         # Date filters
@@ -358,7 +367,7 @@ def parse_search_query(query: str, tz_offset: Optional[int] = None) -> dict:
             # Value pattern (with capture group)
             match = re.search(pattern, query_copy, re.IGNORECASE)
             if match:
-                value = match.group(1)
+                value = match.group(1).strip()
                 # Remove quotes if present
                 if value.startswith('"') or value.startswith("'"):
                     value = value[1:-1]
@@ -421,3 +430,61 @@ def parse_relative_date(relative: str) -> Optional[datetime]:
         return now - timedelta(days=value * 365)
     
     return now
+
+
+def save_search_query_background(user_id: UUID, query: str, run_id: str):
+    """Save or update search query in database as a background task.
+    
+    This function runs after the response is sent to the client.
+    If the query already exists for this user, it updates use_count and last_used_at.
+    Otherwise, it creates a new SavedSearch entry.
+    
+    Args:
+        user_id: The ID of the user who performed the search.
+        query: The search query string to save.
+        run_id: The run ID for the database connection.
+    """
+    # Import here to avoid circular imports
+    from app.db.session import get_db_session
+    from app.models.saved_search import SavedSearch
+    
+    if not query or not query.strip():
+        return
+    
+    query = query.strip()
+    
+    # Create a new database session for the background task
+    db = get_db_session(run_id)
+    try:
+        # Check if this query already exists for the user
+        existing_search = db.query(SavedSearch).filter(
+            SavedSearch.owner_id == user_id,
+            SavedSearch.query == query
+        ).first()
+        
+        if existing_search:
+            # Update existing search
+            existing_search.use_count = (existing_search.use_count or 0) + 1
+            existing_search.last_used_at = datetime.utcnow()
+        else:
+            # Create new search entry with query as name (truncated to 100 chars)
+            filters = parse_search_query(query)
+            # Use query as name, truncated if needed (max 100 chars per schema)
+            name = query[:100] if len(query) > 100 else query
+            new_search = SavedSearch(
+                name=name,
+                query=query,
+                filters=filters,
+                owner_id=user_id,
+                use_count=1,
+                last_used_at=datetime.utcnow()
+            )
+            db.add(new_search)
+        
+        db.commit()
+        logger.debug(f"Search query saved/updated for user {user_id}: {query[:50]}...")
+    except Exception as e:
+        db.rollback()
+        logger.warning(f"Failed to save search query in background: {e}")
+    finally:
+        db.close()

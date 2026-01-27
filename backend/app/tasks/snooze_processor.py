@@ -102,9 +102,6 @@ def process_expired_snoozes_for_database(db_name: str) -> int:
                     thread_id = metadata.thread_id
                     user_id = metadata.user_id
                     
-                    # Clear the snooze
-                    metadata.snooze_until = None
-                    
                     # Sync thread labels (removes SNOOZED label)
                     sync_thread_labels(db, thread_id, user_id, commit=False)
                     

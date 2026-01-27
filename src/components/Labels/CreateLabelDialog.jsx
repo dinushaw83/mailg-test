@@ -50,8 +50,6 @@ export default function CreateLabelDialog({
   const trimmed = name.trim();
   const targetParentKey = nest ? (parentKey ?? ROOT) : ROOT;
 
-  const isEditing = useMemo(() => !!labelDefaultName, [labelDefaultName]);
-
   useEffect(() => {
     setNest(Boolean(parentKey));
   }, [parentKey]);
@@ -129,16 +127,7 @@ export default function CreateLabelDialog({
     }
   };
 
-  const handleSave = () => {
-    renameLabel(currentLabelKey, trimmed);
-    onAfterCreate?.(trimmed, parentKey, isMoving);
-    setSnackbar?.({
-      open: true,
-      message: `The label "${trimmed}" was saved.`,
-      autoHideDuration: 4000,
-    });
-    handleClose();
-  };
+  // Note: Label editing is handled by EditLabelDialog component, not CreateLabelDialog
 
   return (
     <Dialog
@@ -240,11 +229,11 @@ export default function CreateLabelDialog({
         </Button>
         <Button
           variant="contained"
-          onClick={isEditing ? handleSave : handleCreate}
+          onClick={handleCreate}
           disabled={!canSubmit} // keep enabled; validation happens on submit
           sx={{ borderRadius: "20px", textTransform: "none", px: 3 }}
         >
-          {isEditing ? "Save" : "Create"}
+          Create
         </Button>
       </DialogActions>
     </Dialog>

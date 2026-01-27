@@ -1,7 +1,7 @@
 """Pydantic schemas for Email resource - request/response validation."""
 
 from pydantic import BaseModel, Field, RootModel
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from uuid import UUID
 
@@ -63,7 +63,7 @@ class EmailLabelRequest(BaseModel):
 
 class EmailReplyRequest(BaseModel):
     """Schema for replying to an email."""
-    body: str = Field(..., min_length=1, description="Reply body")
+    body: Optional[str] = Field(None, description="Reply body")
     html_body: Optional[str] = Field(None, description="HTML reply body")
     reply_all: bool = Field(False, description="Reply to all recipients")
 
@@ -111,7 +111,7 @@ class LabelBriefResponse(BaseModel):
     
     id: UUID
     name: str
-    color: Optional[str] = None
+    color: Optional[Union[dict, str]] = None
     owner_id: UUID
     parent_id: Optional[UUID] = None
     is_system: bool = False

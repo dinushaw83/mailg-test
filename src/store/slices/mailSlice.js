@@ -101,10 +101,14 @@ export const sendEmailThunk = createAsyncThunk("mail/sendEmail", async (emailDat
  * Note: Mutations are called directly (not through React Query fetchQuery)
  * Cache invalidation is handled by RTK listener middleware.
  */
-export const sendEmailByIdThunk = createAsyncThunk("mail/sendEmailById", async (emailId, { rejectWithValue }) => {
+export const sendEmailByIdThunk = createAsyncThunk("mail/sendEmailById", async (payload, { rejectWithValue }) => {
   try {
+    // Determine if payload is just an ID (legacy) or an object
+    const emailId = typeof payload === "object" ? payload.emailId : payload;
+    const data = typeof payload === "object" ? payload.data : {};
+
     // Call service directly - React Query cache invalidation is handled by listeners
-    const response = await emailService.sendEmailById(emailId);
+    const response = await emailService.sendEmailById(emailId, data);
     return { emailId, data: response };
   } catch (error) {
     console.error("❌ Failed to send email by ID:", error);
@@ -626,6 +630,22 @@ export const bulkArchiveEmailsThunk = createAsyncThunk(
 );
 
 /**
+ * BULK MUTATION THUNK: Unarchive multiple threads
+ */
+export const bulkUnarchiveEmailsThunk = createAsyncThunk(
+  "mail/bulkUnarchiveEmails",
+  async ({ threadIds }, { rejectWithValue }) => {
+    try {
+      const response = await emailService.bulkUnarchiveEmails(threadIds);
+      return { threadIds, response };
+    } catch (error) {
+      console.error("Failed to bulk unarchive threads:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unarchive threads");
+    }
+  }
+);
+
+/**
  * BULK MUTATION THUNK: Snooze multiple threads
  */
 export const bulkSnoozeThreadsThunk = createAsyncThunk(
@@ -653,6 +673,42 @@ export const bulkUnsnoozeThreadsThunk = createAsyncThunk(
     } catch (error) {
       console.error("Failed to bulk unsnooze threads:", error);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to bulk unsnooze threads");
+    }
+  }
+);
+/**
+ * Fetch search suggestions from backend API
+ * @param {Object} params - Search suggestion parameters
+ * @param {string} params.q - Partial query for suggestions (can be empty string)
+ * @param {number} params.limit - Maximum number of suggestions per category (default: 10)
+ * @param {AbortSignal} params.signal - Optional abort signal for request cancellation
+ */
+export const fetchSearchSuggestions = createAsyncThunk(
+  "mail/fetchSearchSuggestions",
+  async ({ q = "", limit = 10, signal }, { rejectWithValue }) => {
+    try {
+      const queryKey = ["searchSuggestions", q, limit];
+
+      const data = await queryClient.fetchQuery({
+        queryKey,
+        queryFn: async () => {
+          return await searchService.getSearchSuggestions({ q, limit });
+        },
+        staleTime: 1000 * 30, // Cache for 30 seconds
+        signal, // Support request cancellation
+      });
+
+      return {
+        suggestions: data,
+        query: q,
+      };
+    } catch (error) {
+      // Ignore cancellation errors
+      if (error?.name === "AbortError" || error?.message?.includes("cancelled")) {
+        throw error; // Re-throw to prevent state update
+      }
+      console.error("❌ Failed to fetch search suggestions:", error);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch search suggestions");
     }
   }
 );
@@ -698,6 +754,17 @@ const mailSlice = createSlice({
     searchError: null,
     searchOriginalParams: {}, // Store original params for frontend post-processing
     lastMutationTime: null, // Timestamp of last mutation to trigger refetch
+    // Search suggestions state
+    searchSuggestions: {
+      contacts: [],
+      labels: [],
+      folders: [],
+      recent_searches: [],
+      operators: [],
+    },
+    searchSuggestionsLoading: false,
+    searchSuggestionsError: null,
+    searchSuggestionsQuery: "",
   },
   reducers: {
     setEmails: (state, action) => {
@@ -823,17 +890,27 @@ const mailSlice = createSlice({
 
         // Transform backend labels to frontend format
         const { labels: transformedLabels, idToKeyMap, keyToIdMap } = transformLabelsArray(labelsArray);
-        // Merge with system labels (keep system labels as-is, they use composite keys)
-        const mergedLabels = { ...state.labels };
+        
+        // Only keep system labels (which use composite keys like "Inbox", "Sent", etc.)
+        // Remove all backend labels (which use UUIDs) and replace with fresh data
+        const systemLabelsOnly = {};
+        Object.entries(state.labels).forEach(([key, label]) => {
+          // System labels don't have UUIDs and use composite keys
+          if (label.is_system || label.system) {
+            systemLabelsOnly[key] = label;
+          }
+        });
 
-        // Add/update backend labels (UUID-based)
+        // Merge system labels with fresh backend labels
+        const mergedLabels = { ...systemLabelsOnly };
         Object.entries(transformedLabels).forEach(([id, label]) => {
           mergedLabels[id] = label;
         });
 
         state.labels = mergedLabels;
-        state.labelIdToKeyMap = { ...state.labelIdToKeyMap, ...idToKeyMap };
-        state.keyToLabelIdMap = { ...state.keyToLabelIdMap, ...keyToIdMap };
+        // Replace ID mappings entirely with fresh data from API
+        state.labelIdToKeyMap = { ...idToKeyMap };
+        state.keyToLabelIdMap = { ...keyToIdMap };
       })
       .addCase(fetchLabels.rejected, (state, action) => {
         state.labelLoading = false;
@@ -887,25 +964,36 @@ const mailSlice = createSlice({
       .addCase(deleteLabelThunk.fulfilled, (state, action) => {
         const deletedId = action.payload.id;
         if (deletedId) {
-          // Remove label from state
-          delete state.labels[deletedId];
+          // Recursive function to collect all descendant label IDs
+          const collectDescendants = (parentId, collected = new Set()) => {
+            Object.entries(state.labels).forEach(([id, label]) => {
+              if (label.parent_id === parentId && !collected.has(id)) {
+                collected.add(id);
+                // Recursively collect children of this child
+                collectDescendants(id, collected);
+              }
+            });
+            return collected;
+          };
 
-          // Remove from mappings
+          // Collect all descendants (deeply nested children)
+          const descendantIds = collectDescendants(deletedId);
+
+          // Remove the deleted label itself
+          delete state.labels[deletedId];
           const compositeKey = state.labelIdToKeyMap[deletedId];
           if (compositeKey) {
             delete state.labelIdToKeyMap[deletedId];
             delete state.keyToLabelIdMap[compositeKey];
           }
 
-          // Also remove children (cascade delete)
-          Object.entries(state.labels).forEach(([id, label]) => {
-            if (label.parent_id === deletedId) {
-              delete state.labels[id];
-              const childKey = state.labelIdToKeyMap[id];
-              if (childKey) {
-                delete state.labelIdToKeyMap[id];
-                delete state.keyToLabelIdMap[childKey];
-              }
+          // Remove all descendants (cascade delete)
+          descendantIds.forEach((id) => {
+            delete state.labels[id];
+            const childKey = state.labelIdToKeyMap[id];
+            if (childKey) {
+              delete state.labelIdToKeyMap[id];
+              delete state.keyToLabelIdMap[childKey];
             }
           });
         }
@@ -930,6 +1018,31 @@ const mailSlice = createSlice({
         state.searchPagination = null;
         state.searchOriginalParams = {};
       })
+
+      // Fetch Search Suggestions
+      .addCase(fetchSearchSuggestions.pending, (state) => {
+        state.searchSuggestionsLoading = true;
+        state.searchSuggestionsError = null;
+      })
+      .addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
+        state.searchSuggestionsLoading = false;
+        state.searchSuggestions = action.payload.suggestions || {
+          contacts: [],
+          labels: [],
+          folders: [],
+          recent_searches: [],
+          operators: [],
+        };
+        state.searchSuggestionsQuery = action.payload.query || "";
+      })
+      .addCase(fetchSearchSuggestions.rejected, (state, action) => {
+        // Only update state if it's not a cancellation error
+        if (action.error?.name !== "AbortError" && !action.error?.message?.includes("cancelled")) {
+          state.searchSuggestionsLoading = false;
+          state.searchSuggestionsError = action.payload;
+        }
+      })
+
       // Delete Email
       .addCase(deleteEmailThunk.fulfilled, (state, action) => {
         const emailId = action.payload?.emailId;
@@ -960,8 +1073,11 @@ const mailSlice = createSlice({
             "mail/bulkMoveToSpam/fulfilled",
             "mail/bulkMoveFromSpam/fulfilled",
             "mail/bulkMoveToTrash/fulfilled",
+            "mail/bulkMoveToFolder/fulfilled",
+            "mail/bulkUpdateLabels/fulfilled",
             "mail/bulkDeleteEmail/fulfilled",
             "mail/bulkArchiveEmails/fulfilled",
+            "mail/bulkUnarchiveEmails/fulfilled",
             "mail/bulkSnoozeThreads/fulfilled",
             "mail/bulkUnsnoozeThreads/fulfilled",
             "mail/snoozeThread/fulfilled",
@@ -1013,5 +1129,30 @@ export const {
   refreshEmails,
   clearError,
 } = mailSlice.actions;
+
+// Selectors for search suggestions
+export const selectSearchSuggestions = (state) => state.mail.searchSuggestions;
+export const selectSearchSuggestionsLoading = (state) => state.mail.searchSuggestionsLoading;
+export const selectSearchSuggestionsError = (state) => state.mail.searchSuggestionsError;
+export const selectSearchSuggestionsQuery = (state) => state.mail.searchSuggestionsQuery;
+
+// Selector to get suggestions by type
+export const selectSearchSuggestionsByType = (type) => (state) => {
+  const suggestions = state.mail.searchSuggestions;
+  switch (type) {
+    case "contacts":
+      return suggestions.contacts || [];
+    case "labels":
+      return suggestions.labels || [];
+    case "folders":
+      return suggestions.folders || [];
+    case "recent_searches":
+      return suggestions.recent_searches || [];
+    case "operators":
+      return suggestions.operators || [];
+    default:
+      return [];
+  }
+};
 
 export default mailSlice.reducer;

@@ -12,8 +12,8 @@ import CreateContactPage from "./pages/Contacts/CreateContactPage";
 import EmailDetails from "./pages/EmailDetails";
 import Frequent from "./pages/Contacts/Frequent";
 import GlobalSnackbar from "./components/GlobalSnackbar";
-import Layout from "./components/Layout";
 import ImportDataMain from "./components/import_data/ImportDataMain";
+import Layout from "./components/Layout";
 import LocalStorageDownload from "./pages/LocalStorageDownload";
 import Login from "./pages/Login";
 import MailGAccount from "./pages/MailGAccount";
@@ -25,6 +25,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import { Provider } from "react-redux";
 import ReduxInitialization from "./components/ReduxInitialization";
 import SearchResultsView from "./pages/SearchResultsView";
+import SessionId from "./pages/SessionId";
 import Settings from "./pages/Settings";
 import VerificationDashboard from "./pages/VerificationDashboard";
 import VerificationLocalStorage from "./pages/VerificationLocalStorage";
@@ -85,6 +86,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <LocalStorageDownload />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/sessionid"
+                element={
+                  <ProtectedRoute>
+                    <SessionId />
                   </ProtectedRoute>
                 }
               />
