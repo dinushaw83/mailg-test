@@ -11,6 +11,7 @@ from typing import Dict, Any, List, Optional
 from pathlib import Path
 import logging
 import json
+import threading
 
 from app.auth.token_manager import get_token_manager
 from app.db.session import get_db, get_seed_db
@@ -27,6 +28,31 @@ OPTIONAL_EXCLUDE_TABLES = {
     # Add tables here if they're too large or not needed
     # 'api_logs',  # Example: might be very large
 }
+
+# Seed snapshot cache - permanent until app restart (seed DB is immutable)
+_seed_snapshot_cache: Optional[Dict[str, Any]] = None
+_seed_snapshot_lock = threading.Lock()
+
+
+def _get_seed_snapshot_cached() -> Dict[str, Any]:
+    """Get cached seed snapshot, creating it on first call.
+    
+    The seed database is immutable after app startup, so we cache
+    it permanently for the lifetime of the application process.
+    """
+    global _seed_snapshot_cache
+    
+    if _seed_snapshot_cache is not None:
+        return _seed_snapshot_cache
+    
+    with _seed_snapshot_lock:
+        # Double-check after acquiring lock
+        if _seed_snapshot_cache is None:
+            logger.info("Building seed snapshot cache (one-time operation)...")
+            _seed_snapshot_cache = _get_seed_snapshot()
+            logger.info("Seed snapshot cached permanently until app restart")
+    
+    return _seed_snapshot_cache
 
 
 def _run_db_exists(run_id: str) -> bool:
@@ -334,7 +360,7 @@ def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
                 serialized_dict[key] = serialize_value(value)
             rows.append(serialized_dict)
         
-        # Generic FK-based relation fetching for all tables
+        # Generic FK-based relation fetching for all tables - BATCH OPTIMIZED
         foreign_keys = get_table_foreign_keys(db, table_name)
         
         if foreign_keys and rows:
@@ -346,39 +372,67 @@ def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
                 pk_col = self_ref_fks[0]["referred_column"]
                 self_lookup = {row.get(pk_col): row for row in rows if row.get(pk_col) is not None}
             
-            # Process each row and add first-level relations
-            for row_data in rows:
-                for fk in foreign_keys:
-                    fk_column = fk["column"]
-                    referred_table = fk["referred_table"]
-                    referred_column = fk["referred_column"]
-                    relation_name = fk["relation_name"]
-                    
-                    fk_value = row_data.get(fk_column)
-                    if fk_value is None:
-                        continue
-                    
-                    # Handle self-referencing FK (e.g., parent_id on tickets)
-                    if referred_table == table_name:
-                        # Try to find in current result set first
-                        related_obj = self_lookup.get(fk_value)
-                        if related_obj:
+            # Batch load related objects for each FK relationship
+            for fk in foreign_keys:
+                fk_column = fk["column"]
+                referred_table = fk["referred_table"]
+                referred_column = fk["referred_column"]
+                relation_name = fk["relation_name"]
+                
+                # Handle self-references from in-memory lookup (no extra query)
+                if referred_table == table_name:
+                    for row_data in rows:
+                        fk_value = row_data.get(fk_column)
+                        if fk_value and fk_value in self_lookup:
                             # Make a copy to avoid circular references
-                            related_copy = related_obj.copy()
+                            related_copy = self_lookup[fk_value].copy()
                             # Remove any nested relation fields to avoid deep nesting
                             for nested_fk in foreign_keys:
                                 related_copy.pop(nested_fk["relation_name"], None)
                             row_data[relation_name] = related_copy
+                    continue
+                
+                # Collect all unique FK values for this relationship
+                fk_values = list({row.get(fk_column) for row in rows if row.get(fk_column) is not None})
+                
+                if not fk_values:
+                    continue
+                
+                # Validate referred_table name to prevent SQL injection
+                if not all(c.isalnum() or c in ('_', '-') for c in referred_table):
+                    logger.warning(f"Invalid referred table name: {referred_table}")
+                    continue
+                if not all(c.isalnum() or c in ('_', '-') for c in referred_column):
+                    logger.warning(f"Invalid referred column name: {referred_column}")
+                    continue
+                
+                # BATCH QUERY: Single query for ALL related objects instead of N queries
+                placeholders = ", ".join([f":v{i}" for i in range(len(fk_values))])
+                params = {f"v{i}": v for i, v in enumerate(fk_values)}
+                query = text(f'SELECT * FROM "{referred_table}" WHERE "{referred_column}" IN ({placeholders})')
+                
+                try:
+                    result = db.execute(query, params)
+                    
+                    # Build lookup dictionary from batch results
+                    related_lookup = {}
+                    for rel_row in result:
+                        if hasattr(rel_row, '_mapping'):
+                            rel_dict = dict(rel_row._mapping)
+                        elif hasattr(rel_row, '_asdict'):
+                            rel_dict = rel_row._asdict()
                         else:
-                            # Not in result set, fetch separately
-                            related_obj = fetch_related_object(db, referred_table, referred_column, fk_value)
-                            if related_obj:
-                                row_data[relation_name] = related_obj
-                    else:
-                        # Regular FK to another table
-                        related_obj = fetch_related_object(db, referred_table, referred_column, fk_value)
-                        if related_obj:
-                            row_data[relation_name] = related_obj
+                            rel_dict = dict(rel_row)
+                        pk_val = rel_dict.get(referred_column)
+                        related_lookup[pk_val] = {k: serialize_value(v) for k, v in rel_dict.items()}
+                    
+                    # Attach related objects to rows using lookup
+                    for row_data in rows:
+                        fk_val = row_data.get(fk_column)
+                        if fk_val in related_lookup:
+                            row_data[relation_name] = related_lookup[fk_val]
+                except Exception as e:
+                    logger.warning(f"Could not batch fetch {referred_table} for {table_name}.{fk_column}: {e}")
         
         logger.debug(f"Retrieved {len(rows)} rows from table {table_name}")
         return {"rows": rows}
@@ -1146,8 +1200,8 @@ def get_db_diff(
         db = SessionLocal()
         
         try:
-            # Capture snapshots
-            seed_snapshot = _get_seed_snapshot()
+            # Capture snapshots (seed is cached permanently since it never changes)
+            seed_snapshot = _get_seed_snapshot_cached()
             run_snapshot = _get_run_snapshot(db, session_id)
             
             # Compute diff
