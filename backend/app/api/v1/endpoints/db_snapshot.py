@@ -234,6 +234,76 @@ def get_table_foreign_keys(db: Session, table_name: str) -> List[Dict[str, str]]
     return result
 
 
+# Mapping of child table names to semantic relation names for reverse FK loading
+REVERSE_FK_RELATION_NAMES = {
+    "email_recipients": "recipients",
+    "attachments": "attachments",
+}
+
+# Tables to load as reverse FK relations (child records)
+REVERSE_FK_TABLES = {"email_recipients", "attachments"}
+
+
+def get_reverse_foreign_keys(db: Session, table_name: str) -> List[Dict[str, str]]:
+    """Get reverse foreign key relationships - child tables that reference this table.
+    
+    Args:
+        db: Database session.
+        table_name: Name of the parent table to find children for.
+        
+    Returns:
+        List of dicts with: child_table, child_fk_column, parent_pk_column,
+        and relation_name (derived field name for the child collection).
+    """
+    result = []
+    try:
+        inspector = inspect(db.get_bind())
+        try:
+            all_tables = inspector.get_table_names(schema="public")
+        except TypeError:
+            all_tables = inspector.get_table_names()
+        
+        for child_table in all_tables:
+            # Only process tables we want to load as reverse FKs
+            if child_table not in REVERSE_FK_TABLES:
+                continue
+                
+            try:
+                fks = inspector.get_foreign_keys(child_table, schema="public")
+            except TypeError:
+                fks = inspector.get_foreign_keys(child_table)
+            
+            for fk in fks:
+                referred_table = fk.get("referred_table")
+                # Check if this FK points to our table
+                if referred_table != table_name:
+                    continue
+                    
+                constrained_columns = fk.get("constrained_columns", [])
+                referred_columns = fk.get("referred_columns", [])
+                
+                # Only handle single-column foreign keys
+                if len(constrained_columns) == 1 and len(referred_columns) == 1:
+                    child_fk_col = constrained_columns[0]
+                    parent_pk_col = referred_columns[0]
+                    
+                    # Derive relation name from mapping or child table name
+                    relation_name = REVERSE_FK_RELATION_NAMES.get(child_table, child_table)
+                    
+                    result.append({
+                        "child_table": child_table,
+                        "child_fk_column": child_fk_col,
+                        "parent_pk_column": parent_pk_col,
+                        "relation_name": relation_name
+                    })
+        
+        logger.debug(f"Reverse foreign keys for {table_name}: {result}")
+    except Exception as e:
+        logger.warning(f"Could not get reverse foreign keys for table {table_name}: {e}")
+    
+    return result
+
+
 def fetch_related_object(db: Session, related_table: str, pk_column: str, pk_value: Any) -> Optional[Dict[str, Any]]:
     """Fetch a related object from another table by primary key.
     
@@ -433,6 +503,68 @@ def get_table_data(db: Session, table_name: str) -> Dict[str, Any]:
                             row_data[relation_name] = related_lookup[fk_val]
                 except Exception as e:
                     logger.warning(f"Could not batch fetch {referred_table} for {table_name}.{fk_column}: {e}")
+        
+        # Reverse FK-based relation fetching (one-to-many child records) - BATCH OPTIMIZED
+        # This loads child records from tables that have FKs pointing TO this table
+        reverse_foreign_keys = get_reverse_foreign_keys(db, table_name)
+        
+        if reverse_foreign_keys and rows:
+            # Get primary key column for this table (usually 'id')
+            pk_columns = get_table_primary_keys(db).get(table_name, ["id"])
+            pk_col = pk_columns[0] if pk_columns else "id"
+            
+            # Collect all parent IDs for batch querying
+            parent_ids = list({row.get(pk_col) for row in rows if row.get(pk_col) is not None})
+            
+            if parent_ids:
+                for rev_fk in reverse_foreign_keys:
+                    child_table = rev_fk["child_table"]
+                    child_fk_column = rev_fk["child_fk_column"]
+                    relation_name = rev_fk["relation_name"]
+                    
+                    # Validate child table name to prevent SQL injection
+                    if not all(c.isalnum() or c in ('_', '-') for c in child_table):
+                        logger.warning(f"Invalid child table name: {child_table}")
+                        continue
+                    if not all(c.isalnum() or c in ('_', '-') for c in child_fk_column):
+                        logger.warning(f"Invalid child FK column name: {child_fk_column}")
+                        continue
+                    
+                    # BATCH QUERY: Get all child records for all parent IDs
+                    placeholders = ", ".join([f":v{i}" for i in range(len(parent_ids))])
+                    params = {f"v{i}": v for i, v in enumerate(parent_ids)}
+                    query = text(f'SELECT * FROM "{child_table}" WHERE "{child_fk_column}" IN ({placeholders})')
+                    
+                    try:
+                        result = db.execute(query, params)
+                        
+                        # Group child records by parent FK value
+                        children_by_parent = {}
+                        for child_row in result:
+                            if hasattr(child_row, '_mapping'):
+                                child_dict = dict(child_row._mapping)
+                            elif hasattr(child_row, '_asdict'):
+                                child_dict = child_row._asdict()
+                            else:
+                                child_dict = dict(child_row)
+                            
+                            # Serialize all values
+                            serialized_child = {k: serialize_value(v) for k, v in child_dict.items()}
+                            
+                            # Group by parent FK
+                            parent_fk_val = serialized_child.get(child_fk_column)
+                            if parent_fk_val is not None:
+                                if parent_fk_val not in children_by_parent:
+                                    children_by_parent[parent_fk_val] = []
+                                children_by_parent[parent_fk_val].append(serialized_child)
+                        
+                        # Attach child arrays to parent rows
+                        for row_data in rows:
+                            parent_id = row_data.get(pk_col)
+                            row_data[relation_name] = children_by_parent.get(parent_id, [])
+                            
+                    except Exception as e:
+                        logger.warning(f"Could not batch fetch {child_table} for {table_name}.{pk_col}: {e}")
         
         logger.debug(f"Retrieved {len(rows)} rows from table {table_name}")
         return {"rows": rows}
@@ -768,13 +900,15 @@ def _compute_diff(
                 before_row = before_by_key[row_key]
                 after_row = after_by_key[row_key]
                 
-                # Find all changed fields (exclude relation objects - they're nested dicts)
+                # Find all changed fields (exclude relation objects - nested dicts and arrays)
                 changes = {}
                 for key in set(before_row.keys()) | set(after_row.keys()):
                     before_val = before_row.get(key)
                     after_val = after_row.get(key)
-                    # Skip relation objects (nested dicts) and context fields
+                    # Skip relation objects (nested dicts) and child collections (lists like recipients, attachments)
                     if isinstance(before_val, dict) or isinstance(after_val, dict):
+                        continue
+                    if isinstance(before_val, list) or isinstance(after_val, list):
                         continue
                     if key.startswith("_"):  # Skip internal fields like _context
                         continue

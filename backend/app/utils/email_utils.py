@@ -415,14 +415,17 @@ def deliver_email_to_recipients(db: Session, email, sender_id: Optional[UUID] = 
                 db.flush()
                 emails_created += 1
 
-                recv_recipient = EmailRecipient(
-                    email_id=received_email.id,
-                    recipient_id=recipient_user.id,
-                    recipient_email=recipient.recipient_email,
-                    recipient_name=recipient.recipient_name,
-                    recipient_type=recipient.recipient_type,
-                )
-                db.add(recv_recipient)
+                # Copy ALL recipients from original email to received copy
+                # This allows recipients to see who else received the email
+                for orig_recipient in email.recipients:
+                    recv_recipient = EmailRecipient(
+                        email_id=received_email.id,
+                        recipient_id=orig_recipient.recipient_id,
+                        recipient_email=orig_recipient.recipient_email,
+                        recipient_name=orig_recipient.recipient_name,
+                        recipient_type=orig_recipient.recipient_type,
+                    )
+                    db.add(recv_recipient)
 
                 # Sync thread labels for recipient (adds INBOX label based on received email)
                 sync_thread_labels(db, email.thread_id, recipient_user.id)

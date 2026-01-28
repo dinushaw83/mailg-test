@@ -452,6 +452,18 @@ def update_email(
             )
             db.add(email_recipient)
     
+    # Sync thread subject and participant count with email changes
+    if email.thread_id:
+        thread = db.query(Thread).filter(Thread.id == email.thread_id).first()
+        if thread:
+            # Sync thread subject with email subject
+            if email.subject:
+                thread.subject = email.subject
+            
+            # Update participant count if recipients changed
+            if recipients_data is not None:
+                thread.participant_count = len(recipients_data) + 1
+    
     try:
         db.commit()
         db.refresh(email)
@@ -585,6 +597,12 @@ def send_email(
                 detail="scheduled_send_at must be in the future"
             )
         
+        # Sync thread subject with email subject before scheduling
+        if email.thread_id:
+            thread = db.query(Thread).filter(Thread.id == email.thread_id).first()
+            if thread and email.subject and thread.subject != email.subject:
+                thread.subject = email.subject
+        
         email.status = EmailStatus.QUEUED.value
         email.scheduled_send_at = scheduled_send_at
         email.folder = FolderType.SCHEDULED.value
@@ -613,6 +631,13 @@ def send_email(
     if undo_delay > 0:
         # Queue the email with scheduled send time (undo send enabled)
         from datetime import timedelta
+        
+        # Sync thread subject with email subject before queueing
+        if email.thread_id:
+            thread = db.query(Thread).filter(Thread.id == email.thread_id).first()
+            if thread and email.subject and thread.subject != email.subject:
+                thread.subject = email.subject
+        
         email.status = EmailStatus.QUEUED.value
         email.scheduled_send_at = datetime.now(UTC) + timedelta(seconds=undo_delay)
         email.folder = FolderType.SENT.value
@@ -631,6 +656,12 @@ def send_email(
         return format_email_response(email, current_user.id)
     
     # Immediate send (undo send disabled)
+    # Sync thread subject with email subject before sending
+    if email.thread_id:
+        thread = db.query(Thread).filter(Thread.id == email.thread_id).first()
+        if thread and email.subject and thread.subject != email.subject:
+            thread.subject = email.subject
+    
     email.status = EmailStatus.SENT.value
     email.sent_at = datetime.now(UTC)
     email.folder = FolderType.SENT.value
