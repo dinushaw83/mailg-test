@@ -69,7 +69,20 @@ def get_unique_constraints(table_schema: dict[str, Any]) -> list[list[str]]:
     """
     Extract unique constraints from table schema.
 
+    Supports both formats:
+    - Plain list of column names: ["col1", "col2"]
+    - Object with columns key: {"name": "...", "columns": ["col1", "col2"]}
+
     Returns:
         List of unique constraints, where each constraint is a list of column names.
     """
-    return table_schema.get("uniqueConstraints", [])
+    raw = table_schema.get("uniqueConstraints", [])
+    result = []
+    for entry in raw:
+        if isinstance(entry, dict):
+            columns = entry.get("columns", [])
+            if columns:
+                result.append(columns)
+        elif isinstance(entry, list):
+            result.append(entry)
+    return result

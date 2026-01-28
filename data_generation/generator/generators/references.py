@@ -86,6 +86,38 @@ class ForeignKeyGenerator(BaseGenerator):
         # Fallback to None and let validation catch it
         return None
 
+    def _enforce_unique_fk(
+        self,
+        value: Any,
+        semantics: FieldSemantics,
+        context: GenerationContext,
+        ref_table: str,
+    ) -> Any:
+        """
+        Enforce uniqueness for unique FK fields (e.g., general_settings.user_id).
+
+        Tries to pick an unused ID if the chosen value is already taken.
+        Does NOT register the value — that is done by _generate_table_records
+        after full-row validation.
+        """
+        if not semantics.is_unique or value is None:
+            return value
+
+        table_name = semantics.table_name
+        field_name = semantics.field_name
+
+        if context.is_unique_value_used(table_name, field_name, value):
+            # Pick an unused ID
+            ids = context.generated_ids.get(ref_table, [])
+            unused = [i for i in ids if not context.is_unique_value_used(table_name, field_name, i)]
+            if unused:
+                value = context.random().choice(unused)
+            else:
+                # No unused IDs — return the duplicate; row-level check will skip it
+                return value
+
+        return value
+
     def generate(self, semantics: FieldSemantics, context: GenerationContext) -> Any:
         fk_ref = semantics.foreign_key_ref
         if not fk_ref:
@@ -159,7 +191,7 @@ class ForeignKeyGenerator(BaseGenerator):
                 )
                 if value is None and not semantics.is_nullable:
                     return self._null_or_placeholder(semantics, context)
-                return value
+                return self._enforce_unique_fk(value, semantics, context, ref_table)
 
         # Check for foreign key filters (e.g., exclude deleted labels)
         fk_filters = context.config.get("foreign_key_filters", {})
@@ -189,7 +221,7 @@ class ForeignKeyGenerator(BaseGenerator):
             )
             if value is None and not semantics.is_nullable:
                 return self._null_or_placeholder(semantics, context)
-            return value
+            return self._enforce_unique_fk(value, semantics, context, ref_table)
 
         # Apply FK filter without assignment constraints
         if field_filter:
@@ -204,7 +236,7 @@ class ForeignKeyGenerator(BaseGenerator):
             )
             if value is None and not semantics.is_nullable:
                 return self._null_or_placeholder(semantics, context)
-            return value
+            return self._enforce_unique_fk(value, semantics, context, ref_table)
 
         value = context.get_foreign_key_value(
             ref_table,
@@ -213,7 +245,7 @@ class ForeignKeyGenerator(BaseGenerator):
         )
         if value is None and not semantics.is_nullable:
             return self._null_or_placeholder(semantics, context)
-        return value
+        return self._enforce_unique_fk(value, semantics, context, ref_table)
 
 
 @generator(SemanticType.AUDIT_ID, priority=80)
@@ -275,6 +307,13 @@ class GenericStringGenerator(BaseGenerator):
             return context.get_distribution_value(
                 semantics.table_name, semantics.field_name,
                 default=default_distribution
+            )
+
+        # Check config enums (master list of valid values)
+        config_enum_values = context.get_enum_values(table_name, field_name)
+        if config_enum_values:
+            return context.get_distribution_value(
+                table_name, field_name,
             )
 
         # Custom status ID - respect schema nullability
