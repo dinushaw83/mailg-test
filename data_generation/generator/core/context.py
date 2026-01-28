@@ -68,6 +68,22 @@ class GenerationContext:
     # Format: {"table.field": set(used_values)}
     _unique_values: dict[str, set] = field(default_factory=dict)
 
+    # Existing records loaded from database (full row data)
+    # Format: {table_name: [row_dict, ...]}
+    existing_records: dict[str, list[dict]] = field(default_factory=dict)
+
+    # Cached field distributions computed from existing_records
+    # Format: {"table.field": {value: count}}
+    _existing_distributions: dict[str, dict[Any, int]] = field(default_factory=dict)
+
+    # Cached assignment counts from existing records
+    # Format: {"table.field": {entity_id: count}}
+    _existing_assignment_counts: dict[str, dict[Any, int]] = field(default_factory=dict)
+
+    # Existing composite unique constraint tuples
+    # Format: {"table.constraint_key": set(tuple(values))}
+    _existing_composite_uniques: dict[str, set[tuple]] = field(default_factory=dict)
+
     # Track field group null decisions for current row
     # Format: {"group_name": is_null (bool)}
     _field_group_nulls: dict[str, bool] = field(default_factory=dict)
@@ -126,39 +142,71 @@ class GenerationContext:
         default: list[tuple[str, float]] | None = None,
     ) -> str:
         """
-        Get a value based on configured distribution.
+        Get a value based on configured distribution, using enums as the master list.
+
+        Logic:
+        1. Look up enums.<category>.<field_name> — master list of valid values
+        2. Look up distributions.<category>.<field_name> — optional weights
+        3. If enums AND distribution: use distribution weights, distribute remainder
+           equally among enum values not in the distribution
+        4. If enums but NO distribution: equal weight across all enum values
+        5. If NO enums but distribution: use distribution as-is
+        6. If neither: fall back to default parameter, or raise ValueError
 
         Args:
-            category: Configuration category (e.g., "tickets").
+            category: Configuration category (e.g., "emails").
             field_name: Field name (e.g., "status").
-            default: Default distribution as [(value, weight), ...] (deprecated, use config).
+            default: Default distribution as [(value, weight), ...].
 
         Returns:
             Randomly selected value based on distribution.
 
         Raises:
-            ValueError: If distribution not found in config and no default provided.
+            ValueError: If no enums, no distribution, and no default provided.
         """
-        # Try to get from config first (preferred)
-        distributions = self.config.get("distributions", {})
-        category_dist = distributions.get(category, {})
-        field_dist = category_dist.get(field_name)
+        # Look up enums and distributions from config
+        enum_values = self.config.get("enums", {}).get(category, {}).get(field_name)
+        field_dist = self.config.get("distributions", {}).get(category, {}).get(field_name)
+
+        if enum_values and field_dist:
+            # Enums + distribution: use distribution weights, spread remainder to unlisted enums
+            values = []
+            weights = []
+            dist_total = sum(field_dist.values())
+            unlisted = [v for v in enum_values if v not in field_dist]
+
+            for v, w in field_dist.items():
+                values.append(v)
+                weights.append(w)
+
+            if unlisted and dist_total < 100:
+                remainder = 100 - dist_total
+                per_unlisted = remainder / len(unlisted)
+                for v in unlisted:
+                    values.append(v)
+                    weights.append(per_unlisted)
+
+            return self._random.choices(values, weights=weights)[0]
+
+        if enum_values:
+            # Enums only: equal weight
+            return self._random.choice(enum_values)
 
         if field_dist:
+            # Distribution only: use as-is
             values = list(field_dist.keys())
             weights = list(field_dist.values())
             return self._random.choices(values, weights=weights)[0]
 
-        # Fallback to default if provided (for backward compatibility)
+        # Fallback to default if provided
         if default:
             values = [v for v, _ in default]
             weights = [w for _, w in default]
             return self._random.choices(values, weights=weights)[0]
 
-        # No config and no default - raise error
         raise ValueError(
-            f"Distribution not found for {category}.{field_name} in config. "
-            f"Please add it to the distributions section of your config file."
+            f"No enums, distribution, or default for {category}.{field_name}. "
+            f"Add it to the enums or distributions section of your config."
         )
 
     def get_enum_values(
@@ -288,13 +336,16 @@ class GenerationContext:
             return None
 
         # Calculate max assignments per entity
-        total_rows = self.table_row_counts.get(table_name, 100)
+        # Include existing records when calculating total for percentage
+        existing_count = self.get_existing_record_count(table_name)
+        new_rows = self.table_row_counts.get(table_name, 100)
+        total_rows = existing_count + new_rows
         max_assignments = max(1, int(total_rows * max_percentage / 100))
 
-        # Filter out entities that have reached their cap
+        # Filter out entities that have reached their cap (considering existing + new)
         available_ids = [
             id_val for id_val in ids
-            if self.get_assignment_count(table_name, field_name, id_val) < max_assignments
+            if self.get_total_assignment_count(table_name, field_name, id_val) < max_assignments
         ]
 
         if not available_ids:
@@ -394,3 +445,260 @@ class GenerationContext:
         if key not in self._unique_values:
             self._unique_values[key] = set()
         self._unique_values[key].add(value)
+
+    def get_existing_composite_uniques(self, table_name: str, constraint_columns: list[str]) -> set[tuple]:
+        """Get existing composite unique tuples for a constraint."""
+        key = f"{table_name}.{'_'.join(sorted(constraint_columns))}"
+        return self._existing_composite_uniques.get(key, set())
+
+    def _populate_existing_unique_values(
+        self, table_name: str, records: list[dict], table_schema: dict[str, Any]
+    ) -> None:
+        """
+        Populate unique value tracking from existing records.
+
+        Reads single-column unique fields and composite unique constraints
+        from the schema and registers all existing values so that newly
+        generated records won't collide.
+
+        Args:
+            table_name: Name of the table.
+            records: Existing records for this table.
+            table_schema: Schema definition for this table.
+        """
+        properties = table_schema.get("properties", {})
+
+        # Single-column unique fields
+        for field_name, field_def in properties.items():
+            if field_def.get("unique", False):
+                for record in records:
+                    value = record.get(field_name)
+                    if value is not None:
+                        self.register_unique_value(table_name, field_name, value)
+
+        # Composite unique constraints
+        unique_constraints = table_schema.get("uniqueConstraints", [])
+        for constraint in unique_constraints:
+            key = f"{table_name}.{'_'.join(sorted(constraint))}"
+            if key not in self._existing_composite_uniques:
+                self._existing_composite_uniques[key] = set()
+            for record in records:
+                combo = tuple(record.get(f) for f in constraint)
+                self._existing_composite_uniques[key].add(combo)
+
+    def load_existing_records(self, table_data: dict[str, list[dict]], schema: dict[str, Any] | None = None) -> None:
+        """
+        Load existing records from database and register IDs with attributes.
+
+        This method:
+        1. Stores the full record data for distribution analysis
+        2. Registers all IDs for FK resolution
+        3. Registers IDs with their attribute values for contextual FKs
+        4. Pre-computes assignment counts for constraint checking
+
+        Args:
+            table_data: Dict mapping table names to list of row dicts.
+        """
+        self.existing_records = table_data
+
+        # Get attribute config from config
+        attr_config = self.config.get("id_registration_attributes", {})
+        derived_config = self.config.get("derived_id_attributes", {})
+
+        # Build lookup tables for derived attribute resolution
+        # Format: {table_name: {id: record}}
+        table_by_id: dict[str, dict[Any, dict]] = {}
+        for tbl_name, records in table_data.items():
+            table_by_id[tbl_name] = {r.get("id"): r for r in records if r.get("id") is not None}
+
+        for table_name, records in table_data.items():
+            if not records:
+                continue
+
+            for record in records:
+                id_value = record.get("id")
+                if id_value is None:
+                    continue
+
+                # Get direct attributes to register for this table
+                table_attrs = attr_config.get(table_name, [])
+                attrs = {attr: record.get(attr) for attr in table_attrs if attr in record}
+
+                # Compute derived attributes for this table
+                derived_attrs = derived_config.get(table_name, {})
+                for attr_name, spec in derived_attrs.items():
+                    via_field = spec.get("via")
+                    from_table = spec.get("from_table")
+                    source_field = spec.get("source_field")
+
+                    if not all([via_field, from_table, source_field]):
+                        continue
+
+                    # Get the FK value that links to the other table
+                    fk_value = record.get(via_field)
+                    if fk_value is None:
+                        continue
+
+                    # Look up the referenced record
+                    ref_record = table_by_id.get(from_table, {}).get(fk_value)
+                    if ref_record:
+                        derived_value = ref_record.get(source_field)
+                        if derived_value is not None:
+                            attrs[attr_name] = derived_value
+
+                # Register the ID with all attributes (direct + derived)
+                self.register_id(table_name, id_value, **attrs)
+
+            # Update start_ids to avoid conflicts
+            int_ids = [r.get("id") for r in records if isinstance(r.get("id"), int)]
+            if int_ids:
+                max_id = max(int_ids)
+                current_start = self.start_ids.get(table_name, self.default_start_id)
+                if max_id >= current_start:
+                    self.start_ids[table_name] = max_id + 1
+
+        # Pre-compute assignment counts from existing data
+        self._compute_existing_assignment_counts()
+
+        # Populate unique value tracking from existing records
+        if schema:
+            for table_name, records in table_data.items():
+                if records and table_name in schema:
+                    self._populate_existing_unique_values(table_name, records, schema[table_name])
+
+    def _compute_existing_assignment_counts(self) -> None:
+        """
+        Pre-compute assignment counts from existing records.
+
+        This analyzes FK fields in existing data to determine how many times
+        each entity is referenced, for use in constraint checking.
+        """
+        constraints = self.config.get("assignment_constraints", {})
+
+        for table_name, field_constraints in constraints.items():
+            records = self.existing_records.get(table_name, [])
+            if not records:
+                continue
+
+            for field_name in field_constraints.keys():
+                key = f"{table_name}.{field_name}"
+                self._existing_assignment_counts[key] = {}
+
+                for record in records:
+                    entity_id = record.get(field_name)
+                    if entity_id is not None:
+                        self._existing_assignment_counts[key][entity_id] = \
+                            self._existing_assignment_counts[key].get(entity_id, 0) + 1
+
+    def get_existing_assignment_count(self, table_name: str, field_name: str, entity_id: Any) -> int:
+        """Get assignment count from existing records for an entity."""
+        key = f"{table_name}.{field_name}"
+        return self._existing_assignment_counts.get(key, {}).get(entity_id, 0)
+
+    def get_total_assignment_count(self, table_name: str, field_name: str, entity_id: Any) -> int:
+        """Get total assignment count (existing + newly generated) for an entity."""
+        existing = self.get_existing_assignment_count(table_name, field_name, entity_id)
+        generated = self.get_assignment_count(table_name, field_name, entity_id)
+        return existing + generated
+
+    def get_existing_field_distribution(self, table_name: str, field_name: str) -> dict[Any, int]:
+        """
+        Get the distribution of values for a field in existing records.
+
+        Args:
+            table_name: Table to analyze.
+            field_name: Field to get distribution for.
+
+        Returns:
+            Dict mapping field values to their counts.
+        """
+        key = f"{table_name}.{field_name}"
+
+        # Return cached if available
+        if key in self._existing_distributions:
+            return self._existing_distributions[key]
+
+        # Compute distribution from existing records
+        records = self.existing_records.get(table_name, [])
+        distribution: dict[Any, int] = {}
+
+        for record in records:
+            value = record.get(field_name)
+            if value is not None:
+                distribution[value] = distribution.get(value, 0) + 1
+
+        # Cache for future use
+        self._existing_distributions[key] = distribution
+        return distribution
+
+    def get_existing_record_count(self, table_name: str) -> int:
+        """Get the count of existing records for a table."""
+        return len(self.existing_records.get(table_name, []))
+
+    def get_distribution_value_with_existing(
+        self,
+        category: str,
+        field_name: str,
+        maintain_existing_ratio: bool = False,
+        default: list[tuple[str, float]] | None = None,
+    ) -> str:
+        """
+        Get a value based on distribution, optionally accounting for existing data.
+
+        When maintain_existing_ratio is True, adjusts the configured distribution
+        to maintain the overall ratio from existing data when combined with new data.
+
+        Args:
+            category: Configuration category (e.g., "tickets").
+            field_name: Field name (e.g., "status").
+            maintain_existing_ratio: If True, adjust weights to maintain existing ratio.
+            default: Default distribution as [(value, weight), ...].
+
+        Returns:
+            Randomly selected value based on distribution.
+        """
+        # Get configured distribution
+        distributions = self.config.get("distributions", {})
+        category_dist = distributions.get(category, {})
+        field_dist = category_dist.get(field_name, {})
+
+        if not field_dist and default:
+            field_dist = {v: w for v, w in default}
+
+        if not field_dist:
+            raise ValueError(
+                f"Distribution not found for {category}.{field_name} in config."
+            )
+
+        # If not maintaining existing ratio, use configured distribution
+        if not maintain_existing_ratio:
+            values = list(field_dist.keys())
+            weights = list(field_dist.values())
+            return self._random.choices(values, weights=weights)[0]
+
+        # Get existing distribution
+        existing_dist = self.get_existing_field_distribution(category, field_name)
+
+        if not existing_dist:
+            # No existing data, use configured distribution
+            values = list(field_dist.keys())
+            weights = list(field_dist.values())
+            return self._random.choices(values, weights=weights)[0]
+
+        # Calculate adjusted weights to maintain existing ratio
+        existing_total = sum(existing_dist.values())
+        new_rows = self.table_row_counts.get(category, 100)
+        total_rows = existing_total + new_rows
+
+        # Target distribution based on existing ratios
+        adjusted_weights = {}
+        for value in field_dist.keys():
+            existing_count = existing_dist.get(value, 0)
+            target_ratio = existing_count / existing_total if existing_total > 0 else 0
+            target_count = int(total_rows * target_ratio)
+            needed = max(0, target_count - existing_count)
+            adjusted_weights[value] = max(1, needed)  # At least weight of 1
+
+        values = list(adjusted_weights.keys())
+        weights = list(adjusted_weights.values())
+        return self._random.choices(values, weights=weights)[0]

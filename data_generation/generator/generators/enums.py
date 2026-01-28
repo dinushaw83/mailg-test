@@ -89,7 +89,15 @@ class StatusGenerator(BaseGenerator):
                 ]
             )
         else:
-            return context.random().choice(["open", "closed", "pending"])
+            # Use config distribution if available, otherwise generic fallback
+            return context.get_distribution_value(
+                semantics.table_name, semantics.field_name,
+                default=[
+                    ("open", 0.40),
+                    ("closed", 0.40),
+                    ("pending", 0.20),
+                ]
+            )
 
 
 @generator(SemanticType.APPROVAL_STATUS, priority=80)

@@ -188,6 +188,22 @@ class DataGenerator:
                     if max_id >= current_start:
                         self.context.start_ids[table_name] = max_id + 1
 
+    def load_existing_data(self, table_data: dict[str, list[dict]]) -> None:
+        """
+        Load full existing data from database for FK resolution and distribution analysis.
+
+        This is the preferred method for loading existing data as it:
+        1. Registers all IDs for FK resolution
+        2. Registers IDs with their attribute values for contextual FKs
+        3. Pre-computes assignment counts for constraint checking
+        4. Stores full records for distribution analysis
+
+        Args:
+            table_data: Dict mapping table names to list of row dicts.
+                       e.g., {"users": [{"id": 1, "role": "admin", ...}, ...]}
+        """
+        self.context.load_existing_records(table_data, schema=self.tables)
+
     def generate_all(
         self,
         row_counts: dict[str, int] | None = None,
@@ -1504,6 +1520,12 @@ class DataGenerator:
             constraint_key = "_".join(sorted(constraint))
             used_combinations[constraint_key] = set()
 
+        # Pre-populate from existing DB records (loaded via load_existing_data)
+        for constraint in unique_constraints:
+            constraint_key = "_".join(sorted(constraint))
+            existing = self.context.get_existing_composite_uniques(table_name, constraint)
+            used_combinations[constraint_key].update(existing)
+
         # Pre-populate unique constraints with seed data to avoid duplicates
         if self.use_seed:
             seed_records = self._get_seed_data(table_name)
@@ -1594,15 +1616,29 @@ class DataGenerator:
                 # Register value by semantic type for context-aware generators
                 self.context.register_semantic_type_value(semantics.semantic_type, value)
 
-            # Check unique constraints after all fields are generated
+            # Check single-column unique FK fields after all fields are generated.
+            # Non-FK unique fields (e.g., email) are handled by their own generators,
+            # so we only need row-level enforcement for unique foreign keys.
             constraint_violated = False
-            for constraint in unique_constraints:
-                constraint_key = "_".join(sorted(constraint))
-                combo = tuple(record.get(f) for f in constraint)
-                if combo in used_combinations.get(constraint_key, set()):
-                    constraint_violated = True
-                    break
-                used_combinations[constraint_key].add(combo)
+            unique_fk_values_to_register = []
+            for field_name, sem in field_semantics.items():
+                if sem.is_unique and sem.is_foreign_key and not sem.is_primary_key:
+                    value = record.get(field_name)
+                    if value is not None and self.context.is_unique_value_used(table_name, field_name, value):
+                        constraint_violated = True
+                        break
+                    if value is not None:
+                        unique_fk_values_to_register.append((field_name, value))
+
+            # Check composite unique constraints after all fields are generated
+            if not constraint_violated:
+                for constraint in unique_constraints:
+                    constraint_key = "_".join(sorted(constraint))
+                    combo = tuple(record.get(f) for f in constraint)
+                    if combo in used_combinations.get(constraint_key, set()):
+                        constraint_violated = True
+                        break
+                    used_combinations[constraint_key].add(combo)
 
             # Check email logical key (subject, sender_id, thread_id, status)
             if table_name == "emails" and "_email_logical_key" in used_combinations:
@@ -1630,6 +1666,10 @@ class DataGenerator:
                 # Composite PK: register each component field for FK resolution
                 for field_name in composite_pk_fields:
                     self.context.register_id(table_name, record[field_name])
+
+            # Register single-column unique FK values now that the row is accepted
+            for field_name, value in unique_fk_values_to_register:
+                self.context.register_unique_value(table_name, field_name, value)
 
             # Apply consistency rules
             record = self.consistency.apply(record, table_name)

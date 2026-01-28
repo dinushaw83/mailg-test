@@ -437,6 +437,19 @@ def get_db_schema(conn_string: str) -> dict:
                 if col_name in tables[table_name]["properties"]:
                     tables[table_name]["properties"][col_name]["unique"] = True
 
+    # Also mark single-column unique indexes (SQLAlchemy Column(unique=True) creates
+    # a unique index rather than a named UNIQUE constraint, so it may not appear in
+    # information_schema.table_constraints)
+    for table_name, indexes in table_indexes.items():
+        if table_name not in tables:
+            continue
+        for idx in indexes:
+            if idx.get("unique") and len(idx.get("columns", [])) == 1:
+                col_name = idx["columns"][0]
+                prop = tables[table_name]["properties"].get(col_name)
+                if prop and not prop.get("primaryKey"):
+                    prop["unique"] = True
+
     # Add table-level metadata
     for table_name in tables:
         # Add table description

@@ -20,6 +20,8 @@ from .generator.output import (
     PostgresWriter,
 )
 from .generator.output.base import FileExistsError as OutputFileExistsError
+from .generator.db_reader import DatabaseReader
+from .generator.json_file_reader import JsonFileReader
 
 
 def parse_key_value_spec(spec: str, value_name: str = "value") -> tuple[str, int]:
@@ -97,6 +99,18 @@ Examples:
 
   # Append to existing SQLite database (atomic write)
   python -m data_generation --use-db /path/to/existing.db
+
+  # Use existing data from PostgreSQL for FK resolution (any output format)
+  python -m data_generation --existing-data-db "postgresql://user:pass@localhost/db" --format json
+  python -m data_generation --existing-data-db "postgresql://user:pass@localhost/db" --rows users=0 --rows emails=100
+
+  # Use existing data from JSON files for FK resolution
+  python -m data_generation --existing-data-dir /path/to/json/data --format json
+  python -m data_generation --existing-data-dir ./exported_data --rows users=0 --rows emails=100
+
+  # Include existing data in output (existing + newly generated)
+  python -m data_generation --existing-data-dir ./data --append --rows emails=50
+  python -m data_generation --existing-data-db "postgresql://..." --append --format json
 
   # Custom output file (single table only)
   python -m data_generation --table users --out-file /path/to/users.json
@@ -212,6 +226,28 @@ Examples:
     )
 
     parser.add_argument(
+        "--existing-data-db",
+        type=str,
+        help=(
+            "PostgreSQL connection string for reading existing data. "
+            "When specified, existing data from this database is used for FK resolution "
+            "regardless of output format. Tables with 0 requested rows will use existing "
+            "data from this database."
+        ),
+    )
+
+    parser.add_argument(
+        "--existing-data-dir",
+        type=str,
+        help=(
+            "Directory path containing JSON files with existing data. "
+            "Each file should be named after its table (e.g., users.json) or use "
+            "all_tables.json for combined data. Used for FK resolution as an "
+            "alternative to --existing-data-db."
+        ),
+    )
+
+    parser.add_argument(
         "--single-file",
         action="store_true",
         help="Output all tables to a single file (json/sqlite only).",
@@ -257,6 +293,15 @@ Examples:
         "--no-seed",
         action="store_true",
         help="Don't inject seed data (users, organizations, groups from config).",
+    )
+
+    parser.add_argument(
+        "--append",
+        action="store_true",
+        help=(
+            "Include existing data in output (existing records first, then new). "
+            "Requires --existing-data-db or --existing-data-dir."
+        ),
     )
 
     args = parser.parse_args(argv)
@@ -356,43 +401,83 @@ Examples:
             use_seed=not args.no_seed,
         )
 
-        # For postgres format, query existing data from database (unless --overwrite)
+        # Query existing data for FK resolution
+        # This works with any output format when --existing-data-db or --existing-data-dir is provided,
+        # or with postgres format when --use-db is provided
         existing_counts = None
         postgres_writer = None
-        if args.format == "postgres" and args.use_db and not args.overwrite:
-            # Create writer early to query existing data
-            postgres_writer = PostgresWriter(
-                output_dir=Path(args.output),
-                prefix=args.prefix,
-                overwrite=args.overwrite,
+        data_reader = None
+        full_table_data = None  # Store for --append option
+
+        # Validate mutually exclusive options
+        if args.existing_data_db and args.existing_data_dir:
+            print("Error: --existing-data-db and --existing-data-dir are mutually exclusive", file=sys.stderr)
+            return 1
+
+        # Validate --append requires existing data source
+        if args.append and not args.existing_data_db and not args.existing_data_dir:
+            print("Error: --append requires --existing-data-db or --existing-data-dir", file=sys.stderr)
+            return 1
+
+        # Note: --existing-data-dir can be the same as --output directory.
+        # This is safe because all data is loaded into memory before any files are written.
+
+        # Determine the database URL for reading existing data
+        existing_data_db_url = args.existing_data_db
+        if not existing_data_db_url and args.format == "postgres" and args.use_db and not args.overwrite:
+            # Fall back to --use-db for postgres format (backward compatibility)
+            existing_data_db_url = args.use_db
+
+        # Load existing data from database or directory
+        if existing_data_db_url:
+            # Use DatabaseReader for querying existing data from PostgreSQL
+            data_reader = DatabaseReader(
+                connection_string=existing_data_db_url,
                 schema=generator.schema,
-                connection_string=args.use_db,
             )
 
-            # Query existing IDs for FK resolution
-            existing_ids = postgres_writer.get_existing_ids()
-            generator.register_existing_ids(existing_ids)
+            # Load full table data for FK resolution and distribution analysis
+            full_table_data = data_reader.get_full_table_data()
+            generator.load_existing_data(full_table_data)
 
-            # Query existing IDs with attributes for contextual FK constraints
-            # e.g., boards need project_id attribute for ticket.board_id lookup
-            attr_config = generator.config.get("id_registration_attributes", {})
-            if attr_config:
-                existing_data_with_attrs = postgres_writer.get_existing_ids_with_attrs(attr_config)
-                generator.register_existing_ids_with_attrs(existing_data_with_attrs)
-
-            # Query derived attributes via JOINs for tables that don't have direct columns
-            # e.g., sprints.project_id is derived via boards table
-            derived_config = generator.config.get("derived_id_attributes", {})
-            if derived_config:
-                derived_data = postgres_writer.get_derived_ids_with_attrs(derived_config)
-                generator.register_existing_ids_with_attrs(derived_data)
-
-            # Use existing ID counts for row calculation
-            existing_counts = {table: len(ids) for table, ids in existing_ids.items()}
+            # Use existing counts for row calculation
+            existing_counts = {table: len(records) for table, records in full_table_data.items()}
             print(f"Existing row counts in database:")
             for table, count in sorted(existing_counts.items()):
                 if count > 0:
                     print(f"  {table}: {count}")
+
+            # Close the reader after querying
+            data_reader.close()
+
+        elif args.existing_data_dir:
+            # Use JsonFileReader for loading existing data from JSON files
+            try:
+                data_reader = JsonFileReader(
+                    directory_path=args.existing_data_dir,
+                    schema=generator.schema,
+                )
+
+                # Load full table data
+                full_table_data = data_reader.get_full_table_data()
+                generator.load_existing_data(full_table_data)
+
+                # Use existing counts for row calculation
+                existing_counts = {table: len(records) for table, records in full_table_data.items()}
+                print(f"Existing row counts from JSON files:")
+                for table, count in sorted(existing_counts.items()):
+                    if count > 0:
+                        print(f"  {table}: {count}")
+
+                # Close the reader after loading
+                data_reader.close()
+
+            except FileNotFoundError as e:
+                print(f"Error: {e}", file=sys.stderr)
+                return 1
+            except ValueError as e:
+                print(f"Error: {e}", file=sys.stderr)
+                return 1
 
         if args.table:
             num_rows = row_counts.get(args.table, default_rows or 100)
@@ -403,6 +488,18 @@ Examples:
             )
         else:
             data = generator.generate_all(row_counts, default_rows, existing_counts)
+
+        # Prepend existing data if --append is specified
+        if args.append and full_table_data:
+            print("Appending new data to existing data...")
+            combined_data = {}
+            # Only include tables that were generated (respects --table option)
+            for table_name in data.keys():
+                existing_records = full_table_data.get(table_name, [])
+                new_records = data.get(table_name, [])
+                # Existing records first, then new records appended
+                combined_data[table_name] = existing_records + new_records
+            data = combined_data
 
         # Output to stdout
         if args.stdout:

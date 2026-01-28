@@ -773,6 +773,7 @@ enums:
   emails:
     status: [draft, queued, sent, received, archived, cancelled]
     category: [primary, promotions, social, updates, forums]
+    folder: [inbox, sent, drafts, trash, spam]
 
   email_recipients:
     recipient_type: [to, cc, bcc]
