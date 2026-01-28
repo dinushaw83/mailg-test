@@ -62,6 +62,8 @@ export const useDraftManagement = ({
   const isFirstSaveRef = useRef(true); // Start as true for new drafts
   const backendDraftIdRef = useRef(null);
   const lastApiContentRef = useRef(null); // Track last content sent to API
+  const isSavingRef = useRef(false); // Prevent concurrent saves (race condition)
+  const localDraftIdRef = useRef(null); // Track local draft ID to avoid stale closure issues
   // Filter valid recipients
   const getValidRecipients = (recipients) => {
     return recipients.filter((recipient) => {
@@ -131,13 +133,17 @@ export const useDraftManagement = ({
       if (currentDraftId && isUUID(currentDraftId.toString())) {
         // Existing draft - fetch from backend
         backendDraftIdRef.current = currentDraftId.toString();
+        localDraftIdRef.current = currentDraftId.toString(); // Track in local ref too
         isFirstSaveRef.current = false;
+        isSavingRef.current = false; // Reset saving lock
         lastApiContentRef.current = null; // Reset to allow fetching fresh content
         setHasPutUpdateCompleted(true); // Existing draft already has PUT update completed
       } else {
         // New draft - reset everything
         backendDraftIdRef.current = null;
+        localDraftIdRef.current = null; // Reset local draft ID
         isFirstSaveRef.current = true;
+        isSavingRef.current = false; // Reset saving lock
         lastApiContentRef.current = null;
         setHasPutUpdateCompleted(false); // New draft hasn't had PUT update yet
       }
@@ -150,13 +156,17 @@ export const useDraftManagement = ({
     if (!currentDraftId) {
       // No draft ID - reset everything to treat as new draft
       backendDraftIdRef.current = null;
+      localDraftIdRef.current = null; // Reset local draft ID
       isFirstSaveRef.current = true;
+      isSavingRef.current = false; // Reset saving lock
       lastApiContentRef.current = null;
       setHasPutUpdateCompleted(false); // New draft hasn't had PUT update yet
     } else if (currentDraftId && isUUID(currentDraftId.toString())) {
       // Existing draft - set refs
       backendDraftIdRef.current = currentDraftId.toString();
+      localDraftIdRef.current = currentDraftId.toString(); // Track in local ref too
       isFirstSaveRef.current = false;
+      isSavingRef.current = false; // Reset saving lock
       lastApiContentRef.current = null;
       setHasPutUpdateCompleted(true); // Existing draft already has PUT update completed
     }
@@ -165,10 +175,23 @@ export const useDraftManagement = ({
   // Save draft to backend API using Redux thunks
   const saveDraftToBackend = useCallback(
     async (isFirstSave) => {
+      // Prevent concurrent saves - if already saving, skip this call
+      // This prevents race condition where multiple POSTs create duplicate drafts
+      if (isSavingRef.current) {
+        return;
+      }
+
+      // Set saving flag immediately to prevent concurrent calls
+      isSavingRef.current = true;
+
       try {
         let action;
 
         if (isFirstSave) {
+          // IMPORTANT: Set isFirstSaveRef to false BEFORE the API call to prevent
+          // race conditions where another save triggers while this one is in flight
+          isFirstSaveRef.current = false;
+
           // Determine if this is a reply from replyType (if isReply not explicitly set)
           const isReplyMode =
             isReply || (replyType && (replyType === "reply" || replyType === "replyAll") && parentEmail?.id);
@@ -255,15 +278,20 @@ export const useDraftManagement = ({
               // Update Redux drafts array with POST response
               const state = store.getState();
               const currentDrafts = state.mail.drafts || [];
+              // Use localDraftIdRef to get current local draft ID (avoids stale closure issue)
+              const currentLocalDraftId = localDraftIdRef.current;
               const filteredDrafts = currentDrafts.filter(
                 (email) =>
-                  email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
+                  email.id?.toString() !== currentLocalDraftId?.toString() && 
+                  email.id?.toString() !== draftId?.toString() && 
+                  email.id?.toString() !== backendDraft.id?.toString()
               );
               const updatedDrafts = [feDraftFallback, ...filteredDrafts];
               dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
 
               // Update draft ID to backend UUID
               setDraftId(newBackendId);
+              localDraftIdRef.current = newBackendId; // Update ref to backend ID
               backendDraftIdRef.current = newBackendId;
               isFirstSaveRef.current = false;
 
@@ -289,15 +317,20 @@ export const useDraftManagement = ({
           // Update Redux drafts array with fetched draft
           const state = store.getState();
           const currentDrafts = state.mail.drafts || [];
+          // Use localDraftIdRef to get current local draft ID (avoids stale closure issue)
+          const currentLocalDraftId = localDraftIdRef.current;
           const filteredDrafts = currentDrafts.filter(
             (email) =>
-              email.id?.toString() !== draftId?.toString() && email.id?.toString() !== fetchedDraft.id?.toString()
+              email.id?.toString() !== currentLocalDraftId?.toString() && 
+              email.id?.toString() !== draftId?.toString() && 
+              email.id?.toString() !== fetchedDraft.id?.toString()
           );
           const updatedDrafts = [feDraft, ...filteredDrafts];
           dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
 
           // Update draft ID to backend UUID
           setDraftId(newBackendId);
+          localDraftIdRef.current = newBackendId; // Update ref to backend ID
           backendDraftIdRef.current = newBackendId;
           isFirstSaveRef.current = false;
 
@@ -327,15 +360,20 @@ export const useDraftManagement = ({
             // Update Redux drafts array with POST response
             const state = store.getState();
             const currentDrafts = state.mail.drafts || [];
+            // Use localDraftIdRef to get current local draft ID (avoids stale closure issue)
+            const currentLocalDraftId = localDraftIdRef.current;
             const filteredDrafts = currentDrafts.filter(
               (email) =>
-                email.id?.toString() !== draftId?.toString() && email.id?.toString() !== backendDraft.id?.toString()
+                email.id?.toString() !== currentLocalDraftId?.toString() && 
+                email.id?.toString() !== draftId?.toString() && 
+                email.id?.toString() !== backendDraft.id?.toString()
             );
             const updatedDrafts = [feDraft, ...filteredDrafts];
             dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
 
             // Update draft ID to backend UUID
             setDraftId(newBackendId);
+            localDraftIdRef.current = newBackendId; // Update ref to backend ID
             backendDraftIdRef.current = newBackendId;
             isFirstSaveRef.current = false;
 
@@ -360,7 +398,14 @@ export const useDraftManagement = ({
         }
       } catch (error) {
         console.error("Error saving draft to backend:", error);
+        // If first save failed, reset the flag so it can be retried
+        if (!backendDraftIdRef.current) {
+          isFirstSaveRef.current = true;
+        }
         throw error;
+      } finally {
+        // Always release the saving lock
+        isSavingRef.current = false;
       }
     },
     [
@@ -477,9 +522,10 @@ export const useDraftManagement = ({
       const state = store.getState();
       const currentDrafts = state.mail.drafts || [];
 
-      // Remove existing draft if updating
-      const filteredDrafts = draftId
-        ? currentDrafts.filter((email) => email.id?.toString() !== draftId?.toString())
+      // Remove existing draft if updating (use ref to get current value, avoiding stale closure)
+      const currentLocalDraftId = localDraftIdRef.current || draftId;
+      const filteredDrafts = currentLocalDraftId
+        ? currentDrafts.filter((email) => email.id?.toString() !== currentLocalDraftId?.toString())
         : currentDrafts;
 
       // Add new/updated draft at the beginning
@@ -487,6 +533,7 @@ export const useDraftManagement = ({
       dispatch(setEmailsForCategory({ category: "drafts", emails: updatedDrafts }));
 
       setDraftId(newDraftId);
+      localDraftIdRef.current = newDraftId; // Track in ref for backend save to use
       setIsDraft(true);
 
       // Update previous content reference
