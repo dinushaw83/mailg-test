@@ -39,9 +39,6 @@ env:
   NODE_VERSION: '20'
   BACKEND_PORT: 8766
   FRONTEND_PORT: 3002
-  # Secrets referenced
-  VM_HOST: ${{ secrets.GCP_VM_HOST }}
-  VM_USER: ${{ secrets.GCP_VM_USER }}
 
 jobs:
   # ===========================================================================
@@ -290,10 +287,10 @@ jobs:
           echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
 
   # ===========================================================================
-  # Stage 3: Deploy to GCP VM
+  # Stage 3: Deploy to GCP Staging VM
   # ===========================================================================
   deploy:
-    name: 🚀 Deploy to GCP
+    name: 🚀 Deploy to Staging
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [build-backend, build-frontend]
@@ -318,12 +315,12 @@ jobs:
             exit 1
           fi
           
-          if [ -z "${{ env.VM_HOST }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
             echo "::error::GCP_VM_HOST secret is not configured"
             exit 1
           fi
           
-          if [ -z "${{ env.VM_USER }}" ]; then
+          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
             echo "::error::GCP_VM_USER secret is not configured"
             exit 1
           fi
@@ -338,7 +335,7 @@ jobs:
       - name: Configure SSH known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ env.VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
       - name: Extract image tags from build outputs
         id: images
@@ -362,12 +359,8 @@ jobs:
 
       - name: Copy deployment files
         run: |
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy'
-          # Copy deployment scripts and configs (always override)
-          scp -r deploy/gcp/* ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/
-          # Copy backend fixtures (always override)
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} 'mkdir -p ~/mailg-deploy/backend'
-          scp -r backend/fixtures ${{ env.VM_USER }}@${{ env.VM_HOST }}:~/mailg-deploy/backend/
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:~/mailg-deploy/
 
       - name: Deploy containers
         env:
@@ -386,7 +379,7 @@ jobs:
           echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
           echo "  Backend API URL: ${BACKEND_API_URL}"
           
-          ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} bash -s << EOF
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} bash -s << EOF
             set -e
             cd ~/mailg-deploy
             
@@ -505,5 +498,221 @@ jobs:
             echo "❌ Deployment failed!"
             # curl -X POST -H 'Content-type: application/json' \
             #   --data '{"text":"❌ Deployment to ${{ github.event.inputs.environment || 'staging' }} failed!"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+
+  # ===========================================================================
+  # Stage 4: Production Deployment
+  # ===========================================================================
+  deploy-production:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build-backend, build-frontend, notify]
+    environment:
+      name: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set registry owner
+        id: owner
+        run: echo "owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Validate deployment secrets
+        run: |
+          echo "🔐 Validating production deployment configuration..."
+          
+          if [ -z "${{ secrets.GCP_SSH_PRIVATE_KEY }}" ]; then
+            echo "::error::GCP_SSH_PRIVATE_KEY secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.GCP_VM_HOST }}" ]; then
+            echo "::error::GCP_VM_HOST secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "${{ secrets.GCP_VM_USER }}" ]; then
+            echo "::error::GCP_VM_USER secret is not configured"
+            exit 1
+          fi
+          
+          echo "✅ All production deployment secrets configured"
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
+      - name: Configure SSH known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.GCP_VM_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Extract image tags from build outputs
+        id: images
+        run: |
+          # docker/metadata-action with type=sha,prefix= uses short SHA (7 chars)
+          FULL_SHA="${{ github.sha }}"
+          SHORT_SHA=$(echo "$FULL_SHA" | cut -c1-7)
+          
+          # Construct image tags using the short commit SHA (matches what docker/metadata-action pushed)
+          BACKEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-backend:${SHORT_SHA}"
+          FRONTEND_IMAGE_TAG="${{ env.REGISTRY }}/${{ steps.owner.outputs.owner }}/mailg-frontend:${SHORT_SHA}"
+          
+          echo "Full commit SHA: $FULL_SHA"
+          echo "Short SHA (7 chars): $SHORT_SHA"
+          echo "Backend image: $BACKEND_IMAGE_TAG"
+          echo "Frontend image: $FRONTEND_IMAGE_TAG"
+          
+          # Set outputs
+          echo "backend_image=$BACKEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=$FRONTEND_IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Copy deployment files
+        run: |
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} 'mkdir -p ~/mailg-deploy'
+          scp -r deploy/gcp/* ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }}:~/mailg-deploy/
+
+      - name: Deploy containers to production
+        env:
+          SYSTEM_URL: ${{ vars.SYSTEM_URL }}
+        run: |
+          if [ -z "$SYSTEM_URL" ]; then
+            echo "::error::SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
+          # Set BACKEND_API_URL from SYSTEM_URL
+          BACKEND_API_URL="${SYSTEM_URL}/api"
+          
+          echo "📦 Deploying to PRODUCTION with images:"
+          echo "  Backend: ${{ steps.images.outputs.backend_image }}"
+          echo "  Frontend: ${{ steps.images.outputs.frontend_image }}"
+          echo "  Backend API URL: ${BACKEND_API_URL}"
+          
+          ssh ${{ secrets.GCP_VM_USER }}@${{ secrets.GCP_VM_HOST }} bash -s << EOF
+            set -e
+            cd ~/mailg-deploy
+            
+            echo "🔑 Logging into GHCR..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            
+            echo "📥 Pulling new images..."
+            docker pull "${{ steps.images.outputs.backend_image }}"
+            docker pull "${{ steps.images.outputs.frontend_image }}"
+            
+            echo "🔄 Updating production deployment..."
+            chmod +x deploy-from-registry.sh
+            
+            BACKEND_IMAGE="${{ steps.images.outputs.backend_image }}" \
+            FRONTEND_IMAGE="${{ steps.images.outputs.frontend_image }}" \
+            BACKEND_API_URL="${BACKEND_API_URL}" \
+            GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
+            GITHUB_ACTOR="${{ github.actor }}" \
+            ./deploy-from-registry.sh
+            
+            echo "✅ Production deployment completed"
+          EOF
+
+      - name: Production health check
+        id: health
+        run: |
+          SYSTEM_URL="${{ vars.SYSTEM_URL }}"
+          
+          if [ -z "$SYSTEM_URL" ]; then
+            echo "::error::SYSTEM_URL variable is not configured"
+            exit 1
+          fi
+          
+          echo "⏳ Waiting for production services to start..."
+          sleep 15
+          
+          # Backend health check with retries
+          echo "Checking production backend health at ${SYSTEM_URL}/api/health..."
+          for i in {1..30}; do
+            if curl -sf --max-time 5 "${SYSTEM_URL}/api/health" > /dev/null; then
+              echo "✅ Production backend is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Production backend health check failed after 30 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 5
+          done
+          
+          # Frontend health check with retries
+          echo "Checking production frontend health at ${SYSTEM_URL}..."
+          for i in {1..30}; do
+            if curl -sf --max-time 5 "${SYSTEM_URL}" > /dev/null; then
+              echo "✅ Production frontend is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Production frontend health check failed after 30 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/30 - waiting..."
+            sleep 5
+          done
+          
+          echo "health_status=success" >> $GITHUB_OUTPUT
+
+      - name: Production deployment summary
+        if: always()
+        run: |
+          STATUS="✅ Success"
+          [ "${{ steps.health.outputs.health_status }}" != "success" ] && STATUS="❌ Failed"
+          
+          SYSTEM_URL="${{ vars.SYSTEM_URL }}"
+          
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Production Deployment Summary
+          
+          | Property | Value |
+          |----------|-------|
+          | **Status** | ${STATUS} |
+          | **Environment** | production |
+          | **Branch** | \`${{ github.ref_name }}\` |
+          | **Commit** | \`${{ github.sha }}\` |
+          | **Deployed by** | @${{ github.actor }} |
+          
+          ### 📦 Docker Images
+          - Backend: \`${{ steps.images.outputs.backend_image }}\`
+          - Frontend: \`${{ steps.images.outputs.frontend_image }}\`
+          
+          ### 🔗 Access URLs
+          - **Application**: ${SYSTEM_URL}
+          - **API**: ${SYSTEM_URL}/api
+          - **Health Check**: ${SYSTEM_URL}/api/health
+          EOF
+
+  # ===========================================================================
+  # Production Notification (Optional)
+  # ===========================================================================
+  notify-production:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [deploy-production]
+    if: always()
+    
+    steps:
+      - name: Send production notification
+        run: |
+          if [ "${{ needs.deploy-production.result }}" == "success" ]; then
+            echo "🎉 Production deployment successful!"
+            # Add Slack/Discord/Email notification here if needed
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"✅ Production deployment succeeded!"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            echo "❌ Production deployment failed!"
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"❌ Production deployment failed!"}' \
             #   ${{ secrets.SLACK_WEBHOOK_URL }}
           fi
