@@ -17,7 +17,7 @@ from app.auth.dependencies import get_current_user, auth
 from app.api.v1.endpoints.users import format_user_response
 from app.schemas.user import UserResponse
 from app.schemas.user_settings import UserSettingsResponse, UserWithSettingsResponse
-from app.api.v1.endpoints.user_settings import get_or_create_all_settings
+from app.api.v1.endpoints.user_settings import get_all_settings
 from app.db.run_router import ensure_run_database
 from app.db.session import get_db_session
 from app.db.registry import touch_run
@@ -153,7 +153,7 @@ def create_token(
     # Fetch or create user settings from the run database
     run_db = get_db_session(run_id)
     try:
-        settings = get_or_create_all_settings(uuid.UUID(user_id), run_db)
+        settings = get_all_settings(uuid.UUID(user_id), run_db)
         settings_response = UserSettingsResponse(
             general=settings["general"],
             advanced=settings["advanced"],
@@ -191,7 +191,7 @@ def get_current_user_info(
     user_data = format_user_response(user, db)
     
     # Get or create settings for the user
-    settings = get_or_create_all_settings(user.id, db)
+    settings = get_all_settings(user.id, db)
     settings_response = UserSettingsResponse(
         general=settings["general"],
         advanced=settings["advanced"],

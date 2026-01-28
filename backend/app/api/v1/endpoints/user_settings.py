@@ -7,6 +7,8 @@ including General and Advanced tabs, plus signatures.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
+from typing import Union
+import uuid as uuid_lib
 import logging
 
 from app.db.session import get_db
@@ -24,6 +26,7 @@ from app.schemas.user_settings import (
     SignatureCreate,
     SignatureUpdate,
     SignatureResponse,
+    DefaultTextStyleResponse,
 )
 from app.auth.rbac import authorized
 from app.auth.dependencies import auth
@@ -33,8 +36,137 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def get_or_create_general_settings(user_id: UUID, db: Session) -> GeneralSettings:
-    """Get or create general settings for a user.
+# =============================================================================
+# Default Settings Builders (no DB persistence)
+# =============================================================================
+
+def _build_default_general_settings(user_id: UUID) -> GeneralSettingsResponse:
+    """Build default general settings response without DB persistence.
+    
+    Args:
+        user_id: User ID.
+        
+    Returns:
+        GeneralSettingsResponse with default values.
+    """
+    # Generate deterministic UUIDs based on user_id for consistency
+    fake_id = uuid_lib.uuid5(uuid_lib.NAMESPACE_DNS, f"general-{user_id}")
+    text_style_id = uuid_lib.uuid5(uuid_lib.NAMESPACE_DNS, f"textstyle-{user_id}")
+    
+    return GeneralSettingsResponse(
+        id=fake_id,
+        user_id=user_id,
+        default_text_style=DefaultTextStyleResponse(
+            id=text_style_id,
+            font="Sans Serif",
+            size="normal",
+            color="#000000",
+        ),
+        signatures=[],
+        # All other fields use schema defaults
+    )
+
+
+def _build_default_advanced_settings(user_id: UUID) -> AdvancedSettingsResponse:
+    """Build default advanced settings response without DB persistence.
+    
+    Args:
+        user_id: User ID.
+        
+    Returns:
+        AdvancedSettingsResponse with default values.
+    """
+    # Generate deterministic UUID based on user_id for consistency
+    fake_id = uuid_lib.uuid5(uuid_lib.NAMESPACE_DNS, f"advanced-{user_id}")
+    
+    return AdvancedSettingsResponse(
+        id=fake_id,
+        user_id=user_id,
+        # All other fields use schema defaults
+    )
+
+
+# =============================================================================
+# Read-Only Settings Getters (return defaults if not found)
+# =============================================================================
+
+def get_general_settings(user_id: UUID, db: Session) -> Union[GeneralSettings, GeneralSettingsResponse]:
+    """Get general settings for a user, returning defaults if not found.
+    
+    This is a read-only operation that does NOT create database records.
+    
+    Args:
+        user_id: User ID.
+        db: Database session.
+        
+    Returns:
+        GeneralSettings instance or GeneralSettingsResponse with defaults.
+    """
+    settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == user_id).first()
+    if settings:
+        return settings
+    return _build_default_general_settings(user_id)
+
+
+def get_advanced_settings(user_id: UUID, db: Session) -> Union[AdvancedSettings, AdvancedSettingsResponse]:
+    """Get advanced settings for a user, returning defaults if not found.
+    
+    This is a read-only operation that does NOT create database records.
+    
+    Args:
+        user_id: User ID.
+        db: Database session.
+        
+    Returns:
+        AdvancedSettings instance or AdvancedSettingsResponse with defaults.
+    """
+    settings = db.query(AdvancedSettings).filter(AdvancedSettings.user_id == user_id).first()
+    if settings:
+        return settings
+    return _build_default_advanced_settings(user_id)
+
+
+def get_user_labels(user_id: UUID, db: Session) -> list:
+    """Get all labels for a user.
+    
+    Args:
+        user_id: User ID.
+        db: Database session.
+        
+    Returns:
+        List of Label instances.
+    """
+    return db.query(Label).filter(Label.owner_id == user_id).order_by(Label.name).all()
+
+
+def get_all_settings(user_id: UUID, db: Session) -> dict:
+    """Get all settings for a user, returning defaults if not found.
+    
+    This is a read-only operation that does NOT create database records.
+    
+    Args:
+        user_id: User ID.
+        db: Database session.
+        
+    Returns:
+        Dictionary with general, advanced settings, and labels.
+    """
+    return {
+        "general": get_general_settings(user_id, db),
+        "advanced": get_advanced_settings(user_id, db),
+        "labels": get_user_labels(user_id, db),
+    }
+
+
+# =============================================================================
+# Write Settings Functions (create if needed for updates)
+# =============================================================================
+
+def ensure_general_settings(user_id: UUID, db: Session) -> GeneralSettings:
+    """Get or create general settings for a user (use only for updates).
+    
+    This function creates database records if they don't exist.
+    Use this only when you need to persist changes.
     
     Args:
         user_id: User ID.
@@ -59,8 +191,11 @@ def get_or_create_general_settings(user_id: UUID, db: Session) -> GeneralSetting
     return settings
 
 
-def get_or_create_advanced_settings(user_id: UUID, db: Session) -> AdvancedSettings:
-    """Get or create advanced settings for a user.
+def ensure_advanced_settings(user_id: UUID, db: Session) -> AdvancedSettings:
+    """Get or create advanced settings for a user (use only for updates).
+    
+    This function creates database records if they don't exist.
+    Use this only when you need to persist changes.
     
     Args:
         user_id: User ID.
@@ -79,21 +214,11 @@ def get_or_create_advanced_settings(user_id: UUID, db: Session) -> AdvancedSetti
     return settings
 
 
-def get_user_labels(user_id: UUID, db: Session) -> list:
-    """Get all labels for a user.
+def ensure_all_settings(user_id: UUID, db: Session) -> dict:
+    """Get or create all settings for a user (use only for updates).
     
-    Args:
-        user_id: User ID.
-        db: Database session.
-        
-    Returns:
-        List of Label instances.
-    """
-    return db.query(Label).filter(Label.owner_id == user_id).order_by(Label.name).all()
-
-
-def get_or_create_all_settings(user_id: UUID, db: Session) -> dict:
-    """Get or create all settings for a user.
+    This function creates database records if they don't exist.
+    Use this only when you need to persist changes.
     
     Args:
         user_id: User ID.
@@ -103,8 +228,8 @@ def get_or_create_all_settings(user_id: UUID, db: Session) -> dict:
         Dictionary with general, advanced settings, and labels.
     """
     return {
-        "general": get_or_create_general_settings(user_id, db),
-        "advanced": get_or_create_advanced_settings(user_id, db),
+        "general": ensure_general_settings(user_id, db),
+        "advanced": ensure_advanced_settings(user_id, db),
         "labels": get_user_labels(user_id, db),
     }
 
@@ -145,7 +270,7 @@ def verify_user_access(user_id: UUID, db: Session) -> User:
 # =============================================================================
 
 @router.get("/users/{user_id}/settings", response_model=UserSettingsResponse, dependencies=[Depends(authorized())])
-def get_user_settings(
+def get_user_settings_endpoint(
     user_id: UUID,
     db: Session = Depends(get_db),
 ) -> UserSettingsResponse:
@@ -163,7 +288,7 @@ def get_user_settings(
         All user settings (general, advanced).
     """
     verify_user_access(user_id, db)
-    settings = get_or_create_all_settings(user_id, db)
+    settings = get_all_settings(user_id, db)
     
     return UserSettingsResponse(
         general=settings["general"],
@@ -193,7 +318,7 @@ def update_user_settings(
         Updated settings.
     """
     verify_user_access(user_id, db)
-    settings = get_or_create_all_settings(user_id, db)
+    settings = ensure_all_settings(user_id, db)
     
     try:
         # Update general settings if provided
@@ -240,10 +365,10 @@ def update_user_settings(
 # =============================================================================
 
 @router.get("/users/{user_id}/settings/general", response_model=GeneralSettingsResponse, dependencies=[Depends(authorized())])
-def get_general_settings(
+def get_general_settings_endpoint(
     user_id: UUID,
     db: Session = Depends(get_db),
-) -> GeneralSettings:
+) -> Union[GeneralSettings, GeneralSettingsResponse]:
     """Get general settings for a user.
     
     Args:
@@ -254,7 +379,7 @@ def get_general_settings(
         General settings.
     """
     verify_user_access(user_id, db)
-    return get_or_create_general_settings(user_id, db)
+    return get_general_settings(user_id, db)
 
 
 @router.patch("/users/{user_id}/settings/general", response_model=GeneralSettingsResponse, dependencies=[Depends(authorized())])
@@ -274,7 +399,7 @@ def update_general_settings(
         Updated general settings.
     """
     verify_user_access(user_id, db)
-    settings = get_or_create_general_settings(user_id, db)
+    settings = ensure_general_settings(user_id, db)
     
     try:
         update_data = settings_data.model_dump(exclude_unset=True)
@@ -304,10 +429,10 @@ def update_general_settings(
 # =============================================================================
 
 @router.get("/users/{user_id}/settings/advanced", response_model=AdvancedSettingsResponse, dependencies=[Depends(authorized())])
-def get_advanced_settings(
+def get_advanced_settings_endpoint(
     user_id: UUID,
     db: Session = Depends(get_db),
-) -> AdvancedSettings:
+) -> Union[AdvancedSettings, AdvancedSettingsResponse]:
     """Get advanced settings for a user.
     
     Args:
@@ -318,7 +443,7 @@ def get_advanced_settings(
         Advanced settings.
     """
     verify_user_access(user_id, db)
-    return get_or_create_advanced_settings(user_id, db)
+    return get_advanced_settings(user_id, db)
 
 
 @router.patch("/users/{user_id}/settings/advanced", response_model=AdvancedSettingsResponse, dependencies=[Depends(authorized())])
@@ -338,7 +463,7 @@ def update_advanced_settings(
         Updated advanced settings.
     """
     verify_user_access(user_id, db)
-    settings = get_or_create_advanced_settings(user_id, db)
+    settings = ensure_advanced_settings(user_id, db)
     
     try:
         update_data = settings_data.model_dump(exclude_unset=True)
@@ -375,8 +500,11 @@ def list_signatures(
         List of signatures.
     """
     verify_user_access(user_id, db)
-    general_settings = get_or_create_general_settings(user_id, db)
-    return general_settings.signatures
+    # Check if settings exist in DB - if not, no signatures exist yet
+    settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == user_id).first()
+    if not settings:
+        return []
+    return settings.signatures
 
 
 @router.post("/users/{user_id}/settings/signatures", response_model=SignatureResponse, status_code=status.HTTP_201_CREATED, dependencies=[Depends(authorized())])
@@ -396,7 +524,7 @@ def create_signature(
         Created signature.
     """
     verify_user_access(user_id, db)
-    general_settings = get_or_create_general_settings(user_id, db)
+    general_settings = ensure_general_settings(user_id, db)
     
     try:
         # If this is set as default for new, unset others
@@ -446,7 +574,14 @@ def get_signature(
         Signature.
     """
     verify_user_access(user_id, db)
-    general_settings = get_or_create_general_settings(user_id, db)
+    # Check if settings exist in DB - if not, signature can't exist
+    general_settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == user_id).first()
+    
+    if not general_settings:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Signature {signature_id} not found"
+        )
     
     signature = db.query(Signature).filter(
         Signature.id == signature_id,
@@ -481,7 +616,7 @@ def update_signature(
         Updated signature.
     """
     verify_user_access(user_id, db)
-    general_settings = get_or_create_general_settings(user_id, db)
+    general_settings = ensure_general_settings(user_id, db)
     
     signature = db.query(Signature).filter(
         Signature.id == signature_id,
@@ -541,7 +676,14 @@ def delete_signature(
         db: Database session.
     """
     verify_user_access(user_id, db)
-    general_settings = get_or_create_general_settings(user_id, db)
+    # For delete, if settings don't exist, signature can't exist
+    general_settings = db.query(GeneralSettings).filter(GeneralSettings.user_id == user_id).first()
+    
+    if not general_settings:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Signature {signature_id} not found"
+        )
     
     signature = db.query(Signature).filter(
         Signature.id == signature_id,
