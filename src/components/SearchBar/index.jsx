@@ -115,6 +115,10 @@ const getIsInInbox = (pathname) => {
  */
 const getSearchOperatorPrefix = (folder, label) => {
   if (folder) {
+    // Use "is:starred" instead of "in:starred" for the starred folder
+    if (folder === "starred") {
+      return "is:starred";
+    }
     return `in:${folder}`;
   }
   if (label) {
@@ -189,9 +193,17 @@ const SearchBar = () => {
       return;
     }
     // Check if the operator is already in the search value
-    const operatorPattern = currentFolder
-      ? new RegExp(`in:\\s*${currentFolder}`, "i")
-      : new RegExp(`label:\\s*${currentLabel?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
+    let operatorPattern;
+    if (currentFolder) {
+      // For starred folder, check for both "is:starred" and "in:starred"
+      if (currentFolder === "starred") {
+        operatorPattern = new RegExp(`(is|in):\\s*starred`, "i");
+      } else {
+        operatorPattern = new RegExp(`in:\\s*${currentFolder}`, "i");
+      }
+    } else {
+      operatorPattern = new RegExp(`label:\\s*${currentLabel?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "i");
+    }
 
     // Only populate if the operator is not already present
     if (!operatorPattern.test(searchValue)) {
@@ -458,6 +470,22 @@ const SearchBar = () => {
     const queryParams = new URLSearchParams();
 
     let finalsEachValue = formattedValue || searchValue;
+    
+    // Check if searching for starred emails from inbox - redirect to starred folder
+    const searchLower = finalsEachValue.toLowerCase().trim();
+    const isStarredSearch = searchLower === "is_starred" || 
+                           searchLower === "is:starred" || 
+                           searchLower === "in:starred" ||
+                           searchLower.includes("is_starred") ||
+                           searchLower.includes("is:starred") ||
+                           searchLower.includes("in:starred");
+    
+    if (isInInbox && isStarredSearch) {
+      handleClickAway();
+      navigate("/starred");
+      return;
+    }
+    
     if (activeFilters.includes(ACTIVE_FILTERS.HAS_ATTACHMENT)) {
       queryParams.set("attachment", "true");
     }
