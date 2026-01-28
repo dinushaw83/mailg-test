@@ -288,10 +288,10 @@ jobs:
           echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
 
   # ===========================================================================
-  # Stage 3: Deploy to GCP VM
+  # Stage 3: Deploy to GCP Staging VM
   # ===========================================================================
   deploy:
-    name: 🚀 Deploy to GCP
+    name: 🚀 Deploy to Staging
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [build-backend, build-frontend]
@@ -691,3 +691,29 @@ jobs:
           - **API**: ${SYSTEM_URL}/api
           - **Health Check**: ${SYSTEM_URL}/api/health
           EOF
+
+  # ===========================================================================
+  # Production Notification (Optional)
+  # ===========================================================================
+  notify-production:
+    name: 📢 Notify Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [deploy-production]
+    if: always()
+    
+    steps:
+      - name: Send production notification
+        run: |
+          if [ "${{ needs.deploy-production.result }}" == "success" ]; then
+            echo "🎉 Production deployment successful!"
+            # Add Slack/Discord/Email notification here if needed
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"✅ Production deployment succeeded!"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            echo "❌ Production deployment failed!"
+            # curl -X POST -H 'Content-type: application/json' \
+            #   --data '{"text":"❌ Production deployment failed!"}' \
+            #   ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
