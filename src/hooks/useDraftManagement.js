@@ -4,6 +4,7 @@ import {
   feToBeDraftUpdatePayload,
   feToBeReplyDraftPayload,
 } from "../utils/draftMapper";
+import { createAttachmentThunk, deleteAttachmentThunk } from "../store/slices/attachmentSlice";
 import {
   createDraftThunk,
   createReplyDraftThunk,
@@ -22,7 +23,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { store } from "../store";
 import { useDispatch } from "react-redux";
 import { useGlobalContext } from "../contexts/GlobalContext";
-import { createAttachmentThunk, deleteAttachmentThunk } from "../store/slices/attachmentSlice";
 
 // Helper to check if a string is a UUID
 const isUUID = (str) => {
@@ -52,6 +52,7 @@ export const useDraftManagement = ({
   const [draftSaved, setDraftSaved] = useState(false);
   const [isDraft, setIsDraft] = useState(currentDraftId ? true : false);
   const [draftId, setDraftId] = useState(currentDraftId || null);
+  const [hasPutUpdateCompleted, setHasPutUpdateCompleted] = useState(false);
 
   const autoSaveTimeoutRef = useRef(null);
   const draftSavedTimeoutRef = useRef(null);
@@ -132,11 +133,13 @@ export const useDraftManagement = ({
         backendDraftIdRef.current = currentDraftId.toString();
         isFirstSaveRef.current = false;
         lastApiContentRef.current = null; // Reset to allow fetching fresh content
+        setHasPutUpdateCompleted(true); // Existing draft already has PUT update completed
       } else {
         // New draft - reset everything
         backendDraftIdRef.current = null;
         isFirstSaveRef.current = true;
         lastApiContentRef.current = null;
+        setHasPutUpdateCompleted(false); // New draft hasn't had PUT update yet
       }
       return;
     }
@@ -149,11 +152,13 @@ export const useDraftManagement = ({
       backendDraftIdRef.current = null;
       isFirstSaveRef.current = true;
       lastApiContentRef.current = null;
+      setHasPutUpdateCompleted(false); // New draft hasn't had PUT update yet
     } else if (currentDraftId && isUUID(currentDraftId.toString())) {
       // Existing draft - set refs
       backendDraftIdRef.current = currentDraftId.toString();
       isFirstSaveRef.current = false;
       lastApiContentRef.current = null;
+      setHasPutUpdateCompleted(true); // Existing draft already has PUT update completed
     }
   }, [currentDraftId, composeWindowId, parentEmail]); // Add parentEmail to dependencies to reset refs when switching reply target
 
@@ -174,10 +179,13 @@ export const useDraftManagement = ({
             // Use reply endpoint for replies - payload only needs body, html_body, reply_all
             const payload = feToBeReplyDraftPayload(content, isReplyAllMode);
             action = await dispatch(createReplyDraftThunk({ emailId: parentEmail.id, draftData: payload })).unwrap();
+                      setHasPutUpdateCompleted(true);
+
           } else {
             // Use regular draft endpoint for compose emails
             const payload = feToBeDraftPayload(to, cc, bcc, subject, content, null);
             action = await dispatch(createDraftThunk(payload)).unwrap();
+            setHasPutUpdateCompleted(true);
           }
         } else {
           // PUT to update existing draft
@@ -217,7 +225,18 @@ export const useDraftManagement = ({
             recipients,
           });
           action = await dispatch(updateDraftThunk({ emailId: backendId, draftData: payload })).unwrap();
+          // Mark PUT update as completed after successful update
+          setHasPutUpdateCompleted(true);
         }
+
+        // Show "Draft saved" only on backend success; auto-hide after 2.5s
+        if (draftSavedTimeoutRef.current) {
+          clearTimeout(draftSavedTimeoutRef.current);
+        }
+        setDraftSaved(true);
+        draftSavedTimeoutRef.current = setTimeout(() => {
+          setDraftSaved(false);
+        }, 1000);
 
         const backendDraft = action;
         const newBackendId = backendDraft.id;
@@ -480,21 +499,7 @@ export const useDraftManagement = ({
         plainText: content.plainText.trim(),
       };
 
-      if (isAutoSave) {
-        setDraftSaved(true);
-
-        // Clear any existing timeout
-        if (draftSavedTimeoutRef.current) {
-          clearTimeout(draftSavedTimeoutRef.current);
-        }
-
-        // Reset draft saved state after 1 second
-        draftSavedTimeoutRef.current = setTimeout(() => {
-          setDraftSaved(false);
-        }, 1000);
-      }
-
-      // Note: API call is debounced separately in useEffect below
+      // Note: "Draft saved" is shown only on backend API success (see saveDraftToBackend), not on local save.
 
       return true;
     },
@@ -536,7 +541,7 @@ export const useDraftManagement = ({
     // Set new timeout for local auto-save (1 second after last activity)
     autoSaveTimeoutRef.current = setTimeout(() => {
       saveDraft(true);
-    }, 1000);
+    }, 400);
 
     // Cleanup timeout on unmount or dependency change
     return () => {
@@ -545,6 +550,15 @@ export const useDraftManagement = ({
       }
     };
   }, [to, cc, bcc, subject, content, saveDraft]);
+
+  // Clear "Draft saved" as soon as the user edits (to, cc, bcc, subject, or content)
+  useEffect(() => {
+    setDraftSaved(false);
+    if (draftSavedTimeoutRef.current) {
+      clearTimeout(draftSavedTimeoutRef.current);
+      draftSavedTimeoutRef.current = null;
+    }
+  }, [to, cc, bcc, subject, content]);
 
   // Check if content has changed since last API call
   const hasApiContentChanged = useCallback(() => {
@@ -612,7 +626,7 @@ export const useDraftManagement = ({
       // 1 second delay for reply drafts
       apiCallTimeoutRef.current = setTimeout(() => {
         saveDraftToBackend(isFirstSave);
-      }, 1000);
+      }, 400);
       // Cleanup timeout on unmount or dependency change
       return () => {
         if (apiCallTimeoutRef.current) {
@@ -646,7 +660,7 @@ export const useDraftManagement = ({
     }
 
     // 500ms for first save, 1s for subsequent updates
-    const delay = isFirstSave ? 500 : 1000;
+    const delay = isFirstSave ? 100 : 400;
 
     // Debounce API call - triggers after delay of no input changes
     apiCallTimeoutRef.current = setTimeout(() => {
@@ -756,5 +770,6 @@ export const useDraftManagement = ({
     saveAttachment,
     removeAttachment,
     attachments: lastApiContentRef.current?.attachments || [],
+    hasPutUpdateCompleted,
   };
 };

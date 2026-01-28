@@ -69,6 +69,7 @@ export default function Editor({
   onAddAttachment,
   onRemoveAttachment,
   apiAttachments,
+  sendDisabled = false,
 }) {
   const extensions = useExtensions({
     placeholder: "",
@@ -759,6 +760,9 @@ export default function Editor({
       const isCmdOrCtrl = isMac ? event.metaKey : event.ctrlKey;
 
       if (isCmdOrCtrl && event.key === "Enter") {
+        if (sendDisabled) {
+          return false; // Don't send if button is disabled
+        }
         event.preventDefault();
         event.stopPropagation();
         // Get latest HTML directly from editor to avoid stale content state
@@ -855,7 +859,7 @@ export default function Editor({
 
       return false;
     },
-    [shortcutsOn, onSend, onDelete, rteRef, embeddedImages, attachments]
+    [shortcutsOn, onSend, onDelete, rteRef, embeddedImages, attachments, sendDisabled]
   );
   const openSignaturePopover = (event) => {
     setSignatureAnchorEl(event.currentTarget);
@@ -967,11 +971,19 @@ export default function Editor({
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", position: "relative", width: "100%" }}>
-                  <div className={styles.sendButtonContainer}>
+                  <div
+                    className={styles.sendButtonContainer}
+                    style={{
+                      opacity: sendDisabled ? 0.6 : 1,
+                      pointerEvents: sendDisabled ? "none" : "auto",
+                    }}
+                    onClick={sendDisabled ? (e) => { e.preventDefault(); e.stopPropagation(); } : undefined}
+                  >
                     <div
                       aria-label="Send ‪(⌘Enter)‬"
+                      aria-disabled={sendDisabled}
                       role="button"
-                      tabIndex="1"
+                      tabIndex={sendDisabled ? -1 : 1}
                       style={{
                         whiteSpace: "nowrap",
                         textAlign: "center",
@@ -1001,11 +1013,11 @@ export default function Editor({
                         marginRight: "0px",
                         maxWidth: "104px",
                         minWidth: "72px",
-                        cursor: "pointer",
+                        cursor: sendDisabled ? "not-allowed" : "pointer",
                         borderRadius: "18px 0px 0px 18px",
                         userSelect: "none",
                       }}
-                      onClick={async () => {
+                      onClick={sendDisabled ? (e) => { e.preventDefault(); e.stopPropagation(); } : async () => {
                         // Process HTML to replace object URLs with IndexedDB references
                         const html = rteRef.current?.editor?.getHTML() || "";
                         const imageMap = {};
@@ -1023,11 +1035,12 @@ export default function Editor({
                     </div>
                     <div
                       aria-expanded={Boolean(sendOptionsAnchorEl)}
+                      aria-disabled={sendDisabled}
                       aria-haspopup="true"
                       aria-label="More send options"
                       role="button"
-                      tabIndex="1"
-                      onClick={openSendOptionsPopover}
+                      tabIndex={sendDisabled ? -1 : 1}
+                      onClick={sendDisabled ? (e) => { e.preventDefault(); e.stopPropagation(); } : openSendOptionsPopover}
                       style={{
                         whiteSpace: "nowrap",
                         textAlign: "center",
@@ -1055,7 +1068,7 @@ export default function Editor({
                         padding: "0px 8px",
                         minWidth: "24px",
                         borderLeft: "1px solid rgb(6, 46, 111)",
-                        cursor: "pointer",
+                        cursor: sendDisabled ? "not-allowed" : "pointer",
                         borderRadius: "0px 18px 18px 0px",
                         userSelect: "none",
                       }}

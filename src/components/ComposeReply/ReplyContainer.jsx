@@ -14,8 +14,8 @@ import replyIcon from "../../icons/reply.png";
 import { useDispatch } from "react-redux";
 import { useDraftManagement } from "../../hooks/useDraftManagement";
 import { useGlobalContext } from "../../contexts/GlobalContext";
-import { useSendEmail } from "../../hooks/useSendEmail";
 import { useScheduleEmail } from "../../hooks/useScheduleEmail";
+import { useSendEmail } from "../../hooks/useSendEmail";
 
 const ReplyContainer = forwardRef(
   ({ email, draft, replyType, currentDraftId, onClose, onUndoDelete, replyToEmail, apiAttachments }, ref) => {
@@ -163,7 +163,7 @@ ${targetEmail.body}
     }, [recipients]);
 
     // Draft management hook
-    const { deleteDraft, isDraft, draftId, draftSaved, hasDraftContent, saveAttachment, removeAttachment } =
+    const { deleteDraft, isDraft, draftId, draftSaved, hasDraftContent, saveAttachment, removeAttachment, hasPutUpdateCompleted } =
       useDraftManagement({
         to: recipientsForDraft.to,
         cc: recipientsForDraft.cc,
@@ -326,11 +326,16 @@ ${targetEmail.body}
       handleErrorModalClose,
       handleSnackbarUndoDelete,
       lastDeletedDraftRef,
+      isSending,
     } = useSendEmail(selectedReplyOption, targetEmail);
 
     /* Removed useScheduleEmail hook */
 
     const handleSend = ({ attachments = [], embeddedImages = [], processedHtml }) => {
+      // Do not send or close until at least one PUT update has completed
+      if (!hasPutUpdateCompleted) {
+        return;
+      }
       // Use processed HTML if available, otherwise use the current content
       const finalContent = processedHtml ? { html: processedHtml, plainText: content.plainText } : content;
 
@@ -459,12 +464,8 @@ ${targetEmail.body}
             setSnackbar({
               open: true,
               message: "Draft discarded.",
-              action: (
-                <Button variant="text" size="medium" onClick={handleUndoDelete} sx={{ textTransform: "capitalize" }}>
-                  Undo
-                </Button>
-              ),
-              autoHideDuration: 4000,
+              
+              autoHideDuration: 1000,
             });
           } catch (error) {
             console.error("Failed to delete draft:", error);
@@ -627,6 +628,7 @@ ${targetEmail.body}
                 textEditorMaxHeight="400px"
                 messageId={targetEmail?.id}
                 apiAttachments={draft?.attachments || (selectedReplyOption === "forward" ? apiAttachments : [])}
+                sendDisabled={!hasPutUpdateCompleted || isSending}
               />
             </div>
           </div>
