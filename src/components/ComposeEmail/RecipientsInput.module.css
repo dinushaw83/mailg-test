@@ -53,9 +53,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  align-content: flex-start;
   gap: 4px;
   padding: 4px 8px;
   min-height: 20px;
+  max-height: 140px;
+  overflow-y: auto;
 }
 
 .recipientInput {

@@ -26,12 +26,6 @@ export default function RecipientChip({ recipient, onDelete }) {
               <span className="material-symbols-filled" style={{ fontSize: "28px", marginTop: "8px" }}>
                 person
               </span>
-            ) : recipient.avatar ? (
-              <img
-                src={recipient.avatar}
-                alt={recipient.name}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
             ) : (
               initials
             )}

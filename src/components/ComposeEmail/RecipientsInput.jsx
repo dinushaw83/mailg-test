@@ -493,8 +493,7 @@ export default function RecipientsInput({
       }
     }
 
-    // Limit to maximum 8 items
-    return filteredOptions.slice(0, 8);
+    return filteredOptions;
   };
 
   // Handle inserting a recipient from select contacts
@@ -566,8 +565,6 @@ export default function RecipientsInput({
             <span className="material-symbols-filled" style={{ fontSize: "32px", marginTop: "10px" }}>
               person
             </span>
-          ) : option.avatar ? (
-            <img src={option.avatar} alt={option.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           ) : (
             initials
           )}
@@ -672,8 +669,8 @@ export default function RecipientsInput({
                   },
                   listbox: {
                     sx: {
-                      maxHeight: "500px",
-                      overflow: "auto",
+                      maxHeight: "280px",
+                      overflowY: "auto",
                     },
                   },
                 }}
@@ -776,8 +773,8 @@ export default function RecipientsInput({
                     },
                     listbox: {
                       sx: {
-                        maxHeight: "500px",
-                        overflow: "auto",
+                        maxHeight: "280px",
+                        overflowY: "auto",
                       },
                     },
                   }}
@@ -880,8 +877,8 @@ export default function RecipientsInput({
                     },
                     listbox: {
                       sx: {
-                        maxHeight: "500px",
-                        overflow: "auto",
+                        maxHeight: "280px",
+                        overflowY: "auto",
                       },
                     },
                   }}

@@ -1,4 +1,11 @@
 import {
+  bulkSnoozeThreadsThunk,
+  bulkUnsnoozeThreadsThunk,
+  bulkUnstarThreadsThunk,
+  bulkUpdateEmailImportantThunk,
+  bulkUpdateEmailStarredThunk,
+  bulkUpdateEmailsThunk,
+  bulkUpdateLabelsThunk,
   cancelSendEmailByIdThunk,
   createDraftThunk,
   createLabelThunk,
@@ -7,30 +14,24 @@ import {
   deleteLabelThunk,
   fetchEmailByIdThunk,
   fetchLabels,
+  moveToSpamThunk,
+  moveToTrashThunk,
   sendEmailByIdThunk,
   sendEmailThunk,
-  updateDraftThunk,
-  updateLabelThunk,
-  updateLabelsThunk,
-  bulkUpdateLabelsThunk,
-  updateEmailStarredThunk,
-  bulkUpdateEmailStarredThunk,
-  updateEmailImportantThunk,
-  bulkUpdateEmailImportantThunk,
-  bulkUpdateEmailsThunk,
-  bulkUnstarThreadsThunk,
-  updateThreadImportantThunk,
   snoozeThreadThunk,
   unsnoozeThreadThunk,
-  bulkSnoozeThreadsThunk,
-  bulkUnsnoozeThreadsThunk,
-  moveToTrashThunk,
-  moveToSpamThunk,
+  updateDraftThunk,
+  updateEmailImportantThunk,
+  updateEmailStarredThunk,
+  updateLabelThunk,
+  updateLabelsThunk,
+  updateThreadImportantThunk,
 } from "../slices/mailSlice";
 import { createAttachmentThunk, deleteAttachmentThunk } from "../slices/attachmentSlice";
 import { logout, setAuth } from "../slices/userSlice";
 
 import { queryClient } from "../../lib/query-client";
+import { setRecipients } from "../slices/contactsSlice";
 
 /**
  * Register React Query side-effects (invalidate/clear) in one place.
@@ -395,7 +396,8 @@ export function registerReactQueryListeners(listenerMiddleware) {
   // Clear React Query cache on logout (and optionally on login) to prevent cross-user leaks
   listenerMiddleware.startListening({
     actionCreator: logout,
-    effect: async () => {
+    effect: async (_action, listenerApi) => {
+      listenerApi.dispatch(setRecipients([]));
       queryClient.clear();
     },
   });
