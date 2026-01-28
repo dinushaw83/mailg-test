@@ -45,6 +45,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
   } = useGlobalContext();
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("Please specify at least one recipient.");
+  const [isSending, setIsSending] = useState(false);
   const lastSentEmailRef = useRef(null);
   const lastDeletedDraftRef = useRef(null);
   const sendTimeoutRef = useRef(null);
@@ -174,6 +175,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     scheduledTime,
     scheduleOption,
   }) => {
+    setIsSending(true);
     // If we have a draft ID (UUID from backend), use the send by ID API
     if (currentDraftId && isUUID(currentDraftId.toString())) {
       try {
@@ -365,6 +367,8 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
           action: null,
           autoHideDuration: 5000,
         });
+      } finally {
+        setIsSending(false);
       }
       return;
     }
@@ -517,6 +521,7 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
         ),
         autoHideDuration: 4000,
       });
+      setIsSending(false);
     }, 500);
   };
 
@@ -702,5 +707,6 @@ export const useSendEmail = (replyType = null, originalEmail = null) => {
     lastSentEmailRef,
     handleUnsendEmail,
     handleSnackbarUndo,
+    isSending,
   };
 };
