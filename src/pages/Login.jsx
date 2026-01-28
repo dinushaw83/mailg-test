@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { isValidEmail } from "../utils/helperFunctions";
 import { setAuth } from "../store/slices/userSlice";
+import { setRecipients } from "../store/slices/contactsSlice";
 import { useDispatch } from "react-redux";
 import userService from "../services/userService";
 
@@ -27,8 +28,15 @@ const Login = () => {
       setError(null);
 
       const tokenData = await userService.createToken(email.trim());
-      // tokenData shape: { access_token, user, role, run_id, expires_in }
+      // tokenData shape: { access_token, user, settings, role, run_id, expires_in, contacts }
       dispatch(setAuth(tokenData));
+      const recipients = (tokenData.contacts ?? []).map((contact) => ({
+        id: contact.id,
+        name: contact.name,
+        email: contact.email,
+        avatar: contact.avatar,
+      })).filter((recipient) => recipient.email !== tokenData.user.email );
+      dispatch(setRecipients(recipients));
 
       navigate("/sessionid", { replace: true });
     } catch (e) {

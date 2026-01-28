@@ -48,7 +48,7 @@ const EmailInput = React.forwardRef(
         }
       }
 
-      return filteredOptions.slice(0, 8);
+      return filteredOptions;
     };
 
     const handleAutocompleteChange = (event, newValue) => {
@@ -132,6 +132,11 @@ const EmailInput = React.forwardRef(
                 }}
                 onOpen={() => setHighlightedIndex(0)}
                 onClose={() => setHighlightedIndex(0)}
+                slotProps={{
+                  listbox: {
+                    sx: { maxHeight: "280px", overflowY: "auto" },
+                  },
+                }}
                 filterOptions={filterOptions}
                 renderOption={(props, option) => {
                   const { key, ...otherProps } = props;
@@ -247,18 +252,18 @@ const EmailInput = React.forwardRef(
                 inputRef.current?.focus();
               }}
             >
-              {addedRecipients.length === 0 ? (
+              {addedEmails.length === 0 ? (
                 <input
                   type="text"
                   readOnly
-                  placeholder={addedRecipients.length === 0 ? "Recipients" : ""}
+                  placeholder="Recipients"
                   className="email-input"
                   onFocus={() => {
                     setIsFocused(true);
                   }}
                 />
               ) : (
-                <CollapsedView emails={addedRecipients} />
+                <CollapsedView emails={addedEmails} />
               )}
             </div>
           )}
