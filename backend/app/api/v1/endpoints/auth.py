@@ -9,7 +9,7 @@ from app.auth.rbac import authorized
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session, sessionmaker
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List, Optional
 from app.db.session import get_db
 from app.models.user import User
 from app.auth.token_manager import get_token_manager
@@ -26,6 +26,18 @@ import app.db.session as database
 import uuid
 
 router = APIRouter()
+
+
+def format_contact_response(user: User) -> dict:
+    """Format user as contact for frontend (camelCase)."""
+    return {
+        "id": str(user.id),
+        "name": f"{user.first_name} {user.last_name}".strip(),
+        "firstName": user.first_name,
+        "lastName": user.last_name,
+        "email": user.email,
+        "avatar": user.photo,
+    }
 
 
 class TokenRequest(BaseModel):
@@ -46,6 +58,7 @@ class TokenResponse(BaseModel):
     role: str
     run_id: str
     expires_in: int
+    contacts: List[dict]
 
 
 @router.post("/auth/token", response_model=TokenResponse)
@@ -159,6 +172,9 @@ def create_token(
             advanced=settings["advanced"],
             labels=settings["labels"],
         )
+        # Fetch all active users as contacts
+        all_users = run_db.query(User).filter(User.active == True).all()
+        contacts = [format_contact_response(u) for u in all_users]
     finally:
         run_db.rollback()
         run_db.close()
@@ -170,6 +186,7 @@ def create_token(
         role=token_role,
         run_id=run_id,
         expires_in=JWT_ACCESS_TOKEN_TTL_SECONDS,
+        contacts=contacts,
     )
 
 
