@@ -150,6 +150,8 @@ export const useGlobalContext = () => {
     // Search results for optimistic updates
     searchResults: mail.searchResults,
     setSearchResults: handleFunctionalUpdate(setSearchResults, "mail", "searchResults"),
+    // Current search query for context-aware actions
+    searchQuery: mail.searchQuery,
     // Access to all folders/categories
     mailFolders: {
       inbox: mail.inbox,
