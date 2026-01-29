@@ -1,6 +1,6 @@
 [
   {
-    "id": "MAIL:6Flow:0",
+    "id": "MAIL_6Flow_0",
     "prompt": "Log in as 'john.doe@example.com' as admin. Open the Promotional emails and look for email that is sent by 'Diana Walters' with subject \"Question about export\". If it is marked starred, unstar it and mark this email to Projects->Client A->Phase 1 label. Then move to Social emails and delete the email from 'Nathaniel Smith'.",
     "created_at": "<ISO_DATE_TIME>",
     "updated_at": "<ISO_DATE_TIME>",
@@ -87,7 +87,7 @@
     }
   },
   {
-    "id": "MAIL:new_4Flow:0",
+    "id": "MAIL_4Flow_0",
     "prompt": "Log in as 'john.doe@example.com' as admin. Open draft and search for an email with subject 'New feature proposal'. Send it to 'emily.davis@example.com' and add 'michael.chen@example.com' to CC and 'jane.smith@example.com' to BCC. Go to Sent section and verify that this email is sent. Make a new label 'New Feature' and make it nest label under the Work label. Mark this email under this new created label 'New Feature'",
     "created_at": "<ISO_DATE_TIME>",
     "updated_at": "<ISO_DATE_TIME>",
@@ -264,7 +264,7 @@
     }
   },
   {
-    "id": "MAIL:New_79Flow:0",
+    "id": "MAIL_79Flow_0",
     "prompt": "\"Log in as Elizabeth Jenkins (kwalls@example.net). In the inbox folder:\n- Mark the email by Robert Olsen with the subject Re: Partner Onboarding Process\"\" as unread\n- Star emails by David Brown (subject: \"\"Website Redesign Feedback\"\") and Nicole Robinson (subject: \"\"How to access account?\"\")\n\nIn the Drafts folder:\n- Unstar the email with the subject \"\"Re: billing not working\"\" and then delete it\n- Open the email with the subject \"\"Re: Question about billing\"\", add Sarah William as a recipient, and send the email.\"",
     "db_verification_config": {
       "tables": {
@@ -506,7 +506,7 @@
     }
   },
   {
-    "id": "MAIL:NEW_22Flow:0",
+    "id": "MAIL_22Flow_0",
     "prompt": "You are logged in as John Doe (john.doe@example.com). Check the inbox and read the email with the subject ‘Urgent: account access problem’. Write the following reply: ‘Thank you for sharing the details. I have reviewed the information and will proceed accordingly.’ Send the email. Once the reply is sent, star the reply and unstar the email with the subject ‘Re: How to reset password?’.",
     "db_verification_config": {
       "tables": {
@@ -595,7 +595,7 @@
     }
   },
   {
-    "id": "MAIL:new_55Flow:0",
+    "id": "MAIL_55Flow_0",
     "prompt": "Log in as Michael Chen (michael.chen@example.com).\nOpen an email from the inbox with the subject “How to access account?”.\n* Mark this email as Important and also star this email.\n* Compose a new email with the following details:\n* To: sarah.williams@example.com\n* Subject: \"\"Production Issue Escalation\"\"\n* Body: \"\"A production issue has been reported and marked as critical. Please investigate and provide an update as soon as possible.\"\" \nSend the email.\nWithin the supported undo window:\n* Undo the send action\n* Confirm the email is restored as a Draft",
     "created_at": "2026-01-29T18:22:28.869Z",
     "updated_at": "2026-01-29T18:22:29.657Z",
@@ -732,7 +732,7 @@
     }
   },
   {
-    "id": "MAIL:new_93Flow:0",
+    "id": "MAIL_93Flow_0",
     "prompt": "\"Log in as Sarah Williams (sarah.williams@example.com). Search for an email with these filters:\nkeyword: Help needed\nfrom: Becky Henry\ndate range: 30 - 31 December 2025\n\nThere should be only one result. Read the email and then delete it. Finally, write a new email with these details:\nTo: Becky Henry\nSubject: Deleted the 'Help Needed' Email\nBody: Your email has been deleted.\n\nInstead of sending the email, close the write email window.\"",
     "db_verification_config": {
       "tables": {
@@ -821,7 +821,7 @@
     }
   },
   {
-    "id": "MAIL:54Flow:0",
+    "id": "MAIL_54Flow_0",
     "prompt": "Login as John Doe (john.doe@example.com) with admin access.\n\nGo to the Primary Inbox and refresh.\n\nFind all emails with the subject \"Help needed: API\".\n\nCreate a new label called \"API\" if it does not already exist.\n\nApply the \"API\" label to all those API-related emails.\n\nAfter labeling them, move those emails to the Archive folder.",
     "created_at": "2026-01-29T17:58:55.347Z",
     "updated_at": "2026-01-29T17:58:56.099Z",
@@ -1007,7 +1007,7 @@
     }
   },
   {
-    "id": "MAIL:new_56Flow:0",
+    "id": "MAIL_56Flow_0",
     "prompt": "\"Log in as John Doe (john.doe@example.com).\nPerform the following actions:\n1. Rename the label “Urgent” to “Expedient”.\n2. Create a sub-label \"\"2024\"\" under \"\"Expedient\"\"\n3. Delete the label Personal\n4. Compose a new email with the following details:\n* To: \"\"michael.chen@example.com\"\"\n* Subject: \"\"Expedited Follow-Up - 2024\"\"\n* Body: \"\"I hope you’re doing well. I just wanted to follow up on our last conversation and check if there are any updates on your end.\"\"\n  5. Send the email.\"",
     "created_at": "2026-01-29T17:53:34.143Z",
     "updated_at": "2026-01-29T17:53:35.122Z",
@@ -1223,7 +1223,7 @@
     }
   },
   {
-    "id": "MAIL:new_49Flow:2,3",
+    "id": "MAIL_49Flow_2,3",
     "prompt": "Log in as john.doe@example.com.\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n   `Project` -> `Alpha` -> `Phase1`\n\nSend an email with the following details;\nSubject: Q1 Project Roadmap Review\nMessage: Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..\n\nSet the recipients as follows:\n\nTo: Jane Smith <jane.smith@example.com>\nCC: David Brown <david.brown@example.com>\nBCC: Sarah Williams <sarah.williams@example.com>\nFinally, apply the Phase1 label to the composed email.",
     "db_verification_config": {
       "tables": {
@@ -1622,7 +1622,7 @@
     }
   },
   {
-    "id": "MAIL:new_14Flow:0",
+    "id": "MAIL_14Flow_0",
     "prompt": "Log in as **Sarah Williams** (sarah.williams@example.com).\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n* Work\n    * Reports\n        * Presidential\nSend an email with the following details;\n* **Subject:** Official Request for Administrative and Security Access\n* **Body:** I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.\n\nSet the recipients as follows:\n\n* **To:** Jane Smith (jane.smith@example.com)\n* **CC:** Michael Chen (michael.chen@example.com)\n* **BCC:** Emily Davis (emily.davis@example.com)\n\n\nFinally, apply the Presidential label to the composed email.",
     "db_verification_config": {
       "tables": {
@@ -2021,7 +2021,7 @@
     }
   },
   {
-    "id": "MAIL:new_13Flow:0",
+    "id": "MAIL_13Flow_0",
     "prompt": "Log in as John Doe (john.doe@example.com)\nNavigate to \"Sent\" and look for email with subject \"Re: Question about billing\"\nClick on \"reply\" and change the \"to\" from \"john.doe@example.com\" to \"hthompson@example.com\".\nCopy the text from the parent email which is what you're to reply to and paste it into the body of the reply.\nClick \"Send\"\nImmediately undo the send action.\nNavigate to \"draft\" to confirm the email is not sent.\nOpen the email and locate the draft reply. Delete the draft reply.",
     "db_verification_config": {
       "tables": {
@@ -2055,7 +2055,7 @@
     }
   },
   {
-    "id": "MAIL:new_84Flow:0",
+    "id": "MAIL_84Flow_0",
     "prompt": "Log in as Michael Chen (michael.chen@example.com). Compose a new email to john.doe@example.com with subject \"Meeting Agenda\" and body \"Please find the agenda items below.\" Save it as a draft. Navigate to Drafts folder and verify it exists. Open the draft and send it.",
     "created_at": "2026-01-29T15:39:30.048Z",
     "updated_at": "2026-01-29T15:39:31.307Z",
@@ -2223,7 +2223,7 @@
     }
   },
   {
-    "id": "MAIL:New_78Flow:0",
+    "id": "MAIL_78Flow_0",
     "prompt": "Log in as John Doe (john.doe@example.com). Search for an email from Matthew Estrada with the subject \"Help needed: API\". Unstar the email and reply to it with the following message: \"Noted. Will do the job immediately.\" After that, star the reply email (Not the original one).",
     "db_verification_config": {
       "tables": {
@@ -2382,7 +2382,7 @@
     }
   },
   {
-    "id": "MAIL:new_82Flow:2",
+    "id": "MAIL_82Flow_2",
     "prompt": "Login as John Doe(john.doe@example.com).\nNavigate to the Primary Inbox and star the email from Nathaniel Smith(hthompson@example.com) with subject \"\"Feature request: subscription\"\".\nNext, find the email with subject \"\"Issue with payment\"\" from Cynthia Murphy(scottsamantha@example.net) and star that email too.",
     "created_at": "2026-01-29T16:24:15.902Z",
     "updated_at": "2026-01-29T16:24:17.168Z",
@@ -2441,7 +2441,7 @@
     }
   },
   {
-    "id": "MAIL:46Flow:0",
+    "id": "MAIL_46Flow_0",
     "prompt": "Login as Emily Davis (emily.davis@example.com).\nIn the search bar, search for the email with the subject \"Urgent: email settings problem\".\nOpen the matching email from the search results to view the email details page.\nClick Reply.\nType this reply message:\n\"Thanks for the details — I'll review the access requirements and confirm the exact steps to get this resolved. If I need anything else from you, I'll follow up.\"\nSave the reply as a Draft (do not send yet).\nNavigate to Drafts and confirm the draft is present.\nOpen the draft and click Send.\nImmediately click Undo Send (within the allowed window) and confirm it reverts back (so it is no longer sent).\nThen click on Drafts and open that same email with the subject \"Question about email settings\" and delete this email and make sure that email is actually deleted. ",
     "db_verification_config": {
       "tables": {
@@ -2553,7 +2553,7 @@
     }
   },
   {
-    "id": "MAIL:1Flow:0",
+    "id": "MAIL_1Flow_0",
     "prompt": "Log in as John Doe (john.doe@example.com). Navigate to the primary inbox and mark the email from Dawn Young (kelly73@example.org) with subject \"notifications not working\" as important. Do not change anything else",
     "created_at": "2026-01-29T06:57:36.669Z",
     "updated_at": "2026-01-29T06:57:37.502Z",
@@ -2591,7 +2591,7 @@
     }
   },
   {
-    "id": "MAIL:92Flow:0",
+    "id": "MAIL_92Flow_0",
     "prompt": "You are logging in as Jane Smith (jane.smith@example.com). Navigate to the Primary Inbox. Create a new label called 'Support-Urgent'. Find the email from Michael Chen with the subject 'Help needed: import' and apply the 'Support-Urgent' label to it. Star this email from Michael Chen. Next, find the email from Monica Richards with subject 'Help needed: API' and also apply the 'Support-Urgent' label to it. Finally, open the email from Michael Chen from the Starred Section and reply with the message: 'Hi Michael, I'm looking into this import issue now. Will update you shortly.' Send the reply.",
     "created_at": "2026-01-29T03:15:00.000Z",
     "updated_at": "2026-01-29T03:15:00.000Z",
@@ -2914,7 +2914,7 @@
     }
   },
   {
-    "id": "MAIL:71Flow:0",
+    "id": "MAIL_71Flow_0",
     "prompt": "Log in as kwalls@example.net. Navigate to the Primary Inbox and identify the following three specific emails: \n\n1) Subject 'How to access account?'\n2) Subject 'Error when login' and \n3) Subject 'Unable to view reports'\n\nCreate a parent label named 'Quarterly Review' and a sub-label 'Quarterly Review/Action Items', then apply the 'Quarterly Review/Action Items' label to these three emails. \nReply to the 'How to access account?' email with the text: 'Acknowledged. I have marked this for the upcoming quarterly review.' \n\nThen, compose a new email with: \n\nsubject 'Review Batch Complete' \nto sarah.williams@example.com, \nCC michael.chen@example.com, and the \nbody: 'I have categorized the pending items for the review session. Please check the label Action Items.' \n\nSend the email. Navigate to the Sent folder and star the email you just sent.",
     "created_at": "2026-01-28T23:15:41.706Z",
     "updated_at": "2026-01-28T23:15:42.439Z",
@@ -3067,7 +3067,7 @@
     }
   },
   {
-    "id": "MAIL:27Flow:0",
+    "id": "MAIL_27Flow_0",
     "prompt": "Sign in as John Doe (john.doe@example.com) who has administrator privileges.\nCreate a new email with the subject line: “System Access Setup”.\nWrite the email body as: \"Hello, I recently joined the team and need access to the internal database along with the required security platforms. Please guide me through the necessary steps.\"\n\nAdd jane.smith@example.com the primary recipient.\nCC sarah.wilson@example.com and BCC michael.johnson@example.com.\nSend the email.\n\nGo to the Primary Inbox and refresh to load the most recent messages.\n\nOpen the Sent folder and confirm the email was delivered with the correct recipients, subject, and message content.\n\nReturn to the Primary Inbox.\nLocate the email from Dawn Young with subject \"notifications not working\" and star the email.\n\nLastly create the label \"Data Upload Problems\" if it is not already available.",
     "db_verification_config": {
       "tables": {
@@ -3350,7 +3350,7 @@
     }
   },
   {
-    "id": "MAIL:87Flow:0",
+    "id": "MAIL_87Flow_0",
     "prompt": "Login as Jane Smith with email \"jane.smith@example.com\"\n\nCreate labels in following hierarchical structure:\n* \"Teams\" and \"Security\" are top-level labels\n* \"Dev\" is under \"Teams\"\n* \"Backend\" and \"Frontend\" are under \"Dev\"\n* \"API integration\" and \"User Experience\" are under \"Frontend\"\n\n\nGo to Inbox Updates tab, open the starred email where sender is Michelle Watson, write a reply \"you need to clear the cache\" and leave it as a draft (do not send)",
     "created_at": "2026-01-29T18:41:11.384Z",
     "updated_at": "2026-01-29T18:44:38.455Z",
@@ -3558,7 +3558,7 @@
     }
   },
   {
-    "id": "MAIL:57Flow:0",
+    "id": "MAIL_57Flow_0",
     "prompt": "Log in as Sarah Williams(sarah.williams@example.com).\nCompose a new email with the following details:\n* To: emily.davis@example.com \n* Subject: Feature Clarification Needed\n* Body:\nI would like clarification on the scope and timeline of the upcoming feature.\n\nSave the email as a Draft.\nNavigate away from the compose view and return to Drafts.\nOpen the saved draft, replace the body with: I would like clarification on the scope and timeline of the upcoming feature. Please also confirm whether this impacts the current release cycle.\nSend the email and confirm it no longer appears in Drafts.",
     "db_verification_config": {
       "tables": {
@@ -3693,7 +3693,7 @@
     }
   },
   {
-    "id": "MAIL:14Flow:0",
+    "id": "MAIL_14Flow_0",
     "prompt": "Log in as **Sarah Williams** (sarah.williams@example.com).\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n* Work\n    * Reports\n        * Presidential\nSend an email with the following details; \n* **Subject:** Official Request for Administrative and Security Access\n* **Body:** I am writing to formally request the necessary database access and authorization to use the organization’s security tools as part of my onboarding process.\n\nSet the recipients as follows:\n\n* **To:** Jane Smith (jane.smith@example.com)\n* **CC:** Michael Chen (michael.chen@example.com)\n* **BCC:** Emily Davis (emily.davis@example.com)\n\n\nFinally, apply the Presidential label to the composed email.",
     "db_verification_config": {
       "tables": {
@@ -3943,7 +3943,7 @@
     }
   },
   {
-    "id": "MAIL:58Flow:0",
+    "id": "MAIL_58Flow_0",
     "prompt": "\"Log in as Sarah Williams(sarah.williams@example.com).\nCompose and send a new email with:\n* To: emily.davis@example.com \n* Subject: System Alert Follow-Up\n* Body: Please review the system alert and provide status updates. \nImmediately after sending:\n* Undo the send operation\nConfirm the email is restored as a Draft.\nOpen the draft, make no changes, and send it again.\"",
     "created_at": "<ISO_DATE_TIME>",
     "updated_at": "<ISO_DATE_TIME>",
@@ -4075,7 +4075,7 @@
     }
   },
   {
-    "id": "MAIL:36Flow:0",
+    "id": "MAIL_36Flow_0",
     "prompt": "Login as John Doe (john.doe@example.com) who has admin access.\n\nNavigate to the Primary Inbox and click Refresh to load the latest emails.\n\nFind the email with the subject \"notifications not working\" from Dawn Young.\nOpen the email and reply with the body: \"We are working on it. We will review this and get back to you by tomorrow.\"\n\nSend the reply.\n\nAfter sending the reply, make sure the original email is marked as read and starred.",
     "db_verification_config": {
       "tables": {
@@ -4247,7 +4247,7 @@
     }
   },
   {
-    "id": "MAIL:2Flow:0",
+    "id": "MAIL_2Flow_0",
     "prompt": "Log in as John Doe (john.doe@example.com). Navigate to the drafts folder and delete the email with the subject \"Re: How to reset password?\", refresh, and make sure that the email no longer exists in inbox. After that, navigate to the Trash folder, refresh, and make sure that the deleted email is there.",
     "created_at": "2026-01-29T07:32:04.885Z",
     "updated_at": "2026-01-29T07:32:06.781Z",
@@ -4289,7 +4289,7 @@
     }
   },
   {
-    "id": "MAIL:80Flow:0",
+    "id": "MAIL_80Flow_0",
     "prompt": "Log in as Elizabeth Jenkins (kwalls@example.net) and compose an email with these details:\n- To: Michael Johnson (michael.johnson@example.com)\n- Cc: Lisa Garcia (lisa.garcia@example.com), Robert Miller (robert.miller@example.com)\n- Subject: New API Integration\n- Body: \"Please continue with the new API integration. Refer to this document for more details.\" (note: the string \"this document\" should hold a hyperlink to a site \"example.org\")\nand then hit \"Send\"",
     "created_at": "2026-01-28T05:47:09.776Z",
     "updated_at": "2026-01-28T05:47:10.966Z",
@@ -4400,7 +4400,7 @@
     }
   },
   {
-    "id": "MAIL:49Flow:2, 3",
+    "id": "MAIL_49Flow_2, 3",
     "prompt": "Log in as john.doe@example.com.\n\nEnsure the following label hierarchy exists. Create any missing labels as needed:\n   `Project` -> `Alpha` -> `Phase1`\n\nSend an email with the following details;\nSubject: Q1 Project Roadmap Review\nMessage: Hi Jane, Please review the attached roadmap for Project Alpha Phase 1. We need your feedback by EOD. Thanks, John..\n\nSet the recipients as follows:\n\nTo: Jane Smith <jane.smith@example.com>\nCC: David Brown <david.brown@example.com>\nBCC: Sarah Williams <sarah.williams@example.com>\nFinally, apply the Phase1 label to the composed email.",
     "created_at": "2026-01-28T22:25:18.579Z",
     "updated_at": "2026-01-28T22:25:19.594Z",
