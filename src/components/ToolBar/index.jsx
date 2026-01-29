@@ -21,6 +21,7 @@ import { useDispatch } from "react-redux";
 import { queryClient } from "../../lib/query-client";
 import { fetchSearchResults } from "../../store/slices/mailSlice";
 import { buildSearchParams } from "../../utils/searchParams";
+import { buildSearchBarFromUrl } from "../../utils/helperFunctions";
 
 const CheckboxContainer = styled.div`
   border: ${({ focused }) => (focused ? "1px solid rgb(239, 238, 237)" : "1px solid transparent")};
@@ -418,7 +419,8 @@ const ToolBar = ({
           page: currentPage,
           pageSize: itemsPerPage,
         });
-        await dispatch(fetchSearchResults({ ...apiParams, originalParams }));
+        const searchQuery = buildSearchBarFromUrl(location);
+        await dispatch(fetchSearchResults({ ...apiParams, originalParams, searchQuery }));
       } else {
         // Build query key using the SAME format as useFolderEmails
         // useFolderEmails uses: ["emails", activeFolder, activeInboxTab, currentPage, itemsPerPage]

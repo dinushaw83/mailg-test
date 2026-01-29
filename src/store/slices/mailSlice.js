@@ -339,7 +339,8 @@ export const fetchSearchResults = createAsyncThunk(
       return {
         results: data.results,
         pagination: data.pagination,
-        query: data.query,
+        // Use the URL-based searchQuery if provided, otherwise fall back to API response
+        query: searchParams.searchQuery || data.query,
         execution_time_ms: data.execution_time_ms,
         originalParams: searchParams.originalParams || {},
       };

@@ -98,12 +98,13 @@ export default function useMailActions() {
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
 
   // Helper to check if current search is a single-term search matching a specific action
-  // Returns true if the search is exactly "is:starred" or "is:important" (case-insensitive, trimmed)
+  // Returns true if the search is exactly "is:starred", "in:starred", "is:important", or "in:important" (case-insensitive, trimmed)
   const isSimpleSingleSearch = useCallback(
     (searchType) => {
       if (!searchQuery) return false;
       const trimmed = searchQuery.trim().toLowerCase();
-      return trimmed === `is:${searchType}`;
+      // Support both "is:" and "in:" prefixes
+      return trimmed === `is:${searchType}` || trimmed === `in:${searchType}`;
     },
     [searchQuery]
   );

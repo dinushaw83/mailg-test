@@ -46,15 +46,15 @@ const SearchResultsView = () => {
     //   return;
     // }
 
-    // Dispatch search action
-    dispatch(fetchSearchResults({ ...apiParams, originalParams }));
+    // Dispatch search action - include searchQuery for context-aware actions
+    dispatch(fetchSearchResults({ ...apiParams, originalParams, searchQuery }));
   }, [currentPage, searchQuery, apiParams, originalParams]);
 
   // Refetch search results when a mutation occurs (e.g., move to inbox, archive, etc.)
   useEffect(() => {
     if (lastMutationTime) {
       // Refetch search results to reflect the changes
-      dispatch(fetchSearchResults({ ...apiParams, originalParams }));
+      dispatch(fetchSearchResults({ ...apiParams, originalParams, searchQuery }));
     }
   }, [lastMutationTime]);
 
