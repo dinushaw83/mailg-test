@@ -88,13 +88,26 @@ const withUndo = (ids, setEmails, operation) => {
 export default function useMailActions() {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
-  const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels } = useGlobalContext();
+  const { setEmails, emails, labels, setSoftRemovedLabels, softRemovedLabels, setSearchResults, searchResults, searchQuery } =
+    useGlobalContext();
 
   // Centralized ID resolution hook
   const { resolveIds, resolveThreadIds } = useIdResolver();
 
   // Get key to ID mapping for transforming composite keys to UUIDs
   const keyToLabelIdMap = useSelector((state) => state.mail.keyToLabelIdMap || {});
+
+  // Helper to check if current search is a single-term search matching a specific action
+  // Returns true if the search is exactly "is:starred", "in:starred", "is:important", or "in:important" (case-insensitive, trimmed)
+  const isSimpleSingleSearch = useCallback(
+    (searchType) => {
+      if (!searchQuery) return false;
+      const trimmed = searchQuery.trim().toLowerCase();
+      // Support both "is:" and "in:" prefixes
+      return trimmed === `is:${searchType}` || trimmed === `in:${searchType}`;
+    },
+    [searchQuery]
+  );
 
   // Helper to update React Query cache optimistically
   const updateQueryCache = useCallback(
@@ -869,13 +882,31 @@ export default function useMailActions() {
 
       if (!emailIds.length) return;
 
+      // Check if we should remove from search results (only for single-term is:starred search when unstarring)
+      const shouldRemoveFromSearch = !newState && isSimpleSingleSearch("starred");
+
+      // Capture original searchResults before modification (for revert on error if removing)
+      const originalSearchResults = shouldRemoveFromSearch ? [...searchResults] : null;
+
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_starred: newState }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: newState } : m)));
+      // Update searchResults - remove if unstarring on is:starred search, otherwise just update the flag
+      if (shouldRemoveFromSearch) {
+        setSearchResults((prev) => prev.filter((m) => !matchAll(m)));
+      } else {
+        setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: newState } : m)));
+      }
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(allIds, (email) => ({ ...email, is_starred: !newState }));
+        setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !newState } : m)));
+        if (shouldRemoveFromSearch && originalSearchResults) {
+          setSearchResults(originalSearchResults);
+        } else {
+          setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !newState } : m)));
+        }
       };
 
       // API call based on action and context
@@ -912,7 +943,7 @@ export default function useMailActions() {
         }
       }
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
+    [setEmails, setSearchResults, searchResults, isSimpleSingleSearch, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const setStar = useCallback(
@@ -922,13 +953,31 @@ export default function useMailActions() {
 
       if (!emailIds.length) return;
 
+      // Check if we should remove from search results (only for single-term is:starred search when unstarring)
+      const shouldRemoveFromSearch = !value && isSimpleSingleSearch("starred");
+
+      // Capture original searchResults before modification (for revert on error if removing)
+      const originalSearchResults = shouldRemoveFromSearch ? [...searchResults] : null;
+
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_starred: value }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: value } : m)));
+      // Update searchResults - remove if unstarring on is:starred search, otherwise just update the flag
+      if (shouldRemoveFromSearch) {
+        setSearchResults((prev) => prev.filter((m) => !matchAll(m)));
+      } else {
+        setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: value } : m)));
+      }
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(allIds, (email) => ({ ...email, is_starred: !value }));
+        setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !value } : m)));
+        if (shouldRemoveFromSearch && originalSearchResults) {
+          setSearchResults(originalSearchResults);
+        } else {
+          setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_starred: !value } : m)));
+        }
       };
 
       // API call based on action and context
@@ -969,7 +1018,7 @@ export default function useMailActions() {
         }
       }
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
+    [setEmails, setSearchResults, searchResults, isSimpleSingleSearch, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const markRead = useCallback(
@@ -1025,13 +1074,31 @@ export default function useMailActions() {
 
       if (!resolvedThreadIds.length) return;
 
+      // Check if we should remove from search results (only for single-term is:important search when unmarking)
+      const shouldRemoveFromSearch = !newState && isSimpleSingleSearch("important");
+
+      // Capture original searchResults before modification (for revert on error if removing)
+      const originalSearchResults = shouldRemoveFromSearch ? [...searchResults] : null;
+
       // Optimistic updates using resolved IDs
       updateQueryCache(allIds, (email) => ({ ...email, is_important: newState }));
       setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: newState } : m)));
+      // Update searchResults - remove if unmarking important on is:important search, otherwise just update the flag
+      if (shouldRemoveFromSearch) {
+        setSearchResults((prev) => prev.filter((m) => !matchAll(m)));
+      } else {
+        setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: newState } : m)));
+      }
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(allIds, (email) => ({ ...email, is_important: !newState }));
+        setEmails((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: !newState } : m)));
+        if (shouldRemoveFromSearch && originalSearchResults) {
+          setSearchResults(originalSearchResults);
+        } else {
+          setSearchResults((prev) => prev.map((m) => (matchAll(m) ? { ...m, is_important: !newState } : m)));
+        }
       };
 
       // Call thread-level endpoint for each thread
@@ -1044,7 +1111,7 @@ export default function useMailActions() {
           revertUpdate();
         });
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
+    [setEmails, setSearchResults, searchResults, isSimpleSingleSearch, dispatch, updateQueryCache, invalidateEmailCaches, resolveIds]
   );
 
   const setImportant = useCallback(
@@ -1057,16 +1124,37 @@ export default function useMailActions() {
       const threadIdSet = new Set(resolvedThreadIds);
       const newValue = !!value;
 
+      // Check if we should remove from search results (only for single-term is:important search when unmarking)
+      const shouldRemoveFromSearch = !newValue && isSimpleSingleSearch("important");
+
+      // Capture original searchResults before modification (for revert on error if removing)
+      const originalSearchResults = shouldRemoveFromSearch ? [...searchResults] : null;
+
       // Optimistic updates - update both query cache and local state synchronously
       updateQueryCache(resolvedThreadIds, (email) => ({ ...email, is_important: newValue }));
 
       // Force immediate state update with new object references to trigger re-render
       setEmails((prev) => prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: newValue } : m)));
+      // Update searchResults - remove if unmarking important on is:important search, otherwise just update the flag
+      if (shouldRemoveFromSearch) {
+        setSearchResults((prev) => prev.filter((m) => !threadIdSet.has(m.thread_id)));
+      } else {
+        setSearchResults((prev) =>
+          prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: newValue } : m))
+        );
+      }
 
       // Revert function for error handling
       const revertUpdate = () => {
         updateQueryCache(resolvedThreadIds, (email) => ({ ...email, is_important: !newValue }));
         setEmails((prev) => prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: !newValue } : m)));
+        if (shouldRemoveFromSearch && originalSearchResults) {
+          setSearchResults(originalSearchResults);
+        } else {
+          setSearchResults((prev) =>
+            prev.map((m) => (threadIdSet.has(m.thread_id) ? { ...m, is_important: !newValue } : m))
+          );
+        }
       };
 
       // Use bulk endpoint for all threads at once
@@ -1080,7 +1168,7 @@ export default function useMailActions() {
           revertUpdate();
         });
     },
-    [setEmails, dispatch, updateQueryCache, invalidateEmailCaches, resolveThreadIds]
+    [setEmails, setSearchResults, searchResults, isSimpleSingleSearch, dispatch, updateQueryCache, invalidateEmailCaches, resolveThreadIds]
   );
 
   const moveToLabel = useCallback(
