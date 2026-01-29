@@ -1998,5 +1998,1105 @@
     "last_email_at": "2025-10-24T05:44:44.380103Z",
     "created_at": "2025-10-27T13:46:42.783374Z",
     "updated_at": "2025-11-05T06:46:42.783374Z"
+  },
+  {
+    "id": "eb74b932-39bb-40d1-99a1-9ed0d1a8597e",
+    "subject": "Vendor Contract Renewal",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2025-12-21T06:53:44.186Z",
+    "created_at": "2026-01-13T21:53:44.186Z",
+    "updated_at": "2026-01-13T21:53:44.186Z"
+  },
+  {
+    "id": "63d8ae89-6688-4569-b29d-665e3dde498b",
+    "subject": "Training Session Schedule",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-01T00:53:44.187Z",
+    "created_at": "2026-01-06T21:53:44.187Z",
+    "updated_at": "2026-01-06T21:53:44.187Z"
+  },
+  {
+    "id": "c35167be-bf76-4025-8cb2-2c62de821b88",
+    "subject": "Budget Review for Q2",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2025-12-23T18:53:44.188Z",
+    "created_at": "2025-11-30T21:53:44.187Z",
+    "updated_at": "2025-11-30T21:53:44.187Z"
+  },
+  {
+    "id": "f8dea104-9c5f-4897-b1a4-3bee0b77b52c",
+    "subject": "Product Launch Timeline",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-09T15:53:44.189Z",
+    "created_at": "2025-12-17T21:53:44.189Z",
+    "updated_at": "2025-12-17T21:53:44.189Z"
+  },
+  {
+    "id": "28c0ef77-0936-41c4-8d38-70ac3f7b75b3",
+    "subject": "Website Redesign Feedback",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 3,
+    "email_count": 4,
+    "last_email_at": "2026-01-08T12:53:44.189Z",
+    "created_at": "2026-01-11T21:53:44.189Z",
+    "updated_at": "2026-01-11T21:53:44.189Z"
+  },
+  {
+    "id": "364cb5e8-3dd0-4529-b8e7-b8eed9379e54",
+    "subject": "IT Infrastructure Upgrade",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2026-01-13T15:53:44.189Z",
+    "created_at": "2025-12-26T21:53:44.189Z",
+    "updated_at": "2025-12-26T21:53:44.189Z"
+  },
+  {
+    "id": "2056f074-eef1-4012-9429-c976c3676c63",
+    "subject": "Departmental Budget Allocation",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2026-01-14T21:53:44.189Z",
+    "created_at": "2025-12-29T21:53:44.189Z",
+    "updated_at": "2025-12-29T21:53:44.189Z"
+  },
+  {
+    "id": "38677a94-6bd6-4dd2-9098-b39cd37201a5",
+    "subject": "Mobile App Development Update",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 4,
+    "email_count": 6,
+    "last_email_at": "2026-01-13T13:53:44.189Z",
+    "created_at": "2026-01-20T21:53:44.189Z",
+    "updated_at": "2026-01-20T21:53:44.189Z"
+  },
+  {
+    "id": "54487b15-b122-4590-8798-aba253b4fea2",
+    "subject": "Software License Renewals",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2026-01-23T05:53:44.191Z",
+    "created_at": "2025-12-27T21:53:44.191Z",
+    "updated_at": "2025-12-27T21:53:44.191Z"
+  },
+  {
+    "id": "34d1f6d8-1518-4c93-aabd-fc7564cf7457",
+    "subject": "Customer Support Escalation",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 4,
+    "email_count": 3,
+    "last_email_at": "2025-12-19T01:53:44.191Z",
+    "created_at": "2026-01-12T21:53:44.191Z",
+    "updated_at": "2026-01-12T21:53:44.191Z"
+  },
+  {
+    "id": "1398b3ed-3f32-475a-bcb4-7a8306f85ea5",
+    "subject": "Staff Meeting Agenda",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 3,
+    "email_count": 4,
+    "last_email_at": "2026-01-12T09:53:44.191Z",
+    "created_at": "2026-01-15T21:53:44.191Z",
+    "updated_at": "2026-01-15T21:53:44.191Z"
+  },
+  {
+    "id": "ef4bf5db-a2e9-4d91-b57a-96ab172cf058",
+    "subject": "Monthly Revenue Report",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2025-12-22T17:53:44.193Z",
+    "created_at": "2026-01-20T21:53:44.193Z",
+    "updated_at": "2026-01-20T21:53:44.193Z"
+  },
+  {
+    "id": "11b3f1e9-efe8-4cfb-8b29-d20e85764e34",
+    "subject": "New Hire Onboarding Process",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 4,
+    "email_count": 8,
+    "last_email_at": "2025-12-19T02:53:44.193Z",
+    "created_at": "2026-01-06T21:53:44.193Z",
+    "updated_at": "2026-01-06T21:53:44.193Z"
+  },
+  {
+    "id": "3cd2254a-8b18-4b60-8dab-1c9d33bd5f53",
+    "subject": "Compliance Requirements Update",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2025-12-18T03:53:44.193Z",
+    "created_at": "2025-12-04T21:53:44.193Z",
+    "updated_at": "2025-12-04T21:53:44.193Z"
+  },
+  {
+    "id": "b8a40c3e-c83c-4ba5-8680-1e4971968458",
+    "subject": "Travel Policy Changes",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-16T15:53:44.197Z",
+    "created_at": "2025-12-06T21:53:44.197Z",
+    "updated_at": "2025-12-06T21:53:44.197Z"
+  },
+  {
+    "id": "2d974c4c-5ece-410d-8d9b-8289cdda8d62",
+    "subject": "Quarterly Business Review",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-02T06:53:44.197Z",
+    "created_at": "2025-12-30T21:53:44.197Z",
+    "updated_at": "2025-12-30T21:53:44.197Z"
+  },
+  {
+    "id": "859e8956-fae8-42a1-ac10-1be46c347163",
+    "subject": "Annual Performance Reviews",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 5,
+    "email_count": 4,
+    "last_email_at": "2025-12-22T12:53:44.199Z",
+    "created_at": "2026-01-07T21:53:44.199Z",
+    "updated_at": "2026-01-07T21:53:44.199Z"
+  },
+  {
+    "id": "ed259cf2-50b5-43f7-9733-a9b0349e4515",
+    "subject": "Partnership Opportunity Discussion",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 4,
+    "email_count": 8,
+    "last_email_at": "2025-12-25T14:53:44.201Z",
+    "created_at": "2026-01-16T21:53:44.201Z",
+    "updated_at": "2026-01-16T21:53:44.201Z"
+  },
+  {
+    "id": "576d5b8e-ce7e-4c64-8470-95cc5caff36e",
+    "subject": "Office Renovation Plans",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 5,
+    "email_count": 7,
+    "last_email_at": "2025-12-20T21:53:44.202Z",
+    "created_at": "2025-12-26T21:53:44.202Z",
+    "updated_at": "2025-12-26T21:53:44.202Z"
+  },
+  {
+    "id": "735ac2d4-48cb-491f-8561-1647f3d199d9",
+    "subject": "Server Maintenance Schedule",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2025-12-22T09:53:44.204Z",
+    "created_at": "2025-11-30T21:53:44.204Z",
+    "updated_at": "2025-11-30T21:53:44.204Z"
+  },
+  {
+    "id": "24afd289-1629-470a-90c3-09e991f90a1a",
+    "subject": "Data Migration Status",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-13T12:53:44.204Z",
+    "created_at": "2025-12-28T21:53:44.204Z",
+    "updated_at": "2025-12-28T21:53:44.204Z"
+  },
+  {
+    "id": "d67f5de0-05e4-4075-aeb6-27f2f2d5dd16",
+    "subject": "Emergency Contact Updates",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2026-01-19T21:53:44.204Z",
+    "created_at": "2025-12-13T21:53:44.204Z",
+    "updated_at": "2025-12-13T21:53:44.204Z"
+  },
+  {
+    "id": "48eba727-a60b-4cc4-b2c9-a700ba9ed7e3",
+    "subject": "Employee Wellness Program",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 5,
+    "email_count": 7,
+    "last_email_at": "2026-01-03T03:53:44.206Z",
+    "created_at": "2025-12-07T21:53:44.206Z",
+    "updated_at": "2025-12-07T21:53:44.206Z"
+  },
+  {
+    "id": "eae111f5-71c8-49f9-a956-4a5d0ee5387d",
+    "subject": "Client Feedback Summary",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 5,
+    "email_count": 5,
+    "last_email_at": "2026-01-13T17:53:44.208Z",
+    "created_at": "2026-01-02T21:53:44.208Z",
+    "updated_at": "2026-01-02T21:53:44.208Z"
+  },
+  {
+    "id": "755457da-ad28-4e07-bf3a-73fc944d6fd5",
+    "subject": "Benefits Enrollment Period",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2026-01-03T21:53:44.209Z",
+    "created_at": "2025-12-06T21:53:44.209Z",
+    "updated_at": "2025-12-06T21:53:44.209Z"
+  },
+  {
+    "id": "5a3e2ce6-505b-40e5-ba70-91f95278e2ba",
+    "subject": "Marketing Campaign Results",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2026-01-13T09:53:44.209Z",
+    "created_at": "2025-12-11T21:53:44.209Z",
+    "updated_at": "2025-12-11T21:53:44.209Z"
+  },
+  {
+    "id": "4a24c586-6df1-408c-820d-14ccca818bc8",
+    "subject": "Team Building Event Planning",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 3,
+    "email_count": 4,
+    "last_email_at": "2026-01-05T03:53:44.211Z",
+    "created_at": "2025-12-17T21:53:44.211Z",
+    "updated_at": "2025-12-17T21:53:44.211Z"
+  },
+  {
+    "id": "e294a72a-53ee-4a19-9e7b-194ac5da518c",
+    "subject": "Security Audit Findings",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 4,
+    "email_count": 7,
+    "last_email_at": "2026-01-14T09:53:44.211Z",
+    "created_at": "2026-01-18T21:53:44.211Z",
+    "updated_at": "2026-01-18T21:53:44.211Z"
+  },
+  {
+    "id": "de477bc6-117d-47a0-9d72-2dfda1039511",
+    "subject": "Project Milestone Update",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 3,
+    "email_count": 8,
+    "last_email_at": "2026-01-30T21:53:44.211Z",
+    "created_at": "2026-01-24T21:53:44.211Z",
+    "updated_at": "2026-01-24T21:53:44.211Z"
+  },
+  {
+    "id": "a63de0e1-6a14-4717-8e13-1af1f6b801b0",
+    "subject": "Holiday Schedule Announcement",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-23T03:53:44.219Z",
+    "created_at": "2025-12-30T21:53:44.219Z",
+    "updated_at": "2025-12-30T21:53:44.219Z"
+  },
+  {
+    "id": "3e4a12f7-e3c8-4a9b-b02c-6de1dcf77c73",
+    "subject": "Data Migration Status",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2026-01-21T21:55:17.668Z",
+    "created_at": "2025-12-28T21:55:17.667Z",
+    "updated_at": "2025-12-28T21:55:17.667Z"
+  },
+  {
+    "id": "26f8b4d3-5806-4c35-ac63-f55f8683bb41",
+    "subject": "Cloud Migration Strategy",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 4,
+    "email_count": 7,
+    "last_email_at": "2026-01-19T15:55:17.669Z",
+    "created_at": "2026-01-23T21:55:17.669Z",
+    "updated_at": "2026-01-23T21:55:17.669Z"
+  },
+  {
+    "id": "2badf029-611c-467a-aa5e-8614123935a0",
+    "subject": "Network Infrastructure Update",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2026-01-09T01:55:17.671Z",
+    "created_at": "2026-01-12T21:55:17.671Z",
+    "updated_at": "2026-01-12T21:55:17.671Z"
+  },
+  {
+    "id": "2588b5ae-9055-48ca-a27b-284748c2cfe5",
+    "subject": "Employee Wellness Program",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 5,
+    "email_count": 4,
+    "last_email_at": "2025-12-18T21:55:17.678Z",
+    "created_at": "2026-01-13T21:55:17.678Z",
+    "updated_at": "2026-01-13T21:55:17.678Z"
+  },
+  {
+    "id": "cab27844-8a44-4ce9-b0c2-9c6369e3b769",
+    "subject": "Code Review Guidelines",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 3,
+    "email_count": 8,
+    "last_email_at": "2026-01-12T20:55:17.679Z",
+    "created_at": "2025-12-04T21:55:17.679Z",
+    "updated_at": "2025-12-04T21:55:17.679Z"
+  },
+  {
+    "id": "0b83a273-1e72-417b-bef4-0b82620c4215",
+    "subject": "Financial Audit Preparation",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 3,
+    "email_count": 6,
+    "last_email_at": "2025-12-21T09:55:17.679Z",
+    "created_at": "2026-01-15T21:55:17.679Z",
+    "updated_at": "2026-01-15T21:55:17.679Z"
+  },
+  {
+    "id": "9daa3429-9ef3-474e-b5fe-6c7343040370",
+    "subject": "Mobile App Beta Testing",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2025-12-26T05:55:17.681Z",
+    "created_at": "2025-12-03T21:55:17.681Z",
+    "updated_at": "2025-12-03T21:55:17.681Z"
+  },
+  {
+    "id": "13050a83-ea54-4cbc-a3a3-4937ff7b1abd",
+    "subject": "Compliance Training Schedule",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 5,
+    "email_count": 4,
+    "last_email_at": "2026-01-12T03:55:17.681Z",
+    "created_at": "2026-01-18T21:55:17.681Z",
+    "updated_at": "2026-01-18T21:55:17.681Z"
+  },
+  {
+    "id": "e828306a-c5ec-4719-98c0-966e57e12a2d",
+    "subject": "Vendor Contract Renewal",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2025-12-20T21:55:17.686Z",
+    "created_at": "2025-12-08T21:55:17.686Z",
+    "updated_at": "2025-12-08T21:55:17.686Z"
+  },
+  {
+    "id": "b943ef04-3b38-4a85-b2e8-7902db602ef7",
+    "subject": "Mobile App Development Update",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 4,
+    "email_count": 6,
+    "last_email_at": "2026-01-15T20:55:17.687Z",
+    "created_at": "2026-01-21T21:55:17.687Z",
+    "updated_at": "2026-01-21T21:55:17.687Z"
+  },
+  {
+    "id": "26e6738a-07b3-43ae-99e8-64d1607d279c",
+    "subject": "Invoice Processing Update",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2026-01-22T01:55:17.694Z",
+    "created_at": "2026-01-11T21:55:17.693Z",
+    "updated_at": "2026-01-11T21:55:17.693Z"
+  },
+  {
+    "id": "654b113a-6603-436f-8ca1-6bacfa4b28eb",
+    "subject": "Competitive Analysis Report",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 5,
+    "email_count": 4,
+    "last_email_at": "2026-01-05T15:55:17.696Z",
+    "created_at": "2025-12-27T21:55:17.696Z",
+    "updated_at": "2025-12-27T21:55:17.696Z"
+  },
+  {
+    "id": "95f7d1da-f557-4787-8d62-ba79e401b80a",
+    "subject": "Travel Policy Changes",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 3,
+    "email_count": 4,
+    "last_email_at": "2026-01-08T21:55:17.697Z",
+    "created_at": "2025-12-03T21:55:17.697Z",
+    "updated_at": "2025-12-03T21:55:17.697Z"
+  },
+  {
+    "id": "4ea2ea16-07ea-4b07-9798-f989f460cc03",
+    "subject": "Content Calendar Planning",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2026-01-03T21:55:17.698Z",
+    "created_at": "2025-12-03T21:55:17.697Z",
+    "updated_at": "2025-12-03T21:55:17.697Z"
+  },
+  {
+    "id": "77559334-d563-4c3c-94a9-b08b083e34e8",
+    "subject": "Interview Feedback Summary",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 4,
+    "email_count": 7,
+    "last_email_at": "2025-12-30T15:55:17.699Z",
+    "created_at": "2026-01-11T21:55:17.699Z",
+    "updated_at": "2026-01-11T21:55:17.699Z"
+  },
+  {
+    "id": "821a98d8-3d79-44b9-b1ce-3fefbce31e83",
+    "subject": "Employee Satisfaction Survey",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 3,
+    "email_count": 6,
+    "last_email_at": "2026-01-17T08:55:17.700Z",
+    "created_at": "2025-12-24T21:55:17.700Z",
+    "updated_at": "2025-12-24T21:55:17.700Z"
+  },
+  {
+    "id": "72324260-11d5-4cec-979c-73e5b9af2760",
+    "subject": "Quarterly Business Review",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 3,
+    "email_count": 3,
+    "last_email_at": "2026-01-15T09:55:17.701Z",
+    "created_at": "2025-12-19T21:55:17.701Z",
+    "updated_at": "2025-12-19T21:55:17.701Z"
+  },
+  {
+    "id": "53982e1d-c3da-4d29-bfae-b691fa2f4059",
+    "subject": "Integration Testing Status",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2026-01-05T13:55:17.701Z",
+    "created_at": "2025-12-09T21:55:17.701Z",
+    "updated_at": "2025-12-09T21:55:17.701Z"
+  },
+  {
+    "id": "bd1fd6b7-a872-4236-b57c-267ffecddaf9",
+    "subject": "Office Renovation Plans",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2026-01-25T21:55:17.701Z",
+    "created_at": "2025-12-19T21:55:17.701Z",
+    "updated_at": "2025-12-19T21:55:17.701Z"
+  },
+  {
+    "id": "9546e45e-a86a-4207-aa9a-c2940e07f793",
+    "subject": "Press Release Draft",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2026-01-11T17:55:17.703Z",
+    "created_at": "2026-01-08T21:55:17.703Z",
+    "updated_at": "2026-01-08T21:55:17.703Z"
+  },
+  {
+    "id": "13b60144-b0dd-4d36-965d-27b6e90c43e2",
+    "subject": "Emergency Contact Updates",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 5,
+    "email_count": 6,
+    "last_email_at": "2026-01-01T08:55:17.703Z",
+    "created_at": "2026-01-21T21:55:17.703Z",
+    "updated_at": "2026-01-21T21:55:17.703Z"
+  },
+  {
+    "id": "1bb87836-13d8-47ee-a1f7-da7ef2183ad8",
+    "subject": "Office Space Planning",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 4,
+    "email_count": 8,
+    "last_email_at": "2026-01-20T22:55:17.704Z",
+    "created_at": "2025-12-28T21:55:17.704Z",
+    "updated_at": "2025-12-28T21:55:17.704Z"
+  },
+  {
+    "id": "d54705fa-4bf8-44ad-ab46-4af95b1ef037",
+    "subject": "Vendor Performance Review",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 3,
+    "email_count": 3,
+    "last_email_at": "2026-01-05T11:55:17.715Z",
+    "created_at": "2025-12-07T21:55:17.714Z",
+    "updated_at": "2025-12-07T21:55:17.714Z"
+  },
+  {
+    "id": "54f13778-222f-41e0-ae3c-c5413eb23c0c",
+    "subject": "Partnership Opportunity Discussion",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 4,
+    "email_count": 3,
+    "last_email_at": "2026-01-12T23:55:17.715Z",
+    "created_at": "2026-01-11T21:55:17.715Z",
+    "updated_at": "2026-01-11T21:55:17.715Z"
+  },
+  {
+    "id": "2d8eb4be-fb8d-49fd-8b18-84d4dcf94d7d",
+    "subject": "Database Optimization Plan",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2025-12-29T03:55:17.716Z",
+    "created_at": "2025-12-11T21:55:17.716Z",
+    "updated_at": "2025-12-11T21:55:17.716Z"
+  },
+  {
+    "id": "d6bf016d-48ee-4d1f-8b67-45d4e203e968",
+    "subject": "Risk Assessment Report",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 4,
+    "email_count": 7,
+    "last_email_at": "2025-12-23T03:55:17.717Z",
+    "created_at": "2026-01-02T21:55:17.717Z",
+    "updated_at": "2026-01-02T21:55:17.717Z"
+  },
+  {
+    "id": "50a9d35f-663f-477d-859e-237a305b91db",
+    "subject": "Partner Onboarding Process",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 5,
+    "email_count": 5,
+    "last_email_at": "2026-01-18T17:55:17.719Z",
+    "created_at": "2025-12-15T21:55:17.718Z",
+    "updated_at": "2025-12-15T21:55:17.718Z"
+  },
+  {
+    "id": "ce363332-7525-4921-a094-be9ec82966ce",
+    "subject": "Website Redesign Feedback",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 4,
+    "email_count": 3,
+    "last_email_at": "2025-12-15T03:55:17.719Z",
+    "created_at": "2025-12-27T21:55:17.719Z",
+    "updated_at": "2025-12-27T21:55:17.719Z"
+  },
+  {
+    "id": "714fb7d3-3da9-4edc-86f7-e5bcda898b80",
+    "subject": "Resource Allocation Planning",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 4,
+    "email_count": 6,
+    "last_email_at": "2026-01-11T15:55:17.720Z",
+    "created_at": "2025-12-31T21:55:17.720Z",
+    "updated_at": "2025-12-31T21:55:17.720Z"
+  },
+  {
+    "id": "b38364cf-6111-410f-8c49-d914fe2fe2a6",
+    "subject": "Marketing Campaign Results",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 5,
+    "email_count": 5,
+    "last_email_at": "2026-01-23T05:55:17.721Z",
+    "created_at": "2025-12-30T21:55:17.721Z",
+    "updated_at": "2025-12-30T21:55:17.721Z"
+  },
+  {
+    "id": "628fe7d5-98d7-4dfa-a13a-e93e588d7ce4",
+    "subject": "Holiday Schedule Announcement",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 5,
+    "email_count": 3,
+    "last_email_at": "2025-12-18T13:55:17.729Z",
+    "created_at": "2025-12-05T21:55:17.729Z",
+    "updated_at": "2025-12-05T21:55:17.729Z"
+  },
+  {
+    "id": "02a208f2-c578-4df6-96ff-b397ae433aa0",
+    "subject": "Tax Planning Strategy",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 4,
+    "email_count": 3,
+    "last_email_at": "2025-12-30T05:55:17.730Z",
+    "created_at": "2025-11-29T21:55:17.730Z",
+    "updated_at": "2025-11-29T21:55:17.730Z"
+  },
+  {
+    "id": "4e6f14de-4a1e-4eea-8ee4-fa345356f3fc",
+    "subject": "Accessibility Improvements",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-14T06:55:17.733Z",
+    "created_at": "2026-01-12T21:55:17.733Z",
+    "updated_at": "2026-01-12T21:55:17.733Z"
+  },
+  {
+    "id": "33de45d6-2129-4586-b5bc-e0d29fe4672c",
+    "subject": "Weekly Sprint Planning",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 5,
+    "email_count": 4,
+    "last_email_at": "2025-12-22T06:55:17.733Z",
+    "created_at": "2025-12-13T21:55:17.733Z",
+    "updated_at": "2025-12-13T21:55:17.733Z"
+  },
+  {
+    "id": "daab6aa1-99d4-40e5-b205-8c5801be46c2",
+    "subject": "Hardware Inventory Review",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 5,
+    "email_count": 3,
+    "last_email_at": "2026-01-04T09:55:17.735Z",
+    "created_at": "2025-12-13T21:55:17.735Z",
+    "updated_at": "2025-12-13T21:55:17.735Z"
+  },
+  {
+    "id": "69bf11ea-a6e2-47af-a834-6565db95db3a",
+    "subject": "Staff Meeting Agenda",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 5,
+    "email_count": 7,
+    "last_email_at": "2025-12-21T09:55:17.735Z",
+    "created_at": "2025-12-07T21:55:17.735Z",
+    "updated_at": "2025-12-07T21:55:17.735Z"
+  },
+  {
+    "id": "3fcc6308-6470-4017-8777-c86254484f9e",
+    "subject": "Performance Metrics Review",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 5,
+    "email_count": 8,
+    "last_email_at": "2025-12-19T09:55:17.736Z",
+    "created_at": "2026-01-01T21:55:17.736Z",
+    "updated_at": "2026-01-01T21:55:17.736Z"
+  },
+  {
+    "id": "b9358055-388d-46a7-8fb8-01a21aaebe13",
+    "subject": "SEO Strategy Review",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 5,
+    "email_count": 3,
+    "last_email_at": "2025-12-29T03:55:17.736Z",
+    "created_at": "2025-12-07T21:55:17.736Z",
+    "updated_at": "2025-12-07T21:55:17.736Z"
+  },
+  {
+    "id": "870dbf6b-f10a-42f1-be2f-ba2547c40a1f",
+    "subject": "Departmental Budget Allocation",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-13T06:55:17.738Z",
+    "created_at": "2025-12-06T21:55:17.738Z",
+    "updated_at": "2025-12-06T21:55:17.738Z"
+  },
+  {
+    "id": "53fa8d78-7e3b-4488-a240-237fa181cd89",
+    "subject": "New Hire Onboarding Process",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2026-01-22T15:55:17.748Z",
+    "created_at": "2026-01-02T21:55:17.748Z",
+    "updated_at": "2026-01-02T21:55:17.748Z"
+  },
+  {
+    "id": "3d8e488e-5dca-4b6f-be6d-80c98c37eb1f",
+    "subject": "Onboarding Checklist Update",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 5,
+    "email_count": 3,
+    "last_email_at": "2026-01-02T11:55:17.749Z",
+    "created_at": "2025-12-06T21:55:17.749Z",
+    "updated_at": "2025-12-06T21:55:17.749Z"
+  },
+  {
+    "id": "69f287fd-b6a8-4a57-a91c-6eb77bbca0a1",
+    "subject": "Security Patch Deployment",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 5,
+    "email_count": 5,
+    "last_email_at": "2026-01-07T17:55:17.751Z",
+    "created_at": "2025-12-26T21:55:17.751Z",
+    "updated_at": "2025-12-26T21:55:17.751Z"
+  },
+  {
+    "id": "337c1bc5-5c47-4e49-a582-a233065784d7",
+    "subject": "Release Notes Draft",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 3,
+    "email_count": 6,
+    "last_email_at": "2026-01-18T05:55:17.751Z",
+    "created_at": "2025-12-05T21:55:17.751Z",
+    "updated_at": "2025-12-05T21:55:17.751Z"
+  },
+  {
+    "id": "a774497b-245b-4cbd-80e4-bc1339228040",
+    "subject": "Payment Terms Discussion",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2025-12-30T00:55:17.751Z",
+    "created_at": "2026-01-09T21:55:17.751Z",
+    "updated_at": "2026-01-09T21:55:17.751Z"
+  },
+  {
+    "id": "6e2ae183-dfee-4e0e-bd6e-3427079721de",
+    "subject": "Server Maintenance Schedule",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 5,
+    "email_count": 7,
+    "last_email_at": "2025-12-25T09:55:17.753Z",
+    "created_at": "2025-12-31T21:55:17.753Z",
+    "updated_at": "2025-12-31T21:55:17.753Z"
+  },
+  {
+    "id": "0d98adce-1fff-4994-a887-b3267a6d8c59",
+    "subject": "Email Marketing Campaign",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 3,
+    "email_count": 6,
+    "last_email_at": "2026-01-22T06:55:17.753Z",
+    "created_at": "2026-01-09T21:55:17.753Z",
+    "updated_at": "2026-01-09T21:55:17.753Z"
+  },
+  {
+    "id": "96e61574-02e3-4b7c-ab43-977b68e7657d",
+    "subject": "Customer Support Escalation",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 4,
+    "email_count": 8,
+    "last_email_at": "2026-01-07T18:55:17.762Z",
+    "created_at": "2025-12-21T21:55:17.761Z",
+    "updated_at": "2025-12-21T21:55:17.761Z"
+  },
+  {
+    "id": "8198fe6f-12b3-4e38-9ee0-42efd675c526",
+    "subject": "Pricing Strategy Discussion",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 4,
+    "email_count": 7,
+    "last_email_at": "2026-01-25T21:55:17.765Z",
+    "created_at": "2025-11-29T21:55:17.765Z",
+    "updated_at": "2025-11-29T21:55:17.765Z"
+  },
+  {
+    "id": "dd78f774-efe1-4ce4-83e9-66b9b3c1464a",
+    "subject": "Disaster Recovery Planning",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 5,
+    "email_count": 6,
+    "last_email_at": "2026-01-05T03:55:17.767Z",
+    "created_at": "2026-01-26T21:55:17.767Z",
+    "updated_at": "2026-01-26T21:55:17.767Z"
+  },
+  {
+    "id": "80ecb58a-0515-4cbb-8764-b9a30fbd7227",
+    "subject": "Benefits Enrollment Period",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2026-01-08T09:55:17.769Z",
+    "created_at": "2025-12-16T21:55:17.769Z",
+    "updated_at": "2025-12-16T21:55:17.769Z"
+  },
+  {
+    "id": "526a34da-7ee7-4d88-8a2c-65e90a00a102",
+    "subject": "Annual Performance Reviews",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2025-12-24T21:55:17.769Z",
+    "created_at": "2025-12-11T21:55:17.769Z",
+    "updated_at": "2025-12-11T21:55:17.769Z"
+  },
+  {
+    "id": "d6144789-3871-4953-a4da-9e8b579593d9",
+    "subject": "User Research Findings",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 3,
+    "email_count": 4,
+    "last_email_at": "2025-12-21T12:55:17.771Z",
+    "created_at": "2026-01-17T21:55:17.771Z",
+    "updated_at": "2026-01-17T21:55:17.771Z"
+  },
+  {
+    "id": "e92db58c-0a32-44ee-8167-28e17480d5c6",
+    "subject": "Design System Updates",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 5,
+    "email_count": 8,
+    "last_email_at": "2026-01-01T21:55:17.782Z",
+    "created_at": "2025-12-17T21:55:17.782Z",
+    "updated_at": "2025-12-17T21:55:17.782Z"
+  },
+  {
+    "id": "691109d6-36b7-4a32-885e-cc34d1e05ece",
+    "subject": "Software License Renewals",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2026-01-14T17:55:17.784Z",
+    "created_at": "2026-01-09T21:55:17.784Z",
+    "updated_at": "2026-01-09T21:55:17.784Z"
+  },
+  {
+    "id": "dcf6bc30-65c3-472e-9ec4-e7c73ae91f4f",
+    "subject": "Product Launch Timeline",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2026-01-17T15:55:17.784Z",
+    "created_at": "2025-11-29T21:55:17.784Z",
+    "updated_at": "2025-11-29T21:55:17.784Z"
+  },
+  {
+    "id": "74a2db0c-9a5a-4921-acf4-12bcb088ca35",
+    "subject": "Training Session Schedule",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 4,
+    "email_count": 3,
+    "last_email_at": "2025-12-29T05:55:17.784Z",
+    "created_at": "2026-01-03T21:55:17.784Z",
+    "updated_at": "2026-01-03T21:55:17.784Z"
+  },
+  {
+    "id": "b23bf140-0d2b-480d-8168-bf2aa7752e07",
+    "subject": "Incident Post-Mortem",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 3,
+    "email_count": 6,
+    "last_email_at": "2026-01-17T13:55:17.786Z",
+    "created_at": "2025-12-15T21:55:17.784Z",
+    "updated_at": "2025-12-15T21:55:17.784Z"
+  },
+  {
+    "id": "434162df-7a23-4768-8ab0-e71ac661f96c",
+    "subject": "Client Feedback Summary",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 5,
+    "email_count": 8,
+    "last_email_at": "2026-01-01T03:55:17.787Z",
+    "created_at": "2025-12-15T21:55:17.787Z",
+    "updated_at": "2025-12-15T21:55:17.787Z"
+  },
+  {
+    "id": "3ac23456-9f3b-480b-ad6e-fe21c9753e19",
+    "subject": "Customer Journey Mapping",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 5,
+    "email_count": 7,
+    "last_email_at": "2026-01-17T21:55:17.787Z",
+    "created_at": "2025-12-24T21:55:17.787Z",
+    "updated_at": "2025-12-24T21:55:17.787Z"
+  },
+  {
+    "id": "09fe9915-103e-4df9-9338-20fa077c6043",
+    "subject": "Budget Forecast Q3",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 3,
+    "email_count": 8,
+    "last_email_at": "2026-01-16T13:55:17.793Z",
+    "created_at": "2026-01-25T21:55:17.793Z",
+    "updated_at": "2026-01-25T21:55:17.793Z"
+  },
+  {
+    "id": "6787c3b0-6fe0-4ba6-8641-472029fec550",
+    "subject": "Feature Flag Configuration",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 5,
+    "email_count": 7,
+    "last_email_at": "2026-01-03T15:55:17.796Z",
+    "created_at": "2026-01-10T21:55:17.796Z",
+    "updated_at": "2026-01-10T21:55:17.796Z"
+  },
+  {
+    "id": "8aa86982-2e2e-4fd0-82f5-68dc3de48016",
+    "subject": "Legal Review Required",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 4,
+    "email_count": 7,
+    "last_email_at": "2025-12-21T21:55:17.797Z",
+    "created_at": "2026-01-24T21:55:17.797Z",
+    "updated_at": "2026-01-24T21:55:17.797Z"
+  },
+  {
+    "id": "7396da62-2fcb-421b-acab-6d3c3b66f598",
+    "subject": "Monthly Revenue Report",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 5,
+    "email_count": 6,
+    "last_email_at": "2026-01-17T21:55:17.799Z",
+    "created_at": "2025-12-25T21:55:17.799Z",
+    "updated_at": "2025-12-25T21:55:17.799Z"
+  },
+  {
+    "id": "9071e478-9c49-42d6-a532-7b1e32102350",
+    "subject": "Team Building Event Planning",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 5,
+    "email_count": 3,
+    "last_email_at": "2026-01-05T09:55:17.799Z",
+    "created_at": "2025-12-04T21:55:17.799Z",
+    "updated_at": "2025-12-04T21:55:17.799Z"
+  },
+  {
+    "id": "3a8a7cc6-f15a-46ef-92af-50ada16fd034",
+    "subject": "Compliance Requirements Update",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2025-12-27T17:55:17.801Z",
+    "created_at": "2025-12-07T21:55:17.801Z",
+    "updated_at": "2025-12-07T21:55:17.801Z"
+  },
+  {
+    "id": "1f3e50d9-e608-4179-86ba-e6179cdae090",
+    "subject": "Software Asset Management",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2025-12-27T05:55:17.801Z",
+    "created_at": "2025-12-31T21:55:17.801Z",
+    "updated_at": "2025-12-31T21:55:17.801Z"
+  },
+  {
+    "id": "e2c86249-3781-4458-aab5-94791c703e6a",
+    "subject": "Hiring Pipeline Update",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 5,
+    "email_count": 3,
+    "last_email_at": "2025-12-24T13:55:17.802Z",
+    "created_at": "2025-12-09T21:55:17.802Z",
+    "updated_at": "2025-12-09T21:55:17.802Z"
+  },
+  {
+    "id": "eb399a71-2545-46bf-b854-740f32faf86d",
+    "subject": "Load Testing Results",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 3,
+    "email_count": 6,
+    "last_email_at": "2026-01-07T00:55:17.802Z",
+    "created_at": "2025-12-13T21:55:17.802Z",
+    "updated_at": "2025-12-13T21:55:17.802Z"
+  },
+  {
+    "id": "e02b77d0-482a-4dcc-9253-5956334a62d5",
+    "subject": "Credit Line Extension Request",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2025-12-28T21:55:17.803Z",
+    "created_at": "2026-01-19T21:55:17.803Z",
+    "updated_at": "2026-01-19T21:55:17.803Z"
+  },
+  {
+    "id": "539de94f-2026-4abf-bdf9-0d095bfc6324",
+    "subject": "Social Media Analytics",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 4,
+    "email_count": 3,
+    "last_email_at": "2026-01-12T23:55:17.803Z",
+    "created_at": "2026-01-22T21:55:17.803Z",
+    "updated_at": "2026-01-22T21:55:17.803Z"
+  },
+  {
+    "id": "ccd82129-4097-4461-b922-d5478105af94",
+    "subject": "Remote Work Policy Update",
+    "owner_id": "00000000-0000-0000-0000-000000000001",
+    "participant_count": 5,
+    "email_count": 5,
+    "last_email_at": "2025-12-31T01:55:17.805Z",
+    "created_at": "2025-12-18T21:55:17.805Z",
+    "updated_at": "2025-12-18T21:55:17.805Z"
+  },
+  {
+    "id": "06d2cc8c-7565-45ef-8593-1b785ba2648d",
+    "subject": "Equipment Request Approval",
+    "owner_id": "00000000-0000-0000-0000-000000000002",
+    "participant_count": 3,
+    "email_count": 5,
+    "last_email_at": "2026-01-10T17:55:17.806Z",
+    "created_at": "2025-12-09T21:55:17.806Z",
+    "updated_at": "2025-12-09T21:55:17.806Z"
+  },
+  {
+    "id": "a88fe7d0-1854-44ed-b8e4-6acd521e373e",
+    "subject": "IT Infrastructure Upgrade",
+    "owner_id": "00000000-0000-0000-0000-000000000003",
+    "participant_count": 5,
+    "email_count": 6,
+    "last_email_at": "2026-01-15T09:55:17.808Z",
+    "created_at": "2025-12-14T21:55:17.808Z",
+    "updated_at": "2025-12-14T21:55:17.808Z"
+  },
+  {
+    "id": "9b59873a-8e1b-43fa-9dff-751834aa252c",
+    "subject": "Security Audit Findings",
+    "owner_id": "00000000-0000-0000-0000-000000000004",
+    "participant_count": 4,
+    "email_count": 5,
+    "last_email_at": "2026-01-06T01:55:17.811Z",
+    "created_at": "2025-12-05T21:55:17.811Z",
+    "updated_at": "2025-12-05T21:55:17.811Z"
+  },
+  {
+    "id": "a2f9029f-4e58-4e93-aba6-c27996fdd577",
+    "subject": "Expense Report Review",
+    "owner_id": "00000000-0000-0000-0000-000000000005",
+    "participant_count": 3,
+    "email_count": 4,
+    "last_email_at": "2025-12-21T09:55:17.813Z",
+    "created_at": "2025-12-09T21:55:17.813Z",
+    "updated_at": "2025-12-09T21:55:17.813Z"
+  },
+  {
+    "id": "a8a08951-7c32-4aa0-b63e-93b7c1f24b17",
+    "subject": "API Documentation Update",
+    "owner_id": "00000000-0000-0000-0000-000000000006",
+    "participant_count": 4,
+    "email_count": 3,
+    "last_email_at": "2025-12-31T05:55:17.814Z",
+    "created_at": "2026-01-03T21:55:17.814Z",
+    "updated_at": "2026-01-03T21:55:17.814Z"
+  },
+  {
+    "id": "caf83fba-93cd-4bbc-9348-f32d7dbe9a7e",
+    "subject": "Contract Negotiation Update",
+    "owner_id": "9cfb02bd-9f7b-4b5b-a125-7d50dfb23787",
+    "participant_count": 5,
+    "email_count": 6,
+    "last_email_at": "2026-01-23T02:55:17.814Z",
+    "created_at": "2025-12-19T21:55:17.814Z",
+    "updated_at": "2025-12-19T21:55:17.814Z"
+  },
+  {
+    "id": "92975a9f-1e2c-4b0e-9844-fed16a123d78",
+    "subject": "Budget Review for Q2",
+    "owner_id": "bd220bbd-7d84-4ab5-9e2b-c1e3328ba01f",
+    "participant_count": 5,
+    "email_count": 4,
+    "last_email_at": "2025-12-24T06:55:17.816Z",
+    "created_at": "2025-12-03T21:55:17.816Z",
+    "updated_at": "2025-12-03T21:55:17.816Z"
+  },
+  {
+    "id": "e20933c1-e2d0-4003-aec7-6f063d935598",
+    "subject": "Brand Guidelines Update",
+    "owner_id": "52123fab-244b-46dd-897a-142d8d53d666",
+    "participant_count": 4,
+    "email_count": 4,
+    "last_email_at": "2025-12-29T09:55:17.816Z",
+    "created_at": "2026-01-25T21:55:17.816Z",
+    "updated_at": "2026-01-25T21:55:17.816Z"
+  },
+  {
+    "id": "548932d3-1d96-4e43-94d8-1bba30fccc6c",
+    "subject": "Project Milestone Update",
+    "owner_id": "d2b530f7-de08-46bf-b8cc-f58e7e51ed61",
+    "participant_count": 3,
+    "email_count": 7,
+    "last_email_at": "2026-01-18T15:55:17.816Z",
+    "created_at": "2026-01-12T21:55:17.816Z",
+    "updated_at": "2026-01-12T21:55:17.816Z"
   }
 ]
